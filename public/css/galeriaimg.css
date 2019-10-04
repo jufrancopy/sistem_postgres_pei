@@ -1,0 +1,90 @@
+@import url("https://fonts.googleapis.com/css?family=Raleway:300,400");
+
+
+body {
+  height: 100vh;
+  background: #84e8dc;
+  background: -moz-linear-gradient(-45deg, #84e8dc 0%, #f4ed8b 100%);
+  background: -webkit-linear-gradient(-45deg, #84e8dc 0%, #f4ed8b 100%);
+  background: linear-gradient(135deg, #84e8dc 0%, #f4ed8b 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#84e8dc', endColorstr='#f4ed8b',GradientType=1 );
+}
+
+/*
+header {
+  padding: 25px 0;
+}
+header h1 {
+  color: white;
+  text-shadow: 1px 3px 4px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  font-size: 30px;
+  letter-spacing: 0.4px;
+  font-family: "Raleway", sans-serif;
+}*/
+.containergal {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: center;
+  padding: 0 30px;
+}
+.containergal .thumbex {
+  margin: 10px 20px 30px;
+  width: 100%;
+  min-width: 175px;
+  max-width: 217.5;
+  height: 150px;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  overflow: hidden;
+  /*outline: 2px solid white;*//*Crea una linea blanca alrededor de la img*/
+  outline-offset: -30px;
+  background-color: blue;
+  box-shadow: 2.5px 5px 20px 2.5px rgba(0, 0, 0, 0.5);
+}
+.containergal .thumbex .thumbnail {
+  overflow: hidden;
+  min-width: 125px;
+  height: 150px;
+  position: relative;
+  opacity: 0.88;
+  backface-visibility: hidden;
+  transition: all 0.4s ease-out;
+}
+.containergal .thumbex .thumbnail img {
+  position: absolute;
+  z-index: 1;
+  left: 25%;
+  top: 25%;
+  height: 115%;
+  width: auto;
+  transform: translate(-25%, -25%);
+  backface-visibility: hidden;
+}
+.containergal .thumbex .thumbnail span {
+  position: absolute;
+  z-index: 2;
+  top: calc(75px - 20px);/*centrado del texto*/
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 5px 25px;
+  margin: 10 22.5px;
+  text-align: center;
+  font-size: 12px;
+  color: white;
+  font-weight: 150;
+  font-family: "Raleway", sans-serif;
+  letter-spacing: 0.2px;
+  transition: all 0.3s ease-out;
+}
+.containergal .thumbex .thumbnail:hover {
+  backface-visibility: hidden;
+  transform: scale(1.15, 1.15);
+  opacity: 1;
+}
+.container .thumbex .thumbnail:hover span {
+  opacity: 0;
+}
