@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-use App\Admin\FodaCategoria;
-use App\Admin\FodaAsignarCategoria;
-use App\Admin\FodaPerfil;
+use App\Admin\Foda\FodaCategoria;
+use App\Admin\Foda\FodaAsignarCategoria;
+use App\Admin\Foda\FodaPerfil;
 
 class FodaAsignarCategoriaController extends Controller
 {

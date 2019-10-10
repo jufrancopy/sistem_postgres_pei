@@ -60,7 +60,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-aspectos-categoria/{idCategoria}/{idPerfil}', 'Admin\FodaAnalisisController@aspectosCategoria')->name('foda-aspectos-categoria');
     Route::get('foda-aspectos-categoria/{idCategoria}/{idPerfil}/edit', 'Admin\FodaAnalisisController@aspectosCategoriaEdit')->name('foda-aspectos-categoria-edit');
     Route::get('foda-analisis-asignar-aspectos/{idPerfil}', 'Admin\FodaAnalisisController@asignarAspectos')->name('ffoda-analisis-asignar-aspectos');
-    // Route::post('foda-ponderar/{id}/ponderar', 'Admin\FodaAnalisisController@ponderar')->name('foda-ponderar');
     Route::get('foda-listado-perfiles', 'Admin\FodaAnalisisController@listadoPerfiles')->name('foda-listado-perfiles');
     Route::get('foda-listado-categorias-aspectos/{idPerfil}', 'Admin\FodaAnalisisController@listadoCategoriaAspectos')->name('foda-listado-categorias-aspectos');
     Route::get('foda-analisis-ambientes/{idPerfil}', 'Admin\FodaAnalisisController@seleccionarAmbiente')->name('foda-analisis-ambientes');

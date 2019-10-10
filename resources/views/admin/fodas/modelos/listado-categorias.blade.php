@@ -61,7 +61,7 @@
                                             </button>
                                             {!! Form::close() !!}
                                             <a href="{{route('foda-modelo-categoria-aspectos',['idModelo'=>$categoria->modelo_id, 'idCategoria'=>$categoria->id])}}">
-                                                <span class="btn btn-success btn-circle">{{App\Admin\FodaAspecto::where('categoria_id', $categoria->id)->count()}}</span>
+                                                <span class="btn btn-success btn-circle">{{App\Admin\Foda\FodaAspecto::where('categoria_id', $categoria->id)->count()}}</span>
                                             </a>
                                             
                                         </td>

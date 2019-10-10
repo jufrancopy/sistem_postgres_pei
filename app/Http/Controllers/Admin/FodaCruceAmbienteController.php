@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Admin;
 use DB;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Admin\FodaAspecto;
-use App\Admin\FodaCategoria;
-use App\Admin\FodaPerfil;
-use App\Admin\FodaAnalisis;
-use App\Admin\FodaCruceAmbiente;
+
+use App\Admin\Foda\FodaAspecto;
+use App\Admin\Foda\FodaCategoria;
+use App\Admin\Foda\FodaPerfil;
+use App\Admin\Foda\FodaAnalisis;
+use App\Admin\Foda\FodaCruceAmbiente;
 use Codedge\Fpdf\Fpdf\Fpdf;
 use App\ClasesPersonalizadas\Pdf;
 

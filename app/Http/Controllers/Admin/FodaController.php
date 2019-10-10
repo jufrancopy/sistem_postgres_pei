@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use DB;
-use App\Admin\Foda;
+
+use App\Admin\Foda\Foda;
 
 class FodaController extends Controller
 {

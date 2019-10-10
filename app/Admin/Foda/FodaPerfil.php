@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Admin;
+namespace App\Admin\Foda;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -14,19 +14,19 @@ class FodaPerfil extends Model
     
     public function categorias(){
         
-        return $this->belongsToMany('App\Admin\FodaCategoria', 'foda_categorias_has_perfil', 'perfil_id','categoria_id' );
+        return $this->belongsToMany('App\Admin\Foda\FodaCategoria', 'foda_categorias_has_perfil', 'perfil_id','categoria_id' );
 
     }
 
     public function aspectos(){
         
-        return $this->belongsToMany('App\Admin\FodaAspecto');
+        return $this->belongsToMany('App\Admin\Foda\FodaAspecto');
 
     }
 
     public function modelo(){
         
-        return $this->belongsTo('App\Admin\FodaModelo');
+        return $this->belongsTo('App\Admin\Foda\FodaModelo');
 
     }
 

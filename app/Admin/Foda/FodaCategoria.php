@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Admin;
+namespace App\Admin\Foda;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,17 +12,17 @@ class FodaCategoria extends Model
 
     public function perfil()
     {
-        return $this->belongsTo('App\Admin\FodaPerfil');
+        return $this->belongsTo('App\Admin\Foda\FodaPerfil');
     }
 
     public function aspectos()
     {
-        return $this->belongsToMany('App\Admin\FodaAspecto');
+        return $this->belongsToMany('App\Admin\Foda\FodaAspecto');
     }
     
     public function modelo()
     {
-        return $this->belongsTo('App\Admin\FodaModelo');
+        return $this->belongsTo('App\Admin\Foda\FodaModelo');
     }
 
     public function scopeNombre($query, $nombre)

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Admin;
+namespace App\Admin\Foda;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,7 +11,7 @@ class FodaAspecto extends Model
     protected $fillable = ['user_id','nombre', 'categoria_id'];
 
     public function categoria(){
-        return $this->belongsTo('App\Admin\FodaCategoria');
+        return $this->belongsTo('App\Admin\Foda\FodaCategoria');
     }
     
     

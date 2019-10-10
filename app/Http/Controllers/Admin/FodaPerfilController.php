@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Storage;
 
 use App\Http\Controllers\Controller;
 
-use App\Admin\FodaPerfil;
-use App\Admin\FodaCategoria;
-use App\Admin\FodaModelo;
+use App\Admin\Foda\FodaPerfil;
+use App\Admin\Foda\FodaCategoria;
+use App\Admin\Foda\FodaModelo;
 
 class FodaPerfilController extends Controller
 {

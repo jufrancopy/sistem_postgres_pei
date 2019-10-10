@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Admin\FodaModelo;
-use App\Admin\FodaCategoria;
-use App\Admin\FodaAspecto;
+
+use App\Admin\Foda\FodaModelo;
+use App\Admin\Foda\FodaCategoria;
+use App\Admin\Foda\FodaAspecto;
 
 class FodaModeloController extends Controller
 {
