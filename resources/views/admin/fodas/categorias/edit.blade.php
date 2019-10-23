@@ -11,10 +11,7 @@
           <div class="card-body">
             {!! Form::model($categoria, ['route'=>['foda-categorias.update', $categoria->id],
             'method'=>'PUT']) !!}
-
-
             @include('admin.fodas.categorias.partials.form')
-
             {!! Form::close() !!}
           </div>
         </div>

@@ -21,7 +21,6 @@ class FodaAnalisis extends Model
     }
 
     
-    
     public function perfil(){
         return $this->belongsTo('App\Admin\FodaPerfil');
     }

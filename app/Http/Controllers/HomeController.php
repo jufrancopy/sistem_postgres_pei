@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Admin\FodaAspecto;
-use App\Admin\FodaCategoria;
-use App\Admin\FodaPerfil;
-use App\Admin\FodaAnalisis;
+use App\Admin\Foda\FodaAspecto;
+use App\Admin\Foda\FodaCategoria;
+use App\Admin\Foda\FodaPerfil;
+use App\Admin\Foda\FodaAnalisis;
 
 class HomeController extends Controller
 {

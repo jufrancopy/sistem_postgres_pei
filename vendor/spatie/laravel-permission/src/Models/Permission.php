@@ -19,6 +19,8 @@ class Permission extends Model implements PermissionContract
     use HasRoles;
     use RefreshesPermissionCache;
 
+    protected $dateFormat = 'Y-m-d H:i:sO';
+    
     protected $guarded = ['id'];
 
     public function __construct(array $attributes = [])

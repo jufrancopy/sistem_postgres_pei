@@ -17,23 +17,26 @@
             </a>
         </li>
         <li class="nav-item ">
-            <a class="nav-link" href="{{route('organigramas.index')}}">
+            <a class="nav-link" href="{{route('organigramas-listado')}}">
                 <i class="material-icons">account_balance</i>
                 <p>Organigrama</p>
             </a>
         </li>
-        <li class="nav-item ">
-            <a class="nav-link" href="{{route('fodas-dashboard')}}">
-                <i class="material-icons">visibility</i>
-                <p>FODA</p>
-            </a>
-        </li>
+        
         <li class="nav-item ">
             <a class="nav-link" href="{{route('accesos')}}">
                 <i class="material-icons">person</i>
                 <p>Roles y Permisos</p>
             </a>
         </li>
+
+        <li class="nav-item ">
+            <a class="nav-link" href="{{route('planificacion-dashboard')}}">
+                <i class="material-icons">person</i>
+                <p>Planificacion</p>
+            </a>
+        </li>
+
         <li class="nav-item ">
             <a class="nav-link" href="{{route('users.index')}}">
                 <i class="material-icons">content_paste</i>
