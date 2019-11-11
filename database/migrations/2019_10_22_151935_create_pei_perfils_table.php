@@ -37,6 +37,6 @@ class CreatePeiPerfilsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('pei_perfils');
+        Schema::dropIfExists('planificacion.pei_perfiles');
     }
 }

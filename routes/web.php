@@ -27,22 +27,39 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('roles', 'Admin\RoleController');
     Route::resource('users', 'Admin\UserController');
     Route::resource('products', 'Admin\ProductController');
-    Route::resource('organigramas', 'Admin\Institucionales\OrganigramaController');
-    Route::get('organigramas-crear-subdependencia/{idDependencia}', 'Admin\Institucionales\OrganigramaController@crearSubDependencia')->name('organigramas-crear-subdependencia');
-    Route::get('organigramas-editar-subdependencia/{idDependencia}', 'Admin\Institucionales\OrganigramaController@editarSubDependencia')->name('organigramas-editar-subdependencia');
-    Route::get('organigramas-listado', 'Admin\Institucionales\OrganigramaController@listaOrganigramas')->name('organigramas-listado');
-    Route::get('organigramas-ver/{id}', 'Admin\Institucionales\OrganigramaController@verOrganigrama')->name('organigramas-ver');
-    Route::get('accesos', 'Admin\AccesoController@index')->name('accesos');
-
-    //Rutas del apartado de Planificacion y Evaluacion
-    Route::view('planificacion-dashboard', 'admin.planificacion.dashboard')->name('planificacion-dashboard');
+    Route::resource('organigramas', 'Admin\Globales\OrganigramaController');
+    Route::get('organigramas-crear-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@crearSubDependencia')->name('organigramas-crear-subdependencia');
+    Route::get('organigramas-editar-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@editarSubDependencia')->name('organigramas-editar-subdependencia');
+    Route::get('organigramas-listado', 'Admin\Globales\OrganigramaController@listaOrganigramas')->name('organigramas-listado');
+    Route::get('organigramas-ver/{id}', 'Admin\Globales\OrganigramaController@verOrganigrama')->name('organigramas-ver');
+    
+    //Rutas del Dpto. Planificacion
+    Route::get('planificacion-dashboard', 'Admin\Planificacion\PlanificacionController@dashboard')->name('planificacion-dashboard');
     
     //Rutas de PEI
-    Route::view('peis-dashboard', 'admin.planificacion.peis.index')->name('pies-dashboard');
+    Route::view('peis-dashboard', 'admin.planificacion.peis.index')->name('peis-dashboard');
     Route::resource('peis-perfiles', 'Admin\Planificacion\Pei\PeiPerfilController');
 
+    // Rutas de Estadisticas
+    Route::view('estadisticas-dashboard', 'admin.estadisticas.dashboard')->name('estadisticas-dashboard');
+
+    // Rutas de Proyectos
+    Route::view('proyectos-dashboard', 'admin.proyectos.dashboard')->name('proyectos-dashboard');
+
+    
+    // Rutas Configuraciones Globales
+    Route::get('globales-dashboard', 'Admin\Globales\GlobalesController@dashboard')->name('globales-dashboard');
+    Route::resource('formulario-variables', 'Admin\Globales\Formulario\VariableController');
+    Route::get('formulario-variables-items/{idVariable}', 'Admin\Globales\Formulario\ItemController@itemsVariable')->name('formulario-variables-items');
+    Route::get('formulario-agregar-item/{idVariable}', 'Admin\Globales\Formulario\ItemController@agregarItem')->name('formulario-agregar-item');
+    
+    Route::resource('formulario-items', 'Admin\Globales\Formulario\ItemController');
+    Route::resource('formulario-formularios', 'Admin\Globales\Formulario\FormularioController');
+    Route::resource('estructuras-control', 'Admin\Globales\EstructuraControlController');
+    Route::get('/estructuras-control/{id}/subdependencias','Admin\Globales\EstructuraControlController@getSubDependencias');
+    
+
     //Rutas del Modulo FODA
-    Route::view('fodas-dashboard', 'admin.fodas.index')->name('fodas-dashboard');
     Route::resource('foda-modelos', 'Admin\Planificacion\Foda\FodaModeloController');
     Route::resource('foda-categorias', 'Admin\Planificacion\Foda\FodaCategoriaController');
     Route::get('foda-modelo-categorias/{idModelo}', 'Admin\Planificacion\Foda\FodaCategoriaController@listadoCategorias')->name('foda-modelo-categorias');

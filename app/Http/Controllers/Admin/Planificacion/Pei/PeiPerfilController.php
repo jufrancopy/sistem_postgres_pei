@@ -15,7 +15,7 @@ class PeiPerfilController extends Controller
      */
     public function index(Request $request)
     {
-      $perfiles = PeiPerfil::orderBy('id', 'ASC')->paginate(10);
+      $perfiles = PeiPerfil::nombre($request->get('nombre'))->orderBy('id', 'ASC')->paginate(10);
       
       return view('admin.planificacion.peis.perfiles.index', get_defined_vars())
       ->with('i', ($request->input('page', 1) - 1) * 5);
@@ -28,7 +28,7 @@ class PeiPerfilController extends Controller
      */
     public function create()
     {
-        //
+        return view ('admin.planificacion.peis.perfiles.create');
     }
 
     /**
@@ -39,7 +39,10 @@ class PeiPerfilController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $perfil = PeiPerfil::create($request->all());
+
+        return redirect()->route('peis-perfiles.index')
+            ->with('success','Perfil de Planificación Estratégica creado exitosamente');
     }
 
     /**
@@ -61,7 +64,9 @@ class PeiPerfilController extends Controller
      */
     public function edit($id)
     {
-        //
+        $perfilPei = PeiPerfil::find($id);
+        
+        return view ('admin.planificacion.peis.perfiles.edit', get_defined_vars());
     }
 
     /**
@@ -73,7 +78,10 @@ class PeiPerfilController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $perfilPei = PeiPerfil::find($id);
+        $perfilPei->fill($request->all())->save();
+
+        return redirect()->route('peis-perfiles.index');
     }
 
     /**
@@ -84,6 +92,11 @@ class PeiPerfilController extends Controller
      */
     public function destroy($id)
     {
-        //
+        
+        
+        
+        PeiPerfil::find($id)->delete();
+        
+        return back()->with('success', 'Perfil de Planificación eliminado correctamente.');
     }
 }

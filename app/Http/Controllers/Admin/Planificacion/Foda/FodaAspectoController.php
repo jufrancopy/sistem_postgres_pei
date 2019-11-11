@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Storage;
 
 use App\Http\Controllers\Controller;
 
-use App\Admin\Foda\FodaAspecto;
-use App\Admin\Foda\FodaCategoria;
-use App\Admin\Foda\FodaModelo;
+use App\Admin\Planificacion\Foda\FodaAspecto;
+use App\Admin\Planificacion\Foda\FodaCategoria;
+use App\Admin\Planificacion\Foda\FodaModelo;
 
 class FodaAspectoController extends Controller
 {
@@ -26,7 +26,7 @@ class FodaAspectoController extends Controller
     {  
         $aspectos=FodaAspecto::nombre($request->get('nombre'))->orderBy('id','DESC')->paginate(10);
         
-        return view('admin.fodas.aspectos.index', get_defined_vars())
+        return view('admin.planificacion.fodas.aspectos.index', get_defined_vars())
                 ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
@@ -34,7 +34,7 @@ class FodaAspectoController extends Controller
     {  
         $modelos=FodaModelo::nombre($request->get('nombre'))->orderBy('id','DESC')->paginate(10);
         
-        return view('admin.fodas.aspectos.modelos', get_defined_vars())
+        return view('admin.planificacion.fodas.aspectos.modelos', get_defined_vars())
                 ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
@@ -49,14 +49,14 @@ class FodaAspectoController extends Controller
     {
         $categorias =FodaCategoria::orderBy('id','ASC')->pluck('nombre', 'id');
         
-        return view('admin.fodas.aspectos.create', get_defined_vars());
+        return view('admin.planificacion.fodas.aspectos.create', get_defined_vars());
     }
 
     public function crearAspecto(Request $request, $idCategoria){
 
         $categoria = FodaCategoria::find($idCategoria);
         
-        return view('admin.fodas.aspectos.create', get_defined_vars());
+        return view('admin.planificacion.fodas.aspectos.create', get_defined_vars());
     }
 
     /**
@@ -85,7 +85,7 @@ class FodaAspectoController extends Controller
     public function show($id)
     {
         $aspecto=FodaAspecto::find($id);
-        return view('admin.fodas.aspectos.show', get_defined_vars());
+        return view('admin.planificacion.fodas.aspectos.show', get_defined_vars());
     }
 
     /**
@@ -100,7 +100,7 @@ class FodaAspectoController extends Controller
         $categoria_id = $aspecto->categoria_id;
         $categoria = FodaCategoria::where('id', $categoria_id)->first();
 
-        return view('admin.fodas.aspectos.edit', get_defined_vars());
+        return view('admin.planificacion.fodas.aspectos.edit', get_defined_vars());
     }
 
     /**

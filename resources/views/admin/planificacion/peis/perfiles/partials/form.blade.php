@@ -11,12 +11,15 @@
 </div>
 
 <div class="form-group">
-    {{ Form::label('responsable', 'Responsable:')	}}
-    {{ Form::text('responsable', null,['class'=>'form-control','id'=>'nombre'])	}}
+    {{ Form::label('vigencia_desde', 'Inico:')	}}
+    {{ Form::text('vigencia_desde', null,['class'=>'form-control','id'=>'nombre'])	}}
 </div>
 
+<div class="form-group">
+    {{ Form::label('vigencia_hasta', 'Fin:')	}}
+    {{ Form::text('vigencia_hasta', null,['class'=>'form-control','id'=>'nombre'], 'required')	}}
+</div>
 
 <div class="form-group">
-
     {{ Form::submit('Guardar', ['class'=>'bt btn-sm btn-primary'])	}}
 </div>

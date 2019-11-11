@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Evaluacion extends Model
 {
-    protected $table = 'diplan_planificacion.evaluaciones';
+    protected $table = 'planificacion.evaluaciones';
 
     protected $dateFormat = 'Y-m-d H:i:sO';
     

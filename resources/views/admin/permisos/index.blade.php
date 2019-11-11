@@ -17,7 +17,7 @@
                 @endcan
 
                 <div class="pull-right">
-                    <a class="btn btn-warning pull-right" href="{{ route('accesos') }}"> Atras</a>
+                    <a class="btn btn-warning pull-right" href="{{ route('globales-dashboard') }}"> Atras</a>
                 </div>
 
             </div>

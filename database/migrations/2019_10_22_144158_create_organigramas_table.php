@@ -13,17 +13,17 @@ class CreateOrganigramasTable extends Migration
      */
     public function up()
     {
-        Schema::create('organigramas', function (Blueprint $table) {
+        Schema::create('globales.organigramas', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('dependency');
 
             $table->unsignedInteger('dependency_id')->nullable();
-            $table->foreign('dependency_id')->references('id')->on('organigramas')
+            $table->foreign('dependency_id')->references('id')->on('globales.organigramas')
                     ->onDelete('cascade')
                     ->onUpdate('cascade');
             
             $table->string('responsable');
-            $table->string('telefono');
+            $table->integer('telefono');
             $table->string('email')->unique();        
 
             $table->unsignedInteger('user_id');
@@ -42,6 +42,6 @@ class CreateOrganigramasTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('organigramas');
+        Schema::dropIfExists('globales.organigramas');
     }
 }

@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin\Planificacion\Foda;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-use App\Admin\Foda\FodaCategoria;
-use App\Admin\Foda\FodaAsignarCategoria;
-use App\Admin\Foda\FodaPerfil;
+use App\Admin\Planificacion\Foda\FodaCategoria;
+use App\Admin\Planificacion\Foda\FodaAsignarCategoria;
+use App\Admin\Planificacion\Foda\FodaPerfil;
 
 class FodaAsignarCategoriaController extends Controller
 {
@@ -25,7 +25,7 @@ class FodaAsignarCategoriaController extends Controller
         
         $perfilCategorias = FodaAsignarCategoria::orderBy('id', 'ASC')->paginate(10);
         dd($perfilCategorias);
-        return view ('admin.fodas.asignar-categorias.index', get_defined_vars())
+        return view ('admin.planificacion.fodas.asignar-categorias.index', get_defined_vars())
                 ->with('i', ($request->input('page', 1) - 1) * 5);;
     }
 
@@ -50,7 +50,7 @@ class FodaAsignarCategoriaController extends Controller
             $categoriasChecked[] = $categoria->id;
         }
         
-        return view('admin.fodas.asignar-categorias.create', get_defined_vars());        
+        return view('admin.planificacion.fodas.asignar-categorias.create', get_defined_vars());        
     }
 
     /**

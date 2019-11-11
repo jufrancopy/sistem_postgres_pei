@@ -15,7 +15,7 @@
                         <a class="btn btn-success" href="{{ route('users.create') }}"> Crear nuevo usuario</a> 
                         @endcan
                         <div class="pull-right">
-                            <a class="btn btn-warning" href="{{ route('accesos') }}"> Atras</a>
+                            <a class="btn btn-warning" href="{{ route('globales-dashboard') }}"> Atras</a>
                         </div>
                     </div>
                         <div class="card-body">

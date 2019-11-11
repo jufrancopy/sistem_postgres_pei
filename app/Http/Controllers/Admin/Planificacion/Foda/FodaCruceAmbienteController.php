@@ -6,11 +6,11 @@ use DB;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-use App\Admin\Foda\FodaAspecto;
-use App\Admin\Foda\FodaCategoria;
-use App\Admin\Foda\FodaPerfil;
-use App\Admin\Foda\FodaAnalisis;
-use App\Admin\Foda\FodaCruceAmbiente;
+use App\Admin\Planificacion\Foda\FodaAspecto;
+use App\Admin\Planificacion\Foda\FodaCategoria;
+use App\Admin\Planificacion\Foda\FodaPerfil;
+use App\Admin\Planificacion\Foda\FodaAnalisis;
+use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
 use Codedge\Fpdf\Fpdf\Fpdf;
 use App\ClasesPersonalizadas\Pdf;
 
@@ -30,39 +30,38 @@ class FodaCruceAmbienteController extends Controller
 
         //Ambiente Interno - Debilidad
         $debilidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Debilidad')
             ->get();
 
         //Ambiente Interno - Fortaleza
         $fortalezas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Fortaleza')
             ->get();
 
         //Ambiente Externo - Oportunidad
         $oportunidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Oportunidad')
             ->get();
 
         //Ambiente Externo - Amenaza
         $amenazas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Amenaza')
             ->get();
-        
         
         $FOs= FodaCruceAmbiente::where('tipo','=', 'FO')->where('perfil_id','=', $idPerfil)->get();
         $DOs= FodaCruceAmbiente::where('tipo','=', 'DO')->where('perfil_id','=', $idPerfil)->get();
         $FAs= FodaCruceAmbiente::where('tipo','=', 'FA')->where('perfil_id','=', $idPerfil)->get();
         $DAs= FodaCruceAmbiente::where('tipo','=', 'DA')->where('perfil_id','=', $idPerfil)->get();
         
-        return view('admin.fodas.analisis.cruce-ambientes', get_defined_vars());
+        return view('admin.planificacion.fodas.analisis.cruce-ambientes', get_defined_vars());
     }
 
     public function FO(Request $request, $idPerfil)
@@ -72,23 +71,19 @@ class FodaCruceAmbienteController extends Controller
 
         //Ambiente Interno - Fortaleza
         $fortalezas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Fortaleza')
             ->get();
 
-        
-
         //Ambiente Externo - Oportunidad
         $oportunidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Oportunidad')
             ->get();
 
-        
-
-        return view('admin.fodas.analisis.cruces.fo', get_defined_vars());
+        return view('admin.planificacion.fodas.analisis.cruces.fo', get_defined_vars());
     }
 
 
@@ -99,8 +94,8 @@ class FodaCruceAmbienteController extends Controller
 
         //Ambiente Interno - Debilidad
         $debilidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Debilidad')
             ->get();
 
@@ -112,8 +107,8 @@ class FodaCruceAmbienteController extends Controller
 
         //Ambiente Externo - Oportunidad
         $oportunidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Oportunidad')
             ->get();
 
@@ -123,7 +118,7 @@ class FodaCruceAmbienteController extends Controller
             $oportunidadesChecked[] = $v->aspecto->id;
         }
         
-        return view('admin.fodas.analisis.cruces.do', get_defined_vars());
+        return view('admin.planificacion.fodas.analisis.cruces.do', get_defined_vars());
     }
 
     public function FA(Request $request, $idPerfil)
@@ -133,8 +128,8 @@ class FodaCruceAmbienteController extends Controller
 
         //Ambiente Interno - Fortaleza
         $fortalezas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Fortaleza')
             ->get();
 
@@ -146,8 +141,8 @@ class FodaCruceAmbienteController extends Controller
 
         //Ambiente Externo - Amenaza
         $amenazas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Amenaza')
             ->get();
 
@@ -156,7 +151,7 @@ class FodaCruceAmbienteController extends Controller
         foreach ($amenazas as $v) {
             $amenazasChecked[] = $v->aspecto->id;
         }
-        return view('admin.fodas.analisis.cruces.fa', get_defined_vars());
+        return view('admin.planificacion.fodas.analisis.cruces.fa', get_defined_vars());
     }
         public function DA(Request $request, $idPerfil)
         {
@@ -165,8 +160,8 @@ class FodaCruceAmbienteController extends Controller
 
         //Ambiente Interno - Debilidad
         $debilidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Debilidad')
             ->get();
 
@@ -178,8 +173,8 @@ class FodaCruceAmbienteController extends Controller
 
         //Ambiente Externo - Amenaza
         $amenazas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Amenaza')
             ->get();
 
@@ -190,7 +185,7 @@ class FodaCruceAmbienteController extends Controller
         }
         
 
-        return view('admin.fodas.analisis.cruces.da', get_defined_vars());
+        return view('admin.planificacion.fodas.analisis.cruces.da', get_defined_vars());
     }
 
    
@@ -294,29 +289,29 @@ public function descargarCrucePdf(Request $request, $idPerfil){
         $matriz =    0.17;
 
         //Ambiente Interno - Fortaleza
-        $fortalezas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+        $fortalezas = FodaAnalisis::where('planificacion.perfil_id', '=', $idPerfil)
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Fortaleza')
             ->get();
 
         //Ambiente Externo - Oportunidad
         $oportunidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Oportunidad')
             ->get();
 
         $debilidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Debilidad')
             ->get();
         
          //Ambiente Externo - Amenaza
         $amenazas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Amenaza')
             ->get();
 
@@ -346,7 +341,7 @@ public function descargarCrucePdf(Request $request, $idPerfil){
             }
             
         
-        return view('admin.fodas.analisis.cruces.edit', get_defined_vars());
+        return view('admin.planificacion.fodas.analisis.cruces.edit', get_defined_vars());
     }
 
     /**

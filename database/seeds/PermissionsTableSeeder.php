@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Carbon\Carbon;
+
 use Spatie\Permission\Models\Permission;
 
 class PermissionsTableSeeder extends Seeder
@@ -12,53 +14,28 @@ class PermissionsTableSeeder extends Seeder
      */
     public function run()
     {
-<<<<<<< HEAD
-        $permissions = [
-            'role-list',
-            'role-create',
-            'role-edit',
-            'role-delete',
-            'product-list',
-            'product-create',
-            'product-edit',
-            'product-delete'
-         ];
- 
- 
-         foreach ($permissions as $permission) {
-              Permission::create(['name' => $permission]);
-         }
-=======
-          DB::table('permissions')->insert([
-            'name' => 'todos_los_permisos',
-            'guard_name'=> 'web'
+        DB::table('sistema.permissions')->insert([
+            'name' => 'role-list',
+            'guard_name'=> 'web',
+            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('roles')->insert([
-            'name' => 'crud_m_v_o_v',
-            'guard_name'=> 'web'
+        DB::table('sistema.permissions')->insert([
+            'name' => 'role-edit',
+            'guard_name'=> 'web',
+            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('roles')->insert([
-            'name' => 'crud_estrategias',
-            'guard_name'=> 'web'
+        DB::table('sistema.permissions')->insert([
+            'name' => 'role-create',
+            'guard_name'=> 'web',
+            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('roles')->insert([
-            'name' => 'crud_programas',
-            'guard_name'=> 'web'
+        DB::table('sistema.permissions')->insert([
+            'name' => 'role-delete',
+            'guard_name'=> 'web',
+            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
-
-        DB::table('roles')->insert([
-            'name' => 'crud_proyectos',
-            'guard_name'=> 'web'
-        ]);
-
-        DB::table('roles')->insert([
-            'name' => 'crud_actividades',
-            'guard_name'=> 'web'
-        ]);
->>>>>>> 241a26be8edd2bbe030de9237187923b504d412f
-    
     }
 }

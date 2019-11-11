@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\Storage;
 
 use App\Http\Controllers\Controller;
 
-use App\Admin\Foda\FodaCategoria;
-use App\Admin\Foda\FodaAspecto;
-use App\Admin\Foda\FodaCruceAmbiente;
-use App\Admin\Foda\FodaModelo;
+use App\Admin\Planificacion\Foda\FodaCategoria;
+use App\Admin\Planificacion\Foda\FodaAspecto;
+use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
+use App\Admin\Planificacion\Foda\FodaModelo;
 
 class FodaCategoriaController extends Controller
 {
@@ -27,7 +27,7 @@ class FodaCategoriaController extends Controller
     {  
         $categorias=FodaCategoria::nombre($request->get('nombre'))->orderBy('id','DESC')->paginate(10);
         
-        return view('admin.fodas.categorias.index', get_defined_vars())
+        return view('admin.planificacion.fodas.categorias.index', get_defined_vars())
                 ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
@@ -39,7 +39,7 @@ class FodaCategoriaController extends Controller
     public function create()
     {   
         $modelos = FodaModelo::orderBy('id', 'ASC')->pluck('nombre', 'id');
-        return view('admin.fodas.categorias.create', get_defined_vars());
+        return view('admin.planificacion.fodas.categorias.create', get_defined_vars());
     }
 
     public function listadoCategorias(Request $request, $idModelo)
@@ -47,7 +47,7 @@ class FodaCategoriaController extends Controller
         $modelo = FodaModelo::find($idModelo);
         $categorias = FodaCategoria::nombre($request->get('nombre'))->where('modelo_id','=', $idModelo)->paginate(10);
         
-       return view('admin.fodas.modelos.listado-categorias', get_defined_vars())
+       return view('admin.planificacion.fodas.modelos.listado-categorias', get_defined_vars())
         ->with('i', ($request->input('page', 1) - 1) * 5);;
     }
     
@@ -55,7 +55,8 @@ class FodaCategoriaController extends Controller
     public function crearCategoria(Request $request, $idModelo)
     {
         $modelo = FodaModelo::find($idModelo);
-        return view('admin.fodas.categorias.create', get_defined_vars());
+        $modelo_id = $modelo->id;
+        return view('admin.planificacion.fodas.categorias.create', get_defined_vars());
     }
 
 
@@ -76,14 +77,14 @@ class FodaCategoriaController extends Controller
     public function show($id)
     {
         $categoria=FodaCategoria::find($id);
-        return view('admin.fodas.categorias.show', get_defined_vars());
+        return view('admin.planificacion.fodas.categorias.show', get_defined_vars());
     }
 
     public function listaAspectosCategoria(Request $request, $idCategoria)
     {
         $aspectos=FodaAspecto::nombre($request->get('nombre'))->where('categoria_id', '=', $idCategoria)->get();
         
-        return view('admin.fodas.categorias.aspectos', get_defined_vars())
+        return view('admin.planificacion.fodas.categorias.aspectos', get_defined_vars())
                 ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
@@ -100,10 +101,11 @@ class FodaCategoriaController extends Controller
         
         $categoria=FodaCategoria::find($id);
         $modelo_id = $categoria->modelo_id;
-        $modelo = FodaModelo::where('id', $modelo_id)->get();
         
         
-        return view('admin.fodas.categorias.edit', get_defined_vars());
+        
+        
+        return view('admin.planificacion.fodas.categorias.edit', get_defined_vars());
     }
 
     /**

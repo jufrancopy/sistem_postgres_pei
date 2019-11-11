@@ -50,5 +50,8 @@
 <!-- Scripts personalizados-->
 @yield('scripts')
 <script>
+  $(document).ready(function() {
+    $('.js-example-responsive').select2();
+});
 
 </script>

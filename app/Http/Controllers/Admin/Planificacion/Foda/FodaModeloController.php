@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin\Planificacion\Foda;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-use App\Admin\Foda\FodaModelo;
-use App\Admin\Foda\FodaCategoria;
-use App\Admin\Foda\FodaAspecto;
+use App\Admin\Planificacion\Foda\FodaModelo;
+use App\Admin\Planificacion\Foda\FodaCategoria;
+use App\Admin\Planificacion\Foda\FodaAspecto;
 
 class FodaModeloController extends Controller
 {
@@ -20,7 +20,7 @@ class FodaModeloController extends Controller
     {
         $modelos=FodaModelo::nombre($request->get('nombre'))->orderBy('id','DESC')->paginate(10);
         
-        return view('admin.fodas.modelos.index', get_defined_vars())
+        return view('admin.planificacion.fodas.modelos.index', get_defined_vars())
                 ->with('i', ($request->input('page', 1) - 1) * 5);
     }
     
@@ -30,7 +30,7 @@ class FodaModeloController extends Controller
         $categoria = FodaCategoria::where('id', '=', $idCategoria)->first();
         $aspectos=FodaAspecto::nombre($request->get('nombre'))->orderBy('id', 'DESC')->where('categoria_id', '=', $idCategoria)->get();
         
-        return view ('admin.fodas.modelos.aspectos', get_defined_vars())
+        return view ('admin.planificacion.fodas.modelos.aspectos', get_defined_vars())
         ->with('i', ($request->input('page', 1) - 1) * 5);;
     }
     /**
@@ -40,7 +40,7 @@ class FodaModeloController extends Controller
      */
     public function create()
     {
-        return view('admin.fodas.modelos.create');
+        return view('admin.planificacion.fodas.modelos.create');
     }
 
     /**
@@ -77,7 +77,7 @@ class FodaModeloController extends Controller
     public function edit($id)
     {
         $modelo = FodaModelo::find($id);
-        return view ('admin.fodas.modelos.edit', get_defined_vars());
+        return view ('admin.planificacion.fodas.modelos.edit', get_defined_vars());
     }
 
     /**

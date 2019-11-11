@@ -51,8 +51,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script> -->
-
-    <style>
+    <script src="{{ asset('master/assets/js/core/popper.min.js') }}" type="text/javascript"></script>    
+    
+<style>
     .data-table td:nth-child(3),
     .data-table th:nth-child(3) {
         /* text-align : center; */
@@ -86,6 +87,6 @@
         line-height: 1.33;
         border-radius: 35px;
     }   
-    </style>
+</style>
 
 </head>

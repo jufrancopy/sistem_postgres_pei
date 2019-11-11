@@ -3,7 +3,7 @@
 <div class="container">
     <section class="content-header">
         <ol class="breadcrumb ">
-            <li><a href="{{route('accesos')}}"><i class="material-icons">arrow_back</i>Volver a Administracion</a></li>
+            <li><a href="{{route('globales-dashboard')}}"><i class="material-icons">arrow_back</i>Volver a Administracion</a></li>
         </ol>
     </section>
     <h3>Gestionar Roles</h3>

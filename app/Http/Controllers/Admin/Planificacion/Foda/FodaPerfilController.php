@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Storage;
 
 use App\Http\Controllers\Controller;
 
-use App\Admin\Foda\FodaPerfil;
-use App\Admin\Foda\FodaCategoria;
-use App\Admin\Foda\FodaModelo;
+use App\Admin\Planificacion\Foda\FodaPerfil;
+use App\Admin\Planificacion\Foda\FodaCategoria;
+use App\Admin\Planificacion\Foda\FodaModelo;
 
 class FodaPerfilController extends Controller
 {
@@ -26,7 +26,7 @@ class FodaPerfilController extends Controller
     {  
         $perfiles=FodaPerfil::nombre($request->get('nombre'))->orderBy('id','DESC')->paginate(10);
         
-        return view('admin.fodas.perfiles.index', get_defined_vars())
+        return view('admin.planificacion.fodas.perfiles.index', get_defined_vars())
                 ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
@@ -49,7 +49,7 @@ class FodaPerfilController extends Controller
         
         
         
-        return view('admin.fodas.perfiles.create', get_defined_vars());
+        return view('admin.planificacion.fodas.perfiles.create', get_defined_vars());
     }
 
     /**
@@ -83,7 +83,7 @@ class FodaPerfilController extends Controller
         foreach ($perfil->categorias as $categoria) {
             $categoriasChecked[] = $categoria->id;
         }
-        return view('admin.fodas.perfiles.show', get_defined_vars());
+        return view('admin.planificacion.fodas.perfiles.show', get_defined_vars());
     }
 
     /**
@@ -105,7 +105,7 @@ class FodaPerfilController extends Controller
             $categoriasChecked[] = $categoria->id;
         }
         
-        return view('admin.fodas.perfiles.edit', get_defined_vars());
+        return view('admin.planificacion.fodas.perfiles.edit', get_defined_vars());
     }
 
     /**

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use DB;
 
-use App\Admin\Foda\Foda;
+use App\Admin\Planificacion\Foda\Foda;
 
 class FodaController extends Controller
 {
@@ -20,7 +20,7 @@ class FodaController extends Controller
 
         $fodas = Foda::get()->groupBy('nivel');
 
-        return view('admin.fodas.dashboard', get_defined_vars());
+        return view('admin.planificacion.fodas.dashboard', get_defined_vars());
     }
     /**
      * Display a listing of the resource.
@@ -30,7 +30,7 @@ class FodaController extends Controller
     public function index()
     {
         $fodas = Foda::orderBy('aspecto', 'ASC')->get();
-        return view('admin.fodas.index', get_defined_vars());
+        return view('admin.planificacion.fodas.index', get_defined_vars());
     }
 
     /**
@@ -81,21 +81,21 @@ class FodaController extends Controller
         $nivel = $id->nivel;
         $fodas = Foda::where('nivel', '=', $nivel)->get();
 
-        return view('admin.fodas.listado', get_defined_vars());
+        return view('admin.planificacion.fodas.listado', get_defined_vars());
     }
 
     public function analisisFortaleza(Request $request, $id)
     {
         $foda = Foda::find($id);
         
-        return view('admin.fodas.fortaleza_edit', get_defined_vars());
+        return view('admin.planificacion.fodas.fortaleza_edit', get_defined_vars());
     }
 
     public function analisisDebilidad(Request $request, $id)
     {
         $foda = Foda::find($id);
         
-        return view('admin.fodas.debilidad_edit', get_defined_vars());
+        return view('admin.planificacion.fodas.debilidad_edit', get_defined_vars());
     }
 
 
@@ -113,7 +113,7 @@ class FodaController extends Controller
         $foda->fill($request->all())->save();
         $fodas = Foda::where('nivel', '=', $request->nivel)->get();
         
-        return view('admin.fodas.listado', get_defined_vars());
+        return view('admin.planificacion.fodas.listado', get_defined_vars());
     }
 
     /**

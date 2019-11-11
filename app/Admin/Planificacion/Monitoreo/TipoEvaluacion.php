@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class TipoEvaluacion extends Model
 {
-    protected $table = 'diplan_planificacion.tipos_evaluaciones';
+    protected $table = 'planificacion.tipos_evaluaciones';
 
-    protected $dateFormat = 'Y-m-d H:i:sO';
+    protected $dateFormat = 'Y-m-d H:i:s';
     
     protected $fillable = ['nombre'];
     

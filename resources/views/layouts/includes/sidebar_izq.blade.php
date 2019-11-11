@@ -5,8 +5,8 @@
     -->
 <div class="logo">
     <a href="{{route('home')}}" class="simple-text logo-normal">
-          SIMOG
-        </a>
+        SIMOG
+    </a>
 </div>
 <div class="sidebar-wrapper">
     <ul class="nav">
@@ -17,31 +17,32 @@
             </a>
         </li>
         <li class="nav-item ">
-            <a class="nav-link" href="{{route('organigramas-listado')}}">
-                <i class="material-icons">account_balance</i>
-                <p>Organigrama</p>
-            </a>
-        </li>
-        
-        <li class="nav-item ">
-            <a class="nav-link" href="{{route('accesos')}}">
-                <i class="material-icons">person</i>
-                <p>Roles y Permisos</p>
+            <a class="nav-link" href="{{route('globales-dashboard')}}">
+                    <i class="material-icons">settings_applications</i>
+                <p>Globales</p>
             </a>
         </li>
 
         <li class="nav-item ">
             <a class="nav-link" href="{{route('planificacion-dashboard')}}">
-                <i class="material-icons">person</i>
+                    <i class="material-icons">assignment</i>
                 <p>Planificacion</p>
             </a>
         </li>
 
         <li class="nav-item ">
-            <a class="nav-link" href="{{route('users.index')}}">
-                <i class="material-icons">content_paste</i>
-                <p>Usuarios</p>
+            <a class="nav-link" href="{{route('estadisticas-dashboard')}}">
+                <i class="material-icons">bar_chart</i>
+                <p>Estadisticas</p>
             </a>
         </li>
+
+        <li class="nav-item ">
+                <a class="nav-link" href="{{route('proyectos-dashboard')}}">
+                        <i class="material-icons">next_week</i>
+                    <p>Proyectos</p>
+                </a>
+            </li>
+        
     </ul>
 </div>
