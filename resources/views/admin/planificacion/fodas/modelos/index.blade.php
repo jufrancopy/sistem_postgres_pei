@@ -40,8 +40,8 @@
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Nombre</th>
-                                        <th>Autor</th>
+                                        <th>Modelo</th>
+                                        <th>Propietario</th>
                                         <th width="350px">Acciones</th>
                                     </tr>
                                 </thead>

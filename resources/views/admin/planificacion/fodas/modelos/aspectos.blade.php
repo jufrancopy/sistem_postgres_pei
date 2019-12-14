@@ -12,7 +12,7 @@
 
                 <div class="card">
                     <div class="card-header card-header-info">
-                        <h4 class="card-title ">Aspectos de la Categoria {{$categoria->nombre}}</h4>
+                        <h4 class="card-title ">Aspectos del {{$categoria->nombre}}</h4>
                         @can('role-create')
                         <a class="btn btn-success" href="{{ route('foda-modelo-categoria-aspectos-crear', $idCategoria) }}"> Crear Aspecto</a>
                         @endcan

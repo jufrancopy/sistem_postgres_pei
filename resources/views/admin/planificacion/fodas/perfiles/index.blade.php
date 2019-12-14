@@ -18,7 +18,7 @@
                         <a class="btn btn-success" href="{{ route('foda-perfiles.create') }}"> Crear Nuevo Perfil</a>
                         @endcan
                         <div class="pull-right">
-                            <a class="btn btn-warning" href="{{ route('fodas-dashboard') }}"> Atras</a>
+                            <a class="btn btn-warning" href="{{ route('planificacion-dashboard') }}"> Atras</a>
                         </div>
                     </div>
 

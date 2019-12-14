@@ -73,6 +73,8 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
             'Symfony\\Component\\Debug\\' => 24,
             'Symfony\\Component\\CssSelector\\' => 30,
             'Symfony\\Component\\Console\\' => 26,
+            'Staudenmeir\\LaravelCte\\' => 23,
+            'Staudenmeir\\LaravelAdjacencyList\\' => 33,
             'Spatie\\Permission\\' => 18,
         ),
         'R' => 
@@ -268,6 +270,14 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         array (
             0 => __DIR__ . '/..' . '/symfony/console',
         ),
+        'Staudenmeir\\LaravelCte\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src',
+        ),
+        'Staudenmeir\\LaravelAdjacencyList\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/staudenmeir/laravel-adjacency-list/src',
+        ),
         'Spatie\\Permission\\' => 
         array (
             0 => __DIR__ . '/..' . '/spatie/laravel-permission/src',
@@ -445,6 +455,7 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
 
     public static $classMap = array (
         'App\\Admin\\Globales\\EstructuraControl' => __DIR__ . '/../..' . '/app/Admin/Globales/EstructuraControl.php',
+        'App\\Admin\\Globales\\Formulario\\Clasificador' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Clasificador.php',
         'App\\Admin\\Globales\\Formulario\\Formulario' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Formulario.php',
         'App\\Admin\\Globales\\Formulario\\Item' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Item.php',
         'App\\Admin\\Globales\\Formulario\\Variable' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Variable.php',
@@ -467,6 +478,8 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         'App\\Exceptions\\Handler' => __DIR__ . '/../..' . '/app/Exceptions/Handler.php',
         'App\\Http\\Controllers\\Admin\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Controller.php',
         'App\\Http\\Controllers\\Admin\\Globales\\EstructuraControlController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Globales/EstructuraControlController.php',
+        'App\\Http\\Controllers\\Admin\\Globales\\Formulario\\ClasificadorController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Globales/Formulario/ClasificadorController.php',
+        'App\\Http\\Controllers\\Admin\\Globales\\Formulario\\FormularioController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Globales/Formulario/FormularioController.php',
         'App\\Http\\Controllers\\Admin\\Globales\\Formulario\\ItemController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Globales/Formulario/ItemController.php',
         'App\\Http\\Controllers\\Admin\\Globales\\Formulario\\VariableController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Globales/Formulario/VariableController.php',
         'App\\Http\\Controllers\\Admin\\Globales\\GlobalesController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Globales/GlobalesController.php',
@@ -3587,6 +3600,31 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         'Spatie\\Permission\\Traits\\HasPermissions' => __DIR__ . '/..' . '/spatie/laravel-permission/src/Traits/HasPermissions.php',
         'Spatie\\Permission\\Traits\\HasRoles' => __DIR__ . '/..' . '/spatie/laravel-permission/src/Traits/HasRoles.php',
         'Spatie\\Permission\\Traits\\RefreshesPermissionCache' => __DIR__ . '/..' . '/spatie/laravel-permission/src/Traits/RefreshesPermissionCache.php',
+        'Staudenmeir\\LaravelAdjacencyList\\Eloquent\\Builder' => __DIR__ . '/..' . '/staudenmeir/laravel-adjacency-list/src/Eloquent/Builder.php',
+        'Staudenmeir\\LaravelAdjacencyList\\Eloquent\\HasRecursiveRelationships' => __DIR__ . '/..' . '/staudenmeir/laravel-adjacency-list/src/Eloquent/HasRecursiveRelationships.php',
+        'Staudenmeir\\LaravelAdjacencyList\\Eloquent\\Relations\\Ancestors' => __DIR__ . '/..' . '/staudenmeir/laravel-adjacency-list/src/Eloquent/Relations/Ancestors.php',
+        'Staudenmeir\\LaravelAdjacencyList\\Eloquent\\Relations\\Descendants' => __DIR__ . '/..' . '/staudenmeir/laravel-adjacency-list/src/Eloquent/Relations/Descendants.php',
+        'Staudenmeir\\LaravelAdjacencyList\\Eloquent\\Relations\\IsRecursiveRelation' => __DIR__ . '/..' . '/staudenmeir/laravel-adjacency-list/src/Eloquent/Relations/IsRecursiveRelation.php',
+        'Staudenmeir\\LaravelAdjacencyList\\Eloquent\\Relations\\Siblings' => __DIR__ . '/..' . '/staudenmeir/laravel-adjacency-list/src/Eloquent/Relations/Siblings.php',
+        'Staudenmeir\\LaravelAdjacencyList\\Query\\Grammars\\ExpressionGrammar' => __DIR__ . '/..' . '/staudenmeir/laravel-adjacency-list/src/Query/Grammars/ExpressionGrammar.php',
+        'Staudenmeir\\LaravelAdjacencyList\\Query\\Grammars\\MySqlGrammar' => __DIR__ . '/..' . '/staudenmeir/laravel-adjacency-list/src/Query/Grammars/MySqlGrammar.php',
+        'Staudenmeir\\LaravelAdjacencyList\\Query\\Grammars\\PostgresGrammar' => __DIR__ . '/..' . '/staudenmeir/laravel-adjacency-list/src/Query/Grammars/PostgresGrammar.php',
+        'Staudenmeir\\LaravelAdjacencyList\\Query\\Grammars\\SQLiteGrammar' => __DIR__ . '/..' . '/staudenmeir/laravel-adjacency-list/src/Query/Grammars/SQLiteGrammar.php',
+        'Staudenmeir\\LaravelAdjacencyList\\Query\\Grammars\\SqlServerGrammar' => __DIR__ . '/..' . '/staudenmeir/laravel-adjacency-list/src/Query/Grammars/SqlServerGrammar.php',
+        'Staudenmeir\\LaravelCte\\Connections\\CreatesQueryBuilder' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Connections/CreatesQueryBuilder.php',
+        'Staudenmeir\\LaravelCte\\Connections\\MySqlConnection' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Connections/MySqlConnection.php',
+        'Staudenmeir\\LaravelCte\\Connections\\PostgresConnection' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Connections/PostgresConnection.php',
+        'Staudenmeir\\LaravelCte\\Connections\\SQLiteConnection' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Connections/SQLiteConnection.php',
+        'Staudenmeir\\LaravelCte\\Connections\\SqlServerConnection' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Connections/SqlServerConnection.php',
+        'Staudenmeir\\LaravelCte\\Connectors\\ConnectionFactory' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Connectors/ConnectionFactory.php',
+        'Staudenmeir\\LaravelCte\\DatabaseServiceProvider' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/DatabaseServiceProvider.php',
+        'Staudenmeir\\LaravelCte\\Eloquent\\QueriesExpressions' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Eloquent/QueriesExpressions.php',
+        'Staudenmeir\\LaravelCte\\Query\\Builder' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Query/Builder.php',
+        'Staudenmeir\\LaravelCte\\Query\\Grammars\\CompilesExpressions' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Query/Grammars/CompilesExpressions.php',
+        'Staudenmeir\\LaravelCte\\Query\\Grammars\\MySqlGrammar' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Query/Grammars/MySqlGrammar.php',
+        'Staudenmeir\\LaravelCte\\Query\\Grammars\\PostgresGrammar' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Query/Grammars/PostgresGrammar.php',
+        'Staudenmeir\\LaravelCte\\Query\\Grammars\\SQLiteGrammar' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Query/Grammars/SQLiteGrammar.php',
+        'Staudenmeir\\LaravelCte\\Query\\Grammars\\SqlServerGrammar' => __DIR__ . '/..' . '/staudenmeir/laravel-cte/src/Query/Grammars/SqlServerGrammar.php',
         'Svg\\DefaultStyle' => __DIR__ . '/..' . '/phenx/php-svg-lib/src/Svg/DefaultStyle.php',
         'Svg\\Document' => __DIR__ . '/..' . '/phenx/php-svg-lib/src/Svg/Document.php',
         'Svg\\Gradient\\Stop' => __DIR__ . '/..' . '/phenx/php-svg-lib/src/Svg/Gradient/Stop.php',

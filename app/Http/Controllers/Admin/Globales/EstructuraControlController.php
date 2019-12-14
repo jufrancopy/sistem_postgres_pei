@@ -121,6 +121,8 @@ class EstructuraControlController extends Controller
      */
     public function destroy($id)
     {
-        //
+        EstructuraControl::find($id)->delete();
+
+        return redirect()->route('estructuras-control.index');
     }
 }

@@ -6,7 +6,7 @@
 </div>
 
 <div class="form-group">
-	{{	Form::label('autor', 'Creado por:')	}}
+	{{	Form::label('autor', 'Propietario:')	}}
 	{{	Form::text('autor', null,['class'=>'form-control','id'=>'nombre'])	}}
 </div>
 

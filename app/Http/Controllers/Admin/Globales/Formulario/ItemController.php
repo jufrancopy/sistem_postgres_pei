@@ -107,7 +107,7 @@ class ItemController extends Controller
         $item = Item::find($id);
         $item->fill($request->all())->save();
 
-        return redirect()->route('formulario-items.index')->with('success', 'Actualización exitosa ');
+        return redirect()->route('formulario-variables-items', $item->variable_id)->with('success', 'Actualización exitosa ');
     }
 
     /**

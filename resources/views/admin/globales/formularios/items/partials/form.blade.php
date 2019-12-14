@@ -10,15 +10,3 @@
 	{{	Form::submit('Guardar', ['class'=>'bt btn-sm btn-primary'])	}}
 </div>
 
-@section('scripts')
-
-<script>
-	// Select2
-	$(document).ready(function() {
-	$('.variable').select2({
-		placeholder: 'Seleccione la Variable',
-		language: 'es',
-	});
-})
-</script>
-@endsection

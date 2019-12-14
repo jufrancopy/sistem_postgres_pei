@@ -17,12 +17,22 @@ class CreateFormularioFomularios extends Migration
             $table->bigIncrements('id');
             $table->string('formulario');
 
+            $table->unsignedInteger('dependencia_emisor_id')->nullable();
+            $table->foreign('dependencia_emisor_id')->references('id')->on('globales.organigramas')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            $table->unsignedInteger('dependencia_receptor_id')->nullable();
+            $table->foreign('dependencia_receptor_id')->references('id')->on('globales.organigramas')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
             $table->unsignedInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            
+
 
             $table->timestamps();
         });

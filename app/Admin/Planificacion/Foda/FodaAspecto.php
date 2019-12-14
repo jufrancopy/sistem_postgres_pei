@@ -8,7 +8,7 @@ class FodaAspecto extends Model
 {
     protected $table = "planificacion.foda_aspectos";
 
-    protected $dateFormat = 'Y-m-d H:i:sO';
+    protected $dateFormat = 'Y-m-d H:i:s';
     
     protected $fillable = ['user_id','nombre', 'categoria_id'];
 

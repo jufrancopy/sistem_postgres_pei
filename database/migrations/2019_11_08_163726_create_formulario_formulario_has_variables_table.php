@@ -16,10 +16,15 @@ class CreateFormularioFormularioHasVariablesTable extends Migration
         Schema::create('globales.formulario_formulario_has_variables', function (Blueprint $table) {
             $table->bigIncrements('id');
 
-            $table->unsignedInteger('fomulario_id');
-            $table->foreign('fomulario_id')->references('id')->on('globales.formulario_formularios')
+            $table->unsignedInteger('formulario_id');
+            $table->foreign('formulario_id')->references('id')->on('globales.formulario_formularios')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
+
+            $table->unsignedInteger('variable_id');
+            $table->foreign('variable_id')->references('id')->on('globales.formulario_variables')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');    
 
             $table->timestamps();
         });

@@ -54,6 +54,11 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('formulario-agregar-item/{idVariable}', 'Admin\Globales\Formulario\ItemController@agregarItem')->name('formulario-agregar-item');
     
     Route::resource('formulario-items', 'Admin\Globales\Formulario\ItemController');
+    Route::resource('formulario-clasificadores', 'Admin\Globales\Formulario\ClasificadorController');
+    Route::get('formulario-clasificadores-listado', 'Admin\Globales\Formulario\ClasificadorController@listaClasificadores')->name('formulario-clasificadores-listado');
+    Route::get('formulario-clasificadores-crear-subclasificador/{idClasificador}', 'Admin\Globales\Formulario\ClasificadorController@crearSubClasificador')->name('formulario-clasificadores-crear-subclasificador');
+    Route::get('formulario-clasificadores-editar-subclasificador/{idClasificador}', 'Admin\Globales\Formulario\ClasificadorController@editarSubClasificador')->name('formulario-clasificadores-editar-subclasificador');
+    
     Route::resource('formulario-formularios', 'Admin\Globales\Formulario\FormularioController');
     Route::resource('estructuras-control', 'Admin\Globales\EstructuraControlController');
     Route::get('/estructuras-control/{id}/subdependencias','Admin\Globales\EstructuraControlController@getSubDependencias');

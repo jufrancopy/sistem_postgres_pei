@@ -87,9 +87,7 @@
             children: [
                 { name: '<a href="{{route('formulario-formularios.index')}}">Formularios</a>'},
                 { name: '<a href="{{route('formulario-variables.index')}}">Variables</a>'},
-                { name: '<a href="{{route('formulario-items.index')}}">Ítenes</a>'},
-                
-                
+                { name: '<a href="{{route('formulario-clasificadores-listado')}}">Clasificadores</a>'}
             ]
         },
     ];

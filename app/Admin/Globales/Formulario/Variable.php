@@ -12,9 +12,8 @@ class Variable extends Model
 
     protected $fillable = ['variable', 'user_id'];
 
-    public function items(){
-
-        return $this->belongsToMany('App\Admin\Globales\Formulario\Item', 'globales.formulario_items_has_variable', 'variable_id', 'item_id');
+    public function item(){
+        return $this->hasMany('App\Admin\Globales\Formulario\Item');
     }
 
     public function scopeVariable($query, $variable)
