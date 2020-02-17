@@ -289,7 +289,7 @@ public function descargarCrucePdf(Request $request, $idPerfil){
         $matriz =    0.17;
 
         //Ambiente Interno - Fortaleza
-        $fortalezas = FodaAnalisis::where('planificacion.perfil_id', '=', $idPerfil)
+        $fortalezas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
             ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Fortaleza')

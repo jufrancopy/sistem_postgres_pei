@@ -13,7 +13,7 @@
             'method'=>'PUT']) !!}
 
 
-            @include('admin.fodas.analisis.cruces.partials.form')
+            @include('admin.planificacion.fodas.analisis.cruces.partials.form')
 
             {!! Form::close() !!}
           </div>
