@@ -78,7 +78,6 @@
             name: 'Institucionales',
             children: [
                 { name: '<a href="{{route('organigramas-listado')}}">Dependencias</a>'},
-                { name: '<a href="{{route('estructuras-control.index')}}">Estructuras de Control</a>'}
             ]
         },
 

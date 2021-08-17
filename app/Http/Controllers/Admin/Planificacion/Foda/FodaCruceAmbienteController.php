@@ -216,9 +216,9 @@ public function descargarCrucePdf(Request $request, $idPerfil){
         $matriz = 0.17;
         $cruce = FodaCruceAmbiente::where('perfil_id', '=', $idPerfil)->get();
         $perfilNombre = isset($cruce[0]->perfil->nombre) ? $cruce[0]->perfil->nombre : '';
-        $contexto = isset($cruce[0]->perfil->contexto) ? $cruce[0]->perfil->contexo : '';
+        $contexto = isset($cruce[0]->perfil->contexto) ? $cruce[0]->perfil->contexto : '';
         $autor = isset($cruce[0]->user->name) ? $cruce[0]->user->name : '';
-        $modelo = isset($cruce[0]->prefil->modelo->nombre) ? $cruce[0]->prefil->modelo->nombre : '';
+        $modelo = isset($cruce[0]->perfil->modelo->nombre) ? $cruce[0]->perfil->modelo->nombre : '';
         
         $pdf = new PDF();
         $pdf->AddPage();
@@ -250,21 +250,21 @@ public function descargarCrucePdf(Request $request, $idPerfil){
         $FOs= FodaCruceAmbiente::where('tipo','=', 'FO')->where('perfil_id','=', $idPerfil)->get();
         $pdf->Cell(0,9,utf8_decode($FO),1,true);
         foreach ($FOs as $sample_text){
-            $pdf->MultiCellBlt($column_width, 8, chr(149), $sample_text->estategia . ' ' . $sample_text->estrategia);  
+            $pdf->MultiCellBlt($column_width, 8, chr(149), utf8_decode($sample_text->estategia) . ' ' . utf8_decode($sample_text->estrategia));  
         }
 
         $DO = "Estrategias de Reorientación (DO)";
         $DOs= FodaCruceAmbiente::where('tipo','=', 'DO')->where('perfil_id','=', $idPerfil)->get();
         $pdf->Cell(0,9,utf8_decode($DO),1, true);
         foreach ($DOs as $sample_text){
-            $pdf->MultiCellBlt($column_width, 8, chr(149), $sample_text->estategia . ' ' . $sample_text->estrategia);  
+            $pdf->MultiCellBlt($column_width, 8, chr(149), utf8_decode($sample_text->estategia) . ' ' . utf8_decode($sample_text->estrategia));  
         }
 
         $FA = "Estrategias Defensivas (FA)";
         $FAs= FodaCruceAmbiente::where('tipo','=', 'FA')->where('perfil_id','=', $idPerfil)->get();
         $pdf->Cell(0,9,utf8_decode($FA),1,true);
         foreach ($FAs as $sample_text){
-            $pdf->MultiCellBlt($column_width, 8, chr(149), $sample_text->estategia . ' ' . $sample_text->estrategia);  
+            $pdf->MultiCellBlt($column_width, 8, chr(149), utf8_decode($sample_text->estategia). ' ' . utf8_decode($sample_text->estrategia));  
             
         }
 
@@ -274,7 +274,7 @@ public function descargarCrucePdf(Request $request, $idPerfil){
         $pdf->Cell(0,9,utf8_decode($DA),1, true);
         
         foreach ($DAs as $sample_text){
-            $pdf->MultiCellBlt($column_width, 8, chr(149), $sample_text->estategia . ' ' . $sample_text->estrategia);  
+            $pdf->MultiCellBlt($column_width, 8, chr(149), utf8_decode($sample_text->estategia) . ' ' . utf8_decode($sample_text->estrategia));  
         }
 
         $headers = ['Content-Type' => 'application/pdf'];

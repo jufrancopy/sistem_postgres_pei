@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class FodaPerfil extends Model
 {
     protected $table = "planificacion.foda_perfiles";
-
+    public $keyType = 'string';
     protected $dateFormat = 'Y-m-d H:i:sO';
     
     protected $fillable = ['nombre','contexto', 'user_id', 'modelo_id'];

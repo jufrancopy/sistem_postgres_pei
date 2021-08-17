@@ -13,17 +13,17 @@ class CreateFormularioFomularios extends Migration
      */
     public function up()
     {
-        Schema::create('globales.formulario_formularios', function (Blueprint $table) {
+        Schema::create('estadistica.formulario_formularios', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('formulario');
 
             $table->unsignedInteger('dependencia_emisor_id')->nullable();
-            $table->foreign('dependencia_emisor_id')->references('id')->on('globales.organigramas')
+            $table->foreign('dependencia_emisor_id')->references('id')->on('organigramas')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
             $table->unsignedInteger('dependencia_receptor_id')->nullable();
-            $table->foreign('dependencia_receptor_id')->references('id')->on('globales.organigramas')
+            $table->foreign('dependencia_receptor_id')->references('id')->on('organigramas')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
@@ -45,6 +45,6 @@ class CreateFormularioFomularios extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('globales.formulario_formularios');
+        Schema::dropIfExists('estadistica.formulario_formularios');
     }
 }

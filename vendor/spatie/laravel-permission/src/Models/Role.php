@@ -17,8 +17,7 @@ class Role extends Model implements RoleContract
 {
     use HasPermissions;
     use RefreshesPermissionCache;
-    
-    protected $dateFormat = 'Y-m-d H:i:s';
+
     protected $guarded = ['id'];
 
     public function __construct(array $attributes = [])
@@ -155,14 +154,5 @@ class Role extends Model implements RoleContract
         }
 
         return $this->permissions->contains('id', $permission->id);
-    }
-
-    public function scopeName($query, $name)
-    {
-        if (trim($name) !="")
-        {
-           $query->where(\DB::raw("CONCAT(name, ' ', guard_name)"), 'LIKE', "%$name%");    
-        }
-        
     }
 }

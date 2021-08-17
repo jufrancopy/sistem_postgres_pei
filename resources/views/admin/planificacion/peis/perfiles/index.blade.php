@@ -42,9 +42,7 @@
                                         <th>No</th>
                                         <th>Nombre</th>
                                         <th>Responsable</th>
-                                        <th>Inicio</th>
-                                        <th>Fin</th>
-                                        <th>Generado por</th>
+                                        <th>Vigencia</th>
                                         <th width="280px">Accion</th>
                                     </tr>
                                 </thead>
@@ -54,16 +52,18 @@
                                         <td>{{ ++$i }}</td>
                                         <td>{{ $perfil->nombre }}</td>
                                         <td>{{ $perfil->responsable }}</td>
-                                        <td>{{ $perfil->vigencia_desde }}</td>
-                                        <td>{{ $perfil->vigencia_hasta }}</td>
-                                        <td>{{ $perfil->user->name }}</td>
+                                        <td>{{ $perfil->vigencia }}</td>
+                                        
                                         <td>
-                                            <a class="btn btn-sm btn-default" href="{{ route('peis-perfiles.edit',$perfil->id) }}"><i class="far fa-edit"></i></a>
+                                            <a class="btn btn-success btn-circle" href="{{ route('peis-perfiles.edit',$perfil->id) }}"><i class="far fa-edit"></i></a>
                                             {!! Form::open(['route' => ['peis-perfiles.destroy', $perfil->id], 'method' => 'DELETE', 'style'=>'display:inline']) !!}
-                                            <button class="btn btn-sm btn-danger" onclick="return confirm('Estas seguro de eliminar el perfil {{$perfil->nombre}}. Si lo eliminas también eliminarás los datos asociados a el.')">
+                                            <button class="btn btn-danger btn-circle" onclick="return confirm('Estas seguro de eliminar el perfil {{$perfil->nombre}}. Si lo eliminas también eliminarás los datos asociados a el.')">
                                                 <i class="fa fa-trash" aria-hidden="true"></i>
                                             </button>
                                             {!! Form::close() !!}
+                                            <a class="btn btn-warning btn-circle" href="{{ route('peis-perfiles.show',$perfil->id) }}"><i class="fa fa-cog" aria-hidden="true"></i>
+                                            </i></a>
+                                            <a class="btn btn-info btn-circle" href="{{ route('ver-cuadro-mando',$perfil->id) }}"><i class="far fa-eye"></i></a>
                                         </td>
                                     </tr>
                                     @endforeach

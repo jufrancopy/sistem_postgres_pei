@@ -13,12 +13,12 @@ class CreateOrganigramasTable extends Migration
      */
     public function up()
     {
-        Schema::create('globales.organigramas', function (Blueprint $table) {
+        Schema::create('organigramas', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('dependency');
 
             $table->unsignedInteger('dependency_id')->nullable();
-            $table->foreign('dependency_id')->references('id')->on('globales.organigramas')
+            $table->foreign('dependency_id')->references('id')->on('organigramas')
                     ->onDelete('cascade')
                     ->onUpdate('cascade');
             
@@ -42,6 +42,6 @@ class CreateOrganigramasTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('globales.organigramas');
+        Schema::dropIfExists('organigramas');
     }
 }

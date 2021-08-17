@@ -102,11 +102,11 @@ class FodaAnalisisController extends Controller
         $idPerfil = $request->idPerfil;    
         $perfil = FodaPerfil::find($idPerfil); 
         $matriz =    0.17; 
-
+        
         //Ambiente Interno - Debilidad
         $debilidades = FodaAnalisis::
             where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
+            ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia::int * foda_analisis.impacto::int) as matriz'))
             ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Debilidad')
             ->get();

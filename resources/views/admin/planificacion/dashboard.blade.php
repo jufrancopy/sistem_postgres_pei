@@ -71,8 +71,7 @@
                 {
                     name: 'Perfiles de Planificacion Estrategica',
                     children: [
-                        { name: '<a href="{{route('peis-perfiles.create')}}">Crear Nuevo Perfil</a>'},
-                        { name: '<a href="{{route('peis-perfiles.index')}}">Listar Perfiles</a>'},
+                        { name: '<a href="{{route('peis.index')}}">Pei</a>'},
                     ]
                 },
                 {
@@ -84,27 +83,10 @@
                     ]
                 },
 
-                {
-                    name: 'Mision - Vision',
-                    children: [
-                        { name: '<a href="{{route('foda-modelos.index')}}">Asociar Perfil</a>'},
-                    ]
-                }
+                
             ]
         },    
         
-        
-
-        {
-            name: 'Monitoreo y Evaluación',
-            children: [
-                { name: '<a href="{{route('monitoreo-tipo_evaluaciones.index')}}">Tipos de Evaluaciones</a>'},
-                { name: '<a href="{{route('monitoreo-evaluaciones.index')}}">Evaluaciones</a>'},
-                
-                
-            ]
-        },
-
         
     ];
 

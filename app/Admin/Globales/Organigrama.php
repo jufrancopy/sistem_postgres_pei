@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Organigrama extends Model
 {
-    protected $table = 'globales.organigramas';
+    protected $table = 'organigramas';
     
     protected $fillable = ['dependency', 'dependency_id', 'user_id', 'email', 'responsable', 'telefono'];
     

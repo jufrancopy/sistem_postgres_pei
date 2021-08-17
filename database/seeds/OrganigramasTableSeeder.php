@@ -12,7 +12,7 @@ class OrganigramasTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('globales.organigramas')->insert([
+        DB::table('organigramas')->insert([
             'dependency' => 'Instituto de Previsión Social',
             'dependency_id'=> null,
             'responsable'=> 'El Presidente',
@@ -22,7 +22,7 @@ class OrganigramasTableSeeder extends Seeder
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('globales.organigramas')->insert([
+        DB::table('organigramas')->insert([
             'dependency' => 'Consejo de Administracion',
             'dependency_id'=> 1,
             'responsable'=> 'Los Consejeros',
@@ -32,7 +32,7 @@ class OrganigramasTableSeeder extends Seeder
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('globales.organigramas')->insert([
+        DB::table('organigramas')->insert([
             'dependency' => 'Gerencia de Desarrollo y Tecnología',
             'dependency_id'=> 2,
             'responsable'=> 'Lourdes Drews',
@@ -42,7 +42,7 @@ class OrganigramasTableSeeder extends Seeder
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('globales.organigramas')->insert([
+        DB::table('organigramas')->insert([
             'dependency' => 'Dirección de Planificación',
             'dependency_id'=> 3,
             'responsable'=> 'Ing. Evelyn Alviso',
@@ -52,7 +52,7 @@ class OrganigramasTableSeeder extends Seeder
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('globales.organigramas')->insert([
+        DB::table('organigramas')->insert([
             'dependency' => 'Departamento de Planificación',
             'dependency_id'=> 4,
             'responsable'=> 'Lic. Maureen Eisenhut',
@@ -62,7 +62,7 @@ class OrganigramasTableSeeder extends Seeder
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('globales.organigramas')->insert([
+        DB::table('organigramas')->insert([
             'dependency' => 'Sección Monitoreo y Control',
             'dependency_id'=> 5,
             'responsable'=> 'César Acosta',
@@ -72,7 +72,7 @@ class OrganigramasTableSeeder extends Seeder
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('globales.organigramas')->insert([
+        DB::table('organigramas')->insert([
             'dependency' => 'Sección Planificación',
             'dependency_id'=> 5,
             'responsable'=> 'Abog. Jorgelina Gómez de la Fuente',
@@ -82,7 +82,7 @@ class OrganigramasTableSeeder extends Seeder
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('globales.organigramas')->insert([
+        DB::table('organigramas')->insert([
             'dependency' => 'Departamento de Estadísticas',
             'dependency_id'=> 4,
             'responsable'=> 'Aleli',
@@ -92,7 +92,7 @@ class OrganigramasTableSeeder extends Seeder
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('globales.organigramas')->insert([
+        DB::table('organigramas')->insert([
             'dependency' => 'Sección Estadísticas de la Seguridad Social',
             'dependency_id'=> 8,
             'responsable'=> 'Arq. Cristina Cabrera',
@@ -102,7 +102,7 @@ class OrganigramasTableSeeder extends Seeder
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('globales.organigramas')->insert([
+        DB::table('organigramas')->insert([
             'dependency' => 'Sección Bio-Estadísticas ',
             'dependency_id'=> 8,
             'responsable'=> 'Lic.Cristhian Gómez',

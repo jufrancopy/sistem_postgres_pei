@@ -14,25 +14,25 @@ class PermissionsTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('sistema.permissions')->insert([
+        DB::table('permissions')->insert([
             'name' => 'role-list',
             'guard_name'=> 'web',
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('sistema.permissions')->insert([
+        DB::table('permissions')->insert([
             'name' => 'role-edit',
             'guard_name'=> 'web',
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('sistema.permissions')->insert([
+        DB::table('permissions')->insert([
             'name' => 'role-create',
             'guard_name'=> 'web',
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        DB::table('sistema.permissions')->insert([
+        DB::table('permissions')->insert([
             'name' => 'role-delete',
             'guard_name'=> 'web',
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),

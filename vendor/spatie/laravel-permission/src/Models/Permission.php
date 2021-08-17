@@ -19,8 +19,6 @@ class Permission extends Model implements PermissionContract
     use HasRoles;
     use RefreshesPermissionCache;
 
-    protected $dateFormat = 'Y-m-d H:i:s';
-    
     protected $guarded = ['id'];
 
     public function __construct(array $attributes = [])
@@ -144,15 +142,8 @@ class Permission extends Model implements PermissionContract
      */
     protected static function getPermissions(array $params = []): Collection
     {
-        return app(PermissionRegistrar::class)->getPermissions($params);
-    }
-
-    public function scopeName($query, $name)
-    {
-        if (trim($name) !="")
-        {
-           $query->where(\DB::raw("CONCAT(name, ' ', guard_name)"), 'LIKE', "%$name%");    
-        }
-        
+        return app(PermissionRegistrar::class)
+            ->setPermissionClass(static::class)
+            ->getPermissions($params);
     }
 }

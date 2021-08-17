@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Clasificador extends Model
 {
-    protected $table = 'globales.formulario_clasificadores';
+    protected $table = 'estadistica.formulario_clasificadores';
     
     protected $fillable = ['user_id', 'clasificador', 'clasificador_id'];
     

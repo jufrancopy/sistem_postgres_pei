@@ -3,8 +3,9 @@
 namespace Yajra\DataTables\Utilities;
 
 use DateTime;
-use Illuminate\Support\Str;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class Helper
 {
@@ -156,7 +157,8 @@ class Helper
      */
     public static function convertToArray($row, $filters = [])
     {
-        $row  = method_exists($row, 'makeHidden') ? $row->makeHidden(array_get($filters, 'hidden', [])) : $row;
+        $row  = is_object($row) && method_exists($row, 'makeHidden') ? $row->makeHidden(Arr::get($filters, 'hidden', [])) : $row;
+        $row  = is_object($row) && method_exists($row, 'makeVisible') ? $row->makeVisible(Arr::get($filters, 'visible', [])) : $row;
         $data = $row instanceof Arrayable ? $row->toArray() : (array) $row;
 
         foreach ($data as &$value) {

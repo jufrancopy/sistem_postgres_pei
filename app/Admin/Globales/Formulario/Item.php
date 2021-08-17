@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Item extends Model
 {
-    protected $table = 'globales.formulario_items';
+    protected $table = 'estadistica.formulario_items';
 
     protected $dateFormat = 'Y-m-d H:i:s';
 

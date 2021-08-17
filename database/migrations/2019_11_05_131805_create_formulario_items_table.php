@@ -13,12 +13,12 @@ class CreateFormularioItemsTable extends Migration
      */
     public function up()
     {
-        Schema::create('globales.formulario_items', function (Blueprint $table) {
+        Schema::create('estadistica.formulario_items', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('item');
 
             $table->unsignedInteger('variable_id')->nullable();
-            $table->foreign('variable_id')->references('id')->on('globales.formulario_variables')
+            $table->foreign('variable_id')->references('id')->on('estadistica.formulario_variables')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             
@@ -39,6 +39,6 @@ class CreateFormularioItemsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('globales.formulario_items');
+        Schema::dropIfExists('estadistica.formulario_items');
     }
 }

@@ -13,12 +13,12 @@ class CreateFormularioClasificadoresTable extends Migration
      */
     public function up()
     {
-        Schema::create('globales.formulario_clasificadores', function (Blueprint $table) {
+        Schema::create('estadistica.formulario_clasificadores', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('clasificador');
 
             $table->unsignedInteger('clasificador_id')->nullable();
-            $table->foreign('clasificador_id')->references('id')->on('globales.formulario_clasificadores')
+            $table->foreign('clasificador_id')->references('id')->on('estadistica.formulario_clasificadores')
                     ->onDelete('cascade')
                     ->onUpdate('cascade'); 
 
@@ -38,6 +38,6 @@ class CreateFormularioClasificadoresTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('globales.formulario_clasificadores');
+        Schema::dropIfExists('estadistica.formulario_clasificadores');
     }
 }

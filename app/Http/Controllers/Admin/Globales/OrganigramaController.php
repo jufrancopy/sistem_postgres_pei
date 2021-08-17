@@ -85,7 +85,6 @@ class OrganigramaController extends Controller
     {
         $dependencia = Organigrama::create($request->all());
         
-        
         return back()->with('success', 'Dependencia creada correctamente.');
             
     }

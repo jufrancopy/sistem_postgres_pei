@@ -13,7 +13,7 @@ class CreateFormularioVariables extends Migration
      */
     public function up()
     {
-        Schema::create('globales.formulario_variables', function (Blueprint $table) {
+        Schema::create('estadistica.formulario_variables', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('variable');
 
@@ -33,6 +33,6 @@ class CreateFormularioVariables extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('globales.formulario_variables');
+        Schema::dropIfExists('estadistica.formulario_variables');
     }
 }

@@ -13,16 +13,16 @@ class CreateFormularioFormularioHasVariablesTable extends Migration
      */
     public function up()
     {
-        Schema::create('globales.formulario_formulario_has_variables', function (Blueprint $table) {
+        Schema::create('estadistica.formulario_formulario_has_variables', function (Blueprint $table) {
             $table->bigIncrements('id');
 
             $table->unsignedInteger('formulario_id');
-            $table->foreign('formulario_id')->references('id')->on('globales.formulario_formularios')
+            $table->foreign('formulario_id')->references('id')->on('estadistica.formulario_formularios')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
             $table->unsignedInteger('variable_id');
-            $table->foreign('variable_id')->references('id')->on('globales.formulario_variables')
+            $table->foreign('variable_id')->references('id')->on('estadistica.formulario_variables')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');    
 
@@ -37,6 +37,6 @@ class CreateFormularioFormularioHasVariablesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('globales.formulario_formulario_has_variables');
+        Schema::dropIfExists('estadistica.formulario_formulario_has_variables');
     }
 }

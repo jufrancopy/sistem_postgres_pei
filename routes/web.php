@@ -9,9 +9,10 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-if(version_compare(PHP_VERSION, '7.2.0', '>=')) {
+if (version_compare(PHP_VERSION, '7.2.0', '>=')) {
     error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
 }
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -21,7 +22,7 @@ Auth::routes();
 Route::get('/home', 'HomeController@index')->name('home');
 
 Route::group(['middleware' => ['auth']], function () {
-    
+
     //Rutas del tipo Resource
     Route::resource('permisos', 'Admin\PermissionController');
     Route::resource('roles', 'Admin\RoleController');
@@ -32,37 +33,74 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('organigramas-editar-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@editarSubDependencia')->name('organigramas-editar-subdependencia');
     Route::get('organigramas-listado', 'Admin\Globales\OrganigramaController@listaOrganigramas')->name('organigramas-listado');
     Route::get('organigramas-ver/{id}', 'Admin\Globales\OrganigramaController@verOrganigrama')->name('organigramas-ver');
-    
+
     //Rutas del Dpto. Planificacion
     Route::get('planificacion-dashboard', 'Admin\Planificacion\PlanificacionController@dashboard')->name('planificacion-dashboard');
-    
+
     //Rutas de PEI
+    Route::resource('peis', 'Admin\Planificacion\Pei\PeiController');
+    Route::get('peis-crear-sub-nivel/{idNivelSuperior}/{id}', 'Admin\Planificacion\Pei\PeiController@addSubNivel')->name('peis-crear-sub-nivel');
+    Route::get('peis-editar-sub-nivel/{idSubNivel}', 'Admin\Planificacion\Pei\PeiController@editarSubNivel')->name('peis-editar-sub-nivel');
+    Route::delete('peis-eliminar-nivel/{idNivelSuperior}/{idNivel}', 'Admin\Planificacion\Pei\PeiController@eliminarNivel')->name('peis-eliminar-nivel');
+
     Route::view('peis-dashboard', 'admin.planificacion.peis.index')->name('peis-dashboard');
-    Route::resource('peis-perfiles', 'Admin\Planificacion\Pei\PeiPerfilController');
+    Route::get('ver-cuadro-mando/{idPerfil}', 'Admin\Planificacion\Pei\PeiController@verCuadroDeMando')->name('ver-cuadro-mando');
+    Route::resource('peis-objetivos', 'Admin\Planificacion\Pei\PeiObjetivoController');
+    Route::get('peis-add-objetivos/{idPerfil}', 'Admin\Planificacion\Pei\PeiObjetivoController@addObjetivos')->name('peis-add-objetivos');
+    Route::resource('peis-estrategias', 'Admin\Planificacion\Pei\PeiEstrategiaController');
+    Route::get('peis-add-estrategias/{idObjetivo}', 'Admin\Planificacion\Pei\PeiEstrategiaController@addEstrategias')->name('peis-add-estrategias');
+    Route::resource('peis-programas', 'Admin\Planificacion\Pei\PeiProgramaController');
+    Route::get('peis-add-programas/{idEstrategia}', 'Admin\Planificacion\Pei\PeiProgramaController@addPrograma')->name('peis-add-programas');
+
+    // Route::get('peis-ver-estrategias/{idEstrategia}', 'Admin\Planificacion\Pei\PeiEstrategiaController@verEstrategias')->name('peis-ver-estrategias');
+
 
     // Rutas de Estadisticas
     Route::view('estadisticas-dashboard', 'admin.estadisticas.dashboard')->name('estadisticas-dashboard');
-
+    
     // Rutas de Proyectos
     Route::view('proyectos-dashboard', 'admin.proyectos.dashboard')->name('proyectos-dashboard');
-
     
+    //Estandar por Complejidad
+    Route::view('proyectos-epc-dashboard', 'admin.proyectos.epc.dashboard')->name('proyectos-epc-dashboard');
+    Route::get('proyectos-epc-home', 'Admin\Proyectos\EPC\EPCController@getHome')->name('proyectos-epc-home');
+    Route::get('proyectos-epc/{type}', 'Admin\Proyectos\EPC\EquipamientoController@getForType')->name('proyectos-epc');
+    Route::resource('proyectos-epc-tthh', 'Admin\Proyectos\EPC\TalentoHumanoController');
+    Route::resource('proyectos-epc-equipamientos', 'Admin\Proyectos\EPC\EquipamientoController');
+    
+    //Apoyo Administrativo
+    Route::resource('proyectos-epc-ap_admins', 'Admin\Proyectos\EPC\ApoyoAdministrativoController');
+    Route::get('proyectos-epc-ap_admin/{type}', 'Admin\Proyectos\EPC\ApoyoAdministrativoController@getForType')->name('apoyo_administrativos');
+    
+    // Infraestructuras
+    Route::resource('proyectos-epc-infraestructuras', 'Admin\Proyectos\EPC\InfraestructuraController');
+    Route::get('proyectos-epc-infraestructura/{type}', 'Admin\Proyectos\EPC\InfraestructuraController@getForType')->name('infraestructuras');
+
+    // Otros Servicios
+    Route::resource('proyectos-epc-otros_servs', 'Admin\Proyectos\EPC\OtroServicioController');
+    Route::get('proyectos-epc-otros_serv/{type}', 'Admin\Proyectos\EPC\OtroServicioController@getForType')->name('otros-servicios');
+
+    // Medicamento e Insumos
+    Route::resource('proyectos-epc-mds_ins', 'Admin\Proyectos\EPC\MedicamentoInsumoController');
+    Route::get('proyectos-epc-mds_in/{type}', 'Admin\Proyectos\EPC\MedicamentoInsumoController@getForType')->name('medicamentos-insumos');
+    
+    // Especialidades
+    Route::resource('proyectos-epc-especialidades', 'Admin\Proyectos\EPC\EspecialidadController');
+    Route::get('proyectos-epc-especialidad/{type}', 'Admin\Proyectos\EPC\EspecialidadController@getForType')->name('especialidades');
+
     // Rutas Configuraciones Globales
     Route::get('globales-dashboard', 'Admin\Globales\GlobalesController@dashboard')->name('globales-dashboard');
     Route::resource('formulario-variables', 'Admin\Globales\Formulario\VariableController');
     Route::get('formulario-variables-items/{idVariable}', 'Admin\Globales\Formulario\ItemController@itemsVariable')->name('formulario-variables-items');
     Route::get('formulario-agregar-item/{idVariable}', 'Admin\Globales\Formulario\ItemController@agregarItem')->name('formulario-agregar-item');
-    
+
     Route::resource('formulario-items', 'Admin\Globales\Formulario\ItemController');
     Route::resource('formulario-clasificadores', 'Admin\Globales\Formulario\ClasificadorController');
     Route::get('formulario-clasificadores-listado', 'Admin\Globales\Formulario\ClasificadorController@listaClasificadores')->name('formulario-clasificadores-listado');
     Route::get('formulario-clasificadores-crear-subclasificador/{idClasificador}', 'Admin\Globales\Formulario\ClasificadorController@crearSubClasificador')->name('formulario-clasificadores-crear-subclasificador');
     Route::get('formulario-clasificadores-editar-subclasificador/{idClasificador}', 'Admin\Globales\Formulario\ClasificadorController@editarSubClasificador')->name('formulario-clasificadores-editar-subclasificador');
-    
+
     Route::resource('formulario-formularios', 'Admin\Globales\Formulario\FormularioController');
-    Route::resource('estructuras-control', 'Admin\Globales\EstructuraControlController');
-    Route::get('/estructuras-control/{id}/subdependencias','Admin\Globales\EstructuraControlController@getSubDependencias');
-    
 
     //Rutas del Modulo FODA
     Route::resource('foda-modelos', 'Admin\Planificacion\Foda\FodaModeloController');
@@ -99,13 +137,5 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-cruce-ambientes-da/{idPerfil}', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@DA')->name('foda-cruce-ambientes-da');
     Route::resource('foda-cruce-ambientes', 'Admin\Planificacion\Foda\FodaCruceAmbienteController');
     Route::get('foda-aspectos-elegir-modelo', 'Admin\Planificacion\Foda\FodaAspectoController@elegirModelo')->name('foda-aspectos-elegir-modelo');
-    Route::get('/foda-perfiles-modelo/{id}/categorias','Admin\Planificacion\Foda\FodaPerfilController@getCategorias');
-
-
-    //Rutas del Monitoreo
-    Route::resource('monitoreo-tipo_evaluaciones', 'Admin\Planificacion\Monitoreo\TipoEvaluacionController');
-    Route::resource('monitoreo-evaluaciones', 'Admin\Planificacion\Monitoreo\EvaluacionController');
-    
- 
-    
+    Route::get('/foda-perfiles-modelo/{id}/categorias', 'Admin\Planificacion\Foda\FodaPerfilController@getCategorias');
 });
