@@ -2,6 +2,109 @@
 
 All notable changes to `laravel-permission` will be documented in this file
 
+## 4.3.0 - 2021-08-17
+- Speed up permissions cache lookups, and make cache smaller #1799
+
+## 4.2.0 - 2021-06-04
+- Add hasExactRoles method #1696
+
+## 4.1.0 - 2021-06-01
+- Refactor to resolve guard only once during middleware
+- Refactor service provider by extracting some methods
+
+## 4.0.1 - 2021-03-22
+- Added note in migration for field lengths on MySQL 8. (either shorten the columns to 125 or use InnoDB)
+
+## 4.0.0 - 2021-01-27
+- Drop support on Laravel 5.8 #1615
+- Fix bug when adding roles to a model that doesn't yet exist #1663
+- Enforce unique constraints on database level #1261
+- Changed PermissionRegistrar::initializeCache() public to allow reinitializing cache in custom situations. #1521
+- Use Eloquent\Collection instead of Support\Collection for consistency, collection merging, etc #1630
+
+This package now requires PHP 7.2.5 and Laravel 6.0 or higher.
+If you are on a PHP version below 7.2.5 or a Laravel version below 6.0 you can use an older version of this package.
+
+## 3.18.0 - 2020-11-27
+- Allow PHP 8.0
+
+## 3.17.0 - 2020-09-16
+- Optional `$guard` parameter may be passed to `RoleMiddleware`, `PermissionMiddleware`, and `RoleOrPermissionMiddleware`. See #1565
+
+## 3.16.0 - 2020-08-18
+- Added Laravel 8 support
+
+## 3.15.0 - 2020-08-15
+- Change `users` relationship type to BelongsToMany
+
+## 3.14.0 - 2020-08-15
+- Declare table relations earlier to improve guarded/fillable detection accuracy (relates to Aug 2020 Laravel security patch)
+
+## 3.13.0 - 2020-05-19
+- Provide migration error text to stop caching local config when installing packages.
+
+## 3.12.0 - 2020-05-14
+- Add missing config setting for `display_role_in_exception`
+- Ensure artisan `permission:show` command uses configured models
+
+## 3.11.0 - 2020-03-03
+- Allow guardName() as a function with priority over $guard_name property #1395
+
+## 3.10.1 - 2020-03-03
+- Update patch to handle intermittent error in #1370
+
+## 3.10.0 - 2020-03-02
+- Ugly patch to handle intermittent error: `Trying to access array offset on value of type null` in #1370
+
+## 3.9.0 - 2020-02-26
+- Add Wildcard Permissions feature #1381 (see PR or docs for details)
+
+## 3.8.0 - 2020-02-18
+- Clear in-memory permissions on boot, for benefit of long running processes like Swoole. #1378
+
+## 3.7.2 - 2020-02-17
+- Refine test for Lumen dependency. Ref #1371, Fixes #1372.
+
+## 3.7.1 - 2020-02-15
+- Internal refactoring of scopes to use whereIn instead of orWhere #1334, #1335
+- Internal refactoring to flatten collection on splat #1341
+
+## 3.7.0 - 2020-02-15
+- Added methods to check any/all when querying direct permissions #1245
+- Removed older Lumen dependencies #1371
+
+## 3.6.0 - 2020-01-17
+- Added Laravel 7.0 support
+- Allow splat operator for passing roles to `hasAnyRole()`
+
+## 3.5.0 - 2020-01-07
+- Added missing `guardName` to Exception `PermissionDoesNotExist` #1316
+
+## 3.4.1 - 2019-12-28
+- Fix 3.4.0 for Lumen
+
+## 3.4.0 - 2019-12-27
+- Make compatible with Swoole - ie: for long-running Laravel instances
+
+## 3.3.1 - 2019-12-24
+- Expose Artisan commands to app layer, not just to console
+
+## 3.3.0 - 2019-11-22
+- Remove duplicate and unreachable code
+- Remove checks for older Laravel versions
+
+## 3.2.0 - 2019-10-16
+- Implementation of optional guard check for hasRoles and hasAllRoles - See #1236
+
+## 3.1.0 - 2019-10-16
+- Use bigIncrements/bigInteger in migration - See #1224
+
+## 3.0.0 - 2019-09-02
+- Update dependencies to allow for Laravel 6.0
+- Drop support for Laravel 5.7 and older, and PHP 7.1 and older. (They can use v2 of this package until they upgrade.)
+To be clear: v3 requires minimum Laravel 5.8 and PHP 7.2 
+
+
 ## 2.38.0 - 2019-09-02
 - Allow support for multiple role/permission models
 - Load roles relationship only when missing

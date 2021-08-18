@@ -19,7 +19,7 @@ class MedicamentoInsumoController extends Controller
 
         $medicamentoInsumos = MedicamentoInsumo::all();
 
-        return view('admin.proyectos.epc.medicamento_insumos.index', get_defined_vars())
+        return view('admin.proyectos.epc.medicamentos_insumos.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
@@ -49,7 +49,7 @@ class MedicamentoInsumoController extends Controller
 
         $data = ['medicamentoInsumos' => $medicamentoInsumos];
 
-        return view('admin.proyectos.epc.medicamento_insumos.index', get_defined_vars());
+        return view('admin.proyectos.epc.medicamentos_insumos.index', get_defined_vars());
     }
 
     /**
@@ -59,7 +59,7 @@ class MedicamentoInsumoController extends Controller
      */
     public function create()
     {
-        return view('admin.proyectos.epc.medicamento_insumos.create');
+        return view('admin.proyectos.epc.medicamentos_insumos.create');
     }
 
     /**
@@ -94,10 +94,10 @@ class MedicamentoInsumoController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
-    {
+    {   
         $medicamentoInsumo = MedicamentoInsumo::find($id);
 
-        return view('admin.proyectos.epc.medicamento_insumos.edit', get_defined_vars());
+        return view('admin.proyectos.epc.medicamentos_insumos.edit', get_defined_vars());
     }
 
     /**

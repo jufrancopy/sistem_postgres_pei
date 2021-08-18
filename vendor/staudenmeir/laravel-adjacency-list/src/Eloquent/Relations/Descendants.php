@@ -23,7 +23,7 @@ class Descendants extends HasMany
         if (static::$constraints) {
             $constraint = function (Builder $query) {
                 if ($this->andSelf) {
-                    $query->where($this->getQualifiedParentKeyName(), '=', $this->getParentKey());
+                    $query->where($this->getQualifiedLocalKeyName(), '=', $this->getParentKey());
                 } else {
                     $query->where($this->foreignKey, '=', $this->getParentKey())
                         ->whereNotNull($this->foreignKey);
@@ -92,7 +92,7 @@ class Descendants extends HasMany
             return $this->buildDictionaryParent($results);
         }
 
-        $dictionary = $results->getDictionary();
+        $dictionary = $results->keyBy($this->localKey);
 
         $foreignKey = $this->getForeignKeyName();
 

@@ -1,9 +1,11 @@
 ---
-title: Extending PhpStorm
-weight: 5
+title: PhpStorm Interaction
+weight: 7
 ---
 
-# Extending PhpStorm to support Blade Directives of this package
+# Extending PhpStorm 
+
+You may wish to extend PhpStorm to support Blade Directives of this package.
 
 1. In PhpStorm, open Preferences, and navigate to **Languages and Frameworks -> PHP -> Blade**
 (File | Settings | Languages & Frameworks | PHP | Blade)
@@ -68,6 +70,22 @@ weight: 5
 --
 
 **endhasallroles**
+
+- has parameter = NO
+- Prefix: blank
+- Suffix: blank
+
+--
+
+**unlessrole**
+
+- has parameter = YES
+- Prefix: `<?php if(auth()->check() && !auth()->user()->hasRole(`
+- Suffix: `)); ?>`
+
+--
+
+**endunlessrole**
 
 - has parameter = NO
 - Prefix: blank

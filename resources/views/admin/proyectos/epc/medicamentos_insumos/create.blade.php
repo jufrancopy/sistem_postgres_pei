@@ -11,7 +11,7 @@
 					<div class="card-body">
 						{!! Form::open(['route'=>'proyectos-epc-mds_ins.store']) !!}
 
-						@include('admin.proyectos.epc.medicamento_insumos.partials.form')
+						@include('admin.proyectos.epc.medicamentos_insumos.partials.form')
 
 						{!! Form::close() !!}
 					</div>

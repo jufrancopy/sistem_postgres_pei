@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/staudenmeir/laravel-adjacency-list.svg?branch=master)](https://travis-ci.org/staudenmeir/laravel-adjacency-list)
+![CI](https://github.com/staudenmeir/laravel-adjacency-list/workflows/CI/badge.svg)
 [![Code Coverage](https://scrutinizer-ci.com/g/staudenmeir/laravel-adjacency-list/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/staudenmeir/laravel-adjacency-list/?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/staudenmeir/laravel-adjacency-list/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/staudenmeir/laravel-adjacency-list/?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/staudenmeir/laravel-adjacency-list/v/stable)](https://packagist.org/packages/staudenmeir/laravel-adjacency-list)
@@ -25,12 +25,14 @@ Supports Laravel 5.5.29+.
 ## Usage
 
 - [Getting Started](#getting-started)
-- [Relationships](#relationships)
-- [Tree](#tree)
+- [Included Relationships](#included-relationships)
+- [Custom Relationships](#custom-relationships)
+- [Trees](#trees)
 - [Filters](#filters)
 - [Order](#order)
 - [Depth](#depth)
 - [Path](#path)
+- [Custom Paths](#custom-paths)
 
 ### Getting Started
 
@@ -66,7 +68,21 @@ class User extends Model
 }
 ```
 
-### Relationships
+By default, the trait uses the model's primary key as the local key. You can customize it by overriding `getLocalKeyName()`:
+
+```php
+class User extends Model
+{
+    use \Staudenmeir\LaravelAdjacencyList\Eloquent\HasRecursiveRelationships;
+    
+    public function getLocalKeyName()
+    {
+        return 'id';
+    }
+}
+```
+
+### Included Relationships
 
 The trait provides various relationships:
 
@@ -78,6 +94,7 @@ The trait provides various relationships:
 - `descendantsAndSelf()`: The model's recursive children and itself.
 - `parent()`: The model's direct parent.
 - `parentAndSelf()`: The model's direct parent and itself.
+- `rootAncestor()`: The model's topmost parent.
 - `siblings()`: The parent's other children.
 - `siblingsAndSelf()`: All the parent's children.
 
@@ -90,17 +107,86 @@ $users = User::whereHas('siblings', function ($query) {
     $query->where('name', '=', 'John');
 })->get();
 
+$total = User::find($id)->descendants()->count();
+
 User::find($id)->descendants()->update(['active' => false]);
 
 User::find($id)->siblings()->delete();
 ```
 
-### Tree
+### Custom Relationships
+
+You can also define custom relationships to retrieve related models recursively.
+
+Consider a `HasMany` relationship between `User` and `Post`:
+ 
+ ```php
+ class User extends Model
+ {
+     public function posts()
+     {
+         return $this->hasMany('App\Post');
+     }
+ }
+ ```
+
+Define a `HasManyOfDescendants` relationship to get all posts of a user and its descendants:
+
+```php
+class User extends Model
+{
+    use \Staudenmeir\LaravelAdjacencyList\Eloquent\HasRecursiveRelationships;
+
+    public function recursivePosts()
+    {
+        return $this->hasManyOfDescendantsAndSelf('App\Post');
+    }
+}
+
+$recursivePosts = User::find($id)->recursivePosts;
+
+$users = User::withCount('recursivePosts')->get();
+```
+
+Use `hasManyOfDescendants()` to only get the descendants' posts:
+
+```php
+class User extends Model
+{
+    use \Staudenmeir\LaravelAdjacencyList\Eloquent\HasRecursiveRelationships;
+
+    public function descendantPosts()
+    {
+        return $this->hasManyOfDescendants('App\Post');
+    }
+}
+```
+
+If you are using the package outside of Laravel or have disabled package discovery for `staudenmeir/laravel-cte`, you need to add support for common table expressions to the related model:
+
+```php
+class Post extends Model
+{
+    use \Staudenmeir\LaravelCte\Eloquent\QueriesExpressions;
+}
+```
+
+### Trees
 
 The trait provides the `tree()` query scope to get all models, beginning at the root(s):
 
 ```php
 $tree = User::tree()->get();
+```
+
+`treeOf()` allows you to query trees with custom constraints for the root model(s). Consider a table with multiple separate lists:
+
+```php
+$constraint = function ($query) {
+    $query->whereNull('parent_id')->where('list_id', 1);
+};
+
+$tree = User::treeOf($constraint)->get();
 ```
 
 ### Filters
@@ -163,6 +249,8 @@ class User extends Model
 }
 ```
 
+#### Depth Constraints
+
 You can use the `whereDepth()` query scope to filter models by their relative depth:
 
 ```php
@@ -171,11 +259,19 @@ $descendants = User::find($id)->descendants()->whereDepth(2)->get();
 $descendants = User::find($id)->descendants()->whereDepth('<', 3)->get();
 ```
 
+Queries with `whereDepth()` constraints that limit the maximum depth still build the entire (sub)tree internally. Both tree scopes allow you to provide a maximum depth that improves query performance by only building the requested section of the tree:
+
+```php
+$tree = User::tree(3)->get();
+
+$tree = User::treeOf($constraint, 3)->get();
+```
+
 ### Path
 
 The results of ancestor, descendant and tree queries include an additional `path` column.
 
-It contains the dot-separated path of primary keys from the query's parent to the model:
+It contains the dot-separated path of local keys from the query's parent to the model:
 
 ```php
 $descendantsAndSelf = User::find(1)->descendantsAndSelf()->depthFirst()->get();
@@ -203,3 +299,35 @@ class User extends Model
     }
 }
 ```
+
+### Custom Paths
+
+You can add custom path columns to the query results:
+
+```php
+class User extends Model
+{
+    use \Staudenmeir\LaravelAdjacencyList\Eloquent\HasRecursiveRelationships;
+
+    public function getCustomPaths()
+    {
+        return [
+            [
+                'name' => 'slug_path',
+                'column' => 'slug',
+                'separator' => '/',
+            ],
+        ];
+    }
+}
+
+$descendantsAndSelf = User::find(1)->descendantsAndSelf;
+
+echo $descendantsAndSelf[0]->slug_path; // user-1
+echo $descendantsAndSelf[1]->slug_path; // user-1/user-2
+echo $descendantsAndSelf[2]->slug_path; // user-1/user-2/user-3
+```
+
+## Contributing
+
+Please see [CONTRIBUTING](CONTRIBUTING.md) and [CODE OF CONDUCT](CODE_OF_CONDUCT.md) for details.

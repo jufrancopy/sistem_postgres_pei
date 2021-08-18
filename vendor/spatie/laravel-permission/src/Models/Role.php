@@ -2,16 +2,15 @@
 
 namespace Spatie\Permission\Models;
 
-use Spatie\Permission\Guard;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Permission\Traits\HasPermissions;
-use Spatie\Permission\Exceptions\RoleDoesNotExist;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Permission\Contracts\Role as RoleContract;
 use Spatie\Permission\Exceptions\GuardDoesNotMatch;
 use Spatie\Permission\Exceptions\RoleAlreadyExists;
-use Spatie\Permission\Contracts\Role as RoleContract;
+use Spatie\Permission\Exceptions\RoleDoesNotExist;
+use Spatie\Permission\Guard;
+use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\RefreshesPermissionCache;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Role extends Model implements RoleContract
 {
@@ -25,8 +24,11 @@ class Role extends Model implements RoleContract
         $attributes['guard_name'] = $attributes['guard_name'] ?? config('auth.defaults.guard');
 
         parent::__construct($attributes);
+    }
 
-        $this->setTable(config('permission.table_names.roles'));
+    public function getTable()
+    {
+        return config('permission.table_names.roles', parent::getTable());
     }
 
     public static function create(array $attributes = [])
@@ -35,10 +37,6 @@ class Role extends Model implements RoleContract
 
         if (static::where('name', $attributes['name'])->where('guard_name', $attributes['guard_name'])->first()) {
             throw RoleAlreadyExists::create($attributes['name'], $attributes['guard_name']);
-        }
-
-        if (isNotLumen() && app()::VERSION < '5.4') {
-            return parent::create($attributes);
         }
 
         return static::query()->create($attributes);
@@ -60,7 +58,7 @@ class Role extends Model implements RoleContract
     /**
      * A role belongs to some users of the model associated with its guard.
      */
-    public function users(): MorphToMany
+    public function users(): BelongsToMany
     {
         return $this->morphedByMany(
             getModelForGuard($this->attributes['guard_name']),
@@ -139,6 +137,10 @@ class Role extends Model implements RoleContract
      */
     public function hasPermissionTo($permission): bool
     {
+        if (config('permission.enable_wildcard_permission', false)) {
+            return $this->hasWildcardPermission($permission, $this->getDefaultGuardName());
+        }
+
         $permissionClass = $this->getPermissionClass();
 
         if (is_string($permission)) {
@@ -154,5 +156,35 @@ class Role extends Model implements RoleContract
         }
 
         return $this->permissions->contains('id', $permission->id);
+    }
+
+    /**
+     * Fill model from array.
+     *
+     * @param array $attributes
+     */
+    protected function fillModelFromArray(array $attributes)
+    {
+        $this->attributes = $attributes;
+        if (isset($attributes['id'])) {
+            $this->exists = true;
+            $this->original['id'] = $attributes['id'];
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get model from array.
+     *
+     * @param array $attributes
+     *
+     * @return \Spatie\Permission\Contracts\Role
+     */
+    public static function getModelFromArray(array $attributes): ?RoleContract
+    {
+        $roles = new static;
+
+        return $roles->fillModelFromArray($attributes);
     }
 }
