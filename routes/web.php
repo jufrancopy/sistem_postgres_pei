@@ -1,5 +1,8 @@
 <?php
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 /*
+
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
@@ -12,7 +15,6 @@
 if (version_compare(PHP_VERSION, '7.2.0', '>=')) {
     error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
 }
-
 
 Route::get('/', function () {
     return view('welcome');
@@ -87,6 +89,10 @@ Route::group(['middleware' => ['auth']], function () {
     // Especialidades
     Route::resource('proyectos-epc-especialidades', 'Admin\Proyectos\EPC\EspecialidadController');
     Route::get('proyectos-epc-especialidad/{type}', 'Admin\Proyectos\EPC\EspecialidadController@getForType')->name('especialidades');
+
+    // Servicios
+    Route::resource('proyectos-epc-servicios', 'Admin\Proyectos\EPC\ServicioController');
+    //Route::get('proyectos-epc-especialidad/{type}', 'Admin\Proyectos\EPC\EspecialidadController@getForType')->name('especialidades');
 
     // Rutas Configuraciones Globales
     Route::get('globales-dashboard', 'Admin\Globales\GlobalesController@dashboard')->name('globales-dashboard');
