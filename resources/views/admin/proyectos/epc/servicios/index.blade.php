@@ -67,9 +67,10 @@
                                     <td>{{ $servicio->description }}</td>
                                     <td>
                                         <a class="btn btn-primary btn-circle"
-                                            href="{{ route('proyectos-epc-otros_servs.edit',$otroServicio->id) }}"><i
+                                            href="{{ route('proyectos-epc-servicios.edit',$servicio->id) }}"><i
                                                 class="far fa-edit"></i></a>
                                         </i></a>
+                                        <a class="btn btn-info btn-circle" href="{{route('proyectos-epc-servicios.show', $servicio->id)}}"><i class="far fa-eye"></i></a>
                                         {!! Form::open(['route' =>
                                         ['proyectos-epc-servicios.destroy',$servicio->id], 'method' =>
                                         'DELETE',

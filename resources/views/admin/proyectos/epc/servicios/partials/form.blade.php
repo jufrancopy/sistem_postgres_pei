@@ -19,8 +19,8 @@
 
 
 <div class="form-group">
-	{{ Form::label('detailEquipamientos', 'Equipamientos:') }}
-	<select multiple="multiple" name="detail_equipamientos[]" id="detail_equipamientos" class="js-example-responsive" style="width:100%">
+	{{ Form::label('detail_equipamiento_id', 'Equipamientos:') }}
+	<select multiple="multiple" name="detail_equipamiento_id[]" id="detail_equipamiento_id" class="js-example-responsive" style="width:100%">
 		@foreach($detailEquipamientos as $key => $value)
 		<option value="{{ $key }}" {{ in_array($key, $detailEquipamientosChecked) ? 'selected' : null }}>{{ $value }}
 		</option>

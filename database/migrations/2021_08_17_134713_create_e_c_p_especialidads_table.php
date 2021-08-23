@@ -13,7 +13,7 @@ class CreateECPEspecialidadsTable extends Migration
      */
     public function up()
     {
-        Schema::create('proyecto.e_c_p_especialidads', function (Blueprint $table) {
+        Schema::create('proyecto.e_p_c_especialidads', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('item');
             $table->string('type');
@@ -30,6 +30,6 @@ class CreateECPEspecialidadsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('proyecto.e_c_p_especialidads');
+        Schema::dropIfExists('proyecto.e_p_c_especialidads');
     }
 }

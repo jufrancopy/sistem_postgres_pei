@@ -7,14 +7,14 @@
 				<div class="card">
 					<div class="card-header card-header-info">
 					<h4 class="card-title ">Editar {{$otroServicio->name}}</h4>
-					<a class="btn btn-warning" href="{{ route('proyectos-epc-ap_admins.index') }}">
+					<a class="btn btn-warning" href="{{ route('proyectos-epc-servicios.index') }}">
 						Atras</a>
 					</div>
 					<div class="card-body">
-						{!! Form::model($otroServicio, ['route'=>['proyectos-epc-otros_servs.update', $otroServicio->id],
+						{!! Form::model($servicio, ['route'=>['proyectos-epc-servicios.update', $servicio->id],
             'method'=>'PUT']) !!}
 
-						@include('admin.proyectos.epc.otros_servicios.partials.form')
+						@include('admin.proyectos.epc.servicios.partials.form')
 
 						{!! Form::close() !!}
 					</div>

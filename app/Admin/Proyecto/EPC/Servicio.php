@@ -28,7 +28,7 @@ class Servicio extends Model
      
         ];
 
-    public function detailEquipamientos(){
-        return $this->belongsToMany('App\Admin\Proyecto\EPC\Servicio', 'proyecto.e_p_c_equipamientos', 'servicio_id','detail_equipamiento_id');
+    public function equipamientos(){
+        return $this->belongsToMany('App\Admin\Proyecto\EPC\Servicio', 'proyecto.e_p_c_recursos_servicios', 'servicio_id','detail_equipamiento_id');
     }
 }

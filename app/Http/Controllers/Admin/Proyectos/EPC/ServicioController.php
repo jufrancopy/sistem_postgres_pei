@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin\Proyectos\EPC;
 
 use App\Admin\Proyecto\EPC\Servicio;
-
 use App\Admin\Proyecto\EPC\Equipamiento;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ServicioController extends Controller
 {
@@ -33,7 +33,7 @@ class ServicioController extends Controller
     {
         $detailEquipamientos = Equipamiento::orderBy('id', 'ASC')->pluck('item', 'id');
         $detailEquipamientosChecked = [];
-        
+
         return view('admin.proyectos.epc.servicios.create', get_defined_vars());
     }
 
@@ -43,21 +43,39 @@ class ServicioController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'item' => 'required',
-            'type' => 'required',
-            'description' => 'required',
-            'detail_equipamientos' => 'required'
-        ]);
+        $rules = [
+            'item'                          => 'required|min:8',
+            'type'                          => 'required',
+            'description'                   => 'required',
+            'detail_equipamiento_id'          => 'required'
+        ];
+
+        $messages = [
+            'item.required'                 => 'El nombre de contener al menos 8 caracteres',
+            'item.min'                      => 'El nombre de contener al menos 8 caracteres',
+            'type.required'                 => 'Debe especificar el tipo.',
+            'description.required'          => 'Describa los detalles del Servicio',
+            'detail_equipamiento_id.required' => 'Debe asignar Equipamientos al Servicio',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return redirect('proyectos-epc-servicios/create')
+                        ->withErrors($validator)
+                        ->withInput();
+        }
+
         
         $servicio = Servicio::create($request->except(['detail_equipamiento_id']));
 
-        $servicio->fortalezas()->attach($request->fortaleza_id);
+        $servicio->equipamientos()->attach($request->detail_equipamiento_id);
 
-        return redirect()->route('users.index')
-                        ->with('success','Usuario creado satisfactoriamente');
+        return redirect()->route('proyectos-epc-servicios.index')
+            ->with('success', 'Servicio creado satisfactoriamente');
     }
 
     /**
@@ -68,7 +86,9 @@ class ServicioController extends Controller
      */
     public function show($id)
     {
-        //
+        $servicio = Servicio::find($id);
+
+        return view('admin.proyectos.epc.servicios.show', get_defined_vars());
     }
 
     /**
@@ -79,7 +99,15 @@ class ServicioController extends Controller
      */
     public function edit($id)
     {
-        //
+        $servicio = Servicio::find($id);
+        
+        $detailEquipamientos = Equipamiento::orderBy('id', 'ASC')->pluck('item', 'id');
+        $detailEquipamientosChecked = [];
+
+        foreach ($servicio->equipamientos as $v) {
+            $equipamientosChecked[] = $v->id;
+        }
+        return view('admin.proyectos.epc.servicios.edit', get_defined_vars());
     }
 
     /**
@@ -91,7 +119,13 @@ class ServicioController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $servicio = Servicio::find($id);
+        $servicio->fill($request->except(['detail_equipamiento_id']))->save();
+        $servicio->equipamientos()->sync($request->detail_equipamiento_id);
+        
+
+        return redirect()->route('proyectos-epc-servicios.index')
+            ->with('info', 'Servicio Actualizado Satisfactoriamente');
     }
 
     /**
@@ -102,6 +136,9 @@ class ServicioController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $servicio = Servicio::find($id);
+        $servicio->delete();
+
+        return back()->with('info', 'Servicio eliminado de la Base de Datos');
     }
 }
