@@ -36,8 +36,8 @@
                             <label>Descripcion: </label>
                             {{$servicio->description}}
                         </p>
-
                         <div class="table-responsive">
+                        <label>Equipamientos: </label>
                             <table class="table">
                                 <thead>
                                     <tr class="table-success">
@@ -50,7 +50,23 @@
                                 <tbody>
                                     <tr>
                                         <td>{{$equipamiento->item}}</td>
-                                        <td>{{$equipamiento->type}}</td>
+                                        @switch($equipamiento->type)
+                                        @case('equipo_biomedico')
+                                        <td>Equipo Biomédico</td>
+                                        
+                                        @break
+
+                                        @case('equipo_informatico')
+                                        <td>Equipo Informático</td>
+                                        @break
+
+                                        @case('equipo_mobiliario')
+                                        <td>Equipo Mobiliario</td>
+                                        @break
+
+                                        @default
+                                        <td>Sin tipo</td>
+                                        @endswitch
                                         <td>{{$equipamiento->cost}}</td>
                                     </tr>
                                 </tbody>
@@ -62,7 +78,7 @@
                                     </tr>
                                 </tfoot>
                             </table>
-                            
+
                         </div>
 
                     </div>
