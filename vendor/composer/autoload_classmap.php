@@ -29,6 +29,7 @@ return array(
     'App\\Admin\\Proyecto\\EPC\\Infraestructura' => $baseDir . '/app/Admin/Proyecto/EPC/Infraestructura.php',
     'App\\Admin\\Proyecto\\EPC\\MedicamentoInsumo' => $baseDir . '/app/Admin/Proyecto/EPC/MedicamentoInsumo.php',
     'App\\Admin\\Proyecto\\EPC\\OtroServicio' => $baseDir . '/app/Admin/Proyecto/EPC/OtroServicio.php',
+    'App\\Admin\\Proyecto\\EPC\\Resource' => $baseDir . '/app/Admin/Proyecto/EPC/Resource.php',
     'App\\Admin\\Proyecto\\EPC\\Servicio' => $baseDir . '/app/Admin/Proyecto/EPC/Servicio.php',
     'App\\Admin\\Proyecto\\EPC\\TalentoHumano' => $baseDir . '/app/Admin/Proyecto/EPC/TalentoHumano.php',
     'App\\ClasesPersonalizadas\\Pdf' => $baseDir . '/app/ClasesPersonalizadas/Pdf.php',

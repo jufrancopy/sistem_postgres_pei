@@ -94,6 +94,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('proyectos-epc-servicios', 'Admin\Proyectos\EPC\ServicioController');
     //Route::get('proyectos-epc-especialidad/{type}', 'Admin\Proyectos\EPC\EspecialidadController@getForType')->name('especialidades');
 
+    // Servicios
+    Route::resource('proyectos-epc-resources', 'Admin\Proyectos\EPC\ResourceController');
+
     // Rutas Configuraciones Globales
     Route::get('globales-dashboard', 'Admin\Globales\GlobalesController@dashboard')->name('globales-dashboard');
     Route::resource('formulario-variables', 'Admin\Globales\Formulario\VariableController');

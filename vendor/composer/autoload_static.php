@@ -27,10 +27,10 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         '4a1f389d6ce373bda9e57857d3b61c84' => __DIR__ . '/..' . '/barryvdh/laravel-debugbar/src/helpers.php',
         '0d8253363903f0ac7b0978dcde4e28a0' => __DIR__ . '/..' . '/beyondcode/laravel-dump-server/helpers.php',
         'fd7db70706777c74792144bfcaec2647' => __DIR__ . '/..' . '/jakezatecky/array_group_by/src/array_group_by.php',
+        '17d016dc52a631c1e74d2eb8fdd57342' => __DIR__ . '/..' . '/laravel/helpers/src/helpers.php',
         'f18cc91337d49233e5754e93f3ed9ec3' => __DIR__ . '/..' . '/laravelcollective/html/src/helpers.php',
         '377b22b161c09ed6e5152de788ca020a' => __DIR__ . '/..' . '/spatie/laravel-permission/src/helpers.php',
         '0b47d6d4a00ca9112ba3953b49e7c9a4' => __DIR__ . '/..' . '/yajra/laravel-datatables-oracle/src/helper.php',
-        '17d016dc52a631c1e74d2eb8fdd57342' => __DIR__ . '/..' . '/laravel/helpers/src/helpers.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -515,6 +515,7 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         'App\\Admin\\Proyecto\\EPC\\Infraestructura' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/Infraestructura.php',
         'App\\Admin\\Proyecto\\EPC\\MedicamentoInsumo' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/MedicamentoInsumo.php',
         'App\\Admin\\Proyecto\\EPC\\OtroServicio' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/OtroServicio.php',
+        'App\\Admin\\Proyecto\\EPC\\Resource' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/Resource.php',
         'App\\Admin\\Proyecto\\EPC\\Servicio' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/Servicio.php',
         'App\\Admin\\Proyecto\\EPC\\TalentoHumano' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/TalentoHumano.php',
         'App\\ClasesPersonalizadas\\Pdf' => __DIR__ . '/../..' . '/app/ClasesPersonalizadas/Pdf.php',

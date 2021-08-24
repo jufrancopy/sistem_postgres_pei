@@ -31,8 +31,9 @@ class ServicioController extends Controller
      */
     public function create()
     {
-        $detailEquipamientos = Equipamiento::orderBy('id', 'ASC')->pluck('item', 'id');
-        $detailEquipamientosChecked = [];
+        $equipamientos = Equipamiento::orderBy('id', 'ASC')->pluck('item', 'id');
+        
+        $equipamientosChecked = [];
 
         return view('admin.proyectos.epc.servicios.create', get_defined_vars());
     }
@@ -87,7 +88,7 @@ class ServicioController extends Controller
     public function show($id)
     {
         $servicio = Servicio::find($id);
-
+        
         return view('admin.proyectos.epc.servicios.show', get_defined_vars());
     }
 
@@ -101,8 +102,8 @@ class ServicioController extends Controller
     {
         $servicio = Servicio::find($id);
         
-        $detailEquipamientos = Equipamiento::orderBy('id', 'ASC')->pluck('item', 'id');
-        $detailEquipamientosChecked = [];
+        $equipamientos = Equipamiento::orderBy('id', 'ASC')->pluck('item', 'id');
+        $equipamientosChecked = [];
 
         foreach ($servicio->equipamientos as $v) {
             $equipamientosChecked[] = $v->id;

@@ -13,4 +13,8 @@ class Equipamiento extends Model
         'type',
         'cost'
         ];
+        public function servicios()
+        {
+            return $this->belongsToMany('App\Admin\Proyecto\EPC\Servicio');
+        }
 }

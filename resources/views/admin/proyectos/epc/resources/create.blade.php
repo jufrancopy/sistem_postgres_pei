@@ -6,15 +6,12 @@
 			<div class="col-md-12">
 				<div class="card">
 					<div class="card-header card-header-info">
-					<h4 class="card-title ">Editar {{$servicio->item}}</h4>
-					<a class="btn btn-warning" href="{{ route('proyectos-epc-servicios.index') }}">
-						Atras</a>
+						<h4 class="card-title ">Agregar nuevo Recurso</h4>
 					</div>
 					<div class="card-body">
-						{!! Form::model($servicio, ['route'=>['proyectos-epc-servicios.update', $servicio->id],
-            'method'=>'PUT']) !!}
+						{!! Form::open(['route'=>'proyectos-epc-resources.store']) !!}
 
-						@include('admin.proyectos.epc.servicios.partials.form')
+						@include('admin.proyectos.epc.resources.partials.form')
 
 						{!! Form::close() !!}
 					</div>
