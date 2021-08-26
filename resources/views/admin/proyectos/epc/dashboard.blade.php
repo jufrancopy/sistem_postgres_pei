@@ -73,10 +73,10 @@
         {
             name: 'Equipamientos | <a class="btn btn-success btn-circle" href="{{route('proyectos-epc-equipamientos.create')}}"><i class="fa fa-plus" aria-hidden="true"></i></a>',
             children: [
-              { name: '<a href="{{route('proyectos-epc', 'all')}}">Listar </a>'},
-                { name: '<a href="{{route('proyectos-epc', 'equipo_informatico')}}">Informático</a>'},
-                { name: '<a href="{{route('proyectos-epc', 'equipo_biomedico')}}">Biomédicos</a>'},
-                { name: '<a href="{{route('proyectos-epc', 'equipo_mobiliario')}}">Mobiliarios</a>'},
+              { name: '<a href="{{route('equipamientos', 'all')}}">Listar </a>'},
+                { name: '<a href="{{route('equipamientos', 'equipo_informatico')}}">Informático</a>'},
+                { name: '<a href="{{route('equipamientos', 'equipo_biomedico')}}">Biomédicos</a>'},
+                { name: '<a href="{{route('equipamientos', 'equipo_mobiliario')}}">Mobiliarios</a>'},
                 
                 
             ]

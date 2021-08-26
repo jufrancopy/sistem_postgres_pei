@@ -68,7 +68,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('proyectos-epc-home', 'Admin\Proyectos\EPC\EPCController@getHome')->name('proyectos-epc-home');
     Route::get('proyectos-epc/{type}', 'Admin\Proyectos\EPC\EquipamientoController@getForType')->name('proyectos-epc');
     Route::resource('proyectos-epc-tthh', 'Admin\Proyectos\EPC\TalentoHumanoController');
+
+    // Equipamientos
     Route::resource('proyectos-epc-equipamientos', 'Admin\Proyectos\EPC\EquipamientoController');
+    Route::get('proyectos-epc-eqs/{type}', 'Admin\Proyectos\EPC\EquipamientoController@getForType')->name('equipamientos');
     
     //Apoyo Administrativo
     Route::resource('proyectos-epc-ap_admins', 'Admin\Proyectos\EPC\ApoyoAdministrativoController');
@@ -84,7 +87,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Medicamento e Insumos
     Route::resource('proyectos-epc-mds_ins', 'Admin\Proyectos\EPC\MedicamentoInsumoController');
-    Route::get('proyectos-epc-mds_in/{type}', 'Admin\Proyectos\EPC\MedicamentoInsumoController@getForType')->name('medicamentos-insumos');
+    Route::get('proyectos-epc-md_ins/{type}', 'Admin\Proyectos\EPC\MedicamentoInsumoController@getForType')->name('medicamentos-insumos');
     
     // Especialidades
     Route::resource('proyectos-epc-especialidades', 'Admin\Proyectos\EPC\EspecialidadController');

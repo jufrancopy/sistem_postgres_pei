@@ -12,6 +12,6 @@ class Especialidad extends Model
         'item', 
         'type',
         'detail',
-        'cost'
+        'cost',
         ];
 }

@@ -53,11 +53,11 @@
 
                                     @switch( $medicamentoInsumo->type )
                                     @case('medicamento')
-                                    <td>Limpieza</td>
+                                    <td>Medicamento</td>
                                     @break
 
                                     @case('insumo')
-                                    <td>Seguridad</td>
+                                    <td>Insumo</td>
                                     @break
 
                                     @case('gastronomia')

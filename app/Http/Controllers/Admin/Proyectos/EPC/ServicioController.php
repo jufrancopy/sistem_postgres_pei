@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin\Proyectos\EPC;
 
 use App\Admin\Proyecto\EPC\Servicio;
 use App\Admin\Proyecto\EPC\Equipamiento;
+use App\Admin\Proyecto\EPC\TalentoHumano;
+use App\Admin\Proyecto\EPC\MedicamentoInsumo;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -32,8 +34,13 @@ class ServicioController extends Controller
     public function create()
     {
         $equipamientos = Equipamiento::orderBy('id', 'ASC')->pluck('item', 'id');
+        $tthh = TalentoHumano::orderBy('id', 'ASC')->pluck('item', 'id');
+        $medicamentoInsumos = MedicamentoInsumo::orderBy('id', 'ASC')->pluck('item', 'id');
+        
         
         $equipamientosChecked = [];
+        $tthhChecked = [];
+        $medicamentoInsumosChecked = [];
 
         return view('admin.proyectos.epc.servicios.create', get_defined_vars());
     }
@@ -71,9 +78,10 @@ class ServicioController extends Controller
         }
 
         
-        $servicio = Servicio::create($request->except(['detail_equipamiento_id']));
+        $servicio = Servicio::create($request->except(['detail_equipamiento_id', 'detail_tthh_id']));
 
         $servicio->equipamientos()->attach($request->detail_equipamiento_id);
+        $servicio->tthh()->attach($request->detail_tthh_id);
 
         return redirect()->route('proyectos-epc-servicios.index')
             ->with('success', 'Servicio creado satisfactoriamente');
@@ -103,11 +111,19 @@ class ServicioController extends Controller
         $servicio = Servicio::find($id);
         
         $equipamientos = Equipamiento::orderBy('id', 'ASC')->pluck('item', 'id');
+        $tthh = TalentoHumano::orderBy('id', 'ASC')->pluck('item', 'id');
+        
         $equipamientosChecked = [];
+        $tthhChecked = [];
 
         foreach ($servicio->equipamientos as $v) {
             $equipamientosChecked[] = $v->id;
         }
+
+        foreach ($servicio->tthh as $v) {
+            $tthhChecked[] = $v->id;
+        }
+
         return view('admin.proyectos.epc.servicios.edit', get_defined_vars());
     }
 

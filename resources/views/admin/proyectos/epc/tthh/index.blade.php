@@ -50,8 +50,8 @@
                                 @foreach ($tthhs as $key => $tthh)
                                 <tr>
                                     <td>{{ ++$i }}</td>
-                                    <td>{{ $tthh->name }}</td>
-                                    <td>{{ $tthh->specialty }}</td>
+                                    <td>{{ $tthh->item }}</td>
+                                    <td>{{ $tthh->especialidad->item }}</td>
                                     <td>{{ $tthh->hours }}</td>
                                     <td>{{ $tthh->cost }}</td>
                                     <td>

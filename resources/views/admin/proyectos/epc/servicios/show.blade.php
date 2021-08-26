@@ -37,7 +37,7 @@
                             {{$servicio->description}}
                         </p>
                         <div class="table-responsive">
-                        <label>Equipamientos: </label>
+                            <label>Equipamientos: </label>
                             <table class="table">
                                 <thead>
                                     <tr class="table-success">
@@ -53,7 +53,7 @@
                                         @switch($equipamiento->type)
                                         @case('equipo_biomedico')
                                         <td>Equipo Biomédico</td>
-                                        
+
                                         @break
 
                                         @case('equipo_informatico')
@@ -79,8 +79,49 @@
                                 </tfoot>
                             </table>
 
-                        </div>
+                            <label>Talentos Humanos: </label>
+                            <table class="table">
+                                <thead>
+                                    <tr class="table-success">
+                                        <td>Item</td>
+                                        <td>Tipo</td>
+                                        <td>Costo</td>
+                                    </tr>
+                                </thead>
+                                @foreach($servicio->tthh as $talentoHumano)
+                                <tbody>
+                                    <tr>
+                                        <td>{{$talentoHumano->item}}</td>
+                                        @switch($talentoHumano->type)
+                                        @case('medico_de_consultorio')
+                                        <td>Médico de Consultorio</td>
 
+                                        @break
+
+                                        @case('medico_de_guardia')
+                                        <td>Médico de Guardia</td>
+                                        @break
+
+                                        @case('auxiliar_de_consultorio')
+                                        <td>Auxiliar de Consultorio</td>
+                                        @break
+
+                                        @default
+                                        <td>Sin tipo</td>
+                                        @endswitch
+                                        <td>{{$talentoHumano->cost}}</td>
+                                    </tr>
+                                </tbody>
+                                @endforeach
+                                <tfoot>
+                                    <tr>
+                                        <th colspan=2>Total</th>
+                                        <th>{{$talentoHumano->sum('cost')}}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                        </div>
                     </div>
                 </div>
             </div>

@@ -15,7 +15,15 @@ class Servicio extends Model
         ];
 
     public function equipamientos(){
-        return $this->belongsToMany('App\Admin\Proyecto\EPC\Equipamiento', 'proyecto.e_p_c_recursos_servicios', 'servicio_id','detail_equipamiento_id');
+        return $this->belongsToMany('App\Admin\Proyecto\EPC\Equipamiento', 'proyecto.e_p_c_equipamientos_servicios', 'servicio_id','detail_equipamiento_id');
+    }
+
+    public function tthh(){
+        return $this->belongsToMany('App\Admin\Proyecto\EPC\TalentoHumano', 'proyecto.e_p_c_tthh_servicios', 'servicio_id','detail_tthh_id');
+    }
+
+    public function medicamentoInsumos(){
+        return $this->belongsToMany('App\Admin\Proyecto\EPC\MedicamentoInsumo', 'proyecto.medicamento-insumos_servicios', 'servicio_id','detail_medicamento-insumo_id');
     }
 
     public function resources(){

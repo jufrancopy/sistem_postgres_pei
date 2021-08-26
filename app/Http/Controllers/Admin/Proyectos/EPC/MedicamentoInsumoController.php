@@ -70,10 +70,27 @@ class MedicamentoInsumoController extends Controller
      */
     public function store(Request $request)
     {
-        MedicamentoInsumo::create($request->all());
+        $medicamentoInsumo = MedicamentoInsumo::create($request->all());
 
+        switch ($medicamentoInsumo->type) {
+            case "insumo":
+                $item = "Insumo";
+                break;
+            case "medicamento":
+                $item = "Medicamento";
+                break;
+            case "util_de_laboratorio":
+                $item = "Util de Laboratorio";
+                break;
+            case "material_quirurgico":
+                $item = "Material Quirúrgico";
+                break;
+            case "producto_quimico":
+                $item = "Producto Químico";
+                break;
+        }
         return redirect()->route('proyectos-epc-mds_ins.index')
-            ->with('info', 'Apoyo Administrativo agregado con éxito');
+            ->with('info', $item . ' agregado con éxito');
     }
 
     /**
@@ -94,7 +111,7 @@ class MedicamentoInsumoController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
-    {   
+    {
         $medicamentoInsumo = MedicamentoInsumo::find($id);
 
         return view('admin.proyectos.epc.medicamentos_insumos.edit', get_defined_vars());

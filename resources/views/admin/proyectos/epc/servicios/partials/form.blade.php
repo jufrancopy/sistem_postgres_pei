@@ -28,6 +28,25 @@
 	</select>
 </div>
 
+<div class="form-group">
+	{{ Form::label('detail_tthh_id', 'Talentos Humanos:') }}
+	<select multiple="multiple" name="detail_tthh_id[]" id="detail_tthh_id" class="js-example-responsive" style="width:100%">
+		@foreach($tthh as $key => $value)
+		<option value="{{ $key }}" {{ in_array($key, $tthhChecked) ? 'selected' : null }}>{{ $value }}
+		</option>
+		@endforeach
+	</select>
+</div>
+
+<div class="form-group">
+	{{ Form::label('detail_medicamento-insumo_id', 'Medicamentos e Insumos:') }}
+	<select multiple="multiple" name="detail_medicamento-insumo_id[]" id="detail_medicamento-insumo_id" class="js-example-responsive" style="width:100%">
+		@foreach($medicamentoInsumos as $key => $value)
+		<option value="{{ $key }}" {{ in_array($key, $medicamentoInsumosChecked) ? 'selected' : null }}>{{ $value }}
+		</option>
+		@endforeach
+	</select>
+</div>
 
 <div class="form-group">
 	{{ Form::submit('Guardar', ['class'=>'bt btn-sm btn-primary'])	}}

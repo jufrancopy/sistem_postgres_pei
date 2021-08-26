@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Proyectos\EPC;
 
+use App\Admin\Proyecto\EPC\Especialidad;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -21,7 +22,6 @@ class TalentoHumanoController extends Controller
 
         return view('admin.proyectos.epc.tthh.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
-
     }
 
     /**
@@ -31,7 +31,11 @@ class TalentoHumanoController extends Controller
      */
     public function create()
     {
-        return view('admin.proyectos.epc.tthh.create');
+        $especialidades = Especialidad::orderBy('id', 'ASC')->pluck('item', 'id');
+        
+        $espcialidadesChecked = [];
+
+        return view('admin.proyectos.epc.tthh.create', get_defined_vars());
     }
 
     /**
@@ -45,7 +49,7 @@ class TalentoHumanoController extends Controller
         TalentoHumano::create($request->all());
 
         return redirect()->route('proyectos-epc-tthh.index')
-            ->with('success','Talento Humano agregado con éxito');
+            ->with('success', 'Talento Humano agregado con éxito');
     }
 
     /**
@@ -69,6 +73,9 @@ class TalentoHumanoController extends Controller
     {
         $tthh = TalentoHumano::find($id);
 
+        $especialidades = Especialidad::orderBy('id', 'ASC')->pluck('item', 'id');
+
+        
         return view('admin.proyectos.epc.tthh.edit', get_defined_vars());
     }
 
@@ -81,10 +88,10 @@ class TalentoHumanoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $tthh=TalentoHumano::find($id);
+        $tthh = TalentoHumano::find($id);
         $tthh->fill($request->all())->save();
 
-        return redirect()->route('proyectos-epc-tthh.index')->with('info','Talento Humano editado con éxito');
+        return redirect()->route('proyectos-epc-tthh.index')->with('info', 'Talento Humano editado con éxito');
     }
 
     /**

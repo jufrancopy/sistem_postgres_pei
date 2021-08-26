@@ -16,10 +16,16 @@ class CreateEPCTalentoHumanosTable extends Migration
         Schema::create('proyecto.e_p_c_talento_humanos', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('item');
-            $table->string('specialty');
+
+            $table->unsignedInteger('specialty_id');
+            $table->foreign('specialty_id')->references('id')->on('proyecto.e_p_c_especialidads')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
             $table->string('hours');
             $table->string('type');
             $table->float('cost');
+
             $table->timestamps();
         });
     }

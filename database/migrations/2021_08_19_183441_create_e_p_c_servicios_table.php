@@ -18,24 +18,6 @@ class CreateEPCServiciosTable extends Migration
             $table->string('item');
             $table->string('type');
             $table->text('description');
-            
-
-            /*    
-            $table->unsignedInteger('detail_infraestructura_id');
-            $table->foreign('detail_infraestructura_id')->references('id')->on('proyecto.e_p_c_infraestructuras')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-
-            $table->unsignedInteger('detail_medicamento-insumo_id');
-            $table->foreign('detail_medicamento-insumo_id')->references('id')->on('proyecto.e_p_c_medicamento_insumos')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-
-            $table->unsignedInteger('detail_apoyo-administrativo_id');
-            $table->foreign('detail_apoyo-administrativo_id')->references('id')->on('proyecto.e_p_c_apoyo_administrativos')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-            */
 
             $table->timestamps();
         });

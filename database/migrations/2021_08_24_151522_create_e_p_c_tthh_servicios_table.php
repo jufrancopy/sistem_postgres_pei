@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateEPCRecursosServiciosTable extends Migration
+class CreateEPCTthhServiciosTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,18 +13,16 @@ class CreateEPCRecursosServiciosTable extends Migration
      */
     public function up()
     {
-        Schema::create('proyecto.e_p_c_equipamientos_servicios', function (Blueprint $table) {
-
+        Schema::create('proyecto.e_p_c_tthh_servicios', function (Blueprint $table) {
             $table->unsignedInteger('servicio_id');
             $table->foreign('servicio_id')->references('id')->on('proyecto.e_p_c_servicios')
                 ->onDelete('cascade')
                 ->onUpdate('cascade'); 
             
-            $table->unsignedInteger('detail_equipamiento_id');
-            $table->foreign('detail_equipamiento_id')->references('id')->on('proyecto.e_p_c_equipamientos')
+            $table->unsignedInteger('detail_tthh_id');
+            $table->foreign('detail_tthh_id')->references('id')->on('proyecto.e_p_c_talento_humanos')
                 ->onDelete('cascade')
                 ->onUpdate('cascade'); 
-            
         });
     }
 
@@ -35,7 +33,7 @@ class CreateEPCRecursosServiciosTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('proyecto.e_p_c_equipamientos_servicios', function (Blueprint $table) {
+        Schema::dropIfExists('proyecto.e_p_c_tthh_servicios', function (Blueprint $table) {
             //
         });
     }
