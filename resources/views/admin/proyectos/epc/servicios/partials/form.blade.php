@@ -17,16 +17,27 @@
 	{{ Form::text('description', null,['class'=>'form-control','id'=>'formulario'])	}}
 </div>
 
+<div class="row">
+	<div class="col-md-6">
+		<div class="form-group">
+			{{ Form::label('detail_equipamiento_id', 'Equipamientos:') }}
+			<select multiple="multiple" name="detail_equipamiento_id[]" id="detail_equipamiento_id" class="equipamientos" style="width:100%">
+				@foreach($equipamientos as $key => $value)
+				<option value="{{ $key }}" {{ in_array($key, $equipamientosChecked) ? 'selected' : null }}>{{ $value }}
+				</option>
+				@endforeach
+			</select>
+		</div>
+	</div>
 
-<div class="form-group">
-	{{ Form::label('detail_equipamiento_id', 'Equipamientos:') }}
-	<select multiple="multiple" name="detail_equipamiento_id[]" id="detail_equipamiento_id" class="js-example-responsive" style="width:100%">
-		@foreach($equipamientos as $key => $value)
-		<option value="{{ $key }}" {{ in_array($key, $equipamientosChecked) ? 'selected' : null }}>{{ $value }}
-		</option>
-		@endforeach
-	</select>
+	<div class="col-md-6">
+		<div class="form-group">
+			{{ Form::label('item', 'Nombre:')	}}
+			{{ Form::number('item', null,['class'=>'form-control','id'=>'formulario'])	}}
+		</div>
+	</div>
 </div>
+
 
 <div class="form-group">
 	{{ Form::label('detail_tthh_id', 'Talentos Humanos:') }}
@@ -51,3 +62,17 @@
 <div class="form-group">
 	{{ Form::submit('Guardar', ['class'=>'bt btn-sm btn-primary'])	}}
 </div>
+
+@section('scripts')
+<script>
+	$(document).ready(function() {
+		$('.equipamientos').select2({
+			placeholder: "Seleccione Equipamientos",
+		});
+
+		$('#type').select2({
+			placeholder: "Elija un Tipo",
+		});
+	});
+</script>
+@endsection

@@ -36,18 +36,21 @@
                             <label>Descripcion: </label>
                             {{$servicio->description}}
                         </p>
+                    </div>
+
+                    <div class="card-body">
                         <div class="table-responsive">
                             <label>Equipamientos: </label>
                             <table class="table">
                                 <thead>
                                     <tr class="table-success">
-                                        <td>Item</td>
+                                        <td width="20%">Item</td>
                                         <td>Tipo</td>
                                         <td>Costo</td>
                                     </tr>
                                 </thead>
-                                @foreach($servicio->equipamientos as $equipamiento)
                                 <tbody>
+                                    @foreach($servicio->equipamientos as $equipamiento)
                                     <tr>
                                         <td>{{$equipamiento->item}}</td>
                                         @switch($equipamiento->type)
@@ -55,7 +58,6 @@
                                         <td>Equipo Biomédico</td>
 
                                         @break
-
                                         @case('equipo_informatico')
                                         <td>Equipo Informático</td>
                                         @break
@@ -69,8 +71,8 @@
                                         @endswitch
                                         <td>{{$equipamiento->cost}}</td>
                                     </tr>
+                                    @endforeach
                                 </tbody>
-                                @endforeach
                                 <tfoot>
                                     <tr>
                                         <th colspan=2>Total</th>
@@ -79,17 +81,16 @@
                                 </tfoot>
                             </table>
 
-                            <label>Talentos Humanos: </label>
                             <table class="table">
                                 <thead>
                                     <tr class="table-success">
-                                        <td>Item</td>
+                                        <td width="20%">Item</td>
                                         <td>Tipo</td>
                                         <td>Costo</td>
                                     </tr>
                                 </thead>
-                                @foreach($servicio->tthh as $talentoHumano)
                                 <tbody>
+                                    @foreach($servicio->tthh as $talentoHumano)
                                     <tr>
                                         <td>{{$talentoHumano->item}}</td>
                                         @switch($talentoHumano->type)
@@ -97,22 +98,21 @@
                                         <td>Médico de Consultorio</td>
 
                                         @break
-
                                         @case('medico_de_guardia')
                                         <td>Médico de Guardia</td>
                                         @break
 
                                         @case('auxiliar_de_consultorio')
-                                        <td>Auxiliar de Consultorio</td>
+                                        <td>Auxiliar</td>
                                         @break
 
                                         @default
                                         <td>Sin tipo</td>
                                         @endswitch
-                                        <td>{{$talentoHumano->cost}}</td>
+                                        <td>{{$equipamiento->cost}}</td>
                                     </tr>
+                                    @endforeach
                                 </tbody>
-                                @endforeach
                                 <tfoot>
                                     <tr>
                                         <th colspan=2>Total</th>
@@ -120,7 +120,6 @@
                                     </tr>
                                 </tfoot>
                             </table>
-
                         </div>
                     </div>
                 </div>

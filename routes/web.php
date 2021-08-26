@@ -95,7 +95,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Servicios
     Route::resource('proyectos-epc-servicios', 'Admin\Proyectos\EPC\ServicioController');
-    //Route::get('proyectos-epc-especialidad/{type}', 'Admin\Proyectos\EPC\EspecialidadController@getForType')->name('especialidades');
+    Route::get('proyectos-epc-servs/{type}', 'Admin\Proyectos\EPC\ServicioController@getForType')->name('servicios');
 
     // Servicios
     Route::resource('proyectos-epc-resources', 'Admin\Proyectos\EPC\ResourceController');

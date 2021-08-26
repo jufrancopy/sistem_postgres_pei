@@ -26,11 +26,26 @@ class ServicioController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    public function getForType(Request $request, $type)
+    {
+
+        switch ($type) {
+            case 'final':
+                $servicios = Servicio::where('type', 'final')->orderBy('id', 'DESC')->paginate(10);
+                break;
+            case 'de_apoyo':
+                $servicios = Servicio::where('type', 'de_apoyo')->orderBy('id', 'DESC')->paginate(10);
+                break;
+            case 'all':
+                $servicios = Servicio::orderBy('id', 'DESC')->paginate(10);
+                break;
+        }
+
+        $data = ['servicios' => $servicios];
+
+        return view('admin.proyectos.epc.servicios.index', get_defined_vars());
+    }
+
     public function create()
     {
         $equipamientos = Equipamiento::orderBy('id', 'ASC')->pluck('item', 'id');
