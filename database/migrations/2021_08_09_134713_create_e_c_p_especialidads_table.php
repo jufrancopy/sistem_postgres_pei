@@ -6,11 +6,6 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateECPEspecialidadsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('proyecto.e_p_c_especialidads', function (Blueprint $table) {

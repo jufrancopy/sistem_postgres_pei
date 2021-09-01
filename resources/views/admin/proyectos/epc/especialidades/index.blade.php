@@ -61,7 +61,7 @@
                                     <td>Segundo Nivel</td>
                                     @break
 
-                                    @case('tercer_mobiliario')
+                                    @case('tercer_nivel')
                                     <td>Tercer Nivel</td>
                                     @break
 

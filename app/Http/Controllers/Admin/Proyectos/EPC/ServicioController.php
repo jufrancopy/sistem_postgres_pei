@@ -13,11 +13,6 @@ use Illuminate\Support\Facades\Validator;
 
 class ServicioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
         $servicios = Servicio::all();
@@ -49,31 +44,17 @@ class ServicioController extends Controller
     public function create()
     {
         $equipamientos = Equipamiento::orderBy('id', 'ASC')->pluck('item', 'id');
-        $tthh = TalentoHumano::orderBy('id', 'ASC')->pluck('item', 'id');
-        $medicamentoInsumos = MedicamentoInsumo::orderBy('id', 'ASC')->pluck('item', 'id');
+        $tthhs = TalentoHumano::orderBy('id', 'ASC')->pluck('item', 'id');
         
-        
-        $equipamientosChecked = [];
-        $tthhChecked = [];
-        $medicamentoInsumosChecked = [];
-
         return view('admin.proyectos.epc.servicios.create', get_defined_vars());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    
     public function store(Request $request)
     {
         $rules = [
             'item'                          => 'required|min:8',
             'type'                          => 'required',
             'description'                   => 'required',
-            'detail_equipamiento_id'          => 'required'
         ];
 
         $messages = [
@@ -81,91 +62,91 @@ class ServicioController extends Controller
             'item.min'                      => 'El nombre de contener al menos 8 caracteres',
             'type.required'                 => 'Debe especificar el tipo.',
             'description.required'          => 'Describa los detalles del Servicio',
-            'detail_equipamiento_id.required' => 'Debe asignar Equipamientos al Servicio',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
 
         if ($validator->fails()) {
             return redirect('proyectos-epc-servicios/create')
-                        ->withErrors($validator)
-                        ->withInput();
+                ->withErrors($validator)
+                ->withInput();
+        }
+        // dd($request);
+        $equipamientoCantidadAttach = [];
+        foreach ($request->equipamientos as $key => $equipamiento) {
+            $equipamientoCantidadAttach[$equipamiento] = ['cantidad' => $request->cantidadesEquipamientos[$key]];
         }
 
+        $tthhCantidadAttach = [];
+        foreach ($request->tthhs as $key => $tthh) {
+            $tthhCantidadAttach[$tthh] = ['cantidad' => $request->cantidadesTthh[$key]];
+        }
         
-        $servicio = Servicio::create($request->except(['detail_equipamiento_id', 'detail_tthh_id']));
+        $infraestructuraCantidadAttach = [];
+        foreach ($request->infraestructuras as $key => $infraestructura) {
+            $infraestructuraCantidadAttach[$infraestructura] = ['cantidad' => $request->cantidadesInfraestructuras[$key]];
+        }
 
-        $servicio->equipamientos()->attach($request->detail_equipamiento_id);
-        $servicio->tthh()->attach($request->detail_tthh_id);
+        $servicio = Servicio::create($request->except(['equipamiento_id','tthh_id', 'infraestructura_id']));
+        
+        $servicio->equipamientos()->attach($equipamientoCantidadAttach);
+        $servicio->tthhs()->attach($tthhCantidadAttach);
+        $servicio->infraestructuras()->attach($infraestructuraCantidadAttach);
+
 
         return redirect()->route('proyectos-epc-servicios.index')
             ->with('success', 'Servicio creado satisfactoriamente');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         $servicio = Servicio::find($id);
-        
+
         return view('admin.proyectos.epc.servicios.show', get_defined_vars());
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         $servicio = Servicio::find($id);
+
+        $equipamientoCantidad = $servicio->equipamientos->toArray();
+        $tthhCantidad = $servicio->tthhs->toArray();    
+        $infraestructuraCantidad = $servicio->infraestructuras->toArray();
         
-        $equipamientos = Equipamiento::orderBy('id', 'ASC')->pluck('item', 'id');
-        $tthh = TalentoHumano::orderBy('id', 'ASC')->pluck('item', 'id');
         
-        $equipamientosChecked = [];
-        $tthhChecked = [];
-
-        foreach ($servicio->equipamientos as $v) {
-            $equipamientosChecked[] = $v->id;
-        }
-
-        foreach ($servicio->tthh as $v) {
-            $tthhChecked[] = $v->id;
-        }
-
         return view('admin.proyectos.epc.servicios.edit', get_defined_vars());
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
+        $equipamientoCantidadAttach = [];
+        foreach ($request->equipamientos as $key => $equipamiento) {
+            $equipamientoCantidadAttach[$equipamiento] = ['cantidad' => $request->cantidadesEquipamientos[$key]];
+        }
+
+        $tthhCantidadAttach = [];
+        foreach ($request->tthhs as $key => $tthh) {
+            $tthhCantidadAttach[$tthh] = ['cantidad' => $request->cantidadesTthh[$key]];
+        }
+
+        $infraestructuraCantidadAttach = [];
+        foreach ($request->infraestructuras as $key => $infraestructura) {
+            $infraestructuraCantidadAttach[$infraestructura] = ['cantidad' => $request->cantidadesInfraestructuras[$key]];
+        }
+
         $servicio = Servicio::find($id);
-        $servicio->fill($request->except(['detail_equipamiento_id']))->save();
-        $servicio->equipamientos()->sync($request->detail_equipamiento_id);
-        
+        $servicio->fill($request->except(['equipamiento_id', 'tthh_id', 'infraestructura_id']))->save();
+
+        $servicio->equipamientos()->sync($equipamientoCantidadAttach);
+        $servicio->tthhs()->sync($tthhCantidadAttach);
+        $servicio->infraestructuras()->sync($infraestructuraCantidadAttach);
+
+
 
         return redirect()->route('proyectos-epc-servicios.index')
             ->with('info', 'Servicio Actualizado Satisfactoriamente');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         $servicio = Servicio::find($id);

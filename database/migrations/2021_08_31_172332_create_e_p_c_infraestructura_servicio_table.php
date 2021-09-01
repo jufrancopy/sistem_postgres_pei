@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMedicamentoInsumosServiciosTable extends Migration
+class CreateEPCInfraestructuraServicioTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,16 +13,18 @@ class CreateMedicamentoInsumosServiciosTable extends Migration
      */
     public function up()
     {
-        Schema::create('proyecto.medicamento-insumos_servicios', function (Blueprint $table) {
+        Schema::create('proyecto.e_p_c_infraestructura_servicio', function (Blueprint $table) {
             $table->unsignedInteger('servicio_id');
             $table->foreign('servicio_id')->references('id')->on('proyecto.e_p_c_servicios')
                 ->onDelete('cascade')
-                ->onUpdate('cascade'); 
-            
-            $table->unsignedInteger('detail_medicamento-insumo_id');
-            $table->foreign('detail_medicamento-insumo_id')->references('id')->on('proyecto.e_p_c_medicamento_insumos')
+                ->onUpdate('cascade');
+
+            $table->unsignedInteger('infraestructura_id');
+            $table->foreign('infraestructura_id')->references('id')->on('proyecto.e_p_c_infraestructuras')
                 ->onDelete('cascade')
-                ->onUpdate('cascade'); 
+                ->onUpdate('cascade');
+                
+            $table->integer('cantidad');
         });
     }
 
@@ -33,7 +35,7 @@ class CreateMedicamentoInsumosServiciosTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('proyecto.medicamento-insumos_servicios', function (Blueprint $table) {
+        Schema::dropIfExists('proyecto.e_p_c_infraestructura_servicio', function (Blueprint $table) {
             //
         });
     }

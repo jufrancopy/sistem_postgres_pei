@@ -12,10 +12,10 @@
             </div>
             <div class="card">
                 <div class="card-header card-header-info">
-                    <h4 class="card-title ">Talentos Humanos</h4>
-                    <a class="btn btn-success" href="{{ route('proyectos-epc-tthh.create') }}">Agregar</a>
+                    <h4 class="card-title ">Ordenes</h4>
+                    <a class="btn btn-success" href="{{ route('orders.create') }}">Agregar</a>
                     <div class="pull-right">
-                        <a class="btn btn-warning pull-right" href="{{ route('proyectos-dashboard') }}"> Atras</a>
+                        <a class="btn btn-warning pull-right" href="{{ route('orders.index') }}"> Atras</a>
                     </div>
                 </div>
                 <div class="card-body">
@@ -38,34 +38,37 @@
                             <!-- Fin Buscador -->
                             <thead>
                                 <tr>
-                                    <th>No</th>
-                                    <th>Nombre</th>
-                                    {{-- <th>Especialidad</th> --}}
-                                    <th>Horas</th>
+                                    <th>id</th>
+                                    <th>user</th>
+                                    <th>correo</th>
                                     <th>Costo</th>
                                     <th width="280px">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($tthhs as $key => $tthh)
-                                <tr>
-                                    <td>{{ ++$i }}</td>
-                                    <td>{{ $tthh->item }}</td>
-                                    {{-- <td>{{ $tthh->especialidad->item }}</td> --}}
-                                    <td>{{ $tthh->hours }}</td>
-                                    <td>{{ $tthh->cost }}</td>
+                                @foreach($orders as $order)
+                                <tr data-entry-id="{{ $order->id }}">
                                     <td>
-                                        <a class="btn btn-primary btn-circle"
-                                            href="{{ route('proyectos-epc-tthh.edit',$tthh->id) }}"><i class="far fa-edit"></i></a>
-                                        </i></a>
-                                        {!! Form::open(['route' => ['proyectos-epc-tthh.destroy',$tthh->id], 'method' => 'DELETE',
-                                        'style'=>'display:inline']) !!}
-                                        <button class="btn btn-danger btn-circle"
-                                            onclick="return confirm('Estas seguro de eliminar el rol {{$tthh->name}}. Si lo eliminas también eliminarás los datos asociados a el.')">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
-                                        {!! Form::close() !!}
+                                        {{ $order->id ?? '' }}
                                     </td>
+                                    <td>
+                                        {{ $order->customer_name ?? '' }}
+                                    </td>
+                                    <td>
+                                        {{ $order->customer_email ?? '' }}
+                                    </td>
+                                    <td>
+                                        <ul>
+                                            @foreach($order->products as $item)
+                                            <li>{{ $item->name }} ({{ $item->pivot->quantity }} x ${{ $item->price }})
+                                            </li>
+                                            @endforeach
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        {{-- ... buttons ... --}}
+                                    </td>
+
                                 </tr>
                                 @endforeach
                             </tbody>

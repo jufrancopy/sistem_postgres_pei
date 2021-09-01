@@ -6,12 +6,12 @@
 			<div class="col-md-12">
 				<div class="card">
 					<div class="card-header card-header-info">
-					<h4 class="card-title ">Editar {{$apoyoAdministrativo->name}}</h4>
-					<a class="btn btn-warning" href="{{ route('proyectos-epc-ap_admins.index') }}">
+					<h4 class="card-title ">Editar {{$equipamiento->name}}</h4>
+					<a class="btn btn-warning" href="{{ route('proyectos-epc-equipamientos.index') }}">
 						Atras</a>
 					</div>
 					<div class="card-body">
-						{!! Form::model($apoyoAdministrativo, ['route'=>['proyectos-epc-ap_admins.update', $apoyoAdministrativo->id],
+						{!! Form::model($equipamiento, ['route'=>['proyectos-epc-equipamientos.update', $equipamiento->id],
             'method'=>'PUT']) !!}
 
 						@include('admin.proyectos.epc.equipamientos.partials.form')

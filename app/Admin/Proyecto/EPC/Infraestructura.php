@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Infraestructura extends Model
 {
     protected $table = 'proyecto.e_p_c_infraestructuras';
-    
+
     protected $fillable = [
-        'item', 
+        'item',
         'type',
         'measurement',
         'cost'
-        ];
+    ];
 }

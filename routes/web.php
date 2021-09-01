@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 /*
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
 if (version_compare(PHP_VERSION, '7.2.0', '>=')) {
     error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
 }
@@ -59,27 +61,35 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Rutas de Estadisticas
     Route::view('estadisticas-dashboard', 'admin.estadisticas.dashboard')->name('estadisticas-dashboard');
-    
+
     // Rutas de Proyectos
     Route::view('proyectos-dashboard', 'admin.proyectos.dashboard')->name('proyectos-dashboard');
-    
+
     //Estandar por Complejidad
     Route::view('proyectos-epc-dashboard', 'admin.proyectos.epc.dashboard')->name('proyectos-epc-dashboard');
     Route::get('proyectos-epc-home', 'Admin\Proyectos\EPC\EPCController@getHome')->name('proyectos-epc-home');
     Route::get('proyectos-epc/{type}', 'Admin\Proyectos\EPC\EquipamientoController@getForType')->name('proyectos-epc');
-    Route::resource('proyectos-epc-tthh', 'Admin\Proyectos\EPC\TalentoHumanoController');
 
+    // TTHH
+    Route::resource('proyectos-epc-tthh', 'Admin\Proyectos\EPC\TalentoHumanoController');
+    Route::get('tthhs/get',         'Admin\Proyectos\EPC\TalentoHumanoController@get')->name('tthhs.get');
+    
     // Equipamientos
     Route::resource('proyectos-epc-equipamientos', 'Admin\Proyectos\EPC\EquipamientoController');
     Route::get('proyectos-epc-eqs/{type}', 'Admin\Proyectos\EPC\EquipamientoController@getForType')->name('equipamientos');
-    
+    Route::get('equipamientos/get',         'Admin\Proyectos\EPC\EquipamientoController@get')->name('equipamientos.get');
+
+    // Orders
+    Route::resource('orders', 'OrdersController');
+
     //Apoyo Administrativo
     Route::resource('proyectos-epc-ap_admins', 'Admin\Proyectos\EPC\ApoyoAdministrativoController');
     Route::get('proyectos-epc-ap_admin/{type}', 'Admin\Proyectos\EPC\ApoyoAdministrativoController@getForType')->name('apoyo_administrativos');
-    
+
     // Infraestructuras
     Route::resource('proyectos-epc-infraestructuras', 'Admin\Proyectos\EPC\InfraestructuraController');
     Route::get('proyectos-epc-infraestructura/{type}', 'Admin\Proyectos\EPC\InfraestructuraController@getForType')->name('infraestructuras');
+    Route::get('infraestructuras/get',         'Admin\Proyectos\EPC\InfraestructuraController@get')->name('infraestructuras.get');
 
     // Otros Servicios
     Route::resource('proyectos-epc-otros_servs', 'Admin\Proyectos\EPC\OtroServicioController');
@@ -88,7 +98,7 @@ Route::group(['middleware' => ['auth']], function () {
     // Medicamento e Insumos
     Route::resource('proyectos-epc-mds_ins', 'Admin\Proyectos\EPC\MedicamentoInsumoController');
     Route::get('proyectos-epc-md_ins/{type}', 'Admin\Proyectos\EPC\MedicamentoInsumoController@getForType')->name('medicamentos-insumos');
-    
+
     // Especialidades
     Route::resource('proyectos-epc-especialidades', 'Admin\Proyectos\EPC\EspecialidadController');
     Route::get('proyectos-epc-especialidad/{type}', 'Admin\Proyectos\EPC\EspecialidadController@getForType')->name('especialidades');
@@ -96,9 +106,6 @@ Route::group(['middleware' => ['auth']], function () {
     // Servicios
     Route::resource('proyectos-epc-servicios', 'Admin\Proyectos\EPC\ServicioController');
     Route::get('proyectos-epc-servs/{type}', 'Admin\Proyectos\EPC\ServicioController@getForType')->name('servicios');
-
-    // Servicios
-    Route::resource('proyectos-epc-resources', 'Admin\Proyectos\EPC\ResourceController');
 
     // Rutas Configuraciones Globales
     Route::get('globales-dashboard', 'Admin\Globales\GlobalesController@dashboard')->name('globales-dashboard');

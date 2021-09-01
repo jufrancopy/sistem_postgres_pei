@@ -10,7 +10,7 @@ class TalentoHumano extends Model
 
     protected $fillable = [
         'item',
-        'specialty_id',
+        // 'specialty_id',
         'hours',
         'type',
         'cost'

@@ -17,10 +17,10 @@ class CreateEPCTalentoHumanosTable extends Migration
             $table->bigIncrements('id');
             $table->string('item');
 
-            $table->unsignedInteger('specialty_id');
-            $table->foreign('specialty_id')->references('id')->on('proyecto.e_p_c_especialidads')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
+            // $table->unsignedInteger('specialty_id');
+            // $table->foreign('specialty_id')->references('id')->on('proyecto.e_p_c_especialidads')
+            //     ->onDelete('cascade')
+            //     ->onUpdate('cascade');
 
             $table->string('hours');
             $table->string('type');

@@ -21,6 +21,16 @@ class EquipamientoController extends Controller
         return view('admin.proyectos.epc.equipamientos.index', get_defined_vars());
     }
 
+    public function get(Request $request)
+    {
+        $rows = Equipamiento::where(\DB::raw("lower(item)"), 'like', '%' . mb_strtolower($request->q) . '%')
+            ->select('item AS text', 'id')
+            ->orderBy('item')->limit(25)->get();
+
+        return response()->json($rows);
+    }
+
+
     public function getForType($type)
     {
         switch ($type) {
@@ -64,7 +74,7 @@ class EquipamientoController extends Controller
         Equipamiento::create($request->all());
 
         return redirect()->route('proyectos-epc-equipamientos.index')
-            ->with('info','Equipamiento agregado con éxito');
+            ->with('info', 'Equipamiento agregado con éxito');
     }
 
     /**
@@ -100,10 +110,10 @@ class EquipamientoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $equipamiento=Equipamiento::find($id);
+        $equipamiento = Equipamiento::find($id);
         $equipamiento->fill($request->all())->save();
 
-        return redirect()->route('proyectos-epc-equipamientos.index')->with('info','Equipamiento editado con éxito');
+        return redirect()->route('proyectos-epc-equipamientos.index')->with('info', 'Equipamiento editado con éxito');
     }
 
     /**

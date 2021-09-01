@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateEPCServiciosTable extends Migration
+class CreateProductsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,10 @@ class CreateEPCServiciosTable extends Migration
      */
     public function up()
     {
-        Schema::create('proyecto.e_p_c_servicios', function (Blueprint $table) {
+        Schema::create('products', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('item');
-            $table->string('type');
-            $table->text('description');
+            $table->string('name');
+            $table->decimal('price', 15, 2)->nullable();
             $table->timestamps();
         });
     }
@@ -29,6 +28,6 @@ class CreateEPCServiciosTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('proyecto.e_p_c_servicios');
+        Schema::dropIfExists('products');
     }
 }

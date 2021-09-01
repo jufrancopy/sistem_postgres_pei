@@ -7,27 +7,30 @@ use Illuminate\Database\Eloquent\Model;
 class Servicio extends Model
 {
     protected $table = 'proyecto.e_p_c_servicios';
-    
+
     protected $fillable = [
-        'item', 
+        'item',
         'type',
         'description',
-        ];
+    ];
 
-    public function equipamientos(){
-        return $this->belongsToMany('App\Admin\Proyecto\EPC\Equipamiento', 'proyecto.e_p_c_equipamientos_servicios', 'servicio_id','detail_equipamiento_id');
+    public function equipamientos()
+    {
+        return $this->belongsToMany('App\Admin\Proyecto\EPC\Equipamiento', 'proyecto.e_p_c_equipamientos_servicios', 'servicio_id', 'equipamiento_id')
+            ->withPivot('cantidad');
     }
 
-    public function tthh(){
-        return $this->belongsToMany('App\Admin\Proyecto\EPC\TalentoHumano', 'proyecto.e_p_c_tthh_servicios', 'servicio_id','detail_tthh_id');
+    public function tthhs()
+    {
+        return $this->belongsToMany('App\Admin\Proyecto\EPC\TalentoHumano', 'proyecto.e_p_c_tthhs_servicios', 'servicio_id', 'tthh_id')
+            ->withPivot('cantidad');
     }
 
-    public function medicamentoInsumos(){
-        return $this->belongsToMany('App\Admin\Proyecto\EPC\MedicamentoInsumo', 'proyecto.medicamento-insumos_servicios', 'servicio_id','detail_medicamento-insumo_id');
+    public function infraestructuras()
+    {
+        return $this->belongsToMany('App\Admin\Proyecto\EPC\Infraestructura', 'proyecto.e_p_c_infraestructura_servicio', 'servicio_id', 'infraestructura_id')
+            ->withPivot('cantidad');
     }
 
-    public function resources(){
-        return $this->belongsToMany('App\Admin\Proyecto\EPC\Resource', 'proyecto.e_p_c_resources', 'servicio_id','resource_id');
-    }
     
 }

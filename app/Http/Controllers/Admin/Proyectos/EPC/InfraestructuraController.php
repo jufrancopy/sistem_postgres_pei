@@ -6,6 +6,7 @@ use App\Admin\Proyecto\EPC\Infraestructura;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use DB;
 
 class InfraestructuraController extends Controller
 {
@@ -21,6 +22,15 @@ class InfraestructuraController extends Controller
 
         return view('admin.proyectos.epc.infraestructuras.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
+    }
+
+    public function get(Request $request)
+    {
+        $rows = Infraestructura::where(\DB::raw("lower(item)"), 'like', '%' . mb_strtolower($request->q) . '%')
+            ->select('item AS text', 'id')
+            ->orderBy('item')->limit(25)->get();
+
+        return response()->json($rows);
     }
 
     public function getForType(Request $request, $type)
@@ -96,7 +106,7 @@ class InfraestructuraController extends Controller
     public function edit($id)
     {
         $infraestructura = Infraestructura::find($id);
-
+        
         return view('admin.proyectos.epc.infraestructuras.edit', get_defined_vars());
     }
 

@@ -12,8 +12,8 @@
             </div>
             <div class="card">
                 <div class="card-header card-header-info">
-                    <h4 class="card-title ">Apoyo Administrativo</h4>
-                    <a class="btn btn-success" href="{{ route('proyectos-epc-ap_admins.create') }}">Agregar</a>
+                    <h4 class="card-title ">Equipamientos</h4>
+                    <a class="btn btn-success" href="{{ route('proyectos-epc-equipamientos.create') }}">Agregar</a>
                     <div class="pull-right">
                         <a class="btn btn-warning pull-right" href="{{ route('proyectos-epc-home') }}"> Atras</a>
                     </div>
@@ -46,40 +46,39 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($apoyoAdministrativos as $key => $apoyoAdministrativo)
+                                @foreach ($equipamientos as $key => $equipamiento)
                                 <tr>
                                     <td>{{ ++$i }}</td>
-                                    <td>{{ $apoyoAdministrativo->item }}</td>
+                                    <td>{{ $equipamiento->item }}</td>
 
-                                    @switch( $apoyoAdministrativo->type )
-                                    @case('servicio_agendamiento')
-                                    <td>Agendamiento</td>
+                                    @switch( $equipamiento->type )
+                                    @case('equipo_biomedico')
+                                    <td>Equipo Biomédico</td>
                                     @break
 
-                                    @case('servicio_archivo_fichero')
-                                    <td>Archivo y Fichero</td>
+                                    @case('equipo_informatico')
+                                    <td>Equipo Informático</td>
                                     @break
 
-                                    @case('servicio_farmacia')
-                                    <td>Farmacia</td>
+                                    @case('equipo_mobiliario')
+                                    <td>Equipo Mobiliario</td>
                                     @break
 
                                     @default
                                     <td>Sin tipo</td>
                                     @endswitch
 
-                                    <td>{{ $apoyoAdministrativo->cost }}</td>
+                                    <td>{{ $equipamiento->cost }}</td>
                                     <td>
                                         <a class="btn btn-primary btn-circle"
-                                            href="{{ route('proyectos-epc-ap_admins.edit',$apoyoAdministrativo->id) }}"><i
+                                            href="{{ route('proyectos-epc-equipamientos.edit',$equipamiento->id) }}"><i
                                                 class="far fa-edit"></i></a>
                                         </i></a>
                                         {!! Form::open(['route' =>
-                                        ['proyectos-epc-ap_admins.destroy',$apoyoAdministrativo->id], 'method' =>
-                                        'DELETE',
+                                        ['proyectos-epc-equipamientos.destroy',$equipamiento->id], 'method' => 'DELETE',
                                         'style'=>'display:inline']) !!}
                                         <button class="btn btn-danger btn-circle"
-                                            onclick="return confirm('Estas seguro de eliminar {{$apoyoAdministrativo->item}}. Si lo eliminas también eliminarás los datos asociados a el.')">
+                                            onclick="return confirm('Estas seguro de eliminar {{$equipamiento->item}}. Si lo eliminas también eliminarás los datos asociados a el.')">
                                             <i class="fa fa-trash"></i>
                                         </button>
                                         {!! Form::close() !!}
