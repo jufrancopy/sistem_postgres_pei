@@ -29,9 +29,7 @@
                                     {!! Form::text('nombre',null, ['class'=>'form-control','placeholder'=>'Buscar
                                     Organigrama']) !!}
                                 </div>
-
                                 <button type="submit" class="btn btn-default pull-right">Buscar</button>
-
                             </div>
 
                             {!!Form::close()!!}

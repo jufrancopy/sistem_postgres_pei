@@ -15,7 +15,7 @@ class ServicioController extends Controller
 {
     public function index(Request $request)
     {
-        $servicios = Servicio::all();
+        $servicios = Servicio::with('cantidad')->all();
 
         return view('admin.proyectos.epc.servicios.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
@@ -71,7 +71,7 @@ class ServicioController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
-        // dd($request);
+        
         $equipamientoCantidadAttach = [];
         foreach ($request->equipamientos as $key => $equipamiento) {
             $equipamientoCantidadAttach[$equipamiento] = ['cantidad' => $request->cantidadesEquipamientos[$key]];
@@ -100,15 +100,14 @@ class ServicioController extends Controller
 
     public function show($id)
     {
-        $servicio = Servicio::find($id);
-
-        return view('admin.proyectos.epc.servicios.show', get_defined_vars());
+        $servicio = Servicio::findOrFail($id);
+        
+       return view('admin.proyectos.epc.servicios.show', get_defined_vars());
     }
 
     public function edit($id)
     {
         $servicio = Servicio::find($id);
-
         $equipamientoCantidad = $servicio->equipamientos->toArray();
         $tthhCantidad = $servicio->tthhs->toArray();    
         $infraestructuraCantidad = $servicio->infraestructuras->toArray();

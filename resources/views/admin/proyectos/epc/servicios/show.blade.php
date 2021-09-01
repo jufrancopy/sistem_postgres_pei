@@ -41,12 +41,15 @@
                     <div class="card-body">
                         <div class="table-responsive">
                             <label>Equipamientos: </label>
+                            {{$servicio->equipamientos()->sum('cantidad')}}   
                             <table class="table">
                                 <thead>
                                     <tr class="table-success">
                                         <td width="20%">Item</td>
                                         <td>Tipo</td>
-                                        <td>Costo</td>
+                                        <td>Cantidad</td>
+                                        <td>Precio Unitario</td>
+                                        <td>Precio Total</td>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -69,28 +72,39 @@
                                         @default
                                         <td>Sin tipo</td>
                                         @endswitch
+                                        <td>{{$equipamiento->pivot->cantidad}}</td>
                                         <td>{{$equipamiento->cost}}</td>
-                                    </tr>
-                                    @endforeach
+                                        @php
+                                            $subtotal = $equipamiento->pivot->cantidad * $equipamiento->cost;
+                                            $totalEquipamiento+=$subtotal;
+                                        @endphp
+                                        <td>{{$subtotal}}</td> 
+                                        @endforeach    
+                                    </tr>                                
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <th colspan=2>Total</th>
-                                        <th>{{$equipamiento->sum('cost')}}</th>
+                                        <th colspan=4>Total Equipamientos</th>
+                                        <td>{{$totalEquipamiento}}</td>    
                                     </tr>
                                 </tfoot>
+                                
                             </table>
+
+                            
 
                             <table class="table">
                                 <thead>
                                     <tr class="table-success">
                                         <td width="20%">Item</td>
                                         <td>Tipo</td>
-                                        <td>Costo</td>
+                                        <td>Cantidad</td>
+                                        <td>Precio Unitario</td>
+                                        <td>Precio Total</td>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($servicio->tthh as $talentoHumano)
+                                    @foreach($servicio->tthhs as $talentoHumano)
                                     <tr>
                                         <td>{{$talentoHumano->item}}</td>
                                         @switch($talentoHumano->type)
@@ -109,14 +123,19 @@
                                         @default
                                         <td>Sin tipo</td>
                                         @endswitch
-                                        <td>{{$equipamiento->cost}}</td>
-                                    </tr>
-                                    @endforeach
+                                        <td>{{$talentoHumano->pivot->cantidad}}</td>
+                                        <td>{{$talentoHumano->cost}}</td>
+                                        @php
+                                            $subtotal = $talentoHumano->pivot->cantidad * $talentoHumano->cost;
+                                            $totalTalentoHumano+=$subtotal;
+                                        @endphp
+                                        <td>{{$subtotal}}</td> 
+                                        @endforeach   
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <th colspan=2>Total</th>
-                                        <th>{{$talentoHumano->sum('cost')}}</th>
+                                        <th colspan=4>Total Talentos Humanos</th>
+                                        <td>{{$totalTalentoHumano}}</td>  
                                     </tr>
                                 </tfoot>
                             </table>
