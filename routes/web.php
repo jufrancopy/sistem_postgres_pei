@@ -85,6 +85,7 @@ Route::group(['middleware' => ['auth']], function () {
     //Apoyo Administrativo
     Route::resource('proyectos-epc-ap_admins', 'Admin\Proyectos\EPC\ApoyoAdministrativoController');
     Route::get('proyectos-epc-ap_admin/{type}', 'Admin\Proyectos\EPC\ApoyoAdministrativoController@getForType')->name('apoyo_administrativos');
+    Route::get('apoyo-administrativos/get',         'Admin\Proyectos\EPC\ApoyoAdministrativoController@get')->name('apoyoAdministrativos.get');
 
     // Infraestructuras
     Route::resource('proyectos-epc-infraestructuras', 'Admin\Proyectos\EPC\InfraestructuraController');
@@ -94,6 +95,7 @@ Route::group(['middleware' => ['auth']], function () {
     // Otros Servicios
     Route::resource('proyectos-epc-otros_servs', 'Admin\Proyectos\EPC\OtroServicioController');
     Route::get('proyectos-epc-otros_serv/{type}', 'Admin\Proyectos\EPC\OtroServicioController@getForType')->name('otros-servicios');
+    Route::get('otro-servicios/get',         'Admin\Proyectos\EPC\OtroServicioController@get')->name('otro-servicios.get');
 
     // Medicamento e Insumos
     Route::resource('proyectos-epc-mds_ins', 'Admin\Proyectos\EPC\MedicamentoInsumoController');

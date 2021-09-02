@@ -6,6 +6,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'ApoyoAdministrativoTableSeeder' => $baseDir . '/database/seeds/ApoyoAdministrativoTableSeeder.php',
     'App\\Admin\\Globales\\Formulario\\Clasificador' => $baseDir . '/app/Admin/Globales/Formulario/Clasificador.php',
     'App\\Admin\\Globales\\Formulario\\Formulario' => $baseDir . '/app/Admin/Globales/Formulario/Formulario.php',
     'App\\Admin\\Globales\\Formulario\\Item' => $baseDir . '/app/Admin/Globales/Formulario/Item.php',
@@ -30,7 +31,6 @@ return array(
     'App\\Admin\\Proyecto\\EPC\\MedicamentoInsumo' => $baseDir . '/app/Admin/Proyecto/EPC/MedicamentoInsumo.php',
     'App\\Admin\\Proyecto\\EPC\\OtroServicio' => $baseDir . '/app/Admin/Proyecto/EPC/OtroServicio.php',
     'App\\Admin\\Proyecto\\EPC\\Servicio' => $baseDir . '/app/Admin/Proyecto/EPC/Servicio.php',
-    'App\\Admin\\Proyecto\\EPC\\ServicioEquipamientoCantidad' => $baseDir . '/app/Admin/Proyecto/EPC/ServicioEquipamientoCantidad.php',
     'App\\Admin\\Proyecto\\EPC\\TalentoHumano' => $baseDir . '/app/Admin/Proyecto/EPC/TalentoHumano.php',
     'App\\ClasesPersonalizadas\\Pdf' => $baseDir . '/app/ClasesPersonalizadas/Pdf.php',
     'App\\ClasesPersonalizadas\\Table' => $baseDir . '/app/ClasesPersonalizadas/Table.php',
@@ -2214,6 +2214,7 @@ return array(
     'Opis\\Closure\\SelfReference' => $vendorDir . '/opis/closure/src/SelfReference.php',
     'Opis\\Closure\\SerializableClosure' => $vendorDir . '/opis/closure/src/SerializableClosure.php',
     'OrganigramasTableSeeder' => $baseDir . '/database/seeds/OrganigramasTableSeeder.php',
+    'OtroServicioTableSeeder' => $baseDir . '/database/seeds/OtroServicioTableSeeder.php',
     'PHPUnit\\Exception' => $vendorDir . '/phpunit/phpunit/src/Exception.php',
     'PHPUnit\\Framework\\Assert' => $vendorDir . '/phpunit/phpunit/src/Framework/Assert.php',
     'PHPUnit\\Framework\\AssertionFailedError' => $vendorDir . '/phpunit/phpunit/src/Framework/Exception/AssertionFailedError.php',

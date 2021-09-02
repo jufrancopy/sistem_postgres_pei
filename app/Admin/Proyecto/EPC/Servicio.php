@@ -32,5 +32,17 @@ class Servicio extends Model
             ->withPivot('cantidad');
     }
 
+    public function apoyoAdministrativos()
+    {
+        return $this->belongsToMany('App\Admin\Proyecto\EPC\ApoyoAdministrativo', 'proyecto.e_p_c_apoyo_administrativo_servicio', 'servicio_id', 'apoyo_administrativo_id')
+            ->withPivot('cantidad');
+    }
+
+    public function otroServicios()
+    {
+        return $this->belongsToMany('App\Admin\Proyecto\EPC\OtroServicio', 'proyecto.e_p_c_otro_servicio_servicio', 'servicio_id', 'otro_servicio_id')
+            ->withPivot('cantidad');
+    }
+
     
 }

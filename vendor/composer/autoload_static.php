@@ -492,6 +492,7 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
     );
 
     public static $classMap = array (
+        'ApoyoAdministrativoTableSeeder' => __DIR__ . '/../..' . '/database/seeds/ApoyoAdministrativoTableSeeder.php',
         'App\\Admin\\Globales\\Formulario\\Clasificador' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Clasificador.php',
         'App\\Admin\\Globales\\Formulario\\Formulario' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Formulario.php',
         'App\\Admin\\Globales\\Formulario\\Item' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Item.php',
@@ -516,7 +517,6 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         'App\\Admin\\Proyecto\\EPC\\MedicamentoInsumo' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/MedicamentoInsumo.php',
         'App\\Admin\\Proyecto\\EPC\\OtroServicio' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/OtroServicio.php',
         'App\\Admin\\Proyecto\\EPC\\Servicio' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/Servicio.php',
-        'App\\Admin\\Proyecto\\EPC\\ServicioEquipamientoCantidad' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/ServicioEquipamientoCantidad.php',
         'App\\Admin\\Proyecto\\EPC\\TalentoHumano' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/TalentoHumano.php',
         'App\\ClasesPersonalizadas\\Pdf' => __DIR__ . '/../..' . '/app/ClasesPersonalizadas/Pdf.php',
         'App\\ClasesPersonalizadas\\Table' => __DIR__ . '/../..' . '/app/ClasesPersonalizadas/Table.php',
@@ -2700,6 +2700,7 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         'Opis\\Closure\\SelfReference' => __DIR__ . '/..' . '/opis/closure/src/SelfReference.php',
         'Opis\\Closure\\SerializableClosure' => __DIR__ . '/..' . '/opis/closure/src/SerializableClosure.php',
         'OrganigramasTableSeeder' => __DIR__ . '/../..' . '/database/seeds/OrganigramasTableSeeder.php',
+        'OtroServicioTableSeeder' => __DIR__ . '/../..' . '/database/seeds/OtroServicioTableSeeder.php',
         'PHPUnit\\Exception' => __DIR__ . '/..' . '/phpunit/phpunit/src/Exception.php',
         'PHPUnit\\Framework\\Assert' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert.php',
         'PHPUnit\\Framework\\AssertionFailedError' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Exception/AssertionFailedError.php',

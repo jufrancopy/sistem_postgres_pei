@@ -24,6 +24,15 @@ class OtroServicioController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
+    public function get(Request $request)
+    {
+        $rows = OtroServicio::where(\DB::raw("lower(item)"), 'like', '%' . mb_strtolower($request->q) . '%')
+            ->select('item AS text', 'id')
+            ->orderBy('item')->limit(25)->get();
+
+        return response()->json($rows);
+    }
+
     public function getForType(Request $request, $type)
     {
 

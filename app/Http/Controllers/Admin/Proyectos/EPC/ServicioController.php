@@ -15,7 +15,7 @@ class ServicioController extends Controller
 {
     public function index(Request $request)
     {
-        $servicios = Servicio::with('cantidad')->all();
+        $servicios = Servicio::all();
 
         return view('admin.proyectos.epc.servicios.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
@@ -87,11 +87,23 @@ class ServicioController extends Controller
             $infraestructuraCantidadAttach[$infraestructura] = ['cantidad' => $request->cantidadesInfraestructuras[$key]];
         }
 
-        $servicio = Servicio::create($request->except(['equipamiento_id','tthh_id', 'infraestructura_id']));
+        $apoyoAdministrativoCantidadAttach = [];
+        foreach ($request->apoyoAdministrativos as $key => $apoyoAdministrativo) {
+            $apoyoAdministrativoCantidadAttach[$apoyoAdministrativo] = ['cantidad' => $request->cantidadesApoyoAdministrativos[$key]];
+        }
+
+        $otroServicioCantidadAttach = [];
+        foreach ($request->otroServicios as $key => $otroServicio) {
+            $otroServicioCantidadAttach[$otroServicio] = ['cantidad' => $request->cantidadesOtroServicios[$key]];
+        }
+
+        $servicio = Servicio::create($request->all());
         
         $servicio->equipamientos()->attach($equipamientoCantidadAttach);
         $servicio->tthhs()->attach($tthhCantidadAttach);
         $servicio->infraestructuras()->attach($infraestructuraCantidadAttach);
+        $servicio->apoyoAdministrativos()->attach($apoyoAdministrativoCantidadAttach);
+        $servicio->otroServicios()->attach($otroServicioCantidadAttach);
 
 
         return redirect()->route('proyectos-epc-servicios.index')
@@ -107,10 +119,12 @@ class ServicioController extends Controller
 
     public function edit($id)
     {
-        $servicio = Servicio::find($id);
+        $servicio = Servicio::findOrFail($id);
         $equipamientoCantidad = $servicio->equipamientos->toArray();
         $tthhCantidad = $servicio->tthhs->toArray();    
         $infraestructuraCantidad = $servicio->infraestructuras->toArray();
+        $apoyoAdministrativoCantidad = $servicio->apoyoAdministrativos->toArray();
+        $otroServicioCantidad = $servicio->otroServicios->toArray();
         
         
         return view('admin.proyectos.epc.servicios.edit', get_defined_vars());
@@ -118,31 +132,42 @@ class ServicioController extends Controller
 
     public function update(Request $request, $id)
     {
-        $equipamientoCantidadAttach = [];
+        $equipamientoCantidadSync = [];
         foreach ($request->equipamientos as $key => $equipamiento) {
-            $equipamientoCantidadAttach[$equipamiento] = ['cantidad' => $request->cantidadesEquipamientos[$key]];
+            $equipamientoCantidadSync[$equipamiento] = ['cantidad' => $request->cantidadesEquipamientos[$key]];
         }
 
-        $tthhCantidadAttach = [];
+        $tthhCantidadSync = [];
         foreach ($request->tthhs as $key => $tthh) {
-            $tthhCantidadAttach[$tthh] = ['cantidad' => $request->cantidadesTthh[$key]];
+            $tthhCantidadSync[$tthh] = ['cantidad' => $request->cantidadesTthh[$key]];
         }
 
-        $infraestructuraCantidadAttach = [];
+        $infraestructuraCantidadSync = [];
         foreach ($request->infraestructuras as $key => $infraestructura) {
-            $infraestructuraCantidadAttach[$infraestructura] = ['cantidad' => $request->cantidadesInfraestructuras[$key]];
+            $infraestructuraCantidadSync[$infraestructura] = ['cantidad' => $request->cantidadesInfraestructuras[$key]];
+        }
+
+        $apoyoAdministrativoCantidadSync = [];
+        foreach ($request->apoyoAdministrativos as $key => $apoyoAdministrativo) {
+            $apoyoAdministrativoCantidadSync[$apoyoAdministrativo] = ['cantidad' => $request->cantidadesApoyoAdministrativos[$key]];
+        }
+
+        $otroServicioCantidadSync = [];
+        foreach ($request->otroServicios as $key => $otroServicio) {
+            $otroServicioCantidadSync[$otroServicio] = ['cantidad' => $request->cantidadesOtroServicios[$key]];
         }
 
         $servicio = Servicio::find($id);
-        $servicio->fill($request->except(['equipamiento_id', 'tthh_id', 'infraestructura_id']))->save();
+        $servicio->fill($request->all())->save();
 
-        $servicio->equipamientos()->sync($equipamientoCantidadAttach);
-        $servicio->tthhs()->sync($tthhCantidadAttach);
-        $servicio->infraestructuras()->sync($infraestructuraCantidadAttach);
+        $servicio->equipamientos()->sync($equipamientoCantidadSync);
+        $servicio->tthhs()->sync($tthhCantidadSync);
+        $servicio->infraestructuras()->sync($infraestructuraCantidadSync);
+        $servicio->apoyoAdministrativos()->sync($apoyoAdministrativoCantidadSync);
+        $servicio->otroServicios()->sync($otroServicioCantidadSync);
 
 
-
-        return redirect()->route('proyectos-epc-servicios.index')
+        return redirect()->route('proyectos-epc-servicios.show', $servicio->id)
             ->with('info', 'Servicio Actualizado Satisfactoriamente');
     }
 

@@ -7,7 +7,7 @@
 				<div class="card">
 					<div class="card-header card-header-info">
 					<h4 class="card-title ">Editar {{$servicio->item}}</h4>
-					<a class="btn btn-warning" href="{{ route('proyectos-epc-servicios.index') }}">
+					<a class="btn btn-warning" href="{{ route('proyectos-epc-home') }}">
 						Atras</a>
 					</div>
 					<div class="card-body">
