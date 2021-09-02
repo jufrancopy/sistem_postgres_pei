@@ -35,7 +35,7 @@ class Pei extends Model
 
     public function parent()
     {
-        return $this->hasOne('App\Admin\Planificacion\Pei\Pei', 'id', 'nivel_id');
+        return $this->belongsTo('App\Admin\Planificacion\Pei\Pei', 'id', 'nivel_id');
     }
 
     public function dependencies(){

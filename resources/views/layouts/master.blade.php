@@ -17,21 +17,17 @@
       <!-- Contenido Principal -->
       <div class="content">
         <div class="container-fluid">
-
           @if(session('info'))
-          <div class="container">
-            <div class="row">
+          <div class="row">
               <div class="col-md-12">
                 <div class="alert alert-success">
                   {{session('info')}}
                 </div>
               </div>
             </div>
-          </div>
           @endif
           @if(count($errors))
-          <div class="container">
-            <div class="row">
+          div class="row">
               <div class="col-md-12">
                 <div class="alert alert-danger">
                   <ul>
@@ -42,7 +38,6 @@
                 </div>
               </div>
             </div>
-          </div>
           @endif
           <main class="py-4">
             

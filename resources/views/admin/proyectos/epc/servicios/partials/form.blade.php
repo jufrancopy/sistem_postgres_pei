@@ -1,9 +1,15 @@
 {{ Form::hidden('user_id', auth()->user()->id) }}
 
 <div class="form-group">
-	{{ Form::label('item', 'Nombre:')	}}
-	{{ Form::text('item', null,['class'=>'form-control','id'=>'formulario'])	}}
+	{{	Form::label('turno', 'Turno')	}}
+	{{	Form::select('type', array(
+			'mañana' => 'Mañana',
+			'siesta' => 'Siesta',
+			'tarde' => 'Tarde',
+			'noche' => 'Noche'),
+			null, ['class' => 'form-control', 'id'=>'especialidades', 'placeholder'=>'Elija Dirección'])	}}
 </div>
+
 
 <div class="form-group">
 	{{ Form::label('type', 'Tipo')	}}
@@ -11,6 +17,11 @@
 			'final' => 'Final',
 			'de_apoyo' => 'De Apoyo'),
 			null, ['class' => 'form-control'])	}}
+</div>
+
+<div class="form-group">
+	{{ Form::label('turno', 'Turno:')	}}
+	{{ Form::select('turno', null,['class'=>'form-control','id'=>'formulario'])	}}
 </div>
 
 <div class="form-group">

@@ -20,9 +20,9 @@
                     </div>
 
                     <div class="card-body">
-                    <h3>{{$pei->vision}}</h3>
-                    <h3>{{$pei->mision}}</h3>
-                    <h3>{{$pei->valores}}</h3>
+                    <h3><label for="">Misión: </label>{{$pei->vision}}</h3>
+                    <h3><label for="">Visión:</label>{{$pei->mision}}</h3>
+                    <h3><label for="">Valores</label> {{$pei->valores}}</h3>
                         </ul>
                         <ul>
                             @foreach ($niveles as $nivel)
