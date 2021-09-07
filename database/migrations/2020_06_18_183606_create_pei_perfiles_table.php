@@ -13,13 +13,6 @@ class CreatePeiPerfilesTable extends Migration
      */
     public function up()
     {
-        
-
-        Schema::table('planificacion.pei_perfiles', function (Blueprint $table) {
-            //
-        });
-
-
         Schema::create('planificacion.pei_perfiles', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('nombre');
@@ -28,11 +21,11 @@ class CreatePeiPerfilesTable extends Migration
             $table->text('valores');
             $table->integer('vigencia');
 
-
             $table->unsignedInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
+
             $table->timestamps();
         });
     }

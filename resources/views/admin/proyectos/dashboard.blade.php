@@ -68,7 +68,7 @@
         {
             name: 'Estándares por Complejidad',
             children: [
-                { name: '<a href="{{route('proyectos-epc-home')}}">Ver</a>'},
+                { name: "<a href='{{route('proyectos-epc-home')}}'>Ver</a>"},
             ]
         },    
 

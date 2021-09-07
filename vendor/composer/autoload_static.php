@@ -492,7 +492,6 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
     );
 
     public static $classMap = array (
-        'ApoyoAdministrativoTableSeeder' => __DIR__ . '/../..' . '/database/seeds/ApoyoAdministrativoTableSeeder.php',
         'App\\Admin\\Globales\\Formulario\\Clasificador' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Clasificador.php',
         'App\\Admin\\Globales\\Formulario\\Formulario' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Formulario.php',
         'App\\Admin\\Globales\\Formulario\\Item' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Item.php',
@@ -510,7 +509,6 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         'App\\Admin\\Planificacion\\Pei\\PeiPerfil' => __DIR__ . '/../..' . '/app/Admin/Planificacion/Pei/PeiPerfil.php',
         'App\\Admin\\Planificacion\\Pei\\PeiPrograma' => __DIR__ . '/../..' . '/app/Admin/Planificacion/Pei/PeiPrograma.php',
         'App\\Admin\\Product' => __DIR__ . '/../..' . '/app/Admin/Product.php',
-        'App\\Admin\\Proyecto\\EPC\\ApoyoAdministrativo' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/ApoyoAdministrativo.php',
         'App\\Admin\\Proyecto\\EPC\\Equipamiento' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/Equipamiento.php',
         'App\\Admin\\Proyecto\\EPC\\Especialidad' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/Especialidad.php',
         'App\\Admin\\Proyecto\\EPC\\Infraestructura' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/Infraestructura.php',
@@ -545,7 +543,6 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         'App\\Http\\Controllers\\Admin\\Planificacion\\Pei\\PeiCuadroDeMandoController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Planificacion/Pei/PeiCuadroDeMandoController.php',
         'App\\Http\\Controllers\\Admin\\Planificacion\\PlanificacionController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Planificacion/PlanificacionController.php',
         'App\\Http\\Controllers\\Admin\\ProductController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/ProductController.php',
-        'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\ApoyoAdministrativoController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Proyectos/EPC/ApoyoAdministrativoController.php',
         'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\EPCController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Proyectos/EPC/EPCController.php',
         'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\EquipamientoController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Proyectos/EPC/EquipamientoController.php',
         'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\EspecialidadController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Proyectos/EPC/EspecialidadController.php',

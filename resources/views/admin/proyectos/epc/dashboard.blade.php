@@ -22,11 +22,10 @@
                     <i class="material-icons">faces</i>
                   </div>
                   <p class="card-category">Servicios Finales</p>
-                  <h3 class="card-title">{{App\Admin\Proyecto\EPC\Servicio::where('type', 'final')->count()}}</h3>
+                  <h3 class='btn btn-danger btn-circle'>{{App\Admin\Proyecto\EPC\Servicio::where('type', 'final')->count()}}</h3>
                 </div>
                 <div class="card-footer">
                   <div class="stats">
-
                     <i class="material-icons">search</i>
                     <a href="{{route('servicios', 'final')}}">Ver todo</a>
                   </div>
@@ -45,105 +44,200 @@
                     <h3 class='btn btn-danger btn-circle'>{{App\Admin\Proyecto\EPC\Servicio::where('type', 'de_apoyo')->count()}}</h3>
                   </a>
                 </div>
+                <div class="card-footer">
+                  <div class="stats">
+                    <i class="material-icons">search</i>
+                    <a href="{{route('servicios', 'final')}}">Ver todo</a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <p id="tree1"></p>
+          <div class="container-fluid">
+
+            <div class="row">
+              <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4">
+
+                <div class="card" style="background-color:#d5a3f7;">
+                  <div class="card-header" style="background-color:#cffc6f;">
+                    <h3>Recursos</h3>
+                  </div>
+                  <p id="tree1" class="p-3 mb-2 text-white"></p>
+                </div>
+
+              </div>
+              <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4">
+                <div class="card" style="background-color:#d5a3f7;">
+
+                  <div class="card-header" style="background-color:#cffc6f;">
+                    <h3>Generales</h3>
+                  </div>
+                  <p id="tree2" class="p-3 mb-2 text-white">
+
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-@section('scripts')
-<script>
-  var data = [
-        {
-            name: "Talentos Humanos | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-tthh.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
-            children: [
-                { name: "<a href='{{route('proyectos-epc-tthh.index')}}'>Listar</a>"},
-            ]
-        },    
+  @section('scripts')
+  <script>
+    var column1 = [{
+        name: "Talentos Humanos | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-tthh.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
+        children: [{
+          name: "<a class='text-white' href='{{route('proyectos-epc-tthh.index')}}'>Listar</a>"
+        }, ]
+      },
 
-        {
-            name: "Equipamientos | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-equipamientos.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
-            children: [
-              { name: "<a href='{{route('equipamientos', 'all')}}'>Listar </a>"},
-                { name: "<a href='{{route('equipamientos', 'equipo_informatico')}}'>Informático</a>"},
-                { name: "<a href='{{route('equipamientos', 'equipo_biomedico')}}'>Biomédicos</a>"},
-                { name: "<a href='{{route('equipamientos', 'equipo_mobiliario')}}'>Mobiliarios</a>"},
-                
-                
-            ]
-        },
+      {
+        name: "Equipamientos | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-equipamientos.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
+        children: [{
+            name: "<a class='text-white' href='{{route('equipamientos', 'all')}}'>Listar </a>"
+          },
+          {
+            name: "<a class='text-white'  href='{{route('equipamientos', 'equipo_informatico')}}'>Informático</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('equipamientos', 'equipo_biomedico')}}'>Biomédicos</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('equipamientos', 'equipo_mobiliario')}}'>Mobiliarios</a>"
+          },
 
-        {
-            name: "Medicamento y Productos Médicos | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-mds_ins.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
-            children: [
-                { name: "<a href='{{route('medicamentos-insumos', 'all')}}'>Listar</a>"},
-                { name: "<a href='{{route('medicamentos-insumos', 'medicamento')}}'>Medicamentos</a>"},
-                { name: "<a href='{{route('medicamentos-insumos', 'insumo')}}'>Insumos</a>"},
-                { name: "<a href='{{route('medicamentos-insumos', 'util_de_laboratorio')}}'>Utiles de Laboratorio</a>"},
-                { name: "<a href='{{route('medicamentos-insumos', 'material_quirurgico')}}'>Materiales Quirúrgicos</a>"},
-                { name: "<a href='{{route('medicamentos-insumos', 'producto_quimico')}}'>Productos Químicos</a>"},
-            ]
-        },
 
-        {
-            name: "Apoyo Administrativo | <a class'btn btn-success btn-circle' href='{{route('proyectos-epc-ap_admins.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
-            children: [
-                { name: "<a href='{{route('apoyo_administrativos', 'all')}}'>Listar</a>"},
-                { name: "<a href='{{route('apoyo_administrativos', 'servicio_agendamiento')}}'>Agendamiento</a>"},
-                { name: "<a href='{{route('apoyo_administrativos', 'servicio_archivo_fichero')}}'>Archivos - Ficheros</a>"},
-                { name: "<a href='{{route('apoyo_administrativos', 'servicio_farmacia')}}'>Farmacia</a>"},
-            ]
-        },
+        ]
+      },
 
-        {
-            name: "Infraestructura | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-infraestructuras.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a",
-            children: [
-                { name: "<a href='{{route('infraestructuras', 'all')}}'>Listar</a>"},
-                { name: "<a href='{{route('infraestructuras', 'servicio')}}'>Servicio</a>"},
-                { name: "<a href='{{route('infraestructuras', 'ambulatorio')}}'>Ambulatorio</a>"},
-                { name: "<a href='{{route('infraestructuras', 'administrativo')}}'>Administrativo</a>"},
-                { name: "<a href='{{route('infraestructuras', 'hospitalizacion')}}'>Hospitalización</a>"},
-                { name: "<a href='{{route('infraestructuras', 'quirurgico')}}'>Quirúrgico</a>"},
-            ]
-        },
+      {
+        name: "Medicamento y Productos Médicos | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-mds_ins.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
+        children: [{
+            name: "<a class='text-white' href='{{route('medicamentos-insumos', 'all')}}'>Listar</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('medicamentos-insumos', 'medicamento')}}'>Medicamentos</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('medicamentos-insumos', 'insumo')}}'>Insumos</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('medicamentos-insumos', 'util_de_laboratorio')}}'>Utiles de Laboratorio</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('medicamentos-insumos', 'material_quirurgico')}}'>Materiales Quirúrgicos</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('medicamentos-insumos', 'producto_quimico')}}'>Productos Químicos</a>"
+          },
+        ]
+      },
 
-        {
-            name: "Especialidades | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-especialidades.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
-            children: [
-                { name: "<a href='{{route('especialidades', 'all')}}'>Listar</a>"},
-                { name: "<a href='{{route('especialidades', 'primer_nivel')}}'>Primer Nivel</a>"},
-                { name: "<a href='{{route('especialidades', 'segundo_nivel')}}'>Segundo Nivel</a>"},
-                { name: "<a href='{{route('especialidades', 'tercer_nivel')}}'>Tercer Nivel</a>"},
-            ]
-        },
+      {
+        name: "Infraestructura | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-infraestructuras.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a",
+        children: [{
+            name: "<a class='text-white' href='{{route('infraestructuras', 'all')}}'>Listar</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('infraestructuras', 'servicio')}}'>Servicio</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('infraestructuras', 'ambulatorio')}}'>Ambulatorio</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('infraestructuras', 'administrativo')}}'>Administrativo</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('infraestructuras', 'hospitalizacion')}}'>Hospitalización</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('infraestructuras', 'quirurgico')}}'>Quirúrgico</a>"
+          },
+        ]
+      },
 
-        {
-            name: "Otros Servicios | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-otros_servs.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
-            children: [
-                { name: "<a href='{{route('otros-servicios', 'all')}}'>Listar</a>"},
-                { name: "<a href='{{route('otros-servicios', 'limpieza')}}'>Limpieza</a>"},
-                { name: "<a href='{{route('otros-servicios', 'seguridad')}}'>Seguridad</a>"},
-                { name: "<a href='{{route('otros-servicios', 'gastronomia')}}'>Gastronomía</a>"},
-                { name: "<a href='{{route('otros-servicios', 'ambulancia')}}'>Ambulancia</a>"},
-            ]
-        },
-        ];
+      {
+        name: "Otros Servicios | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-otros_servs.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
+        children: [{
+            name: "<a class='text-white' href='{{route('otros-servicios', 'all')}}'>Listar</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('otros-servicios', 'limpieza')}}'>Limpieza</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('otros-servicios', 'seguridad')}}'>Seguridad</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('otros-servicios', 'gastronomia')}}'>Gastronomía</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('otros-servicios', 'ambulancia')}}'>Ambulancia</a>"
+          },
+        ]
+      },
+
+      {
+        name: "Turnos | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-otros_servs.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
+        children: [{
+            name: "<a class='text-white' href='{{route('otros-servicios', 'all')}}'>Listar</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('otros-servicios', 'limpieza')}}'>Limpieza</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('otros-servicios', 'seguridad')}}'>Seguridad</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('otros-servicios', 'gastronomia')}}'>Gastronomía</a>"
+          },
+          {
+            name: "<a class='text-white' href='{{route('otros-servicios', 'ambulancia')}}'>Ambulancia</a>"
+          },
+        ]
+      },
+
+    ];
+
+    var column2 = [{
+        name: "Horarios | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-equipamientos.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
+        children: [{
+          name: "<a class='text-white' href='{{route('equipamientos', 'all')}}'>Listar </a>"
+        }, ],
+      },
+
+      {
+        name: "Turnos | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-otros_servs.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
+        children: [{
+          name: "<a class='text-white' href='{{route('otros-servicios', 'all')}}'>Listar</a>"
+        }, ]
+      },
+    ];
 
     $('#tree1').tree({
-        data: data,
-        autoEscape: false,
-        saveState: true,
-        closedIcon: $('<i class="fas fa-arrow-circle-right"></i>'),
-        openedIcon: $('<i class="fas fa-arrow-circle-down"></i>'),
-        autoOpen: true,
-        openFolderDelay: 1000,
-        dragAndDrop: true
+      data: column1,
+      autoEscape: false,
+      saveState: true,
+      closedIcon: $('<i class="fas fa-arrow-circle-right"></i>'),
+      openedIcon: $('<i class="fas fa-arrow-circle-down"></i>'),
+      autoOpen: true,
+      openFolderDelay: 1000,
+      dragAndDrop: true
     });
-</script>
-@endsection
 
-@endsection
+    $('#tree2').tree({
+      data: column2,
+      autoEscape: false,
+      saveState: true,
+      closedIcon: $('<i class="fas fa-arrow-circle-right"></i>'),
+      openedIcon: $('<i class="fas fa-arrow-circle-down"></i>'),
+      autoOpen: true,
+      openFolderDelay: 1000,
+      dragAndDrop: true
+    });
+  </script>
+  @endsection
+
+  @endsection

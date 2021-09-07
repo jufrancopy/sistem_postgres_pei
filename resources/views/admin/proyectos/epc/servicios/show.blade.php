@@ -201,53 +201,6 @@
                                 </tfoot>
                             </table>
 
-                            <label>Apoyo Administrativos: </label>
-                            {{$servicio->apoyoAdministrativos()->sum('cantidad')}}
-                            <table class="table">
-                                <thead>
-                                    <tr class="table-success">
-                                        <td width="20%">Item</td>
-                                        <td>Tipo</td>
-                                        <td>Cantidad</td>
-                                        <td>Precio Unitario</td>
-                                        <td>Precio Total</td>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($servicio->apoyoAdministrativos as $apoyoAdministrativo)
-                                    <tr>
-                                        <td>{{$apoyoAdministrativo->item}}</td>
-                                        @switch($apoyoAdministrativo->type)
-                                        @case('servicio_agendamiento')
-                                        <td>Agendamiento</td>
-                                        @break
-                                        @case('servicio_archivo_fichero')
-                                        <td>Archivos y Ficheros</td>
-                                        @break
-                                        @case('servicio_farmacia')
-                                        <td>Farmacia</td>
-                                        @break
-                                        @default
-                                        <td>Sin tipo</td>
-                                        @endswitch
-                                        <td>{{$apoyoAdministrativo->pivot->cantidad}}</td>
-                                        <td>{{$apoyoAdministrativo->cost}}</td>
-                                        @php
-                                        $subtotal = $apoyoAdministrativo->pivot->cantidad * $apoyoAdministrativo->cost;
-                                        $totalApoyoAdministrativo+=$subtotal;
-                                        @endphp
-                                        <td>{{$subtotal}}</td>
-                                        @endforeach
-                                    </tr>
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <th colspan=4>Total Apoyos y Servicio</th>
-                                        <td>{{$totalApoyoAdministrativo}}</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-
                             <label>Otros Servicios: </label>
                             {{$servicio->otroServicios()->sum('cantidad')}}
                             <table class="table">

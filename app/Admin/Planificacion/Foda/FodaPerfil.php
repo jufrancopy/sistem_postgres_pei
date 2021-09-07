@@ -37,7 +37,7 @@ class FodaPerfil extends Model
         if (trim($nombre) !="")
         {
 
-    $query->where(\DB::raw("CONCAT(nombre, ' ', contexto)"), 'LIKE', "%$nombre%");    
+    $query->where(DB::raw("CONCAT(nombre, ' ', contexto)"), 'LIKE', "%$nombre%");    
         }
         
     }

@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Http\Controllers\Admin\Planificacion\Foda;
-
-use DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+
 use App\Http\Controllers\Controller;
 
 use App\Admin\Planificacion\Foda\FodaAspecto;
@@ -68,7 +69,7 @@ class FodaCruceAmbienteController extends Controller
     {
         $idPerfil = $request->idPerfil;
         $matriz =    0.17;
-
+        
         //Ambiente Interno - Fortaleza
         $fortalezas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
@@ -198,6 +199,7 @@ class FodaCruceAmbienteController extends Controller
         
         //Cruzar Fortaleza - Oprtunidad
         $cruce = FodaCruceAmbiente::create($request->except(['fortaleza_id', 'debilidad_id', 'oportunidad_id', 'amenaza_id']));
+        
         $cruce->fortalezas()->attach($request->fortaleza_id);
         $cruce->oportunidades()->attach($request->oportunidad_id);
         $cruce->debilidades()->attach($request->debilidad_id);
@@ -278,13 +280,13 @@ public function descargarCrucePdf(Request $request, $idPerfil){
         }
 
         $headers = ['Content-Type' => 'application/pdf'];
-        return \Response::make($pdf->Output(),200, $headers);
+        return Response::make($pdf->Output(),200, $headers);
 
     }
     public function edit($id)
     {
         $cruce = FodaCruceAmbiente::find($id);
-
+        
         $idPerfil = $cruce->perfil_id;
         $matriz =    0.17;
 

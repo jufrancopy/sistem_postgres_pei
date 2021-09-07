@@ -3,14 +3,15 @@
 namespace App\Admin\Planificacion\Foda;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class FodaCategoria extends Model
 {
     protected $table = "planificacion.foda_categorias";
 
-    protected $dateFormat = 'Y-m-d H:i:sO';
+    protected $dateFormat = 'Y-m-d H:i:s';
 
-    protected $fillable = ['user_id', 'nombre', 'ambiente', 'modelo_id'];
+    protected $fillable = ['user_id', 'nombre', 'ambiente', 'modelo_id', 'tipo'];
 
     public function perfil()
     {
@@ -31,7 +32,7 @@ class FodaCategoria extends Model
     {
         if (trim($nombre) != "") {
 
-            $query->where(\DB::raw("CONCAT(nombre, ' ', ambiente)"), 'LIKE', "%$nombre%");
+            $query->where(DB::raw("CONCAT(nombre, ' ', ambiente)"), 'LIKE', "%$nombre%");
         }
     }
 }

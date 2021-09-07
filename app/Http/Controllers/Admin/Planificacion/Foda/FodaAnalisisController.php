@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 use App\Http\Controllers\Controller;
-use DB;
+use Illuminate\Support\Facades\DB;
+
 use Illuminate\Database\Eloquent\Builder;
 use Barryvdh\DomPDF\Facade as PDF;
 
@@ -70,8 +71,6 @@ class FodaAnalisisController extends Controller
         return view('admin.planificacion.fodas.analisis.ambientes', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
-
-    
 
     public function aspectosCategoriaEdit(Request $request)
     {

@@ -6,7 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'ApoyoAdministrativoTableSeeder' => $baseDir . '/database/seeds/ApoyoAdministrativoTableSeeder.php',
     'App\\Admin\\Globales\\Formulario\\Clasificador' => $baseDir . '/app/Admin/Globales/Formulario/Clasificador.php',
     'App\\Admin\\Globales\\Formulario\\Formulario' => $baseDir . '/app/Admin/Globales/Formulario/Formulario.php',
     'App\\Admin\\Globales\\Formulario\\Item' => $baseDir . '/app/Admin/Globales/Formulario/Item.php',
@@ -24,7 +23,6 @@ return array(
     'App\\Admin\\Planificacion\\Pei\\PeiPerfil' => $baseDir . '/app/Admin/Planificacion/Pei/PeiPerfil.php',
     'App\\Admin\\Planificacion\\Pei\\PeiPrograma' => $baseDir . '/app/Admin/Planificacion/Pei/PeiPrograma.php',
     'App\\Admin\\Product' => $baseDir . '/app/Admin/Product.php',
-    'App\\Admin\\Proyecto\\EPC\\ApoyoAdministrativo' => $baseDir . '/app/Admin/Proyecto/EPC/ApoyoAdministrativo.php',
     'App\\Admin\\Proyecto\\EPC\\Equipamiento' => $baseDir . '/app/Admin/Proyecto/EPC/Equipamiento.php',
     'App\\Admin\\Proyecto\\EPC\\Especialidad' => $baseDir . '/app/Admin/Proyecto/EPC/Especialidad.php',
     'App\\Admin\\Proyecto\\EPC\\Infraestructura' => $baseDir . '/app/Admin/Proyecto/EPC/Infraestructura.php',
@@ -59,7 +57,6 @@ return array(
     'App\\Http\\Controllers\\Admin\\Planificacion\\Pei\\PeiCuadroDeMandoController' => $baseDir . '/app/Http/Controllers/Admin/Planificacion/Pei/PeiCuadroDeMandoController.php',
     'App\\Http\\Controllers\\Admin\\Planificacion\\PlanificacionController' => $baseDir . '/app/Http/Controllers/Admin/Planificacion/PlanificacionController.php',
     'App\\Http\\Controllers\\Admin\\ProductController' => $baseDir . '/app/Http/Controllers/Admin/ProductController.php',
-    'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\ApoyoAdministrativoController' => $baseDir . '/app/Http/Controllers/Admin/Proyectos/EPC/ApoyoAdministrativoController.php',
     'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\EPCController' => $baseDir . '/app/Http/Controllers/Admin/Proyectos/EPC/EPCController.php',
     'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\EquipamientoController' => $baseDir . '/app/Http/Controllers/Admin/Proyectos/EPC/EquipamientoController.php',
     'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\EspecialidadController' => $baseDir . '/app/Http/Controllers/Admin/Proyectos/EPC/EspecialidadController.php',

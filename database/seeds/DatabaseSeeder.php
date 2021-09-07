@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder
         // $this->call(EspecialidadTableSeeder::class);
         $this->call(TalentoHumanoTableSeeder::class);
         $this->call(InfraestructuraTableSeeder::class);
-        $this->call(ApoyoAdministrativoTableSeeder::class);
         $this->call(OtroServicioTableSeeder::class);
     }
 }
