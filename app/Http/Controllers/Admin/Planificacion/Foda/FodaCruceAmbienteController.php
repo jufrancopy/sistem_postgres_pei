@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Admin\Planificacion\Foda;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-
+use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\Controller;
 
 use App\Admin\Planificacion\Foda\FodaAspecto;
@@ -12,17 +11,13 @@ use App\Admin\Planificacion\Foda\FodaCategoria;
 use App\Admin\Planificacion\Foda\FodaPerfil;
 use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
+
 use Codedge\Fpdf\Fpdf\Fpdf;
 use App\ClasesPersonalizadas\Pdf;
 
-
 class FodaCruceAmbienteController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index(Request $request, $idPerfil)
     {
         $idPerfil = $request->idPerfil;
@@ -197,7 +192,6 @@ class FodaCruceAmbienteController extends Controller
         // $cruces['oportunidad_id'] = implode(',',$request->oportunidad_id);
         // FodaCruceAmbiente::create($cruces);
         
-        //Cruzar Fortaleza - Oprtunidad
         $cruce = FodaCruceAmbiente::create($request->except(['fortaleza_id', 'debilidad_id', 'oportunidad_id', 'amenaza_id']));
         
         $cruce->fortalezas()->attach($request->fortaleza_id);
@@ -267,7 +261,6 @@ public function descargarCrucePdf(Request $request, $idPerfil){
         $pdf->Cell(0,9,utf8_decode($FA),1,true);
         foreach ($FAs as $sample_text){
             $pdf->MultiCellBlt($column_width, 8, chr(149), utf8_decode($sample_text->estategia). ' ' . utf8_decode($sample_text->estrategia));  
-            
         }
 
         $DA = "Estrategias de Supervivencia (DA)" ;   
@@ -342,17 +335,9 @@ public function descargarCrucePdf(Request $request, $idPerfil){
                 $amenazasChecked[] = $v->id;
             }
             
-        
         return view('admin.planificacion.fodas.analisis.cruces.edit', get_defined_vars());
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         $cruce = FodaCruceAmbiente::find($id);
@@ -367,12 +352,6 @@ public function descargarCrucePdf(Request $request, $idPerfil){
             ->with('success', 'Estrategia Creada Satisfactoriamente');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         $cruce = FodaCruceAmbiente::find($id)->delete();

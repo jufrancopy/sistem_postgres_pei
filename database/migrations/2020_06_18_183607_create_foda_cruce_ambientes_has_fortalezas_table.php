@@ -19,8 +19,8 @@ class CreateFodaCruceAmbientesHasFortalezasTable extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->unsignedInteger('categoria_id');
-            $table->foreign('categoria_id')->references('id')->on('planificacion.foda_categorias')
+            $table->unsignedInteger('fortaleza_id');
+            $table->foreign('fortaleza_id')->references('id')->on('planificacion.foda_aspectos')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });

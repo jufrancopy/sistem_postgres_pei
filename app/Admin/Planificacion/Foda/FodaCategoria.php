@@ -9,7 +9,7 @@ class FodaCategoria extends Model
 {
     protected $table = "planificacion.foda_categorias";
 
-    protected $dateFormat = 'Y-m-d H:i:s';
+    // protected $dateFormat = 'Y-m-d H:i:s';
 
     protected $fillable = ['user_id', 'nombre', 'ambiente', 'modelo_id', 'tipo'];
 

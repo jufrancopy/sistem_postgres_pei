@@ -37,8 +37,8 @@
                                 <tbody>
                                     <tr>
                                         <th class="table-danger">Debilidades</th>
-                                        <th  class="table-danger">Amenazas</th>
-                                    </tr>      
+                                        <th class="table-danger">Amenazas</th>
+                                    </tr>
                                     <tr>
                                         <td>
                                             @foreach($debilidades as $v)
@@ -94,10 +94,10 @@
                                     </tr>
 
                                     <tr>
-                                        <th  class="table-success">Fortalezas</th>
-                                        <th  class="table-success">Oportunidades</th>
-                                    </tr> 
-                                    <td >
+                                        <th class="table-success">Fortalezas</th>
+                                        <th class="table-success">Oportunidades</th>
+                                    </tr>
+                                    <td>
                                         @foreach($fortalezas as $v)
                                         <ul>
                                             <li>{{$v->aspecto->nombre}}
@@ -156,10 +156,6 @@
                                 <tfoot>
                                     <tr>
                                         <td colspan="2">
-                                            <a href="{{ route('matriz-foda.pdf', $idPerfil) }}" class="btn btn-sm btn-info">
-                                                Descargar Matriz en PDF
-                                            </a>
-                                            <br />
                                             <a href="{{ route('foda-cruce-ambientes', $idPerfil) }}" class="btn btn-sm btn-info">
                                                 Gestionar Cruce de Ambientes
                                             </a>

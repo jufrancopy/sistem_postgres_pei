@@ -20,5 +20,10 @@ class DatabaseSeeder extends Seeder
         $this->call(TalentoHumanoTableSeeder::class);
         $this->call(InfraestructuraTableSeeder::class);
         $this->call(OtroServicioTableSeeder::class);
+        $this->call(FodaModeloTableSeeder::class);
+        $this->call(FodaCategoriaTableSeeder::class);
+        $this->call(FodaAspectoTableSeeder::class);
+        $this->call(FodaPerfilTableSeeder::class);
+        $this->call(PeiTableSeeder::class);
     }
 }

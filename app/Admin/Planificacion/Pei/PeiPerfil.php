@@ -9,7 +9,7 @@ class PeiPerfil extends Model
 {
     protected $table = 'planificacion.pei_perfiles';
 
-    protected $dateFormat = 'Y-m-d H:i:s';
+    // protected $dateFormat = 'Y-m-d H:i:s';
 
     protected $fillable = ['nombre', 'mision', 'vision','valores','responsable', 'vigencia','user_id'];
 

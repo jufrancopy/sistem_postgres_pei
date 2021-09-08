@@ -21,10 +21,10 @@ class FodaAnalisisController extends Controller
     //antes de procesar el index() ejecuta el metodo consturctor
     function __construct()
     {
-         $this->middleware('permission:role-list');
-         $this->middleware('permission:role-create', ['only' => ['create','store']]);
-         $this->middleware('permission:role-edit', ['only' => ['edit','update']]);
-         $this->middleware('permission:role-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:role-list');
+        $this->middleware('permission:role-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:role-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:role-delete', ['only' => ['destroy']]);
     }
     /**
      * Display a listing of the resource.
@@ -61,9 +61,9 @@ class FodaAnalisisController extends Controller
     {
         $perfil = FodaPerfil::find($id);
         $categorias = $perfil->categorias()->orderBy('nombre', 'ASC')->get();
-        
+
         $categoriasChecked = [];
-        
+
         foreach ($perfil->categorias as $categoria) {
             $categoriasChecked[] = $categoria->id;
         }
@@ -79,110 +79,60 @@ class FodaAnalisisController extends Controller
         $categoria = FodaCategoria::find($idCategoria);
         $analisis = FodaAnalisis::where('perfil_id', '=', $idPerfil)->get();
         // $analisis = FodaAnalisis::where('perfil_id', '=', $idPerfil)->get();
-        
+
         //Array de aspectos asociados al perfil y la categoria
         $aspectos = FodaAspecto::where('categoria_id', '=', $idCategoria)->get();
-            if ($analisis->isNotEmpty()){
-                $aspectosChecked=[];
-                    foreach ($analisis as $v) {
-                        $aspectosChecked[] = $v->aspecto->id;
-                    }
-                    return view('admin.planificacion.fodas.analisis.aspectos-edit', get_defined_vars())
-                    ->with('i', ($request->input('page', 1) - 1) * 5);
-            } else {
-                // colección vacía
-                return view('admin.fplanificacion.odas.analisis.error', get_defined_vars())
-                    ->with('i', ($request->input('page', 1) - 1) * 5);
+        if ($analisis->isNotEmpty()) {
+            $aspectosChecked = [];
+            foreach ($analisis as $v) {
+                $aspectosChecked[] = $v->aspecto->id;
             }
-    
+            return view('admin.planificacion.fodas.analisis.aspectos-edit', get_defined_vars())
+                ->with('i', ($request->input('page', 1) - 1) * 5);
+        } else {
+            // colección vacía
+            return view('admin.fplanificacion.odas.analisis.error', get_defined_vars())
+                ->with('i', ($request->input('page', 1) - 1) * 5);
+        }
     }
     public function matriz(Request $request, $idPerfil)
     {
-        $idPerfil = $request->idPerfil;    
-        $perfil = FodaPerfil::find($idPerfil); 
-        $matriz =    0.17; 
-        
+        $idPerfil = $request->idPerfil;
+        $perfil = FodaPerfil::find($idPerfil);
+        $matriz =    0.17;
+
         //Ambiente Interno - Debilidad
-        $debilidades = FodaAnalisis::
-            where('perfil_id', '=', $idPerfil)
+        $debilidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia::int * foda_analisis.impacto::int) as matriz'))
             ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Debilidad')
             ->get();
-        
+
         //Ambiente Interno - Fortaleza
-        $fortalezas = FodaAnalisis::
-            where('perfil_id', '=', $idPerfil)
+        $fortalezas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
             ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Fortaleza')
             ->get();
-        
+
         //Ambiente Externo - Oportunidad
-        $oportunidades = FodaAnalisis::
-            where('perfil_id', '=', $idPerfil)
+        $oportunidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
             ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Oportunidad')
             ->get();
-            
+
         //Ambiente Externo - Amenaza
-        $amenazas = FodaAnalisis::
-            where('perfil_id', '=', $idPerfil)
+        $amenazas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
             ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Amenaza')
-            ->get();    
+            ->get();
 
         return view('admin.planificacion.fodas.analisis.matriz', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-
-    public function matrizPdf(Request $request, $idPerfil)
-    {        
-       
-        $idPerfil = $request->idPerfil;
-        $perfil = FodaPerfil::find($idPerfil);    
-        $matriz =    0.17; 
-        
-        //Ambiente Interno - Debilidad
-        $debilidades = FodaAnalisis::
-            where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
-            ->where('tipo', 'Debilidad')
-            ->get();
-        
-        //Ambiente Interno - Fortaleza
-        $fortalezas = FodaAnalisis::
-            where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
-            ->where('tipo', 'Fortaleza')
-            ->get();
-        
-        //Ambiente Externo - Oportunidad
-        $oportunidades = FodaAnalisis::
-            where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
-            ->where('tipo', 'Oportunidad')
-            ->get();
-            
-        //Ambiente Externo - Amenaza
-        $amenazas = FodaAnalisis::
-            where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
-            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
-            ->where('tipo', 'Amenaza')
-            ->get(); 
-            
-        $pdf = PDF::loadView('admin.planificacion.fodas.analisis.matriz-pdf', get_defined_vars());
-        
-        return $pdf->download('matriz.pdf');
-    }
-    
     public function listadoCategoriaAspectos(Request $request)
     {
         $idPerfil = $request->idPerfil;
@@ -195,7 +145,7 @@ class FodaAnalisisController extends Controller
             ->with('aspecto')
             ->get();
         $perfil = FodaPerfil::find($idPerfil);
-        
+
         if ($analisis->isNotEmpty()) {
             // colección no está vacía
             return view('admin.planificacion.fodas.analisis.listado-categorias-aspectos', get_defined_vars())
@@ -212,9 +162,9 @@ class FodaAnalisisController extends Controller
         $analisis = FodaAnalisis::where('perfil_id', $idPerfil)->get();
         $perfiles = FodaPerfil::find($idPerfil);
         $categorias = $perfiles->categorias()->nombre($request->get('nombre'))->where('ambiente', 'Interno')->paginate(20);
-        
-        foreach ($categorias as $categoria){
-            $v [] = $aspectos=FodaAspecto::where('categoria_id', $categoria->id)->get();
+
+        foreach ($categorias as $categoria) {
+            $v[] = $aspectos = FodaAspecto::where('categoria_id', $categoria->id)->get();
         }
 
         return view('admin.planificacion.fodas.analisis.analisis-categorias', get_defined_vars())
@@ -226,7 +176,7 @@ class FodaAnalisisController extends Controller
         $idPerfil = $request->idPerfil;
         $perfiles = FodaPerfil::find($idPerfil);
         $categorias = $perfiles->categorias()->nombre($request->get('nombre'))->where('ambiente', 'Externo')->paginate(20);
-        
+
         return view('admin.planificacion.fodas.analisis.analisis-categorias', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
@@ -253,21 +203,21 @@ class FodaAnalisisController extends Controller
 
     public function aspectosCategoria(Request $request, $idPerfil, $idCategoria)
     {
-        
+
         $idPerfil = $request->idPerfil;
         $idCategoria = $request->idCategoria;
         $categoria = FodaCategoria::find($idCategoria);
         $analisis = FodaAnalisis::where('perfil_id', '=', $idPerfil)->get();
-        
+
         //Array de aspectos asociados al perfil y la categoria
         $aspectos = FodaAspecto::where('categoria_id', '=', $idCategoria)->get();
-        
-        $aspectosChecked=[];
-        
+
+        $aspectosChecked = [];
+
         foreach ($analisis as $v) {
             $aspectosChecked[] = $v->aspecto->id;
         }
-        
+
         return view('admin.planificacion.fodas.analisis.aspectos', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
@@ -297,7 +247,7 @@ class FodaAnalisisController extends Controller
      */
     public function store(Request $request)
     {
-        
+
         $count = count($request->input('aspecto_id'));
         for ($i = 0; $i < $count; ++$i) {
 
@@ -310,13 +260,13 @@ class FodaAnalisisController extends Controller
                 'impacto'       => $request->impacto,
             ]);
         }
-        
+
         $idPerfil = $analisis->perfil_id;
         $aspectoID = $analisis->aspecto_id;
         $aspectos = FodaAspecto::find($aspectoID);
         $categoriaID = $aspectos->categoria_id;
-        $categoria = FodaCategoria::find($categoriaID); 
-        
+        $categoria = FodaCategoria::find($categoriaID);
+
         return redirect()->route('foda-listado-categorias-aspectos', ['idCategoria' => $categoria->id, 'idPerfil' => $idPerfil])
             ->with('success', 'Aspectos Listos para analizar');
     }
@@ -359,9 +309,9 @@ class FodaAnalisisController extends Controller
         $aspectoID = $analisis->aspecto_id;
         $aspectos = FodaAspecto::find($aspectoID);
         $categoriaID = $aspectos->categoria_id;
-        $categoria = FodaCategoria::find($categoriaID); 
+        $categoria = FodaCategoria::find($categoriaID);
         $ambiente = $categoria->ambiente;
-        
+
         return view('admin.planificacion.fodas.analisis.edit', get_defined_vars());
     }
 
@@ -401,11 +351,11 @@ class FodaAnalisisController extends Controller
         $aspectoID = $analisis->aspecto_id;
         $aspectos = FodaAspecto::find($aspectoID);
         $categoriaID = $aspectos->categoria_id;
-        $categoria = FodaCategoria::find($categoriaID); 
+        $categoria = FodaCategoria::find($categoriaID);
         $analisis->fill($request->all())->save();
-            
 
-             return redirect()->route('foda-listado-categorias-aspectos', ['idCategoria' => $categoria->id, 'idPerfil' => $idPerfil])
+
+        return redirect()->route('foda-listado-categorias-aspectos', ['idCategoria' => $categoria->id, 'idPerfil' => $idPerfil])
             ->with('success', 'Analizado satisfactoriamente');
     }
 
