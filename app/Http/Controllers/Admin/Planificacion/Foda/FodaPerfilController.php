@@ -47,8 +47,6 @@ class FodaPerfilController extends Controller
         
         $categoriasChecked=[];
         
-        
-        
         return view('admin.planificacion.fodas.perfiles.create', get_defined_vars());
     }
 

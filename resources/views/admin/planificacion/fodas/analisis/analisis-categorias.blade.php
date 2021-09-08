@@ -53,13 +53,11 @@
                                     <tr>
                                         <td>{{ ++$i }}</td>
                                         <td>{{ $categoria->nombre }}</td>
-                                        <td><span
-                                                class="btn btn-info btn-circle">{{App\Admin\Planificacion\Foda\FodaAspecto::where('categoria_id', $categoria->id)->count()}}</span>
+                                        <td><span class="btn btn-info btn-circle">{{App\Admin\Planificacion\Foda\FodaAspecto::where('categoria_id', $categoria->id)->count()}}</span>
                                         </td>
-                                        <td><a
-                                                href="{{route('foda-analisis-listado-categoria-aspectos', ['idCategoria' => $categoria->id, 'idPerfil' => $idPerfil])}}">Analizar
-                                                Aspectos</a></td>
-
+                                        <td><a href="{{route('foda-analisis-listado-categoria-aspectos', ['idCategoria' => $categoria->id, 'idPerfil' => $idPerfil])}}">Analizar
+                                                Aspectos</a>
+                                        </td>
                                     </tr>
                                     @endforeach
                                 </tbody>

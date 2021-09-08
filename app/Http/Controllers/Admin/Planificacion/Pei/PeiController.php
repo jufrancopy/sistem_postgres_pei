@@ -34,8 +34,6 @@ class PeiController extends Controller
         $idNivelSuperior;
         $nivel_id = $request->id;
         $nivel = Pei::where('id', $nivel_id)->get();
-
-
         $dependencies = Organigrama::pluck('dependency', 'id');
         $dependenciesChecked = [];
 

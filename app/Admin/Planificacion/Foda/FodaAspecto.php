@@ -3,12 +3,13 @@
 namespace App\Admin\Planificacion\Foda;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class FodaAspecto extends Model
 {
     protected $table = "planificacion.foda_aspectos";
 
-    protected $dateFormat = 'Y-m-d H:i:s';
+    // protected $dateFormat = 'Y-m-d H:i:s';
     
     protected $fillable = ['user_id','nombre', 'categoria_id'];
 
@@ -21,7 +22,7 @@ class FodaAspecto extends Model
         if (trim($nombre) !="")
         {
 
-    $query->where(\DB::raw("CONCAT(nombre, ' ', categoria_id)"), 'LIKE', "%$nombre%");    
+    $query->where(DB::raw("CONCAT(nombre, ' ', categoria_id)"), 'LIKE', "%$nombre%");    
         }
         
     }

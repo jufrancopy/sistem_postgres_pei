@@ -8,7 +8,7 @@ class FodaCruceAmbiente extends Model
 {
     protected $table = 'planificacion.foda_cruce_ambientes';
 
-    protected $dateFormat = 'Y-m-d H:i:sO';
+    // protected $dateFormat = 'Y-m-d H:i:s';
 
     protected $fillable = ['user_id', 'perfil_id','fortaleza_id', 'oportunidad_id','debilidad_id','amenaza_id','estrategia', 'tipo'];
 

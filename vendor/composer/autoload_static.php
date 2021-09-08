@@ -492,7 +492,6 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
     );
 
     public static $classMap = array (
-        'ApoyoAdministrativoTableSeeder' => __DIR__ . '/../..' . '/database/seeds/ApoyoAdministrativoTableSeeder.php',
         'App\\Admin\\Globales\\Formulario\\Clasificador' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Clasificador.php',
         'App\\Admin\\Globales\\Formulario\\Formulario' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Formulario.php',
         'App\\Admin\\Globales\\Formulario\\Item' => __DIR__ . '/../..' . '/app/Admin/Globales/Formulario/Item.php',
@@ -510,7 +509,6 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         'App\\Admin\\Planificacion\\Pei\\PeiPerfil' => __DIR__ . '/../..' . '/app/Admin/Planificacion/Pei/PeiPerfil.php',
         'App\\Admin\\Planificacion\\Pei\\PeiPrograma' => __DIR__ . '/../..' . '/app/Admin/Planificacion/Pei/PeiPrograma.php',
         'App\\Admin\\Product' => __DIR__ . '/../..' . '/app/Admin/Product.php',
-        'App\\Admin\\Proyecto\\EPC\\ApoyoAdministrativo' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/ApoyoAdministrativo.php',
         'App\\Admin\\Proyecto\\EPC\\Equipamiento' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/Equipamiento.php',
         'App\\Admin\\Proyecto\\EPC\\Especialidad' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/Especialidad.php',
         'App\\Admin\\Proyecto\\EPC\\Infraestructura' => __DIR__ . '/../..' . '/app/Admin/Proyecto/EPC/Infraestructura.php',
@@ -545,7 +543,6 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         'App\\Http\\Controllers\\Admin\\Planificacion\\Pei\\PeiCuadroDeMandoController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Planificacion/Pei/PeiCuadroDeMandoController.php',
         'App\\Http\\Controllers\\Admin\\Planificacion\\PlanificacionController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Planificacion/PlanificacionController.php',
         'App\\Http\\Controllers\\Admin\\ProductController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/ProductController.php',
-        'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\ApoyoAdministrativoController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Proyectos/EPC/ApoyoAdministrativoController.php',
         'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\EPCController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Proyectos/EPC/EPCController.php',
         'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\EquipamientoController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Proyectos/EPC/EquipamientoController.php',
         'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\EspecialidadController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Proyectos/EPC/EspecialidadController.php',
@@ -1468,6 +1465,10 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         'Faker\\ValidGenerator' => __DIR__ . '/..' . '/fzaninotto/faker/src/Faker/ValidGenerator.php',
         'Fideloper\\Proxy\\TrustProxies' => __DIR__ . '/..' . '/fideloper/proxy/src/TrustProxies.php',
         'Fideloper\\Proxy\\TrustedProxyServiceProvider' => __DIR__ . '/..' . '/fideloper/proxy/src/TrustedProxyServiceProvider.php',
+        'FodaAspectoTableSeeder' => __DIR__ . '/../..' . '/database/seeds/FodaAspectoTableSeeder.php',
+        'FodaCategoriaTableSeeder' => __DIR__ . '/../..' . '/database/seeds/FodaCategoriaTableSeeder.php',
+        'FodaModeloTableSeeder' => __DIR__ . '/../..' . '/database/seeds/FodaModeloTableSeeder.php',
+        'FodaPerfilTableSeeder' => __DIR__ . '/../..' . '/database/seeds/FodaPerfilTableSeeder.php',
         'FontLib\\AdobeFontMetrics' => __DIR__ . '/..' . '/phenx/php-font-lib/src/FontLib/AdobeFontMetrics.php',
         'FontLib\\Autoloader' => __DIR__ . '/..' . '/phenx/php-font-lib/src/FontLib/Autoloader.php',
         'FontLib\\BinaryStream' => __DIR__ . '/..' . '/phenx/php-font-lib/src/FontLib/BinaryStream.php',
@@ -3096,6 +3097,7 @@ class ComposerStaticInitbee3fcc4f059b969d952f99bc91d00ef
         'PHP_Token_YIELD' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Yield.php',
         'PHP_Token_YIELD_FROM' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/YieldFrom.php',
         'Parsedown' => __DIR__ . '/..' . '/erusev/parsedown/Parsedown.php',
+        'PeiTableSeeder' => __DIR__ . '/../..' . '/database/seeds/PeiTableSeeder.php',
         'PermissionsTableSeeder' => __DIR__ . '/../..' . '/database/seeds/PermissionsTableSeeder.php',
         'PharIo\\Manifest\\Application' => __DIR__ . '/..' . '/phar-io/manifest/src/values/Application.php',
         'PharIo\\Manifest\\ApplicationName' => __DIR__ . '/..' . '/phar-io/manifest/src/values/ApplicationName.php',

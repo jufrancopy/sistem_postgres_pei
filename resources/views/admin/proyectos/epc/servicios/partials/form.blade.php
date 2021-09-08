@@ -14,6 +14,11 @@
 </div>
 
 <div class="form-group">
+	{{ Form::label('turno', 'Turno:')	}}
+	{{ Form::select('turno', null,['class'=>'form-control','id'=>'formulario'])	}}
+</div>
+
+<div class="form-group">
 	{{ Form::label('description', 'Descripción:')	}}
 	{{ Form::text('description', null,['class'=>'form-control','id'=>'formulario'])	}}
 </div>
@@ -55,19 +60,6 @@
 	<div data-infraestructura-cantidad='@json($infraestructuraCantidad)'>
 		<div>
 			<div id="infraestructuraCantidadFields"></div>
-		</div>
-	</div>
-</div>
-
-<div class="form-group">
-	<label for="tthhs">Apoyo Administrativos:
-		<button type="button" class="btn btn-success btn-circle" id="addApoyoAdministrativoCantidad"><i
-				class="fa fa-plus"></i>
-		</button>
-	</label>
-	<div data-apoyo-administrativo-cantidad='@json($apoyoAdministrativoCantidad)'>
-		<div>
-			<div id="apoyoAdministrativoCantidadFields"></div>
 		</div>
 	</div>
 </div>
@@ -178,35 +170,6 @@
 			addSelect2($infraestructura, 'infraestructuras', '/infraestructuras/get', 'Seleccionar Infraestructura');
 		} 
 
-		var addApoyoAdministrativoCantidad = function(data) {
-			var $divRow = $('<div>').addClass('row')
-				.css({ marginTop: '4px' }).appendTo('#apoyoAdministrativoCantidadFields');
-				
-			var marginTopBtn = { marginTop: 0 };
-			var $apoyoAdministrativo = $('<select>').addClass('form-control tthh-field')
-								.prop('name', 'apoyoAdministrativos[]')
-								.css(marginTopBtn).appendTo($('<div>').addClass('col-md-5').appendTo($divRow));
-
-			var $cantidad = $('<input>').attr('type', 'number').addClass('form-control cantidad-field').attr('placeholder', 'Ingrese Cantidad')
-								.prop('name', 'cantidadesApoyoAdministrativos[]')
-								.css(marginTopBtn).appendTo($('<div>').addClass('col-md-5').appendTo($divRow));
-
-			var $remove = $('<button class="btn btn-danger btn-circle"><i class="fa fa-trash"></i></button>')
-								.css(marginTopBtn).appendTo($('<div>').addClass('col-md-2').appendTo($divRow));
-			
-			if (data) {
-				$('<option>').val(data.id).text(data.item).appendTo($apoyoAdministrativo);
-				$cantidad.val(data.pivot.cantidad).appendTo($cantidad);
-				}
-			
-			$remove.click(function(e) {
-				e.preventDefault();
-				$divRow.remove();
-			})
-			
-			addSelect2($apoyoAdministrativo, 'apoyoAdministrativos', '/apoyo-administrativos/get', 'Seleccionar Apoyo Administrativo');
-		}   
-		
 		var addOtroServicioCantidad = function(data) {
 			var $divRow = $('<div>').addClass('row')
 				.css({ marginTop: '4px' }).appendTo('#otroServicioCantidadFields');

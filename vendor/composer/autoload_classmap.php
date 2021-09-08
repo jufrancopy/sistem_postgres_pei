@@ -6,7 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'ApoyoAdministrativoTableSeeder' => $baseDir . '/database/seeds/ApoyoAdministrativoTableSeeder.php',
     'App\\Admin\\Globales\\Formulario\\Clasificador' => $baseDir . '/app/Admin/Globales/Formulario/Clasificador.php',
     'App\\Admin\\Globales\\Formulario\\Formulario' => $baseDir . '/app/Admin/Globales/Formulario/Formulario.php',
     'App\\Admin\\Globales\\Formulario\\Item' => $baseDir . '/app/Admin/Globales/Formulario/Item.php',
@@ -24,7 +23,6 @@ return array(
     'App\\Admin\\Planificacion\\Pei\\PeiPerfil' => $baseDir . '/app/Admin/Planificacion/Pei/PeiPerfil.php',
     'App\\Admin\\Planificacion\\Pei\\PeiPrograma' => $baseDir . '/app/Admin/Planificacion/Pei/PeiPrograma.php',
     'App\\Admin\\Product' => $baseDir . '/app/Admin/Product.php',
-    'App\\Admin\\Proyecto\\EPC\\ApoyoAdministrativo' => $baseDir . '/app/Admin/Proyecto/EPC/ApoyoAdministrativo.php',
     'App\\Admin\\Proyecto\\EPC\\Equipamiento' => $baseDir . '/app/Admin/Proyecto/EPC/Equipamiento.php',
     'App\\Admin\\Proyecto\\EPC\\Especialidad' => $baseDir . '/app/Admin/Proyecto/EPC/Especialidad.php',
     'App\\Admin\\Proyecto\\EPC\\Infraestructura' => $baseDir . '/app/Admin/Proyecto/EPC/Infraestructura.php',
@@ -59,7 +57,6 @@ return array(
     'App\\Http\\Controllers\\Admin\\Planificacion\\Pei\\PeiCuadroDeMandoController' => $baseDir . '/app/Http/Controllers/Admin/Planificacion/Pei/PeiCuadroDeMandoController.php',
     'App\\Http\\Controllers\\Admin\\Planificacion\\PlanificacionController' => $baseDir . '/app/Http/Controllers/Admin/Planificacion/PlanificacionController.php',
     'App\\Http\\Controllers\\Admin\\ProductController' => $baseDir . '/app/Http/Controllers/Admin/ProductController.php',
-    'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\ApoyoAdministrativoController' => $baseDir . '/app/Http/Controllers/Admin/Proyectos/EPC/ApoyoAdministrativoController.php',
     'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\EPCController' => $baseDir . '/app/Http/Controllers/Admin/Proyectos/EPC/EPCController.php',
     'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\EquipamientoController' => $baseDir . '/app/Http/Controllers/Admin/Proyectos/EPC/EquipamientoController.php',
     'App\\Http\\Controllers\\Admin\\Proyectos\\EPC\\EspecialidadController' => $baseDir . '/app/Http/Controllers/Admin/Proyectos/EPC/EspecialidadController.php',
@@ -982,6 +979,10 @@ return array(
     'Faker\\ValidGenerator' => $vendorDir . '/fzaninotto/faker/src/Faker/ValidGenerator.php',
     'Fideloper\\Proxy\\TrustProxies' => $vendorDir . '/fideloper/proxy/src/TrustProxies.php',
     'Fideloper\\Proxy\\TrustedProxyServiceProvider' => $vendorDir . '/fideloper/proxy/src/TrustedProxyServiceProvider.php',
+    'FodaAspectoTableSeeder' => $baseDir . '/database/seeds/FodaAspectoTableSeeder.php',
+    'FodaCategoriaTableSeeder' => $baseDir . '/database/seeds/FodaCategoriaTableSeeder.php',
+    'FodaModeloTableSeeder' => $baseDir . '/database/seeds/FodaModeloTableSeeder.php',
+    'FodaPerfilTableSeeder' => $baseDir . '/database/seeds/FodaPerfilTableSeeder.php',
     'FontLib\\AdobeFontMetrics' => $vendorDir . '/phenx/php-font-lib/src/FontLib/AdobeFontMetrics.php',
     'FontLib\\Autoloader' => $vendorDir . '/phenx/php-font-lib/src/FontLib/Autoloader.php',
     'FontLib\\BinaryStream' => $vendorDir . '/phenx/php-font-lib/src/FontLib/BinaryStream.php',
@@ -2610,6 +2611,7 @@ return array(
     'PHP_Token_YIELD' => $vendorDir . '/phpunit/php-token-stream/src/Yield.php',
     'PHP_Token_YIELD_FROM' => $vendorDir . '/phpunit/php-token-stream/src/YieldFrom.php',
     'Parsedown' => $vendorDir . '/erusev/parsedown/Parsedown.php',
+    'PeiTableSeeder' => $baseDir . '/database/seeds/PeiTableSeeder.php',
     'PermissionsTableSeeder' => $baseDir . '/database/seeds/PermissionsTableSeeder.php',
     'PharIo\\Manifest\\Application' => $vendorDir . '/phar-io/manifest/src/values/Application.php',
     'PharIo\\Manifest\\ApplicationName' => $vendorDir . '/phar-io/manifest/src/values/ApplicationName.php',

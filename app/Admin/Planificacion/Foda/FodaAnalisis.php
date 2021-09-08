@@ -3,14 +3,13 @@
 namespace App\Admin\Planificacion\Foda;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class FodaAnalisis extends Model
 {
     protected $table = "planificacion.foda_analisis";
-    // public $keyType = 'string';
-    // public $incrementing = false;
     
-    protected $dateFormat = 'Y-m-d H:i:s';
+    // protected $dateFormat = 'Y-m-d H:i:s';
     
     protected $fillable = ['user_id','perfil_id', 'aspecto_id','tipo', 'ocurrencia','impacto'];
 
@@ -32,7 +31,7 @@ class FodaAnalisis extends Model
         if (trim($nombre) !="")
         {
 
-    $query->where(\DB::raw("CONCAT(nombre, ' ', categoria_id)"), 'LIKE', "%$nombre%");    
+    $query->where(DB::raw("CONCAT(nombre, ' ', categoria_id)"), 'LIKE', "%$nombre%");    
         }
         
     }

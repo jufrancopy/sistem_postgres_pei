@@ -87,11 +87,6 @@ class ServicioController extends Controller
             $infraestructuraCantidadAttach[$infraestructura] = ['cantidad' => $request->cantidadesInfraestructuras[$key]];
         }
 
-        $apoyoAdministrativoCantidadAttach = [];
-        foreach ($request->apoyoAdministrativos as $key => $apoyoAdministrativo) {
-            $apoyoAdministrativoCantidadAttach[$apoyoAdministrativo] = ['cantidad' => $request->cantidadesApoyoAdministrativos[$key]];
-        }
-
         $otroServicioCantidadAttach = [];
         foreach ($request->otroServicios as $key => $otroServicio) {
             $otroServicioCantidadAttach[$otroServicio] = ['cantidad' => $request->cantidadesOtroServicios[$key]];
@@ -102,7 +97,6 @@ class ServicioController extends Controller
         $servicio->equipamientos()->attach($equipamientoCantidadAttach);
         $servicio->tthhs()->attach($tthhCantidadAttach);
         $servicio->infraestructuras()->attach($infraestructuraCantidadAttach);
-        $servicio->apoyoAdministrativos()->attach($apoyoAdministrativoCantidadAttach);
         $servicio->otroServicios()->attach($otroServicioCantidadAttach);
 
 
@@ -123,9 +117,7 @@ class ServicioController extends Controller
         $equipamientoCantidad = $servicio->equipamientos->toArray();
         $tthhCantidad = $servicio->tthhs->toArray();    
         $infraestructuraCantidad = $servicio->infraestructuras->toArray();
-        $apoyoAdministrativoCantidad = $servicio->apoyoAdministrativos->toArray();
         $otroServicioCantidad = $servicio->otroServicios->toArray();
-        
         
         return view('admin.proyectos.epc.servicios.edit', get_defined_vars());
     }
@@ -147,11 +139,6 @@ class ServicioController extends Controller
             $infraestructuraCantidadSync[$infraestructura] = ['cantidad' => $request->cantidadesInfraestructuras[$key]];
         }
 
-        $apoyoAdministrativoCantidadSync = [];
-        foreach ($request->apoyoAdministrativos as $key => $apoyoAdministrativo) {
-            $apoyoAdministrativoCantidadSync[$apoyoAdministrativo] = ['cantidad' => $request->cantidadesApoyoAdministrativos[$key]];
-        }
-
         $otroServicioCantidadSync = [];
         foreach ($request->otroServicios as $key => $otroServicio) {
             $otroServicioCantidadSync[$otroServicio] = ['cantidad' => $request->cantidadesOtroServicios[$key]];
@@ -163,9 +150,7 @@ class ServicioController extends Controller
         $servicio->equipamientos()->sync($equipamientoCantidadSync);
         $servicio->tthhs()->sync($tthhCantidadSync);
         $servicio->infraestructuras()->sync($infraestructuraCantidadSync);
-        $servicio->apoyoAdministrativos()->sync($apoyoAdministrativoCantidadSync);
         $servicio->otroServicios()->sync($otroServicioCantidadSync);
-
 
         return redirect()->route('proyectos-epc-servicios.show', $servicio->id)
             ->with('info', 'Servicio Actualizado Satisfactoriamente');

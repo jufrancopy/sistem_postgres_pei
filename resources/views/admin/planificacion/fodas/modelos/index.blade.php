@@ -59,7 +59,7 @@
                                             <i class="fa fa-trash"></i>
                                             </button>
                                             {!! Form::close() !!}
-                                            <label class="badge badge-success"><a href="{{route('foda-modelo-categorias', $modelo->id)}}">Ver Categorias</a></label>
+                                            <label class="btn btn-info btn-circle"><a href="{{route('foda-modelo-categorias', $modelo->id)}}"><i class="fas fa-list text-white"></i></a></label>
                                         </td>
                                     </tr>
                                     @endforeach

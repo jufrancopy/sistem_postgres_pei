@@ -16,7 +16,7 @@ class Formulario extends Model
     
     public function variables(){
         
-        return $this->belongsToMany('App\Admin\Globales\Formulario\Variable', 'globales.formulario_formulario_has_variables', 'formulario_id','variable_id' );
+        return $this->belongsToMany('App\Admin\Globales\Formulario\Variable', 'estadistica.formulario_formulario_has_variables', 'formulario_id','variable_id' );
 
     }
 
