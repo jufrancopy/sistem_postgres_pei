@@ -306,7 +306,7 @@
 
                                 <tr class="table-warning">
                                     <th colspan=4 width=80%>Total General</th>
-                                    <td>{{$totalGeneral}}</td>
+                                    <td>{{number_format($totalGeneral, 1,'.', '')}}</td>
                                 </tr>
                                 </tfoot>
                             </table>
