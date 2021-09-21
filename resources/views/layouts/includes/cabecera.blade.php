@@ -46,12 +46,13 @@
     
     <!--JQTree -->
     <link href="{{ asset('css/jqtree.js') }}" rel="stylesheet">
-     
+    
     <!--JQuery Modal
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script> -->
-    <script src="{{ asset('master/assets/js/core/popper.min.js') }}" type="text/javascript"></script>    
+    <script src="{{ asset('master/assets/js/core/popper.min.js') }}" type="text/javascript"></script>
+    
     
 <style>
     .data-table td:nth-child(3),

@@ -202,9 +202,9 @@
     ];
 
     var column2 = [{
-        name: "Horarios | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-equipamientos.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
+        name: "Horarios | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-horarios.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
         children: [{
-          name: "<a class='text-white' href='{{route('equipamientos', 'all')}}'>Listar </a>"
+          name: "<a class='text-white' href='{{route('proyectos-epc-horarios.index')}}'>Listar </a>",          
         }, ],
       },
 
