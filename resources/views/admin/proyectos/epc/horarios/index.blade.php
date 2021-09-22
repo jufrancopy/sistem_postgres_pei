@@ -65,9 +65,16 @@
                                             onclick="confirm('Estas seguro de eliminar el rol {{$horario->name}}. Si lo eliminas también eliminarás los datos asociados a el.')">
                                             <i class="fa fa-trash"></i>
                                         </button>
+<<<<<<< HEAD
 
                                         <button onclick=”mensaje()”>Pulsar</button>
+=======
+                                        
+>>>>>>> 8afa6a988742226f8f4b94ba17f4b5cb15a20416
                                         {!! Form::close() !!}
+
+
+                                        
                                     </td>
                                 </tr>
                                 @endforeach
@@ -80,6 +87,7 @@
     </div>
 </div>
 @endsection
+<<<<<<< HEAD
 @section('scripts')
 <script>
     function mensaje(){
@@ -93,3 +101,5 @@ swal(‘Mensaje Simple!’,’texto adicional en el mensaje’,’success’);
     
     
 @endsection
+=======
+>>>>>>> 8afa6a988742226f8f4b94ba17f4b5cb15a20416
