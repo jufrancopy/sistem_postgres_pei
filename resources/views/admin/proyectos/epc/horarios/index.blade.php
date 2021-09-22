@@ -1,6 +1,6 @@
 @extends('layouts.master')
 @section('content')
-@include('sweet::alert')
+
 <div class="content">
     <div class="container-fluid">
         <div class="row">
@@ -65,7 +65,11 @@
                                             onclick="return confirm('Estas seguro de eliminar el rol {{$horario->name}}. Si lo eliminas también eliminarás los datos asociados a el.')">
                                             <i class="fa fa-trash"></i>
                                         </button>
+                                        
                                         {!! Form::close() !!}
+
+
+                                        
                                     </td>
                                 </tr>
                                 @endforeach
@@ -77,10 +81,4 @@
         </div>
     </div>
 </div>
-@endsection
-@section('scripts')
-
-    
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-    
 @endsection

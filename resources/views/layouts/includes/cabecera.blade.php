@@ -52,7 +52,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script> -->
     <script src="{{ asset('master/assets/js/core/popper.min.js') }}" type="text/javascript"></script>
-    
+    <script src="{{ asset('js/app.js') }}" type="text/javascript"></script>
     
 <style>
     .data-table td:nth-child(3),
