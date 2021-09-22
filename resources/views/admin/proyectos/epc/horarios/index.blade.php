@@ -1,6 +1,6 @@
 @extends('layouts.master')
 @section('content')
-@include('sweet::alert')
+
 <div class="content">
     <div class="container-fluid">
         <div class="row">
@@ -62,9 +62,11 @@
                                         {!! Form::open(['route' => ['proyectos-epc-horarios.destroy',$horario->id], 'method' => 'DELETE',
                                         'style'=>'display:inline']) !!}
                                         <button class="btn btn-danger btn-circle"
-                                            onclick="return confirm('Estas seguro de eliminar el rol {{$horario->name}}. Si lo eliminas también eliminarás los datos asociados a el.')">
+                                            onclick="confirm('Estas seguro de eliminar el rol {{$horario->name}}. Si lo eliminas también eliminarás los datos asociados a el.')">
                                             <i class="fa fa-trash"></i>
                                         </button>
+
+                                        <button onclick=”mensaje()”>Pulsar</button>
                                         {!! Form::close() !!}
                                     </td>
                                 </tr>
@@ -79,8 +81,15 @@
 </div>
 @endsection
 @section('scripts')
-
+<script>
+    function mensaje(){
+swal(‘Mensaje Simple!’,’texto adicional en el mensaje’,’success’);
+}
+})
+    }
     
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+</script>
+    
     
 @endsection

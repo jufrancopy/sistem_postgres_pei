@@ -46,7 +46,7 @@
 
 <script src="{{ asset('vendor/orgchart/demo/js/jquery.orgchart.js') }}" defer></script>
 <script src="{{ asset('js/orgchart.js') }}"></script>
-
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Scripts personalizados-->
 @yield('scripts')
 <script>
