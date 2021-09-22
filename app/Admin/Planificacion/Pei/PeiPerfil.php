@@ -4,6 +4,7 @@ namespace App\Admin\Planificacion\Pei;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class PeiPerfil extends Model
 {
@@ -29,7 +30,7 @@ class PeiPerfil extends Model
     {
         if (trim($nombre) !="")
         {
-            $query->where(\DB::raw("CONCAT(nombre, ' ', responsable)"), 'LIKE', "%$nombre%");    
+            $query->where(DB::raw("CONCAT(nombre, ' ', responsable)"), 'LIKE', "%$nombre%");    
         }
         
     }

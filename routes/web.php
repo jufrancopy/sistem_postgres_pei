@@ -101,6 +101,14 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('proyectos-epc-horarios', 'Admin\Proyectos\EPC\HorarioController');
     Route::get('horarios/get','Admin\Proyectos\EPC\HorarioController@get')->name('horarios.get');
 
+     // Prestaciones
+     Route::resource('proyectos-epc-prestaciones', 'Admin\Proyectos\EPC\PrestacionController');
+     Route::get('prestaciones/get','Admin\Proyectos\EPC\PrestacionController@get')->name('prestaciones.get');
+
+    // Turnos
+    Route::resource('proyectos-epc-turnos', 'Admin\Proyectos\EPC\TurnoController');
+    Route::get('horarios/get','Admin\Proyectos\EPC\TurnoController@get')->name('turnos.get');
+
     // Medicamento e Insumos
     Route::resource('proyectos-epc-mds_ins', 'Admin\Proyectos\EPC\MedicamentoInsumoController');
     Route::get('proyectos-epc-md_ins/{type}', 'Admin\Proyectos\EPC\MedicamentoInsumoController@getForType')->name('medicamentos-insumos');

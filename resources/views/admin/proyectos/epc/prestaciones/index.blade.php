@@ -51,6 +51,7 @@
                                 <tr>
                                     <td>{{ ++$i }}</td>
                                     <td>{{ $horario->item }}</td>
+                                    {{-- <td>{{ $tthh->especialidad->item }}</td> --}}
                                     <td>{{ $horario->start_time }}</td>
                                     <td>{{ $horario->end_time }}</td>
                                     <td>
@@ -58,6 +59,7 @@
                                             href="{{ route('proyectos-epc-horarios.edit',$horario->id) }}"><i class="far fa-edit"></i></a>
                                             </i>
                                         </a>
+
                                        
                                         <a href="#" onclick="deleteConfirm('{{$horario->id}}')"> 
                                             <button class="btn btn-danger btn-circle">

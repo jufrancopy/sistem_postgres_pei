@@ -4,11 +4,10 @@ namespace App\Http\Controllers\Admin\Proyectos\EPC;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Admin\Proyecto\EPC\Horario;
 
-use SweetAlert;
+use App\Admin\Proyecto\EPC\Turno;
 
-class HorarioController extends Controller
+class TurnoController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,10 +16,9 @@ class HorarioController extends Controller
      */
     public function index(Request $request)
     {
-	    $horarios = Horario::all();
+        $turnos = Turno::nombre($request->nombre)->paginate(10);
 
-	    return view('admin.proyectos.epc.horarios.index', get_defined_vars())
-            ->with('i', ($request->input('page', 1) - 1) * 5);
+        return view('admin.proyectos.epc.turnos.index', get_defined_vars());
     }
 
     /**
@@ -30,7 +28,7 @@ class HorarioController extends Controller
      */
     public function create()
     {
-        return view('admin.proyectos.epc.horarios.create');
+        return view ('admin.proyectos.epc.turnos.create');
     }
 
     /**
@@ -41,9 +39,9 @@ class HorarioController extends Controller
      */
     public function store(Request $request)
     {
-        $horario = Horario::create($request->all());
+        $turno = Turno::create($request->all());
 
-        return redirect()->route('proyectos-epc-horarios.index')->with('info', 'Horario creado con éxito');
+        return redirect()->route('proyectos-epc-turnos.index');
     }
 
     /**
@@ -65,9 +63,9 @@ class HorarioController extends Controller
      */
     public function edit($id)
     {
-        $horario = Horario::findOrFail($id);
-
-        return view('admin.proyectos.epc.horarios.edit', get_defined_vars());
+        $turno = Turno::findOrFail($id);
+        
+        return view('admin.proyectos.epc.turnos.edit', get_defined_vars());
     }
 
     /**
@@ -79,10 +77,11 @@ class HorarioController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $horario = Horario::findOrFail();
-        $horario->fill($request->all())->save();
+        $turno = Turno::findOrFail($id);
+        $turno->fill($request->all())->save();
 
-        return redirect()->route('proyectos-epc-horarios.index')->with('info', 'Horario editado con éxito');
+        return redirect()->route('proyectos-epc-turnos.index')->with('info', 'Actualizado')->with('typealert', 'success');
+
     }
 
     /**
@@ -93,11 +92,6 @@ class HorarioController extends Controller
      */
     public function destroy($id)
     {
-        
-        $horario = Horario::findOrFail($id);
-        $horario->delete();
-        
-        return back()->with('info', 'Horario Eliminado con éxito');
-        
+        //
     }
 }

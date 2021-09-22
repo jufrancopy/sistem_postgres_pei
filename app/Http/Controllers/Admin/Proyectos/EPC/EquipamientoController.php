@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Proyectos\EPC;
 
 use App\Admin\Proyecto\EPC\Equipamiento;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -23,7 +24,7 @@ class EquipamientoController extends Controller
 
     public function get(Request $request)
     {
-        $rows = Equipamiento::where(\DB::raw("lower(item)"), 'like', '%' . mb_strtolower($request->q) . '%')
+        $rows = Equipamiento::where(DB::raw("lower(item)"), 'like', '%' . mb_strtolower($request->q) . '%')
             ->select('item AS text', 'id')
             ->orderBy('item')->limit(25)->get();
 

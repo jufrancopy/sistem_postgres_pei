@@ -3,6 +3,7 @@
 namespace App\Admin\Planificacion\Pei;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class PeiEstrategia extends Model
 {
@@ -27,7 +28,7 @@ class PeiEstrategia extends Model
         if (trim($estrategia) !="")
         {
 
-    $query->where(\DB::raw("CONCAT(estrategia, ' ', dependency_id)"), 'LIKE', "%$estrategia%");    
+    $query->where(DB::raw("CONCAT(estrategia, ' ', dependency_id)"), 'LIKE', "%$estrategia%");    
         }
         
     }

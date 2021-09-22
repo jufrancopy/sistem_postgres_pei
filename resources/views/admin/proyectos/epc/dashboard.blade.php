@@ -209,9 +209,16 @@
       },
 
       {
-        name: "Turnos | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-otros_servs.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
+        name: "Turnos | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-turnos.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
         children: [{
-          name: "<a class='text-white' href='{{route('otros-servicios', 'all')}}'>Listar</a>"
+          name: "<a class='text-white' href='{{route('proyectos-epc-turnos.index')}}'>Listar</a>"
+        }, ]
+      },
+
+      {
+        name: "Prestaciones | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-prestaciones.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
+        children: [{
+          name: "<a class='text-white' href='{{route('proyectos-epc-prestaciones.index')}}'>Listar</a>"
         }, ]
       },
     ];
