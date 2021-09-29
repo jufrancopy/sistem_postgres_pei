@@ -41,7 +41,7 @@
 
 @section('scripts')
 <script>
-	    $(document).ready(function() {
+	$(document).ready(function() {
     	$('#especialidades').select2({
 			placeholder: "Elija un Nivel",
 	});

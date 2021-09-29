@@ -9,9 +9,9 @@
 						<h4 class="card-title ">Agregar Nuevo Horario</h4>
 					</div>
 					<div class="card-body">
-						{!! Form::open(['route'=>'proyectos-epc-horarios.store']) !!}
+						{!! Form::open(['route'=>'proyectos-epc-prestaciones.store']) !!}
 
-						@include('admin.proyectos.epc.horarios.partials.form')
+						@include('admin.proyectos.epc.prestaciones.partials.form')
 
 						{!! Form::close() !!}
 					</div>

@@ -14,7 +14,7 @@
 
     <!-- JQTree -->
     <link href="http://www.japurahei.com/css/jqtree.css" rel="stylesheet">
-
+    
     <title>{{ config('app.name', 'PEI') }}</title>
     <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no'
         name='viewport' />
@@ -46,7 +46,6 @@
     
     <!--JQTree -->
     <link href="{{ asset('css/jqtree.js') }}" rel="stylesheet">
-    
     <!--JQuery Modal
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
 

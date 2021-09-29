@@ -6,15 +6,15 @@
 			<div class="col-md-12">
 				<div class="card">
 					<div class="card-header card-header-info">
-					<h4 class="card-title ">Editar horario <b>{{$horario->item}}</b></h4>
+					<h4 class="card-title ">Editar  <b>{{$prestacion->item}}</b></h4>
 					<a class="btn btn-warning" href="{{ route('proyectos-epc-horarios.index') }}">
 						Atras</a>
 					</div>
 					<div class="card-body">
-						{!! Form::model($horario, ['route'=>['proyectos-epc-horarios.update', $horario->id],
+						{!! Form::model($prestacion, ['route'=>['proyectos-epc-prestaciones.update', $prestacion->id],
             'method'=>'PUT']) !!}
 
-						@include('admin.proyectos.epc.horarios.partials.form')
+						@include('admin.proyectos.epc.prestaciones.partials.form')
 
 						{!! Form::close() !!}
 					</div>
