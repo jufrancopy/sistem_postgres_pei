@@ -1,5 +1,3 @@
-{{ Form::hidden('user_id', auth()->user()->id) }}
-
 <div class="form-group">
 	{{	Form::label('item', 'Item:')	}}
 	{{	Form::text('item', null,['class'=>'form-control','id'=>'formulario'])	}}
@@ -13,7 +11,6 @@
 			'tercer_nivel' => 'Tercer Nivel'),
 			null, ['class' => 'form-control', 'id'=>'especialidades', 'placeholder'=>'Elija Dirección'])	}}
 </div>
-
 
 <div class="form-group">
 	{{	Form::label('detail', 'Detalle:')	}}

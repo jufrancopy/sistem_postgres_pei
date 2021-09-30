@@ -15,12 +15,13 @@ class EquipamientoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $equipamientos = Equipamiento::all();
+        $equipamientos = Equipamiento::item($request->item)->paginate(10);
 
-        return view('admin.proyectos.epc.equipamientos.index', get_defined_vars());
-    }
+        return view('admin.proyectos.epc.equipamientos.index', get_defined_vars())
+            ->with('i', ($request->input('page', 1) - 1) * 5);
+        }
 
     public function get(Request $request)
     {
@@ -74,8 +75,10 @@ class EquipamientoController extends Controller
     {
         Equipamiento::create($request->all());
 
-        return redirect()->route('proyectos-epc-equipamientos.index')
-            ->with('info', 'Equipamiento agregado con éxito');
+        return redirect()
+            ->route('proyectos-epc-equipamientos.index')
+            ->with('info', 'Ítem creado con éxito')
+            ->with('typealert', 'success');
     }
 
     /**
@@ -99,7 +102,9 @@ class EquipamientoController extends Controller
     {
         $equipamiento = Equipamiento::find($id);
 
-        return view('admin.proyectos.epc.equipamientos.edit', get_defined_vars());
+        return view('admin.proyectos.epc.equipamientos.edit', get_defined_vars())
+            ->with('info', 'Ítem editado con éxito')
+            ->with('typealert', 'success');
     }
 
     /**
@@ -114,7 +119,10 @@ class EquipamientoController extends Controller
         $equipamiento = Equipamiento::find($id);
         $equipamiento->fill($request->all())->save();
 
-        return redirect()->route('proyectos-epc-equipamientos.index')->with('info', 'Equipamiento editado con éxito');
+        return redirect()
+            ->route('proyectos-epc-equipamientos.index')
+            ->with('info', 'Ítem Actualizado con éxito')
+            ->with('typealert', 'success');
     }
 
     /**
@@ -127,6 +135,8 @@ class EquipamientoController extends Controller
     {
         $equipamiento = Equipamiento::find($id)->delete();
 
-        return back()->with('info', 'Equipamiento eliminado correctamente.');
+        return back()
+            ->with('info', 'Ítem eliminado con éxito')
+            ->with('typealert', 'success');
     }
 }

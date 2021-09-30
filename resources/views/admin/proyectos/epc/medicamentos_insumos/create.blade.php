@@ -6,7 +6,10 @@
 			<div class="col-md-12">
 				<div class="card">
 					<div class="card-header card-header-info">
-						<h4 class="card-title ">Agregar nuevo Item de Producto</h4>
+						<h4 class="card-title ">Agregar nuevo Item</h4>
+						<div class="pull-right">
+							<a class="btn btn-warning pull-right" href="{{ route('proyectos-epc-mds_ins.index') }}"> Atras</a>
+						</div>
 					</div>
 					<div class="card-body">
 						{!! Form::open(['route'=>'proyectos-epc-mds_ins.store']) !!}

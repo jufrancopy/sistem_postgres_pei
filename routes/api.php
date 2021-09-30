@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\MovieController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,9 +15,24 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:api')
+     ->get('/user', function (Request $request) {
+         return $request->user();
+ });
+
+
+// Route::group(['middleware' => ['auth', 'api']], function () {
+//     Route::get('tthh', function(){
+//         return datatables()
+//             ->eloquent(App\Admin\Proyecto\EPC\TalentoHumano::query())
+//             ->toJson();
+//     });
+// });
+
+// Route::resource('movies', 'MovieController');
+
+Route::get('tthh', function(){
+     return datatables()
+        ->eloquent(App\Admin\Proyecto\EPC\TalentoHumano::query())
+        ->toJson();
 });
-
-
-Route::resource('movies', 'MovieController');

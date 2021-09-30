@@ -7,6 +7,9 @@
 				<div class="card">
 					<div class="card-header card-header-info">
 						<h4 class="card-title ">Agregar nueva Especialidad</h4>
+						<div class="pull-right">
+							<a class="btn btn-warning pull-right" href="{{ route('proyectos-epc-especialidades') }}"> Atras</a>
+						</div>
 					</div>
 					<div class="card-body">
 						{!! Form::open(['route'=>'proyectos-epc-especialidades.store']) !!}

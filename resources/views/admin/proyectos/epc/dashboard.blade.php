@@ -178,28 +178,7 @@
           },
         ]
       },
-
-      {
-        name: "Turnos | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-otros_servs.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",
-        children: [{
-            name: "<a class='text-white' href='{{route('otros-servicios', 'all')}}'>Listar</a>"
-          },
-          {
-            name: "<a class='text-white' href='{{route('otros-servicios', 'limpieza')}}'>Limpieza</a>"
-          },
-          {
-            name: "<a class='text-white' href='{{route('otros-servicios', 'seguridad')}}'>Seguridad</a>"
-          },
-          {
-            name: "<a class='text-white' href='{{route('otros-servicios', 'gastronomia')}}'>Gastronomía</a>"
-          },
-          {
-            name: "<a class='text-white' href='{{route('otros-servicios', 'ambulancia')}}'>Ambulancia</a>"
-          },
-        ]
-      },
-
-    ];
+      ];
 
     var column2 = [{
         name: "Horarios | <a class='btn btn-success btn-circle' href='{{route('proyectos-epc-horarios.create')}}'><i class='fa fa-plus' aria-hidden='true'></i></a>",

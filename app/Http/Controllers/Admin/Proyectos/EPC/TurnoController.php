@@ -18,8 +18,9 @@ class TurnoController extends Controller
     {
         $turnos = Turno::nombre($request->nombre)->paginate(10);
 
-        return view('admin.proyectos.epc.turnos.index', get_defined_vars());
-    }
+        return view('admin.proyectos.epc.turnos.index', get_defined_vars()
+            ->with('i', ($request->input('page', 1)-1)*5));
+        }
 
     /**
      * Show the form for creating a new resource.
@@ -92,6 +93,9 @@ class TurnoController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $turno = Turno::findOrFail($id);
+        $turno->delete;
+
+        return back()->with()->with('alert', )
     }
 }

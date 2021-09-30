@@ -11,13 +11,9 @@ class Turno extends Model
     
     protected $fillable = ['item'];
 
-    public function scopeNombre($query, $nombre)
-    {
-        if (trim($nombre) !="")
-        {
-
-    $query->where(DB::raw("CONCAT(nombre, ' ', autor)"), 'LIKE', "%$nombre%");    
+    public function scopeNombre($query, $nombre){
+        if (trim($nombre) !=""){
+            $query->where(DB::raw("CONCAT(nombre, ' ', autor)"), 'LIKE', "%$nombre%");    
+            }
         }
-        
-    }
 }

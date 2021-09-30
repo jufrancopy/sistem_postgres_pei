@@ -72,6 +72,9 @@ Route::group(['middleware' => ['auth']], function () {
 
     // TTHH
     Route::resource('proyectos-epc-tthh', 'Admin\Proyectos\EPC\TalentoHumanoController');
+    Route::get('epc-tthh', function(){
+        return view('admin.proyectos.epc.tthh.index');
+    });
     Route::get('tthhs/get',         'Admin\Proyectos\EPC\TalentoHumanoController@get')->name('tthhs.get');
     
     // Equipamientos

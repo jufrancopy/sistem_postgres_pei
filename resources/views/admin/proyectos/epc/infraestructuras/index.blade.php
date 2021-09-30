@@ -15,7 +15,7 @@
                     <h4 class="card-title ">Infraestructuras</h4>
                     <a class="btn btn-success" href="{{ route('proyectos-epc-infraestructuras.create') }}">Agregar</a>
                     <div class="pull-right">
-                        <a class="btn btn-warning pull-right" href="{{ route('proyectos-epc-home') }}"> Atras</a>
+                        <a class="btn btn-warning pull-right" href="{{ route('proyectos-epc-dashboard') }}"> Atras</a>
                     </div>
                 </div>
                 <div class="card-body">

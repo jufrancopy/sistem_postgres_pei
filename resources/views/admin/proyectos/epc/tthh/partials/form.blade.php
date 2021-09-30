@@ -5,11 +5,6 @@
 	{{	Form::text('item', null,['class'=>'form-control','id'=>'formulario'])	}}
 </div>
 
-{{-- <div class="form-group">
-	{{	Form::label('especialidades', 'Especialidades')	}}
-	{!! Form::select('specialty_id', $especialidades, old('specialty_id'), ['class' => 'form-control',
-	'id'=>'especialidades', 'placeholder'=>'Elija Dirección']) !!}
-</div> --}}
 
 <div class="form-group">
 	{{	Form::label('hours', 'Carga horaria:')	}}
@@ -32,7 +27,7 @@
 			'profesional_area_salud' => 'PROFESIONAL AREA SALUD', 
 			'tecnico_area_administraiva' => 'TÉCNICO AREA ADMINISTRATIVA',
 			'tecnico_area_salud' => 'TÉCNICO AREA SALUD'),
-			null, ['class' => 'form-control', 'id'=>'type'])	}}
+			null, ['class' => 'form-control', 'placeholder'=>'','id'=>'type'])	}}
 </div>
 
 <div class="form-group">
@@ -41,14 +36,10 @@
 
 @section('scripts')
 <script>
-	$(document).ready(function() {
-    	$('#especialidades').select2({
-			placeholder: "Elija un Nivel",
-	});
-
-	    $('#type').select2({
-			placeholder: "Elija un Tipo",
-	});
-});
+	$(document).ready(function(){
+		$('#type').select2({
+			placeholder: "Seleccion el Tipo"
+		})
+	})
 </script>
 @endsection

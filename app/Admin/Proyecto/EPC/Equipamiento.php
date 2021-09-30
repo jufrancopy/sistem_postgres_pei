@@ -3,6 +3,7 @@
 namespace App\Admin\Proyecto\EPC;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Equipamiento extends Model
 {
@@ -13,5 +14,11 @@ class Equipamiento extends Model
         'type',
         'cost'
     ];
+
+    public function scopeItem($query, $item){
+        if (trim($item) !=""){
+            $query->where(DB::raw("CONCAT(item, ' ', type)"), 'LIKE', "%$item%");    
+            }
+        }
     
 }

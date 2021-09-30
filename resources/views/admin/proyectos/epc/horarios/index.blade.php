@@ -16,7 +16,7 @@
                     <h4 class="card-title ">Horarios</h4>
                     <a class="btn btn-success" href="{{ route('proyectos-epc-horarios.create') }}">Agregar</a>
                     <div class="pull-right">
-                        <a class="btn btn-warning pull-right" href="{{ route('proyectos-dashboard') }}"> Atras</a>
+                        <a class="btn btn-warning pull-right" href="{{ route('proyectos-epc-dashboard') }}"> Atras</a>
                     </div>
                 </div>
                 <div class="card-body">

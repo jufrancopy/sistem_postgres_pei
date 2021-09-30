@@ -17,7 +17,7 @@ class HorarioController extends Controller
      */
     public function index(Request $request)
     {
-	    $horarios = Horario::all();
+	    $horarios = Horario::paginate(10);
 
 	    return view('admin.proyectos.epc.horarios.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);

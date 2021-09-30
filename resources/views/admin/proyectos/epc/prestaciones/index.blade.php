@@ -16,7 +16,7 @@
                     <h4 class="card-title ">Horarios</h4>
                     <a class="btn btn-success" href="{{ route('proyectos-epc-prestaciones.create') }}">Agregar</a>
                     <div class="pull-right">
-                        <a class="btn btn-warning pull-right" href="{{ route('proyectos-dashboard') }}"> Atras</a>
+                        <a class="btn btn-warning pull-right" href="{{ route('proyectos-epc-home') }}"> Atras</a>
                     </div>
                 </div>
                 <div class="card-body">
@@ -109,8 +109,8 @@
     $(window).on('load', function (){
     $( '#content' ).ckeditor();
 });
-    window.deleteConfirm = function(formId)
-{
+
+window.deleteConfirm = function(formId){
     Swal.fire({
         icon: 'warning',
         text: 'Quieres borrar esto?',
