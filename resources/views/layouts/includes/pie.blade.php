@@ -24,8 +24,8 @@
 <script src="{{ asset('js/jquery.js') }}"></script>
 <script src="{{ asset('js/tree.jquery.js') }}"></script>
 <script src="{{ asset('js/jquery.validate.js') }}"></script>
-<script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+<script src="{{ asset('assets/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('assets/datatables/dataTables.bootstrap4.min.js') }}"></script>
 <script src="{{ asset('js/bootstrap.min.js') }}"></script>
 <script src="{{ asset('master/assets/js/core/popper.min.js') }}" type="text/javascript"></script>
 <script src="{{ asset('master/assets/js/core/bootstrap-material-design.min.js') }}" type="text/javascript"></script>
@@ -41,9 +41,9 @@
 <script src="{{ asset('master/assets/js/material-dashboard.min.js?v=2.1.0') }}" type="text/javascript"></script>
 <script src="{{ asset('js/select2.js') }}"></script>
 <script src="{{ asset('js/cursos.js') }}"></script>
-<script src="{{ asset('vendor/bootbox/bootbox.all.js') }}"></script>
+<script src="{{ asset('assets/bootbox/bootbox.all.js') }}"></script>
 
-<script src="{{ asset('vendor/orgchart/demo/js/jquery.orgchart.js') }}" defer></script>
+<script src="{{ asset('assets/orgchart/demo/js/jquery.orgchart.js') }}" defer></script>
 <script src="{{ asset('js/orgchart.js') }}"></script>
 <script src="{{ asset('js/config.js') }}"></script>
 <script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>

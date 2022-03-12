@@ -39,10 +39,10 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <!-- Estilo personalizado en celdas de Datatables -->
-    <link href="{{ asset('vendor/orgchart/demo/css/font-awesome.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('vendor/orgchart/demo/css/jquery.orgchart.css') }}" rel="stylesheet">
-    <link href="{{ asset('vendor/orgchart/demo/css/style.css') }}" rel="stylesheet">
-    <link href="{{ asset('vendor/orgchart/demo/css/orgchart.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/orgchart/demo/css/font-awesome.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/orgchart/demo/css/jquery.orgchart.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/orgchart/demo/css/style.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/orgchart/demo/css/orgchart.css') }}" rel="stylesheet">
     
     <!--JQTree -->
     <link href="{{ asset('css/jqtree.js') }}" rel="stylesheet">
