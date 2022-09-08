@@ -40,7 +40,7 @@
                     <i class="material-icons">account_balance</i>
                   </div>
                   <a href="{{route('proyectos-epc-estandares.index')}}">
-                    <p class="card-category">Estándares</p>
+                    <p class="card-category">Estándars</p>
                     <h3 class='btn btn-danger btn-circle'>{{App\Admin\Proyecto\EPC\Estandar::all()->count()}}</h3>
                   </a>
                 </div>
@@ -52,6 +52,25 @@
                 </div>
               </div>
             </div>
+
+            <div class="col-lg-3 col-md-6 col-sm-6">
+              <div class="card card-stats">
+                <div class="card-header card-header-primary card-header-icon">
+                  <div class="card-icon">
+                    <i class="material-icons">faces</i>
+                  </div>
+                  <p class="card-category">Habilitaciones</p>
+                  <h3 class='btn btn-danger btn-circle'>{{App\Admin\Proyecto\EPC\Servicio::get()->count()}}</h3>
+                </div>
+                <div class="card-footer">
+                  <div class="stats">
+                    <i class="material-icons">search</i>
+                    <a href="{{route('proyectos-epc-servicios.index')}}">Ver todo</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
           <div class="container-fluid">
 

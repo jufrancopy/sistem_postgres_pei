@@ -83,6 +83,12 @@
                         { name: '<a href="{{route('foda-listado-perfiles')}}">Cruce de Ambientes</a>'},
                     ]
                 },
+                {
+                    name: 'Analisis de Riesgo',
+                    children: [
+                        { name: '<a href="{{route('risks.index')}}">Riesgos</a>'},
+                    ]
+                }
 
                 
             ]

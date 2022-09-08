@@ -114,6 +114,9 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Estándares 
     Route::resource('proyectos-epc-estandares', 'Admin\Proyectos\EPC\EstandarController');
+
+    // Riesgos 
+    Route::resource('risks', 'Admin\Planificacion\Riesgo\RiskController');
     
     // Rutas Configuraciones Globales
     Route::get('globales-dashboard', 'Admin\Globales\GlobalesController@dashboard')->name('globales-dashboard');

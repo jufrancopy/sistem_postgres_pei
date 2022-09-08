@@ -11,7 +11,7 @@
 <div class="sidebar-wrapper">
     
     <ul class="nav">
-        {{-- Si tenemos una coleccion de roles pasarmos RoleA|RoleB --}}
+        {{-- Si tenemos una coleccion de roles pasarmos ('RoleA|RoleB') --}}
         @hasanyrole('Administrator')
         <li class="nav-item active  ">
             <a class="nav-link" href="{{url('home')}}">

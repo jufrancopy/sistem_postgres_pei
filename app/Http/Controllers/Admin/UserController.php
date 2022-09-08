@@ -59,14 +59,11 @@ class UserController extends Controller
             'roles' => 'required'
         ]);
 
-
         $input = $request->all();
         $input['password'] = Hash::make($input['password']);
 
-
         $user = User::create($input);
         $user->assignRole($request->input('roles'));
-
 
         return redirect()->route('users.index')
                         ->with('success','Usuario creado satisfactoriamente');
@@ -127,14 +124,11 @@ class UserController extends Controller
             $input = array_except($input,array('password'));    
         }
 
-
         $user = User::find($id);
         $user->update($input);
         DB::table('model_has_roles')->where('model_id',$id)->delete();
 
-
         $user->assignRole($request->input('roles'));
-
 
         return redirect()->route('users.index')
                         ->with('success','Usuario Actualizado satisfactoriamente');
