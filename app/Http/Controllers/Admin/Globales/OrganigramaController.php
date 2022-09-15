@@ -12,8 +12,6 @@ class OrganigramaController extends Controller
 {
     public function index(Request $request)
     {
-        // $dependencias = Organigrama::whereNull('dependency_id')->paginate(10);
-
         return view('admin.globales.organigramas.index', get_defined_vars())
             ->with('i', (request()->input('page', 1) - 1) * 5);
     }
@@ -47,21 +45,23 @@ class OrganigramaController extends Controller
 
     public function create(Request $request)
     {
-        $parents = Organigrama::latest()->get();
+        $parents = Organigrama::pluck('dependency','id');
 
         return view('admin.globales.organigramas.create', get_defined_vars());
     }
 
     public function store(Request $request)
     {
-        // $dependencia = Organigrama::create($request->all());
-
         $parent = Organigrama::create([
-            'dependency' => $request->dependency
+            'dependency' => $request->dependency,
+            'responsable'=>$request->responsable,
+            'telefono'=>$request->telefono,
+            'email'=>$request->email,
         ]);
-        if($request->parent){   
-            $node = Organigrama::find
-            $parent
+
+        if($request->parent && $request->parent !==  null){   
+            $node = Organigrama::find($request->parent);
+            $parent->appendNode($node);
         }
 
         return back()->with('success', 'Dependencia creada correctamente.');

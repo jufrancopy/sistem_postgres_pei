@@ -1,6 +1,3 @@
-{{ Form::hidden('user_id', auth()->user()->id) }}
-{{ Form::hidden('dependency_id', null) }}
-
 <div class="form-group">
     {{ Form::label('dependency', 'Nombre:') }}
     {{ Form::text('dependency', null, ['class' => 'form-control', 'id' => 'nombre']) }}
@@ -9,6 +6,7 @@
 
 <div class="form-group">
     {!! Form::label('parent', 'Dependencia  Emisora:') !!}
+    
     {!! Form::select('parent', $parents, null, [
         'placeholder' => '',
         'class' => 'parent',
@@ -40,7 +38,8 @@
 <script>
     $(document).ready(function() {
         $(".parent").select2({
-            placeholder: "Seleccione Parent",
+            placeholder: "Sin Gerarquía",
+            allowClear: true,
             language: "es"
         });
     });
