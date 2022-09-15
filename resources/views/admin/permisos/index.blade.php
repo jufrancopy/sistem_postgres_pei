@@ -17,7 +17,7 @@
                 @endcan
 
                 <div class="pull-right">
-                    <a class="btn btn-warning pull-right" href="{{ route('globales-dashboard') }}"> Atras</a>
+                    <a class="btn btn-warning pull-right" href="{{ route('globales.dashboard') }}"> Atras</a>
                 </div>
 
             </div>
@@ -83,7 +83,7 @@
         var table = $('.data-table').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{ route('permisos.index') }}",
+            ajax: "{{ route('globales.permisos.index') }}",
             columns: [{
                 data: 'DT_RowIndex',
                 name: 'DT_RowIndex'
@@ -111,7 +111,7 @@
 
         $('body').on('click', '.editPermiso', function() {
             var permiso_id = $(this).data('id');
-            $.get("{{ route('permisos.index') }}" + '/' + permiso_id + '/edit', function(data) {
+            $.get("{{ route('globales.permisos.index') }}" + '/' + permiso_id + '/edit', function(data) {
                 $('#modelHeading').html("Editar Permiso");
                 $('#saveBtn').val("edit-user");
                 $('#ajaxModel').modal('show');
@@ -127,7 +127,7 @@
 
             $.ajax({
                 data: $('#permissionForm').serialize(),
-                url: "{{ route('permisos.store') }}",
+                url: "{{ route('globales.permisos.store') }}",
                 type: "POST",
                 dataType: 'json',
                 success: function(data) {
@@ -151,7 +151,7 @@
 
             $.ajax({
                 type: "DELETE",
-                url: "{{ route('permisos.store') }}" + '/' + permiso_id,
+                url: "{{ route('globales.permisos.store') }}" + '/' + permiso_id,
                 success: function(data) {
                     table.draw();
                 },

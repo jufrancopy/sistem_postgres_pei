@@ -8,7 +8,7 @@
                     <h4 class="card-title ">Formulario {{$formulario->formulario}}</h4>
                     <div class="pull-right">
                         <a class="btn btn-warning pull-right"
-                            href="{{ route('formulario-formularios.index') }}">Volver</a>
+                            href="{{ route('globales.formularios.index') }}">Volver</a>
                     </div>
                 </div>
 

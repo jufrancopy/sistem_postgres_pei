@@ -7,7 +7,7 @@
                     <div class="card-header card-header-info">
                         <h4 class="card-title ">Ver el rol <b>{{ $user->name }}</b></h4>
                         <div class="pull-right">
-                            <a class="btn btn-warning pull-right" href="{{ route('users.index') }}"> Atras</a>
+                            <a class="btn btn-warning pull-right" href="{{ route('globales.users.index') }}"> Atras</a>
                         </div>
                     </div>
                     <div class="card-body">

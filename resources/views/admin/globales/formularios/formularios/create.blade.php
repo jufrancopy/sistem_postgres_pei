@@ -10,7 +10,7 @@
                     <h4 class="card-title ">Agregar nuveo Formulario</h4>
                     </div>
                     <div class="card-body">
-                        {!! Form::open(['route' => 'formulario-formularios.store','files'=>true]) !!}
+                        {!! Form::open(['route' => 'globales.formularios.store','files'=>true]) !!}
                         @include('admin.globales.formularios.formularios.partials.form')
                         {!! Form::close() !!}
                     </div>

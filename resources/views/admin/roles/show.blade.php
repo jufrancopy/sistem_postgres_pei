@@ -8,7 +8,7 @@
                     <div class="card-header card-header-info">
                         <h4 class="card-title ">Ver el rol <b>{{ $role->name }}</b></h4>
                         <div class="pull-right">
-                            <a class="btn btn-warning pull-right" href="{{ route('roles.index') }}"> Atras</a>
+                            <a class="btn btn-warning pull-right" href="{{ route('globales.roles.index') }}"> Atras</a>
                         </div>
                     </div>
                     <div class="card-body">

@@ -7,7 +7,7 @@
                     <div class="card-header card-header-info">
                         <h4 class="card-title ">Crear Nuevo Rol</b>
                         <div class="pull-right">
-                            <a class="btn btn-warning pull-right" href="{{ route('roles.index') }}"> Atras</a>
+                            <a class="btn btn-warning pull-right" href="{{ route('globales.roles.index') }}"> Atras</a>
                         </div>
                     </div>
 
@@ -23,7 +23,7 @@
                     @endif
 
                     <div class="card-body">
-                        {!! Form::open(array('route' => 'roles.store','method'=>'POST')) !!}
+                        {!! Form::open(array('route' => 'globales.roles.store','method'=>'POST')) !!}
                         <div class="content">
                             <div class="col-xs-12 col-sm-12 col-md-12">
                                 <div class="form-group">

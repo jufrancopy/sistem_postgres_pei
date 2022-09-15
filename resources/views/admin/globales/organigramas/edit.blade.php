@@ -6,10 +6,10 @@
       <div class="col-md-12">
         <div class="card">
           <div class="card-header card-header-info">
-            <h4 class="card-title ">Editar Categoría</h4>
+            <h4 class="card-title ">Editar Organigrama</h4>
           </div>
           <div class="card-body">
-            {!! Form::model($dependencia, ['route'=>['organigramas.update', $dependencia->id],
+            {!! Form::model($dependencia, ['route'=>['globales.organigramas.update', $dependencia->id],
             'method'=>'PUT']) !!}
             @include('admin.globales.organigramas.partials.form')
             {!! Form::close() !!}

@@ -9,7 +9,7 @@
                     <h4 class="card-title ">Editar Formulario {{$formulario->formulario}}</h4>
                     </div>
                     <div class="card-body">
-                        {!! Form::model($formulario, ['route'=>['formulario-formularios.update', $formulario->id],
+                        {!! Form::model($formulario, ['route'=>['globales.formularios.update', $formulario->id],
                         'method'=>'PUT']) !!}
                         @include('admin.globales.formularios.formularios.partials.form')
                         {!! Form::close() !!}

@@ -10,7 +10,7 @@
 						<h4 class="card-title ">Agregar Nuevo Organigrama</h4>
 					</div>
 					<div class="card-body">
-						{!! Form::open(['route'=>'organigramas.store']) !!}
+						{!! Form::open(['route'=>'globales.organigramas.store']) !!}
 
 						@include('admin.globales.organigramas.partials.form')
 

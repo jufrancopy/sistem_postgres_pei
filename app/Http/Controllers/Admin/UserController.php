@@ -65,7 +65,7 @@ class UserController extends Controller
         $user = User::create($input);
         $user->assignRole($request->input('roles'));
 
-        return redirect()->route('users.index')
+        return redirect()->route('globales.users.index')
                         ->with('success','Usuario creado satisfactoriamente');
     }
 
@@ -130,7 +130,7 @@ class UserController extends Controller
 
         $user->assignRole($request->input('roles'));
 
-        return redirect()->route('users.index')
+        return redirect()->route('globales.users.index')
                         ->with('success','Usuario Actualizado satisfactoriamente');
     }
 
@@ -144,7 +144,7 @@ class UserController extends Controller
     public function destroy($id)
     {
         User::find($id)->delete();
-        return redirect()->route('users.index')
+        return redirect()->route('globales.users.index')
                         ->with('success','Usuario fue eliminado de la Base de Datos');
     }
 }

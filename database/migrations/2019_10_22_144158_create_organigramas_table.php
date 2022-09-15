@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Kalnoy\Nestedset\NestedSet;
 
 class CreateOrganigramasTable extends Migration
 {
@@ -17,20 +18,22 @@ class CreateOrganigramasTable extends Migration
             $table->bigIncrements('id');
             $table->string('dependency');
 
-            $table->unsignedInteger('dependency_id')->nullable();
-            $table->foreign('dependency_id')->references('id')->on('organigramas')
-                    ->onDelete('cascade')
-                    ->onUpdate('cascade');
-            
+            // $table->unsignedInteger('dependency_id')->nullable();
+            // $table->foreign('dependency_id')->references('id')->on('organigramas')
+            //         ->onDelete('cascade')
+            //         ->onUpdate('cascade');
+
+            $table->nestedSet();
+
             $table->string('responsable');
             $table->integer('telefono');
-            $table->string('email')->unique();        
+            $table->string('email')->unique();
 
-            $table->unsignedInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')
-                    ->onDelete('cascade')
-                    ->onUpdate('cascade');
-            
+            // $table->unsignedInteger('user_id');
+            // $table->foreign('user_id')->references('id')->on('users')
+            //     ->onDelete('cascade')
+            //     ->onUpdate('cascade');
+
             $table->timestamps();
         });
     }
@@ -42,6 +45,11 @@ class CreateOrganigramasTable extends Migration
      */
     public function down()
     {
+        
+        Schema::table('organigramas', function (Blueprint $table) {
+            $table->dropNestedSet();
+        });
+
         Schema::dropIfExists('organigramas');
     }
 }

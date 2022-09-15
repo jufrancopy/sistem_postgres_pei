@@ -12,10 +12,10 @@
                     <div class="card-header card-header-info">
                         <h4 class="card-title ">Panel de Usuarios</h4>
                         @can('role-create')
-                        <a class="btn btn-success" href="{{ route('users.create') }}"> Crear nuevo usuario</a> 
+                        <a class="btn btn-success" href="{{ route('globales.users.create') }}"> Crear nuevo usuario</a> 
                         @endcan
                         <div class="pull-right">
-                            <a class="btn btn-warning" href="{{ route('globales-dashboard') }}"> Atras</a>
+                            <a class="btn btn-warning" href="{{ route('globales.dashboard') }}"> Atras</a>
                         </div>
                     </div>
                         <div class="card-body">
@@ -23,7 +23,7 @@
                                 <table class="table table-striped table-hover">
                                     <!-- AquiBuscador -->
                                     <div class="float-right">
-                                        {!! Form::open(['route' => 'users.index','method' => 'GET', 'class'=>'navbar-form navbar-left pull-right','role'=>'search']) !!}
+                                        {!! Form::open(['route' => 'globales.users.index','method' => 'GET', 'class'=>'navbar-form navbar-left pull-right','role'=>'search']) !!}
                                         <div class="form-group">
                                             {!! Form::text('ci',null, ['class'=>'form-control','placeholder'=>'Buscar Usuario']) !!}
                                         </div>
@@ -56,11 +56,11 @@
                                                 @endforeach @endif
                                             </td>
                                             <td>
-                                                <a class="btn btn-sm btn-info" href="{{ route('users.show',$user->id) }}">Ver</a>
-                                                <a class="btn btn-sm btn-primary" href="{{ route('users.edit',$user->id) }}">Editar</a> 
+                                                <a class="btn btn-sm btn-info" href="{{ route('globales.users.show',$user->id) }}">Ver</a>
+                                                <a class="btn btn-sm btn-primary" href="{{ route('globales.users.edit',$user->id) }}">Editar</a> 
                                                 
 
-                                                {!! Form::open(['route' => ['users.destroy', $user->id], 'method' => 'DELETE', 'style'=>'display:inline']) !!}
+                                                {!! Form::open(['route' => ['globales.users.destroy', $user->id], 'method' => 'DELETE', 'style'=>'display:inline']) !!}
                                                 <button class="btn btn-sm btn-danger" onclick="return confirm('Estas seguro de eliminar a {{$user->name}}. Si lo eliminas también eliminarás los datos asociados a el.')">
                                                 Eliminar
                                                 </button>

@@ -2,17 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-/*
-
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
 
 if (version_compare(PHP_VERSION, '7.2.0', '>=')) {
     error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
@@ -28,15 +17,8 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::group(['middleware' => ['auth']], function () {
 
     //Rutas del tipo Resource
-    Route::resource('permisos', 'Admin\PermissionController');
-    Route::resource('roles', 'Admin\RoleController');
-    Route::resource('users', 'Admin\UserController');
     Route::resource('products', 'Admin\ProductController');
-    Route::resource('organigramas', 'Admin\Globales\OrganigramaController');
-    Route::get('organigramas-crear-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@crearSubDependencia')->name('organigramas-crear-subdependencia');
-    Route::get('organigramas-editar-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@editarSubDependencia')->name('organigramas-editar-subdependencia');
-    Route::get('organigramas-listado', 'Admin\Globales\OrganigramaController@listaOrganigramas')->name('organigramas-listado');
-    Route::get('organigramas-ver/{id}', 'Admin\Globales\OrganigramaController@verOrganigrama')->name('organigramas-ver');
+
 
     //Rutas del Dpto. Planificacion
     Route::get('planificacion-dashboard', 'Admin\Planificacion\PlanificacionController@dashboard')->name('planificacion-dashboard');
@@ -58,11 +40,13 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Route::get('peis-ver-estrategias/{idEstrategia}', 'Admin\Planificacion\Pei\PeiEstrategiaController@verEstrategias')->name('peis-ver-estrategias');
 
+    // Relevamientos
+    Route::get('proyectos-epc-relevamientos/{estandarId}', 'Admin\Proyectos\EPC\RelevamientoController@getFormulario')->name('proyectos-epc-relevamientos-form-dependencia');
 
     // Rutas de Estadisticas
     Route::view('estadisticas-dashboard', 'admin.estadisticas.dashboard')->name('estadisticas-dashboard');
 
-    // Rutas de Proyectos
+    // Rutas de Proyectos 
     Route::view('proyectos-dashboard', 'admin.proyectos.dashboard')->name('proyectos-dashboard');
 
     //Estandar por Complejidad
@@ -70,10 +54,16 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('proyectos-epc-home', 'Admin\Proyectos\EPC\EPCController@getHome')->name('proyectos-epc-home');
     Route::get('proyectos-epc/{type}', 'Admin\Proyectos\EPC\EquipamientoController@getForType')->name('proyectos-epc');
 
+    // Horarios
+    Route::resource('proyectos-epc-horarios', 'Admin\Proyectos\EPC\HorarioController');
+
+    // Horarios
+    Route::resource('proyectos-epc-horarios', 'Admin\Proyectos\EPC\HorarioController');
+
     // TTHH
     Route::resource('proyectos-epc-tthh', 'Admin\Proyectos\EPC\TalentoHumanoController');
     Route::get('tthhs/get',         'Admin\Proyectos\EPC\TalentoHumanoController@get')->name('tthhs.get');
-    
+
     // Equipamientos
     Route::resource('proyectos-epc-equipamientos', 'Admin\Proyectos\EPC\EquipamientoController');
     Route::get('equipamientos/get',         'Admin\Proyectos\EPC\EquipamientoController@get')->name('equipamientos.get');
@@ -83,26 +73,26 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Infraestructuras
     Route::resource('proyectos-epc-infraestructuras', 'Admin\Proyectos\EPC\InfraestructuraController');
-    Route::get('infraestructuras/get','Admin\Proyectos\EPC\InfraestructuraController@get')->name('infraestructuras.get');
-    
+    Route::get('infraestructuras/get', 'Admin\Proyectos\EPC\InfraestructuraController@get')->name('infraestructuras.get');
+
     // Otros Servicios
     Route::resource('proyectos-epc-otros_servs', 'Admin\Proyectos\EPC\OtroServicioController');
-    Route::get('otro-servicios/get','Admin\Proyectos\EPC\OtroServicioController@get')->name('otroServicios.get');
-    
-    
+    Route::get('otro-servicios/get', 'Admin\Proyectos\EPC\OtroServicioController@get')->name('otroServicios.get');
+
+
     // Horarios
     Route::resource('proyectos-epc-horarios', 'Admin\Proyectos\EPC\HorarioController');
-    
-     // Prestaciones
-     Route::resource('proyectos-epc-prestaciones', 'Admin\Proyectos\EPC\PrestacionController');
-     Route::get('prestaciones/get','Admin\Proyectos\EPC\PrestacionController@get')->name('prestaciones.get');
+
+    // Prestaciones
+    Route::resource('proyectos-epc-prestaciones', 'Admin\Proyectos\EPC\PrestacionController');
+    Route::get('prestaciones/get', 'Admin\Proyectos\EPC\PrestacionController@get')->name('prestaciones.get');
 
     // Turnos
     Route::resource('proyectos-epc-turnos', 'Admin\Proyectos\EPC\TurnoController');
-    
+
     // Medicamento e Insumos
     Route::resource('proyectos-epc-mds_ins', 'Admin\Proyectos\EPC\MedicamentoInsumoController');
-    
+
     // Especialidades
     Route::resource('proyectos-epc-especialidades', 'Admin\Proyectos\EPC\EspecialidadController');
     Route::get('proyectos-epc-especialidad/{type}', 'Admin\Proyectos\EPC\EspecialidadController@getForType')->name('especialidades');
@@ -110,16 +100,35 @@ Route::group(['middleware' => ['auth']], function () {
     // Servicios
     Route::resource('proyectos-epc-servicios', 'Admin\Proyectos\EPC\ServicioController');
     Route::get('proyectos-epc-servs/{type}', 'Admin\Proyectos\EPC\ServicioController@getForType')->name('servicios');
-    Route::get('servicios/get','Admin\Proyectos\EPC\ServicioController@get')->name('servicios.get');
+    Route::get('servicios/get', 'Admin\Proyectos\EPC\ServicioController@get')->name('servicios.get');
 
     // Estándares 
     Route::resource('proyectos-epc-estandares', 'Admin\Proyectos\EPC\EstandarController');
 
     // Riesgos 
     Route::resource('risks', 'Admin\Planificacion\Riesgo\RiskController');
-    
+
+    Route::group(['prefix' => 'admin/globales', 'as' => 'globales.'], function () {
+        //Dashboard
+        Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
+        
+        //Roles and permissions
+        Route::resource('users', 'Admin\UserController');
+        Route::resource('permisos', 'Admin\PermissionController');
+        Route::resource('roles', 'Admin\RoleController');
+
+        Route::get('formularios-dependecies', 'Admin\Globales\Formulario\FormularioController@getDependencies')->name('formularios.get-dependencies');
+        Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');
+
+        //Organizational
+        Route::resource('organigramas', 'Admin\Globales\OrganigramaController');
+        Route::get('organigramas-crear-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@crearSubDependencia')->name('organigramas-crear-subdependencia');
+        Route::get('organigramas-editar-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@editarSubDependencia')->name('organigramas-editar-subdependencia');
+        Route::get('organigrama-gestionar/{id}', 'Admin\Globales\OrganigramaController@verOrganigrama')->name('organigrama-gestionar');
+    });
+
     // Rutas Configuraciones Globales
-    Route::get('globales-dashboard', 'Admin\Globales\GlobalesController@dashboard')->name('globales-dashboard');
+    //Route::get('globales-dashboard', 'Admin\Globales\GlobalesController@dashboard')->name('globales-dashboard');
     Route::resource('formulario-variables', 'Admin\Globales\Formulario\VariableController');
     Route::get('formulario-variables-items/{idVariable}', 'Admin\Globales\Formulario\ItemController@itemsVariable')->name('formulario-variables-items');
     Route::get('formulario-agregar-item/{idVariable}', 'Admin\Globales\Formulario\ItemController@agregarItem')->name('formulario-agregar-item');
@@ -130,7 +139,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('formulario-clasificadores-crear-subclasificador/{idClasificador}', 'Admin\Globales\Formulario\ClasificadorController@crearSubClasificador')->name('formulario-clasificadores-crear-subclasificador');
     Route::get('formulario-clasificadores-editar-subclasificador/{idClasificador}', 'Admin\Globales\Formulario\ClasificadorController@editarSubClasificador')->name('formulario-clasificadores-editar-subclasificador');
 
-    Route::resource('formulario-formularios', 'Admin\Globales\Formulario\FormularioController');
+    // Route::resource('formulario-formularios', 'Admin\Globales\Formulario\FormularioController');
 
     //Rutas del Modulo FODA
     Route::resource('foda-modelos', 'Admin\Planificacion\Foda\FodaModeloController');

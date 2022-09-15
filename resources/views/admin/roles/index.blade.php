@@ -15,10 +15,10 @@
                     <div class="card-header card-header-info">
                         <h4 class="card-title ">Panel de Usuarios</h4>
                         @can('role-create')
-                        <a class="btn btn-success" href="{{ route('roles.create') }}"> Nuevo Rol</a>
+                        <a class="btn btn-success" href="{{ route('globales.roles.create') }}"> Nuevo Rol</a>
                         @endcan
                         <div class="pull-right">
-                            <a class="btn btn-warning" href="{{ route('globales-dashboard') }}"> Atras</a>
+                            <a class="btn btn-warning" href="{{ route('globales.dashboard') }}"> Atras</a>
                         </div>
                     </div>
 
@@ -27,9 +27,9 @@
                             <table class="table table-striped table-hover">
                                 <!-- AquiBuscador -->
                                 <div class="float-right">
-                                    {!! Form::open(['route' => 'roles.index','method' => 'GET', 'class'=>'navbar-form navbar-left pull-right','role'=>'search']) !!}
+                                    {!! Form::open(['route' => 'globales.roles.index','method' => 'GET', 'class'=>'navbar-form navbar-left pull-right','role'=>'search']) !!}
                                     <div class="form-group">
-                                        {!! Form::text('ci',null, ['class'=>'form-control','placeholder'=>'Buscar Usuario']) !!}
+                                        {!! Form::text('name',null, ['class'=>'form-control','placeholder'=>'Buscar Role']) !!}
                                     </div>
 
                                     <button type="submit" class="btn btn-default pull-right">Buscar</button>
@@ -51,9 +51,9 @@
                                         <td>{{ ++$i }}</td>
                                         <td>{{ $role->name }}</td>
                                         <td>
-                                            <a class="btn btn-sm btn-info" href="{{ route('roles.show',$role->id) }}">Ver</a>
-                                            <a class="btn btn-sm btn-primary" href="{{ route('roles.edit',$role->id) }}">Editar</a>
-                                            {!! Form::open(['route' => ['roles.destroy', $role->id], 'method' => 'DELETE', 'style'=>'display:inline']) !!}
+                                            <a class="btn btn-sm btn-info" href="{{ route('globales.roles.show',$role->id) }}">Ver</a>
+                                            <a class="btn btn-sm btn-primary" href="{{ route('globales.roles.edit',$role->id) }}">Editar</a>
+                                            {!! Form::open(['route' => ['globales.roles.destroy', $role->id], 'method' => 'DELETE', 'style'=>'display:inline']) !!}
                                             <button class="btn btn-sm btn-danger" onclick="return confirm('Estas seguro de eliminar el rol {{$role->name}}. Si lo eliminas también eliminarás los datos asociados a el.')">
                                                 Eliminar
                                             </button>

@@ -12,11 +12,6 @@ use App\Admin\Globales\Organigrama;
 
 class FormularioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
         $formularios = Formulario::orderBy('id', 'ASC')->paginate(10);
@@ -25,11 +20,15 @@ class FormularioController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    public function getDependencies(Request $request){
+        
+        $data = Organigrama::where('dependency_id', $request->dependency_id)
+            ->with('childrenDependencies')
+            ->get();
+            
+        return response()->json($data);
+    }
+
     public function create()
     {
         $variables = Variable::orderBy('id', 'ASC')->pluck('variable', 'id');
@@ -39,28 +38,18 @@ class FormularioController extends Controller
         return view ('admin.globales.formularios.formularios.create', get_defined_vars());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    
     public function store(Request $request)
     {
         
         $formulario = Formulario::create($request->except(['variable_id']));
+
         $formulario->variables()->attach($request->variable_id);
 
-        return redirect()->route('formulario-formularios.index')
+        return redirect()->route('globales.formularios.index')
             ->with('success', 'Formulario creado exitosamente!');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show(Request $request, $id)
     {
         $formulario = Formulario::find($id);
@@ -69,12 +58,6 @@ class FormularioController extends Controller
         ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         $formulario=Formulario::find($id);
@@ -96,13 +79,7 @@ class FormularioController extends Controller
         return view ('admin.globales.formularios.formularios.edit', get_defined_vars());
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function update(Request $request, $id)
     {
         $formulario = Formulario::find($id);
@@ -110,16 +87,11 @@ class FormularioController extends Controller
         
         $formulario->fill($request->except(['variable_id']))->save();
 
-        return redirect()->route('formulario-formularios.index')
+        return redirect()->route('globales.formularios.index')
             ->with('success', 'Formulario actualizado exitosamente!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+    
     public function destroy($id)
     {
         $formulario = Formulario::find($id);

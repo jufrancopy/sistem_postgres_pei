@@ -29,7 +29,7 @@
               <div class="card-footer">
                 <div class="stats">
                   <i class="material-icons">search</i>
-                  <a href="{{route('users.index')}}">Ver todo</a>
+                  <a href="{{route('globales.users.index')}}">Ver todo</a>
                 </div>
               </div>
             </div>
@@ -46,7 +46,7 @@
                   <div class="card-footer">
                     <div class="stats">
                       <i class="material-icons">search</i>
-                      <a href="{{route('users.index')}}">Ver todo</a>
+                      <a href="{{route('globales.users.index')}}">Ver todo</a>
                     </div>
                   </div>
                 </div>
@@ -66,25 +66,25 @@
 <script>
   var data = [
         {
-            name: 'Roles y Permisos.',
+            name: 'Globales.',
             children: [
-                { name: '<a href="{{route('users.index')}}">Usuarios</a>'},
-                { name: '<a href="{{route('roles.index')}}">Roles</a>'},
-                { name: '<a href="{{route('permisos.index')}}">Permisos</a>'},
+                { name: '<a href="{{route('globales.users.index')}}">Usuarios</a>'},
+                { name: '<a href="{{route('globales.roles.index')}}">Roles</a>'},
+                { name: '<a href="{{route('globales.permisos.index')}}">Permisos</a>'},
             ]
         },    
 
         {
             name: 'Institucionales',
             children: [
-                { name: '<a href="{{route('organigramas-listado')}}">Dependencias</a>'},
+                { name: '<a href="{{route('globales.organigramas.index')}}">Organigramas</a>'},
             ]
         },
 
         {
             name: 'Formularios',
             children: [
-                { name: '<a href="{{route('formulario-formularios.index')}}">Formularios</a>'},
+                { name: '<a href="{{route('globales.formularios.index')}}">Formularios</a>'},
                 { name: '<a href="{{route('formulario-variables.index')}}">Variables</a>'},
                 { name: '<a href="{{route('formulario-clasificadores-listado')}}">Clasificadores</a>'}
             ]

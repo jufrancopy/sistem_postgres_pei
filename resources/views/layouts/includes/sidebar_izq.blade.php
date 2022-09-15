@@ -20,7 +20,7 @@
             </a>
         </li>
         <li class="nav-item ">
-            <a class="nav-link" href="{{route('globales-dashboard')}}">
+            <a class="nav-link" href="{{route('globales.dashboard')}}">
                 <i class="material-icons">settings_applications</i>
                 <p>Globales</p>
             </a>

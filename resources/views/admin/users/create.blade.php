@@ -7,7 +7,7 @@
                     <div class="card-header card-header-info">
                         <h4 class="card-title ">Crear Nuevo Usuario</b>
                             <div class="pull-right">
-                                <a class="btn btn-warning" href="{{ route('users.index') }}"> Volver</a>
+                                <a class="btn btn-warning" href="{{ route('globales.users.index') }}"> Volver</a>
                             </div>
                     </div>
 
@@ -23,7 +23,7 @@
                     @endif
 
                     <div class="card-body">
-                        {!! Form::open(array('route' => 'users.store','method'=>'POST')) !!}
+                        {!! Form::open(array('route' => 'globales.users.store','method'=>'POST')) !!}
                         <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12">
                                 <div class="form-group">

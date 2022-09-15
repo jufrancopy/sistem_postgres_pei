@@ -9,7 +9,7 @@
                     <div class="card-header card-header-info">
                         <h4 class="card-title ">Editar el rol <b>{{ $role->name }}</b></h4>
                         <div class="pull-right">
-                            <a class="btn btn-warning" href="{{ route('roles.index') }}"> Volver</a>
+                            <a class="btn btn-warning" href="{{ route('globales.roles.index') }}"> Volver</a>
                         </div>
                     </div>
 
@@ -24,7 +24,7 @@
                     </div>
                     @endif
                     <div class="card-body">
-                        {!! Form::model($role, ['method' => 'PATCH','route' => ['roles.update', $role->id]]) !!}
+                        {!! Form::model($role, ['method' => 'PATCH','route' => ['globales.roles.update', $role->id]]) !!}
                         <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12">
                                 <div class="form-group">

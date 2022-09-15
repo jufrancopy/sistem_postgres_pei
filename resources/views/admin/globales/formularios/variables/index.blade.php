@@ -18,7 +18,7 @@
                         <a class="btn btn-success" href="{{ route('formulario-variables.create') }}">Nueva Variable</a>
 
                         <div class="pull-right">
-                            <a class="btn btn-warning" href="{{ route('globales-dashboard') }}"> Atras</a>
+                            <a class="btn btn-warning" href="{{ route('globales.dashboard') }}"> Atras</a>
                         </div>
                     </div>
 
