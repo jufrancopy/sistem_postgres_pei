@@ -67,7 +67,7 @@
                                     </div>
                                     <div class="card-footer">
                                         <div class="stats">
-                                            <a href="{{route('globales-dashboard')}}"><button class="btn btn-success">Globales</button></a>
+                                            <a href="{{route('globales.dashboard')}}"><button class="btn btn-success">Globales</button></a>
                                         </div>
                                     </div>
                                 </div>

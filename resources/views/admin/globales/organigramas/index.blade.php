@@ -12,7 +12,7 @@
             </div>
             <div class="card">
                 <div class="card-header card-header-info">
-                    <h4 class="card-title ">Listad de Organigramas</h4>
+                    <h4 class="card-title ">Listado de Organigramas</h4>
                     <a class="btn btn-success" href="{{ route('globales.organigramas.create') }}">Nuevo Organigrama</a>
                     <div class="pull-right">
                         <a class="btn btn-warning pull-right" href="{{ route('globales.dashboard') }}"> Atras</a>
@@ -38,14 +38,21 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Nombre</th>
+                                    <th>Ancestro</th>
                                     <th width="280px">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {{-- @foreach ($dependencias as $key => $dependencia)
+                                @foreach ($dependencias as $key => $dependencia)
                                 <tr>
                                     <td>{{ ++$i }}</td>
                                     <td>{{ $dependencia->dependency }}</td>
+                                    <td>
+                                        @foreach ($dependencia->descendants as $item)
+                                            <span class="badge badge-secondary">{{$item->dependency}},</span>
+                                            
+                                        @endforeach
+                                    </td>
                                     <td>
                                         <a class="btn btn-primary btn-circle" href="{{ route('globales.organigramas.edit',$dependencia->id) }}"><i class="far fa-edit"></i></a>
                                         {!! Form::open(['route' => ['globales.organigramas.destroy', $dependencia->id], 'method' => 'DELETE', 'style'=>'display:inline']) !!}
@@ -57,7 +64,7 @@
                                         <a class="btn btn-info btn-circle" href="{{ route('globales.organigramas.show',$dependencia->id) }}"><i class="far fa-eye"></i></a>
                                     </td>
                                 </tr>
-                                @endforeach --}}
+                                @endforeach
                             </tbody>
                         </table>
                     </div>

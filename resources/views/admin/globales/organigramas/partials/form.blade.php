@@ -6,7 +6,6 @@
 
 <div class="form-group">
     {!! Form::label('parent', 'Dependencia  Emisora:') !!}
-    
     {!! Form::select('parent', $parents, null, [
         'placeholder' => '',
         'class' => 'parent',

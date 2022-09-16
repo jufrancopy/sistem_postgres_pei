@@ -12,6 +12,20 @@ class OrganigramaController extends Controller
 {
     public function index(Request $request)
     {
+        // $dependencias = Organigrama::defaultOrder()->ancestorsOf($id);
+        
+        // $dependencias = Organigrama::withDepth()->with('descendants')->get()->toTree();
+        $dependencias = Organigrama::defaultOrder()->get();
+        // $dependencias = Organigrama::withDepth(0)->get();
+        // $dependencias = Organigrama::reversed()->get();
+        // $dependencias = Organigrama::withDepth()->having('depth', '=', 0)->get();
+        // $depth = $dependencias->depth;
+
+        //  $dependencias = Organigrama::get()->toTree();
+        //  $dependencias = Organigrama::get()->toFlatTree();
+
+        
+
         return view('admin.globales.organigramas.index', get_defined_vars())
             ->with('i', (request()->input('page', 1) - 1) * 5);
     }
@@ -45,36 +59,46 @@ class OrganigramaController extends Controller
 
     public function create(Request $request)
     {
-        $parents = Organigrama::pluck('dependency','id');
+        $parents = Organigrama::pluck('dependency', 'id');
 
         return view('admin.globales.organigramas.create', get_defined_vars());
     }
 
     public function store(Request $request)
     {
-        $parent = Organigrama::create([
+        
+        $dependecie = Organigrama::create([
             'dependency' => $request->dependency,
-            'responsable'=>$request->responsable,
-            'telefono'=>$request->telefono,
-            'email'=>$request->email,
+            'responsable' => $request->responsable,
+            'telefono' => $request->telefono,
+            'email' => $request->email,
         ]);
 
-        if($request->parent && $request->parent !==  null){   
+        if ($request->parent) {
             $node = Organigrama::find($request->parent);
-            $parent->appendNode($node);
+            $node->appendNode($dependecie);
         }
 
         return back()->with('success', 'Dependencia creada correctamente.');
     }
 
     public function show($id)
-    {
-        $dependencias = Organigrama::whereNull('dependency_id')
-            ->where('id', $id)
-            ->with('childrenDependencies')
-            ->get();
+    {   
+        // $dependencia = Organigrama::withDepth()->get();
+        $dependencia = Organigrama::findOrFail($id)->with('descendants')->get()->toTree();
+        // $dependencias = Organigrama::withDepth()->with('descendants')->get()->toTree();
+        // return $dependencia = Organigrama::findOrFail($id)->get();
+        // return $result = Organigrama::defaultOrder()->ancestorsOf(3);
+        
+        // $traverse = function ($dependencias, $prefix = '-') use (&$traverse) {
+        //     foreach ($dependencias as $dependencia) {
+        //         echo PHP_EOL . $prefix . ' ' . $dependencia->dependency;
 
-        $id = $id;
+        //         $traverse($dependencia->children, $prefix . '-');
+        //     }
+        // };
+
+        // $traverse($dependencias);
 
         return view('admin.globales.organigramas.show', get_defined_vars());
     }
