@@ -8,7 +8,7 @@
           <div class="card-header card-header-info">
             <h4 class="card-title ">Editar Sub-Dependencia</h4>
             <div class="pull-right">
-              <a class="btn btn-warning" href="{{ route('globales.organigrama-gestionar', $idDependencia) }}"> Atras</a>
+              <a class="btn btn-warning" href="{{ route('globales.organigrama-gestionar', $rootId) }}"> Atras</a>
           </div>
           </div>
           <div class="card-body">

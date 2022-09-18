@@ -1,18 +1,18 @@
+{{ Form::hidden('parent_id', null) }}
 <div class="form-group">
     {{ Form::label('dependency', 'Nombre:') }}
     {{ Form::text('dependency', null, ['class' => 'form-control', 'id' => 'nombre']) }}
 </div>
-
-
+{{-- 
 <div class="form-group">
-    {!! Form::label('parent', 'Dependencia  Emisora:') !!}
-    {!! Form::select('parent', $parents, null, [
+    {!! Form::label('parent_id', 'Dependencia  Emisora:') !!}
+    {!! Form::select('parent_id', $parents, null, [
         'placeholder' => '',
         'class' => 'parent',
         'style' => 'width:100%',
         'id' => 'parent',
     ]) !!}
-</div>
+</div> --}}
 
 <div class="form-group">
     {{ Form::label('responsable', 'Responsable:') }}
@@ -34,7 +34,7 @@
     {{ Form::submit('Guardar', ['class' => 'bt btn-sm btn-primary']) }}
 </div>
 
-<script>
+{{-- <script>
     $(document).ready(function() {
         $(".parent").select2({
             placeholder: "Sin Gerarquía",
@@ -42,4 +42,4 @@
             language: "es"
         });
     });
-</script>
+</script> --}}

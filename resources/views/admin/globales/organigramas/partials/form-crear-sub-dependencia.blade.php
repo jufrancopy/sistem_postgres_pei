@@ -1,5 +1,5 @@
-{{ Form::hidden('user_id', auth()->user()->id) }}
-{{ Form::hidden('dependency_id', $dependencia_id) }}
+{{ Form::hidden('parent_id', $idDependencia) }}
+
 <div class="form-group">
 	{{	Form::label('dependency', 'Nombre:')	}}
 	{{	Form::text('dependency', null,['class'=>'form-control','id'=>'nombre'])	}}

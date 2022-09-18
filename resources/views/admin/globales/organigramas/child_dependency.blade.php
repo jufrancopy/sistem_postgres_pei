@@ -7,9 +7,9 @@
     </button>
 {!! Form::close() !!}
 </li>
-@if ($child_dependency->dependencies)
+@if ($child_dependency->children)
     <ul>
-        @foreach ($child_dependency->dependencies as $childDependency)
+        @foreach ($child_dependency->children as $childDependency)
             @include('admin.globales.organigramas.child_dependency', ['child_dependency' => $childDependency])
         @endforeach
     </ul>

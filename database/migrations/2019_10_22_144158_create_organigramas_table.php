@@ -24,6 +24,8 @@ class CreateOrganigramasTable extends Migration
             //         ->onUpdate('cascade');
 
             $table->nestedSet();
+            // $table->unsignedBigInteger('parent_id')->nullable();
+
 
             $table->string('responsable');
             $table->integer('telefono');
