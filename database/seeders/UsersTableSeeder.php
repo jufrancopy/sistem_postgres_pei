@@ -29,7 +29,7 @@ class UsersTableSeeder extends Seeder
         ]);
 
         
-        $user->assignRole('Administrator');
+        $user->assignRole('Administrador');
         $permissions = ['role-list', 'role-edit', 'role-create', 'role-delete'];
         
         foreach ($permissions as $permission) {
