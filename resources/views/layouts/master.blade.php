@@ -18,54 +18,54 @@
             <div class="content">
                 <div class="container-fluid">
                     @if (session('info'))
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="alert alert-success">
-                                    {{ session('info') }}
-                                </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-success">
+                                {{ session('info') }}
                             </div>
                         </div>
+                    </div>
                     @endif
                     @if (count($errors))
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="alert alert-danger">
-                                    <ul>
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                                <script>
-                                    $('.alert').slideDown();
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-danger">
+                                <ul>
+                                    @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            <script>
+                                $('.alert').slideDown();
                                     setTimeout(function() {
                                         $('.alert').slideUp();
                                     }, 10000)
-                                </script>
-                            </div>
+                            </script>
                         </div>
+                    </div>
                     @endif
 
 
                     {{-- @if (Session::has('info'))
-                        <div class="container-fluid">
-                            <div class="alert alert-{{ Session::get('typealert') }}" style="display:none;">
-                                {{ Session::get('info') }}
-                                @if ($errors->any())
-                                    <ul>
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                @endif
-                                <script>
-                                    $('.alert').slideDown();
+                    <div class="container-fluid">
+                        <div class="alert alert-{{ Session::get('typealert') }}" style="display:none;">
+                            {{ Session::get('info') }}
+                            @if ($errors->any())
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                            @endif
+                            <script>
+                                $('.alert').slideDown();
                                     setTimeout(function() {
                                         $('.alert').slideUp();
                                     }, 10000)
-                                </script>
-                            </div>
+                            </script>
                         </div>
+                    </div>
                     @endif --}}
                     <main class="py-4">
 
@@ -75,5 +75,4 @@
                     @include('layouts.includes.pie')
                     <!-- Fin Pie -->
 </body>
-
 </html>

@@ -12,7 +12,7 @@
     
     <ul class="nav">
         {{-- Si tenemos una coleccion de roles pasarmos ('RoleA|RoleB') --}}
-        @hasanyrole('Administrator')
+        @hasanyrole('Administrador')
         <li class="nav-item active  ">
             <a class="nav-link" href="{{url('home')}}">
                 <i class="material-icons">dashboard</i>

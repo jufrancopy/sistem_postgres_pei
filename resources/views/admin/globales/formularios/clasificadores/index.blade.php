@@ -15,7 +15,7 @@
                     <h4 class="card-title ">Clasificador</h4>
                     <a class="btn btn-success" href="{{ route('formulario-clasificadores.create') }}">Nuevo Clasificador</a>
                     <div class="pull-right">
-                        <a class="btn btn-warning pull-right" href="{{ route('globales-dashboard') }}"> Atras</a>
+                        <a class="btn btn-warning pull-right" href="{{ route('globales.dashboard') }}"> Atras</a>
                     </div>
                 </div>
                 <div class="card-body">

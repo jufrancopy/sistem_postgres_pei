@@ -14,10 +14,14 @@ Use App\User;
 
 class GlobalesController extends Controller
 {
+    public function __construct(){
+        $this->middleware('role:Administrador');
+    } 
+    
     public function dashboard()
     {
         $totalUsuarios = User::count();
-        $totalDependencias = Organigrama::whereNull('dependency_id')->count();
+        $totalDependencias = Organigrama::whereIsRoot()->count();
 
         return view('admin.globales.dashboard', get_defined_vars());
     }

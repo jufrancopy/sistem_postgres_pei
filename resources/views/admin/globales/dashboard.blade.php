@@ -10,13 +10,9 @@
           <a class="btn btn-warning" href="{{ route('home') }}"> Atras</a>
         </div>
       </div>
-
-      
-
       <div class="card-body">
         <!-- Inicio Cabecera con iconos -->
         <div class="row">
-          
           <div class="col-lg-3 col-md-6 col-sm-6">
             <div class="card card-stats">
               <div class="card-header card-header-primary card-header-icon">
@@ -35,24 +31,23 @@
             </div>
           </div>
           <div class="col-lg-3 col-md-6 col-sm-6">
-                <div class="card card-stats">
-                  <div class="card-header card-header-primary card-header-icon">
-                    <div class="card-icon">
-                        <i class="material-icons">account_balance</i>
-                    </div>
-                    <p class="card-category">Orgs</p>
-                    <h3 class="card-title">{{$totalDependencias}}</h3>
-                  </div>
-                  <div class="card-footer">
-                    <div class="stats">
-                      <i class="material-icons">search</i>
-                      <a href="{{route('globales.users.index')}}">Ver todo</a>
-                    </div>
-                  </div>
+            <div class="card card-stats">
+              <div class="card-header card-header-primary card-header-icon">
+                <div class="card-icon">
+                  <i class="material-icons">account_balance</i>
+                </div>
+                <p class="card-category">Orgs</p>
+                <h3 class="card-title">{{$totalDependencias}}</h3>
+              </div>
+              <div class="card-footer">
+                <div class="stats">
+                  <i class="material-icons">search</i>
+                  <a href="{{route('globales.organigramas.index')}}">Ver todo</a>
                 </div>
               </div>
+            </div>
+          </div>
         </div>
-
         
         <!--Fin de Cabecera con iconos -->
         <p id="tree1"></p>

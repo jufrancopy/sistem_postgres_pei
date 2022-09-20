@@ -7,6 +7,15 @@
         <div class="card">
           <div class="card-header card-header-info">
             <h4 class="card-title ">Editar Organigrama</h4>
+            <div class="pull-right">
+              @if($rootId == null)
+              <a class="btn btn-warning" href="{{ route('globales.organigrama-gestionar', $dependencia->id) }}">
+                Atras</a>
+              @else
+              <a class="btn btn-warning" href="{{ route('globales.organigrama-gestionar', $rootId) }}">
+                Atras</a>
+              @endif
+            </div>
           </div>
           <div class="card-body">
             {!! Form::model($dependencia, ['route'=>['globales.organigramas.update', $dependencia->id],

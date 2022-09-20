@@ -29,7 +29,6 @@
                                     {!! Form::text('nombre',null, ['class'=>'form-control','placeholder'=>'Buscar
                                     Organigrama']) !!}
                                 </div>
-
                                 <button type="submit" class="btn btn-default pull-right">Buscar</button>
                             </div>
 
@@ -55,9 +54,6 @@
                                         @endforeach
                                     </td>
                                     <td>
-                                        <a class="btn btn-primary btn-circle"
-                                            href="{{ route('globales.organigramas.edit',$dependencia->id) }}"><i
-                                                class="far fa-edit"></i></a>
                                         {!! Form::open(['route' => ['globales.organigramas.destroy', $dependencia->id],
                                         'method' => 'DELETE', 'style'=>'display:inline']) !!}
                                         <button class="btn btn-danger btn-circle"

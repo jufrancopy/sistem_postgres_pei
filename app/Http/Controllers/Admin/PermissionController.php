@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Redirect;
 class PermissionController extends Controller
 {
     public function __construct(){
-        $this->middleware('auth');
+        $this->middleware('role:Administrador');
     } 
     /**
      * Display a listing of the resource.

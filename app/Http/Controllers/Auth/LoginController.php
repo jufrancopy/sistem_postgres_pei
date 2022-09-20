@@ -25,7 +25,7 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/admin';
 
     /**
      * Create a new controller instance.
@@ -39,9 +39,9 @@ class LoginController extends Controller
 
     public function authenticated($request , $user){
         if($user->role=='Administrador'){
-            return redirect()->route('home') ;
+            return redirect()->route('admin') ;
         }else{
-            return redirect()->route('planificacion-dashboard') ;
+            return redirect()->route('globales.organigramas.index') ;
         }
     }
 }

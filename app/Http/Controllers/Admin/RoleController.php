@@ -16,10 +16,7 @@ class RoleController extends Controller
 {
     function __construct()
     {
-        //$this->middleware('permission:role-list');
-        //$this->middleware('permission:role-create', ['only' => ['create', 'store']]);
-        //$this->middleware('permission:role-edit', ['only' => ['edit', 'update']]);
-        //$this->middleware('permission:role-delete', ['only' => ['destroy']]);
+        $this->middleware('role:Administrador');
     }
 
     public function index(Request $request)
@@ -42,7 +39,7 @@ class RoleController extends Controller
     {
         $this->validate($request, [
             'name' => 'required|unique:roles,name',
-            'permission' => 'required',
+            // 'permission' => 'required',
         ]);
 
 
@@ -83,7 +80,7 @@ class RoleController extends Controller
     {
         $this->validate($request, [
             'name' => 'required',
-            'permission' => 'required',
+            // 'permission' => 'required',
         ]);
 
         $role = Role::find($id);
