@@ -29,7 +29,7 @@
               <div class="card-footer">
                 <div class="stats">
                   <i class="material-icons">search</i>
-                  <a href="{{route('users.index')}}">Ver todo</a>
+                  <a href="{{route('globales.users.index')}}">Ver todo</a>
                 </div>
               </div>
             </div>
@@ -47,7 +47,7 @@
               <div class="card-footer">
                 <div class="stats">
                   <i class="material-icons">search</i>
-                  <a href="{{route('users.index')}}">Ver todo</a>
+                  <a href="{{route('globales.users.index')}}">Ver todo</a>
                 </div>
               </div>
             </div>

@@ -23,7 +23,7 @@
                         <table class="table table-striped table-hover">
                             <!-- AquiBuscador -->
                             <div class="float-right">
-                                {!! Form::open(['route' => 'organigramas-listado','method' => 'GET',
+                                {!! Form::open(['route' => 'globales.organigramas.index','method' => 'GET',
                                 'class'=>'navbar-form navbar-left pull-right','role'=>'search']) !!}
                                 <div class="form-group">
                                     {!! Form::text('nombre',null, ['class'=>'form-control','placeholder'=>'Buscar
