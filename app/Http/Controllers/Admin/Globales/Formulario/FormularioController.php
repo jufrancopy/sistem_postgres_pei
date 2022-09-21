@@ -53,6 +53,7 @@ class FormularioController extends Controller
     public function show(Request $request, $id)
     {
         $formulario = Formulario::find($id);
+        $dependencia = Organigrama::where('id', $formulario->dependencia_receptor_id)->with('descendants')->first();
 
         return view('admin.globales.formularios.formularios.show', get_defined_vars())
         ->with('i', ($request->input('page', 1) - 1) * 5);

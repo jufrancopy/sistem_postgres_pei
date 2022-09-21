@@ -18,8 +18,8 @@ class ItemController extends Controller
     public function index(Request $request)
     {
         $items = Item::item($request->get('item'))->orderBy('id', 'DESC')->paginate(10);
-        
-        return view ('admin.globales.formularios.items.index', get_defined_vars())
+
+        return view('admin.globales.formularios.items.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
@@ -29,16 +29,16 @@ class ItemController extends Controller
         $idVariable = $request->idVariable;
         $variable = Variable::find($idVariable);
 
-        
         return view('admin.globales.formularios.items.index', get_defined_vars())
-        ->with('i', ($request->input('page', 1) - 1) * 5);
+            ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    public function agregarItem (Request $request, $idVariable){
-        
+    public function agregarItem(Request $request, $idVariable)
+    {
+
         $idVariable = $request->idVariable;
         $variable = Variable::where('id', $idVariable)->first();
-        
+
         return view('admin.globales.formularios.items.create', get_defined_vars());
     }
 
@@ -50,7 +50,7 @@ class ItemController extends Controller
     public function create()
     {
         $variable = Variable::orderBy('id', 'ASC')->pluck('variable', 'id');
-        
+
         return view('admin.globales.formularios.items.create', get_defined_vars());
     }
 
@@ -62,7 +62,14 @@ class ItemController extends Controller
      */
     public function store(Request $request)
     {
-        $item = Item::create($request->all());
+
+        $item = Item::create([
+            'item' => $request->item,
+            'variable_id' => $request->variable_id,
+            'user_id' => $request->user_id,
+            'questions' => json_encode($request->questions)
+        ]);
+        
         $idVariable = $item->variable_id;
         $items = Item::where('id', $idVariable)->paginate(10);
 
@@ -88,11 +95,11 @@ class ItemController extends Controller
      */
     public function edit($id)
     {
-        $item = Item::find($id);
+        dd($item = Item::find($id));
         $idVariable = $item->variable_id;
-        $variable = Variable::where('id', $idVariable)->first();    
+        $variable = Variable::where('id', $idVariable)->first();
 
-        return view ('admin.globales.formularios.items.edit', get_defined_vars());
+        return view('admin.globales.formularios.items.edit', get_defined_vars());
     }
 
     /**
@@ -121,7 +128,7 @@ class ItemController extends Controller
         $variableId = Item::find($id);
         $idVariable = $variableId->variable_id;
         $item = Item::find($id)->delete();
-        
+
         return redirect()->route('formulario-variables-items', $idVariable);
     }
 }

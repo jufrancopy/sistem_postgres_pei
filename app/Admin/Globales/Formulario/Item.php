@@ -3,6 +3,8 @@
 namespace App\Admin\Globales\Formulario;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
 
 class Item extends Model
 {
@@ -10,7 +12,7 @@ class Item extends Model
 
     protected $dateFormat = 'Y-m-d H:i:s';
 
-    protected $fillable = ['item','user_id', 'variable_id'];
+    protected $fillable = ['item','user_id', 'variable_id', 'questions'];
 
     public function dependencia(){
         return $this->belongsTo('App\Admin\Globales\Organigrama');
@@ -29,7 +31,7 @@ class Item extends Model
         if (trim($item) !="")
         {
 
-    $query->where(\DB::raw("CONCAT(item, ' ', id)"), 'LIKE', "%$item%");    
+    $query->where(DB::raw("CONCAT(item, ' ', id)"), 'LIKE', "%$item%");    
         }
         
     }

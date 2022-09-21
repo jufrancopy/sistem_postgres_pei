@@ -16,19 +16,20 @@ class CreateFormularioItemsTable extends Migration
         Schema::create('estadistica.formulario_items', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('item');
+            
+            $table->text('questions');
 
             $table->unsignedInteger('variable_id')->nullable();
             $table->foreign('variable_id')->references('id')->on('estadistica.formulario_variables')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-            
+
             $table->unsignedInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
             $table->timestamps();
-        
         });
     }
 

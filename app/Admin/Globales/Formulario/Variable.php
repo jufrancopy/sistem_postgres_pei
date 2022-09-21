@@ -3,6 +3,8 @@
 namespace App\Admin\Globales\Formulario;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
 
 class Variable extends Model
 {
@@ -21,7 +23,7 @@ class Variable extends Model
         if (trim($variable) !="")
         {
 
-    $query->where(\DB::raw("CONCAT(variable, ' ', id)"), 'LIKE', "%$variable%");    
+    $query->where(DB::raw("CONCAT(variable, ' ', id)"), 'LIKE', "%$variable%");    
         }
         
     }
