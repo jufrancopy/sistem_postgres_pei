@@ -13,7 +13,7 @@
 
                 <div class="card">
                     <div class="card-header card-header-info">
-                    <h4 class="card-title ">Ítems de la variable {{$variable->variable}}</h4>
+                    <h4 class="card-title ">Ítems de la variable {{$variable->name}}</h4>
 
                         <a class="btn btn-success" href="{{ route('formulario-agregar-item', $idVariable) }}">Nuevo Ítem</a>
 
@@ -51,7 +51,8 @@
                                     <tr>
                                         <td>{{ ++$i }}</td>
                                         <td>{{ $item->item }}</td>
-                                        <td>{{ $item->variable->variable }}</td>
+                                        <td>{{ $item->variable->name }}</td>
+                                        
                                         <td>
                                             <a class="btn btn-primary btn-circle" href="{{ route('formulario-items.edit',$item->id) }}"><i class="fa fa-edit" aria-hidden="true"></i></a>
                                             {!! Form::open(['route' => ['formulario-items.destroy', $item->id], 'method' => 'DELETE', 'style'=>'display:inline']) !!}

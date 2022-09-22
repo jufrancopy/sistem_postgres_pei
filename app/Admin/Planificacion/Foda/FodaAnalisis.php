@@ -35,7 +35,6 @@ class FodaAnalisis extends Model
         }
         
     }
-
     
 }
 

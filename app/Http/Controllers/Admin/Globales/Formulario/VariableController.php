@@ -17,21 +17,45 @@ class VariableController extends Controller
      */
     public function index(Request $request)
     {
-        
-        $variables = Variable::variable($request->get('variable'))->orderBy('id', 'ASC')->paginate(10);
+
+        $variables = Variable::whereIsRoot()->paginate(10);
 
         return view('admin.globales.formularios.variables.index', get_defined_vars())
-            ->with('i', ($request->input('page', 1) -1 ) *5);
+            ->with('i', (request()->input('page', 1) - 1) * 5);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    public function verVariable($id)
+    {
+        $variable = Variable::findOrFail($id);
+
+        return view('admin.globales.formularios.variables.variable', get_defined_vars());
+    }
+
+    public function crearItem(Request $request, $idVariable)
+    {
+        $idVariable = $request->idVariable;
+        $variable = Variable::find($idVariable);
+        $parentId = $variable->first()->id;
+        $rootId = Variable::whereAncestorOf($variable)->whereIsRoot()->first()->id;
+
+        return view('admin.globales.formularios.variables.crear_item', get_defined_vars());
+    }
+
+    public function editarItem(Request $request, $idVariable)
+    {
+        $idVariable = $request->idVariable;
+        $variable = Variable::find($idVariable);
+        $parentId = $variable->first()->id;
+        $rootId = Variable::whereAncestorOf($variable)->whereIsRoot()->first()->id;
+
+        return view('admin.globales.formularios.variables.editar_item', get_defined_vars());
+    }
+
     public function create()
     {
-        return view ('admin.globales.formularios.variables.create');
+        $parents = Variable::pluck('name', 'id');
+
+        return view('admin.globales.formularios.variables.create', get_defined_vars());
     }
 
     /**
@@ -42,10 +66,30 @@ class VariableController extends Controller
      */
     public function store(Request $request)
     {
-        $variable = Variable::create($request->all());
-        $variable->save();
+        $variable = Variable::create([
+            'user_id' => $request->user_id,
+            'name' => $request->name,
+            'type' => $request->type
+        ]);
 
-        return redirect()->route('formulario-variables.index')->with('success', 'Variable agregada a la Base de Datos');
+        if ($request->parent_id) {
+            $node = Variable::find($request->parent_id);
+            $node->appendNode($variable);
+        }
+
+        $rootId = Variable::whereAncestorOf($variable)->whereIsRoot()->first()->id;
+
+
+        if ($variable->parent_id == null) {
+            return redirect()->route('globales.gestionar-variable', $variable->id);
+        } else
+            return redirect()->route('globales.gestionar-variable', $rootId);
+
+        // dd($request);
+        // $variable = Variable::create($request->all());
+        // $variable->save();
+
+        // return redirect()->route('formulario-variables.index')->with('success', 'Variable agregada a la Base de Datos');
     }
 
     /**
@@ -68,36 +112,41 @@ class VariableController extends Controller
     public function edit($id)
     {
         $variable = Variable::find($id);
+        $idVariable = $id;
 
         return view('admin.globales.formularios.variables.edit', get_defined_vars());
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         $variable = Variable::find($id);
+
+        $ancestro = $variable->ancestorsAndSelf($id)->where('parent_id', null)->first();
+        $parentRootId = $ancestro->id;
+        $parentId = $request->parent_id;
+
         $variable->fill($request->all())->save();
 
-        return redirect()->route('formulario-variables.index')
-            ->with('success', 'Actualizado exitosamente!');
+        if ($variable->id) {
+            return redirect()->route('globales.gestionar-variable', $parentRootId);
+        } else {
+            return back()->with('success', 'Creado correctamente.');
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
-        $variable= Variable::find($id)->delete();
+        $variable = Variable::find($id);
+        
+        $rootId = Variable::whereAncestorOf($variable)->whereIsRoot()->first()->id;
 
-        return redirect()->route('formulario-variables.index')->with('success', 'Eliminado correctamente!');
+        $variable->delete();
+        
+        if ($rootId) {
+            return redirect()->route('globales.gestionar-variable', $rootId);
+        } else {
+            return redirect()->route('globales.variables.index')->with('success', 'Eliminado correctamente!');
+        }
+        
     }
 }

@@ -1,0 +1,195 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 13.8 (Ubuntu 13.8-1.pgdg20.04+1)
+-- Dumped by pg_dump version 14.4
+
+-- Started on 2022-09-21 17:11:41 -04
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 217 (class 1259 OID 28784908)
+-- Name: organigramas; Type: TABLE; Schema: public; Owner: rysjtiqqmvclax
+--
+
+CREATE TABLE public.organigramas (
+    id bigint NOT NULL,
+    dependency character varying(191) NOT NULL,
+    _lft integer DEFAULT 0 NOT NULL,
+    _rgt integer DEFAULT 0 NOT NULL,
+    parent_id integer,
+    responsable character varying(191) NOT NULL,
+    telefono integer NOT NULL,
+    email character varying(191) NOT NULL,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone
+);
+
+
+ALTER TABLE public.organigramas OWNER TO rysjtiqqmvclax;
+
+--
+-- TOC entry 216 (class 1259 OID 28784906)
+-- Name: organigramas_id_seq; Type: SEQUENCE; Schema: public; Owner: rysjtiqqmvclax
+--
+
+CREATE SEQUENCE public.organigramas_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.organigramas_id_seq OWNER TO rysjtiqqmvclax;
+
+--
+-- TOC entry 4188 (class 0 OID 0)
+-- Dependencies: 216
+-- Name: organigramas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: rysjtiqqmvclax
+--
+
+ALTER SEQUENCE public.organigramas_id_seq OWNED BY public.organigramas.id;
+
+
+--
+-- TOC entry 4042 (class 2604 OID 28784911)
+-- Name: organigramas id; Type: DEFAULT; Schema: public; Owner: rysjtiqqmvclax
+--
+
+ALTER TABLE ONLY public.organigramas ALTER COLUMN id SET DEFAULT nextval('public.organigramas_id_seq'::regclass);
+
+
+--
+-- TOC entry 4181 (class 0 OID 28784908)
+-- Dependencies: 217
+-- Data for Name: organigramas; Type: TABLE DATA; Schema: public; Owner: rysjtiqqmvclax
+--
+
+COPY public.organigramas (id, dependency, _lft, _rgt, parent_id, responsable, telefono, email, created_at, updated_at) FROM stdin;
+2	Hospital Central	2	3	1	El Director	74412	hc@ips.gov.py	2022-09-20 01:34:56	2022-09-20 01:34:56
+48	Hospital Regional de Villarrica	83	84	5	El Director	123123	hrvillarrica@ips.gov.py	2022-09-20 13:51:34	2022-09-20 13:51:34
+15	Centro Medicina Física y Rehabilitación	23	24	4	El Director	123123	medicinafisica@ips.gov.py	2022-09-20 11:58:55	2022-09-20 11:58:55
+3	Hospital Quirúrgico - Ingavi	4	5	1	El Director	74412	ingavi@ips.gov.py	2022-09-20 01:35:25	2022-09-20 01:35:25
+16	Unidad Sanitaria Ypacaraí	25	26	4	El Director	123123	usypacarai@ips.gov.py	2022-09-20 12:01:45	2022-09-20 12:01:45
+50	Unidad Sanitaria Tebicuary	87	88	5	El Director	123123	ustebicuary@ips.gov.py	2022-09-20 13:55:15	2022-09-20 13:55:15
+17	Unidad Sanitaria Villeta	27	28	4	El Director	123123	usvilleta@ips.gov.py	2022-09-20 12:04:19	2022-09-20 12:04:19
+27	Unidad Sanitaria Horqueta	49	50	5	El Director	123123	ushorqueta@ips.gov.py	2022-09-20 12:18:31	2022-09-20 12:18:31
+28	Puesto Sanitario Puerto Pinasco	51	52	5	El Director	123123	pspuertopinasco@ips.gov.py	2022-09-20 12:19:23	2022-09-20 12:19:23
+6	Clinica Periférica Yrendague	7	8	4	El director	74412	yrendague@ips.gov.py	2022-09-20 01:41:51	2022-09-20 01:41:51
+29	Unidad Sanitaria Bahía Negra	53	54	5	El Director	123123	usbahianegra@ips.gov.py	2022-09-20 12:20:05	2022-09-20 12:20:05
+30	Unidad Sanitaria Puerto Casado	55	56	5	El Director	123123	uspuertocasado@ips.gov.py	2022-09-20 12:20:40	2022-09-20 12:20:40
+31	Hospital Regional San Pedro del Ycuamandiyu	57	58	5	El Director	123123	hrsanpedro@ips.gov.py	2022-09-20 12:21:29	2022-09-20 12:21:29
+18	Unidad Sanitaria San Antonio	29	30	4	El Director	123123	ussanantonio@ips.goy.py	2022-09-20 12:04:57	2022-09-20 12:04:57
+32	Unidad Sanitaria San Estanislao	59	60	5	El Director	123123	ussantani@ips.gov.py	2022-09-20 12:25:08	2022-09-20 12:25:08
+7	Clínica Periférica Nanawa	9	10	4	Director nanawa	908755	Nanawa@ips.gov.py	2022-09-20 01:57:25	2022-09-20 01:57:26
+33	Unidad Sanitaria Puerto Rosario	61	62	5	El Director	123123	uspuertorosario@ips.gov.py	2022-09-20 12:26:32	2022-09-20 12:26:32
+34	Puesto Sanitario Itacurubi del Rosario	63	64	5	El Director	123123	psitacurubi@ips.gov.py	2022-09-20 12:28:56	2022-09-20 12:28:56
+35	Puesto Sanitario Puerto Antequera	65	66	5	El Director	123123	psantequera@ips.gov.py	2022-09-20 12:29:39	2022-09-20 12:29:39
+4	Dirección de Hospitales Área Central	6	43	1	El director	74412	areacentral@ips.gov.py	2022-09-20 01:36:04	2022-09-20 01:36:04
+19	Puesto Sanitario Piquete Cue	31	32	4	El Director	123123	pspiquetecue@ips.gov.py	2022-09-20 12:05:41	2022-09-20 12:05:41
+36	Puesto Sanitario Capiibary	67	68	5	El Director	123123	pscapiibary@ips.gov.py	2022-09-20 12:30:17	2022-09-20 12:30:17
+9	Hospital de Luque	11	12	4	Director de Luque	111222	luque@ips.gov.py	2022-09-20 11:46:08	2022-09-20 11:47:45
+37	Puesto Sanitario Chore	69	70	5	El Director	123123	pschore@ips.gov.py	2022-09-20 12:30:50	2022-09-20 12:30:50
+25	Hospital Regional de Concepción	45	46	5	El Director	123123	concepcion@ips.gov.py	2022-09-20 12:16:56	2022-09-20 12:16:56
+20	Puesto Sanitario Itaugua	33	34	4	El Director	123123	psitaugua@ips.gov.py	2022-09-20 12:06:22	2022-09-20 12:06:22
+10	Clínica Periférica Boquerón	13	14	4	Director	123123	boqueron@ips.gov.py	2022-09-20 11:52:59	2022-09-20 11:52:59
+52	Puesto Sanitario José Fasardi	91	92	5	El Director	123123	psfasardi@ips.gov.py	2022-09-20 13:58:15	2022-09-20 13:58:15
+42	Puesto Sanitario San Bernardino	71	72	5	El Director	123123	pssanber@ips.gov.py	2022-09-20 12:39:49	2022-09-20 12:39:49
+11	Clínica Periférica 12 de Junio	15	16	4	El Director	123123	12dejunio@ips.gov.py	2022-09-20 11:55:14	2022-09-20 11:55:14
+21	Puesto Sanitario Guarambare	35	36	4	El Director	123123	psguarambare@ips.gov.py	2022-09-20 12:07:06	2022-09-20 12:07:06
+12	Clínica Periférica Isla Po'i	17	18	4	El Director	123123	islapoi@ips.gov.py	2022-09-20 11:56:16	2022-09-20 11:56:16
+54	Unidad Sanitaria Caaguazú	95	96	5	El Director	123123	uscaaguazu@ips.gov.py	2022-09-20 14:42:32	2022-09-20 14:42:32
+22	Clínica Periférica Campo Vía de Capiata	37	38	4	El Director	123123	capiata@ips.gov.py	2022-09-20 12:08:01	2022-09-20 12:08:02
+44	Puesto Sanitario Tobati	75	76	5	El Director	123123	pstobati@ips.gov.py	2022-09-20 12:42:16	2022-09-20 12:42:16
+56	Puesto Sanitario San José de los Arroyos	99	100	5	El Director	123123	pssanjose@ips.gov.py	2022-09-20 14:44:30	2022-09-20 14:44:30
+14	Centro Odontologico	21	22	4	El Director	123123	odontologia@ips.gov.py	2022-09-20 11:57:47	2022-09-20 11:57:47
+23	Centro de Salud Mental	39	40	4	El Director	123123	saludmental@ips.gov.py	2022-09-20 12:09:23	2022-09-20 12:09:23
+46	PUESTO Sanitario Caraguatay	79	80	5	El Director	123123	pscaraguatay@ips.gov.py	2022-09-20 12:43:37	2022-09-20 12:43:37
+24	Unidad Básica de Atención a la Salud Ita	41	42	4	El Director	123123	ubasita@ips.gov.py	2022-09-20 12:11:58	2022-09-20 12:15:06
+13	Hospital Geriátrico Buongermini	19	20	4	El Director	123123	geriatrico@ips.gov.py	2022-09-20 11:57:01	2022-09-20 12:15:49
+58	Unidad Sanitaria Caazapá	103	104	5	El Director	123123	uscaazapa@ips.gov.py	2022-09-21 15:10:18	2022-09-21 15:10:18
+60	Puesto Sanitario Yuty	107	108	5	El Director	123123	psyuty@ips.gov.py	2022-09-21 15:12:12	2022-09-21 15:12:12
+62	Hospital Regional de Encarnación	111	112	5	El Director	123123	hrencarnacion@ips.gov.py	2022-09-21 15:16:02	2022-09-21 15:16:03
+1	Gerencia de Salud	1	116	\N	El Gerente	74412	gerencia@ips.gov.py	2022-09-20 01:33:13	2022-09-20 01:33:13
+5	Dirección de Hospitales Área Interior	44	115	1	El Director	74412	areainterior@ips.gov.py	2022-09-20 01:36:56	2022-09-20 01:36:56
+26	Unidas Sanitaria Vallemi	47	48	5	El Director	123123	vallemi@ips.gov.py	2022-09-20 12:17:41	2022-09-20 12:17:41
+49	Unidad Sanitaria Iturbe	85	86	5	El Director	123123	usiturbe@ips.gov.py	2022-09-20 13:53:57	2022-09-20 13:53:57
+43	Unidad Sanitaria Eusebio Ayala	73	74	5	El Director	123123	useusebioayala@ips.gov.py	2022-09-20 12:41:28	2022-09-20 12:41:28
+51	Puesto Sanitario Paso Yobay	89	90	5	El Director	123123	pspasoyobay@ips.gov.py	2022-09-20 13:55:58	2022-09-20 13:55:58
+45	Puesto Sanitario Arroyos y Esteros	77	78	5	El Director	123123	psarroyosyesteros@ips.gov.py	2022-09-20 12:42:48	2022-09-20 12:42:48
+47	Unidad Sanitaria Colonia Independencia	81	82	5	El Director	123123	uscolonia@ips.gov.py	2022-09-20 12:44:39	2022-09-20 12:44:39
+53	Hospital Regional Coronel Oviedo	93	94	5	El Director	123123	hroviedo@ips.gov.py	2022-09-20 14:41:48	2022-09-20 14:41:48
+55	Puesto Sanitario Dr Juan Manuel Frutos	97	98	5	El Director	123123	psjmfrutos@ips.gov.py	2022-09-20 14:43:25	2022-09-20 14:43:25
+57	Puesto Sanitario Yhu	101	102	5	El Director	123123	psyhu@ips.gov.py	2022-09-21 15:09:35	2022-09-21 15:09:35
+59	Puesto Sanitario San Juan Nepomuceno	105	106	5	El Director	123123	psnepomuceno@ips.gov.py	2022-09-21 15:11:24	2022-09-21 15:11:24
+61	Puesto Sanitario Yegros	109	110	5	El Director	123123	psyegros@ips.gov.py	2022-09-21 15:12:55	2022-09-21 15:12:55
+63	Unidad Sanitaria Hohenau	113	114	5	El Director	123123	ushohenau@ips.gov.py	2022-09-21 15:16:43	2022-09-21 15:16:43
+\.
+
+
+--
+-- TOC entry 4189 (class 0 OID 0)
+-- Dependencies: 216
+-- Name: organigramas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: rysjtiqqmvclax
+--
+
+SELECT pg_catalog.setval('public.organigramas_id_seq', 63, true);
+
+
+--
+-- TOC entry 4047 (class 2606 OID 28784921)
+-- Name: organigramas organigramas_email_unique; Type: CONSTRAINT; Schema: public; Owner: rysjtiqqmvclax
+--
+
+ALTER TABLE ONLY public.organigramas
+    ADD CONSTRAINT organigramas_email_unique UNIQUE (email);
+
+
+--
+-- TOC entry 4049 (class 2606 OID 28784918)
+-- Name: organigramas organigramas_pkey; Type: CONSTRAINT; Schema: public; Owner: rysjtiqqmvclax
+--
+
+ALTER TABLE ONLY public.organigramas
+    ADD CONSTRAINT organigramas_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4045 (class 1259 OID 28784919)
+-- Name: organigramas__lft__rgt_parent_id_index; Type: INDEX; Schema: public; Owner: rysjtiqqmvclax
+--
+
+CREATE INDEX organigramas__lft__rgt_parent_id_index ON public.organigramas USING btree (_lft, _rgt, parent_id);
+
+
+--
+-- TOC entry 4187 (class 0 OID 0)
+-- Dependencies: 833
+-- Name: LANGUAGE plpgsql; Type: ACL; Schema: -; Owner: postgres
+--
+
+GRANT ALL ON LANGUAGE plpgsql TO rysjtiqqmvclax;
+
+
+-- Completed on 2022-09-21 17:11:56 -04
+
+--
+-- PostgreSQL database dump complete
+--
+

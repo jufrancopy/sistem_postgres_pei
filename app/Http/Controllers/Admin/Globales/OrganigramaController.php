@@ -55,8 +55,8 @@ class OrganigramaController extends Controller
     {
         $dependencia = Organigrama::create([
             'dependency' => $request->dependency,
-            'responsable' => $request->responsable,
-            'telefono' => $request->telefono,
+            'manager' => $request->manager,
+            'phone' => $request->phone,
             'email' => $request->email,
         ]);
 
@@ -67,11 +67,10 @@ class OrganigramaController extends Controller
 
         $rootId = Organigrama::whereAncestorOf($dependencia)->whereIsRoot()->first()->id;
 
-        
+
         if ($dependencia->parent_id == null) {
             return redirect()->route('globales.organigrama-gestionar', $dependencia->id);
         } else
-
             return redirect()->route('globales.organigrama-gestionar', $rootId);
     }
 

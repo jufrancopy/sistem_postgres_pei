@@ -15,7 +15,10 @@ class CreateFormularioVariables extends Migration
     {
         Schema::create('estadistica.formulario_variables', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('variable');
+            $table->string('name');
+            $table->string('type');
+            
+            $table->nestedSet();
 
             $table->unsignedInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')

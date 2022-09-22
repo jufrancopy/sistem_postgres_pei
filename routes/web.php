@@ -125,19 +125,30 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('organigramas-crear-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@crearSubDependencia')->name('organigramas-crear-subdependencia');
         Route::get('organigramas-editar-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@editarSubDependencia')->name('organigramas-editar-subdependencia');
         Route::get('organigrama-gestionar/{id}', 'Admin\Globales\OrganigramaController@verOrganigrama')->name('organigrama-gestionar');
+
+        //Variables de Encuesta
+        Route::resource('variables', 'Admin\Globales\Formulario\VariableController');
+        Route::get('variables-crear-item/{idVariable}', 'Admin\Globales\Formulario\VariableController@crearItem')->name('variables-crear-item');
+        Route::get('variables-editar-item/{idVariable}', 'Admin\Globales\Formulario\VariableController@editarItem')->name('variables-editar-item');
+        Route::get('variable-gestionar/{id}', 'Admin\Globales\Formulario\VariableController@verVariable')->name('gestionar-variable');
+
+        // Servicios
+        Route::resource('servicios', 'Admin\Globales\\ServicioController');
+
+        
     });
 
     // Rutas Configuraciones Globales
     //Route::get('globales-dashboard', 'Admin\Globales\GlobalesController@dashboard')->name('globales-dashboard');
-    Route::resource('formulario-variables', 'Admin\Globales\Formulario\VariableController');
-    Route::get('formulario-variables-items/{idVariable}', 'Admin\Globales\Formulario\ItemController@itemsVariable')->name('formulario-variables-items');
-    Route::get('formulario-agregar-item/{idVariable}', 'Admin\Globales\Formulario\ItemController@agregarItem')->name('formulario-agregar-item');
+    // Route::resource('formulario-variables', 'Admin\Globales\Formulario\VariableController');
+    // Route::get('formulario-variables-items/{idVariable}', 'Admin\Globales\Formulario\ItemController@itemsVariable')->name('formulario-variables-items');
+    // Route::get('formulario-agregar-item/{idVariable}', 'Admin\Globales\Formulario\ItemController@agregarItem')->name('formulario-agregar-item');
 
-    Route::resource('formulario-items', 'Admin\Globales\Formulario\ItemController');
-    Route::resource('formulario-clasificadores', 'Admin\Globales\Formulario\ClasificadorController');
-    Route::get('formulario-clasificadores-listado', 'Admin\Globales\Formulario\ClasificadorController@listaClasificadores')->name('formulario-clasificadores-listado');
-    Route::get('formulario-clasificadores-crear-subclasificador/{idClasificador}', 'Admin\Globales\Formulario\ClasificadorController@crearSubClasificador')->name('formulario-clasificadores-crear-subclasificador');
-    Route::get('formulario-clasificadores-editar-subclasificador/{idClasificador}', 'Admin\Globales\Formulario\ClasificadorController@editarSubClasificador')->name('formulario-clasificadores-editar-subclasificador');
+    // Route::resource('formulario-items', 'Admin\Globales\Formulario\ItemController');
+    // Route::resource('formulario-clasificadores', 'Admin\Globales\Formulario\ClasificadorController');
+    // Route::get('formulario-clasificadores-listado', 'Admin\Globales\Formulario\ClasificadorController@listaClasificadores')->name('formulario-clasificadores-listado');
+    // Route::get('formulario-clasificadores-crear-subclasificador/{idClasificador}', 'Admin\Globales\Formulario\ClasificadorController@crearSubClasificador')->name('formulario-clasificadores-crear-subclasificador');
+    // Route::get('formulario-clasificadores-editar-subclasificador/{idClasificador}', 'Admin\Globales\Formulario\ClasificadorController@editarSubClasificador')->name('formulario-clasificadores-editar-subclasificador');
 
     // Route::resource('formulario-formularios', 'Admin\Globales\Formulario\FormularioController');
 

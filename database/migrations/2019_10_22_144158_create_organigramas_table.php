@@ -18,23 +18,16 @@ class CreateOrganigramasTable extends Migration
             $table->bigIncrements('id');
             $table->string('dependency');
 
-            // $table->unsignedInteger('dependency_id')->nullable();
-            // $table->foreign('dependency_id')->references('id')->on('organigramas')
-            //         ->onDelete('cascade')
-            //         ->onUpdate('cascade');
-
             $table->nestedSet();
-            // $table->unsignedBigInteger('parent_id')->nullable();
 
-
-            $table->string('responsable');
-            $table->integer('telefono');
+            $table->string('manager');
+            $table->integer('phone');
             $table->string('email')->unique();
 
-            // $table->unsignedInteger('user_id');
-            // $table->foreign('user_id')->references('id')->on('users')
-            //     ->onDelete('cascade')
-            //     ->onUpdate('cascade');
+            $table->unsignedInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
 
             $table->timestamps();
         });

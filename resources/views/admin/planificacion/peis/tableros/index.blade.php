@@ -16,7 +16,7 @@
                         <table class="table">
                             <!-- AquiBuscador -->
                             <!-- <div class="float-right">
-                                {!! Form::open(['route' => 'organigramas-listado','method' => 'GET', 'class'=>'navbar-form navbar-left pull-right','role'=>'search']) !!}
+                                {!! Form::open(['route' => 'globales.organigramas.index','method' => 'GET', 'class'=>'navbar-form navbar-left pull-right','role'=>'search']) !!}
                                 <div class="form-group">
                                     {!! Form::text('nombre',null, ['class'=>'form-control','placeholder'=>'Buscar Organigrama']) !!}
                                 </div>

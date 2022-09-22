@@ -80,8 +80,14 @@
             name: 'Formularios',
             children: [
                 { name: '<a href="{{route('globales.formularios.index')}}">Formularios</a>'},
-                { name: '<a href="{{route('formulario-variables.index')}}">Variables</a>'},
-                { name: '<a href="{{route('formulario-clasificadores-listado')}}">Clasificadores</a>'}
+                { name: '<a href="{{route('globales.variables.index')}}">Variables</a>'},
+            ]
+        },
+
+        {
+            name: 'Servicios',
+            children: [
+                { name: '<a href="{{route('globales.servicios.index')}}">Servicios</a>'}
             ]
         },
     ];

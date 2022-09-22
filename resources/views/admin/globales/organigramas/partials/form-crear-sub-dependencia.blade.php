@@ -6,13 +6,13 @@
 </div>
 
 <div class="form-group">
-	{{	Form::label('responsable', 'Responsable:')	}}
-	{{	Form::text('responsable', null,['class'=>'form-control','id'=>'responsable'])	}}
+	{{	Form::label('manager', 'Responsable:')	}}
+	{{	Form::text('manager', null,['class'=>'form-control','id'=>'manager'])	}}
 </div>
 
 <div class="form-group">
-	{{	Form::label('telefono', 'Telefono:')	}}
-	{{	Form::text('telefono', null,['class'=>'form-control','id'=>'telefono'])	}}
+	{{	Form::label('phone', 'Telefono:')	}}
+	{{	Form::text('phone', null,['class'=>'form-control','id'=>'phone'])	}}
 </div>
 
 <div class="form-group">

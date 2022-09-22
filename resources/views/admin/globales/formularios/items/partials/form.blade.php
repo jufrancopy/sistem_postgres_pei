@@ -23,8 +23,8 @@
 </div>
 
 @section('scripts')
-    <script>
-        CKEDITOR.replace('detail');
+<script>
+    CKEDITOR.replace('detail');
 
         $(document).ready(function() {
             var addQuestionQuantity = function(data) {
@@ -64,5 +64,5 @@
 
 
         });
-    </script>
+</script>
 @endsection
