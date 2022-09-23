@@ -9,6 +9,8 @@ use App\Admin\Globales\Formulario\Formulario;
 use App\Admin\Globales\Formulario\Item;
 use App\Admin\Globales\Formulario\Variable;
 use App\Admin\Globales\Organigrama;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
 
 class FormularioController extends Controller
@@ -53,18 +55,28 @@ class FormularioController extends Controller
 
     public function show(Request $request, $id)
     {
-        $formulario = Formulario::find($id);
-        $dependencia = Organigrama::where('id', $formulario->dependencia_receptor_id)->with('descendants')->first();
+        // $authors = Formulario::with('variables')
+        //     ->whereHas('variables', function (Builder $query) {
+        //         $query->where('name', 'like', '');
+        //     })->get();
+        // dd($authors);
+            
+        $items = Formulario::join(
+            'estadistica.formulario_variables AS variable', 
+            'formulario.variable_id', '=', 'variable.id')
+            ->where('formulario.id', $id)
+            ->all();
+            
+        dd($items);
 
-
-        $query = DB::table('estadistica.formulario_variables as p')
-            ->select(DB::raw('p.id, p.parent_id, p.type, p.name, ARRAY[p.id] as ruta, 0 as deph'))
-            ->whereNull('p.parent_id')
+        $query = DB::table('estadistica.formulario_variables as variable')
+            ->select(DB::raw('variable.id, variable.parent_id, variable.type, variable.name, ARRAY[variable.id] as ruta, 0 as deph'))
+            ->whereNull('variable.parent_id')
             ->unionAll(
-                DB::table('estadistica.formulario_variables as p')
-                    ->select(DB::raw('p.id,p.parent_id, p.type, p.name,
-                t.ruta || ARRAY[p.id] as ruta, t.deph + 1 as deph'))
-                    ->join('tree as t', 't.id', '=', 'p.parent_id')
+                DB::table('estadistica.formulario_variables as variable')
+                    ->select(DB::raw('variable.id,variable.parent_id, variable.type, variable.name,
+                t.ruta || ARRAY[variable.id] as ruta, t.deph + 1 as deph'))
+                    ->join('tree as t', 't.id', '=', 'variable.parent_id')
             );
 
         $collection = DB::table('tree')
