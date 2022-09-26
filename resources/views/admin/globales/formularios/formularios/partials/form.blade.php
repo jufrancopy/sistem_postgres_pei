@@ -1,3 +1,6 @@
+{{ Form::hidden('user_id', auth()->user()->id) }}
+{{ Form::hidden('status', 'PENDIENTE') }}
+
 <div class="form-group">
     {{ Form::label('formulario', 'Formulario:') }}
     {{ Form::text('formulario', null, ['class' => 'form-control', 'id' => 'formulario']) }}

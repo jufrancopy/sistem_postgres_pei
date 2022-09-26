@@ -20,6 +20,14 @@ class Variable extends Model
         return $this->hasMany('App\Admin\Globales\Formulario\Item');
     }
 
+    public function formularios(){
+        
+        return $this
+            ->belongsToMany('App\Admin\Globales\Formulario\Formulario', 'estadistica.formulario_formulario_has_variables', 'variable_id','formulario_id' )
+            ->withPivot('value')
+            ->withTimestamps();
+    }
+
     public function scopeVariable($query, $variable)
     {
         if (trim($variable) !="")

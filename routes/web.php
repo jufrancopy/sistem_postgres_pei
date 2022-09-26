@@ -119,7 +119,9 @@ Route::group(['middleware' => ['auth']], function () {
 
         Route::get('formularios-dependecies', 'Admin\Globales\Formulario\FormularioController@getDependencies')->name('formularios.get-dependencies');
         Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');
-
+        Route::get('formulario/{idForm}/response', 'Admin\Globales\Formulario\FormularioController@formUpdate')->name('form-response');
+        Route::post('formulario/{idForm}/response', 'Admin\Globales\Formulario\FormularioController@postResponse')->name('form-response-ok');
+        
         //Organizational
         Route::resource('organigramas', 'Admin\Globales\OrganigramaController');
         Route::get('organigramas-crear-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@crearSubDependencia')->name('organigramas-crear-subdependencia');

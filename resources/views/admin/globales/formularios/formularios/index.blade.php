@@ -57,7 +57,7 @@
                                         <i class="fa fa-trash"></i>
                                         </button>
                                         {!! Form::close() !!}
-                                        
+                                        <a class="btn btn-warning btn-circle" href="{{ route('globales.form-response',$formulario->id) }}"><i class="fa fa-list"></i></a>
                                         <a class="btn btn-info btn-circle" href="{{ route('globales.formularios.show',$formulario->id) }}"><i class="far fa-eye"></i></a>
                                         
                                     </td>

@@ -15,7 +15,8 @@ class CreateFormularioFomularios extends Migration
     {
         Schema::create('estadistica.formulario_formularios', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('formulario');
+            $table->string('formulario')->nullable();
+            $table->string('status')->nullable();
 
             $table->unsignedInteger('dependencia_emisor_id')->nullable();
             $table->foreign('dependencia_emisor_id')->references('id')->on('organigramas')

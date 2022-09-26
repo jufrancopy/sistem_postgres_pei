@@ -19,55 +19,52 @@ class OrganigramasTableSeeder extends Seeder
     {
         DB::table('organigramas')->insert([
             'dependency' => 'Gerencia de Salud',
-            'parent_id'=> null,
-            'manager'=> 'El Gerente',
-            'phone'=> rand(10000, 20000),
-            'email' => Str::random(10).'@ips.gov.py',
+            'parent_id' => null,
+            'manager' => 'El Gerente',
+            'phone' => rand(10000, 20000),
+            'email' => Str::random(10) . '@ips.gov.py',
             'user_id' => 1,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
         DB::table('organigramas')->insert([
             'dependency' => 'Dirección de Hospitales Área Central',
-            'parent_id'=> 1,
-            'manager'=> 'El Director',
-            'phone'=> rand(10000, 20000),
-            'email' => Str::random(10).'@ips.gov.py',
+            'parent_id' => 1,
+            'manager' => 'El Director',
+            'phone' => rand(10000, 20000),
+            'email' => Str::random(10) . '@ips.gov.py',
             'user_id' => 1,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
         DB::table('organigramas')->insert([
             'dependency' => 'Clinica Pereférica Yrendague',
-            'parent_id'=> 2,
-            'manager'=> 'El Director',
-            'phone'=> rand(10000, 20000),
-            'email' => Str::random(10).'@ips.gov.py',
+            'parent_id' => 2,
+            'manager' => 'El Director',
+            'phone' => rand(10000, 20000),
+            'email' => Str::random(10) . '@ips.gov.py',
             'user_id' => 1,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
         DB::table('organigramas')->insert([
             'dependency' => 'Clinica Pereférica Isla Poí',
-            'parent_id'=> 2,
-            'manager'=> 'Dr César Acosta',
-            'phone'=> rand(10000, 20000),
-            'email' => Str::random(10).'@ips.gov.py',
+            'parent_id' => 2,
+            'manager' => 'Dr César Acosta',
+            'phone' => rand(10000, 20000),
+            'email' => Str::random(10) . '@ips.gov.py',
             'user_id' => 1,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
         DB::table('organigramas')->insert([
             'dependency' => 'Clinica Pereférica Nanawa',
-            'parent_id'=> 2,
-            'manager'=> 'Dr Estean Duarte',
-            'phone'=> rand(10000, 20000),
-            'email' => Str::random(10).'@ips.gov.py',
+            'parent_id' => 2,
+            'manager' => 'Dr Estean Duarte',
+            'phone' => rand(10000, 20000),
+            'email' => Str::random(10) . '@ips.gov.py',
             'user_id' => 1,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
-
-        
-
     }
 }
