@@ -61,6 +61,7 @@ class FormularioController extends Controller
         $formularioVariableAttach = [];
 
         foreach ($request->variable_id as $key => $value) {
+
             $formularioVariableAttach[$value] = ['value' => $request->value[$key]];
         }
 
@@ -74,23 +75,21 @@ class FormularioController extends Controller
     {
         $formulario = Formulario::findOrFail($idForm);
 
-        $variablesChecked = [];
-        
-        // Obtener las materias relacionada a la matriculación actual.
+        $selectionChecked = [];
+
         foreach ($formulario->variables as $v) {
-            // Acumular las materias en el array '$materiasChecked'.
-            $variablesChecked[] = $v->pivot->created_at;
+            // $selectionChecked[] = $v->pivot->value == 0 ? 'No' : ($v->pivot->value == 1 ? 'Si' : 'falso');
+            $variable = $v->id;
+            $selectionChecked[$variable] = $v->pivot->value;
         }
-        
 
-
-        // $formulario = Formulario::findOrFail($id);
-
+        // dd($selectionChecked);
         $query = DB::table('estadistica.formulario_formulario_has_variables AS vars')
             ->join('estadistica.formulario_formularios AS form', 'vars.formulario_id', '=', 'form.id')
             ->join('estadistica.formulario_variables AS var', 'vars.variable_id', '=', 'var.id')
             ->select(DB::raw('var.id, var.parent_id, var.type, var.name, ARRAY[var.id] as ruta, 0 as deph'))
             ->whereNull('var.parent_id')
+
             ->where('vars.formulario_id', $idForm)
             ->unionAll(
                 DB::table('estadistica.formulario_variables as variable')
@@ -132,9 +131,6 @@ class FormularioController extends Controller
 
             unset($item->defined);
         });
-
-        // return view('admin.globales.formularios.formularios.index', get_defined_vars())
-        //     ->with('i', ($request->input('page', 1) - 1) * 5);
 
         return view('admin.globales.formularios.formularios.update', get_defined_vars());
     }
