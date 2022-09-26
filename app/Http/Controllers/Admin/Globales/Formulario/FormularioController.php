@@ -81,8 +81,6 @@ class FormularioController extends Controller
             // Acumular las materias en el array '$materiasChecked'.
             $variablesChecked[] = $v->pivot->created_at;
         }
-        
-
 
         // $formulario = Formulario::findOrFail($id);
 
