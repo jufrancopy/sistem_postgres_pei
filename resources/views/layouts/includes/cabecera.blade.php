@@ -14,7 +14,7 @@
 
     <!-- JQTree -->
     <link href="http://www.japurahei.com/css/jqtree.css" rel="stylesheet">
-    
+
     <title>{{ config('app.name', 'PEI') }}</title>
     <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no'
         name='viewport' />
@@ -43,7 +43,7 @@
     <link href="{{ asset('assets/orgchart/demo/css/jquery.orgchart.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/orgchart/demo/css/style.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/orgchart/demo/css/orgchart.css') }}" rel="stylesheet">
-    
+
     <!--JQTree -->
     <link href="{{ asset('css/jqtree.js') }}" rel="stylesheet">
     <!--JQuery Modal
@@ -52,41 +52,57 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script> -->
     <script src="{{ asset('master/assets/js/core/popper.min.js') }}" type="text/javascript"></script>
     <script src="{{ asset('js/app.js') }}" type="text/javascript"></script>
-    
-<style>
-    .data-table td:nth-child(3),
-    .data-table th:nth-child(3) {
-        /* text-align : center; */
-        font-weight: bold;
-    }
+    <style>
+        .data-table td:nth-child(3),
+        .data-table th:nth-child(3) {
+            /* text-align : center; */
+            font-weight: bold;
+        }
 
-    /* Botones circulares */
-    .btn-circle {
-        width: 30px;
-        height: 30px;
-        text-align: center;
-        padding: 6px 0;
-        font-size: 12px;
-        line-height: 1.428571429;
-        border-radius: 15px;
-    }
-    .btn-circle.btn-lg{
-        width: 50px;
-        height: 50px;
-        padding: 10px 16px;
-        font-size: 18px;
-        line-height: 1.33;
-        border-radius: 25px;
-    }    
-    
-    .btn-circle.btn-lx{
-        width: 570px;
-        height: 70px;
-        padding: 10px 16px;
-        font-size: 24px;
-        line-height: 1.33;
-        border-radius: 35px;
-    }   
-</style>
+        /* Botones circulares */
+        .btn-circle {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            padding: 6px 0;
+            font-size: 12px;
+            line-height: 1.428571429;
+            border-radius: 15px;
+        }
+
+        .btn-circle.btn-lg {
+            width: 50px;
+            height: 50px;
+            padding: 10px 16px;
+            font-size: 18px;
+            line-height: 1.33;
+            border-radius: 25px;
+        }
+
+        .btn-circle.btn-lx {
+            width: 570px;
+            height: 70px;
+            padding: 10px 16px;
+            font-size: 24px;
+            line-height: 1.33;
+            border-radius: 35px;
+        }
+
+        #myProgress {
+            width: 100%;
+            background-color: grey;
+        }
+
+        #myBar {
+            width: 10%;
+            height: 30px;
+            background-color: #04AA6D;
+            text-align: center;
+            /* To center it horizontally (if you want) */
+            line-height: 30px;
+            /* To center it vertically */
+            color: white;
+        }
+    </style>
 
 </head>

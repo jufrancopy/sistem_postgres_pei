@@ -33,3 +33,4 @@ const app = new Vue({
 
 
 window.Swal = require('sweetalert2')
+toastr.info("Hola")

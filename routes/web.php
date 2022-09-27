@@ -119,7 +119,7 @@ Route::group(['middleware' => ['auth']], function () {
 
         Route::get('formularios-dependecies', 'Admin\Globales\Formulario\FormularioController@getDependencies')->name('formularios.get-dependencies');
         Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');
-        Route::get('formulario/{idForm}/response', 'Admin\Globales\Formulario\FormularioController@formUpdate')->name('form-response');
+        Route::post('formulario-item/{idForm}/selected', 'Admin\Globales\Formulario\FormularioController@postSelectedItem')->name('form.item.selected');
         Route::post('formulario/{idForm}/response', 'Admin\Globales\Formulario\FormularioController@postResponse')->name('form-response-ok');
         
         //Organizational

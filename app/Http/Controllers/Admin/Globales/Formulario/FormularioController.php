@@ -39,7 +39,7 @@ class FormularioController extends Controller
     {
         $variables = Variable::whereIsRoot()->orderBy('id', 'ASC')->pluck('name', 'id');
         $variablesChecked = [];
-        $dependencias = Organigrama::orderBy('id', 'ASC')->pluck('dependency', 'id');
+
 
         return view('admin.globales.formularios.formularios.create', get_defined_vars());
     }
@@ -58,83 +58,56 @@ class FormularioController extends Controller
             ]
         );
 
+        $status = $request->status;
+
+        if (isset($status)) {
+            $status = 1;
+        } else {
+            $status = 0;
+        }
+
         $formularioVariableAttach = [];
 
-        foreach ($request->variable_id as $key => $value) {
+        $status = $request->status;
 
-            $formularioVariableAttach[$value] = ['value' => $request->value[$key]];
+        foreach ($request->variable_id as $key => $value) {
+            
+            if($request->selected[$key] == null){
+                $status[$key] = 0;
+            }else{
+                $status[$key] = 1;
+            }
+            
+            $formularioVariableAttach[$value] = [
+                'selected_variable_id' => $request->selected[$key],
+                'status' => $status[$key]
+            ];
         }
+
+        $countVariables = count($formulario->variables);
 
         $formulario->variables()->syncWithoutDetaching($formularioVariableAttach);
 
-        return redirect()->route('globales.formularios.index')
+        return redirect()->route('globales.formularios.show', $formulario->id)
             ->with('success', 'Formulario creado exitosamente!');
     }
 
-    public function formUpdate(Request $request, $idForm)
+    public function postSelectedItem(Request $request, $idForm)
     {
-        $formulario = Formulario::findOrFail($idForm);
-
-        $selectionChecked = [];
-
-        foreach ($formulario->variables as $v) {
-            // $selectionChecked[] = $v->pivot->value == 0 ? 'No' : ($v->pivot->value == 1 ? 'Si' : 'falso');
-            $variable = $v->id;
-            $selectionChecked[] = $v->pivot->value;
-            // $selectionChecked[] = $v->id;
-            // $selectionChecked[$variable] = $v->pivot->value;
+        if ($request->ajax()) {
+            $itemSelected = Formulario::findOrFail($idForm);
+            if (!is_null($itemSelected)) {
+                Formulario::setSelected($itemSelected, $request->selected);
+                return response()->json([
+                    'response'  => true,
+                    'message'   => 'Item seleccionado'
+                ]);
+            }
+            return response()->json([
+                'response'  => false,
+                'message'   => 'No seleccionado'
+            ]);
         }
-
-        // dd($selectionChecked);
-        $query = DB::table('estadistica.formulario_formulario_has_variables AS vars')
-            ->join('estadistica.formulario_formularios AS form', 'vars.formulario_id', '=', 'form.id')
-            ->join('estadistica.formulario_variables AS var', 'vars.variable_id', '=', 'var.id')
-            ->select(DB::raw('var.id, var.parent_id, var.type, var.name, ARRAY[var.id] as ruta, 0 as deph'))
-            ->whereNull('var.parent_id')
-
-            ->where('vars.formulario_id', $idForm)
-            ->unionAll(
-                DB::table('estadistica.formulario_variables as variable')
-                    ->select(DB::raw('variable.id,variable.parent_id, variable.type, variable.name,
-                t.ruta || ARRAY[variable.id] as ruta, t.deph + 1 as deph'))
-                    ->join('tree as t', 't.id', '=', 'variable.parent_id')
-            );
-
-        $collection = DB::table('tree')
-            ->select(['*', DB::raw('array_to_json(ruta) as path')])
-            ->withRecursiveExpression('tree', $query)
-            ->orderBy('ruta')
-            ->get();
-
-        $closure = (function ($item) use (&$closure, $collection) {
-            $key = $item->keys()->shift();
-            if (!empty($key) || $key === 0) {
-                if (!isset($collection[$key]->defined)) {
-                    $collection[$key]->defined = true;
-                    $collection[$key]->rowspan = 1;
-                } else {
-                    $collection[$key]->rowspan++;
-                }
-
-                $closure($collection->where('id', $collection[$key]->parent_id));
-            }
-        });
-
-        $collection->reverse()->map(function ($item, $key) use ($closure, $collection) {
-            $item->last = false;
-            $last = $collection->last();
-            if (($last->id != $item->id && $collection[$key + 1]->deph <= $item->deph)
-                || $last->id == $item->id
-            ) {
-                $item->last = true;
-                $item->colspan = $collection->max('deph') - $item->deph + 1;
-                $closure($collection->where('id', $item->parent_id));
-            }
-
-            unset($item->defined);
-        });
-
-        return view('admin.globales.formularios.formularios.update', get_defined_vars());
     }
 
     public function postResponse(Request $request, $idForm)
@@ -145,6 +118,14 @@ class FormularioController extends Controller
     public function show(Request $request, $id)
     {
         $formulario = Formulario::findOrFail($id);
+
+        $selectionChecked = [];
+
+        foreach ($formulario->variables as $v) {
+            $variable = $v->id;
+            $selectionChecked[] = $v->pivot->selected_variable_id;
+        }
+        $countVariables = count($formulario->variables);
 
         $query = DB::table('estadistica.formulario_formulario_has_variables AS vars')
             ->join('estadistica.formulario_formularios AS form', 'vars.formulario_id', '=', 'form.id')

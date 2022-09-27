@@ -24,9 +24,11 @@ class CreateFormularioFormularioHasVariablesTable extends Migration
             $table->unsignedInteger('variable_id');
             $table->foreign('variable_id')->references('id')->on('estadistica.formulario_variables')
                 ->onDelete('cascade')
-                ->onUpdate('cascade'); 
-                
-            $table->integer('value')->nullable();   
+                ->onUpdate('cascade');
+
+            $table->boolean('selected')->default(false);
+            $table->integer('selected_variable_id')->nullable();
+            $table->integer('status')->nullable();
 
             $table->timestamps();
         });
