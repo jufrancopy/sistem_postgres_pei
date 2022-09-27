@@ -80,7 +80,9 @@ class FormularioController extends Controller
         foreach ($formulario->variables as $v) {
             // $selectionChecked[] = $v->pivot->value == 0 ? 'No' : ($v->pivot->value == 1 ? 'Si' : 'falso');
             $variable = $v->id;
-            $selectionChecked[$variable] = $v->pivot->value;
+            $selectionChecked[] = $v->pivot->value;
+            // $selectionChecked[] = $v->id;
+            // $selectionChecked[$variable] = $v->pivot->value;
         }
 
         // dd($selectionChecked);

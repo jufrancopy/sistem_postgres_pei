@@ -55,8 +55,8 @@
                     @elseif (isset($value->colspan))
                     <td colspan="{{ $value->colspan }}">
                         {{ Form::hidden('variable_id[]', $value->id) }}
-                        {{ Form::checkbox('value[]', 1) }} Si
-                        {{ Form::checkbox('value[]', 0) }} No
+                        {{ Form::checkbox('value[]', $value->id) }} Si
+                        {{-- {{ Form::checkbox('value[]', 0) }} No --}}
                     </td>
                     @endif
 
