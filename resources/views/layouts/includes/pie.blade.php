@@ -12,15 +12,16 @@
     <div class="copyright float-right">
       &copy;
       <script>
-      document.write(new Date().getFullYear())
+        document.write(new Date().getFullYear())
       </script>, Hecho con <i class="material-icons">favorite</i> por
-      <a href="https://www.facebook.com/jucfra" target="_blank">Jacobito.</a>
+      <a href="https://www.facebook.com/jucfra" target="_blank">JacEze</a>
     </div>
   </div>
 </footer>
 </div>
 </div>
 <!--   Core JS Files   -->
+<script src="{{ asset('js/app.js') }}" type="text/javascript"></script>
 <script src="{{ asset('js/jquery.js') }}"></script>
 <script src="{{ asset('js/tree.jquery.js') }}"></script>
 <script src="{{ asset('js/jquery.validate.js') }}"></script>
@@ -48,6 +49,9 @@
 <script src="{{ asset('js/config.js') }}"></script>
 <script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
 <script src="{{ asset('js/ckeditor.js') }}"></script>
+
+<!--JQTree -->
+<link href="{{ asset('css/jqtree.js') }}" rel="stylesheet">
 
 
 <!-- Scripts personalizados-->

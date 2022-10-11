@@ -36,6 +36,7 @@
                                     @endforeach
                                 </ul>
                             </div>
+
                             <script>
                                 $('.alert').slideDown();
                                     setTimeout(function() {
@@ -46,33 +47,13 @@
                     </div>
                     @endif
 
-
-                    {{-- @if (Session::has('info'))
-                    <div class="container-fluid">
-                        <div class="alert alert-{{ Session::get('typealert') }}" style="display:none;">
-                            {{ Session::get('info') }}
-                            @if ($errors->any())
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            @endif
-                            <script>
-                                $('.alert').slideDown();
-                                    setTimeout(function() {
-                                        $('.alert').slideUp();
-                                    }, 10000)
-                            </script>
-                        </div>
-                    </div>
-                    @endif --}}
                     <main class="py-4">
-
                         @yield('content')
+                    </main>
 
-                    </main> <!-- Inicio Pie -->
+                    <!-- Inicio Pie -->
                     @include('layouts.includes.pie')
                     <!-- Fin Pie -->
 </body>
+
 </html>

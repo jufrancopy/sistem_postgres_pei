@@ -53310,7 +53310,6 @@ var app = new Vue({
   el: '#app'
 });
 window.Swal = __webpack_require__(/*! sweetalert2 */ "./node_modules/sweetalert2/dist/sweetalert2.all.js");
-toastr.info("Hola");
 
 /***/ }),
 
@@ -53335,6 +53334,9 @@ try {
   __webpack_require__(/*! bootstrap */ "./node_modules/bootstrap/dist/js/bootstrap.js");
 
   toastr = __webpack_require__(/*! toastr */ "./node_modules/toastr/toastr.js");
+  toastr.options = {
+    "progressBar": true
+  };
 } catch (e) {}
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests
@@ -53461,8 +53463,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\Users\jufranco\Desktop\Proyectos\sistem_postgres_pei\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\Users\jufranco\Desktop\Proyectos\sistem_postgres_pei\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! /Users/juliofranco/Desktop/Programacion/sistem_postgres_pei/resources/js/app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! /Users/juliofranco/Desktop/Programacion/sistem_postgres_pei/resources/sass/app.scss */"./resources/sass/app.scss");
 
 
 /***/ })
