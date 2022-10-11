@@ -11,11 +11,14 @@
     </button>
     {!! Form::close() !!}
     @switch($child_item->type)
+    @case($child_item->type == 'level')
+    <span class="badge badge-danger">Nivel</span>
+    @break
     @case($child_item->type == 'service')
     <span class="badge badge-danger">Servicio</span>
     @break
 
-    @case($depchild_itemth1->type == 'require')
+    @case($child_item->type == 'require')
     <span class="badge badge-warning">Requerimiento</span>
     @break
 

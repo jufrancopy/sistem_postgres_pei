@@ -19,6 +19,10 @@
                         @endphp
 
                         @switch($th)
+                            @case($th == 'Level')
+                                <th>Nivel</th>
+                            @break
+
                             @case($th == 'Service')
                                 <th>Servicio</th>
                             @break
@@ -54,13 +58,13 @@
                     @elseif (isset($value->colspan))
                         <td colspan="{{ $value->colspan }}">
                             {{ Form::hidden('variable_id[]', $value->id) }}
-                            
+
                             {{ Form::checkbox('selected[]', $value->id, in_array($value->id, $selectionChecked) ? true : false, [
                                 'class' => 'name',
-                                'id' => 'discount'
+                                'id' => 'discount',
                             ]) }}
                             {{ $value->name }}
-                            
+
                         </td>
                     @endif
 
@@ -84,7 +88,7 @@
         element.addEventListener("click", myFunction);
 
         function myFunction() {
-            document.getElementById("myBar").innerHTML = countVariables -1;
+            document.getElementById("myBar").innerHTML = countVariables - 1;
         }
 
         function move() {

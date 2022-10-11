@@ -28,7 +28,7 @@ class CreateFormularioFormularioHasVariablesTable extends Migration
 
             $table->boolean('selected')->default(false);
             $table->integer('selected_variable_id')->nullable();
-            $table->integer('status')->nullable();
+            $table->integer('value')->nullable();
 
             $table->timestamps();
         });

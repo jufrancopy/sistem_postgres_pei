@@ -57,19 +57,14 @@ class VariableController extends Controller
 
         return view('admin.globales.formularios.variables.create', get_defined_vars());
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    
     public function store(Request $request)
     {
         $variable = Variable::create([
             'user_id' => $request->user_id,
             'name' => $request->name,
-            'type' => $request->type
+            'type' => $request->type,
+            'level' => $request->level,
         ]);
 
         if ($request->parent_id) {
@@ -84,31 +79,8 @@ class VariableController extends Controller
             return redirect()->route('globales.gestionar-variable', $variable->id);
         } else
             return redirect()->route('globales.gestionar-variable', $rootId);
-
-        // dd($request);
-        // $variable = Variable::create($request->all());
-        // $variable->save();
-
-        // return redirect()->route('formulario-variables.index')->with('success', 'Variable agregada a la Base de Datos');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         $variable = Variable::find($id);

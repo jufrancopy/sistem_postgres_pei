@@ -58,29 +58,29 @@ class FormularioController extends Controller
             ]
         );
 
-        $status = $request->status;
+        $values = $request->value;
 
         if (isset($status)) {
-            $status = 1;
+            $values = 1;
         } else {
-            $status = 0;
+            $values = 0;
         }
 
         $formularioVariableAttach = [];
 
-        $status = $request->status;
+        $values = $request->value;
 
         foreach ($request->variable_id as $key => $value) {
             
             if($request->selected[$key] == null){
-                $status[$key] = 0;
+                $values[$key] = 0;
             }else{
-                $status[$key] = 1;
+                $values[$key] = 1;
             }
             
             $formularioVariableAttach[$value] = [
                 'selected_variable_id' => $request->selected[$key],
-                'status' => $status[$key]
+                'value' => $values[$key]
             ];
         }
 

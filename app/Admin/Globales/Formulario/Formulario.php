@@ -18,7 +18,7 @@ class Formulario extends Model
             ->belongsToMany('App\Admin\Globales\Formulario\Variable', 'estadistica.formulario_formulario_has_variables', 'formulario_id', 'variable_id')
             ->withPivot('selected')
             ->withPivot('selected_variable_id')
-            ->withPivot('status')
+            ->withPivot('value')
             ->withTimestamps();
     }
 

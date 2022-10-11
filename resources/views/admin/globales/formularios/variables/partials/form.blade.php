@@ -10,15 +10,16 @@
 <div class="form-group">
     {{ Form::label('type', 'Tipo') }}
     {{ Form::select(
-    'type',
-    [
-    'service' => 'Servicio',
-    'require' => 'Requerimiento',
-    'item' => 'Item',
-    'response' => 'Respuesta'
-    ],
-    null,
-    ['class' => 'form-control', 'placeholder'=>'', 'id'=>'type'],
+        'type',
+        [
+            'level' => 'Nivel',
+            'service' => 'Servicio',
+            'require' => 'Requerimiento',
+            'item' => 'Item',
+            'response' => 'Respuesta',
+        ],
+        null,
+        ['class' => 'form-control', 'placeholder' => '', 'id' => 'level'],
     ) }}
 </div>
 
@@ -27,9 +28,14 @@
 </div>
 
 @section('scripts')
-<script>
-    $(document).ready(function() {
-    $('#type').select2();
-});
-</script>
+    <script>
+        $(document).ready(function() {
+            $('#type').select2({
+                placeholder: "Seleccion el tipo"
+            });
+            $('#level').select2({
+                placeholder: "Seleccion el nivel"
+            });
+        });
+    </script>
 @endsection

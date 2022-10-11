@@ -14,6 +14,9 @@
                     <div class="card-header card-header-info">
                         <h4 class="card-title ">{{$variable->name}}
                             @switch($variable->type)
+                            @case($variable->type == 'level')
+                            <span class="badge badge-secondary">Nivel</span>
+                            @break
                             @case($variable->type == 'service')
                             <span class="badge badge-danger">Servicio</span>
                             @break
@@ -23,6 +26,10 @@
                             @break
 
                             @case($variable->type == 'item')
+                            <span class="badge badge-success">Item</span>
+                            @break
+
+                            @case($variable->type == 'response')
                             <span class="badge badge-success">Item</span>
                             @break
 

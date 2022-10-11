@@ -14,7 +14,7 @@ class Variable extends Model
 
     protected $dateFormat = 'Y-m-d H:i:s';
 
-    protected $fillable = ['name', 'type','user_id'];
+    protected $fillable = ['name','type','user_id'];
 
     public function item(){
         return $this->hasMany('App\Admin\Globales\Formulario\Item');

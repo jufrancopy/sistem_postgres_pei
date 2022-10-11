@@ -7,7 +7,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header card-header-info">
-                    <h4 class="card-title ">Completar Formulario</h4>
+                    <h4 class="card-title ">Completar Formulario {{$formulario->formulario}}</h4>
                     </div>
                     <div class="card-body">
                         {!! Form::open(['route' => 'globales.formularios.store','files'=>true]) !!}
