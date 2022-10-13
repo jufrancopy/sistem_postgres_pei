@@ -53288,6 +53288,10 @@ module.exports = function(module) {
  */
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
+__webpack_require__(/*! ./modal */ "./resources/js/modal.js");
+
+__webpack_require__(/*! ./completed */ "./resources/js/completed.js");
+
 window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
 /**
  * The following block of code may be used to automatically register your
@@ -53321,11 +53325,6 @@ window.Swal = __webpack_require__(/*! sweetalert2 */ "./node_modules/sweetalert2
 /***/ (function(module, exports, __webpack_require__) {
 
 window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
-/**
- * We'll load jQuery and the Bootstrap jQuery plugin which provides support
- * for JavaScript based Bootstrap features such as modals and tabs. This
- * code may be modified to fit the specific needs of your application.
- */
 
 try {
   window.Popper = __webpack_require__(/*! popper.js */ "./node_modules/popper.js/dist/esm/popper.js")["default"];
@@ -53337,22 +53336,11 @@ try {
   toastr.options = {
     "progressBar": true
   };
-} catch (e) {}
-/**
- * We'll load the axios HTTP library which allows us to easily issue requests
- * to our Laravel back-end. This library automatically handles sending the
- * CSRF token as a header based on the value of the "XSRF" token cookie.
- */
+} catch (e) {} // toastr.info('Hola mundo')
 
 
 window.axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-/**
- * Next we will register the CSRF Token as a common header with Axios so that
- * all outgoing HTTP requests automatically have it attached. This is just
- * a simple convenience so we don't have to attach every token manually.
- */
-
 var token = document.head.querySelector('meta[name="csrf-token"]');
 
 if (token) {
@@ -53373,6 +53361,35 @@ if (token) {
 //     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
 //     encrypted: true
 // });
+
+/***/ }),
+
+/***/ "./resources/js/completed.js":
+/*!***********************************!*\
+  !*** ./resources/js/completed.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+$(document).ready(function () {
+  $("table div.checkbox").on("click", "input#ckbox", function () {
+    $('#pleaseWait').modal('show');
+    var complete = $(this).is(':checked') ? 1 : 0;
+    $.post($(this).data('route'), {
+      complete: complete
+    }, function (data) {
+      $('#pleaseWait').modal('hide');
+
+      if (data.response) {
+        if (data.type == 1) {
+          toastr.success(data.message);
+        }
+      } else {
+        toastr.error(data.message);
+      }
+    });
+  });
+});
 
 /***/ }),
 
@@ -53445,6 +53462,49 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/modal.js":
+/*!*******************************!*\
+  !*** ./resources/js/modal.js ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+$(document).ready(function () {
+  $('table').on('click', 'a.delete-record', function (event) {
+    event.preventDefault();
+    $('#form-delete').attr('action', $(this).attr('href'));
+    $('#modal-delete').modal('show');
+  });
+  $('#yes-delete').on('click', function () {
+    $('#pleaseWait').modal('show');
+    $.ajax({
+      type: $('#form-delete').attr('method'),
+      url: $('#form-delete').attr('action'),
+      data: $('#form-delete').serialize(),
+      success: function success(data) {
+        $('#pleaseWait').modal('hide');
+
+        if (data.response) {
+          $('table tr').each(function () {
+            if ($(this).data('id') == data.id) {
+              $(this).fadeOut();
+            }
+          });
+          toastr.success(data.message);
+        } else {
+          toastr.error(data.message);
+        }
+      },
+      error: function error() {
+        $('#pleaseWait').modal('hide');
+        toastr.error('Error, intente más tarde');
+      }
+    });
+  });
+});
+
+/***/ }),
+
 /***/ "./resources/sass/app.scss":
 /*!*********************************!*\
   !*** ./resources/sass/app.scss ***!
@@ -53463,8 +53523,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /Users/juliofranco/Desktop/Programacion/sistem_postgres_pei/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /Users/juliofranco/Desktop/Programacion/sistem_postgres_pei/resources/sass/app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\Users\jufranco\Desktop\Proyectos\sistem_postgres_pei\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\Users\jufranco\Desktop\Proyectos\sistem_postgres_pei\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

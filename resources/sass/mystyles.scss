@@ -1,52 +1,45 @@
 .data-table td:nth-child(3),
-.data-table th:nth-child(3) {
-    /* text-align : center; */
-    font-weight: bold;
-}
-
-
-/* Botones circulares */
-
-.btn-circle {
-    width: 30px;
-    height: 30px;
-    text-align: center;
-    padding: 6px 0;
-    font-size: 12px;
-    line-height: 1.428571429;
-    border-radius: 15px;
-}
-
-.btn-circle.btn-lg {
-    width: 50px;
-    height: 50px;
-    padding: 10px 16px;
-    font-size: 18px;
-    line-height: 1.33;
-    border-radius: 25px;
-}
-
-.btn-circle.btn-lx {
-    width: 570px;
-    height: 70px;
-    padding: 10px 16px;
-    font-size: 24px;
-    line-height: 1.33;
-    border-radius: 35px;
-}
-
-#myProgress {
-    width: 100%;
-    background-color: grey;
-}
-
-#myBar {
-    width: 10%;
-    height: 30px;
-    background-color: #04AA6D;
-    text-align: center;
-    /* To center it horizontally (if you want) */
-    line-height: 30px;
-    /* To center it vertically */
-    color: white;
-}
+        .data-table th:nth-child(3) {
+            /* text-align : center; */
+            font-weight: bold;
+        }
+        /* Botones circulares */
+        .btn-circle {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            padding: 6px 0;
+            font-size: 12px;
+            line-height: 1.428571429;
+            border-radius: 15px;
+        }
+        .btn-circle.btn-lg {
+            width: 50px;
+            height: 50px;
+            padding: 10px 16px;
+            font-size: 18px;
+            line-height: 1.33;
+            border-radius: 25px;
+        }
+        .btn-circle.btn-lx {
+            width: 570px;
+            height: 70px;
+            padding: 10px 16px;
+            font-size: 24px;
+            line-height: 1.33;
+            border-radius: 35px;
+        }
+        #myProgress {
+            width: 100%;
+            background-color: grey;
+        }
+        #myBar {
+            width: 10%;
+            height: 30px;
+            background-color: #04AA6D;
+            text-align: center;
+            /* To center it horizontally (if you want) */
+            line-height: 30px;
+            /* To center it vertically */
+            color: white;
+        }

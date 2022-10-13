@@ -1,17 +1,34 @@
-// Fonts
-@import url('https://fonts.googleapis.com/css?family=Nunito');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons"');
+
 // Variables
 @import 'variables';
-// Bootstrap
-@import '~bootstrap/scss/bootstrap';
-.navbar-laravel {
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-}
 
-// Toastr
-@import '../../node_modules/toastr/toastr.scss';
-@import 'toastr';
-@import 'bg.scss';
-@import 'color.scss';
+
+// // Bootstrap
+// @import '~bootstrap/scss/bootstrap';
+// .navbar-laravel {
+//     background-color: #fff;
+//     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+// }
+
+// // Toastr
+@import '~toastr/toastr.scss';
 @import 'mystyles.scss';
+@import '../../public/css/jqtree.css';
+
+@import '../../public/assets/orgchart/demo/css/jquery.orgchart.css';
+@import '../../public/assets/orgchart/demo/css/orgchart.css';
+@import '../../public/assets/orgchart/demo/css/style.css';
+
+@import '../../public/assets/datatables/css/dataTables.bootstrap4.min.css';
+@import '../../public/assets/datatables/css/jquery.dataTables.min.css';
+@import '../../public/assets/fontawesome/fontawesome-free-6.2.0-web/css/all.css';
+@import '../../public/css/select2.css';
+@import '../../public/master/assets/css/material-dashboard.css';
+
+
+
+
+
+

@@ -31,12 +31,12 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::view('peis-dashboard', 'admin.planificacion.peis.index')->name('peis-dashboard');
     Route::get('ver-cuadro-mando/{idPerfil}', 'Admin\Planificacion\Pei\PeiController@verCuadroDeMando')->name('ver-cuadro-mando');
-    Route::resource('peis-objetivos', 'Admin\Planificacion\Pei\PeiObjetivoController');
-    Route::get('peis-add-objetivos/{idPerfil}', 'Admin\Planificacion\Pei\PeiObjetivoController@addObjetivos')->name('peis-add-objetivos');
-    Route::resource('peis-estrategias', 'Admin\Planificacion\Pei\PeiEstrategiaController');
-    Route::get('peis-add-estrategias/{idObjetivo}', 'Admin\Planificacion\Pei\PeiEstrategiaController@addEstrategias')->name('peis-add-estrategias');
-    Route::resource('peis-programas', 'Admin\Planificacion\Pei\PeiProgramaController');
-    Route::get('peis-add-programas/{idEstrategia}', 'Admin\Planificacion\Pei\PeiProgramaController@addPrograma')->name('peis-add-programas');
+    // Route::resource('peis-objetivos', 'Admin\Planificacion\Pei\PeiObjetivoController');
+    // Route::get('peis-add-objetivos/{idPerfil}', 'Admin\Planificacion\Pei\PeiObjetivoController@addObjetivos')->name('peis-add-objetivos');
+    // Route::resource('peis-estrategias', 'Admin\Planificacion\Pei\PeiEstrategiaController');
+    // Route::get('peis-add-estrategias/{idObjetivo}', 'Admin\Planificacion\Pei\PeiEstrategiaController@addEstrategias')->name('peis-add-estrategias');
+    // Route::resource('peis-programas', 'Admin\Planificacion\Pei\PeiProgramaController');
+    // Route::get('peis-add-programas/{idEstrategia}', 'Admin\Planificacion\Pei\PeiProgramaController@addPrograma')->name('peis-add-programas');
 
     // Route::get('peis-ver-estrategias/{idEstrategia}', 'Admin\Planificacion\Pei\PeiEstrategiaController@verEstrategias')->name('peis-ver-estrategias');
 
@@ -135,7 +135,10 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('variable-gestionar/{id}', 'Admin\Globales\Formulario\VariableController@verVariable')->name('gestionar-variable');
 
         // Servicios
-        Route::resource('servicios', 'Admin\Globales\\ServicioController');
+        Route::resource('servicios', 'Admin\Globales\ServicioController');
+
+        // Catgories
+        Route::resource('categories', 'Backend\CategoryController');
 
         
     });
@@ -163,7 +166,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('foda-aspectos', 'Admin\Planificacion\Foda\FodaAspectoController');
     Route::get('foda-modelo-categoria-aspectos/{idModelo}/{idCategoria}', 'Admin\Planificacion\Foda\FodaModeloController@listadoAspectos')->name('foda-modelo-categoria-aspectos');
     Route::get('foda-modelo-categoria-aspectos-crear/{idCategoria}', 'Admin\Planificacion\Foda\FodaAspectoController@crearAspecto')->name('foda-modelo-categoria-aspectos-crear');
-    Route::resource('fodas', 'Admin\Planificacion\FodaController');
+    // Route::resource('fodas', 'Admin\Planificacion\FodaController');
     Route::resource('foda-perfiles', 'Admin\Planificacion\Foda\FodaPerfilController');
     Route::resource('foda-analisis', 'Admin\Planificacion\Foda\FodaAnalisisController');
     Route::get('foda-ambiente-interno/{idCategoria}/{idPerfil}', 'Admin\Planificacion\Foda\FodaAnalisisController@categoriasAmbienteInterno')->name('foda-ambiente-interno');

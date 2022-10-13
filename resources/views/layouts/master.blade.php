@@ -18,33 +18,33 @@
             <div class="content">
                 <div class="container-fluid">
                     @if (session('info'))
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="alert alert-success">
-                                {{ session('info') }}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-success">
+                                    {{ session('info') }}
+                                </div>
                             </div>
                         </div>
-                    </div>
                     @endif
                     @if (count($errors))
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="alert alert-danger">
-                                <ul>
-                                    @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-danger">
+                                    <ul>
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
 
-                            <script>
-                                $('.alert').slideDown();
+                                <script>
+                                    $('.alert').slideDown();
                                     setTimeout(function() {
                                         $('.alert').slideUp();
                                     }, 10000)
-                            </script>
+                                </script>
+                            </div>
                         </div>
-                    </div>
                     @endif
 
                     <main class="py-4">

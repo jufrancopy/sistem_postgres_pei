@@ -13,7 +13,7 @@ class RelevamientoController extends Controller
         
         $establecimientos = Organigrama::where('');
 
-        return view('admin.proyectos.epc.servicios.create', get_defined_vars())
+        return view('admin.proyectos.epc.servicios.create', get_defined_vars());
     }
 
     public function index()

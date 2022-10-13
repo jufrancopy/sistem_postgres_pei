@@ -65,7 +65,7 @@
                                                 class="fa fa-sitemap" aria-hidden="true"></i></a>
                                         <a class="btn btn-info btn-circle"
                                             href="{{ route('globales.variables.show',$variable->id) }}"><i
-                                                class="far fa-eye"></i></a>
+                                                class="fa-solid fa-eye"></i></a>
                                     </td>
                                 </tr>
                                 @endforeach
