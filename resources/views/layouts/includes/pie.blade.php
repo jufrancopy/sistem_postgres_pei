@@ -22,6 +22,7 @@
 </div>
 <!--   Core JS Files   -->
 <script src="{{ asset('js/app.js') }}" type="text/javascript"></script>
+
 <script src="{{ asset('js/jquery.js') }}"></script>
 <script src="{{ asset('js/tree.jquery.js') }}"></script>
 <script src="{{ asset('js/jquery.validate.js') }}"></script>

@@ -9,6 +9,17 @@ try {
     toastr.options = {
         "progressBar": true,
     };
+
+    // let PerfectScrollbar = require('../../public/master/assets/js/plugins/perfect-scrollbar.jquery.min').default;
+
+    // $.fn.perfectScrollbar = function (options) {
+
+    //     return this.each((k, elm) => new PerfectScrollbar(elm, options || {}));
+    // };
+    
+    // $('.sidebar .sidebar-wrapper, .main-panel').perfectScrollbar();
+    
+    
 } catch (e) {}
 
 // toastr.info('Hola mundo')

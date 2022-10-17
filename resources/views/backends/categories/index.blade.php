@@ -26,7 +26,7 @@
                                         {!! Form::text('nombre', null, [
                                             'class' => 'form-control',
                                             'placeholder' => 'Buscar
-                                                                                                                                                                                                    Organigrama',
+                                                                                                                                                                                                                                            Organigrama',
                                         ]) !!}
                                     </div>
                                     <button type="submit" class="btn btn-default pull-right">Buscar</button>
@@ -82,4 +82,7 @@
             </div>
         </div>
     </div>
+@endsection
+@section('scripts')
+    @include('partials.toastr-messages')    
 @endsection
