@@ -35,6 +35,7 @@ class CategoryController extends Controller
     {
         $category = new Category;
         $category->create($request->all());
+        
         session()->flash('message', [
             'alert' => 'success',
             'text' => 'Categoría creada Correctamente'
