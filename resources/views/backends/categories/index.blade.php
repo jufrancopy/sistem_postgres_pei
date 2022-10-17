@@ -1,8 +1,6 @@
 @extends('layouts.master')
-
-@include('partials.modal')
-
 @section('content')
+    @include('partials.modal')
     <div class="content">
         <div class="container-fluid">
             <div class="row">
@@ -10,9 +8,8 @@
                     <div class="card-header card-header-info">
                         <h4 class="card-title ">Listado de Categorias</h4>
                         <a class="btn btn-success" href="{{ route('globales.categories.create') }}">Agregar Categoría</a>
-                        <div class="pull-right">
-                            <a class="btn btn-warning pull-right" href="{{ route('globales.dashboard') }}"> Atras</a>
-                        </div>
+                        <a class="btn btn-warning float-right" href="{{ route('globales.dashboard') }}"> Atras</a>
+
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -29,7 +26,7 @@
                                         {!! Form::text('nombre', null, [
                                             'class' => 'form-control',
                                             'placeholder' => 'Buscar
-                                                                                                                                                            Organigrama',
+                                                                                                                                                                                                    Organigrama',
                                         ]) !!}
                                     </div>
                                     <button type="submit" class="btn btn-default pull-right">Buscar</button>
@@ -48,7 +45,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($categories as $key => $category)
-                                        <tr data-id="{{$category->id}}">
+                                        <tr data-id="{{ $category->id }}">
                                             <td>{{ ++$i }}</td>
                                             <td>{{ $category->name }}</td>
                                             <td>2</td>
@@ -64,7 +61,8 @@
                                                         class="far fa-edit"></i>
                                                 </a>
 
-                                                <a class="btn btn-danger btn-circle delete-record" href="{{ route('globales.categories.destroy', $category->id) }}"><i
+                                                <a class="btn btn-danger btn-circle delete-record"
+                                                    href="{{ route('globales.categories.destroy', $category->id) }}"><i
                                                         class="far fa-trush"></i>
                                                 </a>
 
