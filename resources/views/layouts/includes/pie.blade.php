@@ -23,7 +23,8 @@
 <!--   Core JS Files   -->
 <script src="{{ asset('js/app.js') }}" type="text/javascript"></script>
 
-<script src="{{ asset('js/jquery.js') }}"></script>
+{{-- JavaScripts --}}
+{{-- <script src="{{ asset('js/jquery.js') }}"></script>
 <script src="{{ asset('js/tree.jquery.js') }}"></script>
 <script src="{{ asset('js/jquery.validate.js') }}"></script>
 <script src="{{ asset('assets/datatables/jquery.dataTables.min.js') }}"></script>
@@ -52,7 +53,7 @@
 <script src="{{ asset('js/ckeditor.js') }}"></script>
 
 <!--JQTree -->
-<link href="{{ asset('css/jqtree.js') }}" rel="stylesheet">
+<link href="{{ asset('css/jqtree.js') }}" rel="stylesheet"> --}}
 
 
 <!-- Scripts personalizados-->

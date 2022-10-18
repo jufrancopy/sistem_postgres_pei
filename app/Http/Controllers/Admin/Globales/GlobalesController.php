@@ -9,14 +9,14 @@ use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
-Use App\User;
+Use App\Models\User;
 
 
 class GlobalesController extends Controller
 {
-    public function __construct(){
-        $this->middleware('role:Administrador');
-    } 
+    // public function __construct(){
+    //     $this->middleware('role:Administrador');
+    // } 
     
     public function dashboard()
     {

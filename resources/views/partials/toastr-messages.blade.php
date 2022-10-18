@@ -15,3 +15,4 @@
         {{session()->forget('message')}}
     @endif
 </script>
+

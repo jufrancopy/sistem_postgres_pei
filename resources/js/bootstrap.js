@@ -10,6 +10,11 @@ try {
         "progressBar": true,
     };
 
+    let PerfectScrollbar = require('perfect-scrollbar/dist/perfect-scrollbar').default;
+    const container = document.querySelector('#container');
+    const ps = new PerfectScrollbar(container);
+
+    
     // let PerfectScrollbar = require('../../public/master/assets/js/plugins/perfect-scrollbar.jquery.min').default;
 
     // $.fn.perfectScrollbar = function (options) {
