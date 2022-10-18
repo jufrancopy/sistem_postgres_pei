@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Passport\HasApiTokens;
