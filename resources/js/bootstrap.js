@@ -3,29 +3,19 @@ window._ = require('lodash');
 try {
     window.Popper = require('popper.js').default;
     window.$ = window.jQuery = require('jquery');
+    // window.$ = window.jQuery = require('../../public/material/js/core/jquery.min.js'); 
+    window.$ = window.jQuery = require('../../public/material/js/core/bootstrap-material-design.min.js'); 
+    
+    
     
     require('bootstrap');
     toastr = require('toastr');
     toastr.options = {
         "progressBar": true,
     };
-
-    let PerfectScrollbar = require('perfect-scrollbar/dist/perfect-scrollbar').default;
-    const container = document.querySelector('#container');
-    const ps = new PerfectScrollbar(container);
-
-    
-    // let PerfectScrollbar = require('../../public/master/assets/js/plugins/perfect-scrollbar.jquery.min').default;
-
-    // $.fn.perfectScrollbar = function (options) {
-
-    //     return this.each((k, elm) => new PerfectScrollbar(elm, options || {}));
-    // };
-    
-    // $('.sidebar .sidebar-wrapper, .main-panel').perfectScrollbar();
-    
     
 } catch (e) {}
+
 
 // toastr.info('Hola mundo')
 window.axios = require('axios');
