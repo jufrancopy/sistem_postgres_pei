@@ -17,6 +17,7 @@
         "fideloper/proxy": "^4.0",
         "filp/whoops": "^2.0",
         "fzaninotto/faker": "^1.4",
+        "intervention/image": "^2.7",
         "jakezatecky/array_group_by": "^2.0",
         "kalnoy/nestedset": "^6.0",
         "laravel-frontend-presets/material-dashboard": "^1.0.6",

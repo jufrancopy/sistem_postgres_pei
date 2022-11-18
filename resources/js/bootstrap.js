@@ -3,16 +3,17 @@ window._ = require('lodash');
 try {
     window.Popper = require('popper.js').default;
     window.$ = window.jQuery = require('jquery');
+    
     // window.$ = window.jQuery = require('../../public/material/js/core/jquery.min.js'); 
     window.$ = window.jQuery = require('../../public/material/js/core/bootstrap-material-design.min.js'); 
-    
-    
     
     require('bootstrap');
     toastr = require('toastr');
     toastr.options = {
         "progressBar": true,
     };
+
+    require('select2');
     
 } catch (e) {}
 
