@@ -89,9 +89,7 @@
                         { name: '<a href="{{route('risks.index')}}">Riesgos</a>'},
                     ]
                 }
-
-                
-            ]
+              ]
         },    
         
         
