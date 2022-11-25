@@ -27,7 +27,7 @@
 </div>
 
 <div class="form-group">
-    {{ Form::label('variable_id', 'Asingne Variables:') }}
+    {{ Form::label('variable_id', 'Asigne Variables:') }}
     <select multiple="multiple" name="variable_id[]" id="variable_id" class="variables" style="width:100%">
         @foreach ($variables as $key => $value)
             <option value="{{ $key }}" {{ in_array($key, $variablesChecked) ? 'selected' : null }}>
