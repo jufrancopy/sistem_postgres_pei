@@ -40,6 +40,8 @@ class FormularioController extends Controller
         $variables = Variable::whereIsRoot()->orderBy('id', 'ASC')->pluck('name', 'id');
         $variablesChecked = [];
 
+        $dependencias = Organigrama::pluck('dependency', 'id');
+
 
         return view('admin.globales.formularios.formularios.create', get_defined_vars());
     }

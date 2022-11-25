@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\User;
+use App\Models\User;
 use Spatie\Permission\Models\Role;
 
 use Illuminate\Support\Facades\DB;
