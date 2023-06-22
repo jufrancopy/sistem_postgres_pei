@@ -70,13 +70,19 @@
                     
                     @php 
                         $total = $valor->ocurrencia * $valor->impacto;
-                        
                     @endphp
                     
                     @switch ($total) 
-                        @case($total >= 0.18)'<td class="badge badge-success">Suficiente ({{$total}})</td>'+ @break
-                        @case($total <= 0.17)'<td class="badge badge-danger">Insuficiente ({{$total}})</td>'+ @break
-                        @case($total = 0)'<td >Pendiente</td>'+ @break
+                        @case($total == 0.00)'<td >Pendiente</td>' +
+                            @break
+                            
+                        @case($total >= 0.18)'<td><strong class="badge badge-success"> ({{$total}})<strong/></td>' +
+                            @break
+                        @case($total <= 0.17)'<td><strong class="badge badge-danger">Insifuciente({{$total}})<strong/></td>' +
+                            @break
+                        
+                        @default
+                            '<td><strong class="badge badge-primary">Pendiente<strong/></td>'+
                     @endswitch
 
                         '<td><a href="{{ route('foda-analisis.edit', $valor->id) }}">Analizar</i></a>'+
