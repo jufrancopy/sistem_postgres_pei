@@ -14,9 +14,9 @@ Use App\Models\User;
 
 class GlobalesController extends Controller
 {
-    // public function __construct(){
-    //     $this->middleware('role:Administrador');
-    // } 
+    public function __construct(){
+        $this->middleware('role:Administrador');
+    } 
     
     public function dashboard()
     {

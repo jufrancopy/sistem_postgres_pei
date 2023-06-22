@@ -16,7 +16,7 @@ class RoleController extends Controller
 {
     function __construct()
     {
-        // $this->middleware('role:Administrador');
+        $this->middleware('role:Administrador');
     }
 
     public function index(Request $request)
