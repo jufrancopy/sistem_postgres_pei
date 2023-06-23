@@ -37,15 +37,15 @@
                                     <!-- Array de Fortalezas -->
                                     <strong>Fortalezas:</strong>
                                     <br /> @foreach($fortalezas as $value)
-                                    <label>{{ Form::checkbox('fortaleza_id[]', $value->id, false, array('class' => 'name')) }}
-                                        F{{ $value->id }} - {{ $value->aspecto->nombre }}</label>
+                                    <label>{{ Form::checkbox('fortaleza_id[]', $value->aspecto->id, false, array('class' => 'name')) }}
+                                        F{{ $value->aspecto->id }} - {{ $value->aspecto->nombre }}</label>
                                     <br /> @endforeach
 
                                     <!-- Array de Oportunidades -->
                                     <strong>Oportunidades:</strong>
                                     <br /> @foreach($oportunidades as $value)
-                                    <label>{{ Form::checkbox('oportunidad_id[]', $value->id, false, array('class' => 'name')) }}
-                                        O{{ $value->id  }} - {{ $value->aspecto->nombre }}</label>
+                                    <label>{{ Form::checkbox('oportunidad_id[]', $value->aspecto->id, false, array('class' => 'name')) }}
+                                        O{{ $value->aspecto->id  }} - {{ $value->aspecto->nombre }}</label>
                                     <br /> @endforeach 
                                 </div>
                                 <div class="form-group">
