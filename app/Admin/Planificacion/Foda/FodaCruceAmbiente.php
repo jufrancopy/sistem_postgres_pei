@@ -13,7 +13,7 @@ class FodaCruceAmbiente extends Model
     protected $fillable = ['user_id', 'perfil_id','fortaleza_id', 'oportunidad_id','debilidad_id','amenaza_id','estrategia', 'tipo'];
 
     public function user(){
-        return $this->belongsTo('App\User');
+        return $this->belongsTo('App\Models\User');
     }
 
     public function perfil(){

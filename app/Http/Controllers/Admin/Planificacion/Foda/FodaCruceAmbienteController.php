@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Admin\Planificacion\Foda;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -51,12 +52,13 @@ class FodaCruceAmbienteController extends Controller
             ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Amenaza')
             ->get();
-        
-        $FOs= FodaCruceAmbiente::where('tipo','=', 'FO')->where('perfil_id','=', $idPerfil)->get();
-        $DOs= FodaCruceAmbiente::where('tipo','=', 'DO')->where('perfil_id','=', $idPerfil)->get();
-        $FAs= FodaCruceAmbiente::where('tipo','=', 'FA')->where('perfil_id','=', $idPerfil)->get();
-        $DAs= FodaCruceAmbiente::where('tipo','=', 'DA')->where('perfil_id','=', $idPerfil)->get();
-        
+
+        $FOs = FodaCruceAmbiente::where('tipo', '=', 'FO')->where('perfil_id', '=', $idPerfil)->get();
+        // dd($FOs);
+        $DOs = FodaCruceAmbiente::where('tipo', '=', 'DO')->where('perfil_id', '=', $idPerfil)->get();
+        $FAs = FodaCruceAmbiente::where('tipo', '=', 'FA')->where('perfil_id', '=', $idPerfil)->get();
+        $DAs = FodaCruceAmbiente::where('tipo', '=', 'DA')->where('perfil_id', '=', $idPerfil)->get();
+
         return view('admin.planificacion.fodas.analisis.cruce-ambientes', get_defined_vars());
     }
 
@@ -64,7 +66,7 @@ class FodaCruceAmbienteController extends Controller
     {
         $idPerfil = $request->idPerfil;
         $matriz =    0.17;
-        
+
         //Ambiente Interno - Fortaleza
         $fortalezas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
@@ -81,7 +83,6 @@ class FodaCruceAmbienteController extends Controller
 
         return view('admin.planificacion.fodas.analisis.cruces.fo', get_defined_vars());
     }
-
 
     public function DO(Request $request, $idPerfil)
     {
@@ -113,7 +114,7 @@ class FodaCruceAmbienteController extends Controller
         foreach ($oportunidades as $v) {
             $oportunidadesChecked[] = $v->aspecto->id;
         }
-        
+
         return view('admin.planificacion.fodas.analisis.cruces.do', get_defined_vars());
     }
 
@@ -149,8 +150,9 @@ class FodaCruceAmbienteController extends Controller
         }
         return view('admin.planificacion.fodas.analisis.cruces.fa', get_defined_vars());
     }
-        public function DA(Request $request, $idPerfil)
-        {
+
+    public function DA(Request $request, $idPerfil)
+    {
         $idPerfil = $request->idPerfil;
         $matriz =    0.17;
 
@@ -179,107 +181,119 @@ class FodaCruceAmbienteController extends Controller
         foreach ($amenazas as $v) {
             $amenazasChecked[] = $v->aspecto->id;
         }
-        
+
 
         return view('admin.planificacion.fodas.analisis.cruces.da', get_defined_vars());
     }
 
-   
     public function store(Request $request)
     {
         // //Insertar un array en un campo
         // $cruces = $request->all();
         // $cruces['oportunidad_id'] = implode(',',$request->oportunidad_id);
         // FodaCruceAmbiente::create($cruces);
-        
+
         $cruce = FodaCruceAmbiente::create($request->except(['fortaleza_id', 'debilidad_id', 'oportunidad_id', 'amenaza_id']));
-        
+
         $cruce->fortalezas()->attach($request->fortaleza_id);
         $cruce->oportunidades()->attach($request->oportunidad_id);
         $cruce->debilidades()->attach($request->debilidad_id);
         $cruce->amenazas()->attach($request->amenaza_id);
-        
-        $idPerfil = $cruce->perfil_id; 
+
+        $idPerfil = $cruce->perfil_id;
 
         return redirect()->route('foda-cruce-ambientes', $idPerfil)
             ->with('success', 'Estrategia Creada Satisfactoriamente');
-        
     }
 
-public function descargarCrucePdf(Request $request, $idPerfil){
-        
+    public function descargarCrucePdf(Request $request, $idPerfil)
+    {
         $idPerfil = $request->idPerfil;
-        $matriz = 0.17;
-        $cruce = FodaCruceAmbiente::where('perfil_id', '=', $idPerfil)->get();
-        $perfilNombre = isset($cruce[0]->perfil->nombre) ? $cruce[0]->perfil->nombre : '';
-        $contexto = isset($cruce[0]->perfil->contexto) ? $cruce[0]->perfil->contexto : '';
-        $autor = isset($cruce[0]->user->name) ? $cruce[0]->user->name : '';
-        $modelo = isset($cruce[0]->perfil->modelo->nombre) ? $cruce[0]->perfil->modelo->nombre : '';
-        
+        $cruce = FodaCruceAmbiente::where('perfil_id', $idPerfil)->first();
+        $perfilNombre = $cruce->perfil->nombre ?? '';
+        $contexto = $cruce->perfil->contexto ?? '';
+        $autor = $cruce->user->name ?? '';
+        $modelo = $cruce->perfil->modelo->nombre ?? '';
+
         $pdf = new PDF();
         $pdf->AddPage();
-        $pdf->SetFont('Arial','',12);
-        $pdf->SetTextColor(138,135,135);
-        $pdf->Cell(50,0,utf8_decode('Perfiles: '));
-        $pdf->Cell(0,0,utf8_decode($perfilNombre),0,1, 'L');
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->SetTextColor(138, 135, 135);
+
+
+        $pdf->SetFont('helvetica', 'B', 12);
+        $pdf->Cell(50, 0, iconv('UTF-8', 'CP1252', 'Perfil: '));
+        $pdf->SetFont('helvetica', '', 12);
+        $pdf->Cell(0, 0, iconv('UTF-8', 'CP1252', $perfilNombre), 0, 1, 'L');
         $pdf->Ln(10);
 
-        $pdf->Cell(50,0,utf8_decode('Contexto: '));
-        $pdf->Cell(0,0,utf8_decode($contexto),0,1, 'L');
+        $pdf->SetFont('helvetica', 'B', 12);
+        $pdf->Cell(50, 0, iconv('UTF-8', 'CP1252', 'Analista: '));
+        $pdf->SetFont('helvetica', '', 12);
+        $pdf->Cell(0, 0, iconv('UTF-8', 'CP1252', $autor), 0, 1, 'L');
         $pdf->Ln(10);
 
-        $pdf->Cell(50,0,utf8_decode('Creado por: '));
-        $pdf->Cell(0,0,utf8_decode($autor),0,1, 'L');
+        $pdf->SetFont('helvetica', 'B', 12);
+        $pdf->Cell(50, 0, iconv('UTF-8', 'CP1252', 'Contexto: '));
+        $pdf->SetFont('helvetica', '', 12);
+        $pdf->Cell(0, 0, iconv('UTF-8', 'CP1252', $contexto), 0, 1, 'L');
         $pdf->Ln(10);
-        
-        $pdf->Cell(50,0,utf8_decode('Modelo de Analisis: '));
-        $pdf->Cell(0,0,utf8_decode($modelo),0,1, 'L');
+
+        $pdf->SetFont('helvetica', 'B', 12);
+        $pdf->Cell(50, 0, iconv('UTF-8', 'CP1252', 'Modelo de Análisis: '));
+        $pdf->SetFont('helvetica', '', 12);
+        $pdf->Cell(0, 0, iconv('UTF-8', 'CP1252', $modelo), 0, 1, 'L');
         $pdf->Ln(10);
-        
-        $pdf->SetTitle ($perfilNombre, true);
+
+        $pdf->SetTitle($perfilNombre, true);
         $pdf->SetAuthor($autor, true);
-        $pdf->SetCreator($autor, true);
 
-        $column_width = ($pdf->GetPageWidth() - 30) / 2;
+        $column_width = $pdf->GetPageWidth() - 20;
 
-        $FO = "Estrategias Ofensivas (FO)";
-        $FOs= FodaCruceAmbiente::where('tipo','=', 'FO')->where('perfil_id','=', $idPerfil)->get();
-        $pdf->Cell(0,9,utf8_decode($FO),1,true);
-        foreach ($FOs as $sample_text){
-            $pdf->MultiCellBlt($column_width, 8, chr(149), utf8_decode($sample_text->estategia) . ' ' . utf8_decode($sample_text->estrategia));  
+        $titles = [
+            'FO' => 'Estrategias Ofensivas (FO)',
+            'DO' => 'Estrategias de Reorientación (DO)',
+            'FA' => 'Estrategias Defensivas (FA)',
+            'DA' => 'Estrategias de Supervivencia (DA)',
+        ];
+
+        // Crear un arreglo para almacenar los datos de la tabla
+        $data = [];
+
+        foreach ($titles as $tipo => $title) {
+            $estrategias = FodaCruceAmbiente::where('tipo', $tipo)
+                ->where('perfil_id', $idPerfil)
+                ->get();
+
+            $data[] = array(
+                $title,
+                '',
+            );
+
+            $counter = 1;
+            foreach ($estrategias as $sample_text) {
+                $data[] = array(
+                    '',
+                    $counter . '. - ' . $sample_text->estrategia,
+                );
+                $counter++;
+            }
         }
 
-        $DO = "Estrategias de Reorientación (DO)";
-        $DOs= FodaCruceAmbiente::where('tipo','=', 'DO')->where('perfil_id','=', $idPerfil)->get();
-        $pdf->Cell(0,9,utf8_decode($DO),1, true);
-        foreach ($DOs as $sample_text){
-            $pdf->MultiCellBlt($column_width, 8, chr(149), utf8_decode($sample_text->estategia) . ' ' . utf8_decode($sample_text->estrategia));  
-        }
+        // Llamar a la función BasicTable para generar la tabla
+        $pdf->BasicTable(array('', ''), $data);
 
-        $FA = "Estrategias Defensivas (FA)";
-        $FAs= FodaCruceAmbiente::where('tipo','=', 'FA')->where('perfil_id','=', $idPerfil)->get();
-        $pdf->Cell(0,9,utf8_decode($FA),1,true);
-        foreach ($FAs as $sample_text){
-            $pdf->MultiCellBlt($column_width, 8, chr(149), utf8_decode($sample_text->estategia). ' ' . utf8_decode($sample_text->estrategia));  
-        }
 
-        $DA = "Estrategias de Supervivencia (DA)" ;   
-        
-        $DAs= FodaCruceAmbiente::where('tipo','=', 'DA')->where('perfil_id','=', $idPerfil)->get();
-        $pdf->Cell(0,9,utf8_decode($DA),1, true);
-        
-        foreach ($DAs as $sample_text){
-            $pdf->MultiCellBlt($column_width, 8, chr(149), utf8_decode($sample_text->estategia) . ' ' . utf8_decode($sample_text->estrategia));  
-        }
+
 
         $headers = ['Content-Type' => 'application/pdf'];
-        return Response::make($pdf->Output(),200, $headers);
-
+        return Response::make($pdf->Output(), 200, $headers);
     }
+
     public function edit($id)
     {
         $cruce = FodaCruceAmbiente::find($id);
-        
+
         $idPerfil = $cruce->perfil_id;
         $matriz =    0.17;
 
@@ -302,45 +316,45 @@ public function descargarCrucePdf(Request $request, $idPerfil){
             ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Debilidad')
             ->get();
-        
-         //Ambiente Externo - Amenaza
+
+        //Ambiente Externo - Amenaza
         $amenazas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
             ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Amenaza')
             ->get();
-            
-            $fortalezasChecked = [];
 
-            foreach ($cruce->fortalezas as $v) {
-                $fortalezasChecked[] = $v->id;
-            }
-            
-            $oportunidadesChecked = [];
+        $fortalezasChecked = [];
 
-            foreach ($cruce->oportunidades as $v) {
-                echo $oportunidadesChecked[] = $v->id;
-            }
+        foreach ($cruce->fortalezas as $v) {
+            $fortalezasChecked[] = $v->id;
+        }
 
-            $debilidadesChecked = [];
+        $oportunidadesChecked = [];
 
-            foreach ($cruce->debilidades as $v) {
-                $debilidadesChecked[] = $v->id;
-            }
+        foreach ($cruce->oportunidades as $v) {
+            echo $oportunidadesChecked[] = $v->id;
+        }
 
-            $amenazasChecked = [];
+        $debilidadesChecked = [];
 
-            foreach ($cruce->amenazas as $v) {
-                $amenazasChecked[] = $v->id;
-            }
-            
+        foreach ($cruce->debilidades as $v) {
+            $debilidadesChecked[] = $v->id;
+        }
+
+        $amenazasChecked = [];
+
+        foreach ($cruce->amenazas as $v) {
+            $amenazasChecked[] = $v->id;
+        }
+
         return view('admin.planificacion.fodas.analisis.cruces.edit', get_defined_vars());
     }
 
     public function update(Request $request, $id)
     {
         $cruce = FodaCruceAmbiente::find($id);
-        
+
         $idPerfil = $cruce->perfil_id;
         $cruce->fill($request->except(['fortaleza_id', 'oportunidad_id', 'debilidad_id', 'amenaza_id']))->save();
 
@@ -349,8 +363,8 @@ public function descargarCrucePdf(Request $request, $idPerfil){
         $cruce->debilidades()->sync($request->debilidad_id);
         $cruce->amenazas()->sync($request->amenaza_id);
 
-        
-        
+
+
 
         return redirect()->route('foda-cruce-ambientes', $idPerfil)
             ->with('success', 'Estrategia Creada Satisfactoriamente');
@@ -359,8 +373,7 @@ public function descargarCrucePdf(Request $request, $idPerfil){
     public function destroy($id)
     {
         $cruce = FodaCruceAmbiente::find($id)->delete();
-        
-        return back()->with('info', 'Estrategia eliminada correctamente.');
 
+        return back()->with('info', 'Estrategia eliminada correctamente.');
     }
 }

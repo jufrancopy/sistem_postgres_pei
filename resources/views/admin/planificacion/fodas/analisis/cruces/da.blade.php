@@ -38,15 +38,15 @@
                                     <!-- Array de Debilidades -->
                                     <strong>Debilidades:</strong>
                                     <br /> @foreach($debilidades as $value)
-                                    <label>{{ Form::checkbox('debilidad_id[]', $value->id, false, array('class' => 'name')) }}
-                                        D{{ $value->id  }} - {{ $value->aspecto->nombre }}</label>
+                                    <label>{{ Form::checkbox('debilidad_id[]', $value->aspecto->id, false, array('class' => 'name')) }}
+                                        D{{ $value->aspecto->id  }} - {{ $value->aspecto->nombre }}</label>
                                     <br /> @endforeach
 
                                     <!-- Array de Amenazas -->
                                     <strong>Amenazas:</strong>
                                     <br /> @foreach($amenazas as $value)
-                                    <label>{{ Form::checkbox('amenaza_id[]', $value->id, false, array('class' => 'name')) }}
-                                        A{{ $value->id  }} - {{ $value->aspecto->nombre }}</label>
+                                    <label>{{ Form::checkbox('amenaza_id[]', $value->aspecto->id, false, array('class' => 'name')) }}
+                                        A{{ $value->aspecto->id  }} - {{ $value->aspecto->nombre }}</label>
                                     <br /> @endforeach
                                 </div>
                                 <div class="form-group">
