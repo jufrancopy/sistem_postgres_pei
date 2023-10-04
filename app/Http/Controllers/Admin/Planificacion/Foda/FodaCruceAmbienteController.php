@@ -6,13 +6,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\Controller;
-
 use App\Admin\Planificacion\Foda\FodaAspecto;
 use App\Admin\Planificacion\Foda\FodaCategoria;
 use App\Admin\Planificacion\Foda\FodaPerfil;
 use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
-
 use Codedge\Fpdf\Fpdf\Fpdf;
 use App\ClasesPersonalizadas\Pdf;
 
@@ -62,6 +60,7 @@ class FodaCruceAmbienteController extends Controller
         return view('admin.planificacion.fodas.analisis.cruce-ambientes', get_defined_vars());
     }
 
+    // Creamos la Estrategia FO
     public function FO(Request $request, $idPerfil)
     {
         $idPerfil = $request->idPerfil;
@@ -188,13 +187,7 @@ class FodaCruceAmbienteController extends Controller
 
     public function store(Request $request)
     {
-        // //Insertar un array en un campo
-        // $cruces = $request->all();
-        // $cruces['oportunidad_id'] = implode(',',$request->oportunidad_id);
-        // FodaCruceAmbiente::create($cruces);
-
         $cruce = FodaCruceAmbiente::create($request->except(['fortaleza_id', 'debilidad_id', 'oportunidad_id', 'amenaza_id']));
-
         $cruce->fortalezas()->attach($request->fortaleza_id);
         $cruce->oportunidades()->attach($request->oportunidad_id);
         $cruce->debilidades()->attach($request->debilidad_id);

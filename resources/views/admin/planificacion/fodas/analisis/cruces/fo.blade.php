@@ -8,7 +8,7 @@
                         <h4 class="card-title ">Crear Estrategias FO</b>
 
                             <div class="pull-right">
-                                <a class="btn btn-warning" href="#"> Atras</a>
+                                <a class="btn btn-warning" href="{{route('foda-cruce-ambientes', 6)}}"> Atras</a>
                             </div>
                     </div>
                     @if (count($errors) > 0)

@@ -18,11 +18,7 @@ class FodaCategoriaController extends Controller
     public function __construct(){
         $this->middleware('auth');
     } 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index(Request $request)
     {  
         $categorias=FodaCategoria::nombre($request->get('nombre'))->orderBy('id','DESC')->paginate(10);
@@ -31,11 +27,26 @@ class FodaCategoriaController extends Controller
                 ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    public function dataCategories(Request $request)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $data = FodaModelo::select("id", "nombre")
+                ->where('nombre', 'LIKE', "%$search%")
+                ->get();
+        }
+        return response()->json($data);
+    }
+
+    public function dataCategory(Request $request, $idSelection)
+    {
+        $data = FodaModelo::findOrFail($idSelection);
+
+        return response()->json($data);
+    }
+
     public function create()
     {   
         $modelos = FodaModelo::orderBy('id', 'ASC')->pluck('nombre', 'id');
