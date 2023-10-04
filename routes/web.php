@@ -138,9 +138,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::resource('servicios', 'Admin\Globales\ServicioController');
 
         // Catgories
-        Route::resource('categories', 'Backend\CategoryController');
-
-        
+        Route::resource('categories', 'Backend\CategoryController');        
     });
 
     // Rutas Configuraciones Globales
@@ -160,6 +158,9 @@ Route::group(['middleware' => ['auth']], function () {
     //Rutas del Modulo FODA
     Route::resource('foda-modelos', 'Admin\Planificacion\Foda\FodaModeloController');
     Route::resource('foda-categorias', 'Admin\Planificacion\Foda\FodaCategoriaController');
+    Route::get('get-foda-categories', 'Admin\Planificacion\Foda\FodaCategoriaController@dataCategories')->name('get-foda-categories');
+    Route::get('get-foda-category/{idSelection}', 'Admin\Planificacion\Foda\FodaCategoriaController@dataCategory')->name('get-foda-category');
+
     Route::get('foda-modelo-categorias/{idModelo}', 'Admin\Planificacion\Foda\FodaCategoriaController@listadoCategorias')->name('foda-modelo-categorias');
     Route::get('foda-modelo-categoria-crear/{idModelo}', 'Admin\Planificacion\Foda\FodaCategoriaController@crearCategoria')->name('foda-modelo-categoria-crear');
     Route::get('perfil-categorias/{id}', 'Admin\Planificacion\Foda\FodaAnalisisController@listarCategorias')->name('perfil-categorias');

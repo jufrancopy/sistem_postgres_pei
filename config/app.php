@@ -181,6 +181,7 @@ return [
         Yajra\DataTables\DataTablesServiceProvider::class,
         // Barryvdh\Debugbar\ServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
+        Yajra\DataTables\DataTablesServiceProvider::class,
 
 
     ],
