@@ -2,6 +2,7 @@
 
 namespace App\Admin\Planificacion\Foda;
 
+use App\Admin\Globales\Organigrama;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -11,13 +12,16 @@ class FodaPerfil extends Model
     public $keyType = 'string';
     protected $dateFormat = 'Y-m-d H:i:sO';
     
-    protected $fillable = ['nombre','contexto', 'user_id', 'modelo_id'];
+    protected $fillable = ['name','context','model_id', 'dependency_id'];
     
     
-    public function categorias(){
-        
-        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaCategoria', 'planificacion.foda_categorias_has_perfil', 'perfil_id','categoria_id' );
+    public function categories(){
+        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaCategoria', 'planificacion.foda_categorias_has_perfil', 'perfil_id','category_id' );
+    }
 
+    public function dependency()
+    {
+        return $this->belongsTo(Organigrama::class);
     }
 
     public function aspectos(){
@@ -26,10 +30,9 @@ class FodaPerfil extends Model
 
     }
 
-    public function modelo(){
-        
-        return $this->belongsTo('App\Admin\Planificacion\Foda\FodaModelo');
-
+    public function model()
+    {
+        return $this->belongsTo(FodaModelo::class);
     }
 
     public function scopeNombre($query, $nombre)

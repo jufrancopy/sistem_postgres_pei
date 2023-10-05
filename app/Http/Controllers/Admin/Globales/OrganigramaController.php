@@ -44,6 +44,27 @@ class OrganigramaController extends Controller
         return view('admin.globales.organigramas.editar_sub_dependencia', get_defined_vars());
     }
 
+    public function getDependencies(Request $request)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $data = Organigrama::select("id", "dependency")
+                ->where('dependency', 'LIKE', "%$search%")
+                ->where('parent_id', null)
+                ->get();
+        }
+        return response()->json($data);
+    }
+
+    public function getDependency(Request $request, $idSelection)
+    {
+        $data = Organigrama::findOrFail($idSelection);
+
+        return response()->json($data);
+    }
+
     public function create(Request $request)
     {
         $parents = Organigrama::pluck('dependency', 'id');

@@ -79,7 +79,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('proyectos-epc-otros_servs', 'Admin\Proyectos\EPC\OtroServicioController');
     Route::get('otro-servicios/get', 'Admin\Proyectos\EPC\OtroServicioController@get')->name('otroServicios.get');
 
-
     // Horarios
     Route::resource('proyectos-epc-horarios', 'Admin\Proyectos\EPC\HorarioController');
 
@@ -127,6 +126,8 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('organigramas-crear-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@crearSubDependencia')->name('organigramas-crear-subdependencia');
         Route::get('organigramas-editar-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@editarSubDependencia')->name('organigramas-editar-subdependencia');
         Route::get('organigrama-gestionar/{id}', 'Admin\Globales\OrganigramaController@verOrganigrama')->name('organigrama-gestionar');
+        Route::get('get-dependencies', 'Admin\Globales\OrganigramaController@getDependencies')->name('get-dependencies');
+        Route::get('get-dependency/{idSelection}', 'Admin\Globales\OrganigramaController@getDependency')->name('get-dependency');
 
         //Variables de Encuesta
         Route::resource('variables', 'Admin\Globales\Formulario\VariableController');
@@ -158,8 +159,10 @@ Route::group(['middleware' => ['auth']], function () {
     //Rutas del Modulo FODA
     Route::resource('foda-modelos', 'Admin\Planificacion\Foda\FodaModeloController');
     Route::resource('foda-categorias', 'Admin\Planificacion\Foda\FodaCategoriaController');
-    Route::get('get-foda-categories', 'Admin\Planificacion\Foda\FodaCategoriaController@dataCategories')->name('get-foda-categories');
+    Route::get('get-foda-categories/{modelId}', 'Admin\Planificacion\Foda\FodaCategoriaController@dataCategories')->name('get-foda-categories');
     Route::get('get-foda-category/{idSelection}', 'Admin\Planificacion\Foda\FodaCategoriaController@dataCategory')->name('get-foda-category');
+    Route::get('get-models', 'Admin\Planificacion\Foda\FodaModeloController@getModels')->name('get-models');
+    Route::get('get-model', 'Admin\Planificacion\Foda\FodaModeloController@dataModel')->name('get-model');
 
     Route::get('foda-modelo-categorias/{idModelo}', 'Admin\Planificacion\Foda\FodaCategoriaController@listadoCategorias')->name('foda-modelo-categorias');
     Route::get('foda-modelo-categoria-crear/{idModelo}', 'Admin\Planificacion\Foda\FodaCategoriaController@crearCategoria')->name('foda-modelo-categoria-crear');
