@@ -11,27 +11,28 @@ use App\Admin\Planificacion\Foda\FodaAspecto;
 
 class FodaModeloController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index(Request $request)
     {
-        $modelos=FodaModelo::nombre($request->get('nombre'))->orderBy('id','DESC')->paginate(10);
-        
+        $modelos = FodaModelo::nombre($request->get('nombre'))->orderBy('id', 'DESC')->paginate(10);
+
         return view('admin.planificacion.fodas.modelos.index', get_defined_vars())
-                ->with('i', ($request->input('page', 1) - 1) * 5);
+            ->with('i', ($request->input('page', 1) - 1) * 5);
     }
-    
-    public function listadoAspectos(Request $request, $idModelo, $idCategoria){
+
+    public function listadoAspectos(Request $request, $idModelo, $idCategoria)
+    {
         $idModelo = $request->idModelo;
         $idCategoria = $request->idCategoria;
         $categoria = FodaCategoria::where('id', '=', $idCategoria)->first();
-        $aspectos=FodaAspecto::nombre($request->get('nombre'))->orderBy('id', 'DESC')->where('categoria_id', '=', $idCategoria)->get();
-        
-        return view ('admin.planificacion.fodas.modelos.aspectos', get_defined_vars())
-        ->with('i', ($request->input('page', 1) - 1) * 5);;
+        $aspectos = FodaAspecto::nombre($request->get('nombre'))->orderBy('id', 'DESC')->where('categoria_id', '=', $idCategoria)->get();
+
+        return view('admin.planificacion.fodas.modelos.aspectos', get_defined_vars())
+            ->with('i', ($request->input('page', 1) - 1) * 5);;
     }
     /**
      * Show the form for creating a new resource.
@@ -52,9 +53,9 @@ class FodaModeloController extends Controller
     public function store(Request $request)
     {
         $modelo = FodaModelo::create($request->all());
-        
+
         return redirect()->route('foda-modelos.index')
-            ->with('success','Modelo creado satisfactoriamente');
+            ->with('success', 'Modelo creado satisfactoriamente');
     }
 
     /**
@@ -77,7 +78,7 @@ class FodaModeloController extends Controller
     public function edit($id)
     {
         $modelo = FodaModelo::find($id);
-        return view ('admin.planificacion.fodas.modelos.edit', get_defined_vars());
+        return view('admin.planificacion.fodas.modelos.edit', get_defined_vars());
     }
 
     /**
@@ -93,7 +94,7 @@ class FodaModeloController extends Controller
         $modelo->fill($request->all())->save();
 
         return redirect()->route('foda-modelos.index')
-            ->with('success','Modelo actualizado satisfactoriamente');
+            ->with('success', 'Modelo actualizado satisfactoriamente');
     }
 
     /**

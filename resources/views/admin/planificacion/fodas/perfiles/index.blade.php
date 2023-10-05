@@ -63,18 +63,18 @@
                                     </div>
 
                                     <div class="form-group">
-                                        {{ Form::label('modelo_id', 'Elija el Modelo:') }}
-                                        {!! Form::select('modelo_id', $modelos, null, [
-                                            'placeholder' => 'Seleccione el Modelo',
+                                        {{ Form::label('dependency_id', 'Seleccione Dependencia Responsable:') }}
+                                        {!! Form::select('dependency_id', $dependencies, null, [
+                                            'placeholder' => 'Seleccione la Dependencia Responsable',
                                             'class' => 'js-example-responsive',
                                             'style' => 'width:100%',
                                         ]) !!}
                                     </div>
 
                                     <div class="form-group">
-                                        {{ Form::label('dependency_id', 'Seleccione Dependencia Responsable:') }}
-                                        {!! Form::select('dependency_id', $dependencies, null, [
-                                            'placeholder' => 'Seleccione la Dependencia Responsable',
+                                        {{ Form::label('modelo_id', 'Elija el Modelo:') }}
+                                        {!! Form::select('modelo_id', $modelos, null, [
+                                            'placeholder' => 'Seleccione el Modelo',
                                             'class' => 'js-example-responsive',
                                             'style' => 'width:100%',
                                         ]) !!}

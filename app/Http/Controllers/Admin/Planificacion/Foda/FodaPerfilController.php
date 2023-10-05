@@ -17,16 +17,11 @@ use Yajra\DataTables\DataTables;
 
 class FodaPerfilController extends Controller
 {
-    //antes de procesar el index() ejecuta el metodo consturctor
     public function __construct()
     {
         $this->middleware('auth');
     }
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index(Request $request)
     {
         if ($request->ajax()) {
