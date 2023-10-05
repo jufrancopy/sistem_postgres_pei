@@ -34,11 +34,27 @@ class FodaModeloController extends Controller
         return view('admin.planificacion.fodas.modelos.aspectos', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);;
     }
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    
+    public function getModels(Request $request)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $data = FodaModelo::select("id", "nombre")
+                ->where('nombre', 'LIKE', "%$search%")
+                ->get();
+        }
+        return response()->json($data);
+    }
+
+    public function dataModel(Request $request, $idSelection)
+    {
+        $data = FodaModelo::findOrFail($idSelection);
+
+        return response()->json($data);
+    }
+
     public function create()
     {
         return view('admin.planificacion.fodas.modelos.create');

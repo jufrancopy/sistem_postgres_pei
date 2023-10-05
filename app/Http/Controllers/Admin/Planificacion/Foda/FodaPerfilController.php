@@ -28,6 +28,19 @@ class FodaPerfilController extends Controller
             $data = FodaPerfil::latest()->get();
             return DataTables::of($data)
                 ->addIndexColumn()
+                ->addColumn('dependency', function (FodaPerfil $profile) {
+                    return $profile->dependency->dependency;
+                })
+
+                ->addColumn('model', function (FodaPerfil $profile) {
+                    return $profile->model->nombre;
+                })
+
+                ->addColumn('categories', function (FodaPerfil $profile) {
+                    $categoryNames = $profile->categories->pluck('nombre')->implode(', '); // Cambia 'nombre' al nombre del campo de categoría en tu modelo
+                    return $categoryNames;
+                })
+
                 ->addColumn('action', function ($row) {
 
                     $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editProfile"><i class="far fa-edit"></i></a>';
@@ -74,28 +87,47 @@ class FodaPerfilController extends Controller
         return view('admin.planificacion.fodas.perfiles.create', get_defined_vars());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+
     public function store(Request $request)
     {
-        // $perfil= FodaPerfil::create($request->all());
-        $perfil = FodaPerfil::create($request->except(['categoria_id']));
-        $perfil->categorias()->attach($request->categoria_id);
+        if ($request->ajax()) {
+            $request->validate(
+                [
+                    'name'              => 'required',
+                    'context'          => 'required',
+                    'model_id'            => 'required',
+                    'dependency_id'            => 'required',
+                ],
+                [
+                    'name.required'             => 'Agregue el nombre del Modelo',
+                    'context.required'          => 'Indique el Contexto',
+                    'dependency_id.required'    => 'Debe seleccionar la Dependencia responsable',
+                    'model_id.required'         => 'Seleccione el Modelo de Análisis'
+                    
+                ]
+            );
+        };
 
-        return redirect()->route('foda-perfiles.index')
-            ->with('success', 'Perfil creado satisfactoriamente');
+        $profile = FodaPerfil::updateOrCreate(
+            ['id' => $request->profile_id],
+            ['name' => $request->name,
+            'context' => $request->context,
+            'model_id'=> $request->model_id,
+            'dependency_id' => $request->dependency_id]
+        );
+
+        //Insert into pivot table 
+        $categories = $request->category_id;
+        $profile->categories()->sync($categories);
+
+        if($profile->wasRecentlyCreated){
+            return response()->json(['success' => 'Perfil creado correctamente.']);
+        }else{
+            return response()->json(['success' => 'Perfil actualizado correctamente.']);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function show($id)
     {
         $perfil = FodaPerfil::find($id);
@@ -110,9 +142,15 @@ class FodaPerfilController extends Controller
 
     public function edit($id)
     {
-        $perfil = FodaPerfil::find($id);
+        $profile = FodaPerfil::with(['dependency', 'model', 'categories'])->find($id);
 
-        return response()->json($perfil);
+        $categoriesChecked = [];
+
+        foreach ($profile->categories as $category) {
+            $categoriesChecked[] = ['id' => $category->id, 'text' => $category->nombre];
+        }
+        
+        return response()->json(['profile'=>$profile, 'categoriesChecked'=>$categoriesChecked]);
     }
 
     // public function edit($id)
@@ -141,15 +179,10 @@ class FodaPerfilController extends Controller
             ->with('success', 'Perfil actualizado el perfil' . $perfil->nombre);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        FodaPerfil::find($id)->delete();
-        return back()->with('success', 'Perfil Eliminado satisfactoriamente.');
+        $profile = FodaPerfil::find($id)->delete();
+
+        return response()->json([$profile]);
     }
 }

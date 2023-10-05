@@ -27,14 +27,15 @@ class FodaCategoriaController extends Controller
                 ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    public function dataCategories(Request $request)
+    public function dataCategories(Request $request, $modelId)
     {
         $data = [];
 
         if ($request->has('q')) {
             $search = $request->q;
-            $data = FodaModelo::select("id", "nombre")
+            $data = FodaCategoria::select("id", "nombre")
                 ->where('nombre', 'LIKE', "%$search%")
+                ->where('modelo_id', $modelId)
                 ->get();
         }
         return response()->json($data);
@@ -42,7 +43,7 @@ class FodaCategoriaController extends Controller
 
     public function dataCategory(Request $request, $idSelection)
     {
-        $data = FodaModelo::findOrFail($idSelection);
+        $data = FodaCategoria::findOrFail($idSelection);
 
         return response()->json($data);
     }
@@ -78,13 +79,7 @@ class FodaCategoriaController extends Controller
         return redirect()->route('foda-modelo-categorias', $categoria->modelo_id)
             ->with('success','Categoria creada satisfactoriamente');
     }
-    
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function show($id)
     {
         $categoria=FodaCategoria::find($id);
@@ -99,14 +94,7 @@ class FodaCategoriaController extends Controller
                 ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         
@@ -119,13 +107,6 @@ class FodaCategoriaController extends Controller
         return view('admin.planificacion.fodas.categorias.edit', get_defined_vars());
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         $categoria=FodaCategoria::find($id);
@@ -135,13 +116,7 @@ class FodaCategoriaController extends Controller
             ->with('success','Categoria actualizada satisfactoriamente');
        
     }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+    
     public function destroy($id)
     {
         FodaCategoria::find($id)->delete();

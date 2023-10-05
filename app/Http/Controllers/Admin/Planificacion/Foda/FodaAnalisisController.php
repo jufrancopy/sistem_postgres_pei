@@ -59,11 +59,11 @@ class FodaAnalisisController extends Controller
     public function seleccionarAmbiente(Request $request, $id)
     {
         $perfil = FodaPerfil::find($id);
-        $categorias = $perfil->categorias()->orderBy('nombre', 'ASC')->get();
+        $categorias = $perfil->categories()->orderBy('nombre', 'ASC')->get();
 
         $categoriasChecked = [];
 
-        foreach ($perfil->categorias as $categoria) {
+        foreach ($perfil->categories as $categoria) {
             $categoriasChecked[] = $categoria->id;
         }
 

@@ -31,6 +31,9 @@
                                     <th>No</th>
                                     <th>Nombre</th>
                                     <th>Contexto</th>
+                                    <th>Dependencia</th>
+                                    <th>Modelo</th>
+                                    <th>Categorías</th>
                                     <th width="280px">Accion</th>
                                 </tr>
                             </thead>
@@ -40,17 +43,17 @@
                     </div>
                 </div>
 
-                <div class="modal fade" id="ajaxModal" aria-hidden="true">
+                <div class="modal fade" id="modalProfile" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h4 class="modal-title" id="modelHeading"></h4>
+                                <h4 class="modal-title" id="modalProfilelHeading"></h4>
                             </div>
                             <div class="modal-body">
-                                <form id="cycleForm" name="cycleForm" class="form-horizontal">
+                                <form id="profileForm" name="profileForm" class="form-horizontal">
                                     <div class="alert alert-danger errors" role="alert"></div>
 
-                                    {{ Form::hidden('cycle_id', null, ['id' => 'cycle_id']) }}
+                                    {{ Form::hidden('profile_id', null, ['profile_id' => 'profile_id']) }}
 
                                     <div class="form-group">
                                         {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
@@ -58,54 +61,36 @@
                                     </div>
 
                                     <div class="form-group">
-                                        {{ Form::label('contexto', 'Contexto:') }}
-                                        {{ Form::text('contexto', null, ['class' => 'form-control', 'id' => 'contexto']) }}
+                                        {{ Form::label('context', 'Contexto:') }}
+                                        {{ Form::text('context', null, ['class' => 'form-control', 'id' => 'context']) }}
                                     </div>
 
                                     <div class="form-group">
                                         {{ Form::label('dependency_id', 'Seleccione Dependencia Responsable:') }}
-                                        {!! Form::select('dependency_id', $dependencies, null, [
-                                            'placeholder' => 'Seleccione la Dependencia Responsable',
-                                            'class' => 'js-example-responsive',
+                                        {!! Form::select('dependency_id', null, null, [
+                                            'id' => 'dependency',
                                             'style' => 'width:100%',
                                         ]) !!}
                                     </div>
 
                                     <div class="form-group">
-                                        {{ Form::label('modelo_id', 'Elija el Modelo:') }}
-                                        {!! Form::select('modelo_id', $modelos, null, [
+                                        {{ Form::label('model_id', 'Elija el Modelo:') }}
+                                        {!! Form::select('model_id', null, null, [
                                             'placeholder' => 'Seleccione el Modelo',
-                                            'class' => 'js-example-responsive',
+                                            'id' => 'models',
                                             'style' => 'width:100%',
                                         ]) !!}
                                     </div>
 
-
-                                    <div class="form-group specialties">
-                                        {!! Form::label('categorias', 'Asingne una o variasCategorias:') !!}
-                                        {!! Form::select('categoria_id[][]', [], null, [
-                                            'class' => 'form-control categorias',
+                                    <div class="form-group">
+                                        {!! Form::label('categories', 'Asigne una o varias Categorias:') !!}
+                                        {!! Form::select('category_id[]', [], null, [
+                                            'class' => 'form-control',
                                             'style' => 'width:100%',
                                             'id' => 'categories',
                                             'multiple',
                                         ]) !!}
                                     </div>
-
-
-                                    {{-- <div class="form-group">
-
-                                        {{ Form::label('categorias', 'Asingne una o variasCategorias:') }}
-                                        <select multiple="multiple" name="categoria_id[]" id="categories"
-                                            class="categorias" style="width:100%">
-                                            @foreach ($categorias as $key => $value)
-                                                <option value="{{ $key }}"
-                                                    {{ in_array($key, $categoriasChecked) ? 'selected' : null }}>
-                                                    {{ $value }}</option>
-                                            @endforeach
-                                            <input type="checkbox" id="checkbox">Seleccionar todo
-                                        </select>
-                                    </div> --}}
-
 
                                     <div class="col-sm-offset-2 col-sm-10">
                                         <button type="button" class="btn btn-secondary"
@@ -124,8 +109,6 @@
         </div>
     </div>
 @stop
-
-
 
 @section('scripts')
     {{-- My custom scripts --}}
@@ -189,38 +172,102 @@
                 },
                 ajax: "{{ route('foda-perfiles.index') }}",
                 columns: [{
-                    data: 'DT_RowIndex',
-                    name: 'DT_RowIndex'
-                }, {
-                    data: 'nombre',
-                    name: 'nombre'
-                }, {
-                    data: 'contexto',
-                    name: 'contexto'
-                }, {
-                    data: 'action',
-                    name: 'action',
-                    orderable: false,
-                    searchable: false
-                }, ]
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex'
+                    }, {
+                        data: 'name',
+                        name: 'name'
+                    }, {
+                        data: 'context',
+                        name: 'context'
+                    }, {
+                        data: 'dependency',
+                        name: 'dependency'
+                    }, {
+                        data: 'model',
+                        name: 'model'
+                    }, {
+                        data: 'categories',
+                        name: 'categories',
+                        render: function(data, type, full, meta) {
+                            var categoriesArray = data.split(', ');
+
+                            var categoriesHtml = '';
+
+                            // Recorremos el arreglo de categorías y aplicamos la clase "badge" a cada una
+                            categoriesArray.forEach(function(category) {
+                                categoriesHtml += '<span class="badge badge-secondary">' +
+                                    category + '</span> ';
+                            });
+
+                            return categoriesHtml; // Devolvemos el HTML personalizado para la columna de categorías
+                        }
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
+                    },
+                ]
+            });
+
+            $('#dependency').select2({
+                placeholder: 'Seleccione la dependencia',
+                ajax: {
+                    url: '{{ route('globales.get-dependencies') }}',
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function(data) {
+                        return {
+                            results: $.map(data, function(item) {
+                                return {
+                                    text: item.dependency,
+                                    id: item.id
+                                }
+                            })
+                        };
+                    },
+                    cache: true
+                }
             });
 
             $('#createNewProfile').click(function() {
                 $('#saveBtn').val("create-user");
-                $('#cycle_id').val('');
-                $('#cycleForm').trigger("reset");
-                $('#modelHeading').html("Nuevo Perfil");
-                $('#ajaxModal').modal('show');
+                $('#profile_id').val('');
+                $('#profileForm').trigger("reset");
+                $('#modalProfilelHeading').html("Nuevo Perfil");
+                $('#modalProfile').modal('show');
                 $('.errors').removeClass("alert alert-danger")
 
-                $("#categories").val([]).change();
-                $("#categories").val("");
-                $("#categories").trigger("change");
-
-                var dependencies = $('#categories').select2({
-                    placeholder: 'Seleccione las Categorías para Analizar',
+                //Dependency
+                $("#dependency").val("");
+                $('#dependency').select2({
+                    placeholder: 'Seleccione la dependencia',
                     ajax: {
-                        url: '{{ route('get-foda-categories') }}',
+                        url: '{{ route('globales.get-dependencies') }}',
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function(data) {
+                            return {
+                                results: $.map(data, function(item) {
+                                    return {
+                                        text: item.dependency,
+                                        id: item.id
+                                    }
+                                })
+                            };
+                        },
+                        cache: true
+                    }
+                });
+
+                //Models
+                $("#models").val("");
+                $('#models').select2({
+                    placeholder: 'Seleccione el Modelo',
+                    ajax: {
+                        url: '{{ route('get-models') }}',
                         dataType: 'json',
                         delay: 250,
                         processResults: function(data) {
@@ -237,18 +284,178 @@
                     }
                 });
 
+                $('#models').on('change', function() {
+                    var modelId = $(this).val();
+                    var url = 'get-foda-categories/' + modelId
+
+                    //Categories
+                    $("#categories").val([]).change();
+                    $("#categories").val("");
+                    $("#categories").trigger("change");
+
+
+                    var dependencies = $('#categories').select2({
+                        placeholder: 'Seleccione las Categorías para Analizar',
+                        ajax: {
+                            url: url,
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(data) {
+                                return {
+                                    results: $.map(data, function(item) {
+                                        return {
+                                            text: item.nombre,
+                                            id: item.id
+                                        }
+                                    })
+                                };
+                            },
+                            cache: true
+                        }
+                    });
+
+                });
+
+                $("#categories").select2({
+                    placeholder: "Seleccione los Factores"
+                });
+
             });
+
+
 
             $('body').on('click', '.editProfile', function() {
                 var profileId = $(this).data('id');
+
                 $.get("{{ route('foda-perfiles.index') }}" + '/' + profileId + '/edit', function(data) {
-                    $('#modelHeading').html("Editar Ciclo");
-                    $('#saveBtn').val("edit-user");
-                    $('#ajaxModal').modal('show');
-                    $('#cycleForm').trigger("reset");
+                    $('#modalProfilelHeading').html("Editar Perfil");
+                    $('#saveBtn').val("edit-profile");
+                    $('#modalProfile').modal('show');
+                    $('#profileForm').trigger("reset");
                     $('.errors').removeClass("alert alert-danger")
-                    $('#cycle_id').val(data.id);
-                    $('#name').val(data.nombre);
+                    $('#profile_id').val(data.profile.id);
+                    $('#name').val(data.profile.name);
+                    $('#context').val(data.profile.context);
+
+
+                    $('#dependency').select2({
+                        placeholder: 'Seleccione la dependencia',
+                        ajax: {
+                            url: '{{ route('globales.get-dependencies') }}',
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(data) {
+                                return {
+                                    results: $.map(data, function(item) {
+                                        return {
+                                            text: item.dependency,
+                                            id: item.id
+                                        }
+                                    })
+                                };
+                            },
+                            cache: true
+                        }
+                    });
+
+                    //Precargar Dependencia
+                    initSelect2($('#dependency'), data.profile.dependency.id, data.profile
+                        .dependency.dependency);
+
+                    function initSelect2(control, key, value) {
+                        var data = {
+                            id: key,
+                            text: value
+                        };
+                        var initOption = new Option(data.text, data.id, true,
+                            true); // Establece el tercer y cuarto parámetro en "true"
+                        control.empty().append(initOption).trigger('change');
+                    }
+
+                    //Models
+                    $("#models").val("");
+                    $('#models').select2({
+                        placeholder: 'Seleccione el Modelo',
+                        ajax: {
+                            url: '{{ route('get-models') }}',
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(data) {
+                                return {
+                                    results: $.map(data, function(item) {
+                                        return {
+                                            text: item.nombre,
+                                            id: item.id
+                                        }
+                                    })
+                                };
+                            },
+                            cache: true
+                        }
+                    });
+
+
+                    //Precargar Modelo
+                    $('#models').on('change', function() {
+                        var modelId = $(this).val();
+                        console.log(modelId)
+                        var url = 'get-foda-categories/' + modelId
+
+                        //Categories
+                        $("#categories").val([]).change();
+                        $("#categories").val("");
+                        $("#categories").trigger("change");
+
+
+                        var dependencies = $('#categories').select2({
+                            placeholder: 'Seleccione las Categorías para Analizar',
+                            ajax: {
+                                url: url,
+                                dataType: 'json',
+                                delay: 250,
+                                processResults: function(data) {
+                                    return {
+                                        results: $.map(data, function(item) {
+                                            return {
+                                                text: item.nombre,
+                                                id: item.id
+                                            }
+                                        })
+                                    };
+                                },
+                                cache: true
+                            }
+                        });
+
+                    });
+
+                    initSelect2($('#models'), data.profile.model.id, data.profile.model.nombre);
+
+                    function initSelect2(control, key, value) {
+                        var data = {
+                            id: key,
+                            text: value
+                        };
+                        var initOption = new Option(data.text, data.id, true,
+                            true); // Establece el tercer y cuarto parámetro en "true"
+                        control.empty().append(initOption).trigger('change');
+                    }
+
+                    //Clearing selections
+                    $('#categories').select2()
+                    $("#categories").val([]).change();
+                    var selectCategories = $('#categories');
+                    data.categoriesChecked.forEach(function(d) {
+                        var option = new Option(d.text, d.id, true, true);
+                        selectCategories.append(option).trigger('change');
+                        selectCategories.trigger({
+                            type: 'select2:select',
+                            params: {
+                                data: data
+                            }
+                        });
+                    });
+
                 });
             });
 
@@ -257,7 +464,7 @@
                 e.preventDefault();
                 $(this).html('Enviando..');
                 $.ajax({
-                    data: $('#cycleForm').serialize(),
+                    data: $('#profileForm').serialize(),
                     url: "{{ route('foda-perfiles.store') }}",
                     type: "POST",
                     dataType: 'json',
@@ -268,8 +475,8 @@
                                 $(".success").hide().html('');
                             }, 5000);
                         }
-                        $('#cycleForm').trigger("reset");
-                        $('#ajaxModal').modal('hide');
+                        $('#profileForm').trigger("reset");
+                        $('#modalProfile').modal('hide');
                         $(".success").removeAttr("style");
                         table.draw();
                     },
@@ -277,14 +484,15 @@
                     error: function(data) {
                         var obj = data.responseJSON.errors;
                         $.each(obj, function(key, value) {
-                            $(".errors").fadeIn().append($("<p>" + value + "</p>")
-                                .addClass("alert alert-danger"));
-                            setTimeout(function() {
-                                $(".errors").fadeOut().html('');
-                            }, 5000);
+                            // Alert Toastr
+                            toastr.options = {
+                                closeButton: true,
+                                progressBar: true,
+                            };
+                            toastr.error("Atención: " + value);
                         });
-                        $('#saveBtn').html('Guardar Cambios');
-                    }
+                        $("#saveBtn").html("Guardar Cambios");
+                    },
 
                 });
             });

@@ -34,6 +34,9 @@
 <script src="{{ asset('master/assets/js/core/bootstrap-material-design.min.js') }}" type="text/javascript"></script>
 <script src="{{ asset('master/assets/js/plugins/perfect-scrollbar.jquery.min.js') }}" type="text/javascript"></script>
 
+<!-- Toastr JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <!-- Chartist JS -->
 <script src="{{ asset('master/assets/js/plugins/chartist.min.js') }}" type="text/javascript"></script>
 

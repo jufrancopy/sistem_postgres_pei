@@ -16,16 +16,16 @@ class CreateFodaPerfilesTable extends Migration
     {
         Schema::create('planificacion.foda_perfiles', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('nombre');
-            $table->string('contexto');
+            $table->string('name');
+            $table->string('context');
 
-            $table->unsignedInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')
+            $table->unsignedInteger('model_id');
+            $table->foreign('model_id')->references('id')->on('planificacion.foda_modelos')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->unsignedInteger('modelo_id');
-            $table->foreign('modelo_id')->references('id')->on('planificacion.foda_modelos')
+            $table->unsignedInteger('dependency_id');
+            $table->foreign('dependency_id')->references('id')->on('organigramas')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
