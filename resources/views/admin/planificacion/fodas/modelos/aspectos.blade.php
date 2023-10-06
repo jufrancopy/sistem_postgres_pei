@@ -43,6 +43,7 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Nombre</th>
+                                        <th>Referencia</th>
                                         <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>
@@ -51,6 +52,7 @@
                                     <tr>
                                         <td>{{ ++$i }}</td>
                                         <td>{{ $aspecto->nombre }}</td>
+                                        <td>{{ $aspecto->referencia }}</td>
                                         <td>
                                             <a class="btn btn-primary btn-circle" href="{{ route('foda-aspectos.edit',$aspecto->id) }}"><i class="far fa-edit"></i></a>
                                             {!! Form::open(['route' => ['foda-aspectos.destroy', $aspecto->id], 'method' => 'DELETE', 'style'=>'display:inline']) !!}
