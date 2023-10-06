@@ -19,7 +19,9 @@
                         </nav>
                         <div class="card-body">
                             <h4>Referencia</h4>
-                            {{ $analisis->aspecto->referencia }}
+                            <div class="card">
+                                {{ $analisis->aspecto->referencia }}
+                            </div>
                             <hr>
                             {!! Form::model($analisis, ['route' => ['foda-analisis.update', $analisis->id], 'method' => 'PUT']) !!}
                             @include('admin.planificacion.fodas.analisis.partials.form')
