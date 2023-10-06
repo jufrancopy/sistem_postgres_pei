@@ -52,7 +52,6 @@ class FodaCruceAmbienteController extends Controller
             ->get();
 
         $FOs = FodaCruceAmbiente::where('tipo', '=', 'FO')->where('perfil_id', '=', $idPerfil)->get();
-        // dd($FOs);
         $DOs = FodaCruceAmbiente::where('tipo', '=', 'DO')->where('perfil_id', '=', $idPerfil)->get();
         $FAs = FodaCruceAmbiente::where('tipo', '=', 'FA')->where('perfil_id', '=', $idPerfil)->get();
         $DAs = FodaCruceAmbiente::where('tipo', '=', 'DA')->where('perfil_id', '=', $idPerfil)->get();
@@ -188,6 +187,7 @@ class FodaCruceAmbienteController extends Controller
     public function store(Request $request)
     {
         $cruce = FodaCruceAmbiente::create($request->except(['fortaleza_id', 'debilidad_id', 'oportunidad_id', 'amenaza_id']));
+
         $cruce->fortalezas()->attach($request->fortaleza_id);
         $cruce->oportunidades()->attach($request->oportunidad_id);
         $cruce->debilidades()->attach($request->debilidad_id);
@@ -285,7 +285,7 @@ class FodaCruceAmbienteController extends Controller
 
     public function edit($id)
     {
-        $cruce = FodaCruceAmbiente::find($id);
+        $cruce = FodaCruceAmbiente::findOrFail($id);
 
         $idPerfil = $cruce->perfil_id;
         $matriz =    0.17;
@@ -318,15 +318,13 @@ class FodaCruceAmbienteController extends Controller
             ->get();
 
         $fortalezasChecked = [];
-
         foreach ($cruce->fortalezas as $v) {
             $fortalezasChecked[] = $v->id;
         }
 
         $oportunidadesChecked = [];
-
         foreach ($cruce->oportunidades as $v) {
-            echo $oportunidadesChecked[] = $v->id;
+            $oportunidadesChecked[] = $v->id;
         }
 
         $debilidadesChecked = [];
@@ -355,8 +353,6 @@ class FodaCruceAmbienteController extends Controller
         $cruce->oportunidades()->sync($request->oportunidad_id);
         $cruce->debilidades()->sync($request->debilidad_id);
         $cruce->amenazas()->sync($request->amenaza_id);
-
-
 
 
         return redirect()->route('foda-cruce-ambientes', $idPerfil)

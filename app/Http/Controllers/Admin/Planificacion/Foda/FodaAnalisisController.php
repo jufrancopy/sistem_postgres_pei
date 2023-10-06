@@ -160,7 +160,7 @@ class FodaAnalisisController extends Controller
     {
         $analisis = FodaAnalisis::where('perfil_id', $idPerfil)->get();
         $perfiles = FodaPerfil::find($idPerfil);
-        $categorias = $perfiles->categorias()->nombre($request->get('nombre'))->where('ambiente', 'Interno')->paginate(20);
+        $categorias = $perfiles->categories()->nombre($request->get('nombre'))->where('ambiente', 'Interno')->paginate(20);
 
         foreach ($categorias as $categoria) {
             $v[] = $aspectos = FodaAspecto::where('categoria_id', $categoria->id)->get();
@@ -174,7 +174,7 @@ class FodaAnalisisController extends Controller
     {
         $idPerfil = $request->idPerfil;
         $perfiles = FodaPerfil::find($idPerfil);
-        $categorias = $perfiles->categorias()->nombre($request->get('nombre'))->where('ambiente', 'Externo')->paginate(20);
+        $categorias = $perfiles->categories()->nombre($request->get('nombre'))->where('ambiente', 'Externo')->paginate(20);
 
         return view('admin.planificacion.fodas.analisis.analisis-categorias', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);

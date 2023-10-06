@@ -26,8 +26,8 @@
                                     <tbody>
                                         <tr>
                                             <td>
-                                                Perfil: <label>{{ $perfil->nombre }}</label><br />
-                                                Contexto: <label>{{ $perfil->contexto }}</label>
+                                                Perfil: <label>{{ $perfil->name }}</label><br />
+                                                Contexto: <label>{{ $perfil->context }}</label>
                                             </td>
                                             <td class="table-success"><label>Fortalezas</label> <br />
                                                 @foreach ($fortalezas as $v)

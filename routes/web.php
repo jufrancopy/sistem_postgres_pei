@@ -110,7 +110,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::group(['prefix' => 'admin/globales', 'as' => 'globales.'], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
-        
+
         //Roles and permissions
         Route::resource('users', 'Admin\UserController');
         Route::resource('permisos', 'Admin\PermissionController');
@@ -120,7 +120,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');
         Route::post('formulario-item/{idForm}/selected', 'Admin\Globales\Formulario\FormularioController@postSelectedItem')->name('form.item.selected');
         Route::post('formulario/{idForm}/response', 'Admin\Globales\Formulario\FormularioController@postResponse')->name('form-response-ok');
-        
+
         //Organizational
         Route::resource('organigramas', 'Admin\Globales\OrganigramaController');
         Route::get('organigramas-crear-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@crearSubDependencia')->name('organigramas-crear-subdependencia');
@@ -139,7 +139,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::resource('servicios', 'Admin\Globales\ServicioController');
 
         // Catgories
-        Route::resource('categories', 'Backend\CategoryController');        
+        Route::resource('categories', 'Backend\CategoryController');
     });
 
     // Rutas Configuraciones Globales
@@ -203,39 +203,38 @@ Auth::routes();
 Route::get('/home', 'HomeController@index')->name('home')->middleware('auth');
 
 Route::group(['middleware' => 'auth'], function () {
-	Route::get('table-list', function () {
-		return view('pages.table_list');
-	})->name('table');
+    Route::get('table-list', function () {
+        return view('pages.table_list');
+    })->name('table');
 
-	Route::get('typography', function () {
-		return view('pages.typography');
-	})->name('typography');
+    Route::get('typography', function () {
+        return view('pages.typography');
+    })->name('typography');
 
-	Route::get('icons', function () {
-		return view('pages.icons');
-	})->name('icons');
+    Route::get('icons', function () {
+        return view('pages.icons');
+    })->name('icons');
 
-	Route::get('map', function () {
-		return view('pages.map');
-	})->name('map');
+    Route::get('map', function () {
+        return view('pages.map');
+    })->name('map');
 
-	Route::get('notifications', function () {
-		return view('pages.notifications');
-	})->name('notifications');
+    Route::get('notifications', function () {
+        return view('pages.notifications');
+    })->name('notifications');
 
-	Route::get('rtl-support', function () {
-		return view('pages.language');
-	})->name('language');
+    Route::get('rtl-support', function () {
+        return view('pages.language');
+    })->name('language');
 
-	Route::get('upgrade', function () {
-		return view('pages.upgrade');
-	})->name('upgrade');
+    Route::get('upgrade', function () {
+        return view('pages.upgrade');
+    })->name('upgrade');
 });
 
 Route::group(['middleware' => 'auth'], function () {
-	Route::resource('user', 'UserController', ['except' => ['show']]);
-	Route::get('profile', ['as' => 'profile.edit', 'uses' => 'ProfileController@edit']);
-	Route::put('profile', ['as' => 'profile.update', 'uses' => 'ProfileController@update']);
-	Route::put('profile/password', ['as' => 'profile.password', 'uses' => 'ProfileController@password']);
+    Route::resource('user', 'UserController', ['except' => ['show']]);
+    Route::get('profile', ['as' => 'profile.edit', 'uses' => 'ProfileController@edit']);
+    Route::put('profile', ['as' => 'profile.update', 'uses' => 'ProfileController@update']);
+    Route::put('profile/password', ['as' => 'profile.password', 'uses' => 'ProfileController@password']);
 });
-
