@@ -16,6 +16,7 @@ class CreateFodaAspectosTable extends Migration
         Schema::create('planificacion.foda_aspectos', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('nombre');
+            $table->text('referencia');
 
             $table->unsignedInteger('categoria_id')->nullable();
             $table->foreign('categoria_id')->references('id')->on('planificacion.foda_categorias')

@@ -11,7 +11,7 @@ class FodaAspecto extends Model
 
     // protected $dateFormat = 'Y-m-d H:i:s';
     
-    protected $fillable = ['user_id','nombre', 'categoria_id'];
+    protected $fillable = ['user_id','nombre', 'referencia','categoria_id'];
 
     public function categoria(){
         return $this->belongsTo('App\Admin\Planificacion\Foda\FodaCategoria');

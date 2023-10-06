@@ -29,7 +29,7 @@ class FodaCruceAmbiente extends Model
         return $this->belongsTo('App\Admin\Planificacion\Foda\FodaAnalisis');
     }
 
-    public function fortalezas()
+    public function fortalezasPivot()
     {
         return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaAnalisis', 'planificacion.foda_cruce_ambientes_has_fortalezas', 'cruce_id', 'fortaleza_id');
     }
