@@ -11,11 +11,20 @@
                 @endif
                 <div class="card">
                     <div class="card-header card-header-info">
-                        <h4 class="card-title ">{{$categoria->nombre }} </h4>
-                        {{--
-                        <a href="{{route('foda-aspectos-categoria-edit', ['idCategoria' => $idCategoria, 'idPerfil' => $perfil->id])}}" class="btn btn-success">+ Aspectos</a>
-                        --}}
+                            <h4 class="card-title ">Analizando Categoría (Factor) - {{$categoria->nombre }}</h4>
                     </div>
+                    <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a
+                                    href="{{ route('foda-perfiles.index') }}">Planificación-Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('foda-perfiles.index') }}">Perfiles</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{ route('foda-analisis-ambientes', $idPerfil) }}">Ambientes</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Ambiente Interno</li>
+                        </ol>
+                    </nav>
                     <div class="card-body">
                         <p id="tree1"></p>
                         <div class="card text-center">
@@ -38,7 +47,7 @@
                     '@case('Oportunidad')<p class="badge badge-info">Oportunidad</p>@break'+ 
                     '@case('Debilidad')<p class="badge badge-danger">Debilidad</td> @break'+
                     '@case('Amenaza') <p class="badge badge-warning">Amenaza</p> @break'+ 
-                    '@default <p>Pendiente</p>'+
+                    '@default <p>(Pendiente de Análisis)</p>'+
                     '@endswitch',
             children: [
                 { name: 
@@ -56,7 +65,7 @@
                         @case('0.5')'<td>Alta ({{$valor->ocurrencia}})</td>' + @break
                         @case('0.7')'<td>Muy Alta ({{$valor->ocurrencia}})</td>' + @break  
                         @case('0.9')'<td>Cierta ({{$valor->ocurrencia}})</td>'+ @break
-                    @default'<td>Pendiente</td>' + 
+                    @default'<td>(Pendiente de Análisis)</td>' + 
                     @endswitch
 
                     @switch($valor->impacto) 
@@ -65,7 +74,7 @@
                         @case('0.2')'<td>Moderado ({{$valor->impacto}})</td>' + @break
                         @case('0.4')'<td>Alto ({{$valor->impacto}})</td>' + @break  
                         @case('0.8')'<td>Muy Alto ({{$valor->impacto}})</td>'+ @break 
-                    @default'<td>Pendiente</td>' +
+                    @default'<td>(Pendiente de Análisis)</td>' +
                     @endswitch
                     
                     @php 
@@ -73,7 +82,7 @@
                     @endphp
                     
                     @switch ($total) 
-                        @case($total == 0.00)'<td >Pendiente</td>' +
+                        @case($total == 0.00)'<td>Pendiente</td>' +
                             @break
                             
                         @case($total >= 0.18)'<td><strong class="badge badge-success"> ({{$total}})<strong/></td>' +
@@ -89,7 +98,7 @@
                         '</td>'+
                         '<td>'+
                             '{!! Form::open(['route' => ['foda-analisis.destroy', $valor->id], 'method' => 'DELETE', 'style'=>'display:inline']) !!}'+
-                                '<button class= "btn btn-danger" onclick="return confirm(\'Estas seguro de eliminar el analisis?\')">'+
+                                '<button class= "btn btn-danger btn-circle" onclick="return confirm(\'Estas seguro de eliminar el analisis?\')">'+
                                     '<i class="fa fa-trash" aria-hidden="true"></i>'+
                                 '</button>'+
                             '{!! Form::close() !!}'+

@@ -103,30 +103,31 @@ class FodaPerfilController extends Controller
                     'context.required'          => 'Indique el Contexto',
                     'dependency_id.required'    => 'Debe seleccionar la Dependencia responsable',
                     'model_id.required'         => 'Seleccione el Modelo de Análisis'
-                    
+
                 ]
             );
         };
 
         $profile = FodaPerfil::updateOrCreate(
             ['id' => $request->profile_id],
-            ['name' => $request->name,
-            'context' => $request->context,
-            'model_id'=> $request->model_id,
-            'dependency_id' => $request->dependency_id]
+            [
+                'name' => $request->name,
+                'context' => $request->context,
+                'model_id' => $request->model_id,
+                'dependency_id' => $request->dependency_id
+            ]
         );
 
         //Insert into pivot table 
         $categories = $request->category_id;
         $profile->categories()->sync($categories);
 
-        if($profile->wasRecentlyCreated){
+        if ($profile->wasRecentlyCreated) {
             return response()->json(['success' => 'Perfil creado correctamente.']);
-        }else{
+        } else {
             return response()->json(['success' => 'Perfil actualizado correctamente.']);
         }
     }
-
 
     public function show($id)
     {
@@ -149,34 +150,8 @@ class FodaPerfilController extends Controller
         foreach ($profile->categories as $category) {
             $categoriesChecked[] = ['id' => $category->id, 'text' => $category->nombre];
         }
-        
-        return response()->json(['profile'=>$profile, 'categoriesChecked'=>$categoriesChecked]);
-    }
 
-    // public function edit($id)
-    // {
-    //     $perfil = FodaPerfil::find($id);
-    //     $modelos = FodaModelo::orderBy('id', 'ASC')->pluck('nombre', 'id');
-    //     $categorias = FodaCategoria::orderBy('id', 'ASC')->where('modelo_id', $perfil->modelo_id)->pluck('nombre', 'id');
-
-    //     $categoriasChecked = [];
-    //     // Obtener las categorias relacionadas al PERFIL
-    //     foreach ($perfil->categorias as $categoria) {
-    //         // Acumular las categorias recolectadas en el array '$materiasChecked'.
-    //         $categoriasChecked[] = $categoria->id;
-    //     }
-
-    //     return view('admin.planificacion.fodas.perfiles.edit', get_defined_vars());
-    // }
-
-    public function update(Request $request, $id)
-    {
-        $perfil = FodaPerfil::find($id);
-        $perfil->categorias()->sync($request->categoria_id);
-        $perfil->fill($request->except(['categoria']))->save();
-
-        return redirect()->route('foda-perfiles.index')
-            ->with('success', 'Perfil actualizado el perfil' . $perfil->nombre);
+        return response()->json(['profile' => $profile, 'categoriesChecked' => $categoriesChecked]);
     }
 
     public function destroy(Request $request, $id)

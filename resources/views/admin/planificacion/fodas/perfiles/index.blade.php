@@ -1,106 +1,107 @@
 @extends('layouts.master')
 @section('title', 'Perfiles')
 
-@section('content_header')
-    <div class="card">
-        <div class="card-header">
-            <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="#">Globales</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Ciclos</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-@stop
-
 @section('content')
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <div class="success"></div>
-                    <a class="btn btn-success mb-2" href="javascript:void(0)" id="createNewProfile"> Agregar Perfil</a>
-                </div>
+    <div class="card">
+        <div class="card-header card-header-info">
+            <h4 class="card-title ">Perfiles de Análisis DAFO</h4>
+        </div>
+        <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Perfiles Foda</li>
+            </ol>
+        </nav>
 
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered data-table display nowrap" id="data-table">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Nombre</th>
-                                    <th>Contexto</th>
-                                    <th>Dependencia</th>
-                                    <th>Modelo</th>
-                                    <th>Categorías</th>
-                                    <th width="280px">Accion</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="success"></div>
+                        <a class="btn btn-success" href="javascript:void(0)" id="createNewProfile"> <i
+                                class="material-icons ">add_box</i> Nuevo Perfil</a>
                     </div>
-                </div>
 
-                <div class="modal fade" id="modalProfile" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h4 class="modal-title" id="modalProfilelHeading"></h4>
-                            </div>
-                            <div class="modal-body">
-                                <form id="profileForm" name="profileForm" class="form-horizontal">
-                                    <div class="alert alert-danger errors" role="alert"></div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered data-table display nowrap" id="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Nombre</th>
+                                        <th>Contexto</th>
+                                        <th>Dependencia</th>
+                                        <th>Modelo</th>
+                                        <th>Categorías</th>
+                                        <th width="280px">Accion</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
 
-                                    {{ Form::hidden('profile_id', null, ['profile_id' => 'profile_id']) }}
+                    <div class="modal fade" id="modalProfile" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="card-header card-header-info">
+                                    <h4 class="modal-title" id="modalProfilelHeading"></h4>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="profileForm" name="profileForm" class="form-horizontal">
+                                        <div class="alert alert-danger errors" role="alert"></div>
 
-                                    <div class="form-group">
-                                        {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
-                                        {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
-                                    </div>
+                                        {{ Form::hidden('profile_id', null, ['id' => 'profile_id']) }}
 
-                                    <div class="form-group">
-                                        {{ Form::label('context', 'Contexto:') }}
-                                        {{ Form::text('context', null, ['class' => 'form-control', 'id' => 'context']) }}
-                                    </div>
+                                        <div class="form-group">
+                                            {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
+                                            {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
+                                        </div>
 
-                                    <div class="form-group">
-                                        {{ Form::label('dependency_id', 'Seleccione Dependencia Responsable:') }}
-                                        {!! Form::select('dependency_id', null, null, [
-                                            'id' => 'dependency',
-                                            'style' => 'width:100%',
-                                        ]) !!}
-                                    </div>
+                                        <div class="form-group">
+                                            {{ Form::label('context', 'Contexto:') }}
+                                            {{ Form::text('context', null, ['class' => 'form-control', 'id' => 'context']) }}
+                                        </div>
 
-                                    <div class="form-group">
-                                        {{ Form::label('model_id', 'Elija el Modelo:') }}
-                                        {!! Form::select('model_id', null, null, [
-                                            'placeholder' => 'Seleccione el Modelo',
-                                            'id' => 'models',
-                                            'style' => 'width:100%',
-                                        ]) !!}
-                                    </div>
+                                        <div class="form-group">
+                                            {{ Form::label('dependency_id', 'Seleccione Dependencia Responsable:') }}
+                                            {!! Form::select('dependency_id', null, null, [
+                                                'id' => 'dependency',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
 
-                                    <div class="form-group">
-                                        {!! Form::label('categories', 'Asigne una o varias Categorias:') !!}
-                                        {!! Form::select('category_id[]', [], null, [
-                                            'class' => 'form-control',
-                                            'style' => 'width:100%',
-                                            'id' => 'categories',
-                                            'multiple',
-                                        ]) !!}
-                                    </div>
+                                        <div class="form-group">
+                                            {{ Form::label('model_id', 'Elija el Modelo:') }}
+                                            {!! Form::select('model_id', null, null, [
+                                                'placeholder' => 'Seleccione el Modelo',
+                                                'id' => 'models',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
 
-                                    <div class="col-sm-offset-2 col-sm-10">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-dismiss="modal">Cerrar</button>
-                                        <button type="submit" class="btn btn-success" id="saveBtn" value="create">Guardar
-                                            cambios
-                                        </button>
-                                    </div>
+                                        <div class="form-group">
+                                            {!! Form::label('categories', 'Asigne una o varias Categorias:') !!}
+                                            {!! Form::select('category_id[]', [], null, [
+                                                'class' => 'form-control',
+                                                'style' => 'width:100%',
+                                                'id' => 'categories',
+                                                'multiple',
+                                            ]) !!}
+                                        </div>
 
-                                </form>
+                                        <div class="col-sm-offset-2 col-sm-10">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">Cerrar</button>
+                                            <button type="submit" class="btn btn-success" id="saveBtn"
+                                                value="create">Guardar
+                                                cambios
+                                            </button>
+                                        </div>
+
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -398,7 +399,6 @@
                     //Precargar Modelo
                     $('#models').on('change', function() {
                         var modelId = $(this).val();
-                        console.log(modelId)
                         var url = 'get-foda-categories/' + modelId
 
                         //Categories
