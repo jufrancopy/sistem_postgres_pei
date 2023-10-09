@@ -72,6 +72,15 @@
                                             ]) !!}
                                         </div>
 
+                                        <div class="form-group groups">
+                                            {{ Form::label('groups', 'Grupo De Análisis:') }}
+                                            {!! Form::select('group_id',null, null, [
+                                                'placeholder'=> '',
+                                                'id' => 'groups',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
+
                                         <div class="form-group">
                                             {{ Form::label('dependency_id', 'Seleccione Dependencia Responsable:') }}
                                             {!! Form::select('dependency_id', null, null, [
@@ -328,6 +337,10 @@
                 $("#categories").select2({
                     placeholder: "Seleccione los Factores"
                 });
+
+                $('#groups').select2({
+                    placeholder: 'Seleccione el Grupo Padre'
+                })
 
             });
 

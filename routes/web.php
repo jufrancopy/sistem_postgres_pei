@@ -134,6 +134,11 @@ Route::group(['middleware' => ['auth']], function () {
 
         // Catgories
         Route::resource('categories', 'Backend\CategoryController');
+
+        //Groups
+        Route::resource('groups', 'Admin\Globales\GroupController');
+        Route::get('get-groups', 'Admin\Globales\GroupController@getGroups')->name('get-groups');
+        Route::get('get-foda-users', 'Admin\UserController@getUsers')->name('get-foda-users');
     });
 
     // Rutas Configuraciones Globales
@@ -190,9 +195,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('foda-cruce-ambientes', 'Admin\Planificacion\Foda\FodaCruceAmbienteController');
     Route::get('foda-aspectos-elegir-modelo', 'Admin\Planificacion\Foda\FodaAspectoController@elegirModelo')->name('foda-aspectos-elegir-modelo');
     Route::get('/foda-perfiles-modelo/{id}/categorias', 'Admin\Planificacion\Foda\FodaPerfilController@getCategorias');
-    Route::get('foda-perfiles/{idPerfil}/add-group', 'Admin\Planificacion\Foda\FodaPerfilController@addGroup')->name('foda.add.group');
-    Route::resource('foda-groups', 'Admin\Planificacion\Foda\FodaGroupController');
-    Route::get('get-foda-users', 'Admin\UserController@getUsers')->name('get-foda-users');
+    Route::get('foda-perfiles/{idPerfil}/add-group', 'Admin\Planificacion\Foda\FodaPerfilController@addGroup')->name('foda.add.group');    
 });
 Auth::routes();
 

@@ -136,7 +136,7 @@
                             "previous": "Anterior"
                         }
                     },
-                    ajax: "{{ route('foda-groups.index') }}",
+                    ajax: "{{ route('globales.groups.index') }}",
                     columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex'
@@ -161,14 +161,14 @@
 
                 $('body').on('click', '.editGroup', function() {
                     var groupID = $(this).data('id');
-                    $.get("{{ route('foda-groups.index') }}" + '/' + groupID + '/edit', function(data) {
+                    $.get("{{ route('globales.groups.index') }}" + '/' + groupID + '/edit', function(data) {
                         $('#modalHeading').html("Editar Grupo");
                         $('#saveBtn').val("edit-user");
                         $('#ajaxModal').modal('show');
                         $('#groupForm').trigger("reset");
                         $('.errors').removeClass("alert alert-danger")
-                        $('#group_id').val(data.id);
-                        $('#name').val(data.name);
+                        $('#group_id').val(data.group.id);
+                        $('#name').val(data.group.name);
                     });
                 });
 
@@ -177,7 +177,7 @@
                     $(this).html('Enviando..');
                     $.ajax({
                         data: $('#groupForm').serialize(),
-                        url: "{{ route('foda-groups.store') }}",
+                        url: "{{ route('globales.groups.store') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function(data) {
@@ -208,7 +208,7 @@
                     });
                 });
 
-                $('body').on('click', '.deleteCycle', function() {
+                $('body').on('click', '.deleteGroup', function() {
                     Swal.fire({
                         title: 'Estás seguro de eliminarlo?',
                         text: "Si lo haces, no podras revertirlo!",
@@ -227,7 +227,7 @@
                             var cicle_id = $(this).data("id");
                             $.ajax({
                                 type: "DELETE",
-                                url: "{{ route('foda-groups.store') }}" + '/' + cicle_id,
+                                url: "{{ route('globales.groups.store') }}" + '/' + cicle_id,
                                 success: function(data) {
                                     table.draw();
                                 },

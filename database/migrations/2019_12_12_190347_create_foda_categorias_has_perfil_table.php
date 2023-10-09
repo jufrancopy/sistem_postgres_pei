@@ -23,6 +23,8 @@ class CreateFodaCategoriasHasPerfilTable extends Migration
             $table->foreign('category_id')->references('id')->on('planificacion.foda_categorias')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
+
+            $table->timestamps();
         });
     }
 
