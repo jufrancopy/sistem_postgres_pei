@@ -152,10 +152,6 @@ class FodaPerfilController extends Controller
         $categories = $request->category_id;
         $profile->categories()->sync($categories);
 
-        $groups = $request->group_name;
-        $profile->groups()->sync($groups);
-        //Insert into pivot table perfiles_has_groups
-
         if ($profile->wasRecentlyCreated) {
             return response()->json(['success' => 'Perfil creado correctamente.']);
         } else {

@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Kalnoy\Nestedset\NestedSet;
 
-class CreateFodaGroupsTable extends Migration
+class CreateGroupsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class CreateFodaGroupsTable extends Migration
      */
     public function up()
     {
-        Schema::create('planificacion.foda_groups', function (Blueprint $table) {
+        Schema::create('groups', function (Blueprint $table) {
             $table->id();
             $table->string('name');
 
@@ -31,6 +31,6 @@ class CreateFodaGroupsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('planificacion.foda_groups');
+        Schema::dropIfExists('groups');
     }
 }

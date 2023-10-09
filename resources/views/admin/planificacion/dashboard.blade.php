@@ -79,9 +79,6 @@
                                 name: '<a href="{{ route('foda-modelos.index') }}">Modelos</a>'
                             },
                             {
-                                name: '<a href="{{ route('foda-groups.index') }}">Grupos de Análisis</a>'
-                            },
-                            {
                                 name: '<a href="{{ route('foda-perfiles.index') }}">Perfiles</a>'
                             },
                             {

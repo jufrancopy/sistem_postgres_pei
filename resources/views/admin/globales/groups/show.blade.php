@@ -9,7 +9,7 @@
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('foda-groups.index') }}">{{ $group->name }}</a>
+                <li class="breadcrumb-item"><a href="{{ route('globales.groups.index') }}">{{ $group->name }}</a>
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">Listado de Sub - Grupos</li>
             </ol>
@@ -52,8 +52,8 @@
                                     <form id="subGroupForm" name="subGroupForm" class="form-horizontal">
                                         <div class="alert alert-danger errors" role="alert"></div>
 
-                                        {{ Form::text('group_id', null, ['id' => 'group_id']) }}
-                                        {{ Form::text('parent_id', $group->id, ['id' => 'parent_id']) }}
+                                        {{ Form::hidden('group_id', null, ['id' => 'group_id']) }}
+                                        {{ Form::hidden('parent_id', $group->id, ['id' => 'parent_id']) }}
 
                                         <div class="form-group">
                                             {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
@@ -149,7 +149,7 @@
                             "previous": "Anterior"
                         }
                     },
-                    ajax: "{{ route('foda-groups.show', $group->id) }}",
+                    ajax: "{{ route('globales.groups.show', $group->id) }}",
                     columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex'
@@ -158,7 +158,20 @@
                         name: 'name'
                     }, {
                         data: 'members',
-                        name: 'members'
+                        name: 'members',
+                        render: function(data, type, full, meta) {
+                            var membersArray = data.split(', ');
+
+                            var membersHtml = '';
+
+                            // Recorremos el arreglo de categorías y aplicamos la clase "badge" a cada una
+                            membersArray.forEach(function(member) {
+                                membersHtml += '<span class="badge badge-secondary">' +
+                                    member + '</span> ';
+                            });
+
+                            return membersHtml; // Devolvemos el HTML personalizado para la columna de categorías
+                        }
                     }, {
                         data: 'action',
                         name: 'action',
@@ -174,8 +187,8 @@
                     $('#ajaxModal').modal('show');
                     $('.errors').removeClass("alert alert-danger")
 
-                    var url = '{{ route('get-foda-users') }}';
                     //members
+                    var url = '{{ route('globales.get-foda-users') }}';
                     $("#members").val([]).change();
                     $("#members").val("");
                     $("#members").trigger("change");
@@ -206,14 +219,52 @@
 
                 $('body').on('click', '.editGroup', function() {
                     var groupID = $(this).data('id');
-                    $.get("{{ route('foda-groups.index') }}" + '/' + groupID + '/edit', function(data) {
+                    $.get("{{ route('globales.groups.index') }}" + '/' + groupID + '/edit', function(data) {
                         $('#modalHeading').html("Editar Grupo");
                         $('#saveBtn').val("edit-user");
                         $('#ajaxModal').modal('show');
                         $('#subGroupForm').trigger("reset");
                         $('.errors').removeClass("alert alert-danger")
-                        $('#group_id').val(data.id);
-                        $('#name').val(data.name);
+                        $('#group_id').val(data.group.id);
+                        $('#name').val(data.group.name);
+
+
+                        //Clearing selections
+                        $('#members').select2()
+                        $("#members").val([]).change();
+                        var selectMembers = $('#members');
+                        data.membersChecked.forEach(function(d) {
+                            var option = new Option(d.text, d.id, true, true);
+                            selectMembers.append(option).trigger('change');
+                            selectMembers.trigger({
+                                type: 'select2:select',
+                                params: {
+                                    data: data
+                                }
+                            });
+                        });
+
+                        //Members
+                        var url = '{{ route('globales.get-foda-users') }}';
+                        var members = $('#members').select2({
+                            placeholder: 'Seleccione las Miembros',
+                            ajax: {
+                                url: url,
+                                dataType: 'json',
+                                delay: 250,
+                                processResults: function(data) {
+                                    return {
+                                        results: $.map(data, function(item) {
+                                            return {
+                                                text: item.name,
+                                                id: item.id
+                                            }
+                                        })
+                                    };
+                                },
+                                cache: true
+                            }
+                        });
                     });
                 });
 
@@ -222,7 +273,7 @@
                     $(this).html('Enviando..');
                     $.ajax({
                         data: $('#subGroupForm').serialize(),
-                        url: "{{ route('foda-groups.store') }}",
+                        url: "{{ route('globales.groups.store') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function(data) {
@@ -253,7 +304,7 @@
                     });
                 });
 
-                $('body').on('click', '.deleteCycle', function() {
+                $('body').on('click', '.deleteSubGroup', function() {
                     Swal.fire({
                         title: 'Estás seguro de eliminarlo?',
                         text: "Si lo haces, no podras revertirlo!",
@@ -269,10 +320,10 @@
                                 'El registro ha sido eliminado correctamente.',
                                 'success'
                             )
-                            var cicle_id = $(this).data("id");
+                            var subGroupId = $(this).data("id");
                             $.ajax({
                                 type: "DELETE",
-                                url: "{{ route('foda-groups.store') }}" + '/' + cicle_id,
+                                url: "{{ route('globales.groups.store') }}" + '/' + subGroupId,
                                 success: function(data) {
                                     table.draw();
                                 },
