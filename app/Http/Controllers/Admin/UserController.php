@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 
-
-
 class UserController extends Controller
 {
     /**
@@ -24,9 +22,30 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $data = User::orderBy('id','DESC')->paginate(5);
-        return view('admin.users.index',compact('data'))
+        $data = User::orderBy('id', 'DESC')->paginate(5);
+        return view('admin.users.index', compact('data'))
             ->with('i', ($request->input('page', 1) - 1) * 5);
+    }
+
+    public function getUsers(Request $request)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $data = User::select("id", "name")
+                ->where('name', 'LIKE', "%$search%")
+                ->get();
+        }
+
+        return response()->json($data);
+    }
+
+    public function dataUser(Request $request, $idSelection)
+    {
+        $data = User::findOrFail($idSelection);
+
+        return response()->json($data);
     }
 
 
@@ -37,9 +56,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        
-        $roles = Role::orderBy('name', 'ASC')->pluck('name','id');
-        $rolesChecked=[];
+
+        $roles = Role::orderBy('name', 'ASC')->pluck('name', 'id');
+        $rolesChecked = [];
         return view('admin.users.create', get_defined_vars());
     }
 
@@ -66,7 +85,7 @@ class UserController extends Controller
         $user->assignRole($request->input('roles'));
 
         return redirect()->route('globales.users.index')
-                        ->with('success','Usuario creado satisfactoriamente');
+            ->with('success', 'Usuario creado satisfactoriamente');
     }
 
 
@@ -79,7 +98,7 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::find($id);
-        return view('admin.users.show',compact('user'));
+        return view('admin.users.show', compact('user'));
     }
 
 
@@ -92,8 +111,8 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::find($id);
-        $roles = Role::pluck('name','name')->all();
-        $userRole = $user->roles->pluck('name','name')->all();
+        $roles = Role::pluck('name', 'name')->all();
+        $userRole = $user->roles->pluck('name', 'name')->all();
 
 
         return view('admin.users.edit', get_defined_vars());
@@ -111,27 +130,27 @@ class UserController extends Controller
     {
         $this->validate($request, [
             'name' => 'required',
-            'email' => 'required|email|unique:users,email,'.$id,
+            'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'same:confirm-password',
             'roles' => 'required'
         ]);
 
 
         $input = $request->all();
-        if(!empty($input['password'])){ 
+        if (!empty($input['password'])) {
             $input['password'] = Hash::make($input['password']);
-        }else{
-            $input = array_except($input,array('password'));    
+        } else {
+            $input = array_except($input, array('password'));
         }
 
         $user = User::find($id);
         $user->update($input);
-        DB::table('model_has_roles')->where('model_id',$id)->delete();
+        DB::table('model_has_roles')->where('model_id', $id)->delete();
 
         $user->assignRole($request->input('roles'));
 
         return redirect()->route('globales.users.index')
-                        ->with('success','Usuario Actualizado satisfactoriamente');
+            ->with('success', 'Usuario Actualizado satisfactoriamente');
     }
 
 
@@ -145,6 +164,6 @@ class UserController extends Controller
     {
         User::find($id)->delete();
         return redirect()->route('globales.users.index')
-                        ->with('success','Usuario fue eliminado de la Base de Datos');
+            ->with('success', 'Usuario fue eliminado de la Base de Datos');
     }
 }

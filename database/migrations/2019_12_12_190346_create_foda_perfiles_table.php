@@ -18,6 +18,7 @@ class CreateFodaPerfilesTable extends Migration
             $table->bigIncrements('id');
             $table->string('name');
             $table->string('context');
+            $table->string('type');
 
             $table->unsignedInteger('model_id');
             $table->foreign('model_id')->references('id')->on('planificacion.foda_modelos')

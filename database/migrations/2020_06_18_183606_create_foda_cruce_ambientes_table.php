@@ -15,17 +15,17 @@ class CreateFodaCruceAmbientesTable extends Migration
     {
         Schema::create('planificacion.foda_cruce_ambientes', function (Blueprint $table) {
             $table->bigIncrements('id');
-            
+
             $table->unsignedInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-            
+
             $table->unsignedInteger('perfil_id');
             $table->foreign('perfil_id')->references('id')->on('planificacion.foda_perfiles')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-                
+
             $table->string('estrategia');
             $table->string('tipo');
             $table->timestamps();

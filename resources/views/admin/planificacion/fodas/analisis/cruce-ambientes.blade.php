@@ -62,13 +62,13 @@
                                                     @foreach ($vi->fortalezas as $fortaleza)
                                                         <label class="badge badge-success" data-toggle="tooltip"
                                                             data-placement="top"
-                                                            title="{{ $fortaleza->aspecto->nombre }}">F{{ $fortaleza->aspecto->id }}</label>
+                                                            title="{{ $fortaleza->nombre }}">F{{ $fortaleza->id }}</label>
                                                     @endforeach
 
                                                     @foreach ($vi->oportunidades as $oportunidad)
                                                         <label class="badge badge-success" data-toggle="tooltip"
                                                             data-placement="top"
-                                                            title="{{ $oportunidad->aspecto->nombre }}">O{{ $oportunidad->aspecto->id }}</label>
+                                                            title="{{ $oportunidad->nombre }}">O{{ $oportunidad->id }}</label>
                                                     @endforeach
 
                                                     {{ $vi->estrategia }}
@@ -103,13 +103,13 @@
                                                     @foreach ($vi->debilidades as $debilidad)
                                                         <label class="badge badge-danger" data-toggle="tooltip"
                                                             data-placement="top"
-                                                            title="{{ $debilidad->aspecto->nombre }}">D{{ $debilidad->aspecto->id }}</label>
+                                                            title="{{ $debilidad->nombre }}">D{{ $debilidad->id }}</label>
                                                     @endforeach
 
                                                     @foreach ($vi->oportunidades as $oportunidad)
                                                         <label class="badge badge-success" data-toggle="tooltip"
                                                             data-placement="top"
-                                                            title="{{ $oportunidad->aspecto->nombre }}">O{{ $oportunidad->aspecto->id }}</label>
+                                                            title="{{ $oportunidad->nombre }}">O{{ $oportunidad->id }}</label>
                                                     @endforeach
 
                                                     {{ $vi->estrategia }}
@@ -151,12 +151,12 @@
                                                     @foreach ($vi->fortalezas as $fortaleza)
                                                         <label class="badge badge-success" data-toggle="tooltip"
                                                             data-placement="top"
-                                                            title="{{ $fortaleza->aspecto->nombre }}">F{{ $fortaleza->aspecto->id }}</label>
+                                                            title="{{ $fortaleza->nombre }}">F{{ $fortaleza->id }}</label>
                                                     @endforeach
                                                     @foreach ($vi->amenazas as $amenaza)
                                                         <label class="badge badge-danger" data-toggle="tooltip"
                                                             data-placement="top"
-                                                            title="{{ $amenaza->aspecto->nombre }}">A{{ $amenaza->aspecto->id }}</label>
+                                                            title="{{ $amenaza->nombre }}">A{{ $amenaza->id }}</label>
                                                     @endforeach
                                                     {{ $vi->estrategia }}
                                                     <a href="{{ route('foda-cruce-ambientes.edit', $vi->id) }}"
@@ -188,12 +188,12 @@
                                                     @foreach ($vi->debilidades as $debilidad)
                                                         <label class="badge badge-danger" data-toggle="tooltip"
                                                             data-placement="top"
-                                                            title="{{ $debilidad->aspecto->nombre }}">D{{ $debilidad->aspecto->id }}</label>
+                                                            title="{{ $debilidad->nombre }}">D{{ $debilidad->id }}</label>
                                                     @endforeach
                                                     @foreach ($vi->amenazas as $amenaza)
                                                         <label class="badge badge-danger" data-toggle="tooltip"
                                                             data-placement="top"
-                                                            title="{{ $amenaza->aspecto->nombre }}">A{{ $amenaza->aspecto->id }}</label>
+                                                            title="{{ $amenaza->nombre }}">A{{ $amenaza->id }}</label>
                                                     @endforeach
                                                     {{ $vi->estrategia }}
                                                     <a href="{{ route('foda-cruce-ambientes.edit', $vi->id) }}"

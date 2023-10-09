@@ -10,9 +10,7 @@ class FodaCruceAmbiente extends Model
 {
     protected $table = 'planificacion.foda_cruce_ambientes';
 
-    // protected $dateFormat = 'Y-m-d H:i:s';
-
-    protected $fillable = ['user_id', 'perfil_id', 'fortaleza_id', 'oportunidad_id', 'debilidad_id', 'amenaza_id', 'estrategia', 'tipo'];
+    protected $fillable = ['user_id', 'perfil_id', 'estrategia', 'tipo'];
 
     public function user()
     {
@@ -29,23 +27,23 @@ class FodaCruceAmbiente extends Model
         return $this->belongsTo('App\Admin\Planificacion\Foda\FodaAnalisis');
     }
 
-    public function fortalezasPivot()
+    public function fortalezas()
     {
-        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaAnalisis', 'planificacion.foda_cruce_ambientes_has_fortalezas', 'cruce_id', 'fortaleza_id');
+        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaAspecto', 'planificacion.foda_cruce_ambientes_has_fortalezas', 'cruce_id', 'fortaleza_id');
     }
 
     public function oportunidades()
     {
-        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaAnalisis', 'planificacion.foda_cruce_ambientes_has_oportunidades', 'cruce_id', 'oportunidad_id');
+        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaAspecto', 'planificacion.foda_cruce_ambientes_has_oportunidades', 'cruce_id', 'oportunidad_id');
     }
 
     public function debilidades()
     {
-        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaAnalisis', 'planificacion.foda_cruce_ambientes_has_debilidades', 'cruce_id', 'debilidad_id');
+        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaAspecto', 'planificacion.foda_cruce_ambientes_has_debilidades', 'cruce_id', 'debilidad_id');
     }
 
     public function amenazas()
     {
-        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaAnalisis', 'planificacion.foda_cruce_ambientes_has_amenazas', 'cruce_id', 'amenaza_id');
+        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaAspecto', 'planificacion.foda_cruce_ambientes_has_amenazas', 'cruce_id', 'amenaza_id');
     }
 }

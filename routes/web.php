@@ -15,20 +15,14 @@ Auth::routes();
 // Route::get('/home', 'HomeController@index')->name('home');
 
 Route::group(['middleware' => ['auth']], function () {
-
-    //Rutas del tipo Resource
     Route::resource('products', 'Admin\ProductController');
-
-
     //Rutas del Dpto. Planificacion
     Route::get('planificacion-dashboard', 'Admin\Planificacion\PlanificacionController@dashboard')->name('planificacion-dashboard');
-
     //Rutas de PEI
     Route::resource('peis', 'Admin\Planificacion\Pei\PeiController');
     Route::get('peis-crear-sub-nivel/{idNivelSuperior}/{id}', 'Admin\Planificacion\Pei\PeiController@addSubNivel')->name('peis-crear-sub-nivel');
     Route::get('peis-editar-sub-nivel/{idSubNivel}', 'Admin\Planificacion\Pei\PeiController@editarSubNivel')->name('peis-editar-sub-nivel');
     Route::delete('peis-eliminar-nivel/{idNivelSuperior}/{idNivel}', 'Admin\Planificacion\Pei\PeiController@eliminarNivel')->name('peis-eliminar-nivel');
-
     Route::view('peis-dashboard', 'admin.planificacion.peis.index')->name('peis-dashboard');
     Route::get('ver-cuadro-mando/{idPerfil}', 'Admin\Planificacion\Pei\PeiController@verCuadroDeMando')->name('ver-cuadro-mando');
     // Route::resource('peis-objetivos', 'Admin\Planificacion\Pei\PeiObjetivoController');
@@ -170,7 +164,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('foda-aspectos', 'Admin\Planificacion\Foda\FodaAspectoController');
     Route::get('foda-modelo-categoria-aspectos/{idModelo}/{idCategoria}', 'Admin\Planificacion\Foda\FodaModeloController@listadoAspectos')->name('foda-modelo-categoria-aspectos');
     Route::get('foda-modelo-categoria-aspectos-crear/{idCategoria}', 'Admin\Planificacion\Foda\FodaAspectoController@crearAspecto')->name('foda-modelo-categoria-aspectos-crear');
-    // Route::resource('fodas', 'Admin\Planificacion\FodaController');
     Route::resource('foda-perfiles', 'Admin\Planificacion\Foda\FodaPerfilController');
     Route::resource('foda-analisis', 'Admin\Planificacion\Foda\FodaAnalisisController');
     Route::get('foda-ambiente-interno/{idCategoria}/{idPerfil}', 'Admin\Planificacion\Foda\FodaAnalisisController@categoriasAmbienteInterno')->name('foda-ambiente-interno');
@@ -197,6 +190,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('foda-cruce-ambientes', 'Admin\Planificacion\Foda\FodaCruceAmbienteController');
     Route::get('foda-aspectos-elegir-modelo', 'Admin\Planificacion\Foda\FodaAspectoController@elegirModelo')->name('foda-aspectos-elegir-modelo');
     Route::get('/foda-perfiles-modelo/{id}/categorias', 'Admin\Planificacion\Foda\FodaPerfilController@getCategorias');
+    Route::get('foda-perfiles/{idPerfil}/add-group', 'Admin\Planificacion\Foda\FodaPerfilController@addGroup')->name('foda.add.group');
+    Route::resource('foda-groups', 'Admin\Planificacion\Foda\FodaGroupController');
+    Route::get('get-foda-users', 'Admin\UserController@getUsers')->name('get-foda-users');
 });
 Auth::routes();
 
