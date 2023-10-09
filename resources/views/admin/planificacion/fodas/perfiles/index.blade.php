@@ -65,6 +65,14 @@
                                         </div>
 
                                         <div class="form-group">
+                                            {{ Form::label('type', 'Tipo:') }}
+                                            {!! Form::select('type', ['individual' => 'Individual', 'grupal' => 'Grupal'], null, [
+                                                'id' => 'type',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
+
+                                        <div class="form-group">
                                             {{ Form::label('dependency_id', 'Seleccione Dependencia Responsable:') }}
                                             {!! Form::select('dependency_id', null, null, [
                                                 'id' => 'dependency',
@@ -240,6 +248,7 @@
                 $('#modalProfilelHeading').html("Nuevo Perfil");
                 $('#modalProfile').modal('show');
                 $('.errors').removeClass("alert alert-danger")
+                $('#type').select2()
 
                 //Dependency
                 $("#dependency").val("");
@@ -294,7 +303,6 @@
                     $("#categories").val("");
                     $("#categories").trigger("change");
 
-
                     var dependencies = $('#categories').select2({
                         placeholder: 'Seleccione las Categorías para Analizar',
                         ajax: {
@@ -322,7 +330,6 @@
                 });
 
             });
-
 
 
             $('body').on('click', '.editProfile', function() {

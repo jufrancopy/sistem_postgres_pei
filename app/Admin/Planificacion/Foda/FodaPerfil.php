@@ -11,12 +11,18 @@ class FodaPerfil extends Model
     protected $table = "planificacion.foda_perfiles";
     public $keyType = 'string';
     protected $dateFormat = 'Y-m-d H:i:sO';
-    
-    protected $fillable = ['name','context','model_id', 'dependency_id'];
-    
-    
-    public function categories(){
-        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaCategoria', 'planificacion.foda_categorias_has_perfil', 'perfil_id','category_id' );
+
+    protected $fillable = ['name', 'context', 'type', 'model_id', 'dependency_id'];
+
+
+    public function categories()
+    {
+        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaCategoria', 'planificacion.foda_categorias_has_perfil', 'perfil_id', 'category_id');
+    }
+
+    public function groups()
+    {
+        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaPerfil', 'planificacion.foda_perfiles_has_groups', 'perfil_id', 'group_name');
     }
 
     public function dependency()
@@ -24,10 +30,10 @@ class FodaPerfil extends Model
         return $this->belongsTo(Organigrama::class);
     }
 
-    public function aspectos(){
-        
-        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaAspecto');
+    public function aspectos()
+    {
 
+        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaAspecto');
     }
 
     public function model()
@@ -37,11 +43,9 @@ class FodaPerfil extends Model
 
     public function scopeNombre($query, $nombre)
     {
-        if (trim($nombre) !="")
-        {
+        if (trim($nombre) != "") {
 
-    $query->where(DB::raw("CONCAT(nombre, ' ', contexto)"), 'LIKE', "%$nombre%");    
+            $query->where(DB::raw("CONCAT(nombre, ' ', contexto)"), 'LIKE', "%$nombre%");
         }
-        
     }
 }

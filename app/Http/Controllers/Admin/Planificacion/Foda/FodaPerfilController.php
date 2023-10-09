@@ -26,6 +26,8 @@ class FodaPerfilController extends Controller
     {
         if ($request->ajax()) {
             $data = FodaPerfil::latest()->get();
+            // Determinar si hay elementos tipo grupo
+            $groupType = FodaPerfil::where('type', 'grupal')->exists();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('dependency', function (FodaPerfil $profile) {
@@ -41,13 +43,18 @@ class FodaPerfilController extends Controller
                     return $categoryNames;
                 })
 
-                ->addColumn('action', function ($row) {
+                ->addColumn('action', function ($row) use ($groupType) {
 
                     $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editProfile"><i class="far fa-edit"></i></a>';
 
                     $btn = $btn . ' <a href="/foda-analisis-ambientes/' . $row->id . '" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-info btn-circle"><i class="far fa-eye" aria-hidden="true"></i></a>';
 
                     $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteProfile"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+
+                    // Agregar el botón "Crear Grupo" solo si existe tipo grupo
+                    if ($row->type === 'grupal') {
+                        $btn .= ' <a href="' . route('foda.add.group', $row->id) . '" class="btn btn-success btn-circle"><i class="fa fa-users" aria-hidden="true"></i></a>';
+                    }
 
                     return $btn;
                 })
@@ -65,18 +72,39 @@ class FodaPerfilController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
+    public function addGroup(Request $request, $idPerfil)
+    {
+        $profile = FodaPerfil::findOrFail($idPerfil);
+        if ($request->ajax()) {
+            $data = FodaPerfil::latest()->get();
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($row) {
 
+                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editProfile"><i class="far fa-edit"></i></a>';
+
+                    $btn = $btn . ' <a href="/foda-analisis-ambientes/' . $row->id . '" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-info btn-circle"><i class="far fa-eye" aria-hidden="true"></i></a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteProfile"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+
+                    return $btn;
+                })
+                ->addColumn('group_name', function (FodaPerfil $profile) {
+                    return $profile->groups->group_name;
+                })
+
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('admin.planificacion.fodas.perfiles.add_group', get_defined_vars());
+    }
 
     public function getCategorias($id)
     {
         return FodaCategoria::where('modelo_id', $id)->get();
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         $modelos = FodaModelo::orderBy('id', 'ASC')->pluck('nombre', 'id');
@@ -87,20 +115,21 @@ class FodaPerfilController extends Controller
         return view('admin.planificacion.fodas.perfiles.create', get_defined_vars());
     }
 
-
     public function store(Request $request)
     {
         if ($request->ajax()) {
             $request->validate(
                 [
                     'name'              => 'required',
-                    'context'          => 'required',
-                    'model_id'            => 'required',
-                    'dependency_id'            => 'required',
+                    'context'           => 'required',
+                    'type'              => 'required',
+                    'model_id'          => 'required',
+                    'dependency_id'     => 'required',
                 ],
                 [
                     'name.required'             => 'Agregue el nombre del Modelo',
                     'context.required'          => 'Indique el Contexto',
+                    'type.required'             => 'Indique el Tipo',
                     'dependency_id.required'    => 'Debe seleccionar la Dependencia responsable',
                     'model_id.required'         => 'Seleccione el Modelo de Análisis'
 
@@ -113,6 +142,7 @@ class FodaPerfilController extends Controller
             [
                 'name' => $request->name,
                 'context' => $request->context,
+                'type' => $request->type,
                 'model_id' => $request->model_id,
                 'dependency_id' => $request->dependency_id
             ]
@@ -121,6 +151,10 @@ class FodaPerfilController extends Controller
         //Insert into pivot table 
         $categories = $request->category_id;
         $profile->categories()->sync($categories);
+
+        $groups = $request->group_name;
+        $profile->groups()->sync($groups);
+        //Insert into pivot table perfiles_has_groups
 
         if ($profile->wasRecentlyCreated) {
             return response()->json(['success' => 'Perfil creado correctamente.']);

@@ -16,6 +16,10 @@ use App\ClasesPersonalizadas\Pdf;
 
 class FodaCruceAmbienteController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
 
     public function index(Request $request, $idPerfil)
     {
@@ -285,10 +289,7 @@ class FodaCruceAmbienteController extends Controller
 
     public function edit($id)
     {
-        // $cruce = FodaCruceAmbiente::findOrFail($id);
-        $cruce = FodaCruceAmbiente::with(['fortalezas', 'oportunidades', 'debilidades', 'amenazas'])->findOrFail($id);
-
-
+        $cruce = FodaCruceAmbiente::with('fortalezas')->findOrFail($id);
         $idPerfil = $cruce->perfil_id;
         $matriz =    0.17;
 
@@ -298,7 +299,7 @@ class FodaCruceAmbienteController extends Controller
             ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Fortaleza')
             ->get();
-        
+
         //Ambiente Externo - Oportunidad
         $oportunidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
@@ -317,7 +318,7 @@ class FodaCruceAmbienteController extends Controller
             ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
             ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Amenaza')
-            ->get();        
+            ->get();
 
         $fortalezasChecked = [];
         foreach ($cruce->fortalezas as $v) {
