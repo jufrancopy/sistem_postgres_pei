@@ -3,8 +3,10 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Kalnoy\Nestedset\NestedSet;
 
-class CreateFodaModelosTable extends Migration
+
+class CreateFodaModelsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +15,13 @@ class CreateFodaModelosTable extends Migration
      */
     public function up()
     {
-        Schema::create('planificacion.foda_modelos', function (Blueprint $table) {
+        Schema::create('planificacion.foda_models', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('nombre');
-            $table->string('autor');
-
-            $table->unsignedInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
+            $table->string('name');
+            $table->string('owner');
+            $table->text('description')->nullable();
+            
+            $table->nestedSet();
 
             $table->timestamps();
         });
@@ -34,7 +34,7 @@ class CreateFodaModelosTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('planificacion.foda_modelos', function (Blueprint $table) {
+        Schema::dropIfExists('planificacion.foda_models', function (Blueprint $table) {
             //
         });
     }

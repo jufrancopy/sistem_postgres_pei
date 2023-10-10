@@ -24,7 +24,7 @@
                   <i class="material-icons">faces</i>
                 </div>
                 <p class="card-category">Usuarios</p>
-                <h3 class="card-title">{{$totalUsuarios}}</h3>
+                <h3 class="card-title"></h3>
               </div>
               <div class="card-footer">
                 <div class="stats">
@@ -42,7 +42,7 @@
                   <i class="material-icons">account_balance</i>
                 </div>
                 <p class="card-category">Orgs</p>
-                <h3 class="card-title">{{$totalDependencias}}</h3>
+                <h3 class="card-title"></h3>
               </div>
               <div class="card-footer">
                 <div class="stats">

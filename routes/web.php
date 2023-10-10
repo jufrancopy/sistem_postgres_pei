@@ -3,9 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-if (version_compare(PHP_VERSION, '7.2.0', '>=')) {
-    error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
-}
 
 Route::get('/', function () {
     return view('welcome');
@@ -18,6 +15,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('products', 'Admin\ProductController');
     //Rutas del Dpto. Planificacion
     Route::get('planificacion-dashboard', 'Admin\Planificacion\PlanificacionController@dashboard')->name('planificacion-dashboard');
+    
     //Rutas de PEI
     Route::resource('peis', 'Admin\Planificacion\Pei\PeiController');
     Route::get('peis-crear-sub-nivel/{idNivelSuperior}/{id}', 'Admin\Planificacion\Pei\PeiController@addSubNivel')->name('peis-crear-sub-nivel');
@@ -25,14 +23,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::delete('peis-eliminar-nivel/{idNivelSuperior}/{idNivel}', 'Admin\Planificacion\Pei\PeiController@eliminarNivel')->name('peis-eliminar-nivel');
     Route::view('peis-dashboard', 'admin.planificacion.peis.index')->name('peis-dashboard');
     Route::get('ver-cuadro-mando/{idPerfil}', 'Admin\Planificacion\Pei\PeiController@verCuadroDeMando')->name('ver-cuadro-mando');
-    // Route::resource('peis-objetivos', 'Admin\Planificacion\Pei\PeiObjetivoController');
-    // Route::get('peis-add-objetivos/{idPerfil}', 'Admin\Planificacion\Pei\PeiObjetivoController@addObjetivos')->name('peis-add-objetivos');
-    // Route::resource('peis-estrategias', 'Admin\Planificacion\Pei\PeiEstrategiaController');
-    // Route::get('peis-add-estrategias/{idObjetivo}', 'Admin\Planificacion\Pei\PeiEstrategiaController@addEstrategias')->name('peis-add-estrategias');
-    // Route::resource('peis-programas', 'Admin\Planificacion\Pei\PeiProgramaController');
-    // Route::get('peis-add-programas/{idEstrategia}', 'Admin\Planificacion\Pei\PeiProgramaController@addPrograma')->name('peis-add-programas');
-
-    // Route::get('peis-ver-estrategias/{idEstrategia}', 'Admin\Planificacion\Pei\PeiEstrategiaController@verEstrategias')->name('peis-ver-estrategias');
+    
 
     // Relevamientos
     Route::get('proyectos-epc-relevamientos/{estandarId}', 'Admin\Proyectos\EPC\RelevamientoController@getFormulario')->name('proyectos-epc-relevamientos-form-dependencia');
@@ -86,7 +77,7 @@ Route::group(['middleware' => ['auth']], function () {
     // Medicamento e Insumos
     Route::resource('proyectos-epc-mds_ins', 'Admin\Proyectos\EPC\MedicamentoInsumoController');
 
-    // Especialidades
+    // Specialties
     Route::resource('proyectos-epc-especialidades', 'Admin\Proyectos\EPC\EspecialidadController');
     Route::get('proyectos-epc-especialidad/{type}', 'Admin\Proyectos\EPC\EspecialidadController@getForType')->name('especialidades');
 
@@ -141,22 +132,9 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-foda-users', 'Admin\UserController@getUsers')->name('get-foda-users');
     });
 
-    // Rutas Configuraciones Globales
-    //Route::get('globales-dashboard', 'Admin\Globales\GlobalesController@dashboard')->name('globales-dashboard');
-    // Route::resource('formulario-variables', 'Admin\Globales\Formulario\VariableController');
-    // Route::get('formulario-variables-items/{idVariable}', 'Admin\Globales\Formulario\ItemController@itemsVariable')->name('formulario-variables-items');
-    // Route::get('formulario-agregar-item/{idVariable}', 'Admin\Globales\Formulario\ItemController@agregarItem')->name('formulario-agregar-item');
-
-    // Route::resource('formulario-items', 'Admin\Globales\Formulario\ItemController');
-    // Route::resource('formulario-clasificadores', 'Admin\Globales\Formulario\ClasificadorController');
-    // Route::get('formulario-clasificadores-listado', 'Admin\Globales\Formulario\ClasificadorController@listaClasificadores')->name('formulario-clasificadores-listado');
-    // Route::get('formulario-clasificadores-crear-subclasificador/{idClasificador}', 'Admin\Globales\Formulario\ClasificadorController@crearSubClasificador')->name('formulario-clasificadores-crear-subclasificador');
-    // Route::get('formulario-clasificadores-editar-subclasificador/{idClasificador}', 'Admin\Globales\Formulario\ClasificadorController@editarSubClasificador')->name('formulario-clasificadores-editar-subclasificador');
-
-    // Route::resource('formulario-formularios', 'Admin\Globales\Formulario\FormularioController');
-
+   
     //Rutas del Modulo FODA
-    Route::resource('foda-modelos', 'Admin\Planificacion\Foda\FodaModeloController');
+    Route::resource('foda-models', 'Admin\Planificacion\Foda\FodaModeloController');
     Route::resource('foda-categorias', 'Admin\Planificacion\Foda\FodaCategoriaController');
     Route::get('get-foda-categories/{modelId}', 'Admin\Planificacion\Foda\FodaCategoriaController@dataCategories')->name('get-foda-categories');
     Route::get('get-foda-category/{idSelection}', 'Admin\Planificacion\Foda\FodaCategoriaController@dataCategory')->name('get-foda-category');
