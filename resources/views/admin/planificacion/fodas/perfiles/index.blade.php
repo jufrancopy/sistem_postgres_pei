@@ -72,10 +72,10 @@
                                             ]) !!}
                                         </div>
 
-                                        <div class="form-group groups">
+                                        <div class="form-group groups" style="display: none;">
                                             {{ Form::label('groups', 'Grupo De Análisis:') }}
-                                            {!! Form::select('group_id',null, null, [
-                                                'placeholder'=> '',
+                                            {!! Form::select('group_id', [], null, [
+                                                'placeholder' => '',
                                                 'id' => 'groups',
                                                 'style' => 'width:100%',
                                             ]) !!}
@@ -83,7 +83,7 @@
 
                                         <div class="form-group">
                                             {{ Form::label('dependency_id', 'Seleccione Dependencia Responsable:') }}
-                                            {!! Form::select('dependency_id', null, null, [
+                                            {!! Form::select('dependency_id', [], null, [
                                                 'id' => 'dependency',
                                                 'style' => 'width:100%',
                                             ]) !!}
@@ -91,7 +91,7 @@
 
                                         <div class="form-group">
                                             {{ Form::label('model_id', 'Elija el Modelo:') }}
-                                            {!! Form::select('model_id', null, null, [
+                                            {!! Form::select('model_id', [], null, [
                                                 'placeholder' => 'Seleccione el Modelo',
                                                 'id' => 'models',
                                                 'style' => 'width:100%',
@@ -256,8 +256,16 @@
                 $('#profileForm').trigger("reset");
                 $('#modalProfilelHeading').html("Nuevo Perfil");
                 $('#modalProfile').modal('show');
-                $('.errors').removeClass("alert alert-danger")
-                $('#type').select2()
+                $('.errors').removeClass("alert alert-danger");
+                $('#type').select2();
+
+                $('#type').change(function() {
+                    if ($(this).val() === 'grupal') {
+                        $('.form-group.groups').show();
+                    } else {
+                        $('.form-group.groups').hide();
+                    }
+                });
 
                 //Dependency
                 $("#dependency").val("");
@@ -338,9 +346,27 @@
                     placeholder: "Seleccione los Factores"
                 });
 
+                $("#groups").val([]);
+                $("#groups").val("");
                 $('#groups').select2({
-                    placeholder: 'Seleccione el Grupo Padre'
-                })
+                    placeholder: 'Seleccione el grupo de trabajo',
+                    ajax: {
+                        url: '{{ route('globales.get-groups') }}',
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function(data) {
+                            return {
+                                results: $.map(data, function(item) {
+                                    return {
+                                        text: item.name,
+                                        id: item.id
+                                    }
+                                })
+                            };
+                        },
+                        cache: true
+                    }
+                });
 
             });
 

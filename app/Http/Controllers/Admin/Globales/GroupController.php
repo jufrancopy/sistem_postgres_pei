@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Admin\Globales\Group;;
+
 use Kalnoy\Nestedset\NodeTrait;
 use Yajra\DataTables\DataTables;
 use App\Models\User;
@@ -44,7 +45,7 @@ class GroupController extends Controller
         return view('admin.globales.groups.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
-    
+
 
     public function store(Request $request)
     {
@@ -70,7 +71,7 @@ class GroupController extends Controller
             $node = Group::find($request->parent_id);
             $node->appendNode($group);
         }
-        
+
         $members = $request->user_id;
 
         $group->members()->sync($members);
@@ -80,6 +81,27 @@ class GroupController extends Controller
         } else {
             return response()->json(['success' => 'Grupo Hijo creado con éxito', 'parent_id' => $request->parent_id]);
         }
+    }
+
+    public function getGroups(Request $request)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $data = Group::select("id", "name")
+                ->where('name', 'LIKE', "%$search%")
+                ->where('parent_id', null)
+                ->get();
+        }
+        return response()->json($data);
+    }
+
+    public function dataGroup(Request $request, $idSelection)
+    {
+        $data = Group::findOrFail($idSelection);
+
+        return response()->json($data);
     }
 
     public function edit($id)
@@ -95,7 +117,7 @@ class GroupController extends Controller
         return response()->json(['group' => $group, 'membersChecked' => $membersChecked]);
     }
 
-    
+
     public function show(Request $request, $id)
     {
         $group = Group::findOrFail($id);

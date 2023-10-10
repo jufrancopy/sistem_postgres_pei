@@ -13,7 +13,7 @@ class CreateFodaGroupsHasPerfilesTable extends Migration
      */
     public function up()
     {
-        Schema::create('groups_has_perfiles', function (Blueprint $table) {
+        Schema::create('planificacion.foda_groups_has_perfiles', function (Blueprint $table) {
             $table->id();
 
             $table->unsignedInteger('perfil_id');
@@ -37,6 +37,6 @@ class CreateFodaGroupsHasPerfilesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('groups_has_perfiles');
+        Schema::dropIfExists('planificacion.foda_groups_has_perfiles');
     }
 }

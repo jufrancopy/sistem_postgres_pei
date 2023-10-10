@@ -1,9 +1,11 @@
 <?php
+
 namespace Database\Seeders;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class UsersTableSeeder extends Seeder
 {
@@ -22,5 +24,11 @@ class UsersTableSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now()
         ]);
+        $user = User::find(1);
+
+        if ($user) {
+            // Asocia el rol con ID 1 (Administrador) al usuario
+            $user->assignRole('Administrador');
+        }
     }
 }
