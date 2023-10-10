@@ -9,6 +9,8 @@ use App\Admin\Planificacion\Foda\FodaModelo;
 use App\Admin\Planificacion\Foda\FodaCategoria;
 use App\Admin\Planificacion\Foda\FodaAspecto;
 
+use Yajra\DataTables\DataTables;
+
 class FodaModeloController extends Controller
 {
     public function __construct()
@@ -18,110 +20,102 @@ class FodaModeloController extends Controller
 
     public function index(Request $request)
     {
-        $modelos = FodaModelo::nombre($request->get('nombre'))->orderBy('id', 'DESC')->paginate(10);
+        if ($request->ajax()) {
+            $data = FodaModelo::where('parent_id', null)->latest()->get();
+            return DataTables::of($data)
+                ->addIndexColumn()
 
-        return view('admin.planificacion.fodas.modelos.index', get_defined_vars())
+                ->addColumn('action', function ($row) {
+
+                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editModel"><i class="far fa-edit"></i></a>';
+
+                    $btn .= ' <a href="' . route('foda-models.show', $row->id) . '" class="btn btn-success btn-circle"><i class="fa fa-users" aria-hidden="true"></i></a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteModel"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('admin.planificacion.fodas.models.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    public function listadoAspectos(Request $request, $idModelo, $idCategoria)
-    {
-        $idModelo = $request->idModelo;
-        $idCategoria = $request->idCategoria;
-        $categoria = FodaCategoria::where('id', '=', $idCategoria)->first();
-        $aspectos = FodaAspecto::nombre($request->get('nombre'))->orderBy('id', 'DESC')->where('categoria_id', '=', $idCategoria)->get();
-
-        return view('admin.planificacion.fodas.modelos.aspectos', get_defined_vars())
-            ->with('i', ($request->input('page', 1) - 1) * 5);;
-    }
-    
-    public function getModels(Request $request)
-    {
-        $data = [];
-
-        if ($request->has('q')) {
-            $search = $request->q;
-            $data = FodaModelo::select("id", "nombre")
-                ->where('nombre', 'LIKE', "%$search%")
-                ->get();
-        }
-        return response()->json($data);
-    }
-
-    public function dataModel(Request $request, $idSelection)
-    {
-        $data = FodaModelo::findOrFail($idSelection);
-
-        return response()->json($data);
-    }
-
-    public function create()
-    {
-        return view('admin.planificacion.fodas.modelos.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        $modelo = FodaModelo::create($request->all());
+        if ($request->ajax()) {
+            $request->validate(
+                [
+                    'name'              => 'required',
+                    'owner'              => 'required',
+                ],
+                [
+                    'name.required'     => 'Campor Nombre es requerido',
+                    'owner.required'     => 'Indique el Propietario del Modelo',
+                ]
+            );
+        };
 
-        return redirect()->route('foda-modelos.index')
-            ->with('success', 'Modelo creado satisfactoriamente');
+        $model = FodaModelo::updateOrCreate(
+            ['id' => $request->model_id],
+            [
+                'name' => $request->name,
+                'owner' => $request->owner,
+                'description' => $request->description,
+            ]
+        );
+
+        if ($request->parent_id) {
+            $node = FodaModelo::find($request->parent_id);
+            $node->appendNode($model);
+        }
+
+        if ($model->parent_id == null) {
+            return response()->json(['success' => 'Modelo creado con éxito']);
+        } else {
+            return response()->json(['success' => 'Aspecto creado con éxito', 'parent_id' => $request->parent_id]);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
-        $modelo = FodaModelo::find($id);
-        return view('admin.planificacion.fodas.modelos.edit', get_defined_vars());
+        $group = FodaModelo::find($id);
+
+        return response()->json($group);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    
+    public function show(Request $request, $id)
     {
-        $modelo = FodaModelo::find($id);
-        $modelo->fill($request->all())->save();
+        $group = FodaModelo::findOrFail($id);
 
-        return redirect()->route('foda-modelos.index')
-            ->with('success', 'Modelo actualizado satisfactoriamente');
+        if ($request->ajax()) {
+            $data = FodaModelo::descendantsOf($id);
+            return DataTables::of($data)
+                ->addIndexColumn()
+
+                ->addColumn('action', function ($row) {
+
+                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editGroup"><i class="far fa-edit"></i></a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteSubGroup"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('admin.planificacion.fodas.models.show', get_defined_vars())
+            ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $modelo = FodaModelo::find($id)->delete();
-        return back()->with('success', 'Modelo eliminada correctamente.');
+        $profile = FodaModelo::find($id)->delete();
+
+        return response()->json([$profile]);
     }
 }

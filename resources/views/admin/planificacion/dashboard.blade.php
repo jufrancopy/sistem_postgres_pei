@@ -76,7 +76,7 @@
                     {
                         name: 'Analisis FODA',
                         children: [{
-                                name: '<a href="{{ route('foda-modelos.index') }}">Modelos</a>'
+                                name: '<a href="{{ route('foda-models.index') }}">Modelos</a>'
                             },
                             {
                                 name: '<a href="{{ route('foda-perfiles.index') }}">Perfiles</a>'

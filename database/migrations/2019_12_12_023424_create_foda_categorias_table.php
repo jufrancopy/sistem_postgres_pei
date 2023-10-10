@@ -25,7 +25,7 @@ class CreateFodaCategoriasTable extends Migration
                 ->onUpdate('cascade');
 
             $table->unsignedInteger('modelo_id');
-            $table->foreign('modelo_id')->references('id')->on('planificacion.foda_modelos')
+            $table->foreign('modelo_id')->references('id')->on('planificacion.foda_models')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 

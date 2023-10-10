@@ -21,7 +21,7 @@ class CreateFodaPerfilesTable extends Migration
             $table->string('type');
 
             $table->unsignedInteger('model_id');
-            $table->foreign('model_id')->references('id')->on('planificacion.foda_modelos')
+            $table->foreign('model_id')->references('id')->on('planificacion.foda_models')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
