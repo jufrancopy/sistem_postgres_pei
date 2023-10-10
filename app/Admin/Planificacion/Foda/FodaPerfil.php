@@ -22,7 +22,7 @@ class FodaPerfil extends Model
 
     public function groups()
     {
-        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaPerfil', 'planificacion.foda_perfiles_has_groups', 'perfil_id', 'group_name');
+        return $this->belongsToMany('App\Admin\Globales\Group', 'planificacion.foda_perfiles_has_groups', 'perfil_id', 'group_id');
     }
 
     public function dependency()

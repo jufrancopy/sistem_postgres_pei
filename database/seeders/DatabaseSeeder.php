@@ -1,8 +1,10 @@
 <?php
+
 namespace Database\Seeders;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Contracts\Permission;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,7 +15,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call([UsersTableSeeder::class]);
+        $this->call([PermissionsTableSeeder::class]);
         $this->call([RolesTableSeeder::class]);
+        $this->call([UsersTableSeeder::class]);
+        $this->call([OrganigramasTableSeeder::class]);
+        // $this->call([GroupsTableSeeder::class]);
     }
 }
