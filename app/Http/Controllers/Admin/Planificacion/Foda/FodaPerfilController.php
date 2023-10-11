@@ -35,7 +35,7 @@ class FodaPerfilController extends Controller
                 })
 
                 ->addColumn('model', function (FodaPerfil $profile) {
-                    return $profile->model->nombre;
+                    return $profile->model->name;
                 })
 
                 ->addColumn('categories', function (FodaPerfil $profile) {
@@ -62,7 +62,7 @@ class FodaPerfilController extends Controller
                 ->make(true);
         }
 
-        $modelos = FodaModelo::orderBy('nombre', 'ASC')->pluck('nombre', 'id')->toArray();
+        $modelos = FodaModelo::orderBy('name', 'ASC')->pluck('name', 'id')->toArray();
         $categorias = FodaCategoria::orderBy('nombre', 'ASC')->pluck('nombre', 'id')->toArray();
         $dependencies = Organigrama::whereIsRoot()->pluck('dependency', 'id')->toArray();
 
