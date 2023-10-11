@@ -1,16 +1,18 @@
 @extends('layouts.master')
-@section('title', 'Perfiles')
+@section('title', 'Aspectos')
 
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">FODA - Modelos</h4>
+            <h4 class="card-title ">Lista de Aspectos de la categoría {{$category->name}}</h4>
         </div>
 
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">FODA - Modelos</li>
+                <li class="breadcrumb-item"><a href="{{ route('foda-models.index') }}">Modelos</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('foda-models.show', $category->parent_id) }}">Categorías</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{$category->name}}:Agregar Aspectos</li>
             </ol>
         </nav>
 
@@ -19,8 +21,8 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="success"></div>
-                        <a class="btn btn-success" href="javascript:void(0)" id="createNewModel"> <i
-                                class="material-icons ">add_box</i> Nuevo Modelo</a>
+                        <a class="btn btn-success" href="javascript:void(0)" id="createNewAspect"> <i
+                                class="material-icons ">add_box</i> Nuevo Aspecto</a>
                     </div>
 
                     <div class="card-body">
@@ -30,7 +32,6 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Nombre</th>
-                                        <th>Propietario</th>
                                         <th>Descripión</th>
                                         <th width="280px">Accion</th>
                                     </tr>
@@ -41,28 +42,23 @@
                         </div>
                     </div>
 
-                    <div class="modal fade" id="modalModel" aria-hidden="true">
+                    <div class="modal fade" id="modalCategory" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="card-header card-header-info">
                                     <h4 class="modal-title" id="modalModelHeading"></h4>
                                 </div>
                                 <div class="modal-body">
-                                    <form id="modelForm" name="modelForm" class="form-horizontal">
-                                        <div class="alert alert-danger errors" role="alert"></div>
+                                    <form id="categoryForm" name="categoryForm" class="form-horizontal">
 
-                                        {{ Form::hidden('profile_id', null, ['id' => 'profile_id']) }}
-                                        {{-- {{ Form::hidden('type', 'model') }} --}}
+                                        {{ Form::hidden('model_id', null, ['id' => 'model_id']) }}
+                                        {{ Form::hidden('parent_id', $category->id, ['id' => 'parent_id']) }}
+                                        {{ Form::hidden('owner', $category->owner, ['id' => 'owner']) }}
+                                        {{ Form::hidden('environment', $category->environment, ['class' => 'form-control', 'id' => 'environment']) }}
 
                                         <div class="form-group">
                                             {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
                                             {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
-                                            {{ Form::text('environment', null, ['class' => 'form-control', 'id' => 'environment']) }}
-                                        </div>
-
-                                        <div class="form-group">
-                                            {{ Form::label('owner', 'Propietario:') }}
-                                            {{ Form::text('owner', null, ['class' => 'form-control', 'id' => 'owner']) }}
                                         </div>
 
                                         <div class="description mb-2">
@@ -102,7 +98,6 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
-
             var table = $('.data-table').DataTable({
                 processing: true,
                 serverSide: true,
@@ -153,7 +148,7 @@
                         "previous": "Anterior"
                     }
                 },
-                ajax: "{{ route('foda-models.index') }}",
+                ajax: "{{ route('foda-models-getAspects', $category->id) }}",
                 columns: [{
                     data: 'DT_RowIndex',
                     name: 'DT_RowIndex'
@@ -161,11 +156,9 @@
                     data: 'name',
                     name: 'name'
                 }, {
-                    data: 'owner',
-                    name: 'owner'
-                }, {
                     data: 'description',
                     name: 'description',
+
                     render: function(data, type, full, meta) {
                         if (type === 'display' || type === 'filter') {
                             // Deshacer la escapada de HTML utilizando jQuery
@@ -192,63 +185,42 @@
                     console.error(err.stack);
                 });
 
-            $('#createNewModel').click(function() {
+            $('#createNewAspect').click(function() {
                 $('#saveBtn').val("create-model");
-                $('#profile_id').val('');
-                $('#modelForm').trigger("reset");
-                $('#modalModelHeading').html("Nuevo Modelo");
-                $('#modalModel').modal('show');
-                $('.errors').removeClass("alert alert-danger");
+                $('#model_id').val('');
+                $('#categoryForm').trigger("reset");
+                $('#modalModelHeading').html("Nueva Categorìa");
+                $('#modalCategory').modal('show');
 
                 descriptionEditor.setData('');
 
-
             });
 
+            $('body').on('click', '.editAspect', function() {
+                var categoryID = $(this).data('id');
 
-            $('body').on('click', '.editModel', function() {
-                var modelID = $(this).data('id');
+                $.get("{{ route('foda-models.index') }}" + '/' + categoryID + '/edit', function(data) {
 
-                $.get("{{ route('foda-models.index') }}" + '/' + modelID + '/edit', function(data) {
-                    console.log(data)
-                    $('#modalModelHeading').html("Editar Modelo");
+                    $('#modalModelHeading').html("Editar Perfil");
                     $('#saveBtn').val("edit-profile");
-                    $('#modalModel').modal('show');
-                    $('#modelForm').trigger("reset");
-                    $('.errors').removeClass("alert alert-danger")
-                    $('#model_id').val(data.model_id);
+                    $('#modalCategory').modal('show');
+                    $('#categoryForm').trigger("reset");
+                    $('#model_id').val(data.id);
                     $('#name').val(data.name);
                     $('#owner').val(data.owner);
                     descriptionEditor.setData(data.description);
                 });
             });
 
-            // $('body').on('click', '.editCategory', function() {
-            //     var categoryID = $(this).data('id');
-
-            //     $.get("{{ route('foda-models.index') }}" + '/' + categoryID + '/addAspects', function(data) {
-            //         console.log(data)
-            //         $('#modalModelHeading').html("Editar Modelo");
-            //         $('#saveBtn').val("edit-profile");
-            //         $('#modalModel').modal('show');
-            //         $('#modelForm').trigger("reset");
-            //         $('.errors').removeClass("alert alert-danger")
-            //         $('#model_id').val(data.model_id);
-            //         $('#name').val(data.name);
-            //         $('#owner').val(data.owner);
-            //         descriptionEditor.setData(data.description);
-            //     });
-            // });
-
-
             $('#saveBtn').click(function(e) {
                 e.preventDefault();
                 $(this).html('Enviando..');
 
                 var data = new FormData();
-                var form_data = $('#modelForm').serializeArray();
+                var form_data = $('#categoryForm').serializeArray();
 
                 $.each(form_data, function(key, input) {
+                    console.log(input)
                     data.append(input.name, input.value);
                 });
 
@@ -263,8 +235,8 @@
                     processData: false,
                     contentType: false,
                     success: function(data) {
-                        $('#modelForm').trigger("reset");
-                        $('#modalModel').modal('hide');
+                        $('#categoryForm').trigger("reset");
+                        $('#modalCategory').modal('hide');
                         $(".success").removeAttr("style");
                         table.draw();
                     },
@@ -285,7 +257,7 @@
                 });
             });
 
-            $('body').on('click', '.deleteModel', function() {
+            $('body').on('click', '.deleteAspect', function() {
                 Swal.fire({
                     title: 'Estás seguro de eliminarlo?',
                     text: "Si lo haces, no podras revertirlo!",

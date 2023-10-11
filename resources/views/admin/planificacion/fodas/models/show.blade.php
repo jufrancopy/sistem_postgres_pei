@@ -10,8 +10,8 @@
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('foda-models.index') }}">{{ $model->name }}</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Agregar Categorías - Aspectos</li>
+                <li class="breadcrumb-item"><a href="{{ route('foda-models.index') }}">Modelos</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Agregar Categorías</li>
             </ol>
         </nav>
 
@@ -21,7 +21,7 @@
                     <div class="card-header">
                         <div class="success"></div>
                         <a class="btn btn-success" href="javascript:void(0)" id="createNewCategory"> <i
-                                class="material-icons ">add_box</i> Nueva Categoría</a>
+                                class="material-icons ">add_box</i> Nueva Categoría (Capacidades o Factores)</a>
                     </div>
 
                     <div class="card-body">
@@ -31,6 +31,7 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Nombre</th>
+                                        <th>Ambiente</th>
                                         <th>Descripión</th>
                                         <th width="280px">Accion</th>
                                     </tr>
@@ -51,13 +52,26 @@
                                     <form id="categoryForm" name="categoryForm" class="form-horizontal">
 
                                         {{ Form::hidden('model_id', null, ['id' => 'model_id']) }}
-                                        {{ Form::hidden('parent_id', $model->id, ['id' => 'parent_id']) }}
-                                        {{ Form::hidden('owner', $model->owner, ['id' => 'owner']) }}
-                                        {{-- {{ Form::text('type', null, ['id' => 'type']) }} --}}
+                                        {{ Form::hidden('parent_id', $category->id, ['id' => 'parent_id']) }}
+                                        {{ Form::hidden('owner', $category->owner, ['id' => 'owner']) }}
 
                                         <div class="form-group">
                                             {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
                                             {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
+                                        </div>
+
+                                        <div class="form-group">
+                                            {{ Form::label('environment', 'Ambiente:') }}
+                                            {!! Form::select(
+                                                'environment',
+                                                ['Interno' => 'Análisis Estratégico Interno', 'Externo' => 'Análisis Estratégico Externo'],
+                                                null,
+                                                [
+                                                    'id' => 'environment',
+                                                    'placeholder' => '',
+                                                    'style' => 'width:100%',
+                                                ],
+                                            ) !!}
                                         </div>
 
                                         <div class="description mb-2">
@@ -76,8 +90,41 @@
                                                 cambios
                                             </button>
                                         </div>
-
                                     </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="modalShowAspects" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="card-header card-header-info">
+                                    <h4 class="modal-title" id="modalShowAspectsHeading"></h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <table class="table table-bordered aspectsTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Nombre</th>
+                                                        <th scope="col">Referencia</th>
+                                                    </tr>
+                                                    </head>
+                                                <tbody>
+
+                                                </tbody>
+
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-offset-2 col-sm-10">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar
+                                        </button>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -90,7 +137,9 @@
 
 @section('scripts')
     {{-- My custom scripts --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/he/1.2.0/he.min.js"></script>
     <script type="text/javascript">
+
         $(function() {
             $.ajaxSetup({
                 headers: {
@@ -147,13 +196,16 @@
                         "previous": "Anterior"
                     }
                 },
-                ajax: "{{ route('foda-models.show', $model->id) }}",
+                ajax: "{{ route('foda-models.show', $category->id) }}",
                 columns: [{
                     data: 'DT_RowIndex',
                     name: 'DT_RowIndex'
                 }, {
                     data: 'name',
                     name: 'name'
+                }, {
+                    data: 'environment',
+                    name: 'environment'
                 }, {
                     data: 'description',
                     name: 'description',
@@ -188,13 +240,47 @@
                 $('#saveBtn').val("create-model");
                 $('#model_id').val('');
                 $('#categoryForm').trigger("reset");
-                $('#modalModelHeading').html("Nueva Categorìa");
+                $('#modalModelHeading').html("Nueva Categoría (Capacidades o Factores)");
                 $('#modalCategory').modal('show');
+                $('#environment').select2({
+                    placeholder: "Seleccion el Ambiente"
+                });
 
                 descriptionEditor.setData('');
 
             });
 
+            $('body').on('click', '.showAspects', function() {
+                var categoryID = $(this).data('id');
+
+                $.get("{{ route('foda-models.index') }}" + '/' + categoryID + '/showAspects', function(
+                    data) {
+
+                    $('#modalShowAspects').modal('show');
+                    $('#modalShowAspectsHeading').html("Listado de Aspectos de la categoría " + data
+                        .category.name);
+                    $('#categoryForm').trigger("reset");
+
+                    // Limpia la lista existente antes de agregar nuevos elementos
+                    $(".aspectsTable tbody").empty();
+
+
+                    $.each(data.aspects, function(index, value) {
+                        var nombre = value.name;
+                        var descripcion = value.description;
+
+                        // Crea una nueva fila de la tabla
+                        var nuevaFila = $("<tr>").append(
+                            $("<td>").text(nombre),
+                            $("<td>").html(descripcion)
+
+                        );
+
+                        // Agrega la nueva fila a la tabla
+                        $(".aspectsTable  tbody").append(nuevaFila);
+                    });
+                });
+            });
 
             $('body').on('click', '.editCategory', function() {
                 var categoryID = $(this).data('id');

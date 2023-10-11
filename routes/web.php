@@ -135,6 +135,8 @@ Route::group(['middleware' => ['auth']], function () {
    
     //Rutas del Modulo FODA
     Route::resource('foda-models', 'Admin\Planificacion\Foda\FodaModeloController');
+    Route::get('foda-models/{categoryId}/getAspects', 'Admin\Planificacion\Foda\FodaModeloController@getAspects')->name('foda-models-getAspects');
+    Route::get('foda-models/{categoryId}/showAspects', 'Admin\Planificacion\Foda\FodaModeloController@showAspects');
     Route::resource('foda-categorias', 'Admin\Planificacion\Foda\FodaCategoriaController');
     Route::get('get-foda-categories/{modelId}', 'Admin\Planificacion\Foda\FodaCategoriaController@dataCategories')->name('get-foda-categories');
     Route::get('get-foda-category/{idSelection}', 'Admin\Planificacion\Foda\FodaCategoriaController@dataCategory')->name('get-foda-category');

@@ -43,17 +43,46 @@ class FodaModeloController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
+    public function getAspects(Request $request, $categoryId){
+        $category = FodaModelo::find($categoryId);
+        $modelId = $category->parent_id;
+
+        if ($request->ajax()) {
+            $data = FodaModelo::where('parent_id', $categoryId)->latest()->get();
+            return DataTables::of($data)
+                ->addIndexColumn()
+
+                ->addColumn('action', function ($row) {
+
+                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editAspect"><i class="far fa-edit"></i></a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteAspect"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+       
+        return view('admin.planificacion.fodas.models.aspects', get_defined_vars())
+            ->with('i', ($request->input('page', 1) - 1) * 5);
+    }
+    
+     
+
     public function store(Request $request)
     {
         if ($request->ajax()) {
             $request->validate(
                 [
-                    'name'              => 'required',
-                    'owner'              => 'required',
+                    'name'                  => 'required',
+                    'owner'                 => 'required',
+                    'environment'           => 'required',
                 ],
                 [
-                    'name.required'     => 'Campor Nombre es requerido',
-                    'owner.required'     => 'Indique el Propietario del Modelo',
+                    'name.required'         => 'Campor Nombre es requerido',
+                    'owner.required'        => 'Indique el Propietario del Modelo',
+                    'environment.required'  => 'Indique el Ambiente (Interno o Externo)',
                 ]
             );
         };
@@ -64,6 +93,7 @@ class FodaModeloController extends Controller
                 'name' => $request->name,
                 'owner' => $request->owner,
                 'description' => $request->description,
+                'environment' => $request->environment,
             ]
         );
 
@@ -79,6 +109,15 @@ class FodaModeloController extends Controller
         }
     }
 
+    
+    public function showAspects($categoryId)
+    {
+        $category = FodaModelo::findOrFail($categoryId);
+        $aspects = FodaModelo::where('parent_id', $categoryId)->get();
+    
+        return response()->json(['category'=>$category, 'aspects'=>$aspects]);
+    }
+
     public function edit($id)
     {
         $modal = FodaModelo::find($id);
@@ -89,10 +128,10 @@ class FodaModeloController extends Controller
 
     public function show(Request $request, $id)
     {
-        $model = FodaModelo::findOrFail($id);
+        $category = FodaModelo::findOrFail($id);
 
         if ($request->ajax()) {
-            $data = FodaModelo::descendantsOf($id);
+            $data = FodaModelo::where('parent_id', $id)->latest()->get();
             return DataTables::of($data)
                 ->addIndexColumn()
 
@@ -100,7 +139,9 @@ class FodaModeloController extends Controller
 
                     $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editCategory"><i class="far fa-edit"></i></a>';
 
-                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-success btn-circle addAspect"><i class="fa fa-plus" aria-hidden="true"></i></a>';
+                    $btn .= ' <a href="' . route('foda-models-getAspects', $row->id) . '" class="btn btn-success btn-circle"><i class="fa fa-plus" aria-hidden="true"></i></a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-info btn-circle showAspects"><i class="fa fa-eye" aria-hidden="true"></i></a>';
 
                     $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteCategory"><i class="fa fa-trash" aria-hidden="true"></i></a>';
 
