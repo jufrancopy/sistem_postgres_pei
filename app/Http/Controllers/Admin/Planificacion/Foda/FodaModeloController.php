@@ -29,7 +29,7 @@ class FodaModeloController extends Controller
 
                     $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editModel"><i class="far fa-edit"></i></a>';
 
-                    $btn .= ' <a href="' . route('foda-models.show', $row->id) . '" class="btn btn-success btn-circle"><i class="fa fa-users" aria-hidden="true"></i></a>';
+                    $btn .= ' <a href="' . route('foda-models.show', $row->id) . '" class="btn btn-success btn-circle"><i class="fa fa-plus" aria-hidden="true"></i></a>';
 
                     $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteModel"><i class="fa fa-trash" aria-hidden="true"></i></a>';
 
@@ -81,15 +81,15 @@ class FodaModeloController extends Controller
 
     public function edit($id)
     {
-        $group = FodaModelo::find($id);
+        $modal = FodaModelo::find($id);
 
-        return response()->json($group);
+        return response()->json($modal);
     }
 
-    
+
     public function show(Request $request, $id)
     {
-        $group = FodaModelo::findOrFail($id);
+        $model = FodaModelo::findOrFail($id);
 
         if ($request->ajax()) {
             $data = FodaModelo::descendantsOf($id);
@@ -98,9 +98,11 @@ class FodaModeloController extends Controller
 
                 ->addColumn('action', function ($row) {
 
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editGroup"><i class="far fa-edit"></i></a>';
+                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editCategory"><i class="far fa-edit"></i></a>';
 
-                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteSubGroup"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-success btn-circle addAspect"><i class="fa fa-plus" aria-hidden="true"></i></a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteCategory"><i class="fa fa-trash" aria-hidden="true"></i></a>';
 
                     return $btn;
                 })

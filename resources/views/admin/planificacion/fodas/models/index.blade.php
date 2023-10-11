@@ -20,7 +20,7 @@
                     <div class="card-header">
                         <div class="success"></div>
                         <a class="btn btn-success" href="javascript:void(0)" id="createNewModel"> <i
-                                class="material-icons ">add_box</i> Nuevo Perfil</a>
+                                class="material-icons ">add_box</i> Nuevo Modelo</a>
                     </div>
 
                     <div class="card-body">
@@ -41,7 +41,7 @@
                         </div>
                     </div>
 
-                    <div class="modal fade" id="modalGroup" aria-hidden="true">
+                    <div class="modal fade" id="modalModel" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="card-header card-header-info">
@@ -52,6 +52,7 @@
                                         <div class="alert alert-danger errors" role="alert"></div>
 
                                         {{ Form::hidden('profile_id', null, ['id' => 'profile_id']) }}
+                                        {{-- {{ Form::hidden('type', 'model') }} --}}
 
                                         <div class="form-group">
                                             {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
@@ -163,7 +164,14 @@
                     name: 'owner'
                 }, {
                     data: 'description',
-                    name: 'description'
+                    name: 'description',
+                    render: function(data, type, full, meta) {
+                        if (type === 'display' || type === 'filter') {
+                            // Deshacer la escapada de HTML utilizando jQuery
+                            return $('<div/>').html(data).text();
+                        }
+                        return data;
+                    }
                 }, {
                     data: 'action',
                     name: 'action',
@@ -177,8 +185,6 @@
             ClassicEditor
                 .create(document.querySelector('#description'))
                 .then(editor => {
-                    console.log('Editor was initialized', editor);
-
                     descriptionEditor = editor;
                 })
                 .catch(err => {
@@ -189,8 +195,8 @@
                 $('#saveBtn').val("create-model");
                 $('#profile_id').val('');
                 $('#modelForm').trigger("reset");
-                $('#modalModelHeading').html("Nuevo Perfil");
-                $('#modalGroup').modal('show');
+                $('#modalModelHeading').html("Nuevo Modelo");
+                $('#modalModel').modal('show');
                 $('.errors').removeClass("alert alert-danger");
 
                 descriptionEditor.setData('');
@@ -199,18 +205,20 @@
             });
 
 
-            $('body').on('click', '.editProfile', function() {
-                var profileId = $(this).data('id');
+            $('body').on('click', '.editModel', function() {
+                var modelID = $(this).data('id');
 
-                $.get("{{ route('foda-perfiles.index') }}" + '/' + profileId + '/edit', function(data) {
-                    $('#modalModelHeading').html("Editar Perfil");
+                $.get("{{ route('foda-models.index') }}" + '/' + modelID + '/edit', function(data) {
+                    console.log(data)
+                    $('#modalModelHeading').html("Editar Modelo");
                     $('#saveBtn').val("edit-profile");
-                    $('#modalGroup').modal('show');
+                    $('#modalModel').modal('show');
                     $('#modelForm').trigger("reset");
                     $('.errors').removeClass("alert alert-danger")
-                    $('#profile_id').val(data.profile.id);
-                    $('#name').val(data.profile.name);
-                    $('#context').val(data.profile.context);
+                    $('#model_id').val(data.model_id);
+                    $('#name').val(data.name);
+                    $('#owner').val(data.owner);
+                    descriptionEditor.setData(data.description);
                 });
             });
 
@@ -238,7 +246,7 @@
                     contentType: false,
                     success: function(data) {
                         $('#modelForm').trigger("reset");
-                        $('#modalGroup').modal('hide');
+                        $('#modalModel').modal('hide');
                         $(".success").removeAttr("style");
                         table.draw();
                     },
@@ -259,11 +267,11 @@
                 });
             });
 
-            $('body').on('click', '.deleteProfile', function() {
+            $('body').on('click', '.deleteModel', function() {
                 Swal.fire({
                     title: 'Estás seguro de eliminarlo?',
                     text: "Si lo haces, no podras revertirlo!",
-                    type: 'warning',
+                    icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
@@ -278,7 +286,7 @@
                         var cicle_id = $(this).data("id");
                         $.ajax({
                             type: "DELETE",
-                            url: "{{ route('foda-perfiles.store') }}" + '/' + cicle_id,
+                            url: "{{ route('foda-models.store') }}" + '/' + cicle_id,
                             success: function(data) {
                                 table.draw();
                             },
