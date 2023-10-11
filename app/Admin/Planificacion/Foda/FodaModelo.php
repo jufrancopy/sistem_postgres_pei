@@ -15,7 +15,7 @@ class FodaModelo extends Model
 
     // protected $dateFormat = 'Y-m-d H:i:s';
     
-    protected $fillable = ['name', 'owner', 'description'];
+    protected $fillable = ['name', 'owner', 'environment', 'description'];
 
     public function categorias(){
         $this->belongsToMany('App\Admin\Planificacion\Foda\FodaCategoria', 'planificacion.foda_categoria_has_modelo', 'modelo_id', 'categoria_id' );

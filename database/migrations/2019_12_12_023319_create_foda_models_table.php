@@ -19,6 +19,7 @@ class CreateFodaModelsTable extends Migration
             $table->bigIncrements('id');
             $table->string('name');
             $table->string('owner');
+            $table->string('environment')->nullable();
             $table->text('description')->nullable();
             
             $table->nestedSet();
