@@ -68,6 +68,11 @@
         var data = [{
                 name: 'Planificación Estratégica Institucional.',
                 children: [{
+                        name: 'Tareas',
+                        children: [{
+                            name: '<a href="{{ route('type-tasks.index') }}">Listado de Tareas</a>'
+                        }, ]
+                    }, {
                         name: 'Perfiles de Planificacion Estrategica',
                         children: [{
                             name: '<a href="{{ route('peis.index') }}">Pei</a>'

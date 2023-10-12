@@ -1,15 +1,15 @@
 @extends('layouts.master')
-@section('title', 'Grupos')
+@section('title', 'Tipos de Tareas')
 
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Grupos de Análisis</h4>
+            <h4 class="card-title ">Tipos de Tareas</h4>
         </div>
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Listado de grupo de análisis</li>
+                <li class="breadcrumb-item active" aria-current="page">Tipos de Tareas</li>
             </ol>
         </nav>
 
@@ -18,8 +18,9 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="success"></div>
-                        <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)" id="createNewGroup">
-                            Agregar nuevo Grupo de Análisis</a>
+                        <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)"
+                            id="createNewTypeTasks">
+                            Agregar Nuevo Tipo de Tarea</a>
                     </div>
 
                     <div class="card-body">
@@ -29,6 +30,7 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Nombre</th>
+                                        <th>Ruta</th>
                                         <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>
@@ -41,21 +43,26 @@
                     <div class="modal fade" id="ajaxModal" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
-                                <div class="modal-header">
+                                <div class="card-header card-header-info">
                                     <h4 class="modal-title" id="modalHeading"></h4>
                                 </div>
                                 <div class="modal-body">
-                                    <form id="groupForm" name="groupForm" class="form-horizontal">
-                                        <div class="alert alert-danger errors" role="alert"></div>
-
-                                        {{ Form::hidden('group_id', null, ['id' => 'group_id']) }}
-                                        {{ Form::hidden('parent_id', null, ['id' => 'parent_id']) }}
+                                    <form id="typeTaskForm" name="typeTaskForm" class="form-horizontal">
+                                        {{ Form::hidden('typeTask_id', null, ['id' => 'typeTask_id']) }}
 
                                         <div class="form-group">
                                             {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
                                             {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
                                         </div>
 
+                                        <div class="form-group">
+                                            {{ Form::label('routes', 'Ambiente:') }}
+                                            {!! Form::select('route', $arrayRoutes, null, [
+                                                'id' => 'routes',
+                                                'placeholder' => '',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
 
                                         <div class="col-sm-offset-2 col-sm-10">
                                             <button type="button" class="btn btn-secondary"
@@ -136,7 +143,7 @@
                             "previous": "Anterior"
                         }
                     },
-                    ajax: "{{ route('globales.groups.index') }}",
+                    ajax: "{{ route('type-tasks.index') }}",
                     columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex'
@@ -144,31 +151,37 @@
                         data: 'name',
                         name: 'name'
                     }, {
+                        data: 'route',
+                        name: 'route'
+                    }, {
                         data: 'action',
                         name: 'action',
                         orderable: false,
                         searchable: false
                     }, ]
                 });
-                $('#createNewGroup').click(function() {
+                $('#createNewTypeTasks').click(function() {
                     $('#saveBtn').val("create-user");
                     $('#group_id').val('');
-                    $('#groupForm').trigger("reset");
-                    $('#modalHeading').html("Nuevo Grupo");
+                    $('#typeTaskForm').trigger("reset");
+                    $('#modalHeading').html("Nuevo Tipo de Tarea");
                     $('#ajaxModal').modal('show');
-                    $('.errors').removeClass("alert alert-danger")
+                    $('#routes').select2({
+                        placeholder: "Seleccione la ruta vinculante"
+                    });
                 });
 
-                $('body').on('click', '.editGroup', function() {
-                    var groupID = $(this).data('id');
-                    $.get("{{ route('globales.groups.index') }}" + '/' + groupID + '/edit', function(data) {
-                        $('#modalHeading').html("Editar Grupo");
-                        $('#saveBtn').val("edit-user");
+                $('body').on('click', '.editTypeTask', function() {
+                    var typeTaskID = $(this).data('id');
+                    $.get("{{ route('type-tasks.index') }}" + '/' + typeTaskID + '/edit', function(data) {
+                        $('#modalHeading').html("Editar Tipo de Tarea " + data.name);
+                        $('#saveBtn').val("edit-type_task");
                         $('#ajaxModal').modal('show');
-                        $('#groupForm').trigger("reset");
-                        $('.errors').removeClass("alert alert-danger")
-                        $('#group_id').val(data.group.id);
-                        $('#name').val(data.group.name);
+                        $('#typeTaskForm').trigger("reset");
+                        $('#typeTask_id').val(data.id);
+                        $('#name').val(data.name);
+                        $('#routes').select2();
+                        $('#routes').val(data.route).trigger('change');
                     });
                 });
 
@@ -176,18 +189,12 @@
                     e.preventDefault();
                     $(this).html('Enviando..');
                     $.ajax({
-                        data: $('#groupForm').serialize(),
-                        url: "{{ route('globales.groups.store') }}",
+                        data: $('#typeTaskForm').serialize(),
+                        url: "{{ route('type-tasks.store') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function(data) {
-                            if (data) {
-                                $(".success").text(data.success).addClass('alert alert-success');
-                                setTimeout(function() {
-                                    $(".success").hide().html('');
-                                }, 5000);
-                            }
-                            $('#groupForm').trigger("reset");
+                            $('#typeTaskForm').trigger("reset");
                             $('#ajaxModal').modal('hide');
                             table.draw();
                         },
@@ -208,7 +215,7 @@
                     });
                 });
 
-                $('body').on('click', '.deleteGroup', function() {
+                $('body').on('click', '.deleteTypeTask', function() {
                     Swal.fire({
                         title: 'Estás seguro de eliminarlo?',
                         text: "Si lo haces, no podras revertirlo!",
@@ -224,10 +231,10 @@
                                 'El registro ha sido eliminado correctamente.',
                                 'success'
                             )
-                            var cicle_id = $(this).data("id");
+                            var typeTaskID = $(this).data("id");
                             $.ajax({
                                 type: "DELETE",
-                                url: "{{ route('globales.groups.store') }}" + '/' + cicle_id,
+                                url: "{{ route('type-tasks.store') }}" + '/' + typeTaskID,
                                 success: function(data) {
                                     table.draw();
                                 },

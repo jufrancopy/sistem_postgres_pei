@@ -223,24 +223,6 @@
                 });
             });
 
-            // $('body').on('click', '.editCategory', function() {
-            //     var categoryID = $(this).data('id');
-
-            //     $.get("{{ route('foda-models.index') }}" + '/' + categoryID + '/addAspects', function(data) {
-            //         console.log(data)
-            //         $('#modalModelHeading').html("Editar Modelo");
-            //         $('#saveBtn').val("edit-profile");
-            //         $('#modalModel').modal('show');
-            //         $('#modelForm').trigger("reset");
-            //         $('.errors').removeClass("alert alert-danger")
-            //         $('#model_id').val(data.model_id);
-            //         $('#name').val(data.name);
-            //         $('#owner').val(data.owner);
-            //         descriptionEditor.setData(data.description);
-            //     });
-            // });
-
-
             $('#saveBtn').click(function(e) {
                 e.preventDefault();
                 $(this).html('Enviando..');
