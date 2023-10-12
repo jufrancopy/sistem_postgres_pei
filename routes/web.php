@@ -15,7 +15,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('products', 'Admin\ProductController');
     //Rutas del Dpto. Planificacion
     Route::get('planificacion-dashboard', 'Admin\Planificacion\PlanificacionController@dashboard')->name('planificacion-dashboard');
-    
+
     //Rutas de PEI
     Route::resource('peis', 'Admin\Planificacion\Pei\PeiController');
     Route::get('peis-crear-sub-nivel/{idNivelSuperior}/{id}', 'Admin\Planificacion\Pei\PeiController@addSubNivel')->name('peis-crear-sub-nivel');
@@ -23,7 +23,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::delete('peis-eliminar-nivel/{idNivelSuperior}/{idNivel}', 'Admin\Planificacion\Pei\PeiController@eliminarNivel')->name('peis-eliminar-nivel');
     Route::view('peis-dashboard', 'admin.planificacion.peis.index')->name('peis-dashboard');
     Route::get('ver-cuadro-mando/{idPerfil}', 'Admin\Planificacion\Pei\PeiController@verCuadroDeMando')->name('ver-cuadro-mando');
-    
+
 
     // Relevamientos
     Route::get('proyectos-epc-relevamientos/{estandarId}', 'Admin\Proyectos\EPC\RelevamientoController@getFormulario')->name('proyectos-epc-relevamientos-form-dependencia');
@@ -132,7 +132,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-foda-users', 'Admin\UserController@getUsers')->name('get-foda-users');
     });
 
-   
+
     //Rutas del Modulo FODA
     Route::resource('foda-models', 'Admin\Planificacion\Foda\FodaModeloController');
     Route::get('foda-models/{categoryId}/getAspects', 'Admin\Planificacion\Foda\FodaModeloController@getAspects')->name('foda-models-getAspects');
@@ -175,7 +175,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('foda-cruce-ambientes', 'Admin\Planificacion\Foda\FodaCruceAmbienteController');
     Route::get('foda-aspectos-elegir-modelo', 'Admin\Planificacion\Foda\FodaAspectoController@elegirModelo')->name('foda-aspectos-elegir-modelo');
     Route::get('/foda-perfiles-modelo/{id}/categorias', 'Admin\Planificacion\Foda\FodaPerfilController@getCategorias');
-    Route::get('foda-perfiles/{idPerfil}/add-group', 'Admin\Planificacion\Foda\FodaPerfilController@addGroup')->name('foda.add.group');    
+    Route::get('foda-perfiles/{idPerfil}/add-group', 'Admin\Planificacion\Foda\FodaPerfilController@addGroup')->name('foda.add.group');
+
+    //Rutas de Elaboración del PEI
+    Route::resource('type-tasks', 'Admin\Planificacion\Tasks\TypeTaskController');
 });
 Auth::routes();
 
