@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Admin\Planificacion\Tasks;
+namespace App\Http\Controllers\Admin\Planificacion\Task;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Yajra\DataTables\DataTables;
 
-use App\Admin\Planificacion\Tasks\TypeTask;
+use App\Admin\Planificacion\Task\TypeTask;
 
 class TypeTaskController extends Controller
 {
@@ -40,10 +40,9 @@ class TypeTaskController extends Controller
             $arrayRoutes[$route->uri] = $route->uri;
         }
 
-        return view('admin.planificacion.type_tasks.index', get_defined_vars())
+        return view('admin.planificacion.tasks.type_tasks.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
-
 
     public function store(Request $request)
     {

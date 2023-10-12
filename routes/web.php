@@ -178,7 +178,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-perfiles/{idPerfil}/add-group', 'Admin\Planificacion\Foda\FodaPerfilController@addGroup')->name('foda.add.group');
 
     //Rutas de Elaboración del PEI
-    Route::resource('type-tasks', 'Admin\Planificacion\Tasks\TypeTaskController');
+    Route::resource('tasks', 'Admin\Planificacion\Task\TaskController');
+    Route::resource('tasks-type', 'Admin\Planificacion\Task\TypeTaskController');
+    Route::get('get-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTypeTasks')->name('get-tasks');
 });
 Auth::routes();
 

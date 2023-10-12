@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Admin\Planificacion\Tasks;
+namespace App\Admin\Planificacion\Task;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

@@ -52,12 +52,12 @@
                                         <div class="alert alert-danger errors" role="alert"></div>
 
                                         {{ Form::hidden('profile_id', null, ['id' => 'profile_id']) }}
+                                        {{ Form::hidden('environment', null, ['class' => 'form-control', 'id' => 'environment']) }}
                                         {{-- {{ Form::hidden('type', 'model') }} --}}
 
                                         <div class="form-group">
                                             {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
                                             {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
-                                            {{ Form::text('environment', null, ['class' => 'form-control', 'id' => 'environment']) }}
                                         </div>
 
                                         <div class="form-group">

@@ -70,8 +70,10 @@
                 children: [{
                         name: 'Tareas',
                         children: [{
-                            name: '<a href="{{ route('type-tasks.index') }}">Listado de Tareas</a>'
-                        }, ]
+                            name: '<a href="{{ route('tasks.index') }}">Tareas</a>'
+                        }, {
+                            name: '<a href="{{ route('tasks-type.index') }}">Tipos de Tarea</a>'
+                        },]
                     }, {
                         name: 'Perfiles de Planificacion Estrategica',
                         children: [{

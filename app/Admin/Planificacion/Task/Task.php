@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Admin\Planificacion\Tareas;
+namespace App\Admin\Planificacion\Task;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TaskList extends Model
+class Task extends Model
 {
     use HasFactory;
+    protected $table = 'planificacion.tasks';
 }

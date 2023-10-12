@@ -69,7 +69,6 @@ class FodaModeloController extends Controller
     }
     
      
-
     public function store(Request $request)
     {
         if ($request->ajax()) {
@@ -77,12 +76,10 @@ class FodaModeloController extends Controller
                 [
                     'name'                  => 'required',
                     'owner'                 => 'required',
-                    'environment'           => 'required',
                 ],
                 [
                     'name.required'         => 'Campor Nombre es requerido',
                     'owner.required'        => 'Indique el Propietario del Modelo',
-                    'environment.required'  => 'Indique el Ambiente (Interno o Externo)',
                 ]
             );
         };
