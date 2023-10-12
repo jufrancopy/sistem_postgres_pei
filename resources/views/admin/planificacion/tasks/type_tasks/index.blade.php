@@ -143,7 +143,7 @@
                             "previous": "Anterior"
                         }
                     },
-                    ajax: "{{ route('type-tasks.index') }}",
+                    ajax: "{{ route('tasks-type.index') }}",
                     columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex'
@@ -173,7 +173,7 @@
 
                 $('body').on('click', '.editTypeTask', function() {
                     var typeTaskID = $(this).data('id');
-                    $.get("{{ route('type-tasks.index') }}" + '/' + typeTaskID + '/edit', function(data) {
+                    $.get("{{ route('tasks-type.index') }}" + '/' + typeTaskID + '/edit', function(data) {
                         $('#modalHeading').html("Editar Tipo de Tarea " + data.name);
                         $('#saveBtn').val("edit-type_task");
                         $('#ajaxModal').modal('show');
@@ -190,7 +190,7 @@
                     $(this).html('Enviando..');
                     $.ajax({
                         data: $('#typeTaskForm').serialize(),
-                        url: "{{ route('type-tasks.store') }}",
+                        url: "{{ route('tasks-type.store') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function(data) {
@@ -234,7 +234,7 @@
                             var typeTaskID = $(this).data("id");
                             $.ajax({
                                 type: "DELETE",
-                                url: "{{ route('type-tasks.store') }}" + '/' + typeTaskID,
+                                url: "{{ route('tasks-type.store') }}" + '/' + typeTaskID,
                                 success: function(data) {
                                     table.draw();
                                 },
