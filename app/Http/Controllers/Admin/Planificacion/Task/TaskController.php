@@ -44,13 +44,11 @@ class TaskController extends Controller
             $request->validate(
                 [
                     'group_id'              => 'required',
-                    'analista_id'           => 'required',
-                    'status'                => 'required',
+                    'details'                => 'required',
                 ],
                 [
                     'group_id.required'         => 'Campo nombre es requerido',
-                    'analista_id.required'     => 'Seleccione la ruta vinculante a la tarea',
-                    'status.required'     => 'Seleccione la ruta vinculante a la tarea',
+                    'details.required'          => 'Describa brevemente la acitividad',
                 ]
             );
         };
@@ -58,10 +56,18 @@ class TaskController extends Controller
         $task = Task::updateOrCreate(
             ['id' => $request->task_id],
             [
-                'name' => $request->name,
-                'route' => $request->route,
+                'group_id' => $request->group_id,
+                'details' => $request->details,
+                'status' => $request->status,
             ]
         );
+
+        $analysts = $request->analyst_id;
+        $task->analysts()->sync($analysts);
+
+
+        $tasks = $request->task_id;
+        $task->typeTasks()->sync($tasks);
 
         if ($task->wasRecentlyCreated) {
             return response()->json(['success' => 'Tipo de Tarea creado con éxito']);

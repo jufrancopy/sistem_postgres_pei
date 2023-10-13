@@ -4,15 +4,16 @@
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Lista de Aspectos de la categoría {{$category->name}}</h4>
+            <h4 class="card-title ">Lista de Aspectos de la categoría {{ $category->name }}</h4>
         </div>
 
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('foda-models.index') }}">Modelos</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('foda-models.show', $category->parent_id) }}">Categorías</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{{$category->name}}:Agregar Aspectos</li>
+                <li class="breadcrumb-item"><a href="{{ route('foda-models.show', $category->parent_id) }}">Categorías</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{ $category->name }}:Agregar Aspectos</li>
             </ol>
         </nav>
 
@@ -52,6 +53,7 @@
                                     <form id="categoryForm" name="categoryForm" class="form-horizontal">
 
                                         {{ Form::hidden('model_id', null, ['id' => 'model_id']) }}
+                                        {{ Form::hidden('type', 'aspect', ['id' => 'type']) }}
                                         {{ Form::hidden('parent_id', $category->id, ['id' => 'parent_id']) }}
                                         {{ Form::hidden('owner', $category->owner, ['id' => 'owner']) }}
                                         {{ Form::hidden('environment', $category->environment, ['class' => 'form-control', 'id' => 'environment']) }}
@@ -189,7 +191,7 @@
                 $('#saveBtn').val("create-model");
                 $('#model_id').val('');
                 $('#categoryForm').trigger("reset");
-                $('#modalModelHeading').html("Nueva Categorìa");
+                $('#modalModelHeading').html("Nuevo Aspecto");
                 $('#modalCategory').modal('show');
 
                 descriptionEditor.setData('');

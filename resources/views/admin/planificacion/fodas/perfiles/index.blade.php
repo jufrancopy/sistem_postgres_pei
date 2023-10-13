@@ -301,7 +301,7 @@
                             return {
                                 results: $.map(data, function(item) {
                                     return {
-                                        text: item.nombre,
+                                        text: item.name,
                                         id: item.id
                                     }
                                 })
@@ -327,10 +327,11 @@
                             dataType: 'json',
                             delay: 250,
                             processResults: function(data) {
+                                console.log(data)
                                 return {
                                     results: $.map(data, function(item) {
                                         return {
-                                            text: item.nombre,
+                                            text: item.name,
                                             id: item.id
                                         }
                                     })

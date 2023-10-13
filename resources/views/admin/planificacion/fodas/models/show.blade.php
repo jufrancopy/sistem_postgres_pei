@@ -52,6 +52,7 @@
                                     <form id="categoryForm" name="categoryForm" class="form-horizontal">
 
                                         {{ Form::hidden('model_id', null, ['id' => 'model_id']) }}
+                                        {{ Form::hidden('type', 'category', ['class' => 'form-control', 'id' => 'type']) }}
                                         {{ Form::hidden('parent_id', $category->id, ['id' => 'parent_id']) }}
                                         {{ Form::hidden('owner', $category->owner, ['id' => 'owner']) }}
 
@@ -139,7 +140,6 @@
     {{-- My custom scripts --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/he/1.2.0/he.min.js"></script>
     <script type="text/javascript">
-
         $(function() {
             $.ajaxSetup({
                 headers: {

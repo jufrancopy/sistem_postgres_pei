@@ -138,9 +138,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-models/{categoryId}/getAspects', 'Admin\Planificacion\Foda\FodaModeloController@getAspects')->name('foda-models-getAspects');
     Route::get('foda-models/{categoryId}/showAspects', 'Admin\Planificacion\Foda\FodaModeloController@showAspects');
     Route::resource('foda-categorias', 'Admin\Planificacion\Foda\FodaCategoriaController');
-    Route::get('get-foda-categories/{modelId}', 'Admin\Planificacion\Foda\FodaCategoriaController@dataCategories')->name('get-foda-categories');
+
     Route::get('get-foda-category/{idSelection}', 'Admin\Planificacion\Foda\FodaCategoriaController@dataCategory')->name('get-foda-category');
     Route::get('get-models', 'Admin\Planificacion\Foda\FodaModeloController@getModels')->name('get-models');
+    Route::get('get-foda-categories/{modelId}', 'Admin\Planificacion\Foda\FodaModeloController@getCategories')->name('get-foda-categories');
     Route::get('get-model', 'Admin\Planificacion\Foda\FodaModeloController@dataModel')->name('get-model');
 
     Route::get('foda-modelo-categorias/{idModelo}', 'Admin\Planificacion\Foda\FodaCategoriaController@listadoCategorias')->name('foda-modelo-categorias');
@@ -157,7 +158,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-aspectos-categoria/{idCategoria}/{idPerfil}/edit', 'Admin\Planificacion\Foda\FodaAnalisisController@aspectosCategoriaEdit')->name('foda-aspectos-categoria-edit');
     Route::get('foda-analisis-asignar-aspectos/{idPerfil}', 'Admin\Planificacion\Foda\FodaAnalisisController@asignarAspectos')->name('ffoda-analisis-asignar-aspectos');
     Route::get('foda-listado-perfiles', 'Admin\Planificacion\Foda\FodaAnalisisController@listadoPerfiles')->name('foda-listado-perfiles');
-    Route::get('foda-listado-categorias-aspectos/{idPerfil}', 'Admin\Planificacion\Foda\FodaAnalisisController@listadoCategoriaAspectos')->name('foda-listado-categorias-aspectos');
+    Route::get('foda-listado-categorias-aspectos/{idCategoria}/{idPerfil}', 'Admin\Planificacion\Foda\FodaAnalisisController@listadoCategoriaAspectos')->name('foda-listado-categorias-aspectos');
     Route::get('foda-analisis-ambientes/{idPerfil}', 'Admin\Planificacion\Foda\FodaAnalisisController@seleccionarAmbiente')->name('foda-analisis-ambientes');
     Route::get('foda-analisis-ambiente-interno/{idPerfil}', 'Admin\Planificacion\Foda\FodaAnalisisController@analisisCategoriasAmbienteInterno')->name('foda-analisis-ambiente-interno');
     Route::get('foda-analisis-ambiente-externo/{idPerfil}', 'Admin\Planificacion\Foda\FodaAnalisisController@analisisCategoriasAmbienteExterno')->name('foda-analisis-ambiente-externo');

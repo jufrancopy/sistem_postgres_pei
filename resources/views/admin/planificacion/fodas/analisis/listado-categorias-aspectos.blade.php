@@ -11,7 +11,7 @@
                 @endif
                 <div class="card">
                     <div class="card-header card-header-info">
-                            <h4 class="card-title ">Analizando Categoría (Factor) - {{$categoria->nombre }}</h4>
+                            <h4 class="card-title ">Analizando Categoría (Factor) - {{$categoria->name }}</h4>
                     </div>
                     <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
                         <ol class="breadcrumb mb-0">
@@ -41,7 +41,7 @@
         var data = [
             @foreach($analisis as $valor)
         {
-            name: '{{$valor->aspecto->nombre}}'+
+            name: '{{$valor->aspecto->name}}'+
             '@switch($valor->tipo)@case('Fortaleza')<p class="badge badge-success">Fortaleza</p>'+
                 '@break'+
                     '@case('Oportunidad')<p class="badge badge-info">Oportunidad</p>@break'+ 

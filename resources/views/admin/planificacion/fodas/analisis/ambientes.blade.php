@@ -23,7 +23,7 @@
                             <div class="table-responsive">
                                 <table class="table table-striped table-hover">
                                     <p><label>Contexto</label> {{ $perfil->context }}</p>
-                                    <p><label>Modelo:</label> {{ $perfil->model->nombre }}</p>
+                                    <p><label>Modelo:</label> {{ $perfil->model->name }}</p>
 
                                     <table class="table table-bordered">
                                         <tr>

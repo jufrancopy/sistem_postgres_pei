@@ -20,7 +20,7 @@ class CreateFodaCategoriasHasPerfilTable extends Migration
                 ->onUpdate('cascade');
 
             $table->unsignedInteger('category_id');
-            $table->foreign('category_id')->references('id')->on('planificacion.foda_categorias')
+            $table->foreign('category_id')->references('id')->on('planificacion.foda_models')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 

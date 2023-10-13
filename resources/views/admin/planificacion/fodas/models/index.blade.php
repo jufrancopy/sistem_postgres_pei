@@ -52,8 +52,8 @@
                                         <div class="alert alert-danger errors" role="alert"></div>
 
                                         {{ Form::hidden('profile_id', null, ['id' => 'profile_id']) }}
+                                        {{ Form::hidden('type', 'root', ['class' => 'form-control', 'id' => 'type']) }}
                                         {{ Form::hidden('environment', null, ['class' => 'form-control', 'id' => 'environment']) }}
-                                        {{-- {{ Form::hidden('type', 'model') }} --}}
 
                                         <div class="form-group">
                                             {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
@@ -205,10 +205,8 @@
 
             });
 
-
             $('body').on('click', '.editModel', function() {
                 var modelID = $(this).data('id');
-
                 $.get("{{ route('foda-models.index') }}" + '/' + modelID + '/edit', function(data) {
                     console.log(data)
                     $('#modalModelHeading').html("Editar Modelo");
@@ -217,6 +215,7 @@
                     $('#modelForm').trigger("reset");
                     $('.errors').removeClass("alert alert-danger")
                     $('#model_id').val(data.model_id);
+                    $('#type').val(data.type);
                     $('#name').val(data.name);
                     $('#owner').val(data.owner);
                     descriptionEditor.setData(data.description);
@@ -234,7 +233,6 @@
                     data.append(input.name, input.value);
                 });
 
-                (descriptionEditor.getData())
                 data.append('description', descriptionEditor.getData());
 
                 $.ajax({

@@ -17,11 +17,12 @@ class CreateFodaModelsTable extends Migration
     {
         Schema::create('planificacion.foda_models', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->string('type');
             $table->string('name');
             $table->string('owner');
             $table->string('environment')->nullable();
             $table->text('description')->nullable();
-            
+
             $table->nestedSet();
 
             $table->timestamps();
@@ -39,6 +40,4 @@ class CreateFodaModelsTable extends Migration
             //
         });
     }
-
-    
 }
