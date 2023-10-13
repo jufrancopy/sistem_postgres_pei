@@ -39,7 +39,7 @@ class FodaPerfilController extends Controller
                 })
 
                 ->addColumn('categories', function (FodaPerfil $profile) {
-                    $categoryNames = $profile->categories->pluck('nombre')->implode(', '); // Cambia 'nombre' al nombre del campo de categoría en tu modelo
+                    $categoryNames = $profile->categories->pluck('name')->implode(', '); // Cambia 'nombre' al nombre del campo de categoría en tu modelo
                     return $categoryNames;
                 })
 

@@ -27,7 +27,7 @@ class CreateFodaAnalisisTable extends Migration
                 ->onUpdate('cascade');
 
             $table->unsignedInteger('aspecto_id')->nullable();
-            $table->foreign('aspecto_id')->references('id')->on('planificacion.foda_aspectos')
+            $table->foreign('aspecto_id')->references('id')->on('planificacion.foda_models')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 

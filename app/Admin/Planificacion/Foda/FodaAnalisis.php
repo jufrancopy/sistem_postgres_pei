@@ -20,7 +20,7 @@ class FodaAnalisis extends Model
 
     public function aspecto()
     {
-        return $this->belongsTo('App\Admin\Planificacion\Foda\FodaAspecto');
+        return $this->belongsTo('App\Admin\Planificacion\Foda\FodaModelo');
     }
 
     public function fodaCruceAmbientes()

@@ -53,7 +53,7 @@
 
                                         <div class="form-group">
                                             {!! Form::label('typetasks', 'Asignar Tareas:') !!}
-                                            {!! Form::select('typetask_id[]', [], null, [
+                                            {!! Form::select('task_id[]', [], null, [
                                                 'class' => 'form-control',
                                                 'style' => 'width:100%',
                                                 'id' => 'typetasks',
@@ -72,10 +72,11 @@
 
                                         <div class="form-group">
                                             {{ Form::label('analysts', 'Asignar Analista Grupal:') }}
-                                            {!! Form::select('analyst_id', [], null, [
+                                            {!! Form::select('analyst_id[]', [], null, [
                                                 'id' => 'analysts',
                                                 'placeholder' => '',
                                                 'style' => 'width:100%',
+                                                'multiple',
                                             ]) !!}
                                         </div>
 
@@ -104,261 +105,281 @@
                 </div>
             </div>
         </div>
-    @stop
+    </div>
+@stop
 
-    @section('scripts')
-        {{-- My custom scripts --}}
-        <script type="text/javascript">
-            $(function() {
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+@section('scripts')
+    {{-- My custom scripts --}}
+    <script type="text/javascript">
+        $(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            var table = $('.data-table').DataTable({
+                processing: true,
+                serverSide: true,
+                dom: 'Bfrtip',
+                buttons: [{
+                        extend: 'copy',
+                        text: '<i class="fa fa-copy"></i>',
+                        titleAttr: 'Copy'
+                    },
+                    {
+                        extend: 'excel',
+                        text: '<i class="fa fa-file-excel"></i>',
+                        titleAttr: 'Excel'
+                    },
+                    {
+                        extend: 'csv',
+                        text: '<i class="fas fa-file-csv"></i>',
+                        titleAttr: 'CSV'
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="fa fa-file-pdf"></i>',
+                        titleAttr: 'PDF'
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fa fa-print"></i>',
+                        titleAttr: 'Imprimir'
+                    }
+                ],
+                language: {
+                    "decimal": "",
+                    "emptyTable": "No hay información",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ Entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "Sin resultados encontrados",
+                    "paginate": {
+                        "first": "Primero",
+                        "last": "Ultimo",
+                        "next": "Siguiente",
+                        "previous": "Anterior"
+                    }
+                },
+                ajax: "{{ route('tasks.index') }}",
+                columns: [{
+                    data: 'DT_RowIndex',
+                    name: 'DT_RowIndex'
+                }, {
+                    data: 'grupo',
+                    name: 'grupo'
+                }, {
+                    data: 'analista',
+                    name: 'analista'
+                }, {
+                    data: 'tasks',
+                    name: 'tasks',
+                    render: function(data, type, full, meta) {
+                        var tasksArray = data.split(', ');
+
+                        var tasksHtml = '';
+
+                        tasksArray.forEach(function(task) {
+                            tasksHtml += '<span class="badge badge-secondary">' +
+                                task + '</span> ';
+                        });
+
+                        return tasksHtml;
+                    }
+                }, {
+                    data: 'action',
+                    name: 'action',
+                    orderable: false,
+                    searchable: false
+                }, ]
+            });
+
+            var detailsEditor;
+
+            ClassicEditor
+                .create(document.querySelector('#details'))
+                .then(editor => {
+                    detailsEditor = editor;
+                })
+                .catch(err => {
+                    console.error(err.stack);
+                });
+
+            $('#createNewTasks').click(function() {
+                $('#saveBtn').val("create-user");
+                $('#group_id').val('');
+                $('#taskForm').trigger("reset");
+                $('#modalHeading').html("Nueva Tarea");
+                $('#ajaxModal').modal('show');
+                detailsEditor.setData('');
+
+                //Tasks
+                var url = '{{ route('get-tasks') }}';
+                $("#tasks").val([]).change();
+                $("#tasks").trigger("change");
+
+                var taskSelect = $('#typetasks').select2({
+                    allowClear: true,
+                    ajax: {
+                        url: url,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function(data) {
+                            console.log(data)
+                            return {
+                                results: $.map(data, function(item) {
+                                    return {
+                                        text: item.name,
+                                        id: item.id
+                                    }
+                                })
+                            };
+                        },
+                        cache: true
                     }
                 });
 
-                var table = $('.data-table').DataTable({
-                    processing: true,
-                    serverSide: true,
-                    dom: 'Bfrtip',
-                    buttons: [{
-                            extend: 'copy',
-                            text: '<i class="fa fa-copy"></i>',
-                            titleAttr: 'Copy'
-                        },
-                        {
-                            extend: 'excel',
-                            text: '<i class="fa fa-file-excel"></i>',
-                            titleAttr: 'Excel'
-                        },
-                        {
-                            extend: 'csv',
-                            text: '<i class="fas fa-file-csv"></i>',
-                            titleAttr: 'CSV'
-                        },
-                        {
-                            extend: 'pdf',
-                            text: '<i class="fa fa-file-pdf"></i>',
-                            titleAttr: 'PDF'
-                        },
-                        {
-                            extend: 'print',
-                            text: '<i class="fa fa-print"></i>',
-                            titleAttr: 'Imprimir'
-                        }
-                    ],
-                    language: {
-                        "decimal": "",
-                        "emptyTable": "No hay información",
-                        "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
-                        "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
-                        "infoFiltered": "(Filtrado de _MAX_ total entradas)",
-                        "infoPostFix": "",
-                        "thousands": ",",
-                        "lengthMenu": "Mostrar _MENU_ Entradas",
-                        "loadingRecords": "Cargando...",
-                        "processing": "Procesando...",
-                        "search": "Buscar:",
-                        "zeroRecords": "Sin resultados encontrados",
-                        "paginate": {
-                            "first": "Primero",
-                            "last": "Ultimo",
-                            "next": "Siguiente",
-                            "previous": "Anterior"
-                        }
-                    },
-                    ajax: "{{ route('tasks.index') }}",
-                    columns: [{
-                        data: 'DT_RowIndex',
-                        name: 'DT_RowIndex'
-                    }, {
-                        data: 'grupo',
-                        name: 'grupo'
-                    }, {
-                        data: 'analista',
-                        name: 'analista'
-                    }, {
-                        data: 'tasks',
-                        name: 'tasks',
-                        render: function(data, type, full, meta) {
-                            var tasksArray = data.split(', ');
-
-                            var tasksHtml = '';
-
-                            tasksArray.forEach(function(task) {
-                                tasksHtml += '<span class="badge badge-secondary">' +
-                                    task + '</span> ';
-                            });
-
-                            return tasksHtml;
-                        }
-                    }, {
-                        data: 'action',
-                        name: 'action',
-                        orderable: false,
-                        searchable: false
-                    }, ]
-                });
-                $('#createNewTasks').click(function() {
-                    $('#saveBtn').val("create-user");
-                    $('#group_id').val('');
-                    $('#taskForm').trigger("reset");
-                    $('#modalHeading').html("Nueva Tarea");
-                    $('#ajaxModal').modal('show');
-
-                    //Tasks
-                    var url = '{{ route('get-tasks') }}';
-                    $("#tasks").val([]).change();
-                    $("#tasks").val("");
-                    $("#tasks").trigger("change");
-
-                    var taskSelect = $('#typetasks').select2({
-                        allowClear: true,
-                        ajax: {
-                            url: url,
-                            dataType: 'json',
-                            delay: 250,
-                            processResults: function(data) {
-                                console.log(data)
-                                return {
-                                    results: $.map(data, function(item) {
-                                        return {
-                                            text: item.name,
-                                            id: item.id
-                                        }
-                                    })
-                                };
-                            },
-                            cache: true
-                        }
-                    });
-
-
-                    $('#groups').select2({
-                        placeholder: 'Indique el Grupo',
-                        ajax: {
-                            url: '{{ route('globales.get-groups') }}',
-                            dataType: 'json',
-                            delay: 250,
-                            processResults: function(data) {
-                                return {
-                                    results: $.map(data, function(item) {
-                                        return {
-                                            text: item.name,
-                                            id: item.id
-                                        }
-                                    })
-                                };
-                            },
-                            cache: true
-                        }
-                    });
-
-                    //Analysts
-                    var url = '{{ route('globales.get-foda-users') }}';
-                    $("#analysts").val([]).change();
-                    $("#analysts").trigger("change");
-
-                    var dependencies = $('#analysts').select2({
-                        placeholder: 'Seleccione los Analistas',
-                        allowClear: true,
-                        ajax: {
-                            url: url,
-                            dataType: 'json',
-                            delay: 250,
-                            processResults: function(data) {
-                                console.log(data)
-                                return {
-                                    results: $.map(data, function(item) {
-                                        return {
-                                            text: item.name,
-                                            id: item.id
-                                        }
-                                    })
-                                };
-                            },
-                            cache: true
-                        }
-                    });
-
-
-
-
-                });
-
-                $('body').on('click', '.editTypeTask', function() {
-                    var typeTaskID = $(this).data('id');
-                    $.get("{{ route('tasks-type.index') }}" + '/' + typeTaskID + '/edit', function(data) {
-                        $('#modalHeading').html("Editar Tipo de Tarea " + data.name);
-                        $('#saveBtn').val("edit-type_task");
-                        $('#ajaxModal').modal('show');
-                        $('#taskForm').trigger("reset");
-                        $('#typeTask_id').val(data.id);
-                        $('#name').val(data.name);
-                        $('#routes').select2();
-                        $('#routes').val(data.route).trigger('change');
-                    });
-                });
-
-                $('#saveBtn').click(function(e) {
-                    e.preventDefault();
-                    $(this).html('Enviando..');
-                    $.ajax({
-                        data: $('#taskForm').serialize(),
-                        url: "{{ route('tasks-type.store') }}",
-                        type: "POST",
+                //Groups
+                $('#groups').select2({
+                    placeholder: 'Indique el Grupo',
+                    ajax: {
+                        url: '{{ route('globales.get-groups') }}',
                         dataType: 'json',
-                        success: function(data) {
-                            $('#taskForm').trigger("reset");
-                            $('#ajaxModal').modal('hide');
-                            table.draw();
+                        delay: 250,
+                        processResults: function(data) {
+                            return {
+                                results: $.map(data, function(item) {
+                                    return {
+                                        text: item.name,
+                                        id: item.id
+                                    }
+                                })
+                            };
                         },
-
-                        error: function(data) {
-                            var obj = data.responseJSON.errors;
-                            $.each(obj, function(key, value) {
-                                // Alert Toastr
-                                toastr.options = {
-                                    closeButton: true,
-                                    progressBar: true,
-                                };
-                                toastr.error("Atención: " + value);
-                            });
-                            $('#saveBtn').html('Guardar Cambios');
-                        }
-
-                    });
+                        cache: true
+                    }
                 });
 
-                $('body').on('click', '.deleteTypeTask', function() {
-                    Swal.fire({
-                        title: 'Estás seguro de eliminarlo?',
-                        text: "Si lo haces, no podras revertirlo!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Estoy seguro!'
-                    }).then((isConfirm) => {
-                        if (isConfirm.value) {
-                            Swal.fire(
-                                'Borrado!',
-                                'El registro ha sido eliminado correctamente.',
-                                'success'
-                            )
-                            var typeTaskID = $(this).data("id");
-                            $.ajax({
-                                type: "DELETE",
-                                url: "{{ route('tasks-type.store') }}" + '/' + typeTaskID,
-                                success: function(data) {
-                                    table.draw();
-                                },
-                                error: function(data) {
-                                    console.log('Error:', data);
-                                }
-                            });
-                        }
-                    })
+                //Analysts
+                var url = '{{ route('globales.get-foda-users') }}';
+                $("#analysts").val([]).change();
+                $("#analysts").trigger("change");
+
+                $('#analysts').select2({
+                    allowClear: true,
+                    ajax: {
+                        url: url,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function(data) {
+                            console.log(data)
+                            return {
+                                results: $.map(data, function(item) {
+                                    return {
+                                        text: item.name,
+                                        id: item.id
+                                    }
+                                })
+                            };
+                        },
+                        cache: true
+                    }
                 });
             });
-        </script>
-    @stop
+
+            $('body').on('click', '.editTask', function() {
+                var taskID = $(this).data('id');
+                $.get("{{ route('tasks.index') }}" + '/' + taskID + '/edit', function(data) {
+                    $('#modalHeading').html("Editar Tarea ");
+                    $('#saveBtn').val("edit-tasks");
+                    $('#ajaxModal').modal('show');
+                    $('#taskForm').trigger("reset");
+                    $('#task_id').val(data.id);
+                    $('#name').val(data.name);
+                    $('#routes').select2();
+                    $('#routes').val(data.route).trigger('change');
+                });
+            });
+
+            $('#saveBtn').click(function(e) {
+                e.preventDefault();
+                $(this).html('Procesando..');
+
+                var data = new FormData();
+                var form_data = $('#taskForm').serializeArray();
+
+                $.each(form_data, function(key, input) {
+                    data.append(input.name, input.value);
+                });
+
+                data.append('details', detailsEditor.getData());
+
+                $.ajax({
+                    data: data,
+                    url: "{{ route('tasks.store') }}",
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $('#taskForm').trigger("reset");
+                        $('#ajaxModal').modal('hide');
+                        table.draw();
+                    },
+
+                    error: function(data) {
+                        var obj = data.responseJSON.errors;
+                        $.each(obj, function(key, value) {
+                            // Alert Toastr
+                            toastr.options = {
+                                closeButton: true,
+                                progressBar: true,
+                            };
+                            toastr.error("Atención: " + value);
+                        });
+                        $('#saveBtn').html('Guardar Cambios');
+                    }
+
+                });
+            });
+
+            $('body').on('click', '.deleteTypeTask', function() {
+                Swal.fire({
+                    title: 'Estás seguro de eliminarlo?',
+                    text: "Si lo haces, no podras revertirlo!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Estoy seguro!'
+                }).then((isConfirm) => {
+                    if (isConfirm.value) {
+                        Swal.fire(
+                            'Borrado!',
+                            'El registro ha sido eliminado correctamente.',
+                            'success'
+                        )
+                        var typeTaskID = $(this).data("id");
+                        $.ajax({
+                            type: "DELETE",
+                            url: "{{ route('tasks.store') }}" + '/' + typeTaskID,
+                            success: function(data) {
+                                table.draw();
+                            },
+                            error: function(data) {
+                                console.log('Error:', data);
+                            }
+                        });
+                    }
+                })
+            });
+        });
+    </script>
+@stop

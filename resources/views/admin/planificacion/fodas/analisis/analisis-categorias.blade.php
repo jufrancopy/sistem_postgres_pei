@@ -24,7 +24,7 @@
                                 <li class="breadcrumb-item">
                                     <a href="{{ route('foda-analisis-ambientes', $idPerfil) }}">Ambientes</a>
                                 </li>
-                                <li class="breadcrumb-item active" aria-current="page">Ambiente Interno</li>
+                                <li class="breadcrumb-item active" aria-current="page">{{ $environment }}</li>
                             </ol>
                         </nav>
 
@@ -45,7 +45,7 @@
                                             {!! Form::text('nombre', null, [
                                                 'class' => 'form-control',
                                                 'placeholder' => 'Buscar
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Categoria',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Categoria',
                                             ]) !!}
                                         </div>
                                         <button type="submit" class="btn btn-default pull-right">Buscar</button>
@@ -65,9 +65,9 @@
                                         @foreach ($categorias as $categoria)
                                             <tr>
                                                 <td>{{ ++$i }}</td>
-                                                <td>{{ $categoria->nombre }}</td>
+                                                <td>{{ $categoria->name }}</td>
                                                 <td><span
-                                                        class="btn btn-info btn-circle">{{ App\Admin\Planificacion\Foda\FodaAspecto::where('categoria_id', $categoria->id)->count() }}</span>
+                                                        class="btn btn-info btn-circle">{{ App\Admin\Planificacion\Foda\FodaModelo::where('parent_id', $categoria->id)->count() }}</span>
                                                 </td>
                                                 <td><a
                                                         href="{{ route('foda-analisis-listado-categoria-aspectos', ['idCategoria' => $categoria->id, 'idPerfil' => $idPerfil]) }}">Analizar

@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin\Globales;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-use App\Admin\Globales\Group;;
+use App\Admin\Globales\Group;
+use App\Admin\Planificacion\Foda\FodaModelo;;
 
 use Kalnoy\Nestedset\NodeTrait;
 use Yajra\DataTables\DataTables;
@@ -89,7 +90,7 @@ class GroupController extends Controller
 
         if ($request->has('q')) {
             $search = $request->q;
-            $data = Group::select("id", "name")
+            $data = FodaModelo::select("id", "name")
                 ->where('name', 'LIKE', "%$search%")
                 ->where('parent_id', null)
                 ->get();

@@ -43,7 +43,42 @@ class FodaModeloController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    public function getAspects(Request $request, $categoryId){
+    public function getModels(Request $request)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $data = FodaModelo::select("id", "name")
+                ->where('name', 'LIKE', "%$search%")
+                ->get();
+        }
+        return response()->json($data);
+    }
+
+    public function dataGroup(Request $request, $idSelection)
+    {
+        $data = FodaModelo::findOrFail($idSelection);
+
+        return response()->json($data);
+    }
+
+    public function getCategories(Request $request, $modelId)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $data = FodaModelo::select("id", "name")
+                ->where('name', 'LIKE', "%$search%")
+                ->where('parent_id', $modelId)
+                ->get();
+        }
+        return response()->json($data);
+    }
+
+    public function getAspects(Request $request, $categoryId)
+    {
         $category = FodaModelo::find($categoryId);
         $modelId = $category->parent_id;
 
@@ -63,12 +98,12 @@ class FodaModeloController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
-       
+
         return view('admin.planificacion.fodas.models.aspects', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
-    
-     
+
+
     public function store(Request $request)
     {
         if ($request->ajax()) {
@@ -87,6 +122,7 @@ class FodaModeloController extends Controller
         $model = FodaModelo::updateOrCreate(
             ['id' => $request->model_id],
             [
+                'type' => $request->type,
                 'name' => $request->name,
                 'owner' => $request->owner,
                 'description' => $request->description,
@@ -106,13 +142,13 @@ class FodaModeloController extends Controller
         }
     }
 
-    
+
     public function showAspects($categoryId)
     {
         $category = FodaModelo::findOrFail($categoryId);
         $aspects = FodaModelo::where('parent_id', $categoryId)->get();
-    
-        return response()->json(['category'=>$category, 'aspects'=>$aspects]);
+
+        return response()->json(['category' => $category, 'aspects' => $aspects]);
     }
 
     public function edit($id)

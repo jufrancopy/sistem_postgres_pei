@@ -17,7 +17,7 @@ class FodaPerfil extends Model
 
     public function categories()
     {
-        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaCategoria', 'planificacion.foda_categorias_has_perfil', 'perfil_id', 'category_id');
+        return $this->belongsToMany('App\Admin\Planificacion\Foda\FodaModelo', 'planificacion.foda_categorias_has_perfil', 'perfil_id', 'category_id');
     }
 
     public function groups()
