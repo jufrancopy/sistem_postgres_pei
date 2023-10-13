@@ -31,7 +31,12 @@ class FodaPerfilController extends Controller
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('dependency', function (FodaPerfil $profile) {
-                    return $profile->dependency->dependency;
+                    // Comprobar si el campo "dependency" es nulo o contiene 'null'
+                    if ($profile->dependency === null || $profile->dependency->dependency === 'null') {
+                        return 'Análisis Grupal';
+                    } else {
+                        return $profile->dependency->dependency;
+                    }
                 })
 
                 ->addColumn('model', function (FodaPerfil $profile) {
@@ -90,7 +95,7 @@ class FodaPerfilController extends Controller
                     return $btn;
                 })
                 ->addColumn('group_name', function (FodaPerfil $profile) {
-                    return $profile->groups->group_name;
+                    return $profile->group->name;
                 })
 
                 ->rawColumns(['action'])
@@ -124,13 +129,11 @@ class FodaPerfilController extends Controller
                     'context'           => 'required',
                     'type'              => 'required',
                     'model_id'          => 'required',
-                    'dependency_id'     => 'required',
                 ],
                 [
                     'name.required'             => 'Agregue el nombre del Modelo',
                     'context.required'          => 'Indique el Contexto',
                     'type.required'             => 'Indique el Tipo',
-                    'dependency_id.required'    => 'Debe seleccionar la Dependencia responsable',
                     'model_id.required'         => 'Seleccione el Modelo de Análisis'
 
                 ]
@@ -144,7 +147,8 @@ class FodaPerfilController extends Controller
                 'context' => $request->context,
                 'type' => $request->type,
                 'model_id' => $request->model_id,
-                'dependency_id' => $request->dependency_id
+                'dependency_id' => $request->dependency_id,
+                'group_id' => $request->group_id,
             ]
         );
 
@@ -173,12 +177,12 @@ class FodaPerfilController extends Controller
 
     public function edit($id)
     {
-        $profile = FodaPerfil::with(['dependency', 'model', 'categories'])->find($id);
+        $profile = FodaPerfil::with(['dependency', 'model', 'categories', 'group'])->find($id);
 
         $categoriesChecked = [];
 
         foreach ($profile->categories as $category) {
-            $categoriesChecked[] = ['id' => $category->id, 'text' => $category->nombre];
+            $categoriesChecked[] = ['id' => $category->id, 'text' => $category->name];
         }
 
         return response()->json(['profile' => $profile, 'categoriesChecked' => $categoriesChecked]);

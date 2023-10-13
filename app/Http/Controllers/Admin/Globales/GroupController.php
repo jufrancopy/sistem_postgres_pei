@@ -84,13 +84,13 @@ class GroupController extends Controller
         }
     }
 
-    public function getGroups(Request $request)
+    public function getRootGroups(Request $request)
     {
         $data = [];
 
         if ($request->has('q')) {
             $search = $request->q;
-            $data = FodaModelo::select("id", "name")
+            $data = Group::select("id", "name")
                 ->where('name', 'LIKE', "%$search%")
                 ->where('parent_id', null)
                 ->get();
@@ -98,10 +98,17 @@ class GroupController extends Controller
         return response()->json($data);
     }
 
-    public function dataGroup(Request $request, $idSelection)
+    public function getGroupsFromRoot(Request $request, $idRoot)
     {
-        $data = Group::findOrFail($idSelection);
+        $data = [];
 
+        if ($request->has('q')) {
+            $search = $request->q;
+            $data = Group::select("id", "name")
+                ->where('name', 'LIKE', "%$search%")
+                ->where('parent_id', $idRoot)
+                ->get();
+        }
         return response()->json($data);
     }
 

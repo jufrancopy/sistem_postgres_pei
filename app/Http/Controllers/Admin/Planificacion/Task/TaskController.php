@@ -27,7 +27,23 @@ class TaskController extends Controller
 
                     $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteTask"><i class="fa fa-trash" aria-hidden="true"></i></a>';
 
+                    $btn = $btn . ' <a href="' . route('tasks.show', $row->id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>';
+
+
                     return $btn;
+                })
+                ->addColumn('group', function (Task $task) {
+                    return $task->group->name;
+                })
+
+                ->addColumn('analysts', function (Task $task) {
+                    $analystNames = $task->analysts->pluck('name')->implode(', ');
+                    return $analystNames;
+                })
+
+                ->addColumn('tasks', function (Task $task) {
+                    $taskNames = $task->typeTasks->pluck('name')->implode(', ');
+                    return $taskNames;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
@@ -102,6 +118,50 @@ class TaskController extends Controller
 
         return response()->json($task);
     }
+
+
+    public function show(Request $request, $id)
+    {
+        if ($request->ajax()) {
+            $tasks = Task::with(['typeTasks'])->where('id', $id)->latest()->get();
+            
+            $data = [];
+            foreach ($tasks as $task) {
+                foreach ($task->typeTasks as $typeTask) {
+                    $data[] = [
+                        'task' => $typeTask->name,
+                        'status' => $task->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
+                        'action' => '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $typeTask->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editTask"><i class="far fa-edit"></i></a>' .
+                            ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $typeTask->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteTask"><i class="fa fa-trash" aria-hidden="true"></i></a>' .
+                            ' <a href="' . route('tasks.show', $typeTask->id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
+                    ];
+                }
+            }
+
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->make(true);
+        }
+
+        $task = Task::with('typeTasks')->where('id', $id)->latest()->first();
+        
+        $analysts = [];
+
+        $analystsNames = [];
+
+        foreach ($task->analysts as $analyst) {
+            $analystsNames[] = $analyst->name;
+        }
+
+        if ($task) {
+            $group = $task->group; // Obtén el grupo asociado a la tarea.
+            $members = $group->members; // Obtén los miembros del grupo.
+        }
+
+
+        return view('admin.planificacion.tasks.tasks.show', get_defined_vars());
+    }
+
 
 
     public function destroy(Request $request, $id)

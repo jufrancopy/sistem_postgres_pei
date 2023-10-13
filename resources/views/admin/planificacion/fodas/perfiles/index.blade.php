@@ -72,6 +72,15 @@
                                             ]) !!}
                                         </div>
 
+                                        <div class="form-group group_roots" style="display: none;">
+                                            {{ Form::label('group_root_id', 'Elija Grupo Raíz:') }}
+                                            {!! Form::select('group_root_id', [], null, [
+                                                'placeholder' => '',
+                                                'id' => 'group_roots',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
+
                                         <div class="form-group groups" style="display: none;">
                                             {{ Form::label('groups', 'Grupo De Análisis:') }}
                                             {!! Form::select('group_id', [], null, [
@@ -81,7 +90,7 @@
                                             ]) !!}
                                         </div>
 
-                                        <div class="form-group">
+                                        <div class="form-group dependencies">
                                             {{ Form::label('dependency_id', 'Seleccione Dependencia Responsable:') }}
                                             {!! Form::select('dependency_id', [], null, [
                                                 'id' => 'dependency',
@@ -250,6 +259,31 @@
                 }
             });
 
+            // Función para inicializar Select2
+            function initializeSelect2(selector, placeholder, url) {
+                selector.val("").select2({
+                    placeholder: placeholder,
+                    ajax: {
+                        url: url,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function(data) {
+                            return {
+                                results: $.map(data, function(item) {
+                                    return {
+                                        text: item.name || item
+                                            .dependency, // Use 'name' or 'dependency' depending on the selector
+                                        id: item.id
+                                    }
+                                })
+                            };
+                        },
+                        cache: true
+                    }
+                });
+            }
+
+
             $('#createNewProfile').click(function() {
                 $('#saveBtn').val("create-user");
                 $('#profile_id').val('');
@@ -259,122 +293,63 @@
                 $('.errors').removeClass("alert alert-danger");
                 $('#type').select2();
 
+                // Selectores dependientes
                 $('#type').change(function() {
                     if ($(this).val() === 'grupal') {
                         $('.form-group.groups').show();
+                        $('.form-group.group_roots').show();
+                        $('.form-group.dependencies').hide();
                     } else {
                         $('.form-group.groups').hide();
+                        $('.form-group.group_roots').hide();
+                        $('.form-group.dependencies').show();
                     }
                 });
 
-                //Dependency
-                $("#dependency").val("");
-                $('#dependency').select2({
-                    placeholder: 'Seleccione la dependencia',
-                    ajax: {
-                        url: '{{ route('globales.get-dependencies') }}',
-                        dataType: 'json',
-                        delay: 250,
-                        processResults: function(data) {
-                            return {
-                                results: $.map(data, function(item) {
-                                    return {
-                                        text: item.dependency,
-                                        id: item.id
-                                    }
-                                })
-                            };
-                        },
-                        cache: true
-                    }
+                // Inicializar el selector de dependencia
+                initializeSelect2($("#dependency"), 'Seleccione la dependencia',
+                    '{{ route('globales.get-dependencies') }}');
+
+                // Inicializar el selector de grupo raíz
+                initializeSelect2($("#group_roots"), 'Seleccione Grupo Raíz de trabajo',
+                    '{{ route('globales.get-root-groups') }}');
+
+                // Cuando se cambia el grupo raíz
+                $('#group_roots').on('change', function() {
+                    var groupRootID = $(this).val();
+                    var url = 'admin/globales/get-groups/' + groupRootID;
+
+                    // Reinicializar el selector de grupos
+                    initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
                 });
 
-                //Models
-                $("#models").val("");
-                $('#models').select2({
-                    placeholder: 'Seleccione el Modelo',
-                    ajax: {
-                        url: '{{ route('get-models') }}',
-                        dataType: 'json',
-                        delay: 250,
-                        processResults: function(data) {
-                            return {
-                                results: $.map(data, function(item) {
-                                    return {
-                                        text: item.name,
-                                        id: item.id
-                                    }
-                                })
-                            };
-                        },
-                        cache: true
-                    }
+                $("#groups").select2({
+                    placeholder: "Seleccionar Grupo"
                 });
 
+                // Inicializar el selector de modelos
+                initializeSelect2($("#models"), 'Seleccione el Modelo', '{{ route('get-models') }}');
+
+                // Cuando se cambia el modelo
                 $('#models').on('change', function() {
                     var modelId = $(this).val();
-                    var url = 'get-foda-categories/' + modelId
+                    var url = 'get-foda-categories/' + modelId;
 
-                    //Categories
-                    $("#categories").val([]).change();
-                    $("#categories").val("");
-                    $("#categories").trigger("change");
-
-                    var dependencies = $('#categories').select2({
-                        placeholder: 'Seleccione las Categorías para Analizar',
-                        ajax: {
-                            url: url,
-                            dataType: 'json',
-                            delay: 250,
-                            processResults: function(data) {
-                                console.log(data)
-                                return {
-                                    results: $.map(data, function(item) {
-                                        return {
-                                            text: item.name,
-                                            id: item.id
-                                        }
-                                    })
-                                };
-                            },
-                            cache: true
-                        }
-                    });
-
+                    // Reinicializar el selector de categorías
+                    initializeSelect2($("#categories"), 'Seleccione las Categorías para Analizar',
+                        url);
                 });
 
                 $("#categories").select2({
                     placeholder: "Seleccione los Factores"
                 });
 
-                $("#groups").val([]);
-                $("#groups").val("");
-                $('#groups').select2({
-                    placeholder: 'Seleccione el grupo de trabajo',
-                    ajax: {
-                        url: '{{ route('globales.get-groups') }}',
-                        dataType: 'json',
-                        delay: 250,
-                        processResults: function(data) {
-                            return {
-                                results: $.map(data, function(item) {
-                                    return {
-                                        text: item.name,
-                                        id: item.id
-                                    }
-                                })
-                            };
-                        },
-                        cache: true
-                    }
-                });
 
             });
 
 
             $('body').on('click', '.editProfile', function() {
                 var profileId = $(this).data('id');
-
                 $.get("{{ route('foda-perfiles.index') }}" + '/' + profileId + '/edit', function(data) {
                     $('#modalProfilelHeading').html("Editar Perfil");
                     $('#saveBtn').val("edit-profile");
@@ -385,6 +360,35 @@
                     $('#name').val(data.profile.name);
                     $('#context').val(data.profile.context);
 
+                    // Selectores dependientes
+                    var $typeSelect = $('#type').select2();
+
+                    // Función para mostrar u ocultar elementos dependiendo del valor de 'type'
+                    function toggleElementsBasedOnType(typeValue) {
+                        if (typeValue === 'grupal') {
+                            $('.form-group.groups').show();
+                            $('.form-group.group_roots').show();
+                        } else {
+                            $('.form-group.groups').hide();
+                            $('.form-group.group_roots').hide();
+                        }
+                    }
+
+                    // Obtener el valor actual de 'data.profile.type'
+                    var initialTypeValue = data.profile
+                        .type; // Asegúrate de obtener el valor de manera adecuada
+
+                    // Establecer el valor inicial en el select
+                    $typeSelect.val(initialTypeValue).trigger('change');
+
+                    // Aplicar la lógica basada en el valor inicial
+                    toggleElementsBasedOnType(initialTypeValue);
+
+                    // Cuando cambia el valor del select '#type'
+                    $typeSelect.on('change', function() {
+                        var selectedTypeValue = $(this).val();
+                        toggleElementsBasedOnType(selectedTypeValue);
+                    });
 
                     $('#dependency').select2({
                         placeholder: 'Seleccione la dependencia',
@@ -409,6 +413,7 @@
                     //Precargar Dependencia
                     initSelect2($('#dependency'), data.profile.dependency.id, data.profile
                         .dependency.dependency);
+                    initSelect2($('#groups'), data.profile.group.id, data.profile.group.name);
 
                     function initSelect2(control, key, value) {
                         var data = {
@@ -420,6 +425,14 @@
                         control.empty().append(initOption).trigger('change');
                     }
 
+                    //Groups
+                    // Inicializar el selector de grupo raíz
+                    initializeSelect2($("#group_roots"), 'Seleccione Grupo Raíz de trabajo',
+                        '{{ route('globales.get-root-groups') }}');
+                    $("#groups").select2({
+                        placeholder: "Seleccionar Grupo"
+                    });
+
                     //Models
                     $("#models").val("");
                     $('#models').select2({
@@ -429,10 +442,11 @@
                             dataType: 'json',
                             delay: 250,
                             processResults: function(data) {
+                                console.log(data)
                                 return {
                                     results: $.map(data, function(item) {
                                         return {
-                                            text: item.nombre,
+                                            text: item.name,
                                             id: item.id
                                         }
                                     })
@@ -441,7 +455,6 @@
                             cache: true
                         }
                     });
-
 
                     //Precargar Modelo
                     $('#models').on('change', function() {
@@ -454,7 +467,7 @@
                         $("#categories").trigger("change");
 
 
-                        var dependencies = $('#categories').select2({
+                        $('#categories').select2({
                             placeholder: 'Seleccione las Categorías para Analizar',
                             ajax: {
                                 url: url,
@@ -464,7 +477,7 @@
                                     return {
                                         results: $.map(data, function(item) {
                                             return {
-                                                text: item.nombre,
+                                                text: item.name,
                                                 id: item.id
                                             }
                                         })
@@ -476,7 +489,7 @@
 
                     });
 
-                    initSelect2($('#models'), data.profile.model.id, data.profile.model.nombre);
+                    initSelect2($('#models'), data.profile.model.id, data.profile.model.name);
 
                     function initSelect2(control, key, value) {
                         var data = {
