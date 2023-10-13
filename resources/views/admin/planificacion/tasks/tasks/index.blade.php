@@ -61,6 +61,15 @@
                                             ]) !!}
                                         </div>
 
+                                        <div class="form-group group_roots">
+                                            {{ Form::label('group_root_id', 'Elija Grupo Raíz:') }}
+                                            {!! Form::select('group_root_id', [], null, [
+                                                'placeholder' => '',
+                                                'id' => 'group_roots',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
+
                                         <div class="form-group">
                                             {{ Form::label('groups', 'Asignar Grupo de Trabajo:') }}
                                             {!! Form::select('group_id', [], null, [
@@ -173,11 +182,23 @@
                     data: 'DT_RowIndex',
                     name: 'DT_RowIndex'
                 }, {
-                    data: 'grupo',
-                    name: 'grupo'
+                    data: 'group',
+                    name: 'group'
                 }, {
-                    data: 'analista',
-                    name: 'analista'
+                    data: 'analysts',
+                    name: 'analysts',
+                    render: function(data, type, full, meta) {
+                        var analystsArray = data.split(', ');
+
+                        var analystsHtml = '';
+
+                        analystsArray.forEach(function(task) {
+                            analystsHtml += '<span class="badge badge-secondary">' +
+                                task + '</span> ';
+                        });
+
+                        return analystsHtml;
+                    }
                 }, {
                     data: 'tasks',
                     name: 'tasks',
@@ -200,6 +221,30 @@
                     searchable: false
                 }, ]
             });
+
+            // Función para inicializar Select2
+            function initializeSelect2(selector, placeholder, url) {
+                selector.val("").select2({
+                    placeholder: placeholder,
+                    ajax: {
+                        url: url,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function(data) {
+                            return {
+                                results: $.map(data, function(item) {
+                                    return {
+                                        text: item.name || item
+                                            .dependency, // Use 'name' or 'dependency' depending on the selector
+                                        id: item.id
+                                    }
+                                })
+                            };
+                        },
+                        cache: true
+                    }
+                });
+            }
 
             var detailsEditor;
 
@@ -246,26 +291,19 @@
                     }
                 });
 
-                //Groups
-                $('#groups').select2({
-                    placeholder: 'Indique el Grupo',
-                    ajax: {
-                        url: '{{ route('globales.get-groups') }}',
-                        dataType: 'json',
-                        delay: 250,
-                        processResults: function(data) {
-                            return {
-                                results: $.map(data, function(item) {
-                                    return {
-                                        text: item.name,
-                                        id: item.id
-                                    }
-                                })
-                            };
-                        },
-                        cache: true
-                    }
+                // Inicializar el selector de grupo raíz
+                initializeSelect2($("#group_roots"), 'Seleccione Grupo Raíz de trabajo',
+                    '{{ route('globales.get-root-groups') }}');
+
+                // Cuando se cambia el grupo raíz
+                $('#group_roots').on('change', function() {
+                    var groupRootID = $(this).val();
+                    var url = 'admin/globales/get-groups/' + groupRootID;
+
+                    // Reinicializar el selector de grupos
+                    initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
                 });
+                   
 
                 //Analysts
                 var url = '{{ route('globales.get-foda-users') }}';

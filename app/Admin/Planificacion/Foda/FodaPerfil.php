@@ -6,13 +6,15 @@ use App\Admin\Globales\Organigrama;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
+use App\Admin\Globales\Group;
+
 class FodaPerfil extends Model
 {
     protected $table = "planificacion.foda_perfiles";
     public $keyType = 'string';
     protected $dateFormat = 'Y-m-d H:i:sO';
 
-    protected $fillable = ['name', 'context', 'type', 'model_id', 'dependency_id'];
+    protected $fillable = ['name', 'context', 'type', 'model_id', 'dependency_id', 'group_id'];
 
 
     public function categories()
@@ -39,6 +41,10 @@ class FodaPerfil extends Model
     public function model()
     {
         return $this->belongsTo(FodaModelo::class);
+    }
+
+    public function group(){
+        return $this->belongsTo(Group::class);
     }
 
     public function scopeNombre($query, $nombre)

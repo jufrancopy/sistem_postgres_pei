@@ -128,7 +128,8 @@ Route::group(['middleware' => ['auth']], function () {
 
         //Groups
         Route::resource('groups', 'Admin\Globales\GroupController');
-        Route::get('get-groups', 'Admin\Globales\GroupController@getGroups')->name('get-groups');
+        Route::get('get-root-groups', 'Admin\Globales\GroupController@getRootGroups')->name('get-root-groups');
+        Route::get('get-groups/{idRoot}', 'Admin\Globales\GroupController@getGroupsFromRoot')->name('get-groups');    
         Route::get('get-foda-users', 'Admin\UserController@getUsers')->name('get-foda-users');
     });
 

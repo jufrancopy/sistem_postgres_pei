@@ -20,12 +20,18 @@ class CreateFodaPerfilesTable extends Migration
             $table->string('context');
             $table->string('type');
 
+
             $table->unsignedInteger('model_id');
             $table->foreign('model_id')->references('id')->on('planificacion.foda_models')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->unsignedInteger('dependency_id');
+            $table->unsignedInteger('group_id')->nullable();
+            $table->foreign('group_id')->references('id')->on('groups')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            $table->unsignedInteger('dependency_id')->nullable();
             $table->foreign('dependency_id')->references('id')->on('organigramas')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
