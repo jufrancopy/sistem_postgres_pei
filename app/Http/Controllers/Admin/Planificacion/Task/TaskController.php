@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 
 use App\Admin\Planificacion\Task\Task;
+use App\Admin\Planificacion\Foda\FodaPerfil;
+use App\Admin\Planificacion\Pei\PeiProfile;
+
 
 class TaskController extends Controller
 {
@@ -81,14 +84,13 @@ class TaskController extends Controller
         $analysts = $request->analyst_id;
         $task->analysts()->sync($analysts);
 
-
-        $tasks = $request->task_id;
+        $tasks = $request->typetask_id;
         $task->typeTasks()->sync($tasks);
 
         if ($task->wasRecentlyCreated) {
-            return response()->json(['success' => 'Tipo de Tarea creado con éxito']);
+            return response()->json(['success' => 'Tarea creado con éxito']);
         } else {
-            return response()->json(['success' => 'Tipo de Tarea actualizado con éxito']);
+            return response()->json(['success' => 'Tarea actualizada con éxito']);
         }
     }
 
@@ -98,10 +100,18 @@ class TaskController extends Controller
 
         if ($request->has('q')) {
             $search = $request->q;
-            $data = Task::select("id", "name")
+            $fodaData = FodaPerfil::select("id", "name")
                 ->where('name', 'LIKE', "%$search%")
                 ->get();
+
+            $peiData = PeiProfile::select("id",  "name")
+                ->where('name', 'LIKE', "%$search%")
+                ->get();
+
+            // Combinamos los resultados en un solo conjunto de datos
+            $data = $fodaData->concat($peiData);
         }
+
         return response()->json($data);
     }
 
@@ -124,7 +134,7 @@ class TaskController extends Controller
     {
         if ($request->ajax()) {
             $tasks = Task::with(['typeTasks'])->where('id', $id)->latest()->get();
-            
+
             $data = [];
             foreach ($tasks as $task) {
                 foreach ($task->typeTasks as $typeTask) {
@@ -144,7 +154,7 @@ class TaskController extends Controller
         }
 
         $task = Task::with('typeTasks')->where('id', $id)->latest()->first();
-        
+
         $analysts = [];
 
         $analystsNames = [];

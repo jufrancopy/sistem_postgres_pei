@@ -51,6 +51,7 @@ class FodaModeloController extends Controller
             $search = $request->q;
             $data = FodaModelo::select("id", "name")
                 ->where('name', 'LIKE', "%$search%")
+                ->where('parent_id', null)
                 ->get();
         }
         return response()->json($data);

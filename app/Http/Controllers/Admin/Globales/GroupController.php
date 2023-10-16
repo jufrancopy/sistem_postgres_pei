@@ -56,7 +56,7 @@ class GroupController extends Controller
                     'name'              => 'required',
                 ],
                 [
-                    'name.required'     => 'Campor Nombre es requerido',
+                    'name.required'     => 'El campo Nombre es requerido',
                 ]
             );
         };
@@ -78,9 +78,9 @@ class GroupController extends Controller
         $group->members()->sync($members);
 
         if ($group->parent_id == null) {
-            return response()->json(['success' => 'Grupo Padre creado con éxito']);
+            return response()->json(['success' => 'Evento creado con éxito']);
         } else {
-            return response()->json(['success' => 'Grupo Hijo creado con éxito', 'parent_id' => $request->parent_id]);
+            return response()->json(['success' => 'Grupo creado agregado al Evento correctamente', 'parent_id' => $request->parent_id]);
         }
     }
 
