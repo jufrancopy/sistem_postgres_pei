@@ -15,11 +15,10 @@ class CreateFodaPerfilesTable extends Migration
     public function up()
     {
         Schema::create('planificacion.foda_perfiles', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->uuid('id')->primary();
             $table->string('name');
             $table->string('context');
             $table->string('type');
-
 
             $table->unsignedInteger('model_id');
             $table->foreign('model_id')->references('id')->on('planificacion.foda_models')

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kalnoy\Nestedset\NodeTrait;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 use App\Models\User;
 use App\Admin\Planificacion\Task\Task;
@@ -14,6 +15,7 @@ use App\Admin\Globales\Group;
 
 class PeiProfile extends Model
 {
+    use HasUuids;
     use SoftDeletes;
     use NodeTrait;
 
@@ -48,5 +50,10 @@ class PeiProfile extends Model
     public function analysts()
     {
         return $this->belongsToMany(User::class, 'planificacion.peis_profiles_has_analysts', 'pei_profile_id', 'analyst_id');
+    }
+
+    public function tasks()
+    {
+        return $this->morphMany(Task::class, 'typetaskable', 'typetask_id');
     }
 }

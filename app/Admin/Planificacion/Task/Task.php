@@ -29,8 +29,15 @@ class Task extends Model
         return $this->belongsToMany('App\Admin\Planificacion\Task\TypeTask', 'planificacion.tasks_has_type_tasks', 'task_id', 'typetask_id');
     }
 
-    public function group(){
+    public function group()
+    {
         return $this->belongsTo(Group::class);
     }
+
+    public function typetaskable()
+    {
+        return $this->morphTo('typetaskable', 'typetask_id');
+    }
+    // Definir la relación 'tasks' aquí
     
 }

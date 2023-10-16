@@ -14,7 +14,7 @@ class CreateFodaCategoriasHasPerfilTable extends Migration
     public function up()
     {
         Schema::create('planificacion.foda_categorias_has_perfil', function (Blueprint $table) {
-            $table->unsignedInteger('perfil_id');
+            $table->uuid('perfil_id');
             $table->foreign('perfil_id')->references('id')->on('planificacion.foda_perfiles')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');

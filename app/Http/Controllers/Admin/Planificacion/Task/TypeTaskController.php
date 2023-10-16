@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Admin\Planificacion\Task;
 
+use App\Admin\Planificacion\Foda\FodaPerfil;
+use App\Admin\Planificacion\Pei\PeiProfile;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\DB;
 
 use App\Admin\Planificacion\Task\TypeTask;
 
@@ -30,31 +33,106 @@ class TypeTaskController extends Controller
 
                     return $btn;
                 })
+
+                ->addColumn('task_value', function ($row) {
+                    $taskValue = null;
+
+                    // Verifica si el task_id coincide con un registro en FodaPerfil
+                    $fodaProfile = FodaPerfil::where('id', $row->task_id)->first();
+
+                    if ($fodaProfile) {
+                        $taskValue = $fodaProfile->name;
+                    } else {
+                        // Si no coincide con FodaPerfil, verifica en PeiProfile
+                        $peiProfile = PeiProfile::where('id', $row->task_id)->first();
+
+                        if ($peiProfile) {
+                            $taskValue = $peiProfile->name;
+                        }
+                    }
+
+                    return $taskValue;
+                })
+
+                ->addColumn('model', function ($row) {
+                    $modelValue = null;
+
+                    // Verifica si el task_id coincide con un registro en FodaPerfil
+                    $fodaProfile = FodaPerfil::select("id", "name", DB::raw("'Análisis FODA' as model"))
+                        ->where('id', $row->task_id)->first();
+
+                    if ($fodaProfile) {
+                        $modelValue = $fodaProfile->model;
+                    } else {
+                        $peiProfile = PeiProfile::select("id", "name", DB::raw("'Definción de Visión, Misión y Valores' as model"))
+                        ->where('id', $row->task_id)->first();
+                        
+                        if ($peiProfile) {
+                            $modelValue = $peiProfile->model;
+                        }
+                    }
+
+                    return $modelValue;
+                })
+
+                ->addColumn('group', function ($row) {
+                    $groupValue = null;
+                    
+                    $fodaProfile = FodaPerfil::where('id', $row->task_id)->first();
+                    
+                    if ($fodaProfile) {
+                        $groupValue = $fodaProfile->group->name;
+                    } else {
+                        $peiProfile = PeiProfile::where('id', $row->task_id)->first();
+
+                        if ($peiProfile) {
+                            $groupValue = $peiProfile->group->name;
+                        }
+                    }
+
+                    return $groupValue;
+                })
+
+
                 ->rawColumns(['action'])
                 ->make(true);
-        }
-        $routes = Route::getRoutes();
-        $arrayRoutes = [];
-
-        foreach ($routes as $route) {
-            $arrayRoutes[$route->uri] = $route->uri;
         }
 
         return view('admin.planificacion.tasks.type_tasks.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
+    public function getTaskType(Request $request)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $fodaData = FodaPerfil::select("id", "name", DB::raw("'Análisis FODA' as model"))
+                ->where('name', 'LIKE', "%$search%")
+                ->get();
+
+            $peiData = PeiProfile::select("id", "name", DB::raw("'Análisis PEI' as model"))
+                ->where('name', 'LIKE', "%$search%")
+                ->get();
+
+            $data = $fodaData->concat($peiData);
+        }
+
+
+        return response()->json($data);
+    }
+        
+
     public function store(Request $request)
     {
         if ($request->ajax()) {
             $request->validate(
                 [
-                    'name'              => 'required',
-                    'route'              => 'required',
+                    'task_id'              => 'required',
                 ],
                 [
-                    'name.required'     => 'Campo nombre es requerido',
-                    'route.required'     => 'Seleccione la ruta vinculante a la tarea',
+                    'task_id.required'     => 'Campo nombre es requerido',
                 ]
             );
         };
@@ -62,8 +140,8 @@ class TypeTaskController extends Controller
         $typeTask = TypeTask::updateOrCreate(
             ['id' => $request->typeTask_id],
             [
+                'task_id' => $request->task_id,
                 'name' => $request->name,
-                'route' => $request->route,
             ]
         );
 

@@ -11,5 +11,5 @@ class TypeTask extends Model
 
     protected $table = "planificacion.typetasks";
 
-    protected $fillable = ['name', 'route'];
+    protected $fillable = ['task_id', 'name'];
 }

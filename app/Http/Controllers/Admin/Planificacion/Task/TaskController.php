@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin\Planificacion\Task;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\DB;
 
+//Models
 use App\Admin\Planificacion\Task\Task;
+use App\Admin\Planificacion\Task\TypeTask;
 use App\Admin\Planificacion\Foda\FodaPerfil;
 use App\Admin\Planificacion\Pei\PeiProfile;
 
@@ -20,6 +23,7 @@ class TaskController extends Controller
 
     public function index(Request $request)
     {
+        dd($data = Task::with('typetaskable')->where('id', 1)->get());
         if ($request->ajax()) {
             $data = Task::latest()->get();
             return DataTables::of($data)
@@ -45,9 +49,12 @@ class TaskController extends Controller
                 })
 
                 ->addColumn('tasks', function (Task $task) {
-                    $taskNames = $task->typeTasks->pluck('name')->implode(', ');
-                    return $taskNames;
+                    $taskName = $task->typetaskable->name;
+                    $modelName = get_class($task->typetaskable);
+                    return $taskName . ' (' . $modelName . ')';
                 })
+                
+                
                 ->rawColumns(['action'])
                 ->make(true);
         }
@@ -100,18 +107,10 @@ class TaskController extends Controller
 
         if ($request->has('q')) {
             $search = $request->q;
-            $fodaData = FodaPerfil::select("id", "name")
+            $data = TypeTask::select("id", "name")
                 ->where('name', 'LIKE', "%$search%")
                 ->get();
-
-            $peiData = PeiProfile::select("id",  "name")
-                ->where('name', 'LIKE', "%$search%")
-                ->get();
-
-            // Combinamos los resultados en un solo conjunto de datos
-            $data = $fodaData->concat($peiData);
         }
-
         return response()->json($data);
     }
 

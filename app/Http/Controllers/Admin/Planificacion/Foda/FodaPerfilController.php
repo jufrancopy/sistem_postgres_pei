@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin\Planificacion\Foda;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
 
 use App\Admin\Planificacion\Foda\FodaPerfil;
@@ -138,8 +138,9 @@ class FodaPerfilController extends Controller
             );
         };
 
+        $profileId = Str::uuid();
         $profile = FodaPerfil::updateOrCreate(
-            ['id' => $request->profile_id],
+            ['id' => $profileId],
             [
                 'name' => $request->name,
                 'context' => $request->context,

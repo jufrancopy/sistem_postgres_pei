@@ -15,8 +15,7 @@ class CreateFodaGroupsHasPerfilesTable extends Migration
     {
         Schema::create('planificacion.foda_groups_has_perfiles', function (Blueprint $table) {
             $table->id();
-
-            $table->unsignedInteger('perfil_id');
+            $table->uuid('perfil_id');
             $table->foreign('perfil_id')->references('id')->on('planificacion.foda_perfiles')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');

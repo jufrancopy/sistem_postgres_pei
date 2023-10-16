@@ -5,9 +5,10 @@ namespace App\Http\Controllers\Admin\Planificacion\Pei;
 use App\Admin\Planificacion\Pei\Pei;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Str;
 use Kalnoy\Nestedset\NodeTrait;
 use Yajra\DataTables\DataTables;
+
 use App\Models\User;
 use App\Admin\Planificacion\Pei\PeiProfile;
 
@@ -65,9 +66,11 @@ class PeiController extends Controller
                 ]
             );
         };
+        
+        $profileId = Str::uuid();
 
         $profile = PeiProfile::updateOrCreate(
-            ['id' => $request->group_id],
+            ['id' => $profileId],
             [
                 'name' => $request->name,
                 'type' => $request->type,
