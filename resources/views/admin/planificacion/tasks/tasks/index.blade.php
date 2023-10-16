@@ -1,15 +1,15 @@
 @extends('layouts.master')
-@section('title', 'Tipos de Tareas')
+@section('title', 'Tareas')
 
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Tipos de Tareas</h4>
+            <h4 class="card-title ">Tareas</h4>
         </div>
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Tipos de Tareas</li>
+                <li class="breadcrumb-item active" aria-current="page">Tareas</li>
             </ol>
         </nav>
 
@@ -30,7 +30,7 @@
                                         <th>ID</th>
                                         <th>Grupo</th>
                                         <th>Analista</th>
-                                        <th>Tareas</th>
+                                        {{-- <th>Tareas</th> --}}
                                         <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>
@@ -199,22 +199,24 @@
 
                         return analystsHtml;
                     }
-                }, {
-                    data: 'tasks',
-                    name: 'tasks',
-                    render: function(data, type, full, meta) {
-                        var tasksArray = data.split(', ');
+                }, 
+                // {
+                //     data: 'tasks',
+                //     name: 'tasks',
+                //     render: function(data, type, full, meta) {
+                //         var tasksArray = data.split(', ');
 
-                        var tasksHtml = '';
+                //         var tasksHtml = '';
 
-                        tasksArray.forEach(function(task) {
-                            tasksHtml += '<span class="badge badge-secondary">' +
-                                task + '</span> ';
-                        });
+                //         tasksArray.forEach(function(task) {
+                //             tasksHtml += '<span class="badge badge-secondary">' +
+                //                 task + '</span> ';
+                //         });
 
-                        return tasksHtml;
-                    }
-                }, {
+                //         return tasksHtml;
+                //     }
+                // }, 
+                {
                     data: 'action',
                     name: 'action',
                     orderable: false,
@@ -265,31 +267,31 @@
                 $('#ajaxModal').modal('show');
                 detailsEditor.setData('');
 
-                //Tasks
+                //Type Tasks
                 var url = '{{ route('get-tasks') }}';
-                $("#tasks").val([]).change();
-                $("#tasks").trigger("change");
+                $("#typetasks").val([]).change();
+                $("#typetasks").trigger("change");
 
-                var taskSelect = $('#typetasks').select2({
+                $('#typetasks').select2({
                     allowClear: true,
                     ajax: {
                         url: url,
                         dataType: 'json',
                         delay: 250,
                         processResults: function(data) {
-                            console.log(data)
                             return {
                                 results: $.map(data, function(item) {
                                     return {
-                                        text: item.name,
+                                        text: item.name + ' (' + item.model + ')',
                                         id: item.id
-                                    }
+                                    };
                                 })
                             };
                         },
                         cache: true
                     }
                 });
+
 
                 // Inicializar el selector de grupo raíz
                 initializeSelect2($("#group_roots"), 'Seleccione Grupo Raíz de trabajo',

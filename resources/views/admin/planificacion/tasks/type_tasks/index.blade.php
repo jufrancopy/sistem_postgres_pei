@@ -30,7 +30,8 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Nombre</th>
-                                        <th>Ruta</th>
+                                        <th>Tipo</th>
+                                        <th>Grupo</th>
                                         <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>
@@ -49,16 +50,12 @@
                                 <div class="modal-body">
                                     <form id="typeTaskForm" name="typeTaskForm" class="form-horizontal">
                                         {{ Form::hidden('typeTask_id', null, ['id' => 'typeTask_id']) }}
+                                        {{ Form::hidden('name', null, ['class' => 'form-control', 'id' => 'name']) }}
 
                                         <div class="form-group">
-                                            {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
-                                            {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
-                                        </div>
-
-                                        <div class="form-group">
-                                            {{ Form::label('routes', 'Ruta de la Tarea:') }}
-                                            {!! Form::select('route', $arrayRoutes, null, [
-                                                'id' => 'routes',
+                                            {{ Form::label('task', 'Ruta de la Tarea:') }}
+                                            {!! Form::select('task_id', [], null, [
+                                                'id' => 'tasks',
                                                 'placeholder' => '',
                                                 'style' => 'width:100%',
                                             ]) !!}
@@ -148,11 +145,14 @@
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex'
                     }, {
-                        data: 'name',
-                        name: 'name'
+                        data: 'task_value',
+                        name: 'task_value'
                     }, {
-                        data: 'route',
-                        name: 'route'
+                        data: 'model',
+                        name: 'model'
+                    }, {
+                        data: 'group',
+                        name: 'group'
                     }, {
                         data: 'action',
                         name: 'action',
@@ -166,8 +166,39 @@
                     $('#typeTaskForm').trigger("reset");
                     $('#modalHeading').html("Nuevo Tipo de Tarea");
                     $('#ajaxModal').modal('show');
-                    $('#routes').select2({
-                        placeholder: "Seleccione la ruta vinculante"
+
+                    //Type Tasks
+                    var url = '{{ route('get-tasks') }}';
+                    $("#tasks").val([]).change();
+                    $("#tasks").trigger("change");
+
+                    $('#tasks').select2({
+                        allowClear: true,
+                        ajax: {
+                            url: url,
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(data) {
+                                return {
+                                    results: $.map(data, function(item) {
+                                        return {
+                                            text: item.name + ' (' + item.model + ')',
+                                            id: item.id
+                                        };
+                                    })
+                                };
+                            },
+                            cache: true
+                        }
+                    });
+
+                    // Agregar un oyente de eventos al selector
+                    $('#tasks').on('change', function(e) {
+                        // Obtener el valor seleccionado
+                        var selectedValue = $('#tasks').select2('data')[0];
+
+                        // Colocar el valor en el input de texto
+                        $('#name').val(selectedValue.text);
                     });
                 });
 

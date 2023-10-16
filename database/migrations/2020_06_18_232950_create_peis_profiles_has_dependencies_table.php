@@ -15,8 +15,7 @@ class CreatePeisProfilesHasDependenciesTable extends Migration
     {
         Schema::create('planificacion.pei_profiles_has_dependencies', function (Blueprint $table) {
             $table->id();
-
-            $table->unsignedInteger('pei_profile_id');
+            $table->uuid('pei_profile_id');
             $table->foreign('pei_profile_id')->references('id')->on('planificacion.pei_profiles')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');

@@ -5,11 +5,16 @@ namespace App\Admin\Planificacion\Foda;
 use App\Admin\Globales\Organigrama;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+
+use App\Admin\Planificacion\Task\Task;
 
 use App\Admin\Globales\Group;
 
 class FodaPerfil extends Model
 {
+    use HasUuids;
+
     protected $table = "planificacion.foda_perfiles";
     public $keyType = 'string';
     protected $dateFormat = 'Y-m-d H:i:sO';
@@ -43,8 +48,14 @@ class FodaPerfil extends Model
         return $this->belongsTo(FodaModelo::class);
     }
 
-    public function group(){
+    public function group()
+    {
         return $this->belongsTo(Group::class);
+    }
+
+    public function tasks()
+    {
+        return $this->morphMany(Task::class, 'typetaskable', 'typetask_id');
     }
 
     public function scopeNombre($query, $nombre)

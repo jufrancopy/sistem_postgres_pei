@@ -16,7 +16,7 @@ class CreateTypetasksTable extends Migration
         Schema::create('planificacion.typetasks', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('route');
+            $table->uuid('task_id');
             $table->timestamps();
         });
     }

@@ -21,10 +21,7 @@ class CreateTasksHasTypeTasksTable extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->unsignedInteger('typetask_id');
-            $table->foreign('typetask_id')->references('id')->on('planificacion.typetasks')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
+            $table->uuid('typetask_id');
             $table->timestamps();
         });
     }
