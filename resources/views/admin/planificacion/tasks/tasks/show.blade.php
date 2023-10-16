@@ -305,7 +305,7 @@
 
 
                     //Analysts
-                    var url = '{{ route('globales.get-foda-users') }}';
+                    var url = '{{ route('globales.get-users') }}';
                     $("#analysts").val([]).change();
                     $("#analysts").trigger("change");
 

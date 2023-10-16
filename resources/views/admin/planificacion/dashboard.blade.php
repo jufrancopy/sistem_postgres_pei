@@ -29,7 +29,7 @@
                                 <div class="card-footer">
                                     <div class="stats">
                                         <i class="material-icons">search</i>
-                                        <a href="{{ route('peis.index') }}">Ver todo</a>
+                                        <a href="{{ route('pei-profiles.index') }}">Ver todo</a>
                                     </div>
                                 </div>
                             </div>
@@ -73,11 +73,11 @@
                             name: '<a href="{{ route('tasks.index') }}">Tareas</a>'
                         }, {
                             name: '<a href="{{ route('tasks-type.index') }}">Tipos de Tarea</a>'
-                        },]
+                        }, ]
                     }, {
                         name: 'Perfiles de Planificacion Estrategica',
                         children: [{
-                            name: '<a href="{{ route('peis.index') }}">Pei</a>'
+                            name: '<a href="{{ route('pei-profiles.index') }}">Pei</a>'
                         }, ]
                     },
                     {

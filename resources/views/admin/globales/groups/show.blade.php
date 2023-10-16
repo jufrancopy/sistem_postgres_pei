@@ -1,17 +1,17 @@
 @extends('layouts.master')
-@section('title', 'Agregar Sub - Grupos')
+@section('title', 'Grupos de Trabajo')
 
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Agregar Sub - Grupos</h4>
+            <h4 class="card-title ">Grupos de Trabajo</h4>
         </div>
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('globales.groups.index') }}">{{ $group->name }}</a>
+                <li class="breadcrumb-item"><a href="{{ route('globales.groups.index') }}">Eventos</a>
                 </li>
-                <li class="breadcrumb-item active" aria-current="page">Listado de Sub - Grupos</li>
+                <li class="breadcrumb-item active" aria-current="page">Lista de Grupos</li>
             </ol>
         </nav>
 
@@ -22,7 +22,7 @@
                         <div class="success"></div>
                         <a class="btn btn-success mb-2" data-group-id="{{ $group->id }}" href="javascript:void(0)"
                             id="createNewGroup">
-                            Agregar</a>
+                            Nuevo Grupo</a>
                     </div>
 
                     <div class="card-body">
@@ -188,7 +188,7 @@
                     $('.errors').removeClass("alert alert-danger")
 
                     //members
-                    var url = '{{ route('globales.get-foda-users') }}';
+                    var url = '{{ route('globales.get-users') }}';
                     $("#members").val([]).change();
                     $("#members").val("");
                     $("#members").trigger("change");
@@ -245,7 +245,7 @@
                         });
 
                         //Members
-                        var url = '{{ route('globales.get-foda-users') }}';
+                        var url = '{{ route('globales.get-users') }}';
                         var members = $('#members').select2({
                             placeholder: 'Seleccione las Miembros',
                             ajax: {
@@ -277,26 +277,20 @@
                         type: "POST",
                         dataType: 'json',
                         success: function(data) {
-                            if (data) {
-                                $(".success").text(data.success).addClass('alert alert-success');
-                                setTimeout(function() {
-                                    $(".success").hide().html('');
-                                }, 5000);
-                            }
                             $('#subGroupForm').trigger("reset");
                             $('#ajaxModal').modal('hide');
-                            $(".success").removeAttr("style");
                             table.draw();
                         },
 
                         error: function(data) {
                             var obj = data.responseJSON.errors;
                             $.each(obj, function(key, value) {
-                                $(".errors").fadeIn().append($("<p>" + value + "</p>")
-                                    .addClass("alert alert-danger"));
-                                setTimeout(function() {
-                                    $(".errors").fadeOut().html('');
-                                }, 5000);
+                                // Alert Toastr
+                                toastr.options = {
+                                    closeButton: true,
+                                    progressBar: true,
+                                };
+                                toastr.error("Atención: " + value);
                             });
                             $('#saveBtn').html('Guardar Cambios');
                         }

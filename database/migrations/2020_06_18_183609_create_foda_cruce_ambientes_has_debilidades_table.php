@@ -20,7 +20,7 @@ class CreateFodaCruceAmbientesHasDebilidadesTable extends Migration
                 ->onUpdate('cascade');
 
             $table->unsignedInteger('debilidad_id');
-            $table->foreign('debilidad_id')->references('id')->on('planificacion.foda_aspectos')
+            $table->foreign('debilidad_id')->references('id')->on('planificacion.foda_models')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });

@@ -17,7 +17,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('planificacion-dashboard', 'Admin\Planificacion\PlanificacionController@dashboard')->name('planificacion-dashboard');
 
     //Rutas de PEI
-    Route::resource('peis', 'Admin\Planificacion\Pei\PeiController');
+    Route::resource('pei-profiles', 'Admin\Planificacion\Pei\PeiController');
     Route::get('peis-crear-sub-nivel/{idNivelSuperior}/{id}', 'Admin\Planificacion\Pei\PeiController@addSubNivel')->name('peis-crear-sub-nivel');
     Route::get('peis-editar-sub-nivel/{idSubNivel}', 'Admin\Planificacion\Pei\PeiController@editarSubNivel')->name('peis-editar-sub-nivel');
     Route::delete('peis-eliminar-nivel/{idNivelSuperior}/{idNivel}', 'Admin\Planificacion\Pei\PeiController@eliminarNivel')->name('peis-eliminar-nivel');
@@ -129,8 +129,8 @@ Route::group(['middleware' => ['auth']], function () {
         //Groups
         Route::resource('groups', 'Admin\Globales\GroupController');
         Route::get('get-root-groups', 'Admin\Globales\GroupController@getRootGroups')->name('get-root-groups');
-        Route::get('get-groups/{idRoot}', 'Admin\Globales\GroupController@getGroupsFromRoot')->name('get-groups');    
-        Route::get('get-foda-users', 'Admin\UserController@getUsers')->name('get-foda-users');
+        Route::get('get-groups/{idRoot}', 'Admin\Globales\GroupController@getGroupsFromRoot')->name('get-groups');
+        Route::get('get-users', 'Admin\UserController@getUsers')->name('get-users');
     });
 
 
@@ -182,7 +182,8 @@ Route::group(['middleware' => ['auth']], function () {
     //Rutas de Elaboración del PEI
     Route::resource('tasks', 'Admin\Planificacion\Task\TaskController');
     Route::resource('tasks-type', 'Admin\Planificacion\Task\TypeTaskController');
-    Route::get('get-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTypeTasks')->name('get-tasks');
+    Route::get('get-tasks', 'Admin\Planificacion\Task\TaskController@getTasks')->name('get-tasks');
+    // Route::get('get-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTypeTasks')->name('get-tasks');
 });
 Auth::routes();
 

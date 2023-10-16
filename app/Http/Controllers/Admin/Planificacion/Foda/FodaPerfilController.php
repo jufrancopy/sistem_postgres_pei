@@ -67,8 +67,6 @@ class FodaPerfilController extends Controller
                 ->make(true);
         }
 
-        $modelos = FodaModelo::orderBy('name', 'ASC')->pluck('name', 'id')->toArray();
-        $categorias = FodaCategoria::orderBy('nombre', 'ASC')->pluck('nombre', 'id')->toArray();
         $dependencies = Organigrama::whereIsRoot()->pluck('dependency', 'id')->toArray();
 
         $categoriasChecked = [];

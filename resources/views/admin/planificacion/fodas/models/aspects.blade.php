@@ -4,7 +4,8 @@
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Lista de Aspectos de la categoría {{ $category->name }}</h4>
+            <h4 class="card-title ">Lista de Aspectos de la categoría {{ $category->name }} ({{ $category->environment }})
+            </h4>
         </div>
 
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">

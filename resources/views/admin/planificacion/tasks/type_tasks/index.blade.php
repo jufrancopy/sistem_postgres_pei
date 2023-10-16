@@ -56,7 +56,7 @@
                                         </div>
 
                                         <div class="form-group">
-                                            {{ Form::label('routes', 'Ambiente:') }}
+                                            {{ Form::label('routes', 'Ruta de la Tarea:') }}
                                             {!! Form::select('route', $arrayRoutes, null, [
                                                 'id' => 'routes',
                                                 'placeholder' => '',

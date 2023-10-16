@@ -258,7 +258,8 @@
 
                     $('#modalShowAspects').modal('show');
                     $('#modalShowAspectsHeading').html("Listado de Aspectos de la categoría " + data
-                        .category.name);
+                        .category.name + " (" + data.category.environment + ")");
+
                     $('#categoryForm').trigger("reset");
 
                     // Limpia la lista existente antes de agregar nuevos elementos
@@ -287,13 +288,18 @@
 
                 $.get("{{ route('foda-models.index') }}" + '/' + categoryID + '/edit', function(data) {
 
-                    $('#modalModelHeading').html("Editar Perfil");
+
+                    $('#modalModelHeading').html("Editar categoría " + data.name + " (" + data
+                        .environment + ")");
                     $('#saveBtn').val("edit-profile");
                     $('#modalCategory').modal('show');
                     $('#categoryForm').trigger("reset");
                     $('#model_id').val(data.id);
                     $('#name').val(data.name);
                     $('#owner').val(data.owner);
+                    $('#environment').select2();
+                    $('#environment').val(data.environment).trigger('change');
+
                     descriptionEditor.setData(data.description);
                 });
             });

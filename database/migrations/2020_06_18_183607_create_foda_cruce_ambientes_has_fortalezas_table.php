@@ -20,7 +20,7 @@ class CreateFodaCruceAmbientesHasFortalezasTable extends Migration
                 ->onUpdate('cascade');
 
             $table->unsignedInteger('fortaleza_id');
-            $table->foreign('fortaleza_id')->references('id')->on('planificacion.foda_aspectos')
+            $table->foreign('fortaleza_id')->references('id')->on('planificacion.foda_models')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });

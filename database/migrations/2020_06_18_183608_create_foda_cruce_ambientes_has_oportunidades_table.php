@@ -20,7 +20,7 @@ class CreateFodaCruceAmbientesHasOportunidadesTable extends Migration
                 ->onUpdate('cascade');
 
             $table->unsignedInteger('oportunidad_id');
-            $table->foreign('oportunidad_id')->references('id')->on('planificacion.foda_aspectos')
+            $table->foreign('oportunidad_id')->references('id')->on('planificacion.foda_models')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });

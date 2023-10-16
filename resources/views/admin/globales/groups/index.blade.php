@@ -4,12 +4,12 @@
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Grupos de Análisis</h4>
+            <h4 class="card-title ">Evento</h4>
         </div>
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Listado de grupo de análisis</li>
+                <li class="breadcrumb-item active" aria-current="page">Lista de Eventos</li>
             </ol>
         </nav>
 
@@ -19,7 +19,7 @@
                     <div class="card-header">
                         <div class="success"></div>
                         <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)" id="createNewGroup">
-                            Agregar nuevo Grupo de Análisis</a>
+                            Nuevo Evento</a>
                     </div>
 
                     <div class="card-body">
@@ -154,7 +154,7 @@
                     $('#saveBtn').val("create-user");
                     $('#group_id').val('');
                     $('#groupForm').trigger("reset");
-                    $('#modalHeading').html("Nuevo Grupo");
+                    $('#modalHeading').html("Nuevo Evento");
                     $('#ajaxModal').modal('show');
                     $('.errors').removeClass("alert alert-danger")
                 });
@@ -162,7 +162,7 @@
                 $('body').on('click', '.editGroup', function() {
                     var groupID = $(this).data('id');
                     $.get("{{ route('globales.groups.index') }}" + '/' + groupID + '/edit', function(data) {
-                        $('#modalHeading').html("Editar Grupo");
+                        $('#modalHeading').html("Editar Evento " + data.group.name);
                         $('#saveBtn').val("edit-user");
                         $('#ajaxModal').modal('show');
                         $('#groupForm').trigger("reset");

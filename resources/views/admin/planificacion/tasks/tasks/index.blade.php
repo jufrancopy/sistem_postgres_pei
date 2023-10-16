@@ -53,7 +53,7 @@
 
                                         <div class="form-group">
                                             {!! Form::label('typetasks', 'Asignar Tareas:') !!}
-                                            {!! Form::select('task_id[]', [], null, [
+                                            {!! Form::select('typetask_id[]', [], null, [
                                                 'class' => 'form-control',
                                                 'style' => 'width:100%',
                                                 'id' => 'typetasks',
@@ -303,10 +303,10 @@
                     // Reinicializar el selector de grupos
                     initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
                 });
-                   
+
 
                 //Analysts
-                var url = '{{ route('globales.get-foda-users') }}';
+                var url = '{{ route('globales.get-users') }}';
                 $("#analysts").val([]).change();
                 $("#analysts").trigger("change");
 

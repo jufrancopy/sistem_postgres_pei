@@ -245,7 +245,6 @@
                     success: function(data) {
                         $('#modelForm').trigger("reset");
                         $('#modalModel').modal('hide');
-                        $(".success").removeAttr("style");
                         table.draw();
                     },
 
