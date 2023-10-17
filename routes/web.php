@@ -18,7 +18,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     //Rutas de PEI
     Route::resource('pei-profiles', 'Admin\Planificacion\Pei\PeiController');
-    Route::get('peis-crear-sub-nivel/{idNivelSuperior}/{id}', 'Admin\Planificacion\Pei\PeiController@addSubNivel')->name('peis-crear-sub-nivel');
+    Route::get('peis-crear-sub-nivel/{id}', 'Admin\Planificacion\Pei\PeiController@addSubNivel')->name('peis-crear-sub-nivel');
     Route::get('peis-editar-sub-nivel/{idSubNivel}', 'Admin\Planificacion\Pei\PeiController@editarSubNivel')->name('peis-editar-sub-nivel');
     Route::delete('peis-eliminar-nivel/{idNivelSuperior}/{idNivel}', 'Admin\Planificacion\Pei\PeiController@eliminarNivel')->name('peis-eliminar-nivel');
     Route::view('peis-dashboard', 'admin.planificacion.peis.index')->name('peis-dashboard');
@@ -182,7 +182,8 @@ Route::group(['middleware' => ['auth']], function () {
     //Rutas de Elaboración del PEI
     Route::resource('tasks', 'Admin\Planificacion\Task\TaskController');
     Route::resource('tasks-type', 'Admin\Planificacion\Task\TypeTaskController');
-    Route::get('get-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTaskType')->name('get-tasks');
+    Route::get('get-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTask')->name('get-tasks');
+    Route::get('get-type-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTaskType')->name('get-type-tasks');
     // Route::get('get-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTypeTasks')->name('get-tasks');
 });
 Auth::routes();

@@ -14,7 +14,7 @@
                 <div class="card">
                     <div class="card-header card-header-info">
                         <h3 class="card-title ">Matriz FODA </h3>
-                        <h4>{{$perfil->nombre}}</h4>
+                        <h4>{{$perfil->name}}</h4>
                         <div class="pull-right">
                             <a class="btn btn-warning" href="{{ route('planificacion-dashboard') }}"> Atras</a>
                         </div>
@@ -43,7 +43,7 @@
                                         <td>
                                             @foreach($debilidades as $v)
                                             <ul>
-                                                <li>{{$v->aspecto->nombre}}
+                                                <li>{{$v->aspecto->name}}
                                                     @switch($v->tipo)
                                                     @case('Fortaleza')
                                                     <p class="badge badge-success">{{$v->tipo}}</p>
@@ -69,7 +69,7 @@
                                         <td>
                                             @foreach($amenazas as $v)
                                             <ul>
-                                                <li>{{$v->aspecto->nombre}}
+                                                <li>{{$v->aspecto->name}}
                                                     @switch($v->tipo)
                                                     @case('Fortaleza')
                                                     <p class="badge badge-success">{{$v->tipo}}</p>
@@ -100,7 +100,7 @@
                                     <td>
                                         @foreach($fortalezas as $v)
                                         <ul>
-                                            <li>{{$v->aspecto->nombre}}
+                                            <li>{{$v->aspecto->name}}
                                                 @switch($v->tipo)
                                                 @case('Fortaleza')
                                                 <p class="badge badge-success">{{$v->tipo}}</p>
@@ -125,7 +125,7 @@
                                     <td>
                                         @foreach($oportunidades as $v)
                                         <ul>
-                                            <li>{{$v->aspecto->nombre}}
+                                            <li>{{$v->aspecto->name}}
                                                 @switch($v->tipo)
                                                 @case('Fortaleza')
                                                 <p class="badge badge-success">{{$v->tipo}}</p>
@@ -153,7 +153,7 @@
 
                                     </tr>
                                 </tbody>
-                                <tfoot>
+                                {{-- <tfoot>
                                     <tr>
                                         <td colspan="2">
                                             <a href="{{ route('foda-cruce-ambientes', $idPerfil) }}" class="btn btn-sm btn-info">
@@ -161,7 +161,7 @@
                                             </a>
                                         </td>
                                     </tr>
-                                </tfoot>
+                                </tfoot> --}}
                             </table>
                         </div>
                     </div>

@@ -30,7 +30,7 @@
                                         <th>ID</th>
                                         <th>Grupo</th>
                                         <th>Analista</th>
-                                        {{-- <th>Tareas</th> --}}
+                                        {{-- <th>IDTAREA</th> --}}
                                         <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>
@@ -215,7 +215,7 @@
 
                     //         return tasksHtml;
                     //     }
-                    // }, 
+                    // },
                     {
                         data: 'action',
                         name: 'action',
@@ -269,7 +269,7 @@
                 detailsEditor.setData('');
 
                 //Type Tasks
-                var url = '{{ route('get-tasks') }}';
+                var url = '{{ route('get-type-tasks') }}';
                 $("#typetasks").val([]).change();
                 $("#typetasks").trigger("change");
 
@@ -283,7 +283,7 @@
                             return {
                                 results: $.map(data, function(item) {
                                     return {
-                                        text: item.name + ' (' + item.model + ')',
+                                        text: item.name ,
                                         id: item.id
                                     };
                                 })

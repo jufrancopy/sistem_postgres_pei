@@ -52,7 +52,7 @@ class FodaAnalisisController extends Controller
 
     public function listadoPerfiles(Request $request)
     {
-        $perfiles = FodaPerfil::nombre($request->get('nombre'))->orderBy('id', 'DESC')->paginate(10);
+        $perfiles = FodaPerfil::orderBy('id', 'DESC')->paginate(10);
 
         return view('admin.planificacion.fodas.analisis.perfiles', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);

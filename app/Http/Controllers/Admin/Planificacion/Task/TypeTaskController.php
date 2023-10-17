@@ -95,7 +95,7 @@ class TypeTaskController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    public function getTaskType(Request $request)
+    public function getTask(Request $request)
     {
         $data = [];
 
@@ -113,6 +113,19 @@ class TypeTaskController extends Controller
         }
 
 
+        return response()->json($data);
+    }
+
+    public function getTaskType(Request $request)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $data = TypeTask::select("id", "name")
+                ->where('name', 'LIKE', "%$search%")
+                ->get();
+        }
         return response()->json($data);
     }
 

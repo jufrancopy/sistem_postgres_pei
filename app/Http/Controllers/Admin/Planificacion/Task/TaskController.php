@@ -24,7 +24,7 @@ class TaskController extends Controller
     public function index(Request $request)
     {
 
-        // dd($data = Task::with('typetaskable')->where('id', 1)->get());
+        // dd($data = Task::with('typeTasks')->where('id', 3)->get());
 
         if ($request->ajax()) {
             $data = Task::latest()->get();
@@ -51,9 +51,9 @@ class TaskController extends Controller
                 })
 
                 ->addColumn('tasks', function (Task $task) {
-                    $taskName = $task->typetaskable->name;
-                    $modelName = get_class($task->typetaskable);
-                    return $taskName . ' (' . $modelName . ')';
+                    // $taskNames = $task->typeTasks->pluck('name')->implode(', ');
+                    $taskNames = $task->typeTasks->pluck('typetaskable_id')->implode(', ');
+                    return $taskNames;
                 })
 
                 ->rawColumns(['action'])
@@ -93,36 +93,7 @@ class TaskController extends Controller
         $task->analysts()->sync($analysts);
 
         $tasks = $request->typetask_id;
-        $typetaskableIds = $tasks; // Valores de typetaskable_id
-        $typetaskableTypes = []; // Valores de typetaskable_type
-
-        $typetaskableTypes = [];
-
-        foreach ($typetaskableIds as $typetaskableId) {
-            $typetask = TypeTask::where('typetaskable_id', $typetaskableId)->first();
-
-            if ($typetask) {
-                $typetaskableTypes[] = $typetask->typetaskable_type;
-            }
-        }
-
-        // Asegúrate de que tengas una instancia válida de Task antes de continuar
-        if ($task) {
-            // Asociar los valores a la relación polimórfica
-            foreach ($typetaskableIds as $key => $typetaskableId) {
-                // Utiliza el método attach en la relación correcta (taskable) según el modelo al que estás asociando
-                // $task->taskable()->attach($typetaskableId, ['typetaskable_type' => $typetaskableTypes[$key]]);
-                try {
-                    // Insertar los valores en la relación polimórfica
-                    $task->taskable()->attach($typetaskableId, ['typetaskable_type' => $typetaskableTypes[$key]]);
-                } catch (\Exception $e) {
-                    // Manejar la excepción, mostrar mensajes de error, o registrar información de depuración
-                    dd($e->getMessage());
-                }
-            }
-        }
-
-
+        $task->typeTasks()->sync($tasks);
 
         if ($task->wasRecentlyCreated) {
             return response()->json(['success' => 'Tarea creado con éxito']);
@@ -167,13 +138,23 @@ class TaskController extends Controller
             $data = [];
             foreach ($tasks as $task) {
                 foreach ($task->typeTasks as $typeTask) {
-                    $data[] = [
-                        'task' => $typeTask->name,
-                        'status' => $task->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
-                        'action' => '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $typeTask->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editTask"><i class="far fa-edit"></i></a>' .
-                            ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $typeTask->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteTask"><i class="fa fa-trash" aria-hidden="true"></i></a>' .
-                            ' <a href="' . route('tasks.show', $typeTask->id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
-                    ];
+                    if ($typeTask->typetaskable_type == "App\Admin\Planificacion\Pei\PeiProfile") {
+
+                        $data[] = [
+                            'task' => $typeTask->name,
+                            'status' => $task->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
+                            'action' => 
+                                ' <a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
+                        ];
+                    } else {
+                        $data[] = [
+                            'task' => $typeTask->name,
+                            'status' => $task->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
+                            'action' => 
+                                ' <a href="' . route('foda-analisis-ambientes', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>'.
+                                ' <a href="' . route('foda-analisis-matriz', $typeTask->typetaskable_id) . '" class="btn btn-warning btn-circle"><i class="fas fa-eye"></i></a>',
+                        ];
+                    }
                 }
             }
 

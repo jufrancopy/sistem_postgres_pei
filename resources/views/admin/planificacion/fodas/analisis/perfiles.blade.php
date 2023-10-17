@@ -48,7 +48,7 @@
                                     @foreach ($perfiles as $key => $perfil)
                                     <tr>
                                         <td>{{ ++$i }}</td>
-                                        <td>{{ $perfil->nombre }}</td>
+                                        <td>{{ $perfil->name }}</td>
                                         <td>{{ $perfil->contexto }}</td>
                                         <td>
                                             <a class="btn btn-sm btn-success" href="{{ route('foda-analisis-ambientes',$perfil->id) }}">
