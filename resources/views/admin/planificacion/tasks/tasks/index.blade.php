@@ -179,49 +179,50 @@
                 },
                 ajax: "{{ route('tasks.index') }}",
                 columns: [{
-                    data: 'DT_RowIndex',
-                    name: 'DT_RowIndex'
-                }, {
-                    data: 'group',
-                    name: 'group'
-                }, {
-                    data: 'analysts',
-                    name: 'analysts',
-                    render: function(data, type, full, meta) {
-                        var analystsArray = data.split(', ');
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex'
+                    }, {
+                        data: 'group',
+                        name: 'group'
+                    }, {
+                        data: 'analysts',
+                        name: 'analysts',
+                        render: function(data, type, full, meta) {
+                            var analystsArray = data.split(', ');
 
-                        var analystsHtml = '';
+                            var analystsHtml = '';
 
-                        analystsArray.forEach(function(task) {
-                            analystsHtml += '<span class="badge badge-secondary">' +
-                                task + '</span> ';
-                        });
+                            analystsArray.forEach(function(task) {
+                                analystsHtml += '<span class="badge badge-secondary">' +
+                                    task + '</span> ';
+                            });
 
-                        return analystsHtml;
-                    }
-                }, 
-                // {
-                //     data: 'tasks',
-                //     name: 'tasks',
-                //     render: function(data, type, full, meta) {
-                //         var tasksArray = data.split(', ');
+                            return analystsHtml;
+                        }
+                    },
+                    // {
+                    //     data: 'tasks',
+                    //     name: 'tasks',
+                    //     render: function(data, type, full, meta) {
+                    //         var tasksArray = data.split(', ');
 
-                //         var tasksHtml = '';
+                    //         var tasksHtml = '';
 
-                //         tasksArray.forEach(function(task) {
-                //             tasksHtml += '<span class="badge badge-secondary">' +
-                //                 task + '</span> ';
-                //         });
+                    //         tasksArray.forEach(function(task) {
+                    //             tasksHtml += '<span class="badge badge-secondary">' +
+                    //                 task + '</span> ';
+                    //         });
 
-                //         return tasksHtml;
-                //     }
-                // }, 
-                {
-                    data: 'action',
-                    name: 'action',
-                    orderable: false,
-                    searchable: false
-                }, ]
+                    //         return tasksHtml;
+                    //     }
+                    // }, 
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
+                    },
+                ]
             });
 
             // Función para inicializar Select2
@@ -289,6 +290,21 @@
                             };
                         },
                         cache: true
+                    }
+                });
+
+                // Agregar un oyente de eventos al selector
+                $('#tasks').on('select2:select', function(e) {
+                    // Obtener el valor seleccionado
+                    var selectedValue = e.params.data;
+
+                    // Verificar si se ha seleccionado algún valor
+                    if (selectedValue) {
+                        // Obtener el valor de item.model de la cadena completa
+                        var modelName = selectedValue.text.match(/\(([^)]+)\)/)[1];
+
+                        // Colocar el valor de item.model en el campo oculto "model"
+                        $('#model').val(modelName);
                     }
                 });
 

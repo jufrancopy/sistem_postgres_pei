@@ -23,7 +23,9 @@ class TaskController extends Controller
 
     public function index(Request $request)
     {
-        dd($data = Task::with('typetaskable')->where('id', 1)->get());
+
+        // dd($data = Task::with('typetaskable')->where('id', 1)->get());
+
         if ($request->ajax()) {
             $data = Task::latest()->get();
             return DataTables::of($data)
@@ -53,8 +55,7 @@ class TaskController extends Controller
                     $modelName = get_class($task->typetaskable);
                     return $taskName . ' (' . $modelName . ')';
                 })
-                
-                
+
                 ->rawColumns(['action'])
                 ->make(true);
         }
@@ -92,7 +93,36 @@ class TaskController extends Controller
         $task->analysts()->sync($analysts);
 
         $tasks = $request->typetask_id;
-        $task->typeTasks()->sync($tasks);
+        $typetaskableIds = $tasks; // Valores de typetaskable_id
+        $typetaskableTypes = []; // Valores de typetaskable_type
+
+        $typetaskableTypes = [];
+
+        foreach ($typetaskableIds as $typetaskableId) {
+            $typetask = TypeTask::where('typetaskable_id', $typetaskableId)->first();
+
+            if ($typetask) {
+                $typetaskableTypes[] = $typetask->typetaskable_type;
+            }
+        }
+
+        // Asegúrate de que tengas una instancia válida de Task antes de continuar
+        if ($task) {
+            // Asociar los valores a la relación polimórfica
+            foreach ($typetaskableIds as $key => $typetaskableId) {
+                // Utiliza el método attach en la relación correcta (taskable) según el modelo al que estás asociando
+                // $task->taskable()->attach($typetaskableId, ['typetaskable_type' => $typetaskableTypes[$key]]);
+                try {
+                    // Insertar los valores en la relación polimórfica
+                    $task->taskable()->attach($typetaskableId, ['typetaskable_type' => $typetaskableTypes[$key]]);
+                } catch (\Exception $e) {
+                    // Manejar la excepción, mostrar mensajes de error, o registrar información de depuración
+                    dd($e->getMessage());
+                }
+            }
+        }
+
+
 
         if ($task->wasRecentlyCreated) {
             return response()->json(['success' => 'Tarea creado con éxito']);

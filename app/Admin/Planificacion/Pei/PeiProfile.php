@@ -54,6 +54,6 @@ class PeiProfile extends Model
 
     public function tasks()
     {
-        return $this->morphMany(Task::class, 'typetaskable', 'typetask_id');
+        return $this->morphMany(Task::class, 'typetaskable', 'typetaskable_id');
     }
 }

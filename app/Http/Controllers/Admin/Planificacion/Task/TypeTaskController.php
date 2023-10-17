@@ -38,13 +38,13 @@ class TypeTaskController extends Controller
                     $taskValue = null;
 
                     // Verifica si el task_id coincide con un registro en FodaPerfil
-                    $fodaProfile = FodaPerfil::where('id', $row->task_id)->first();
+                    $fodaProfile = FodaPerfil::where('id', $row->typetaskable_id)->first();
 
                     if ($fodaProfile) {
                         $taskValue = $fodaProfile->name;
                     } else {
                         // Si no coincide con FodaPerfil, verifica en PeiProfile
-                        $peiProfile = PeiProfile::where('id', $row->task_id)->first();
+                        $peiProfile = PeiProfile::where('id', $row->typetaskable_id)->first();
 
                         if ($peiProfile) {
                             $taskValue = $peiProfile->name;
@@ -57,19 +57,12 @@ class TypeTaskController extends Controller
                 ->addColumn('model', function ($row) {
                     $modelValue = null;
 
-                    // Verifica si el task_id coincide con un registro en FodaPerfil
-                    $fodaProfile = FodaPerfil::select("id", "name", DB::raw("'Análisis FODA' as model"))
-                        ->where('id', $row->task_id)->first();
-
-                    if ($fodaProfile) {
-                        $modelValue = $fodaProfile->model;
-                    } else {
-                        $peiProfile = PeiProfile::select("id", "name", DB::raw("'Definción de Visión, Misión y Valores' as model"))
-                        ->where('id', $row->task_id)->first();
-                        
-                        if ($peiProfile) {
-                            $modelValue = $peiProfile->model;
-                        }
+                    if ($row->typetaskable_type === 'App\Admin\Planificacion\Foda\FodaPerfil') {
+                        // Si es de tipo FodaPerfil
+                        $modelValue = 'Análisis FODA';
+                    } elseif ($row->typetaskable_type === 'App\Admin\Planificacion\Pei\PeiProfile') {
+                        // Si es de tipo PeiProfile
+                        $modelValue = 'Definción de Visión, Misión y Valores';
                     }
 
                     return $modelValue;
@@ -77,13 +70,13 @@ class TypeTaskController extends Controller
 
                 ->addColumn('group', function ($row) {
                     $groupValue = null;
-                    
-                    $fodaProfile = FodaPerfil::where('id', $row->task_id)->first();
-                    
+
+                    $fodaProfile = FodaPerfil::where('id', $row->typetaskable_id)->first();
+
                     if ($fodaProfile) {
                         $groupValue = $fodaProfile->group->name;
                     } else {
-                        $peiProfile = PeiProfile::where('id', $row->task_id)->first();
+                        $peiProfile = PeiProfile::where('id', $row->typetaskable_id)->first();
 
                         if ($peiProfile) {
                             $groupValue = $peiProfile->group->name;
@@ -108,11 +101,11 @@ class TypeTaskController extends Controller
 
         if ($request->has('q')) {
             $search = $request->q;
-            $fodaData = FodaPerfil::select("id", "name", DB::raw("'Análisis FODA' as model"))
+            $fodaData = FodaPerfil::select("id", "name", DB::raw("'App\Admin\Planificacion\Foda\FodaPerfil' as model"))
                 ->where('name', 'LIKE', "%$search%")
                 ->get();
 
-            $peiData = PeiProfile::select("id", "name", DB::raw("'Análisis PEI' as model"))
+            $peiData = PeiProfile::select("id", "name", DB::raw("'App\Admin\Planificacion\Pei\PeiProfile' as model"))
                 ->where('name', 'LIKE', "%$search%")
                 ->get();
 
@@ -122,7 +115,7 @@ class TypeTaskController extends Controller
 
         return response()->json($data);
     }
-        
+
 
     public function store(Request $request)
     {
@@ -137,11 +130,14 @@ class TypeTaskController extends Controller
             );
         };
 
+
         $typeTask = TypeTask::updateOrCreate(
             ['id' => $request->typeTask_id],
             [
-                'task_id' => $request->task_id,
                 'name' => $request->name,
+                'typetaskable_id' => $request->task_id,
+                'typetaskable_type' => $request->typetaskable_type,
+
             ]
         );
 
