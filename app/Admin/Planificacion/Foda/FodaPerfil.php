@@ -55,14 +55,6 @@ class FodaPerfil extends Model
 
     public function tasks()
     {
-        return $this->morphMany(Task::class, 'typetaskable', 'typetask_id');
-    }
-
-    public function scopeNombre($query, $nombre)
-    {
-        if (trim($nombre) != "") {
-
-            $query->where(DB::raw("CONCAT(nombre, ' ', contexto)"), 'LIKE', "%$nombre%");
-        }
+        return $this->morphMany(Task::class, 'typetaskable', 'typetaskable_id');
     }
 }

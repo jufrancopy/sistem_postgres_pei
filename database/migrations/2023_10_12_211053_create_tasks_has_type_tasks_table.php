@@ -21,7 +21,8 @@ class CreateTasksHasTypeTasksTable extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->uuid('typetask_id');
+            $table->uuid('taskable_id');
+            $table->string('taskable_type');
             $table->timestamps();
         });
     }

@@ -26,7 +26,7 @@ class Task extends Model
 
     public function typeTasks()
     {
-        return $this->belongsToMany('App\Admin\Planificacion\Task\TypeTask', 'planificacion.tasks_has_type_tasks', 'task_id', 'typetask_id');
+        return $this->belongsToMany('App\Admin\Planificacion\Task\TypeTask', 'planificacion.tasks_has_type_tasks', 'task_id', 'typetaskable_id');
     }
 
     public function group()
@@ -34,10 +34,8 @@ class Task extends Model
         return $this->belongsTo(Group::class);
     }
 
-    public function typetaskable()
+    public function taskable()
     {
-        return $this->morphTo('typetaskable', 'typetask_id');
+        return $this->morphTo('taskable', 'taskable_id');
     }
-    // Definir la relación 'tasks' aquí
-    
 }

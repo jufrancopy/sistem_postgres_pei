@@ -11,5 +11,10 @@ class TypeTask extends Model
 
     protected $table = "planificacion.typetasks";
 
-    protected $fillable = ['task_id', 'name'];
+    protected $fillable = ['typetaskable_id', 'name', 'typetaskable_type'];
+
+    public function typetaskable()
+    {
+        return $this->morphTo('typetaskable', 'typetaskable_id');
+    }
 }

@@ -51,6 +51,7 @@
                                     <form id="typeTaskForm" name="typeTaskForm" class="form-horizontal">
                                         {{ Form::hidden('typeTask_id', null, ['id' => 'typeTask_id']) }}
                                         {{ Form::hidden('name', null, ['class' => 'form-control', 'id' => 'name']) }}
+                                        {{ Form::hidden('typetaskable_type', null, ['class' => 'form-control', 'id' => 'model']) }}
 
                                         <div class="form-group">
                                             {{ Form::label('task', 'Ruta de la Tarea:') }}
@@ -193,13 +194,24 @@
                     });
 
                     // Agregar un oyente de eventos al selector
-                    $('#tasks').on('change', function(e) {
+                    $('#tasks').on('select2:select', function(e) {
                         // Obtener el valor seleccionado
-                        var selectedValue = $('#tasks').select2('data')[0];
+                        var selectedValue = e.params.data;
 
-                        // Colocar el valor en el input de texto
-                        $('#name').val(selectedValue.text);
+                        // Verificar si se ha seleccionado algún valor
+                        if (selectedValue) {
+                            // Obtener el valor de item.model de la cadena completa
+                            var modelName = selectedValue.text.match(/\(([^)]+)\)/)[1];
+
+                            // Colocar el valor de item.model en el campo oculto "model"
+                            $('#model').val(modelName);
+
+                            // Colocar el valor en el input de texto
+                            $('#name').val(selectedValue.text);
+                        }
                     });
+
+
                 });
 
                 $('body').on('click', '.editTypeTask', function() {
