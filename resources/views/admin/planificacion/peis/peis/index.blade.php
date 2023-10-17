@@ -369,7 +369,7 @@
                     });
                 });
 
-                $('body').on('click', '.deleteGroup', function() {
+                $('body').on('click', '.deleteProfile', function() {
                     Swal.fire({
                         title: 'Estás seguro de eliminarlo?',
                         text: "Si lo haces, no podras revertirlo!",
@@ -385,10 +385,10 @@
                                 'El registro ha sido eliminado correctamente.',
                                 'success'
                             )
-                            var cicle_id = $(this).data("id");
+                            var profileID = $(this).data("id");
                             $.ajax({
                                 type: "DELETE",
-                                url: "{{ route('globales.groups.store') }}" + '/' + cicle_id,
+                                url: "{{ route('pei-profiles.store') }}" + '/' + profileID,
                                 success: function(data) {
                                     table.draw();
                                 },

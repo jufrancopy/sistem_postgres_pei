@@ -30,12 +30,14 @@
                     <th class="">Nombre</th>
                     <th class="">Correo</th>
                 </thead>
-                <tbody>
-                    @foreach ($members as $member)
+                @foreach ($members as $member)
+                    <tbody>
+
                         <td class="">{{ $member->name }}</td>
                         <td class="">{{ $member->email }}</td>
-                    @endforeach
-                </tbody>
+
+                    </tbody>
+                @endforeach
             </table>
         </div>
 
