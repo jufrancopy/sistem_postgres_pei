@@ -7,10 +7,26 @@
             <h4 class="card-title ">Módulo de Planificación Estratégica</h4>
         </div>
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Módulo de Planificación Estratégica</li>
-            </ol>
+            @php
+                $taskShowUrl = request()->cookie('task_show_url');
+            @endphp
+
+
+            @if ($taskShowUrl)
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ $taskShowUrl }}">Lista de Tareas</a>
+
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Módulo de Planificación Estratégica</li>
+                </ol>
+            @else
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Módulo de Planificación Estratégica</li>
+                </ol>
+            @endif
+
         </nav>
 
         <div class="row">

@@ -37,11 +37,12 @@ class LoginController extends Controller
         $this->middleware('guest')->except('logout');
     }
 
-    public function authenticated($request , $user){
-        if($user->role=='Administrador'){
-            return redirect()->route('admin') ;
-        }else{
-            return redirect()->route('globales.organigramas.index') ;
+    public function authenticated($request, $user)
+    {
+        if ($user->role == 'Administrador') {
+            return redirect()->route('admin');
+        } else {
+            return redirect()->route('tasks.index');
         }
     }
 }

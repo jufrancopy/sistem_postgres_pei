@@ -18,7 +18,8 @@ class FodaCruceAmbienteController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware(['auth', 'role:Administrador']);
+        $this->middleware(['auth', 'role:Analista']);
     }
 
     public function index(Request $request, $idPerfil)

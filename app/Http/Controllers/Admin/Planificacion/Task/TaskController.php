@@ -6,28 +6,40 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Response;
 
 //Models
 use App\Admin\Planificacion\Task\Task;
 use App\Admin\Planificacion\Task\TypeTask;
 use App\Admin\Planificacion\Foda\FodaPerfil;
 use App\Admin\Planificacion\Pei\PeiProfile;
+use Spatie\Permission\Contracts\Permission;
+use Spatie\Permission\Contracts\Role;
+
 
 
 class TaskController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware(['auth', 'role:Administrador|Analista']);
     }
 
     public function index(Request $request)
     {
-
-        // dd($data = Task::with('typeTasks')->where('id', 3)->get());
-
         if ($request->ajax()) {
-            $data = Task::latest()->get();
+            // Obtener el usuario autenticado
+            $user = auth()->user();
+
+            // Comprobar si el usuario es un administrador
+            if ($user->hasRole('Administrador')) {
+                $data = Task::latest()->get();
+            } else {
+                // Filtrar tareas asignadas al usuario analista actual
+                $data = Task::whereHas('analysts', function ($query) use ($user) {
+                    $query->where('analyst_id', $user->id);
+                })->latest()->get();
+            }
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
@@ -142,16 +154,16 @@ class TaskController extends Controller
 
                         $data[] = [
                             'task' => $typeTask->name,
-                            'status' => $task->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
-                            'action' => 
-                                ' <a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
+                            'status' => $typeTask->pivot->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
+                            'action' =>
+                            ' <a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
                         ];
                     } else {
                         $data[] = [
                             'task' => $typeTask->name,
-                            'status' => $task->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
-                            'action' => 
-                                ' <a href="' . route('foda-analisis-ambientes', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>'.
+                            'status' => $typeTask->pivot->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
+                            'action' =>
+                            ' <a href="' . route('foda-analisis-ambientes', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>' .
                                 ' <a href="' . route('foda-analisis-matriz', $typeTask->typetaskable_id) . '" class="btn btn-warning btn-circle"><i class="fas fa-eye"></i></a>',
                         ];
                     }
@@ -178,11 +190,12 @@ class TaskController extends Controller
             $members = $group->members; // Obtén los miembros del grupo.
         }
 
+        $taskShowUrl = route('tasks.show', $id);
+        $response = new Response(view('admin.planificacion.tasks.tasks.show', get_defined_vars()));
+        $response->withCookie(cookie('task_show_url', $taskShowUrl, 60)); // Ajusta la duración según tus necesidades
 
         return view('admin.planificacion.tasks.tasks.show', get_defined_vars());
     }
-
-
 
     public function destroy(Request $request, $id)
     {

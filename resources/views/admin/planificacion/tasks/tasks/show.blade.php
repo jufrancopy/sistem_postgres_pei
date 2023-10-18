@@ -212,7 +212,16 @@
                         },
                         {
                             data: 'status',
-                            name: 'status'
+                            name: 'status',
+                            render: function(data, type, row) {
+                                console.log(row)
+                                if (row.status === 0) {
+                                    return '<span class="badge badge-danger">PENDIENTE</span>';
+                                } else if (row.status == 1) {
+                                    return '<span class="badge badge-success">PROCESADO</span>';
+                                }
+                            }
+
                         },
                         {
                             data: 'action',
