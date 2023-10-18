@@ -48,10 +48,12 @@
             </li>
         </ul>
     @else
+        
+
         <li class="nav-item ">
-            <a class="nav-link" href="{{ route('planificacion-dashboard') }}">
+            <a class="nav-link" href="{{ route('tasks.index') }}">
                 <i class="material-icons">assignment</i>
-                <p>Planificacion</p>
+                <p>Tareas</p>
             </a>
         </li>
     @endhasanyrole

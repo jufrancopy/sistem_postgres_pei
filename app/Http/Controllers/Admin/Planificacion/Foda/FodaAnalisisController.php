@@ -27,9 +27,7 @@ class FodaAnalisisController extends Controller
         // $this->middleware('permission:role-edit', ['only' => ['edit', 'update']]);
         // $this->middleware('permission:role-delete', ['only' => ['destroy']]);
         // $this->middleware(['auth', 'role:Administrador']);
-
-        $this->middleware('permission:task-list');
-        $this->middleware(['auth', 'role:Analista']);
+        // $this->middleware(['auth', 'role:Analista']);
     }
     /**
      * Display a listing of the resource.
