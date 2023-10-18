@@ -26,12 +26,16 @@
                                     <p class="card-category">Peis</p>
                                     <h3 class="card-title">{{ $totalPeiPerfil }}</h3>
                                 </div>
+
                                 <div class="card-footer">
                                     <div class="stats">
-                                        <i class="material-icons">search</i>
-                                        <a href="{{ route('pei-profiles.index') }}">Ver todo</a>
+                                        @hasanyrole('Administrador')
+                                            <i class="material-icons">search</i>
+                                            <a href="{{ route('pei-profiles.index') }}">Ver todo</a>
+                                        @endhasanyrole
                                     </div>
                                 </div>
+
                             </div>
                         </div>
 
@@ -46,8 +50,10 @@
                                 </div>
                                 <div class="card-footer">
                                     <div class="stats">
-                                        <i class="material-icons">search</i>
-                                        <a href="{{ route('foda-perfiles.index') }}">Ver todo</a>
+                                        @hasanyrole('Administrador')
+                                            <i class="material-icons">search</i>
+                                            <a href="{{ route('foda-perfiles.index') }}">Ver todo</a>
+                                        @endhasanyrole
                                     </div>
                                 </div>
                             </div>
@@ -70,11 +76,15 @@
                 children: [{
                         name: 'Tareas',
                         children: [{
-                            name: '<a href="{{ route('tasks.index') }}">Tareas</a>'
-                        }, {
-                            name: '<a href="{{ route('tasks-type.index') }}">Tipos de Tarea</a>'
-                        }, ]
-                    }, {
+                                name: '<a href="{{ route('tasks.index') }}">Tareas</a>'
+                            },
+
+                            {
+                                name: '<a href="{{ route('tasks-type.index') }}">Tipos de Tarea</a>'
+                            },
+                        ]
+                    },
+                    {
                         name: 'Perfiles de Planificacion Estrategica',
                         children: [{
                             name: '<a href="{{ route('pei-profiles.index') }}">Pei</a>'
