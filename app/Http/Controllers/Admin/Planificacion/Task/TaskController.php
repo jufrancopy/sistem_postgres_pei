@@ -150,7 +150,7 @@ class TaskController extends Controller
             $data = [];
             foreach ($tasks as $task) {
                 foreach ($task->typeTasks as $typeTask) {
-                    if ($typeTask->typetaskable_type == "App\Admin\Planificacion\Pei\PeiProfile") {
+                    if ($typeTask->typetaskable_type == "PEI") {
 
                         $data[] = [
                             'task' => $typeTask->name,
@@ -192,7 +192,7 @@ class TaskController extends Controller
 
         $taskShowUrl = route('tasks.show', $id);
         $response = new Response(view('admin.planificacion.tasks.tasks.show', get_defined_vars()));
-        $response->withCookie(cookie('task_show_url', $taskShowUrl, 60)); // Ajusta la duración según tus necesidades
+        $response->withCookie(cookie('task_show_url', $taskShowUrl, 60)); 
 
         return view('admin.planificacion.tasks.tasks.show', get_defined_vars());
     }

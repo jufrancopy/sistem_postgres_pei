@@ -57,10 +57,10 @@ class TypeTaskController extends Controller
                 ->addColumn('model', function ($row) {
                     $modelValue = null;
 
-                    if ($row->typetaskable_type === 'App\Admin\Planificacion\Foda\FodaPerfil') {
+                    if ($row->typetaskable_type === 'FODA') {
                         // Si es de tipo FodaPerfil
                         $modelValue = 'Análisis FODA';
-                    } elseif ($row->typetaskable_type === 'App\Admin\Planificacion\Pei\PeiProfile') {
+                    } elseif ($row->typetaskable_type === 'PEI') {
                         // Si es de tipo PeiProfile
                         $modelValue = 'Definción de Visión, Misión y Valores';
                     }
@@ -101,11 +101,11 @@ class TypeTaskController extends Controller
 
         if ($request->has('q')) {
             $search = $request->q;
-            $fodaData = FodaPerfil::select("id", "name", DB::raw("'App\Admin\Planificacion\Foda\FodaPerfil' as model"))
+            $fodaData = FodaPerfil::select("id", "name", DB::raw("'FODA' as model"))
                 ->where('name', 'LIKE', "%$search%")
                 ->get();
 
-            $peiData = PeiProfile::select("id", "name", DB::raw("'App\Admin\Planificacion\Pei\PeiProfile' as model"))
+            $peiData = PeiProfile::select("id", "name", DB::raw("'PEI' as model"))
                 ->where('name', 'LIKE', "%$search%")
                 ->get();
 

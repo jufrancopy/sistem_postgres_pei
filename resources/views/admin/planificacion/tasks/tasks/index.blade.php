@@ -406,7 +406,7 @@
                 });
             });
 
-            $('body').on('click', '.deleteTypeTask', function() {
+            $('body').on('click', '.deleteTask', function() {
                 Swal.fire({
                     title: 'Estás seguro de eliminarlo?',
                     text: "Si lo haces, no podras revertirlo!",
