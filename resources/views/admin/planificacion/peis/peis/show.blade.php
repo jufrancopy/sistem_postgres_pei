@@ -32,8 +32,6 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-
-
                     <div class="card-body">
                         <div class="card mision">
                             <div class="card-header">
@@ -118,16 +116,16 @@
                     <div class="modal fade ajaxMisionModal" id="ajaxMisionModal" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title" id="modalHeading"></h4>
+                                <div class="card-header card-header-info">
+                                    <h4 class="modal-title" id="modalHeadingMision"></h4>
                                 </div>
                                 <div class="modal-body">
                                     <form id="misionForm" name="misionForm" class="form-horizontal">
 
-                                        {{ Form::text('profile_id', null, ['id' => 'profile_id']) }}
+                                        {{ Form::hidden('profile_id', null, ['id' => 'profile_id']) }}
                                         {{ Form::hidden('parent_id', null, ['id' => 'parent_id']) }}
-                                        {{ Form::text('name', null, ['id' => 'name']) }}
-                                        {{ Form::text('group_id', null, ['id' => 'group_id']) }}
+                                        {{ Form::hidden('name', null, ['id' => 'name']) }}
+                                        {{ Form::hidden('group_id', null, ['id' => 'group_id']) }}
                                         {{ Form::hidden('type', 'institucional', ['id' => 'type']) }}
                                         {{ Form::hidden('vision', null, ['class' => 'form-control', 'id' => 'vision']) }}
                                         {{ Form::hidden('values', null, ['class' => 'form-control', 'id' => 'values']) }}
@@ -168,19 +166,19 @@
                     <div class="modal fade" id="ajaxVisionModal" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title" id="modalHeading"></h4>
+                                <div class="card-header card-header-info">
+                                    <h4 class="modal-title" id="modalHeadingVision"></h4>
                                 </div>
                                 <div class="modal-body">
                                     <form id="visionForm" name="visionForm" class="form-horizontal">
 
-                                        {{ Form::text('profile_id', null, ['id' => 'vision_profile_id']) }}
+                                        {{ Form::hidden('profile_id', null, ['id' => 'vision_profile_id']) }}
                                         {{ Form::hidden('parent_id', null, ['id' => 'parent_id']) }}
-                                        {{ Form::text('name', null, ['id' => 'vision_name']) }}
-                                        {{ Form::text('group_id', null, ['id' => 'vision_group_id']) }}
-                                        {{ Form::text('mision', null, ['id' => 'vision_mision']) }}
+                                        {{ Form::hidden('name', null, ['id' => 'vision_name']) }}
+                                        {{ Form::hidden('group_id', null, ['id' => 'vision_group_id']) }}
                                         {{ Form::hidden('type', 'institucional', ['id' => 'type']) }}
-                                        {{ Form::text('values', null, ['class' => 'form-control', 'id' => 'vision_values']) }}
+                                        {{ Form::hidden('mision', null, ['id' => 'vision_mision']) }}
+                                        {{ Form::hidden('values', null, ['class' => 'form-control', 'id' => 'vision_values']) }}
                                         {{ Form::hidden('period', null, ['class' => 'form-control', 'id' => 'period']) }}
                                         {{ Form::hidden('numerator', null, ['class' => 'form-control', 'id' => 'numerator']) }}
                                         {{ Form::hidden('operator', null, ['class' => 'form-control', 'id' => 'numerator']) }}
@@ -214,18 +212,20 @@
                     <div class="modal fade" id="ajaxValuesModal" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title" id="modalHeading"></h4>
+
+                                <div class="card-header card-header-info">
+                                    <h4 class="modal-title" id="modalHeadingValues"></h4>
                                 </div>
+
                                 <div class="modal-body">
                                     <form id="valuesForm" name="valuesForm" class="form-horizontal">
 
-                                        {{ Form::text('profile_id', null, ['id' => 'values_profile_id']) }}
+                                        {{ Form::hidden('profile_id', null, ['id' => 'values_profile_id']) }}
                                         {{ Form::hidden('parent_id', null, ['id' => 'parent_id']) }}
-                                        {{ Form::text('name', null, ['id' => 'values_name']) }}
-                                        {{ Form::text('group_id', null, ['id' => 'values_group_id']) }}
-                                        {{ Form::text('mision', null, ['id' => 'values_mision']) }}
-                                        {{ Form::text('vision', null, ['id' => 'values_vision']) }}
+                                        {{ Form::hidden('name', null, ['id' => 'values_name']) }}
+                                        {{ Form::hidden('group_id', null, ['id' => 'values_group_id']) }}
+                                        {{ Form::hidden('mision', null, ['id' => 'values_mision']) }}
+                                        {{ Form::hidden('vision', null, ['id' => 'values_vision']) }}
                                         {{ Form::hidden('type', 'institucional', ['id' => 'type']) }}
                                         {{ Form::hidden('period', null, ['class' => 'form-control', 'id' => 'period']) }}
                                         {{ Form::hidden('numerator', null, ['class' => 'form-control', 'id' => 'numerator']) }}
@@ -256,6 +256,55 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="modal fade" id="ajaxEjesModal" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+
+                                <div class="card-header card-header-info">
+                                    <h4 class="modal-title" id="modalEjes"></h4>
+                                </div>
+
+                                <div class="modal-body">
+                                    <form id="ejesForm" name="ejesForm" class="form-horizontal">
+
+                                        {{ Form::hidden('profile_id', null, ['id' => 'values_profile_id']) }}
+                                        {{ Form::hidden('parent_id', null, ['id' => 'parent_id']) }}
+                                        {{ Form::hidden('name', null, ['id' => 'values_name']) }}
+                                        {{ Form::hidden('group_id', null, ['id' => 'values_group_id']) }}
+                                        {{ Form::hidden('mision', null, ['id' => 'values_mision']) }}
+                                        {{ Form::hidden('vision', null, ['id' => 'values_vision']) }}
+                                        {{ Form::hidden('type', 'institucional', ['id' => 'type']) }}
+                                        {{ Form::hidden('period', null, ['class' => 'form-control', 'id' => 'period']) }}
+                                        {{ Form::hidden('numerator', null, ['class' => 'form-control', 'id' => 'numerator']) }}
+                                        {{ Form::hidden('operator', null, ['class' => 'form-control', 'id' => 'numerator']) }}
+                                        {{ Form::hidden('denominator', null, ['class' => 'form-control', 'id' => 'denominator']) }}
+                                        {{ Form::hidden('goal', null, ['class' => 'form-control', 'id' => 'goal']) }}
+                                        {{ Form::hidden('progress', null, ['class' => 'form-control', 'id' => 'progress']) }}
+
+                                        <div class="ejes mb-2">
+                                            {{ Form::label('ejes', 'Ejes:', ['class' => 'control-label']) }}
+                                            {{ Form::textarea('ejes', null, [
+                                                'class' => 'form-control editor',
+                                                'id' => 'ejes',
+                                            ]) }}
+                                        </div>
+
+                                        <div class="col-sm-offset-2 col-sm-10">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">Cerrar</button>
+                                            <button type="submit" class="btn btn-success" id="saveBtnValues"
+                                                value="create">Guardar
+                                                cambios
+                                            </button>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -391,7 +440,11 @@
                 $('body').on('click', '#createMision', function() {
                     var profileID = $(this).data('id');
                     $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                        $('#modalHeading').html("Misión " + data.profile.name);
+                        if (data.profile.mision === null) {
+                            $('#modalHeadingMision').html("Misión");
+                        } else {
+                            $('#modalHeadingMision').html(data.profile.mision);
+                        }
                         $('#saveBtnMision').val("edit-mision");
                         $('#ajaxMisionModal').modal('show');
                         $('#misionForm').trigger("reset");
@@ -409,7 +462,11 @@
                 $('body').on('click', '#createVision', function() {
                     var profileID = $(this).data('id');
                     $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                        $('#modalHeading').html("Misión " + data.profile.name);
+                        if (data.profile.mision === null) {
+                            $('#modalHeadingVision').html("Visión");
+                        } else {
+                            $('#modalHeadingVision').html(data.profile.vision);
+                        }
                         $('#saveBtn').val("edit-profile");
                         $('#ajaxVisionModal').modal('show');
                         $('#visionForm').trigger("reset");
@@ -428,7 +485,7 @@
                 $('body').on('click', '#createValues', function() {
                     var profileID = $(this).data('id');
                     $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                        $('#modalHeading').html("Valores");
+                        $('#modalHeadingValues').html("Valores");
                         $('#saveBtnValues').val("edit-values");
                         $('#ajaxValuesModal').modal('show');
                         $('#valuesForm').trigger("reset");
@@ -439,6 +496,24 @@
                         $('#values_group_id').val(data.profile.group_id);
                         $('#values_mision').val(data.profile.mision);
                         $('#values_vision').val(data.profile.vision);
+                        valuesEditor.setData(data.profile.values);
+                    });
+                });
+
+                $('body').on('click', '#createEjes', function() {
+                    var profileID = $(this).data('id');
+                    $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
+                        $('#modalHeadingEjes').html("Ejes");
+                        $('#saveBtnEjes').val("edit-ejes");
+                        $('#ajaxEjesModal').modal('show');
+                        $('#ejesForm').trigger("reset");
+                        $('#ejes_profile_id').val(data.profile.id);
+                        $('#ejes_name').val(data.profile.name);
+                        $('#ejes_type').val(data.profile.type);
+                        $('#ejes_group_id').val(data.profile.group_id);
+                        $('#ejes_mision').val(data.profile.mision);
+                        $('#ejes_vision').val(data.profile.vision);
+                        $('#ejes_eje').val(data.profile.ejes);
                         valuesEditor.setData(data.profile.values);
                     });
                 });
