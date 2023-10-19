@@ -13,6 +13,8 @@
                 <li class="breadcrumb-item active" aria-current="page">{{ $task->group->name }} - Lista Tareas</li>
             </ol>
         </nav>
+
+
         <div class="card-header">
             <h5 class="card-title ">Ficha Técnica</h5>
             <ul class="list-group list-group-flush">
@@ -231,6 +233,12 @@
                         }
                     ]
                 });
+
+                // Captura el valor de data-task-id
+                var taskID = {{ $task->id }};
+
+                // Guarda el valor en el localStorage
+                localStorage.setItem('taskID', taskID);
 
                 // Función para inicializar Select2
                 function initializeSelect2(selector, placeholder, url) {
