@@ -17,9 +17,10 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <div class="success"></div>
-                        <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)" id="createNewTasks">
-                            Agregar Nueva Tarea</a>
+                        @hasanyrole('Administrador')
+                            <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)" id="createNewTasks">
+                                Agregar Nueva Tarea</a>
+                        @endhasanyrole
                     </div>
 
                     <div class="card-body">
@@ -283,7 +284,7 @@
                             return {
                                 results: $.map(data, function(item) {
                                     return {
-                                        text: item.name ,
+                                        text: item.name,
                                         id: item.id
                                     };
                                 })
