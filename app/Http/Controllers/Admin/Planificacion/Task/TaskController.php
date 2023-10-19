@@ -16,7 +16,7 @@ use App\Admin\Planificacion\Pei\PeiProfile;
 use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Contracts\Role;
 
-
+use Illuminate\Support\Facades\Cookie;
 
 class TaskController extends Controller
 {
@@ -161,15 +161,15 @@ class TaskController extends Controller
                             'task' => $typeTask->name,
                             'status' => $typeTask->pivot->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
                             'action' =>
-                            ' <a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
+                            ' <a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-task-id="' . $id . '"><i class="fas fa-tasks"></i></a>',
                         ];
                     } else {
                         $data[] = [
                             'task' => $typeTask->name,
                             'status' => $typeTask->pivot->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
                             'action' =>
-                            ' <a href="' . route('foda-analisis-ambientes', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>' .
-                                ' <a href="' . route('foda-analisis-matriz', $typeTask->typetaskable_id) . '" class="btn btn-warning btn-circle"><i class="fas fa-eye"></i></a>',
+                            ' <a href="' . route('foda-analisis-ambientes', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle routeId" data-task-id="' . $id . '"><i class="fas fa-tasks"></i></a>' .
+                                ' <a href="' . route('foda-analisis-matriz', $typeTask->typetaskable_id) . '" class="btn btn-warning btn-circle routeId" data-task-id="' . $id . '"><i class="fas fa-eye"></i></a>',
                         ];
                     }
                 }
@@ -194,10 +194,8 @@ class TaskController extends Controller
             $group = $task->group; // Obtén el grupo asociado a la tarea.
             $members = $group->members; // Obtén los miembros del grupo.
         }
-
         $taskShowUrl = route('tasks.show', $id);
-        $response = new Response(view('admin.planificacion.tasks.tasks.show', get_defined_vars()));
-        $response->withCookie(cookie('task_show_url', $taskShowUrl, 60));
+        Cookie::queue('tasks', $taskShowUrl, 60);
 
         return view('admin.planificacion.tasks.tasks.show', get_defined_vars());
     }
