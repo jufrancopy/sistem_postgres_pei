@@ -43,15 +43,20 @@ class TaskController extends Controller
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
+                    $user = auth()->user();
+                    $buttons = '';
 
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editTask"><i class="far fa-edit"></i></a>';
+                    // Verifica si el usuario es Administrador
+                    if ($user->hasRole('Administrador')) {
+                        // Si es Administrador, muestra los botones de edición y eliminación
+                        $buttons .= '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editTask"><i class="far fa-edit"></i></a>';
+                        $buttons .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteTask"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+                    }
 
-                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteTask"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+                    // Siempre muestra el botón 'View' sin importar el rol
+                    $buttons .= ' <a href="' . route('tasks.show', $row->id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>';
 
-                    $btn = $btn . ' <a href="' . route('tasks.show', $row->id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>';
-
-
-                    return $btn;
+                    return $buttons;
                 })
                 ->addColumn('group', function (Task $task) {
                     return $task->group->name;
@@ -192,7 +197,7 @@ class TaskController extends Controller
 
         $taskShowUrl = route('tasks.show', $id);
         $response = new Response(view('admin.planificacion.tasks.tasks.show', get_defined_vars()));
-        $response->withCookie(cookie('task_show_url', $taskShowUrl, 60)); 
+        $response->withCookie(cookie('task_show_url', $taskShowUrl, 60));
 
         return view('admin.planificacion.tasks.tasks.show', get_defined_vars());
     }
