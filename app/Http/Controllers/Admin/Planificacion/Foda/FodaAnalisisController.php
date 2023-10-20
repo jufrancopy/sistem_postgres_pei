@@ -16,6 +16,7 @@ use App\Admin\Planificacion\Foda\FodaCategoria;
 use App\Admin\Planificacion\Foda\FodaPerfil;
 use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaModelo;
+use App\Admin\Globales\Group;
 
 class FodaAnalisisController extends Controller
 {
@@ -29,11 +30,7 @@ class FodaAnalisisController extends Controller
         // $this->middleware(['auth', 'role:Administrador']);
         // $this->middleware(['auth', 'role:Analista']);
     }
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index(Request $request)
     {
         $analizados = FodaAnalisis::orderBy('id', 'ASC')->get();
@@ -133,6 +130,43 @@ class FodaAnalisisController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
+    public function getMatrizForGroup()
+    {
+        return view('admin.planificacion.fodas.matrices.matriz_for_group');
+    }
+
+    public function dataTreeGroup()
+    {
+        $items = Group::orderBy('id', 'ASC')->withDepth()->get()->linkNodes();
+
+        $result = [];
+        foreach ($items as $item) {
+            if ($item) {
+                $btnCreate = '<a class="btn btn-success btn-circle mr-2" href="javascript:void(0)" data-id="' . $item->id . '" id="newItem"><i class="fa fa-plus"></i></a>';
+                $btnEdit = '<a class="btn btn-info btn-circle mr-2" href="javascript:void(0)" data-id=" ' . $item->id . ' " id="editCareer"><i class="fa fa-edit"></i></a>';
+                $btnDelete = '<a class="btn btn-danger btn-circle" href="javascript:void(0)" data-id=" ' . $item->id . ' " id="deleteItem"><i class="fa fa-trash"></i></a>';
+                $parent = $item->parent_id ?: '#';
+                $node = [
+                    'id' => $item->id,
+                    'state' => ['opened' => true],
+                    'parent' => $parent,
+                    'text' => $item->name . $btnCreate . $btnEdit . $btnDelete,
+                ];
+                array_push($result, $node);
+            } else {
+                $parent = $item->parent_id ?: '#';
+                $node = [
+                    'id' => $item->id,
+                    'state' => ['opened' => true],
+                    'parent' => $parent,
+                    'text' => $item->name
+                ];
+                array_push($result, $node);
+            }
+        }
+        return response()->json($result);
+    }
+
     public function listadoCategoriaAspectos(Request $request)
     {
         $idPerfil = $request->idPerfil;
@@ -223,11 +257,6 @@ class FodaAnalisisController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create(Request $request)
     {
         $idPerfil = $request->idPerfil;
@@ -240,12 +269,6 @@ class FodaAnalisisController extends Controller
         return view('admin.planificacion.fodas.analisis.create', get_defined_vars());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $count = count($request->input('aspecto_id'));
@@ -269,12 +292,6 @@ class FodaAnalisisController extends Controller
             ->with('success', 'Aspectos Listos para analizar');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show(Request $request, $id)
     {
         $analizados = FodaAnalisis::where('aspecto_id', '=', $id)->get();
@@ -306,13 +323,6 @@ class FodaAnalisisController extends Controller
         return view('admin.planificacion.fodas.analisis.edit', get_defined_vars());
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         $analisis = FodaAnalisis::find($id);

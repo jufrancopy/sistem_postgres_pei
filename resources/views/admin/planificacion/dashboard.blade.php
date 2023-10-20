@@ -101,6 +101,9 @@
                             {
                                 name: '<a href="{{ route('foda-listado-perfiles') }}">Cruce de Ambientes</a>'
                             },
+                            {
+                                name: '<a href="{{ route('foda-matriz-group') }}">Matriz FODA</a>'
+                            },
                         ]
                     },
                     {
