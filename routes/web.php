@@ -178,6 +178,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-aspectos-elegir-modelo', 'Admin\Planificacion\Foda\FodaAspectoController@elegirModelo')->name('foda-aspectos-elegir-modelo');
     Route::get('/foda-perfiles-modelo/{id}/categorias', 'Admin\Planificacion\Foda\FodaPerfilController@getCategorias');
     Route::get('foda-perfiles/{idPerfil}/add-group', 'Admin\Planificacion\Foda\FodaPerfilController@addGroup')->name('foda.add.group');
+    Route::get('foda-matriz-group/', 'Admin\Planificacion\Foda\FodaAnalisisController@getMatrizForGroup')->name('foda-matriz-group');
+    Route::get('tree-group', 'Admin\Planificacion\Foda\FodaAnalisisController@dataTreeGroup')->name('tree-group');
+
 
     //Rutas de Elaboración del PEI
     Route::resource('tasks', 'Admin\Planificacion\Task\TaskController');

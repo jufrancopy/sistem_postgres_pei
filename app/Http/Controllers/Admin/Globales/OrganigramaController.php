@@ -29,7 +29,7 @@ class OrganigramaController extends Controller
         $idDependencia = $request->idDependencia;
         $dependencia = Organigrama::find($idDependencia);
         $parentId = $dependencia->first()->id;
-        $rootId = Organigrama::whereAncestorOf($dependencia)->whereIsRoot()->first()->id;
+
 
         return view('admin.globales.organigramas.crear_sub_dependencia', get_defined_vars());
     }
@@ -86,13 +86,12 @@ class OrganigramaController extends Controller
             $node->appendNode($dependencia);
         }
 
-        $rootId = Organigrama::whereAncestorOf($dependencia)->whereIsRoot()->first()->id;
 
 
         if ($dependencia->parent_id == null) {
             return redirect()->route('globales.organigrama-gestionar', $dependencia->id);
         } else
-            return redirect()->route('globales.organigrama-gestionar', $rootId);
+            return redirect()->route('globales.organigrama-gestionar', $dependencia->parent_id);
     }
 
     public function show($id)
