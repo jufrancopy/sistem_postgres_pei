@@ -100,7 +100,18 @@ class FodaAnalisisController extends Controller
     public function matriz(Request $request, $idPerfil)
     {
         $idPerfil = $request->idPerfil;
-        $perfil = FodaPerfil::find($idPerfil);
+        $perfil = FodaPerfil::with(['group', 'model'])->find($idPerfil);
+        // Accede a los miembros del grupo relacionado
+        $members = $perfil->group->members;
+
+        // Ahora puedes trabajar con la colección de miembros
+        foreach ($members as $member) {
+            // Accede a las propiedades de cada miembro
+            $userName = $member->name;
+            $userEmail = $member->email;
+            // ...otros campos de usuario...
+        }
+
         $matriz =    0.17;
 
         // Ambiente Interno - Debilidad
@@ -144,89 +155,14 @@ class FodaAnalisisController extends Controller
                 'fortalezas' => $fortalezas,
                 'oportunidades' => $oportunidades,
                 'amenazas' => $amenazas,
+                'profile' => $perfil,
+                'members' => $members
             ]);
         }
 
         return view('admin.planificacion.fodas.analisis.matriz', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
-
-    public function getMatrizForGroup()
-    {
-        return view('admin.planificacion.fodas.matrices.matriz_for_group');
-    }
-    public function dataTreeGroup()
-    {
-        $groups = Group::orderBy('id', 'ASC')->withDepth()->get()->linkNodes();
-
-        // $result = [];
-        // foreach ($groups as $item) {
-        //     if ($item->type !== 'Evaluation') {
-        //         $btnCreate = '<a class="btn btn-success btn-circle mr-2" href="javascript:void(0)" data-id="' . $item->id . '" id="showMatrizFoda"><i class="fa fa-plus"></i></a>';
-        //         $btnEdit = '<a class="btn btn-info btn-circle mr-2" href="javascript:void(0)" data-id=" ' . $item->id . ' " id="editCareer"><i class="fa fa-edit"></i></a>';
-        //         $btnDelete = '<a class="btn btn-danger btn-circle" href="javascript:void(0)" data-id=" ' . $item->id . ' " id="deleteItem"><i class="fa fa-trash"></i></a>';
-        //         $parent = $item->parent_id ?: '#';
-        //         $node = [
-        //             'id' => $item->id,
-        //             'state' => ['opened' => true],
-        //             'parent' => $parent,
-        //             'text' => $item->name . $btnCreate . $btnEdit . $btnDelete,
-        //         ];
-        //         array_push($result, $node);
-        //     } else {
-        //         $parent = $item->parent_id ?: '#';
-        //         $node = [
-        //             'id' => $item->id,
-        //             'state' => ['opened' => true],
-        //             'parent' => $parent,
-        //             'text' => $item->name
-        //         ];
-        //         array_push($result, $node);
-        //     }
-        // }
-        $result = [];
-        foreach ($groups as $group) {
-            $parent = $group->parent_id ?: '#';
-            $text = $group->name;
-
-            // Obtén las tareas asociadas al grupo
-            $tasks = $group->tasks;
-            // Si hay tareas asociadas
-            if ($tasks->isNotEmpty()) {
-                $typeTaskIds = [];
-                foreach ($tasks[0]->typeTasks as $typeTask) {
-                    if ($typeTask->typetaskable_type == 'FODA') {
-                        $typeTaskableId = $typeTask->typetaskable_id;
-                        $idName = 'showMatrizFoda';
-                        $routeName = 'foda-analisis-matriz';
-                    } elseif ($typeTask->typetaskable_type == 'PEI') {
-                        $typeTaskableId = $typeTask->typetaskable_id;
-                        $idName = 'showPeiDetailes';
-                        $routeName = 'pei-profiles.show';
-                    }
-                    // $btnDelete = '<a class="btn btn-danger btn-circle" href="javascript:void(0)" data-id=" ' . $item->id . ' " id="deleteItem"><i class="fa fa-trash"></i></a>';
-                    // $typeTaskIds[] = '<a href="javascript:void(0)" data-id="' . $typeTaskableId . '" id="' . $idName . '"><span class="badge badge-secondary">' . $typeTask->typetaskable_type . '</span></a>';
-                    $typeTaskIds[] = '<a href="' . route($routeName, $typeTaskableId) . '" data-id="' . $typeTaskableId . '" id="' . $idName . '"><span class="badge badge-secondary">' . $typeTask->typetaskable_type . '</span></a>';
-                }
-
-
-                if (!empty($typeTaskIds)) {
-                    $text .= ' (Tareas: ' . implode(', ', $typeTaskIds) . ')';
-                }
-            }
-
-            $node = [
-                'id' => $group->id,
-                'state' => ['opened' => true],
-                'parent' => $parent,
-                'text' => $text,
-            ];
-            array_push($result, $node);
-        }
-        return response()->json($result);
-    }
-
-
 
     public function listadoCategoriaAspectos(Request $request)
     {

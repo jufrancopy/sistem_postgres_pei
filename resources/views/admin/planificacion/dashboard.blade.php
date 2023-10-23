@@ -102,7 +102,7 @@
                                 name: '<a href="{{ route('foda-listado-perfiles') }}">Cruce de Ambientes</a>'
                             },
                             {
-                                name: '<a href="{{ route('foda-matriz-group') }}">Matriz FODA</a>'
+                                name: '<a href="{{ route('tasks-list-tree') }}">Árbol de Tareas</a>'
                             },
                         ]
                     },
