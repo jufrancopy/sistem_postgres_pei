@@ -18,6 +18,11 @@ use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaModelo;
 use App\Admin\Globales\Group;
 
+use App\Admin\Planificacion\Task\Task;
+use App\Admin\Planificacion\Task\TypeTask;
+
+
+
 class FodaAnalisisController extends Controller
 {
     //antes de procesar el index() ejecuta el metodo consturctor
@@ -126,6 +131,17 @@ class FodaAnalisisController extends Controller
             ->where('tipo', 'Amenaza')
             ->get();
 
+        // Comprueba si es una solicitud AJAX
+        if ($request->ajax()) {
+            // Si es una solicitud AJAX, puedes devolver una respuesta JSON
+            return response()->json([
+                'debilidades' => $debilidades,
+                'fortalezas' => $fortalezas,
+                'oportunidades' => $oportunidades,
+                'amenazas' => $amenazas,
+            ]);
+        }
+
         return view('admin.planificacion.fodas.analisis.matriz', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
@@ -134,38 +150,78 @@ class FodaAnalisisController extends Controller
     {
         return view('admin.planificacion.fodas.matrices.matriz_for_group');
     }
-
     public function dataTreeGroup()
     {
-        $items = Group::orderBy('id', 'ASC')->withDepth()->get()->linkNodes();
+        $groups = Group::orderBy('id', 'ASC')->withDepth()->get()->linkNodes();
 
+        // $result = [];
+        // foreach ($groups as $item) {
+        //     if ($item->type !== 'Evaluation') {
+        //         $btnCreate = '<a class="btn btn-success btn-circle mr-2" href="javascript:void(0)" data-id="' . $item->id . '" id="showMatrizFoda"><i class="fa fa-plus"></i></a>';
+        //         $btnEdit = '<a class="btn btn-info btn-circle mr-2" href="javascript:void(0)" data-id=" ' . $item->id . ' " id="editCareer"><i class="fa fa-edit"></i></a>';
+        //         $btnDelete = '<a class="btn btn-danger btn-circle" href="javascript:void(0)" data-id=" ' . $item->id . ' " id="deleteItem"><i class="fa fa-trash"></i></a>';
+        //         $parent = $item->parent_id ?: '#';
+        //         $node = [
+        //             'id' => $item->id,
+        //             'state' => ['opened' => true],
+        //             'parent' => $parent,
+        //             'text' => $item->name . $btnCreate . $btnEdit . $btnDelete,
+        //         ];
+        //         array_push($result, $node);
+        //     } else {
+        //         $parent = $item->parent_id ?: '#';
+        //         $node = [
+        //             'id' => $item->id,
+        //             'state' => ['opened' => true],
+        //             'parent' => $parent,
+        //             'text' => $item->name
+        //         ];
+        //         array_push($result, $node);
+        //     }
+        // }
         $result = [];
-        foreach ($items as $item) {
-            if ($item) {
-                $btnCreate = '<a class="btn btn-success btn-circle mr-2" href="javascript:void(0)" data-id="' . $item->id . '" id="newItem"><i class="fa fa-plus"></i></a>';
-                $btnEdit = '<a class="btn btn-info btn-circle mr-2" href="javascript:void(0)" data-id=" ' . $item->id . ' " id="editCareer"><i class="fa fa-edit"></i></a>';
-                $btnDelete = '<a class="btn btn-danger btn-circle" href="javascript:void(0)" data-id=" ' . $item->id . ' " id="deleteItem"><i class="fa fa-trash"></i></a>';
-                $parent = $item->parent_id ?: '#';
-                $node = [
-                    'id' => $item->id,
-                    'state' => ['opened' => true],
-                    'parent' => $parent,
-                    'text' => $item->name . $btnCreate . $btnEdit . $btnDelete,
-                ];
-                array_push($result, $node);
-            } else {
-                $parent = $item->parent_id ?: '#';
-                $node = [
-                    'id' => $item->id,
-                    'state' => ['opened' => true],
-                    'parent' => $parent,
-                    'text' => $item->name
-                ];
-                array_push($result, $node);
+        foreach ($groups as $group) {
+            $parent = $group->parent_id ?: '#';
+            $text = $group->name;
+
+            // Obtén las tareas asociadas al grupo
+            $tasks = $group->tasks;
+            // Si hay tareas asociadas
+            if ($tasks->isNotEmpty()) {
+                $typeTaskIds = [];
+                foreach ($tasks[0]->typeTasks as $typeTask) {
+                    if ($typeTask->typetaskable_type == 'FODA') {
+                        $typeTaskableId = $typeTask->typetaskable_id;
+                        $idName = 'showMatrizFoda';
+                        $routeName = 'foda-analisis-matriz';
+                    } elseif ($typeTask->typetaskable_type == 'PEI') {
+                        $typeTaskableId = $typeTask->typetaskable_id;
+                        $idName = 'showPeiDetailes';
+                        $routeName = 'pei-profiles.show';
+                    }
+                    // $btnDelete = '<a class="btn btn-danger btn-circle" href="javascript:void(0)" data-id=" ' . $item->id . ' " id="deleteItem"><i class="fa fa-trash"></i></a>';
+                    // $typeTaskIds[] = '<a href="javascript:void(0)" data-id="' . $typeTaskableId . '" id="' . $idName . '"><span class="badge badge-secondary">' . $typeTask->typetaskable_type . '</span></a>';
+                    $typeTaskIds[] = '<a href="' . route($routeName, $typeTaskableId) . '" data-id="' . $typeTaskableId . '" id="' . $idName . '"><span class="badge badge-secondary">' . $typeTask->typetaskable_type . '</span></a>';
+                }
+
+
+                if (!empty($typeTaskIds)) {
+                    $text .= ' (Tareas: ' . implode(', ', $typeTaskIds) . ')';
+                }
             }
+
+            $node = [
+                'id' => $group->id,
+                'state' => ['opened' => true],
+                'parent' => $parent,
+                'text' => $text,
+            ];
+            array_push($result, $node);
         }
         return response()->json($result);
     }
+
+
 
     public function listadoCategoriaAspectos(Request $request)
     {
