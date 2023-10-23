@@ -153,6 +153,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-modelo-categoria-aspectos-crear/{idCategoria}', 'Admin\Planificacion\Foda\FodaAspectoController@crearAspecto')->name('foda-modelo-categoria-aspectos-crear');
     Route::resource('foda-perfiles', 'Admin\Planificacion\Foda\FodaPerfilController');
     Route::resource('foda-analisis', 'Admin\Planificacion\Foda\FodaAnalisisController');
+    Route::get('foda-analisis/{idPerfil}/matriz', 'Admin\Planificacion\Foda\FodaAnalisisController@matriz');
     Route::get('foda-ambiente-interno/{idCategoria}/{idPerfil}', 'Admin\Planificacion\Foda\FodaAnalisisController@categoriasAmbienteInterno')->name('foda-ambiente-interno');
     Route::get('foda-ambiente-externo/{idPerfil}', 'Admin\Planificacion\Foda\FodaAnalisisController@categoriasAmbienteExterno')->name('foda-ambiente-externo');
     Route::get('foda-aspectos-categoria/{idCategoria}/{idPerfil}', 'Admin\Planificacion\Foda\FodaAnalisisController@aspectosCategoria')->name('foda-aspectos-categoria');

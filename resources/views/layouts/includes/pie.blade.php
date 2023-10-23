@@ -29,7 +29,7 @@
 <script src="{{ asset('master/assets/js/core/popper.min.js') }}" type="text/javascript"></script>
 <script src="{{ asset('js/jquery.validate.js') }}"></script>
 <script src="{{ asset('assets/datatables/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('assets/jqtree/jstree.js') }}"></script>
+<script src="{{ asset('assets/jstree/jstree.js') }}"></script>
 <script src="{{ asset('assets/') }}"></script>
 <script src="{{ asset('js/bootstrap.min.js') }}"></script>
 

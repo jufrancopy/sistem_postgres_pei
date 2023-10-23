@@ -24,6 +24,31 @@
                             </div>
                         </div>
                     </div>
+                    <div class="modal fade" id="ajaxShowMatrizFoda" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title" id="modalHeading"></h4>
+                                </div>
+                                <div class="modal-body">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="ajaxShowPeiDetails" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title" id="modalHeading"></h4>
+                                </div>
+                                <div class="modal-body">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -45,8 +70,6 @@
                     'data': {
                         'url': function(node) {
                             var routeDetailItem = "{!! route('tree-group') !!}";
-
-
                             return routeDetailItem;
                         },
                         'data': function(node) {
@@ -57,64 +80,107 @@
                     }
                 }
             });
+
+            $('body').on('click', '#showMatrizFoda', function() {
+                var fodaProfileID = $(this).data('id');
+                $.get("{{ route('foda-analisis.index') }}" + '/' + fodaProfileID + '/matriz', function(
+                data) {
+                    // Construye el contenido de la modal
+                    var modalContent = '<div class="card-body">';
+                    modalContent += '<div class="table-bordered">';
+                    modalContent += '<table class="table table-striped table-hover">';
+                    modalContent += '<thead>';
+                    modalContent += '<tr>';
+                    modalContent += '<th><h3>Análisis Interno</h3></th>';
+                    modalContent += '<th><h3>Análisis Externo</h3></th>';
+                    modalContent += '</tr>';
+                    modalContent += '</thead>';
+                    modalContent += '<tbody>';
+                    modalContent += '<tr>';
+                    modalContent += '<th class="table-danger">Debilidades</th>';
+                    modalContent += '<th class="table-danger">Amenazas</th>';
+                    modalContent += '</tr>';
+                    modalContent += '<tr>';
+                    modalContent += '<td>';
+
+                    // Construye la sección de Debilidades con base en los datos recibidos
+                    data.debilidades.forEach(function(debilidad) {
+                        modalContent += '<ul>';
+                        modalContent += '<li>' + debilidad.aspecto.name;
+
+                        // Aquí puedes aplicar el switch para determinar la clase CSS según el tipo
+                        // ...
+
+                        modalContent += '</li>';
+                        modalContent += '</ul>';
+                    });
+
+                    modalContent += '</td>';
+                    modalContent += '<td>';
+
+                    // Construye la sección de Amenazas con base en los datos recibos
+                    data.amenazas.forEach(function(amenaza) {
+                        modalContent += '<ul>';
+                        modalContent += '<li>' + amenaza.aspecto.name;
+
+                        // Aquí puedes aplicar el switch para determinar la clase CSS según el tipo
+                        // ...
+
+                        modalContent += '</li>';
+                        modalContent += '</ul>';
+                    });
+
+                    modalContent += '</td>';
+                    modalContent += '</tr>';
+                    modalContent += '<tr>';
+                    modalContent += '<th class="table-success">Fortalezas</th>';
+                    modalContent += '<th class="table-success">Oportunidades</th>';
+                    modalContent += '</tr>';
+                    modalContent += '<td>';
+
+                    // Construye la sección de Fortalezas con base en los datos recibidos
+                    data.fortalezas.forEach(function(fortaleza) {
+                        modalContent += '<ul>';
+                        modalContent += '<li>' + fortaleza.aspecto.name;
+
+                        // Aquí puedes aplicar el switch para determinar la clase CSS según el tipo
+                        // ...
+
+                        modalContent += '</li>';
+                        modalContent += '</ul>';
+                    });
+
+                    modalContent += '</td>';
+                    modalContent += '<td>';
+
+                    // Construye la sección de Oportunidades con base en los datos recibidos
+                    data.oportunidades.forEach(function(oportunidad) {
+                        modalContent += '<ul>';
+                        modalContent += '<li>' + oportunidad.aspecto.name;
+
+                        // Aquí puedes aplicar el switch para determinar la clase CSS según el tipo
+                        // ...
+
+                        modalContent += '</li>';
+                        modalContent += '</ul>';
+                    });
+
+                    modalContent += '</td>';
+                    modalContent += '</tr>';
+                    modalContent += '</tbody>';
+                    modalContent += '</table>';
+                    modalContent += '</div>';
+                    modalContent += '</div>';
+
+                    // Establece el contenido de la modal
+                    $('#modalBody').html(modalContent);
+
+                    // Abre la modal
+                    $('#ajaxShowMatrizFoda').modal('show');
+                });
+            });
+
         })
-        var data = [{
-                name: 'Planificación Estratégica Institucional.',
-                children: [{
-                        name: 'Tareas',
-                        children: [{
-                                name: '<a href="{{ route('tasks.index') }}">Tareas</a>'
-                            },
-
-                            {
-                                name: '<a href="{{ route('tasks-type.index') }}">Tipos de Tarea</a>'
-                            },
-                        ]
-                    },
-                    {
-                        name: 'Perfiles de Planificacion Estrategica',
-                        children: [{
-                            name: '<a href="{{ route('pei-profiles.index') }}">Pei</a>'
-                        }, ]
-                    },
-                    {
-                        name: 'Analisis FODA',
-                        children: [{
-                                name: '<a href="{{ route('foda-models.index') }}">Modelos</a>'
-                            },
-                            {
-                                name: '<a href="{{ route('foda-perfiles.index') }}">Perfiles</a>'
-                            },
-                            {
-                                name: '<a href="{{ route('foda-listado-perfiles') }}">Cruce de Ambientes</a>'
-                            },
-                            {
-                                name: '<a href="{{ route('foda-matriz-group') }}">Matriz FODA</a>'
-                            },
-                        ]
-                    },
-                    {
-                        name: 'Analisis de Riesgo',
-                        children: [{
-                            name: '<a href="{{ route('risks.index') }}">Riesgos</a>'
-                        }, ]
-                    }
-                ]
-            },
-
-
-        ];
-
-        $('#tree1').tree({
-            data: data,
-            autoEscape: false,
-            saveState: true,
-            closedIcon: $('<i class="fas fa-arrow-circle-right"></i>'),
-            openedIcon: $('<i class="fas fa-arrow-circle-down"></i>'),
-            autoOpen: true,
-            openFolderDelay: 1000,
-            dragAndDrop: true
-        });
     </script>
 
 @stop
