@@ -4,7 +4,7 @@
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Matrices Grupales</h4>
+            <h4 class="card-title ">Lista de Tareas Grupales</h4>
         </div>
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
@@ -18,48 +18,94 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="card-body">
-
                             <div id="data">
 
                             </div>
                         </div>
                     </div>
+
                     <div class="modal fade bd-example-modal-lg" id="ajaxShowMatrizFoda" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title" id="modalHeading"></h4>
+                                <div class="modal-header card-header-info">
+                                    <h4 class="modal-title" id="modalFODAHeading"></h4>
+                                </div>
+                                <div class="card-body">
+                                    <label>Nombre: </label><span id="name"> </span><br>
+                                    <label>Contexto: </label><span id="context"> </span><br>
+                                    <label>Tipo: </label><span id="type"> </span><br>
+                                    <label>Modelo: </label><span id="model"> </span><br>
+                                    <label>Grupo: </label><span id="group"> </span>
+                                    <h3>Miembros del Grupo de Análisis</h3>
+
+                                    <div class="table members">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <th class="">Nombre</th>
+                                                <th class="">Correo</th>
+                                            </thead>
+
+                                            <tbody id="memberListFODA">
+
+
+                                            </tbody>
+
+                                        </table>
+                                    </div>
                                 </div>
 
-                                <div class="modal-body">
 
-                                </div>
+
+                                <div class="modal-body"></div>
                                 <div class="row">
-                                    <div class="col-md-2"></div> <!-- Espacio en blanco izquierdo -->
-                                    <div class="col-md-8 text-center"> <!-- Columna centrada -->
+                                    <div class="col-md-2"></div>
+                                    <div class="col-md-8 text-center">
                                         <button type="button" class="btn btn-info mb-2"
                                             data-dismiss="modal">Cerrar</button>
                                     </div>
-                                    <div class="col-md-2"></div> <!-- Espacio en blanco derecho -->
+                                    <div class="col-md-2"></div>
                                 </div>
-
 
                             </div>
                         </div>
                     </div>
 
-                    <div class="modal fade" id="ajaxShowPeiDetails" aria-hidden="true">
-                        <div class="modal-dialog">
+                    <div class="modal fade bd-example-modal-lg" id="ajaxShowPeiDetails" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" id="peiDetails">
                             <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title" id="modalHeading"></h4>
+                                <div class="modal-header card-header-info">
+                                    <h4 class="modal-title" id="modalPEIHeading"></h4>
                                 </div>
-                                <div class="modal-body">
 
+                                <div class="card-body headerPei">
+                                    <label>Nombre: </label><span id="name"> </span><br>
+                                    <label>Tipo: </label><span id="type"> </span><br>
+                                    <label>Grupo: </label><span id="group"> </span>
+
+                                    <h3>Miembros del Grupo de Análisis</h3>
+                                    <div class="table membersPEI">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <th class="">Nombre</th>
+                                                <th class="">Correo</th>
+                                            </thead>
+                                            <tbody id="memberListPEI"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="card-body">
+                                    <label>Definición de la Misión: </label>
+                                    <h3 id="mision"> </h3><br>
+                                    <label>Definición de la Visión: </label>
+                                    <h3 id="vision"> </h3><br>
+                                    <label>Definición de la Valores: </label>
+                                    <h3 id="values"> </h3><br>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -92,11 +138,59 @@
                 }
             });
 
+            // Esta función agregará los miembros al modal
+            function membersModalFODA(members) {
+                var memberListFODA = $('#memberListFODA'); // Encuentra el contenedor de la lista de miembros
+
+                // Vacía la lista actual (si hubiera elementos anteriores)
+                memberListFODA.empty();
+
+                // Itera sobre los miembros y agrégalos a la lista
+                members.forEach(function(member) {
+                    var row = '<tr>' +
+                        '<td>' + member.name + '</td>' +
+                        '<td>' + member.email + '</td>' +
+                        '</tr>';
+                    memberListFODA.append(row);
+                });
+            }
+
+            // Esta función agregará los miembros al modal
+            function membersModalPEI(members) {
+                var memberListPEI = $('#memberListPEI'); // Encuentra el contenedor de la lista de miembros
+
+                // Vacía la lista actual (si hubiera elementos anteriores)
+                memberListPEI.empty();
+
+                // Itera sobre los miembros y agrégalos a la lista
+                members.forEach(function(member) {
+                    var row = '<tr>' +
+                        '<td>' + member.name + '</td>' +
+                        '<td>' + member.email + '</td>' +
+                        '</tr>';
+                    memberListPEI.append(row);
+                });
+            }
+
             $('body').on('click', '#showMatrizFoda', function() {
                 var fodaProfileID = $(this).data('id');
+
                 $.get("{{ route('foda-analisis.index') }}" + '/' + fodaProfileID + '/matriz', function(
                     data) {
+
+                    // Listado de mimbros del Grupo
+                    var members = data.members;
+                    membersModalFODA(members);
+
                     // Construye el contenido de la modal
+                    $('#modalFODAHeading').html("FODA " + data.profile.name);
+                    $('#name').text(data.profile.name);
+                    $('#context').text(data.profile.context);
+                    $('#type').text(data.profile.type);
+                    $('#model').text(data.profile.model.name);
+                    $('#group').text(data.profile.group.name);
+
+
                     var modalContent = '<div class="card-body">';
                     modalContent += '<div class="table-bordered">';
                     modalContent += '<table class="table table-striped table-hover">';
@@ -191,6 +285,26 @@
                     $('.modal-body').html(modalContent);
 
                 });
+            });
+
+            $('body').on('click', '#showPeiDetailes', function() {
+                var peiProfileID = $(this).data('id');
+                $.get("{{ route('pei-profiles.index') }}" + '/' + peiProfileID + '/detail', function(
+                    data) {
+                    $('#modalPEIHeading').html("PEI " + data.name);
+                    $('#ajaxShowPeiDetails').modal('show');
+                    $('.headerPei #name').text(data.profile.name);
+                    $('.headerPei #type').text(data.profile.type);
+                    $('.headerPei #group').text(data.profile.group.name);
+                    $('#mision').html(data.profile.mision);
+                    $('#vision').html(data.profile.vision);
+                    $('#values').html(data.profile.values);
+
+                    var members = data.members;
+                    console.log(members)
+                    membersModalPEI(members);
+                });
+
             });
 
         })

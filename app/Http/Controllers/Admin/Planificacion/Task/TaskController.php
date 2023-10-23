@@ -15,6 +15,7 @@ use App\Admin\Planificacion\Foda\FodaPerfil;
 use App\Admin\Planificacion\Pei\PeiProfile;
 use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Contracts\Role;
+use App\Admin\Globales\Group;
 
 use Illuminate\Support\Facades\Cookie;
 
@@ -81,7 +82,6 @@ class TaskController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-
     public function store(Request $request)
     {
         if ($request->ajax()) {
@@ -146,6 +146,53 @@ class TaskController extends Controller
         return response()->json($task);
     }
 
+    public function getTasksForGroup()
+    {
+        return view('admin.planificacion.tasks.tasks.list_tasks_for_group');
+    }
+
+    public function dataTreeGroup()
+    {
+        $groups = Group::orderBy('id', 'ASC')->withDepth()->get()->linkNodes();
+        $result = [];
+        foreach ($groups as $group) {
+            $parent = $group->parent_id ?: '#';
+            $text = $group->name;
+
+            // Obtén las tareas asociadas al grupo
+            $tasks = $group->tasks;
+            // Si hay tareas asociadas
+            if ($tasks->isNotEmpty()) {
+                $typeTaskIds = [];
+                foreach ($tasks[0]->typeTasks as $typeTask) {
+                    if ($typeTask->typetaskable_type == 'FODA') {
+                        $typeTaskableId = $typeTask->typetaskable_id;
+                        $idName = 'showMatrizFoda';
+                        $routeName = 'foda-analisis-matriz';
+                    } elseif ($typeTask->typetaskable_type == 'PEI') {
+                        $typeTaskableId = $typeTask->typetaskable_id;
+                        $idName = 'showPeiDetailes';
+                        $routeName = 'pei-profiles.show';
+                    }
+
+                    $typeTaskIds[] = '<a href="' . route($routeName, $typeTaskableId) . '" data-id="' . $typeTaskableId . '" id="' . $idName . '"><span class="badge badge-secondary">' . $typeTask->typetaskable_type . '</span></a>';
+                }
+
+                if (!empty($typeTaskIds)) {
+                    $text .= ' (Tareas: ' . implode(', ', $typeTaskIds) . ')';
+                }
+            }
+
+            $node = [
+                'id' => $group->id,
+                'state' => ['opened' => true],
+                'parent' => $parent,
+                'text' => $text,
+            ];
+            array_push($result, $node);
+        }
+        return response()->json($result);
+    }
 
     public function show(Request $request, $id)
     {

@@ -53,6 +53,13 @@ class PeiController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
+    public function showDetailForGroup($idPerfil)
+    {
+        $profile = PeiProfile::with('group')->findOrFail($idPerfil);
+        $members = $profile->group->members;
+
+        return response()->json(['profile' => $profile, 'members' => $members]);
+    }
 
     public function store(Request $request)
     {
@@ -66,13 +73,13 @@ class PeiController extends Controller
                 ]
             );
         };
-        
-        if($request->profile_id){
-            $profileId =  $request->profile_id;   
-        } else{
+
+        if ($request->profile_id) {
+            $profileId =  $request->profile_id;
+        } else {
             $profileId = Str::uuid();
         }
-        
+
 
         $profile = PeiProfile::updateOrCreate(
             ['id' => $profileId],
@@ -103,7 +110,7 @@ class PeiController extends Controller
         $profile->analysts()->sync($analysts);
 
         if ($profile->parent_id == null) {
-            return response()->json(['success' => 'Perfil creado exitosamente', 'profile'=>$profile]);
+            return response()->json(['success' => 'Perfil creado exitosamente', 'profile' => $profile]);
         } else {
             return response()->json(['success' => 'Elemento creado con éxito', 'parent_id' => $request->parent_id]);
         }
@@ -122,12 +129,11 @@ class PeiController extends Controller
         return response()->json(['profile' => $profile, 'analystsChecked' => $analystsChecked]);
     }
 
-
     public function show(Request $request, $id)
     {
         $profile = PeiProfile::findOrFail($id);
-        
-        
+
+
         return view('admin.planificacion.peis.peis.show', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }

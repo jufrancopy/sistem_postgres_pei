@@ -208,7 +208,6 @@
             $('body').on('click', '.editModel', function() {
                 var modelID = $(this).data('id');
                 $.get("{{ route('foda-models.index') }}" + '/' + modelID + '/edit', function(data) {
-                    console.log(data)
                     $('#modalModelHeading').html("Editar Modelo");
                     $('#saveBtn').val("edit-profile");
                     $('#modalModel').modal('show');

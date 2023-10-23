@@ -18,6 +18,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     //Rutas de PEI
     Route::resource('pei-profiles', 'Admin\Planificacion\Pei\PeiController');
+    Route::get('pei-profiles/{idPerfil}/detail', 'Admin\Planificacion\Pei\PeiController@showDetailForGroup');
     Route::get('peis-crear-sub-nivel/{id}', 'Admin\Planificacion\Pei\PeiController@addSubNivel')->name('peis-crear-sub-nivel');
     Route::get('peis-editar-sub-nivel/{idSubNivel}', 'Admin\Planificacion\Pei\PeiController@editarSubNivel')->name('peis-editar-sub-nivel');
     Route::delete('peis-eliminar-nivel/{idNivelSuperior}/{idNivel}', 'Admin\Planificacion\Pei\PeiController@eliminarNivel')->name('peis-eliminar-nivel');
@@ -133,7 +134,6 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-users', 'Admin\UserController@getUsers')->name('get-users');
     });
 
-
     //Rutas del Modulo FODA
     Route::resource('foda-models', 'Admin\Planificacion\Foda\FodaModeloController');
     Route::get('foda-models/{categoryId}/getAspects', 'Admin\Planificacion\Foda\FodaModeloController@getAspects')->name('foda-models-getAspects');
@@ -179,9 +179,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-aspectos-elegir-modelo', 'Admin\Planificacion\Foda\FodaAspectoController@elegirModelo')->name('foda-aspectos-elegir-modelo');
     Route::get('/foda-perfiles-modelo/{id}/categorias', 'Admin\Planificacion\Foda\FodaPerfilController@getCategorias');
     Route::get('foda-perfiles/{idPerfil}/add-group', 'Admin\Planificacion\Foda\FodaPerfilController@addGroup')->name('foda.add.group');
-    Route::get('foda-matriz-group/', 'Admin\Planificacion\Foda\FodaAnalisisController@getMatrizForGroup')->name('foda-matriz-group');
-    Route::get('tree-group', 'Admin\Planificacion\Foda\FodaAnalisisController@dataTreeGroup')->name('tree-group');
-
+    Route::get('tasks-list-tree/', 'Admin\Planificacion\Task\TaskController@getTasksForGroup')->name('tasks-list-tree');
+    Route::get('tree-group', 'Admin\Planificacion\Task\TaskController@dataTreeGroup')->name('tree-group');
 
     //Rutas de Elaboración del PEI
     Route::resource('tasks', 'Admin\Planificacion\Task\TaskController');
