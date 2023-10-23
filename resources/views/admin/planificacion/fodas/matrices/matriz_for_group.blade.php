@@ -30,9 +30,11 @@
                                 <div class="modal-header">
                                     <h4 class="modal-title" id="modalHeading"></h4>
                                 </div>
+
                                 <div class="modal-body">
 
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -84,7 +86,7 @@
             $('body').on('click', '#showMatrizFoda', function() {
                 var fodaProfileID = $(this).data('id');
                 $.get("{{ route('foda-analisis.index') }}" + '/' + fodaProfileID + '/matriz', function(
-                data) {
+                    data) {
                     // Construye el contenido de la modal
                     var modalContent = '<div class="card-body">';
                     modalContent += '<div class="table-bordered">';
@@ -177,6 +179,8 @@
 
                     // Abre la modal
                     $('#ajaxShowMatrizFoda').modal('show');
+                    $('.modal-body').html(modalContent);
+
                 });
             });
 

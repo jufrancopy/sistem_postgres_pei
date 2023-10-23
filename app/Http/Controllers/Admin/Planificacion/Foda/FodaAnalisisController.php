@@ -103,33 +103,38 @@ class FodaAnalisisController extends Controller
         $perfil = FodaPerfil::find($idPerfil);
         $matriz =    0.17;
 
-        //Ambiente Interno - Debilidad
-        $debilidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
+        // Ambiente Interno - Debilidad
+        $debilidades = FodaAnalisis::with('aspecto')
+            ->where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia::int * foda_analisis.impacto::int) as matriz'))
             ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Debilidad')
             ->get();
 
-        //Ambiente Interno - Fortaleza
-        $fortalezas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
+        // Ambiente Interno - Fortaleza
+        $fortalezas = FodaAnalisis::with('aspecto')
+            ->where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
             ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Fortaleza')
             ->get();
 
-        //Ambiente Externo - Oportunidad
-        $oportunidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
+        // Ambiente Externo - Oportunidad
+        $oportunidades = FodaAnalisis::with('aspecto')
+            ->where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
             ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Oportunidad')
             ->get();
 
-        //Ambiente Externo - Amenaza
-        $amenazas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
+        // Ambiente Externo - Amenaza
+        $amenazas = FodaAnalisis::with('aspecto')
+            ->where('perfil_id', '=', $idPerfil)
             ->select(DB::raw('planificacion.foda_analisis.*,(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz'))
             ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
             ->where('tipo', 'Amenaza')
             ->get();
+
 
         // Comprueba si es una solicitud AJAX
         if ($request->ajax()) {
