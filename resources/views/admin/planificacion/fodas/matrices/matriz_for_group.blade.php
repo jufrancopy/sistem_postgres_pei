@@ -24,8 +24,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal fade" id="ajaxShowMatrizFoda" aria-hidden="true">
-                        <div class="modal-dialog">
+                    <div class="modal fade bd-example-modal-lg" id="ajaxShowMatrizFoda" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h4 class="modal-title" id="modalHeading"></h4>
@@ -34,6 +34,15 @@
                                 <div class="modal-body">
 
                                 </div>
+                                <div class="row">
+                                    <div class="col-md-2"></div> <!-- Espacio en blanco izquierdo -->
+                                    <div class="col-md-8 text-center"> <!-- Columna centrada -->
+                                        <button type="button" class="btn btn-info mb-2"
+                                            data-dismiss="modal">Cerrar</button>
+                                    </div>
+                                    <div class="col-md-2"></div> <!-- Espacio en blanco derecho -->
+                                </div>
+
 
                             </div>
                         </div>
