@@ -231,18 +231,7 @@
                     }
                 });
 
-                if (defaultOption) {
-                    var option = new Option(defaultOption.text, defaultOption.id, true, true);
-                    selector.append(option).trigger('change');
-                    selector.trigger({
-                        type: 'select2:select',
-                        params: {
-                            data: defaultOption
-                        }
-                    });
-                }
             }
-
 
             var detailsEditor;
 
@@ -265,10 +254,10 @@
 
                 //Type Tasks
                 var url = '{{ route('get-type-tasks') }}';
-                $("#typetasks").val([]).change();
-                $("#typetasks").trigger("change");
+                var selectTypeTasks = $('#typetasks').select2();
+                selectTypeTasks.empty();
 
-                $('#typetasks').select2({
+                selectTypeTasks.select2({
                     allowClear: true,
                     ajax: {
                         url: url,
@@ -288,35 +277,24 @@
                     }
                 });
 
-                // Agregar un oyente de eventos al selector
-                $('#tasks').on('select2:select', function(e) {
-                    // Obtener el valor seleccionado
-                    var selectedValue = e.params.data;
-
-                    // Verificar si se ha seleccionado algún valor
-                    if (selectedValue) {
-                        // Obtener el valor de item.model de la cadena completa
-                        var modelName = selectedValue.text.match(/\(([^)]+)\)/)[1];
-
-                        // Colocar el valor de item.model en el campo oculto "model"
-                        $('#model').val(modelName);
-                    }
-                });
-
-
-                // Inicializar el selector de grupo raíz
-                initializeSelect2($("#group_roots"), 'Seleccione Grupo Raíz de trabajo',
+                var groupRoots = $('#group_roots').select2();
+                groupRoots.empty();
+                initializeSelect2(groupRoots, 'Seleccione Grupo Raíz de trabajo',
                     '{{ route('globales.get-root-groups') }}');
 
+
                 // Cuando se cambia el grupo raíz
-                $('#group_roots').on('change', function() {
+                groupRoots.on('change', function() {
                     var groupRootID = $(this).val();
                     var url = 'admin/globales/get-groups/' + groupRootID;
 
                     // Reinicializar el selector de grupos
-                    initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
+
+                    initializeSelect2(groupSelect, 'Seleccione el Grupo', url);
                 });
 
+                var groupSelect = $("#groups");
+                groupSelect.empty();
 
                 //Analysts
                 var url = '{{ route('globales.get-users') }}';
