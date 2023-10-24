@@ -180,17 +180,18 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-aspectos-elegir-modelo', 'Admin\Planificacion\Foda\FodaAspectoController@elegirModelo')->name('foda-aspectos-elegir-modelo');
     Route::get('/foda-perfiles-modelo/{id}/categorias', 'Admin\Planificacion\Foda\FodaPerfilController@getCategorias');
     Route::get('foda-perfiles/{idPerfil}/add-group', 'Admin\Planificacion\Foda\FodaPerfilController@addGroup')->name('foda.add.group');
-    Route::get('tasks-list-tree/', 'Admin\Planificacion\Task\TaskController@getTasksForGroup')->name('tasks-list-tree');
-    Route::get('tree-group', 'Admin\Planificacion\Task\TaskController@dataTreeGroup')->name('tree-group');
+    Route::get('foda-list-groups', 'Admin\Planificacion\Foda\FodaAnalisisController@getListGroup')->name('foda-list-groups');
+    Route::get('foda-matriz-groups/{idGroup}', 'Admin\Planificacion\Foda\FodaAnalisisController@getMatrizForGroup')->name('foda-matriz-groups');
+
 
     //Rutas de Elaboración del PEI
     Route::resource('tasks', 'Admin\Planificacion\Task\TaskController');
     Route::resource('tasks-type', 'Admin\Planificacion\Task\TypeTaskController');
     Route::get('get-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTask')->name('get-tasks');
     Route::get('get-task/{idSelection}', 'Admin\Planificacion\Task\TaskController@dataTask')->name('get-task');
-
     Route::get('get-type-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTaskType')->name('get-type-tasks');
-    // Route::get('get-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTypeTasks')->name('get-tasks');
+    Route::get('tasks-list-tree/', 'Admin\Planificacion\Task\TaskController@getTasksForGroup')->name('tasks-list-tree');
+    Route::get('tree-group', 'Admin\Planificacion\Task\TaskController@dataTreeGroup')->name('tree-group');
 });
 Auth::routes();
 

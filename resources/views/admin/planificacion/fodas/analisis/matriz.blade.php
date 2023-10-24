@@ -14,12 +14,18 @@
                     <div class="card">
                         <div class="card-header card-header-info">
                             <h3 class="card-title ">Matriz FODA </h3>
-                            <h4>{{ $perfil->name }}</h4>
                             <div class="pull-right">
                                 <a class="btn btn-warning" href="{{ route('planificacion-dashboard') }}"> Atras</a>
                             </div>
                         </div>
-
+                        <div class="card-body">
+                            <div class="card-header">
+                                <label>Perfiles: </label>
+                                @foreach ($profiles as $profile)
+                                    {{ $profile->name }}
+                                @endforeach
+                            </div>
+                        </div>
                         <div class="card-body">
                             <div class="table-bordered">
                                 <table class="table table-striped table-hover">

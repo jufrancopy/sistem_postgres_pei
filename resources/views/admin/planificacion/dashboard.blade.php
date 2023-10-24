@@ -104,6 +104,9 @@
                             {
                                 name: '<a href="{{ route('tasks-list-tree') }}">Árbol de Tareas</a>'
                             },
+                            {
+                                name: '<a href="{{ route('foda-list-groups') }}">Matríz</a>'
+                            },
                         ]
                     },
                     {
