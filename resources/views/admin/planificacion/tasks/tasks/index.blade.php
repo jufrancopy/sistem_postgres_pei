@@ -75,7 +75,6 @@
                                             {{ Form::label('groups', 'Asignar Grupo de Trabajo:') }}
                                             {!! Form::select('group_id', [], null, [
                                                 'id' => 'groups',
-                                                'placeholder' => '',
                                                 'style' => 'width:100%',
                                             ]) !!}
                                         </div>
@@ -84,7 +83,6 @@
                                             {{ Form::label('analysts', 'Asignar Analista Grupal:') }}
                                             {!! Form::select('analyst_id[]', [], null, [
                                                 'id' => 'analysts',
-                                                'placeholder' => '',
                                                 'style' => 'width:100%',
                                                 'multiple',
                                             ]) !!}
@@ -201,22 +199,6 @@
                             return analystsHtml;
                         }
                     },
-                    // {
-                    //     data: 'tasks',
-                    //     name: 'tasks',
-                    //     render: function(data, type, full, meta) {
-                    //         var tasksArray = data.split(', ');
-
-                    //         var tasksHtml = '';
-
-                    //         tasksArray.forEach(function(task) {
-                    //             tasksHtml += '<span class="badge badge-secondary">' +
-                    //                 task + '</span> ';
-                    //         });
-
-                    //         return tasksHtml;
-                    //     }
-                    // },
                     {
                         data: 'action',
                         name: 'action',
@@ -227,8 +209,8 @@
             });
 
             // Función para inicializar Select2
-            function initializeSelect2(selector, placeholder, url) {
-                selector.val("").select2({
+            function initializeSelect2(selector, placeholder, url, defaultOption) {
+                selector.select2({
                     placeholder: placeholder,
                     ajax: {
                         url: url,
@@ -241,14 +223,26 @@
                                         text: item.name || item
                                             .dependency, // Use 'name' or 'dependency' depending on the selector
                                         id: item.id
-                                    }
+                                    };
                                 })
                             };
                         },
                         cache: true
                     }
                 });
+
+                if (defaultOption) {
+                    var option = new Option(defaultOption.text, defaultOption.id, true, true);
+                    selector.append(option).trigger('change');
+                    selector.trigger({
+                        type: 'select2:select',
+                        params: {
+                            data: defaultOption
+                        }
+                    });
+                }
             }
+
 
             var detailsEditor;
 
@@ -354,14 +348,141 @@
             $('body').on('click', '.editTask', function() {
                 var taskID = $(this).data('id');
                 $.get("{{ route('tasks.index') }}" + '/' + taskID + '/edit', function(data) {
-                    $('#modalHeading').html("Editar Tarea ");
+                    //Details
+                    detailsEditor.setData(data.task.details);
+
+                    //Clearing selections
+                    var selectTypeTasks = $('#typetasks').select2();
+                    selectTypeTasks.empty();
+                    data.typeTasksChecked.forEach(function(d) {
+                        var option = new Option(d.text, d.id, true, true);
+                        selectTypeTasks.append(option).trigger('change');
+                        selectTypeTasks.trigger({
+                            type: 'select2:select',
+                            params: {
+                                data: data
+                            }
+                        });
+                    });
+
+                    var url = '{{ route('get-type-tasks') }}';
+                    $('#typetasks').select2({
+                        allowClear: true,
+                        ajax: {
+                            url: url,
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(data) {
+                                return {
+                                    results: $.map(data, function(item) {
+                                        return {
+                                            text: item.name,
+                                            id: item.id
+                                        };
+                                    })
+                                };
+                            },
+                            cache: true
+                        }
+                    });
+
+                    // RootGroup
+                    var groupRoots = $('#group_roots').select2();
+                    groupRoots.empty();
+                    var urlGroup = 'admin/globales/get-group-parent/' + data.task.group_id
+                    initSelectWithRelationshipGroupParent(urlGroup, groupRoots)
+
+                    function initSelectWithRelationshipGroupParent(url, control) {
+                        $.ajax({
+                            type: 'GET',
+                            url: url
+                        }).then(function(data) {
+                            var option = new Option(data.name, data.id, true, true);
+                            control.append(option).trigger('change');
+                            control.trigger({
+                                type: 'select2:select',
+                                params: {
+                                    data: data
+                                }
+                            });
+                        });
+                    }
+
+                    //Change RootGroup
+                    $('#group_roots').on('change', function() {
+                        var groupRootID = $(this).val();
+                        var url = 'admin/globales/get-groups/' + groupRootID;
+                        // Reinicializar el selector de grupos
+                        initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
+                    });
+
+                    // RootGroup
+                    var group = $('#groups').select2();
+
+                    //Clear Select
+                    group.empty();
+
+                    //Initialization Select2 with Relationship
+                    var urlGroupSelected = 'admin/globales/get-group/' + data.task.group_id
+                    initSelectWithRelationshipGroup(urlGroupSelected, group)
+
+                    function initSelectWithRelationshipGroup(url, control) {
+                        $.ajax({
+                            type: 'GET',
+                            url: url
+                        }).then(function(data) {
+                            var option = new Option(data.name, data.id, true, true);
+                            control.append(option).trigger('change');
+                            control.trigger({
+                                type: 'select2:select',
+                                params: {
+                                    data: data
+                                }
+                            });
+                        });
+                    }
+
+                    //Clearing selections
+                    var selectAnalysts = $('#analysts');
+                    selectAnalysts.val([]).trigger("change");
+                    data.analystsChecked.forEach(function(d) {
+                        var option = new Option(d.text, d.id, true, true);
+                        selectAnalysts.append(option).trigger('change');
+                        selectAnalysts.trigger({
+                            type: 'select2:select',
+                            params: {
+                                data: data
+                            }
+                        });
+                    });
+
+                    //Analysts
+                    var url = '{{ route('globales.get-users') }}';
+                    var analysts = $('#analysts').select2({
+                        ajax: {
+                            url: url,
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(data) {
+                                return {
+                                    results: $.map(data, function(item) {
+                                        return {
+                                            text: item.name,
+                                            id: item.id
+                                        }
+                                    })
+                                };
+                            },
+                            cache: true
+                        }
+                    });
+
+
+                    $('#modalHeading').html("Editar Tarea");
                     $('#saveBtn').val("edit-tasks");
                     $('#ajaxModal').modal('show');
                     $('#taskForm').trigger("reset");
-                    $('#task_id').val(data.id);
-                    $('#name').val(data.name);
-                    $('#routes').select2();
-                    $('#routes').val(data.route).trigger('change');
+                    $('#task_id').val(data.task.id);
                 });
             });
 

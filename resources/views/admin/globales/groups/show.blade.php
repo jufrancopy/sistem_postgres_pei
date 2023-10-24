@@ -193,7 +193,7 @@
                     $("#members").val("");
                     $("#members").trigger("change");
 
-                    var dependencies = $('#members').select2({
+                    $('#members').select2({
                         placeholder: 'Seleccione los miembros para el grupo',
                         allowClear: true,
                         ajax: {
