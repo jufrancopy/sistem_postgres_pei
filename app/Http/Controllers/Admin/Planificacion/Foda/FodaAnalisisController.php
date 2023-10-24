@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\DataTables;
 
 use Illuminate\Database\Eloquent\Builder;
 use Barryvdh\DomPDF\Facade as PDF;
@@ -157,6 +158,88 @@ class FodaAnalisisController extends Controller
                 'amenazas' => $amenazas,
                 'profile' => $perfil,
                 'members' => $members
+            ]);
+        }
+
+        return view('admin.planificacion.fodas.analisis.matriz', get_defined_vars())
+            ->with('i', ($request->input('page', 1) - 1) * 5);
+    }
+
+    public function getListGroup(Request $request)
+    {
+
+        if ($request->ajax()) {
+            $data = Group::where('parent_id', null)->latest()->get();
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($row) {
+
+                    $btn = ' <a href="' . route('foda-matriz-groups', $row->id) . '" class="btn btn-info btn-circle"><i class="fa fa-eye" aria-hidden="true"></i></a>';
+
+                    $btn .= ' <a href="' . route('globales.groups.show', $row->id) . '" class="btn btn-warning btn-circle"><i class="fa-solid fa-xmark"></i></a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('admin.planificacion.fodas.groups.list_tasks');
+    }
+
+    public function getMatrizForGroup(Request $request, $idGroup)
+    {
+        $groups = Group::descendantsOf($idGroup);
+        $groupId = [];
+
+        foreach ($groups as $group) {
+            $groupId[] = $group->id;
+        }
+
+        $profiles = FodaPerfil::with(['group', 'model'])
+            ->whereIn('group_id', $groupId)
+            ->get();
+
+        $perfilIds = $profiles->pluck('id');
+        $matriz = 0.17;
+
+        $fodaAnalisis = FodaAnalisis::with('aspecto')
+            ->whereIn('perfil_id', $perfilIds)
+            ->select(
+                DB::raw('planificacion.foda_analisis.*'),
+                DB::raw('(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz')
+            )
+            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->whereIn('tipo', ['Debilidad', 'Fortaleza', 'Oportunidad', 'Amenaza'])
+            ->get();
+
+        // Filtrar y seleccionar los aspectos únicos con puntaje más alto
+        $uniqueAspects = $fodaAnalisis->unique('aspecto_id')->map(function ($item, $key) use ($fodaAnalisis) {
+            $maxScoreAspect = $fodaAnalisis->where('aspecto_id', $item->aspecto_id)->max('matriz');
+            return $fodaAnalisis->where('aspecto_id', $item->aspecto_id)->first(function ($value, $key) use ($maxScoreAspect) {
+                return $value->matriz == $maxScoreAspect;
+            });
+        });
+
+        $debilidades = $uniqueAspects->where('tipo', 'Debilidad');
+        $fortalezas = $uniqueAspects->where('tipo', 'Fortaleza');
+        $oportunidades = $uniqueAspects->where('tipo', 'Oportunidad');
+        $amenazas = $uniqueAspects->where('tipo', 'Amenaza');
+
+        // $members = $perfil->group->members;
+        // foreach ($members as $member) {
+        //     $userName = $member->name;
+        //     $userEmail = $member->email;
+        // }
+
+        // Comprueba si es una solicitud AJAX
+        if ($request->ajax()) {
+            // Si es una solicitud AJAX, puedes devolver una respuesta JSON
+            return response()->json([
+                'debilidades' => $debilidades,
+                'fortalezas' => $fortalezas,
+                'oportunidades' => $oportunidades,
+                'amenazas' => $amenazas,
+                'profiles' => $profiles,
             ]);
         }
 
