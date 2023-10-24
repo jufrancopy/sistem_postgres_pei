@@ -141,9 +141,25 @@ class TaskController extends Controller
 
     public function edit($id)
     {
-        $task = Task::findOrFail($id);
+        $task = Task::with(['group', 'analysts'])->find($id);
 
-        return response()->json($task);
+        $typeTasksChecked = [];
+
+        foreach ($task->typeTasks as $typeTask) {
+            $typeTasksChecked[] = ['id' => $typeTask->id, 'text' => $typeTask->name];
+        }
+
+        $analystsChecked = [];
+
+        foreach ($task->analysts as $analyst) {
+            $analystsChecked[] = ['id' => $analyst->id, 'text' => $analyst->name];
+        }
+
+        return response()->json([
+            'task' => $task,
+            'analystsChecked' => $analystsChecked,
+            'typeTasksChecked' => $typeTasksChecked
+        ]);
     }
 
     public function getTasksForGroup()

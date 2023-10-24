@@ -131,6 +131,8 @@ Route::group(['middleware' => ['auth']], function () {
         Route::resource('groups', 'Admin\Globales\GroupController');
         Route::get('get-root-groups', 'Admin\Globales\GroupController@getRootGroups')->name('get-root-groups');
         Route::get('get-groups/{idRoot}', 'Admin\Globales\GroupController@getGroupsFromRoot')->name('get-groups');
+        Route::get('get-group-parent/{idSelection}', 'Admin\Globales\GroupController@dataGroupParent')->name('get-group-parent');
+        Route::get('get-group/{idSelection}', 'Admin\Globales\GroupController@dataGroup')->name('get-group');
         Route::get('get-users', 'Admin\UserController@getUsers')->name('get-users');
     });
 
@@ -144,7 +146,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('get-models', 'Admin\Planificacion\Foda\FodaModeloController@getModels')->name('get-models');
     Route::get('get-foda-categories/{modelId}', 'Admin\Planificacion\Foda\FodaModeloController@getCategories')->name('get-foda-categories');
     Route::get('get-model', 'Admin\Planificacion\Foda\FodaModeloController@dataModel')->name('get-model');
-
     Route::get('foda-modelo-categorias/{idModelo}', 'Admin\Planificacion\Foda\FodaCategoriaController@listadoCategorias')->name('foda-modelo-categorias');
     Route::get('foda-modelo-categoria-crear/{idModelo}', 'Admin\Planificacion\Foda\FodaCategoriaController@crearCategoria')->name('foda-modelo-categoria-crear');
     Route::get('perfil-categorias/{id}', 'Admin\Planificacion\Foda\FodaAnalisisController@listarCategorias')->name('perfil-categorias');
@@ -186,6 +187,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('tasks', 'Admin\Planificacion\Task\TaskController');
     Route::resource('tasks-type', 'Admin\Planificacion\Task\TypeTaskController');
     Route::get('get-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTask')->name('get-tasks');
+    Route::get('get-task/{idSelection}', 'Admin\Planificacion\Task\TaskController@dataTask')->name('get-task');
+
     Route::get('get-type-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTaskType')->name('get-type-tasks');
     // Route::get('get-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTypeTasks')->name('get-tasks');
 });

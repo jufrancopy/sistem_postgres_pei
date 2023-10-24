@@ -112,6 +112,20 @@ class GroupController extends Controller
         return response()->json($data);
     }
 
+    public function dataGroupParent(Request $request, $idSelection)
+    {
+        $data = Group::findOrFail($idSelection)->parent;
+
+        return response()->json($data);
+    }
+
+    public function dataGroup(Request $request, $idSelection)
+    {
+        $data = Group::findOrFail($idSelection);
+
+        return response()->json($data);
+    }
+
     public function edit($id)
     {
         $group = Group::with('members')->find($id);
@@ -124,7 +138,6 @@ class GroupController extends Controller
 
         return response()->json(['group' => $group, 'membersChecked' => $membersChecked]);
     }
-
 
     public function show(Request $request, $id)
     {
