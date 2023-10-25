@@ -42,7 +42,7 @@ class LoginController extends Controller
         if ($user->role == 'Administrador') {
             return redirect()->route('admin');
         } else {
-            return redirect()->route('tasks.index');
+            return redirect()->route('foda-list-groups');
         }
     }
 }

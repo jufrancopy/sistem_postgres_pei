@@ -48,12 +48,16 @@
             </li>
         </ul>
     @else
-        
-
         <li class="nav-item ">
-            <a class="nav-link" href="{{ route('tasks.index') }}">
+            <a class="nav-link" href="{{ route('tasks-list-tree') }}">
                 <i class="material-icons">assignment</i>
                 <p>Tareas</p>
+            </a>
+        </li>
+        <li class="nav-item ">
+            <a class="nav-link" href="{{ route('foda-list-groups') }}">
+                <i class="material-icons">assignment</i>
+                <p>Cruce de Ambientes</p>
             </a>
         </li>
     @endhasanyrole
