@@ -18,6 +18,7 @@ use App\Admin\Planificacion\Foda\FodaPerfil;
 use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaModelo;
 use App\Admin\Globales\Group;
+use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
 
 use App\Admin\Planificacion\Task\Task;
 use App\Admin\Planificacion\Task\TypeTask;
@@ -29,12 +30,7 @@ class FodaAnalisisController extends Controller
     //antes de procesar el index() ejecuta el metodo consturctor
     function __construct()
     {
-        // $this->middleware('permission:role-list');
-        // $this->middleware('permission:role-create', ['only' => ['create', 'store']]);
-        // $this->middleware('permission:role-edit', ['only' => ['edit', 'update']]);
-        // $this->middleware('permission:role-delete', ['only' => ['destroy']]);
-        // $this->middleware(['auth', 'role:Administrador']);
-        // $this->middleware(['auth', 'role:Analista']);
+        $this->middleware(['auth']);
     }
 
     public function index(Request $request)
@@ -62,6 +58,7 @@ class FodaAnalisisController extends Controller
         return view('admin.planificacion.fodas.analisis.perfiles', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
+
     public function seleccionarAmbiente(Request $request, $id)
     {
         $perfil = FodaPerfil::find($id);
@@ -98,6 +95,7 @@ class FodaAnalisisController extends Controller
                 ->with('i', ($request->input('page', 1) - 1) * 5);
         }
     }
+
     public function matriz(Request $request, $idPerfil)
     {
         $idPerfil = $request->idPerfil;
@@ -176,7 +174,7 @@ class FodaAnalisisController extends Controller
 
                     $btn = ' <a href="' . route('foda-matriz-groups', $row->id) . '" class="btn btn-info btn-circle"><i class="fa fa-eye" aria-hidden="true"></i></a>';
 
-                    $btn .= ' <a href="' . route('globales.groups.show', $row->id) . '" class="btn btn-warning btn-circle"><i class="fa-solid fa-xmark"></i></a>';
+                    $btn .= ' <a href="' . route('foda-matriz-groups', $row->id) . '' . '/crossing' . '" class="btn btn-warning btn-circle"><i class="fa-solid fa-xmark"></i></a>';
 
                     return $btn;
                 })
@@ -191,6 +189,8 @@ class FodaAnalisisController extends Controller
         $groups = Group::descendantsOf($idGroup);
         $groupId = [];
 
+        $profile = FodaPerfil::where('group_id', $idGroup)->first();
+
         foreach ($groups as $group) {
             $groupId[] = $group->id;
         }
@@ -198,6 +198,8 @@ class FodaAnalisisController extends Controller
         $profiles = FodaPerfil::with(['group', 'model'])
             ->whereIn('group_id', $groupId)
             ->get();
+
+        $modelId = $profiles->first()->model_id;
 
         $perfilIds = $profiles->pluck('id');
         $matriz = 0.17;
@@ -243,7 +245,74 @@ class FodaAnalisisController extends Controller
             ]);
         }
 
-        return view('admin.planificacion.fodas.analisis.matriz', get_defined_vars())
+        return view('admin.planificacion.fodas.groups.matriz', get_defined_vars())
+            ->with('i', ($request->input('page', 1) - 1) * 5);
+    }
+
+    public function getMatrizForCrossing(Request $request, $idGroup)
+    {
+        $groups = Group::descendantsOf($idGroup);
+        $groupId = [];
+
+        foreach ($groups as $group) {
+            $groupId[] = $group->id;
+        }
+
+        $perfil = FodaPerfil::where('group_id', $idGroup)->first();
+        $idPerfil = $perfil->id;
+
+        $profiles = FodaPerfil::with(['group', 'model'])
+            ->whereIn('group_id', $groupId)
+            ->get();
+
+        $perfilIds = $profiles->pluck('id');
+        $matriz = 0.17;
+
+        $fodaAnalisis = FodaAnalisis::with('aspecto')
+            ->whereIn('perfil_id', $perfilIds)
+            ->select(
+                DB::raw('planificacion.foda_analisis.*'),
+                DB::raw('(foda_analisis.ocurrencia * foda_analisis.impacto) as matriz')
+            )
+            ->whereRaw("(foda_analisis.ocurrencia * foda_analisis.impacto) > $matriz")
+            ->whereIn('tipo', ['Debilidad', 'Fortaleza', 'Oportunidad', 'Amenaza'])
+            ->get();
+
+        // Filtrar y seleccionar los aspectos únicos con puntaje más alto
+        $uniqueAspects = $fodaAnalisis->unique('aspecto_id')->map(function ($item, $key) use ($fodaAnalisis) {
+            $maxScoreAspect = $fodaAnalisis->where('aspecto_id', $item->aspecto_id)->max('matriz');
+            return $fodaAnalisis->where('aspecto_id', $item->aspecto_id)->first(function ($value, $key) use ($maxScoreAspect) {
+                return $value->matriz == $maxScoreAspect;
+            });
+        });
+
+        $debilidades = $uniqueAspects->where('tipo', 'Debilidad');
+        $fortalezas = $uniqueAspects->where('tipo', 'Fortaleza');
+        $oportunidades = $uniqueAspects->where('tipo', 'Oportunidad');
+        $amenazas = $uniqueAspects->where('tipo', 'Amenaza');
+
+        // $members = $perfil->group->members;
+        // foreach ($members as $member) {
+        //     $userName = $member->name;
+        //     $userEmail = $member->email;
+        // }
+        $FOs = FodaCruceAmbiente::where('tipo', '=', 'FO')->where('perfil_id', '=', $idPerfil)->get();
+        $DOs = FodaCruceAmbiente::where('tipo', '=', 'DO')->where('perfil_id', '=', $idPerfil)->get();
+        $FAs = FodaCruceAmbiente::where('tipo', '=', 'FA')->where('perfil_id', '=', $idPerfil)->get();
+        $DAs = FodaCruceAmbiente::where('tipo', '=', 'DA')->where('perfil_id', '=', $idPerfil)->get();
+        // Comprueba si es una solicitud AJAX
+        if ($request->ajax()) {
+            // Si es una solicitud AJAX, puedes devolver una respuesta JSON
+            return response()->json([
+                'debilidades' => $debilidades,
+                'fortalezas' => $fortalezas,
+                'oportunidades' => $oportunidades,
+                'amenazas' => $amenazas,
+                'profiles' => $profiles,
+            ]);
+        }
+
+        return view('admin.planificacion.fodas.groups.crossing-environments', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 

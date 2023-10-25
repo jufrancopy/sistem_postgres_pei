@@ -182,6 +182,12 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-perfiles/{idPerfil}/add-group', 'Admin\Planificacion\Foda\FodaPerfilController@addGroup')->name('foda.add.group');
     Route::get('foda-list-groups', 'Admin\Planificacion\Foda\FodaAnalisisController@getListGroup')->name('foda-list-groups');
     Route::get('foda-matriz-groups/{idGroup}', 'Admin\Planificacion\Foda\FodaAnalisisController@getMatrizForGroup')->name('foda-matriz-groups');
+    Route::get('foda-matriz-groups/{idGroup}/crossing', 'Admin\Planificacion\Foda\FodaAnalisisController@getMatrizForCrossing')->name('foda-matriz-groups-crossing');
+    Route::get('foda-matriz-crossing/{idProfile}/fo', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@foGroup')->name('foda-matriz-crossing-fo');
+    Route::get('foda-matriz-crossing/{idProfile}/do', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@doGroup')->name('foda-matriz-crossing-do');
+    Route::get('foda-matriz-crossing/{idProfile}/fa', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@faGroup')->name('foda-matriz-crossing-fa');
+    Route::get('foda-matriz-crossing/{idProfile}/da', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@daGroup')->name('foda-matriz-crossing-da');
+    Route::post('foda-profile/{idRootGroup}/', 'Admin\Planificacion\Foda\FodaPerfilController@createGroupRootProfile')->name('foda-profile-create');
 
 
     //Rutas de Elaboración del PEI

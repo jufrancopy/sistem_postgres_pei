@@ -20,10 +20,15 @@
                         </div>
                         <div class="card-body">
                             <div class="card-header">
-                                <label>Perfiles: </label>
-                                @foreach ($profiles as $profile)
-                                    {{ $profile->name }}
-                                @endforeach
+                                @if (isset($profiles) && count($profiles) > 0)
+                                    <label>Perfiles:</label>
+                                    @foreach ($profiles as $profile)
+                                        {{ $profile->name }}
+                                    @endforeach
+                                @else
+                                    <label>Perfiles:</label>
+                                    {{ $perfil->name }}
+                                @endif
                             </div>
                         </div>
                         <div class="card-body">
@@ -171,15 +176,16 @@
 
                                         </tr>
                                     </tbody>
-                                    {{-- <tfoot>
-                                    <tr>
-                                        <td colspan="2">
-                                            <a href="{{ route('foda-cruce-ambientes', $idPerfil) }}" class="btn btn-sm btn-info">
-                                                Gestionar Cruce de Ambientes
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </tfoot> --}}
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="2">
+                                                <a href="{{ route('foda-cruce-ambientes', $idPerfil) }}"
+                                                    class="btn btn-sm btn-info">
+                                                    Gestionar Cruce de Ambientes
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </div>
