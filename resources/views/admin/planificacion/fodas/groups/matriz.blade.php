@@ -191,7 +191,7 @@
                                                         <label>Propietario Genérico:</label>
                                                         {{ $profile->dependency->dependency }}<br>
 
-                                                        <a href="{{ route('foda-matriz-groups-crossing', $profile->group->first()->parent->id) }}"
+                                                        <a href="{{ route('foda-matriz-groups-crossing', $profile->group_id) }}"
                                                             class="btn btn-sm btn-info">
                                                             Gestionar Cruce de Ambientes
                                                         </a>

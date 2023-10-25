@@ -257,9 +257,9 @@ class FodaAnalisisController extends Controller
         foreach ($groups as $group) {
             $groupId[] = $group->id;
         }
-
         $perfil = FodaPerfil::where('group_id', $idGroup)->first();
         $idPerfil = $perfil->id;
+
 
         $profiles = FodaPerfil::with(['group', 'model'])
             ->whereIn('group_id', $groupId)
