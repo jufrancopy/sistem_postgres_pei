@@ -37,7 +37,7 @@
                                         <br />
                                         @foreach ($fortalezas as $value)
                                             <label>{{ Form::checkbox('fortaleza_id[]', $value->aspecto->id, false, ['class' => 'name']) }}
-                                                F{{ $value->aspecto->id }} - {{ $value->aspecto->nombre }}</label>
+                                                F{{ $value->aspecto->id }} - {{ $value->aspecto->name }}</label>
                                             <br />
                                         @endforeach
 
@@ -46,7 +46,7 @@
                                         <br />
                                         @foreach ($oportunidades as $value)
                                             <label>{{ Form::checkbox('oportunidad_id[]', $value->aspecto->id, false, ['class' => 'name']) }}
-                                                O{{ $value->aspecto->id }} - {{ $value->aspecto->nombre }}</label>
+                                                O{{ $value->aspecto->id }} - {{ $value->aspecto->name }}</label>
                                             <br />
                                         @endforeach
                                     </div>

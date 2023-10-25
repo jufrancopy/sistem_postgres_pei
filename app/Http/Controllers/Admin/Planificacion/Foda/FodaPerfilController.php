@@ -162,6 +162,52 @@ class FodaPerfilController extends Controller
         }
     }
 
+    public function createGroupRootProfile(Request $request)
+    {
+        if ($request->ajax()) {
+            $request->validate(
+                [
+                    'name'              => 'required',
+                    'context'           => 'required',
+                    'type'              => 'required',
+                    'model_id'          => 'required',
+                ],
+                [
+                    'name.required'             => 'Agregue el nombre del Modelo',
+                    'context.required'          => 'Indique el Contexto',
+                    'type.required'             => 'Indique el Tipo',
+                    'model_id.required'         => 'Seleccione el Modelo de Análisis'
+
+                ]
+            );
+        };
+
+        $profileId = Str::uuid();
+        $profile = FodaPerfil::updateOrCreate(
+            ['id' => $profileId],
+            [
+                'name' => $request->name,
+                'context' => $request->context,
+                'type' => $request->type,
+                'model_id' => $request->model_id,
+                'dependency_id' => $request->dependency_id,
+                'group_id' => $request->group_id,
+            ]
+        );
+        $groupRootId = $profile->group->id;
+
+        //Insert into pivot table 
+        $categories = $request->category_id;
+        $profile->categories()->sync($categories);
+
+        if ($profile->wasRecentlyCreated) {
+            // return response()->json(['redirect' => route('foda-matriz-groups', $profile->group_id), 'message' => 'Perfil Grupal creado correctamente.']);
+            return redirect()->route('foda-matriz-groups', $groupRootId)->with(['success' => 'Perfil asignado correctamente']);
+        } else {
+            // return response()->json(['redirect' => route('foda-matriz-groups', $profile->group_id), 'message' => 'Perfil Grupal actualizado correctamente.']);
+            return redirect()->route('foda-matriz-groups', $groupRootId)->with(['success' => 'Perfil asignado correctamente']);
+        }
+    }
     public function show($id)
     {
         $perfil = FodaPerfil::find($id);
