@@ -6,10 +6,6 @@
                     <div class="card">
                         <div class="card-header card-header-info">
                             <h4 class="card-title ">Crear Estrategias FO</b>
-
-                                <div class="pull-right">
-                                    <a class="btn btn-warning" href="{{ route('foda-cruce-ambientes', 6) }}"> Atras</a>
-                                </div>
                         </div>
                         @if (count($errors) > 0)
                             <div class="alert alert-danger">
@@ -21,6 +17,22 @@
                                 </ul>
                             </div>
                         @endif
+
+                        <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
+                            <ol class="breadcrumb mb-0">
+                                @if (isset($profile))
+                                    <li class="breadcrumb-item"><a
+                                            href="{{ route('foda-matriz-groups-crossing', $profile->group_id) }}">Matriz
+                                            Foda - {{ $profile->name }}
+                                        </a>
+                                    </li>
+                                    <li class="breadcrumb-item active" aria-current="page">Estrategias
+                                        FO: {{ $profile->name }}</li>
+                                @else
+                                    <li class="breadcrumb-item active" aria-current="page">Estrategias FO</li>
+                                @endif
+                            </ol>
+                        </nav>
 
                         <div class="card-body">
                             {!! Form::open(['route' => 'foda-cruce-ambientes.store', 'files' => true]) !!}

@@ -204,8 +204,8 @@ class FodaCruceAmbienteController extends Controller
             $groupId[] = $group->id;
         }
 
-        $perfil = FodaPerfil::where('group_id', $idGroup)->first();
-        $idPerfil = $perfil->id;
+        $profile = FodaPerfil::where('group_id', $idGroup)->first();
+        $idPerfil = $profile->id;
 
         $profiles = FodaPerfil::with(['group', 'model'])
             ->whereIn('group_id', $groupId)
@@ -250,8 +250,8 @@ class FodaCruceAmbienteController extends Controller
             $groupId[] = $group->id;
         }
 
-        $perfil = FodaPerfil::where('group_id', $idGroup)->first();
-        $idPerfil = $perfil->id;
+        $profile = FodaPerfil::where('group_id', $idGroup)->first();
+        $idPerfil = $profile->id;
 
         $profiles = FodaPerfil::with(['group', 'model'])
             ->whereIn('group_id', $groupId)
@@ -298,8 +298,8 @@ class FodaCruceAmbienteController extends Controller
             $groupId[] = $group->id;
         }
 
-        $perfil = FodaPerfil::where('group_id', $idGroup)->first();
-        $idPerfil = $perfil->id;
+        $profile = FodaPerfil::where('group_id', $idGroup)->first();
+        $idPerfil = $profile->id;
 
         $profiles = FodaPerfil::with(['group', 'model'])
             ->whereIn('group_id', $groupId)
@@ -346,8 +346,8 @@ class FodaCruceAmbienteController extends Controller
             $groupId[] = $group->id;
         }
 
-        $perfil = FodaPerfil::where('group_id', $idGroup)->first();
-        $idPerfil = $perfil->id;
+        $profile = FodaPerfil::where('group_id', $idGroup)->first();
+        $idPerfil = $profile->id;
 
         $profiles = FodaPerfil::with(['group', 'model'])
             ->whereIn('group_id', $groupId)

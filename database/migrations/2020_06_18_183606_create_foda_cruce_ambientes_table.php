@@ -26,7 +26,7 @@ class CreateFodaCruceAmbientesTable extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->string('estrategia');
+            $table->text('estrategia');
             $table->string('tipo');
             $table->timestamps();
         });

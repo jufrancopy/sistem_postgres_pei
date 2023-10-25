@@ -13,12 +13,29 @@
 
                     <div class="card">
                         <div class="card-header card-header-info">
-                            <h4 class="card-title ">Cruce de Ambientes</h4>
-
-                            <div class="pull-right">
-                                <a class="btn btn-warning" href="{{ route('planificacion-dashboard') }}"> Atras</a>
-                            </div>
+                            @if (isset($profile))
+                                <h3 class="card-title ">Matriz FODA - {{ $profile->name }}</h3>
+                            @else
+                                <h3 class="card-title ">Matriz FODA Consolidado</h3>
+                            @endif
                         </div>
+                        <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
+                            <ol class="breadcrumb mb-0">
+                                @if (isset($profile))
+                                    <li class="breadcrumb-item"><a href="{{ route('foda-list-groups') }}">Matriz Consolidado
+                                        </a></li>
+                                    <li class="breadcrumb-item"><a
+                                            href="{{ route('foda-matriz-groups', $profile->group_id) }}">Consolidado -
+                                            {{ $profile->name }}
+                                        </a>
+                                    </li>
+                                    <li class="breadcrumb-item active" aria-current="page">Matriz Foda -
+                                        {{ $profile->name }}</li>
+                                @else
+                                    <li class="breadcrumb-item active" aria-current="page">Matriz Foda Consolidado</li>
+                                @endif
+                            </ol>
+                        </nav>
 
                         <div class="card-body">
                             <div class="table-bordered">
@@ -26,8 +43,8 @@
                                     <tbody>
                                         <tr>
                                             <td>
-                                                Perfil: <label>{{ $perfil->name }}</label><br />
-                                                Contexto: <label>{{ $perfil->context }}</label>
+                                                profile: <label>{{ $profile->name }}</label><br />
+                                                Contexto: <label>{{ $profile->context }}</label>
                                             </td>
                                             <td class="table-success"><label>Fortalezas</label> <br />
                                                 @foreach ($fortalezas as $v)
