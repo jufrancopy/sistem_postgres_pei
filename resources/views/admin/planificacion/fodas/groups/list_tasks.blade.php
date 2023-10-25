@@ -9,7 +9,7 @@
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Tareas</li>
+                <li class="breadcrumb-item active" aria-current="page">Lista de Consolidados</li>
             </ol>
         </nav>
 

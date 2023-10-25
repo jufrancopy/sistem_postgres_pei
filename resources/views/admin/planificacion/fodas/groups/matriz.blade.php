@@ -13,11 +13,24 @@
 
                     <div class="card">
                         <div class="card-header card-header-info">
-                            <h3 class="card-title ">Matriz FODA </h3>
-                            <div class="pull-right">
-                                <a class="btn btn-warning" href="{{ route('planificacion-dashboard') }}"> Atras</a>
-                            </div>
+                            @if (isset($profile))
+                                <h3 class="card-title ">Matriz FODA Consolidado de {{ $profile->name }}</h3>
+                            @else
+                                <h3 class="card-title ">Matriz FODA Consolidado</h3>
+                            @endif
                         </div>
+                        <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="{{ route('foda-list-groups') }}">Lista de Consolidados
+                                    </a></li>
+                                @if (isset($profile))
+                                    <li class="breadcrumb-item active" aria-current="page">Matriz Foda -
+                                        {{ $profile->name }}</li>
+                                @else
+                                    <li class="breadcrumb-item active" aria-current="page">Matriz Foda Consolidado</li>
+                                @endif
+                            </ol>
+                        </nav>
                         <div class="card-body">
                             <div class="card-header">
                                 @if (isset($profiles) && count($profiles) > 0)
