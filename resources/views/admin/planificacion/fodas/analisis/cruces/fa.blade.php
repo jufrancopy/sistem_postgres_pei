@@ -6,10 +6,6 @@
                     <div class="card">
                         <div class="card-header card-header-info">
                             <h4 class="card-title ">Crear Estrategias FA</b>
-
-                                <div class="pull-right">
-                                    <a class="btn btn-warning" href="#"> Atras</a>
-                                </div>
                         </div>
                         @if (count($errors) > 0)
                             <div class="alert alert-danger">
