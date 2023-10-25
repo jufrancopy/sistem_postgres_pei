@@ -1,5 +1,5 @@
 @extends('layouts.master')
-
+@section('title', 'Cruce de Ambientes')
 @section('content')
     <div class="content">
         <div class="container-fluid">

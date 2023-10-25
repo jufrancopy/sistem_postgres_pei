@@ -1,4 +1,6 @@
-@extends('layouts.master') @section('content')
+@extends('layouts.master')
+@section('title', 'Crear Estrategias FA')
+@section('content')
     <div class="content">
         <div class="container-fluid">
             <div class="row">
