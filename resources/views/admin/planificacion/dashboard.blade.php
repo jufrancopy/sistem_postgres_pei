@@ -1,4 +1,5 @@
 @extends('layouts.master')
+@section('title', 'Dashboard-Planificación')
 @section('content')
     <!-- Contenido Principal -->
     <div class="content">

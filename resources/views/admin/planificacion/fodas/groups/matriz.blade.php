@@ -1,5 +1,5 @@
 @extends('layouts.master')
-
+@section('title', 'Consolidados')
 @section('content')
     <div class="content">
         <div class="container-fluid">

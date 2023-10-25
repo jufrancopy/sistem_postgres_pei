@@ -1,6 +1,5 @@
 @extends('layouts.master')
 @section('title', 'Matrices Grupales')
-
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
