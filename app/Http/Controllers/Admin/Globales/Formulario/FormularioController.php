@@ -27,7 +27,6 @@ class FormularioController extends Controller
 
     public function getDependencies(Request $request)
     {
-
         $data = Organigrama::where('dependency_id', $request->dependency_id)
             ->with('childrenDependencies')
             ->get();
@@ -73,13 +72,13 @@ class FormularioController extends Controller
         $values = $request->value;
 
         foreach ($request->variable_id as $key => $value) {
-            
-            if($request->selected[$key] == null){
+
+            if ($request->selected[$key] == null) {
                 $values[$key] = 0;
-            }else{
+            } else {
                 $values[$key] = 1;
             }
-            
+
             $formularioVariableAttach[$value] = [
                 'selected_variable_id' => $request->selected[$key],
                 'value' => $values[$key]

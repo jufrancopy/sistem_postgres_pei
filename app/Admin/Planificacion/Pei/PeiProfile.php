@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use App\Models\User;
 use App\Admin\Planificacion\Task\Task;
 use App\Admin\Globales\Group;
+use App\Admin\Globales\Organigrama;
+use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
 
 class PeiProfile extends Model
 {
@@ -23,6 +25,8 @@ class PeiProfile extends Model
 
     protected $fillable = [
         'name',
+        'year_start',
+        'year_end',
         'type',
         'level',
         'mision',
@@ -35,6 +39,11 @@ class PeiProfile extends Model
         'goal',
         'progress',
         'group_id',
+        'dependency_id',
+        'action',
+        'indicator',
+        'baseline',
+        'target'
     ];
 
     public function task()
@@ -55,5 +64,20 @@ class PeiProfile extends Model
     public function tasks()
     {
         return $this->morphMany(Task::class, 'typetaskable', 'typetaskable_id');
+    }
+
+    public function strategies()
+    {
+        return $this->belongsToMany(FodaCruceAmbiente::class, 'planificacion.pei_profiles_has_strategies', 'profile_id', 'strategy_id');
+    }
+
+    public function responsibles()
+    {
+        return $this->belongsToMany(Organigrama::class, 'planificacion.peis_profiles_has_responsibles', 'profile_id', 'responsible_id');
+    }
+
+    public function dependency()
+    {
+        return $this->belongsTo(Organigrama::class);
     }
 }

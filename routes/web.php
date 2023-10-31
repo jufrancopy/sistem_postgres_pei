@@ -19,11 +19,12 @@ Route::group(['middleware' => ['auth']], function () {
     //Rutas de PEI
     Route::resource('pei-profiles', 'Admin\Planificacion\Pei\PeiController');
     Route::get('pei-profiles/{idPerfil}/detail', 'Admin\Planificacion\Pei\PeiController@showDetailForGroup');
-    Route::get('peis-crear-sub-nivel/{id}', 'Admin\Planificacion\Pei\PeiController@addSubNivel')->name('peis-crear-sub-nivel');
-    Route::get('peis-editar-sub-nivel/{idSubNivel}', 'Admin\Planificacion\Pei\PeiController@editarSubNivel')->name('peis-editar-sub-nivel');
-    Route::delete('peis-eliminar-nivel/{idNivelSuperior}/{idNivel}', 'Admin\Planificacion\Pei\PeiController@eliminarNivel')->name('peis-eliminar-nivel');
-    Route::view('peis-dashboard', 'admin.planificacion.peis.index')->name('peis-dashboard');
-    Route::get('ver-cuadro-mando/{idPerfil}', 'Admin\Planificacion\Pei\PeiController@verCuadroDeMando')->name('ver-cuadro-mando');
+    Route::get('pei-profiles-compareHistorical', 'Admin\Planificacion\Pei\PeiController@compareHistorical')->name('pei-profiles-compareHistorical');
+    // Route::get('peis-crear-sub-nivel/{id}', 'Admin\Planificacion\Pei\PeiController@addSubNivel')->name('peis-crear-sub-nivel');
+    // Route::get('peis-editar-sub-nivel/{idSubNivel}', 'Admin\Planificacion\Pei\PeiController@editarSubNivel')->name('peis-editar-sub-nivel');
+    // Route::delete('peis-eliminar-nivel/{idNivelSuperior}/{idNivel}', 'Admin\Planificacion\Pei\PeiController@eliminarNivel')->name('peis-eliminar-nivel');
+    // Route::view('peis-dashboard', 'admin.planificacion.peis.index')->name('peis-dashboard');
+    // Route::get('ver-cuadro-mando/{idPerfil}', 'Admin\Planificacion\Pei\PeiController@verCuadroDeMando')->name('ver-cuadro-mando');
 
 
     // Relevamientos
@@ -113,6 +114,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('organigramas-editar-subdependencia/{idDependencia}', 'Admin\Globales\OrganigramaController@editarSubDependencia')->name('organigramas-editar-subdependencia');
         Route::get('organigrama-gestionar/{id}', 'Admin\Globales\OrganigramaController@verOrganigrama')->name('organigrama-gestionar');
         Route::get('get-dependencies', 'Admin\Globales\OrganigramaController@getDependencies')->name('get-dependencies');
+        Route::get('get-dependencies/{idRoot}', 'Admin\Globales\OrganigramaController@getDependenciesFromRoot')->name('has-dependencies');
         Route::get('get-dependency/{idSelection}', 'Admin\Globales\OrganigramaController@getDependency')->name('get-dependency');
 
         //Variables de Encuesta
@@ -188,6 +190,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-matriz-crossing/{idProfile}/fa', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@faGroup')->name('foda-matriz-crossing-fa');
     Route::get('foda-matriz-crossing/{idProfile}/da', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@daGroup')->name('foda-matriz-crossing-da');
     Route::post('foda-profile/{idRootGroup}/', 'Admin\Planificacion\Foda\FodaPerfilController@createGroupRootProfile')->name('foda-profile-create');
+    Route::get('get-crossings', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@getCrossings')->name('get-crossings');
 
 
     //Rutas de Elaboración del PEI

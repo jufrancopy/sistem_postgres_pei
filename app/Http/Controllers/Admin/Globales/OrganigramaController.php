@@ -58,6 +58,24 @@ class OrganigramaController extends Controller
         return response()->json($data);
     }
 
+    public function getDependenciesFromRoot(Request $request, $idRoot)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $rootNode = Organigrama::find($idRoot);
+
+            if ($rootNode) {
+                // Utiliza descendants para obtener todos los hijos del nodo raíz
+                $children = $rootNode->descendants()->where('dependency', 'LIKE', "%$search%")->get(['id', 'dependency']);
+                $data = $children->toArray();
+            }
+        }
+
+        return response()->json($data);
+    }
+
     public function getDependency(Request $request, $idSelection)
     {
         $data = Organigrama::findOrFail($idSelection);
