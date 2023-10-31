@@ -80,7 +80,7 @@
                                         </div>
 
                                         <div class="form-group">
-                                            {{ Form::label('analysts', 'Asignar Analista Grupal:') }}
+                                            {{ Form::label('analysts', 'Asignar Analistas:') }}
                                             {!! Form::select('analyst_id[]', [], null, [
                                                 'id' => 'analysts',
                                                 'style' => 'width:100%',

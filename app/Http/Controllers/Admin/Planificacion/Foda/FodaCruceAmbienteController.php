@@ -67,6 +67,20 @@ class FodaCruceAmbienteController extends Controller
         return view('admin.planificacion.fodas.analisis.cruce-ambientes', get_defined_vars());
     }
 
+    public function getCrossings(Request $request)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $data = FodaCruceAmbiente::select("id", "estrategia")
+                ->where('estrategia', 'LIKE', "%$search%")
+                ->get();
+        }
+
+        return response()->json($data);
+    }
+
     // Creamos la Estrategia FO
     public function FO(Request $request, $idPerfil)
     {

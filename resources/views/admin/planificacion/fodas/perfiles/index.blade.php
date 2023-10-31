@@ -413,6 +413,7 @@
                     //Precargar Dependencia
                     initSelect2($('#dependency'), data.profile.dependency.id, data.profile
                         .dependency.dependency);
+
                     initSelect2($('#groups'), data.profile.group.id, data.profile.group.name);
 
                     function initSelect2(control, key, value) {
