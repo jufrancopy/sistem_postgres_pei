@@ -298,7 +298,7 @@
                             <div class="modal-body">
                                 <form id="axisForm" name="axisForm" class="form-horizontal">
 
-                                    {{ Form::hidden('profile_id', null, ['id' => 'axis_profile_id']) }}
+                                    {{ Form::text('profile_id', null, ['id' => 'axis_profile_id']) }}
                                     {{ Form::hidden('parent_id', null, ['id' => 'axis_parent_id']) }}
                                     {{ Form::hidden('group_id', null, ['id' => 'axis_group_id']) }}
                                     {{ Form::hidden('mision', null, ['id' => 'axis_mision']) }}
