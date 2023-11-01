@@ -43,7 +43,8 @@ class PeiProfile extends Model
         'action',
         'indicator',
         'baseline',
-        'target'
+        'target',
+        'user_id'
     ];
 
     public function task()

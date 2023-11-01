@@ -89,6 +89,9 @@ class PeiController extends Controller
             );
         };
 
+        $user = Auth::user();
+
+
         if ($request->profile_id) {
             $profileId =  $request->profile_id;
         } else {
@@ -119,6 +122,7 @@ class PeiController extends Controller
                     'indicator' => $request->indicator,
                     'baseline' => $request->baseline,
                     'target' => $request->target,
+                    'user_id' => $user->id,
                 ]
             );
         } else {
@@ -144,7 +148,8 @@ class PeiController extends Controller
                     'action' => $request->action,
                     'indicator' => $request->indicator,
                     'baseline' => $request->baseline,
-                    'target' => $request->target
+                    'target' => $request->target,
+                    'user_id' => $user->id
                 ]
             );
         }
@@ -215,13 +220,11 @@ class PeiController extends Controller
 
     public function show(Request $request, $id)
     {
-        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->findOrFail($id);
+        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies', 'user'])->findOrFail($id);
         $type = $profile->type;
 
 
         $user = Auth::user('name');
-
-
 
 
         if ($request->ajax()) {

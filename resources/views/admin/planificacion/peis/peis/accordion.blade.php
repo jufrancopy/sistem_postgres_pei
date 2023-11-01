@@ -72,11 +72,18 @@
                                                     <div class="card mb-3">
                                                         <div class="card-header" id="headingAction">
                                                             <ul>
-                                                                <li><label
-                                                                        for="">Analista:</label>{{ $user->name }}
+                                                                <li>
+                                                                    <label>
+                                                                        @if ($action->user == null)
+                                                                            Analista: Pendiente
+                                                                        @else
+                                                                            Analista:
+                                                                            {{ $action->user->name }}
+                                                                        @endif
+                                                                    </label>
                                                                 </li>
-
                                                             </ul>
+
                                                             <h5 class="mb-0">
                                                                 <div class="card-body"
                                                                     id="actionsBlock_{{ $action->id }}">
