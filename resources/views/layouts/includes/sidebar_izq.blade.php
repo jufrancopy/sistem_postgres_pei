@@ -49,16 +49,22 @@
         </ul>
     @else
         <li class="nav-item ">
-            <a class="nav-link" href="{{ route('tasks-list-tree') }}">
+            <a class="nav-link" href="{{ route('tasks.index') }}">
                 <i class="material-icons">assignment</i>
-                <p>Tareas</p>
+                <p>Mis Tareas</p>
             </a>
         </li>
         <li class="nav-item ">
+            <a class="nav-link" href="{{ route('tasks-list-tree') }}">
+                <i class="material-icons">assignment</i>
+                <p>Arbol de Tareas</p>
+            </a>
+        </li>
+        {{-- <li class="nav-item ">
             <a class="nav-link" href="{{ route('foda-list-groups') }}">
                 <i class="material-icons">assignment</i>
                 <p>Cruce de Ambientes</p>
             </a>
-        </li>
+        </li> --}}
     @endhasanyrole
 </div>
