@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
 
 use App\Models\User;
 use App\Admin\Planificacion\Pei\PeiProfile;
-
+use Illuminate\Support\Facades\Auth;
 
 class PeiController extends Controller
 {
@@ -217,6 +217,12 @@ class PeiController extends Controller
     {
         $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->findOrFail($id);
         $type = $profile->type;
+
+
+        $user = Auth::user('name');
+
+
+
 
         if ($request->ajax()) {
             $responseData = [

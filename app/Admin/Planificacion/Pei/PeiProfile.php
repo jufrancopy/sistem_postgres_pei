@@ -80,4 +80,9 @@ class PeiProfile extends Model
     {
         return $this->belongsTo(Organigrama::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

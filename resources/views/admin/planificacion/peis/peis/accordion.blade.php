@@ -65,16 +65,18 @@
                                             <div class="card">
                                                 <div class="card-header bg-info">
                                                     <h3>Lista de Acciones</h3>
-                                                    @foreach ($profile->analysts as $analyst)
-                                                        <label for="" class="text-white">Analista:
-                                                            {{ $analyst->name }}</label>
-                                                    @endforeach
                                                 </div>
                                             </div>
                                             @foreach ($goal->children as $action)
                                                 <div class="actionDetail">
                                                     <div class="card mb-3">
                                                         <div class="card-header" id="headingAction">
+                                                            <ul>
+                                                                <li><label
+                                                                        for="">Analista:</label>{{ $user->name }}
+                                                                </li>
+
+                                                            </ul>
                                                             <h5 class="mb-0">
                                                                 <div class="card-body"
                                                                     id="actionsBlock_{{ $action->id }}">
@@ -94,8 +96,10 @@
                                                                             <tbody>
                                                                                 <tr>
                                                                                     <td>{!! $action->name !!}</td>
-                                                                                    <td>{{ $action->indicator }}</td>
-                                                                                    <td>{{ $action->baseline }}</td>
+                                                                                    <td>{{ $action->indicator }}
+                                                                                    </td>
+                                                                                    <td>{{ $action->baseline }}
+                                                                                    </td>
                                                                                     <td>{{ $action->target }}</td>
                                                                                     <td>
                                                                                         @foreach ($action->responsibles as $responsible)
