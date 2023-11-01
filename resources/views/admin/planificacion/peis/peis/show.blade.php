@@ -1289,15 +1289,16 @@
                         var accordionAxiID = data.profile.id
 
                         if (saveBtnValue === "create") {
-                            var newAxisElement = '<div class="card bg-primary">' +
+                            var newAxisElement = '<div class="col-12 mb-3">' +
+                                '<div class="card bg-primary">' +
                                 '<div class="card-header bg-light" id="headingAxi_' + axisId +
                                 '">' +
                                 '<h2 class="mb-0" id="axisBlock_' + axisId + '">' +
                                 '<div class="d-flex justify-content-between">' +
                                 '<button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#' +
                                 axisId + '" aria-expanded="false" aria-controls="' + axisId +
-                                '">' +
-                                '<h6><p>' + axisName + '</p></h6>' +
+                                '" style="max-height: 100px; overflow-y: auto; white-space: pre-line; text-align: left; font-weight: bold;">' +
+                                axisName +
                                 '</button>' +
                                 '<a class="btn btn-success text-white btn-circle createAxis" data-id="' +
                                 axisId +
@@ -1320,7 +1321,7 @@
                                 '<div class="row contentGoals">' +
                                 '<div class="col-12">' +
                                 '<div class="card-body">' +
-                                '<div class="accordion" id="accordionGoal_' + axisId + '">' +
+                                '<div id="accordionGoal_' + axisId + '">' +
                                 '</div>' +
                                 '</div>' +
                                 '</div>' +
@@ -1329,12 +1330,13 @@
                                 '</div>';
 
                             // Agrega el nuevo elemento al primer nivel de contentMain
-                            $('.contentMain #accordionAxi').prepend(newAxisElement);
+                            $('.contentMain').prepend(
+                                newAxisElement);
 
                         } else if (saveBtnValue === "edit") {
-                            var existingElement = $('.contentMain .accordion #axisBlock_' +
-                                axisId);
-                            existingElement.find('h6').html(axisName);
+
+                            $('#headingAxi_' + axisId + ' button').html(axisName);
+
                         }
 
                     },
@@ -1383,7 +1385,6 @@
                             'Has Agregado un nuevo Objetivo.',
                             'success'
                         )
-
                         var parentId = data.profile.parent_id;
                         var goalsId = data.profile.id;
                         var goalsName = data.profile.name;
@@ -1397,8 +1398,9 @@
                                 '<button class="btn btn-link btn-block text-left collapsed" ' +
                                 'type="button" data-toggle="collapse" ' +
                                 'data-target="#' + goalsId + '" aria-expanded="false" ' +
-                                'aria-controls="' + goalsId + '">' +
-                                '<h6>' + goalsName + '</h6>' +
+                                'aria-controls="' + goalsId +
+                                '" style="max-height: 100px; overflow-y: auto; white-space: pre-line; text-align: left; font-weight: bold;">' +
+                                goalsName +
                                 '</button>' +
                                 '<a class="btn btn-warning text-white btn-circle showStrategies" ' +
                                 'data-id="' + goalsId +
@@ -1425,7 +1427,6 @@
                                 '<div id="' + goalsId + '" class="collapse" ' +
                                 'aria-labelledby="headingGoal_' + goalsId + '" ' +
                                 'data-parent="#accordionGoal_' + goalsId + '">' +
-                                '<div class="card">' +
                                 '<div class="row contentActions">' +
                                 '<div class="card-body">' +
                                 '<div class="accordionAction" id="accordionAction_' +
@@ -1434,9 +1435,7 @@
                                 newGoalsElement);
 
                         } else if (saveBtnValue === "edit") {
-                            var existingElement = $(
-                                '#goalsBlock_' + goalsId);
-                            existingElement.find('h6').html(goalsName);
+                            $('#headingGoal_' + goalsId + ' button').html(goalsName);
                         }
                         $('#goalsForm').trigger("reset");
                         $('#ajaxGoalsModal').modal('hide');
@@ -1492,52 +1491,53 @@
                         var actionsId = data.profile.id;
                         var actionsName = data.profile.name;
 
-                        function createCard(data) {
+                        if (saveBtnValue === "create") {
+                            // Supongo que tienes un valor de acción para identificar la nueva acción
+                            var newRowHtml = `
+                                <tr>
+                                    <td>${data.profile.name}</td>
+                                    <td>${data.profile.indicator}</td>
+                                    <td>${data.profile.baseline}</td>
+                                    <td>${data.profile.target}</td>
+                                    <td>${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}</td>
+                                    <td>
+                                        <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
+                                            <i class="fa fa-edit" aria-hidden="true"></i>
+                                        </a>
+                                        <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
+                                            <i class="fa fa-trash" aria-hidden="true"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            `;
 
-                            var cardHtml = `
-                            <div class="container">
-                                <div class="card">
-                                    <div class="card-header bg-light" id="headingAction_${data.profile.id}">
-                                        <div class="table-responsive" id="actionsBlock_${data.profile.id}">
-                                            <table class="table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Acción</th>
-                                                        <th>Indicador</th>
-                                                        <th>Línea de Base</th>
-                                                        <th>Meta</th>
-                                                        <th>Responsable</th>
-                                                        <th>Acciones</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>${data.profile.name}</td>
-                                                        <td>${data.profile.indicator}</td>
-                                                        <td>${data.profile.baseline}</td>
-                                                        <td>${data.profile.target}</td>
-                                                        <td>
-                                                            ${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}
-                                                        </td>
-                                                        <td>
-                                                            <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
-                                                                <i class="fa fa-edit" aria-hidden="true"></i>
-                                                            </a>
-                                                            <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
-                                                                <i class="fa fa-trash" aria-hidden="true"></i>
-                                                            </a>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                            $('.contentActions #accordionAction_' + parentId).append(cardHtml);
+                            // Agrega la nueva fila al final de la tabla existente
+                            $('#actionsBlock_' + parentId + ' table tbody').append(newRowHtml);
+                        } else if (saveBtnValue === "edit") {
+                            // Supongo que tienes un valor de acción para actualizar, así que obtén su ID
+                            var updatedHtml = `
+                                    <tr>
+                                        <td>${data.profile.name}</td>
+                                        <td>${data.profile.indicator}</td>
+                                        <td>${data.profile.baseline}</td>
+                                        <td>${data.profile.target}</td>
+                                        <td>${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}</td>
+                                        <td>
+                                            <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
+                                                <i class="fa fa-edit" aria-hidden="true"></i>
+                                            </a>
+                                            <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
+                                                <i class="fa fa-trash" aria-hidden="true"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                `;
+
+                            // Actualiza el contenido de la fila de la tabla existente
+                            $('#actionsBlock_' + parentId + ' table tbody').html(updatedHtml);
                         }
-                        createCard(data);
+
+
                         $('#actionsForm').trigger("reset");
                         $('#ajaxActionsModal').modal('hide');
                     },
@@ -1561,6 +1561,7 @@
             // Agregar un controlador de eventos para el botón de eliminación
             $('.contentMain').on('click', '.deleteItem', function() {
                 var axisId = $(this).data('id');
+                console.log("🚀 ~ file: show.blade.php:1564 ~ $ ~ axisId:", axisId)
 
                 // Muestra una confirmación en SweetAlert
                 Swal.fire({
