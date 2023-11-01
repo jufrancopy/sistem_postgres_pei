@@ -62,6 +62,15 @@
                                         aria-labelledby="headingGoal_{{ $goal->id }}"
                                         data-parent="#accordionGoal_{{ $goal->id }}">
                                         <div class="card-body">
+                                            <div class="card">
+                                                <div class="card-header bg-info">
+                                                    <h3>Lista de Acciones</h3>
+                                                    @foreach ($profile->analysts as $analyst)
+                                                        <label for="" class="text-white">Analista:
+                                                            {{ $analyst->name }}</label>
+                                                    @endforeach
+                                                </div>
+                                            </div>
                                             @foreach ($goal->children as $action)
                                                 <div class="actionDetail">
                                                     <div class="card mb-3">
@@ -69,6 +78,7 @@
                                                             <h5 class="mb-0">
                                                                 <div class="card-body"
                                                                     id="actionsBlock_{{ $action->id }}">
+
                                                                     <div class="table-responsive">
                                                                         <table class="table table-striped">
                                                                             <thead>
