@@ -1491,8 +1491,11 @@
                         var actionsId = data.profile.id;
                         var actionsName = data.profile.name;
 
+                        var goalId = data.profile
+                            .id; // Supongo que contiene el ID del objetivo al que deseas agregar o actualizar acciones
+
                         if (saveBtnValue === "create") {
-                            // Supongo que tienes un valor de acción para identificar la nueva acción
+                            // Crear una nueva fila de acción (action) y agregarla a la tabla existente
                             var newRowHtml = `
                                 <tr>
                                     <td>${data.profile.name}</td>
@@ -1511,31 +1514,36 @@
                                 </tr>
                             `;
 
-                            // Agrega la nueva fila al final de la tabla existente
-                            $('#actionsBlock_' + parentId + ' table tbody').append(newRowHtml);
+                            // Agregar la nueva fila al final de la tabla del objetivo correspondiente
+                            $(`.actionDetail table tbody`).append(newRowHtml);
                         } else if (saveBtnValue === "edit") {
-                            // Supongo que tienes un valor de acción para actualizar, así que obtén su ID
+                            // Actualiza una fila de acción existente
                             var updatedHtml = `
-                                    <tr>
-                                        <td>${data.profile.name}</td>
-                                        <td>${data.profile.indicator}</td>
-                                        <td>${data.profile.baseline}</td>
-                                        <td>${data.profile.target}</td>
-                                        <td>${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}</td>
-                                        <td>
-                                            <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
-                                                <i class="fa fa-edit" aria-hidden="true"></i>
-                                            </a>
-                                            <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
-                                                <i class="fa fa-trash" aria-hidden="true"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                `;
+                            <tr>
+                                <td>${data.profile.name}</td>
+                                <td>${data.profile.indicator}</td>
+                                <td>${data.profile.baseline}</td>
+                                <td>${data.profile.target}</td>
+                                <td>${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}</td>
+                                <td>
+                                    <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
+                                        <i class="fa fa-edit" aria-hidden="true"></i>
+                                    </a>
+                                    <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
+                                        <i class="fa fa-trash" aria-hidden="true"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        `;
 
-                            // Actualiza el contenido de la fila de la tabla existente
-                            $('#actionsBlock_' + parentId + ' table tbody').html(updatedHtml);
+                            // Reemplaza el contenido de la fila de acción correspondiente
+
+                            $(`.headingAction #accordionAction_${actionsId} table tbody`)
+                                .append(updatedHtml);
+
                         }
+
+
 
 
                         $('#actionsForm').trigger("reset");

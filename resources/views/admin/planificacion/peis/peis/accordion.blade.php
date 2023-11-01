@@ -58,72 +58,63 @@
                                             </div>
                                         </h5>
                                     </div>
-                                    <div id="{{ $goal->id }}" class="collapse"
+                                    <div id="{{ $goal->id }}" class="collapse accordionAction"
                                         aria-labelledby="headingGoal_{{ $goal->id }}"
                                         data-parent="#accordionGoal_{{ $goal->id }}">
                                         <div class="card-body">
                                             @foreach ($goal->children as $action)
-                                                <div class="card mb-3">
-                                                    <div class="card-header" id="headingAction_{{ $action->id }}">
-                                                        <h5 class="mb-0">
-                                                            <button class="btn btn-link" type="button"
-                                                                data-toggle="collapse"
-                                                                data-target="#{{ $action->id }}"
-                                                                aria-expanded="false"
-                                                                style="max-height: 100px; overflow-y: auto; white-space: pre-line; text-align: left; font-weight: bold;"
-                                                                aria-controls="{{ $action->id }}">
-                                                                {!! $action->name !!}
-                                                            </button>
-                                                        </h5>
-                                                    </div>
-                                                    <div id="{{ $action->id }}" class="collapse"
-                                                        aria-labelledby="headingAction_{{ $action->id }}"
-                                                        data-parent="#accordionAction_{{ $goal->id }}">
-                                                        <div class="card-body" id="actionsBlock_{{ $goal->id }}">
-                                                            <div class="table-responsive">
-                                                                <table class="table table-striped">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th>Acción</th>
-                                                                            <th>Indicador</th>
-                                                                            <th>Línea de Base</th>
-                                                                            <th>Meta</th>
-                                                                            <th>Responsable</th>
-                                                                            <th>Acciones</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        <tr>
-                                                                            <td>{!! $action->name !!}</td>
-                                                                            <td>{{ $action->indicator }}</td>
-                                                                            <td>{{ $action->baseline }}</td>
-                                                                            <td>{{ $action->target }}</td>
-                                                                            <td>
-                                                                                @foreach ($action->responsibles as $responsible)
-                                                                                    <span
-                                                                                        class="badge badge-secondary">{{ $responsible->dependency }}</span>
-                                                                                @endforeach
-                                                                            </td>
-                                                                            <td>
-                                                                                <a class="btn btn-success btn-circle"
-                                                                                    data-id="{{ $action->id }}"
-                                                                                    data-type="edit"
-                                                                                    href="javascript:void(0)"
-                                                                                    id="createActions"><i
-                                                                                        class="fa fa-edit"
-                                                                                        aria-hidden="true"></i></a>
-                                                                                <a class="btn btn-danger btn-circle deleteItem"
-                                                                                    data-id="{{ $action->id }}"
-                                                                                    href="javascript:void(0)"
-                                                                                    id="deleteProfile"><i
-                                                                                        class="fa fa-trash"
-                                                                                        aria-hidden="true"></i>
-                                                                                </a>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
+                                                <div class="actionDetail">
+                                                    <div class="card mb-3">
+                                                        <div class="card-header" id="headingAction">
+                                                            <h5 class="mb-0">
+                                                                <div class="card-body"
+                                                                    id="actionsBlock_{{ $action->id }}">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-striped">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th>Acción</th>
+                                                                                    <th>Indicador</th>
+                                                                                    <th>Línea de Base</th>
+                                                                                    <th>Meta</th>
+                                                                                    <th>Responsable</th>
+                                                                                    <th>Acciones</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td>{!! $action->name !!}</td>
+                                                                                    <td>{{ $action->indicator }}</td>
+                                                                                    <td>{{ $action->baseline }}</td>
+                                                                                    <td>{{ $action->target }}</td>
+                                                                                    <td>
+                                                                                        @foreach ($action->responsibles as $responsible)
+                                                                                            <span
+                                                                                                class="badge badge-secondary">{{ $responsible->dependency }}</span>
+                                                                                        @endforeach
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <a class="btn btn-success btn-circle"
+                                                                                            data-id="{{ $action->id }}"
+                                                                                            data-type="edit"
+                                                                                            href="javascript:void(0)"
+                                                                                            id="createActions"><i
+                                                                                                class="fa fa-edit"
+                                                                                                aria-hidden="true"></i></a>
+                                                                                        <a class="btn btn-danger btn-circle deleteItem"
+                                                                                            data-id="{{ $action->id }}"
+                                                                                            href="javascript:void(0)"
+                                                                                            id="deleteProfile"><i
+                                                                                                class="fa fa-trash"
+                                                                                                aria-hidden="true"></i>
+                                                                                        </a>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                            </h5>
                                                         </div>
                                                     </div>
                                                 </div>
