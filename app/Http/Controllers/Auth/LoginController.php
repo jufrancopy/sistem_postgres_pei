@@ -42,7 +42,7 @@ class LoginController extends Controller
         if ($user->role == 'Administrador') {
             return redirect()->route('admin');
         } else {
-            return redirect()->route('pei-profiles');
+            return redirect()->route('pei-profiles.index');
         }
     }
 }
