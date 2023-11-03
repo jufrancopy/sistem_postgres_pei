@@ -149,7 +149,7 @@
                                                             target: "{{ $action->target }}",
                                                             responsible: "Julio",
                                                         }
-                                                    }
+                                                    },
                                                 @endforeach
                                             ]
 
