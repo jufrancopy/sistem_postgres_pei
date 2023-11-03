@@ -30,6 +30,7 @@
 <script src="{{ asset('js/jquery.validate.js') }}"></script>
 <script src="{{ asset('assets/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('assets/jstree/jstree.js') }}"></script>
+<script src="{{ asset('assets/jstree/jstreetable.min.js') }}"></script>
 <script src="{{ asset('assets/') }}"></script>
 <script src="{{ asset('js/bootstrap.min.js') }}"></script>
 

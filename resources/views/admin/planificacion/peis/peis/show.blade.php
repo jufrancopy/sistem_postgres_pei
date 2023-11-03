@@ -53,6 +53,7 @@
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="col vision">
                                     <div class="card">
                                         <div class="card-header d-flex align-items-center">
@@ -73,6 +74,7 @@
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="col values">
                                     <div class="card">
                                         <div class="card-header d-flex align-items-center">
@@ -95,6 +97,7 @@
 
                                 </div>
                             </div>
+                            <hr>
                             <div class="row">
                                 <div class="col-12">
                                     <a class="btn btn-success mb-2 text-white" data-id="{{ $profile->id }}"
@@ -103,6 +106,10 @@
                                     </a>
                                 </div>
                             </div>
+                            {{-- Arbol de Planificación Estrategica --}}
+                            {{-- <div id="data">
+
+                            </div> --}}
                             {{-- Inicio Contenido Desplegable (Acordeon) --}}
                             @include('admin.planificacion.peis.peis.accordion')
                             {{-- Fin Contenido Desplegable (Acordeon) --}}
@@ -298,7 +305,7 @@
                             <div class="modal-body">
                                 <form id="axisForm" name="axisForm" class="form-horizontal">
 
-                                    {{ Form::text('profile_id', null, ['id' => 'axis_profile_id']) }}
+                                    {{ Form::hidden('profile_id', null, ['id' => 'axis_profile_id']) }}
                                     {{ Form::hidden('parent_id', null, ['id' => 'axis_parent_id']) }}
                                     {{ Form::hidden('group_id', null, ['id' => 'axis_group_id']) }}
                                     {{ Form::hidden('mision', null, ['id' => 'axis_mision']) }}
@@ -540,6 +547,23 @@
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            // Initilizaton JSTree
+            $('#data').jstree({
+                'core': {
+                    'data': {
+                        'url': function(node) {
+                            var routeDetailItem = "{!! route('tree-group') !!}";
+                            return routeDetailItem;
+                        },
+                        'data': function(node) {
+                            return {
+                                'id': node.id
+                            };
+                        }
+                    }
                 }
             });
 
@@ -1534,11 +1558,12 @@
                                     </a>
                                 </td>
                             </tr>
+                            
                         `;
 
                             // Reemplaza el contenido de la fila de acción correspondiente
 
-                            $(`.headingAction #accordionAction_${actionsId} table tbody`)
+                            $(`#accordionAction_${actionsId} table tbody`)
                                 .append(updatedHtml);
 
                         }

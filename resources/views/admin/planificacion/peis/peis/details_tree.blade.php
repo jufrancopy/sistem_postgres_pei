@@ -1,5 +1,5 @@
 @extends('layouts.master')
-@section('title', 'Árbol de Tareas')
+@section('title', 'Árbol Detalles PEI')
 
 @section('content')
     <div class="card">
@@ -8,8 +8,8 @@
         </div>
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Árbol de Tareas </li>
+                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Árbol de Detalles</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Árbol Detalles PEI</li>
             </ol>
         </nav>
 
@@ -18,13 +18,13 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="card-body">
-                            <div id="data">
+                            <div id="treeProfile">
 
                             </div>
                         </div>
                     </div>
 
-                    <div class="modal fade bd-example-modal-lg" id="ajaxShowMatrizFoda" aria-hidden="true">
+                    {{-- <div class="modal fade bd-example-modal-lg" id="ajaxShowMatrizFoda" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="modal-header card-header-info">
@@ -104,7 +104,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
 
                 </div>
             </div>
@@ -120,23 +120,120 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
+            @foreach ($profile as $depth0)
 
-            // Initilizaton JSTree
-            $('#data').jstree({
-                'core': {
-                    'data': {
-                        'url': function(node) {
-                            var routeDetailItem = "{!! route('tree-group') !!}";
-                            return routeDetailItem;
+                var data = [{
+                    id: "{{ $depth0->id }}",
+                    text: "{{ $depth0->name }}",
+                    data: {},
+                    children: [
+                        @foreach ($depth0->children as $depth1)
+                            {
+                                id: "{{ $depth1->id }}",
+                                text: "{{ $depth1->name }}",
+                                data: {},
+                                children: [
+                                    @foreach ($depth1->children as $depth2)
+                                        {
+
+                                            id: "{{ $depth2->id }}",
+                                            text: "{{ $depth2->name }}",
+                                            children: [
+                                                @foreach ($depth2->children as $action)
+                                                    {
+                                                        id: "{{ $action->id }}",
+                                                        text: "{{ $action->name }}",
+                                                        data: {
+                                                            indicator: "{{ $action->indicator }}",
+                                                            baseline: "{{ $action->baseline }}",
+                                                            target: "{{ $action->target }}",
+                                                            responsible: "Julio",
+                                                        }
+                                                    }
+                                                @endforeach
+                                            ]
+
+
+                                        },
+                                    @endforeach
+
+                                ],
+                                'state': {
+                                    'opened': true
+                                }
+                            },
+                        @endforeach
+                    ],
+                }];
+            @endforeach
+
+            // load jstree
+            $("#treeProfile").jstree({
+                plugins: ["table", "dnd", "contextmenu", "sort"],
+                core: {
+                    data: data,
+                    check_callback: true
+                },
+                // configure tree table
+                table: {
+                    columns: [{
+                            width: 200,
+                            header: "Name"
                         },
-                        'data': function(node) {
-                            return {
-                                'id': node.id
-                            };
+                        {
+                            width: 150,
+                            value: "indicator",
+                            header: "Indicador",
+                            // format: function(v) {
+                            //     if (v) {
+                            //         return '$' + v.toFixed(2)
+                            //     }
+                            // }
+                        },
+                        {
+                            width: 150,
+                            value: "baseline",
+                            header: "Linea de Base"
+                        },
+                        {
+                            width: 150,
+                            value: "target",
+                            header: "Meta"
+                        },
+                        {
+                            width: 150,
+                            value: "responsible",
+                            header: "Responsable"
                         }
-                    }
+                    ],
+                    resizable: true,
+                    draggable: true,
+                    contextmenu: true,
+                    width: 1000,
+                    height: 1000
                 }
             });
+
+            // Initilizaton JSTree
+            // $('#treeProfile').jstree({
+            //     'core': {
+            //         'data': {
+            //             'url': function(node) {
+            //                 var idProfile = <?php echo json_encode($idProfile); ?>;
+            //                 var routeDetailItem = "{!! route('pei-profiles-details.tree', $idProfile) !!}";
+            //                 console.log("🚀 ~ file: details_tree.blade.php:131 ~ routeDetailItem:",
+            //                     routeDetailItem)
+
+            //                 return routeDetailItem;
+            //             },
+            //             'data': function(node) {
+            //                 return {
+            //                     'id': node.id
+            //                 };
+            //             }
+            //         }
+            //     }
+            // });
 
             // Esta función agregará los miembros al modal
             function membersModalFODA(members) {

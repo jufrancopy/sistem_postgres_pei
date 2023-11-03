@@ -35,6 +35,8 @@ class PeiController extends Controller
 
                     $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteProfile"><i class="fa fa-trash" aria-hidden="true"></i></a>';
 
+                    $btn .= ' <a href="' . route('pei-profiles.details', $row->id) . '" class="btn btn-info btn-circle showTree"><i class="fa fa-tree" aria-hidden="true"></i></a>';
+
                     return $btn;
                 })
                 ->addColumn('group', function (PeiProfile $profile) {
@@ -58,6 +60,46 @@ class PeiController extends Controller
 
         return view('admin.planificacion.peis.peis.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
+    }
+
+    public function showDetailsTree($idProfile)
+    {
+        $idProfile = $idProfile;
+        $profile = PeiProfile::descendantsAndSelf($idProfile)->toTree();
+
+
+        return view('admin.planificacion.peis.peis.details_tree', get_defined_vars());
+    }
+
+    public function dataDetailsTree($idProfile)
+    {
+        // $profile = PeiProfile::orderBy('id', 'ASC')->withDepth()->with('analysts')->get()->linkNodes();
+
+        // $result = [];
+        // foreach ($profile as $detail) {
+        //     $parent = $detail->parent_id ?: '#';
+        //     $text = $detail->name;
+        //     $plainText = strip_tags($text);
+
+        //     // Accede al nombre del analista (supongo que la relación se llama 'analysts')
+        //     // $analystNames = $detail->analysts->pluck('name')->implode(', ');
+
+        //     if ($detail->level == 'action') {
+        //         $analystName = $detail->analyst ? $detail->analyst->name : 'PENDIENTE';
+        //     } else {
+        //         $analystName = ''; // En otros niveles, deja la variable vacía o ajusta según lo necesario
+        //     }
+
+
+        //     $node = [
+        //         'id' => $detail->id,
+        //         'state' => ['opened' => true],
+        //         'parent' => $parent,
+        //         'text' => $plainText . ' - ' . $analystName, // Agrega el nombre del analista al texto
+        //     ];
+        //     array_push($result, $node);
+        // }
+        // return response()->json($result);
     }
 
     public function showDetailForGroup($idPerfil)
@@ -220,11 +262,11 @@ class PeiController extends Controller
 
     public function show(Request $request, $id)
     {
-        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies', 'user'])->findOrFail($id);
+        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->findOrFail($id);
         $type = $profile->type;
 
 
-        $user = Auth::user('name');
+        // $user = Auth::user('name');
 
 
         if ($request->ajax()) {

@@ -20,6 +20,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('pei-profiles', 'Admin\Planificacion\Pei\PeiController');
     Route::get('pei-profiles/{idPerfil}/detail', 'Admin\Planificacion\Pei\PeiController@showDetailForGroup');
     Route::get('pei-profiles-compareHistorical', 'Admin\Planificacion\Pei\PeiController@compareHistorical')->name('pei-profiles-compareHistorical');
+    Route::get('pei-profiles-details/{idProfile}', 'Admin\Planificacion\Pei\PeiController@showDetailsTree')->name('pei-profiles.details');
+    Route::get('pei-profiles-tree-details/{idProfile}', 'Admin\Planificacion\Pei\PeiController@dataDetailsTree')->name('pei-profiles-details.tree');
     // Route::get('peis-crear-sub-nivel/{id}', 'Admin\Planificacion\Pei\PeiController@addSubNivel')->name('peis-crear-sub-nivel');
     // Route::get('peis-editar-sub-nivel/{idSubNivel}', 'Admin\Planificacion\Pei\PeiController@editarSubNivel')->name('peis-editar-sub-nivel');
     // Route::delete('peis-eliminar-nivel/{idNivelSuperior}/{idNivel}', 'Admin\Planificacion\Pei\PeiController@eliminarNivel')->name('peis-eliminar-nivel');
