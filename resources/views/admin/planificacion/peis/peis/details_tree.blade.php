@@ -122,6 +122,8 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
+
+
             var data = [
                 @foreach ($profile as $matriz)
                     {
@@ -132,37 +134,42 @@
                                     name: '<p class="badge badge-success">EJE</p> {!! $axi->name !!}',
                                     children: [
                                         @foreach ($axi->children as $goal)
-                                            @foreach ($goal->children as $action)
-                                                {
-                                                    name: '<div class="card">' +
-                                                        '<div class="card-body">' +
-                                                        '<span class="badge badge-primary">Objetivo</span>' +
-                                                        ' {!! $goal->name !!}' +
-                                                        '<table class="table table-bordered">' +
-                                                        '<tr>' +
-                                                        '<th>Acción</th>' +
-                                                        '<th>Indicador</th>' +
-                                                        '<th>Línea de Base</th>' +
-                                                        '<th>Meta</th>' +
-                                                        '<th>Responsable</th>' +
-                                                        '</tr>' +
-                                                        '<tr>' +
-                                                        '<td>{!! $action->name !!}</td>' +
-                                                        '<td>{!! $action->indicator !!}</td>' +
-                                                        '<td>{!! $action->baseline !!}</td>' +
-                                                        '<td>{!! $action->target !!}</td>' +
-                                                        '<td>' +
-                                                        @foreach ($action->responsibles as $responsible)
-                                                            '<span class="badge badge-secondary">{{ $responsible->dependency }}</span> ' +
-                                                        @endforeach
-                                                    '</td>' +
-                                                    '</tr>' +
-                                                    '</table>' +
-                                                    '</div>' +
-                                                    '</div>',
-
-                                                },
-                                            @endforeach
+                                            {
+                                                name: '<sup class="badge badge-primary">Objetivo</sup> {!! $goal->name !!}',
+                                                children: [
+                                                    @foreach ($goal->children as $action)
+                                                        {
+                                                            name: '<div class="card">' +
+                                                                '<div class="card-header bg-info">' +
+                                                                '<h6 class="text-white">Lista de acciones de {!! $goal->name !!}</h6>' +
+                                                                '</div>' +
+                                                                '<div class="card-body">' +
+                                                                '<table class="table table-bordered">' +
+                                                                '<tr>' +
+                                                                '<th>Acción</th>' +
+                                                                '<th>Indicador</th>' +
+                                                                '<th>Línea de Base</th>' +
+                                                                '<th>Meta</th>' +
+                                                                '<th>Responsable</th>' +
+                                                                '</tr>' +
+                                                                '<tr>' +
+                                                                '<td>{!! $action->name !!}</td>' +
+                                                                '<td>{!! $action->indicator !!}</td>' +
+                                                                '<td>{!! $action->baseline !!}</td>' +
+                                                                '<td>{!! $action->target !!}</td>' +
+                                                                '<td>' +
+                                                                @foreach ($action->responsibles as $responsible)
+                                                                    '<span class="badge badge-secondary">{{ $responsible->dependency }}</span> ' +
+                                                                @endforeach
+                                                            '</td>' +
+                                                            '</tr>' +
+                                                            '</table>' +
+                                                            '</div>' +
+                                                            '</div>',
+                                                        },
+                                                    @endforeach
+                                                ]
+                                            },
                                         @endforeach
                                     ]
                                 },
@@ -171,6 +178,7 @@
                     },
                 @endforeach
             ];
+
 
 
             $('#treeProfile').tree({
