@@ -137,14 +137,15 @@
                                             {
                                                 name: '<sup class="badge badge-primary">Objetivo</sup> {!! $goal->name !!}',
                                                 children: [
-                                                    @foreach ($goal->children as $action)
-                                                        {
-                                                            name: '<div class="card">' +
-                                                                '<div class="card-header bg-info">' +
-                                                                '<h6 class="text-white">Lista de acciones de {!! $goal->name !!}</h6>' +
-                                                                '</div>' +
-                                                                '<div class="card-body">' +
-                                                                '<table class="table table-bordered">' +
+
+                                                    {
+                                                        name: '<div class="card">' +
+                                                            '<div class="card-header bg-info">' +
+                                                            '<h6 class="text-white">Lista de acciones de {!! $goal->name !!}</h6>' +
+                                                            '</div>' +
+                                                            '<div class="card-body">' +
+                                                            @foreach ($goal->children as $action)
+                                                                '<table class="table table-responsive">' +
                                                                 '<tr>' +
                                                                 '<th>Acción</th>' +
                                                                 '<th>Indicador</th>' +
@@ -161,13 +162,14 @@
                                                                 @foreach ($action->responsibles as $responsible)
                                                                     '<span class="badge badge-secondary">{{ $responsible->dependency }}</span> ' +
                                                                 @endforeach
-                                                            '</td>' +
-                                                            '</tr>' +
-                                                            '</table>' +
-                                                            '</div>' +
-                                                            '</div>',
-                                                        },
-                                                    @endforeach
+                                                                '</td>' +
+                                                                '</tr>' +
+                                                                '</table>' +
+                                                            @endforeach
+                                                        '</div>' +
+                                                        '</div>',
+                                                    },
+
                                                 ]
                                             },
                                         @endforeach
