@@ -106,6 +106,8 @@
                         </div>
                     </div> --}}
 
+
+
                 </div>
             </div>
         </div>
@@ -120,98 +122,66 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
-            @foreach ($profile as $depth0)
+            var data = [
+                @foreach ($profile as $matriz)
+                    {
+                        name: '{!! $matriz->name !!}',
+                        children: [
+                            @foreach ($matriz->children as $axi)
+                                {
+                                    name: '<p class="badge badge-success">EJE</p> {!! $axi->name !!}',
+                                    children: [
+                                        @foreach ($axi->children as $goal)
+                                            @foreach ($goal->children as $action)
+                                                {
+                                                    name: '<div class="card">' +
+                                                        '<div class="card-body">' +
+                                                        '<span class="badge badge-primary">Objetivo</span>' +
+                                                        ' {!! $goal->name !!}' +
+                                                        '<table class="table table-bordered">' +
+                                                        '<tr>' +
+                                                        '<th>Acción</th>' +
+                                                        '<th>Indicador</th>' +
+                                                        '<th>Línea de Base</th>' +
+                                                        '<th>Meta</th>' +
+                                                        '<th>Responsable</th>' +
+                                                        '</tr>' +
+                                                        '<tr>' +
+                                                        '<td>{!! $action->name !!}</td>' +
+                                                        '<td>{!! $action->indicator !!}</td>' +
+                                                        '<td>{!! $action->baseline !!}</td>' +
+                                                        '<td>{!! $action->target !!}</td>' +
+                                                        '<td>' +
+                                                        @foreach ($action->responsibles as $responsible)
+                                                            '<span class="badge badge-secondary">{{ $responsible->dependency }}</span> ' +
+                                                        @endforeach
+                                                    '</td>' +
+                                                    '</tr>' +
+                                                    '</table>' +
+                                                    '</div>' +
+                                                    '</div>',
 
-                var data = [{
-                    id: "{{ $depth0->id }}",
-                    text: "{{ $depth0->name }}",
-                    data: {},
-                    children: [
-                        @foreach ($depth0->children as $depth1)
-                            {
-                                id: "{{ $depth1->id }}",
-                                text: "{{ $depth1->name }}",
-                                data: {},
-                                children: [
-                                    @foreach ($depth1->children as $depth2)
-                                        {
-
-                                            id: "{{ $depth2->id }}",
-                                            text: "{{ $depth2->name }}",
-                                            children: [
-                                                @foreach ($depth2->children as $action)
-                                                    {
-                                                        id: "{{ $action->id }}",
-                                                        text: "{{ $action->name }}",
-                                                        data: {
-                                                            indicator: "{{ $action->indicator }}",
-                                                            baseline: "{{ $action->baseline }}",
-                                                            target: "{{ $action->target }}",
-                                                            responsible: "Julio",
-                                                        }
-                                                    },
-                                                @endforeach
-                                            ]
+                                                },
+                                            @endforeach
+                                        @endforeach
+                                    ]
+                                },
+                            @endforeach
+                        ]
+                    },
+                @endforeach
+            ];
 
 
-                                        },
-                                    @endforeach
-
-                                ],
-                                'state': {
-                                    'opened': true
-                                }
-                            },
-                        @endforeach
-                    ],
-                }];
-            @endforeach
-
-            // load jstree
-            $("#treeProfile").jstree({
-                plugins: ["table", "dnd", "contextmenu", "sort"],
-                core: {
-                    data: data,
-                    check_callback: true
-                },
-                // configure tree table
-                table: {
-                    columns: [{
-                            width: 200,
-                            header: "Name"
-                        },
-                        {
-                            width: 150,
-                            value: "indicator",
-                            header: "Indicador",
-                            // format: function(v) {
-                            //     if (v) {
-                            //         return '$' + v.toFixed(2)
-                            //     }
-                            // }
-                        },
-                        {
-                            width: 150,
-                            value: "baseline",
-                            header: "Linea de Base"
-                        },
-                        {
-                            width: 150,
-                            value: "target",
-                            header: "Meta"
-                        },
-                        {
-                            width: 150,
-                            value: "responsible",
-                            header: "Responsable"
-                        }
-                    ],
-                    resizable: true,
-                    draggable: true,
-                    contextmenu: true,
-                    width: 1000,
-                    height: 1000
-                }
+            $('#treeProfile').tree({
+                data: data,
+                autoEscape: false,
+                saveState: true,
+                closedIcon: $('<i class="fas fa-arrow-circle-right"></i>'),
+                openedIcon: $('<i class="fas fa-arrow-circle-down"></i>'),
+                autoOpen: true,
+                openFolderDelay: 1000,
+                dragAndDrop: true
             });
 
             // Initilizaton JSTree
@@ -237,7 +207,8 @@
 
             // Esta función agregará los miembros al modal
             function membersModalFODA(members) {
-                var memberListFODA = $('#memberListFODA'); // Encuentra el contenedor de la lista de miembros
+                var memberListFODA = $(
+                    '#memberListFODA'); // Encuentra el contenedor de la lista de miembros
 
                 // Vacía la lista actual (si hubiera elementos anteriores)
                 memberListFODA.empty();
