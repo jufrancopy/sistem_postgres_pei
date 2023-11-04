@@ -4,7 +4,7 @@
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Lista de Tareas Grupales</h4>
+            <h4 class="card-title ">Árbol Detalles PEI {{ $profile->first()->name }}</h4>
         </div>
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
