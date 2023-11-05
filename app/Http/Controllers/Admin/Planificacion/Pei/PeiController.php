@@ -24,7 +24,7 @@ class PeiController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = PeiProfile::where('parent_id', null)->orderBy('order_item', 'ASC')->get();
+            $data = PeiProfile::where('parent_id', null)->latest()->get();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
@@ -294,12 +294,11 @@ class PeiController extends Controller
 
     public function show(Request $request, $id)
     {
-        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->findOrFail($id);
+        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])
+            ->orderBy('order_item', 'ASC')
+            ->findOrFail($id);
+
         $type = $profile->type;
-
-
-        // $user = Auth::user('name');
-
 
         if ($request->ajax()) {
             $responseData = [
