@@ -44,7 +44,8 @@ class PeiProfile extends Model
         'indicator',
         'baseline',
         'target',
-        'user_id'
+        'user_id',
+        'order_item'
     ];
 
     public function task()

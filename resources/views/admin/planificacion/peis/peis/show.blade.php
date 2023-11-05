@@ -106,13 +106,11 @@
                                     </a>
                                 </div>
                             </div>
-                            {{-- Arbol de Planificación Estrategica --}}
-                            {{-- <div id="data">
 
-                            </div> --}}
                             {{-- Inicio Contenido Desplegable (Acordeon) --}}
                             @include('admin.planificacion.peis.peis.accordion')
                             {{-- Fin Contenido Desplegable (Acordeon) --}}
+
                         </div>
                     </div>
                 </div>
@@ -220,8 +218,8 @@
                                     </div>
 
                                     <div class="col-sm-offset-2 col-sm-10">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-dismiss="modal">Cerrar</button>
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar
+                                        </button>
                                         <button type="submit" class="btn btn-success" id="saveBtnVision"
                                             value="create">Guardar
                                             cambios
@@ -329,6 +327,14 @@
                                         ]) }}
                                     </div>
 
+                                    <div class="order mb-2">
+                                        {{ Form::label('order_item', 'Orden:', ['class' => 'control-label']) }}
+                                        {{ Form::number('order_item', null, [
+                                            'class' => 'form-control',
+                                            'id' => 'axis_order_item',
+                                        ]) }}
+                                    </div>
+
                                     <div class="col-sm-offset-2 col-sm-10">
                                         <button type="button" class="btn btn-secondary"
                                             data-dismiss="modal">Cerrar</button>
@@ -374,6 +380,14 @@
                                         {{ Form::textarea('name', null, [
                                             'class' => 'form-control editor',
                                             'id' => 'goals',
+                                        ]) }}
+                                    </div>
+
+                                    <div class="order mb-2">
+                                        {{ Form::label('order', 'Orden:', ['class' => 'control-label']) }}
+                                        {{ Form::number('order', null, [
+                                            'class' => 'form-control',
+                                            'id' => 'order',
                                         ]) }}
                                     </div>
 
@@ -424,6 +438,12 @@
                                             </tr>
                                         </tbody>
                                     </table>
+                                </div>
+                                <div class="col-sm-offset-2 col-sm-10">
+                                    <div class="text-center">
+                                        <button type="button" class="btn btn-info" data-dismiss="modal">Cerrar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -567,6 +587,7 @@
                 }
             });
 
+            // Datatables values
             var table = $('.data-table').DataTable({
                 processing: true,
                 serverSide: true,
@@ -650,7 +671,7 @@
                 }, ]
             });
 
-            // Función para inicializar Select2
+            // Funtion for initilization Select2
             function initializeSelect2(selector, placeholder, url) {
                 selector.val("").select2({
                     placeholder: placeholder,
@@ -674,6 +695,7 @@
                 });
             }
 
+            // Inicialization CKEditor
             var misionEditor;
             ClassicEditor
                 .create(document.querySelector('#mision'))
@@ -904,6 +926,7 @@
                     $('#axis_type').val(data.profile.type);
                     $('#axis_group_id').val(data.profile.group_id);
                     $('#axis_dependency').val(data.profile.dependency_id);
+                    $('#axis_order_item').val(data.profile.order_item);
 
                 });
             });

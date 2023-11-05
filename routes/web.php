@@ -9,7 +9,6 @@ Route::get('/', function () {
 });
 
 Auth::routes();
-// Route::get('/home', 'HomeController@index')->name('home');
 
 Route::group(['middleware' => ['auth']], function () {
     Route::resource('products', 'Admin\ProductController');
@@ -21,13 +20,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idPerfil}/detail', 'Admin\Planificacion\Pei\PeiController@showDetailForGroup');
     Route::get('pei-profiles-compareHistorical', 'Admin\Planificacion\Pei\PeiController@compareHistorical')->name('pei-profiles-compareHistorical');
     Route::get('pei-profiles-details/{idProfile}', 'Admin\Planificacion\Pei\PeiController@showDetailsTree')->name('pei-profiles.details');
-    Route::get('pei-profiles-tree-details/{idProfile}', 'Admin\Planificacion\Pei\PeiController@dataDetailsTree')->name('pei-profiles-details.tree');
-    // Route::get('peis-crear-sub-nivel/{id}', 'Admin\Planificacion\Pei\PeiController@addSubNivel')->name('peis-crear-sub-nivel');
-    // Route::get('peis-editar-sub-nivel/{idSubNivel}', 'Admin\Planificacion\Pei\PeiController@editarSubNivel')->name('peis-editar-sub-nivel');
-    // Route::delete('peis-eliminar-nivel/{idNivelSuperior}/{idNivel}', 'Admin\Planificacion\Pei\PeiController@eliminarNivel')->name('peis-eliminar-nivel');
-    // Route::view('peis-dashboard', 'admin.planificacion.peis.index')->name('peis-dashboard');
-    // Route::get('ver-cuadro-mando/{idPerfil}', 'Admin\Planificacion\Pei\PeiController@verCuadroDeMando')->name('ver-cuadro-mando');
-
 
     // Relevamientos
     Route::get('proyectos-epc-relevamientos/{estandarId}', 'Admin\Proyectos\EPC\RelevamientoController@getFormulario')->name('proyectos-epc-relevamientos-form-dependencia');
@@ -204,7 +196,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('tasks-list-tree/', 'Admin\Planificacion\Task\TaskController@getTasksForGroup')->name('tasks-list-tree');
     Route::get('tree-group', 'Admin\Planificacion\Task\TaskController@dataTreeGroup')->name('tree-group');
 });
-Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home')->middleware('auth');
 

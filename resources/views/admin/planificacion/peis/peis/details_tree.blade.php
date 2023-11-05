@@ -8,7 +8,9 @@
         </div>
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Árbol de Detalles</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('pei-profiles.index') }}">Módulo de Planificación
+                        Estratégica</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Árbol Detalles PEI</li>
             </ol>
         </nav>
@@ -23,91 +25,6 @@
                             </div>
                         </div>
                     </div>
-
-                    {{-- <div class="modal fade bd-example-modal-lg" id="ajaxShowMatrizFoda" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header card-header-info">
-                                    <h4 class="modal-title" id="modalFODAHeading"></h4>
-                                </div>
-                                <div class="card-body">
-                                    <label>Nombre: </label><span id="name"> </span><br>
-                                    <label>Contexto: </label><span id="context"> </span><br>
-                                    <label>Tipo: </label><span id="type"> </span><br>
-                                    <label>Modelo: </label><span id="model"> </span><br>
-                                    <label>Grupo: </label><span id="group"> </span>
-                                    <h3>Miembros del Grupo de Análisis</h3>
-
-                                    <div class="table members">
-                                        <table class="table table-bordered">
-                                            <thead>
-                                                <th class="">Nombre</th>
-                                                <th class="">Correo</th>
-                                            </thead>
-
-                                            <tbody id="memberListFODA">
-
-
-                                            </tbody>
-
-                                        </table>
-                                    </div>
-                                </div>
-
-
-
-                                <div class="modal-body"></div>
-                                <div class="row">
-                                    <div class="col-md-2"></div>
-                                    <div class="col-md-8 text-center">
-                                        <button type="button" class="btn btn-info mb-2"
-                                            data-dismiss="modal">Cerrar</button>
-                                    </div>
-                                    <div class="col-md-2"></div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal fade bd-example-modal-lg" id="ajaxShowPeiDetails" aria-hidden="true">
-                        <div class="modal-dialog modal-lg" id="peiDetails">
-                            <div class="modal-content">
-                                <div class="modal-header card-header-info">
-                                    <h4 class="modal-title" id="modalPEIHeading"></h4>
-                                </div>
-
-                                <div class="card-body headerPei">
-                                    <label>Nombre: </label><span id="name"> </span><br>
-                                    <label>Tipo: </label><span id="type"> </span><br>
-                                    <label>Grupo: </label><span id="group"> </span>
-
-                                    <h3>Miembros del Grupo de Análisis</h3>
-                                    <div class="table membersPEI">
-                                        <table class="table table-bordered">
-                                            <thead>
-                                                <th class="">Nombre</th>
-                                                <th class="">Correo</th>
-                                            </thead>
-                                            <tbody id="memberListPEI"></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <div class="card-body">
-                                    <label>Definición de la Misión: </label>
-                                    <h3 id="mision"> </h3><br>
-                                    <label>Definición de la Visión: </label>
-                                    <h3 id="vision"> </h3><br>
-                                    <label>Definición de la Valores: </label>
-                                    <h3 id="values"> </h3><br>
-                                </div>
-                            </div>
-                        </div>
-                    </div> --}}
-
-
-
                 </div>
             </div>
         </div>
@@ -122,7 +39,6 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
-
 
             var data = [
                 @foreach ($profile as $matriz)
@@ -165,6 +81,8 @@
                                                                 '</td>' +
                                                                 '</tr>' +
                                                                 '</table>' +
+                                                                '<hr>' +
+                                                                '<br>' +
                                                             @endforeach
                                                         '</div>' +
                                                         '</div>',
@@ -181,8 +99,6 @@
                 @endforeach
             ];
 
-
-
             $('#treeProfile').tree({
                 data: data,
                 autoEscape: false,
@@ -193,27 +109,6 @@
                 openFolderDelay: 1000,
                 dragAndDrop: true
             });
-
-            // Initilizaton JSTree
-            // $('#treeProfile').jstree({
-            //     'core': {
-            //         'data': {
-            //             'url': function(node) {
-            //                 var idProfile = <?php echo json_encode($idProfile); ?>;
-            //                 var routeDetailItem = "{!! route('pei-profiles-details.tree', $idProfile) !!}";
-            //                 console.log("🚀 ~ file: details_tree.blade.php:131 ~ routeDetailItem:",
-            //                     routeDetailItem)
-
-            //                 return routeDetailItem;
-            //             },
-            //             'data': function(node) {
-            //                 return {
-            //                     'id': node.id
-            //                 };
-            //             }
-            //         }
-            //     }
-            // });
 
             // Esta función agregará los miembros al modal
             function membersModalFODA(members) {
@@ -384,7 +279,6 @@
                 });
 
             });
-
         })
     </script>
 
