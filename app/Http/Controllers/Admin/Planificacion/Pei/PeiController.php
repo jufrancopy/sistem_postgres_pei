@@ -295,7 +295,6 @@ class PeiController extends Controller
     public function show(Request $request, $id)
     {
         $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])
-            ->orderBy('order_item', 'DESC')
             ->findOrFail($id);
 
         $type = $profile->type;
