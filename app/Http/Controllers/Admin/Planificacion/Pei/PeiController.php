@@ -24,7 +24,7 @@ class PeiController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = PeiProfile::where('parent_id', null)->latest()->get();
+            $data = PeiProfile::where('parent_id', null)->orderby('order_item', 'DESC')->get();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
@@ -67,101 +67,12 @@ class PeiController extends Controller
         $idProfile = $idProfile;
         $profile = PeiProfile::with('responsibles')->descendantsAndSelf($idProfile)->toTree();
 
-        // $formattedData = [];
-
-        // foreach ($profile as $depth0) {
-        //     $depth0Array = [
-        //         "id" => $depth0->id,
-        //         "text" => $depth0->name,
-        //         "data" => [],
-        //         "children" => [],
-        //     ];
-
-        //     foreach ($depth0->children as $depth1) {
-        //         $depth1Array = [
-        //             "id" => $depth1->id,
-        //             "text" => htmlspecialchars($depth1->name), // Escapamos caracteres HTML
-        //             "data" => [],
-        //             "children" => [],
-        //             "state" => ["opened" => true],
-        //         ];
-
-        //         foreach ($depth1->children as $depth2) {
-        //             $depth2Array = [
-        //                 "id" => $depth2->id,
-        //                 "text" => htmlspecialchars($depth2->name), // Escapamos caracteres HTML
-        //                 "children" => [],
-        //                 "state" => ["opened" => true],
-        //             ];
-
-        //             foreach ($depth2->children as $action) {
-        //                 $responsiblesArray = [];
-
-        //                 // Recorre los responsables y agrega sus nombres al arreglo
-        //                 foreach ($action->responsibles as $responsible) {
-        //                     $responsiblesArray[] = $responsible->name;
-        //                 }
-        //                 $actionArray = [
-        //                     "id" => $action->id,
-        //                     "text" => htmlspecialchars($action->name), // Escapamos caracteres HTML
-        //                     "data" => [
-        //                         "indicator" => $action->indicator,
-        //                         "baseline" => $action->baseline,
-        //                         "target" => $action->target,
-
-        //                         "responsible" => $responsiblesArray,
-
-
-        //                     ],
-        //                 ];
-
-        //                 $depth2Array["children"][] = $actionArray;
-        //             }
-
-        //             $depth1Array["children"][] = $depth2Array;
-        //         }
-
-        //         $depth0Array["children"][] = $depth1Array;
-        //     }
-
-        //     $formattedData[] = $depth0Array;
-        // }
-
-
         return view('admin.planificacion.peis.peis.details_tree', get_defined_vars());
     }
 
     public function dataDetailsTree($idProfile)
     {
         $profile = PeiProfile::orderBy('id', 'ASC')->withDepth()->with('analysts')->get()->linkNodes();
-
-
-        // $result = [];
-        // foreach ($profile as $detail) {
-        //     $parent = $detail->parent_id ?: '#';
-        //     $text = $detail->name;
-        //     $plainText = strip_tags($text);
-
-        //     // Accede al nombre del analista (supongo que la relación se llama 'analysts')
-        //     // $analystNames = $detail->analysts->pluck('name')->implode(', ');
-
-        //     if ($detail->level == 'action') {
-        //         $analystName = $detail->analyst ? $detail->analyst->name : 'PENDIENTE';
-        //     } else {
-        //         $analystName = ''; // En otros niveles, deja la variable vacía o ajusta según lo necesario
-        //     }
-
-
-        //     $node = [
-        //         'id' => $detail->id,
-        //         'state' => ['opened' => true],
-        //         'parent' => $parent,
-        //         'text' => $plainText . ' - ' . $analystName, // Agrega el nombre del analista al texto
-        //     ];
-        //     array_push($result, $node);
-        // }
-        // return response()->json($result);
-
 
         $profile = PeiProfile::orderBy('id', 'ASC')
             ->withDepth()
@@ -254,7 +165,7 @@ class PeiController extends Controller
 
         $user = Auth::user();
 
-
+        // If exist value in $request->profile_id save value, else create uuid
         if ($request->profile_id) {
             $profileId =  $request->profile_id;
         } else {
@@ -262,32 +173,34 @@ class PeiController extends Controller
         }
 
         if ($request->type == 'corporative') {
-            $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles'])->updateOrCreate(
-                ['id' => $profileId],
-                [
-                    'name' => $request->name,
-                    'year_start' => $request->year_start,
-                    'year_end' => $request->year_end,
-                    'type' => $request->type,
-                    'level' => $request->level,
-                    'mision' => $request->mision,
-                    'vision' => $request->vision,
-                    'values' => $request->values,
-                    'period' => $request->period,
-                    'numerator' => $request->numerator,
-                    'operator' => $request->operator,
-                    'denominator' => $request->denominator,
-                    'goal' => $request->goal,
-                    'progress' => $request->progress,
-                    'group_id' => $request->group_root_id,
-                    'dependency_id' => $request->dependency_id,
-                    'action' => $request->action,
-                    'indicator' => $request->indicator,
-                    'baseline' => $request->baseline,
-                    'target' => $request->target,
-                    'user_id' => $user->id,
-                ]
-            );
+            $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles'])
+                ->updateOrCreate(
+                    ['id' => $profileId],
+                    [
+                        'name' => $request->name,
+                        'year_start' => $request->year_start,
+                        'year_end' => $request->year_end,
+                        'type' => $request->type,
+                        'level' => $request->level,
+                        'mision' => $request->mision,
+                        'vision' => $request->vision,
+                        'values' => $request->values,
+                        'period' => $request->period,
+                        'numerator' => $request->numerator,
+                        'operator' => $request->operator,
+                        'denominator' => $request->denominator,
+                        'goal' => $request->goal,
+                        'progress' => $request->progress,
+                        'group_id' => $request->group_root_id,
+                        'dependency_id' => $request->dependency_id,
+                        'action' => $request->action,
+                        'indicator' => $request->indicator,
+                        'baseline' => $request->baseline,
+                        'target' => $request->target,
+                        'user_id' => $user->id,
+                        'order_item' => $request->order_item
+                    ]
+                );
         } else {
             $profile = PeiProfile::updateOrCreate(
                 ['id' => $profileId],
@@ -312,7 +225,8 @@ class PeiController extends Controller
                     'indicator' => $request->indicator,
                     'baseline' => $request->baseline,
                     'target' => $request->target,
-                    'user_id' => $user->id
+                    'user_id' => $user->id,
+                    'order_item' => $request->order_item
                 ]
             );
         }
@@ -321,7 +235,6 @@ class PeiController extends Controller
             $node = PeiProfile::find($request->parent_id);
             $node->appendNode($profile);
         }
-
 
         $analysts = $request->analyst_id;
         $profile->analysts()->sync($analysts);
@@ -333,13 +246,11 @@ class PeiController extends Controller
         $profile->responsibles()->sync($responsibles);
 
         $strategiesChecked = [];
-
         foreach ($profile->strategies as $strategy) {
             $strategiesChecked[] = ['id' => $strategy->id, 'text' => $strategy->estrategia];
         }
 
         $responsiblesChecked = [];
-
         foreach ($profile->responsibles as $responsible) {
             $responsiblesChecked[] = ['id' => $responsible->id, 'name' => $responsible->dependency];
         }
