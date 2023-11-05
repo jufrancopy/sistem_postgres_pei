@@ -383,11 +383,11 @@
                                         ]) }}
                                     </div>
 
-                                    <div class="order mb-2">
-                                        {{ Form::label('order', 'Orden:', ['class' => 'control-label']) }}
-                                        {{ Form::number('order', null, [
+                                    <div class="goals_order_item mb-2">
+                                        {{ Form::label('goals_order_item', 'Orden:', ['class' => 'control-label']) }}
+                                        {{ Form::number('order_item', null, [
                                             'class' => 'form-control',
-                                            'id' => 'order',
+                                            'id' => 'goals_order_item',
                                         ]) }}
                                     </div>
 
@@ -481,6 +481,13 @@
                                         {{ Form::textarea('name', null, [
                                             'class' => 'form-control editor',
                                             'id' => 'actions',
+                                        ]) }}
+                                    </div>
+                                    <div class="actions_order_item mb-2">
+                                        {{ Form::label('actions_order_item', 'Orden:', ['class' => 'control-label']) }}
+                                        {{ Form::number('order_item', null, [
+                                            'class' => 'form-control',
+                                            'id' => 'actions_order_item',
                                         ]) }}
                                     </div>
                                     <br>
@@ -916,17 +923,19 @@
                     if (typeBtn === 'create') {
                         $('#axis_parent_id').val(data.profile.id);
                         axisEditor.setData('');
+                        $('#axis_order_item').val('');
 
                     } else if (typeBtn === 'edit') {
                         $('#axis_profile_id').val(data.profile.id);
                         $('#axis_parent_id').val(data.profile.parent_id);
                         axisEditor.setData(data.profile.name)
+                        $('#axis_order_item').val(data.profile.order_item);
                     }
 
                     $('#axis_type').val(data.profile.type);
                     $('#axis_group_id').val(data.profile.group_id);
                     $('#axis_dependency').val(data.profile.dependency_id);
-                    $('#axis_order_item').val(data.profile.order_item);
+
 
                 });
             });
@@ -944,17 +953,20 @@
 
                     if (typeBtn === 'create') {
                         $('#goals_parent_id').val(data.profile.id);
+                        $('#goals_order_item').val('');
                         goalsEditor.setData('');
 
                     } else if (typeBtn === 'edit') {
                         $('#goals_profile_id').val(data.profile.id);
                         $('#goals_parent_id').val(data.profile.parent_id);
                         goalsEditor.setData(data.profile.name)
+                        $('#goals_order_item').val(data.profile.order_item);
                     }
 
                     $('#goals_type').val(data.profile.type);
                     $('#goals_group_id').val(data.profile.group_id);
                     $('#goals_dependency').val(data.profile.dependency_id);
+
 
                     //Straetegis from crossing
                     var url = '{{ route('get-crossings') }}';
@@ -1010,11 +1022,13 @@
                     if (typeBtn === 'create') {
                         $('#actions_parent_id').val(data.profile.id);
                         actionsEditor.setData('');
+                        $('#actions_order_item').val('');
 
                     } else if (typeBtn === 'edit') {
                         $('#actions_profile_id').val(data.profile.id);
                         $('#actions_parent_id').val(data.profile.parent_id);
                         actionsEditor.setData(data.profile.name)
+                        $('#actions_order_item').val(data.profile.order_item);
                     }
 
                     $('#actions_type').val(data.profile.type);
