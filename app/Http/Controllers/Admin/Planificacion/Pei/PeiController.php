@@ -24,7 +24,7 @@ class PeiController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = PeiProfile::where('parent_id', null)->orderby('order_item', 'DESC')->get();
+            $data = PeiProfile::where('parent_id', null)->orderby('order_item', 'ASC')->get();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
