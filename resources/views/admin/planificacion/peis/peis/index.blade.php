@@ -369,6 +369,9 @@
                     $('#name').val(data.profile.name);
                     $('#year_start').val(data.profile.year_start);
                     $('#year_end').val(data.profile.year_end);
+                    $('#mision').val(data.profile.mision);
+                    $('#vision').val(data.profile.vision);
+                    $('#values').val(data.profile.values);
 
                     // Inicializa los selectores de dependencia y grupo raíz
                     initializeSelect2($("#group_roots"), 'Seleccione Grupo Raíz de trabajo',
