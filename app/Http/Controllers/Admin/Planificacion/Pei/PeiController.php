@@ -65,20 +65,21 @@ class PeiController extends Controller
     public function showDetailsTree($idProfile)
     {
         $idProfile = $idProfile;
-        $profile = PeiProfile::with('responsibles')->descendantsAndSelf($idProfile)->toTree();
+        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->descendantsAndSelf($idProfile)->toTree();
 
         return view('admin.planificacion.peis.peis.details_tree', get_defined_vars());
     }
 
     public function dataDetailsTree($idProfile)
     {
-        $profile = PeiProfile::orderBy('id', 'ASC')->withDepth()->with('analysts')->get()->linkNodes();
 
-        $profile = PeiProfile::orderBy('id', 'ASC')
-            ->withDepth()
-            ->with('analysts')
-            ->get()
-            ->linkNodes();
+        $profile = PeiProfile::orderBy('id', 'ASC')->withDepth()->with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->get()->linkNodes();
+
+        // $profile = PeiProfile::orderBy('id', 'ASC')
+        //     ->withDepth()
+        //     ->with('analysts')
+        //     ->get()
+        //     ->linkNodes();
 
         $formattedData = [];
 
@@ -292,28 +293,10 @@ class PeiController extends Controller
         ]);
     }
 
-    public function sortRecursive($data)
-    {
-        foreach ($data as &$item) {
-            if (isset($item['children']) && count($item['children']) > 0) {
-                $item['children'] = $this->sortRecursive($item['children']);
-            }
-        }
-
-        usort($data, function ($a, $b) {
-            return $a['order_item'] - $b['order_item'];
-        });
-
-        return $data;
-    }
-
     public function show(Request $request, $id)
     {
         $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])
             ->findOrFail($id);
-
-        // $profileArray = $profile->toArray();
-        // $sortedData = $this->sortRecursive($profileArray);
 
         $type = $profile->type;
 
