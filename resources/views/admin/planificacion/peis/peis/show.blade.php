@@ -804,9 +804,9 @@
                 var profileID = $(this).data('id');
                 $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
                     if (data.profile.mision === null) {
-                        $('#modalHeadingMision').html("Misión");
+                        $('#modalHeadingMision').html("Defina la Misión");
                     } else {
-                        $('#modalHeadingMision').html(data.profile.mision);
+                        $('#modalHeadingMision').html("Editar la Definición de Misión");
                     }
                     $('#saveBtnMision').val("edit-mision");
                     $('#ajaxMisionModal').modal('show');
