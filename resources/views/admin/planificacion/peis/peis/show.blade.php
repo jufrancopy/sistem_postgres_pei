@@ -48,7 +48,9 @@
 
                                                 <li class="list-group-item"><label>Ejes: </label>
                                                     <div class="btn btn-danger btn-circle">
-                                                        {{ $profile->children->count() }}</div>
+                                                        {{ $profile->where('level', 'exi')->count() }}
+                                                    </div>
+                                                </li>
                                                 <li class="list-group-item">
                                                     <label>Objetivos: </label>
                                                     <div class="btn btn-danger btn-circle">
@@ -56,9 +58,9 @@
                                                     </div>
                                                 </li>
                                                 <li class="list-group-item">
-                                                    <label>Acciones Totales:</label>
+                                                    <label>Acciones:</label>
                                                     <div class="btn btn-danger btn-circle">
-                                                        {{ $profile->where('level', 'axi')->count() }}
+                                                        {{ $profile->where('level', 'action')->count() }}
                                                     </div>
                                                 </li>
                                             </ul>
