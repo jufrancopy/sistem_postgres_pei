@@ -853,9 +853,9 @@
                 var profileID = $(this).data('id');
                 $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
                     if (data.profile.mision === null) {
-                        $('#modalHeadingVision').html("Visión");
+                        $('#modalHeadingVision').html("Crear la Definición de Visión");
                     } else {
-                        $('#modalHeadingVision').html(data.profile.vision);
+                        $('#modalHeadingVision').html("Editar la Definición de Visión");
                     }
                     $('#saveBtn').val("edit-profile");
                     $('#ajaxVisionModal').modal('show');
@@ -901,7 +901,11 @@
             $('body').on('click', '#createValues', function() {
                 var profileID = $(this).data('id');
                 $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                    $('#modalHeadingValues').html("Valores");
+                    if (data.profile.mision === null) {
+                        $('#modalHeadingValues').html("Crear la Definición de Valores");
+                    } else {
+                        $('#modalHeadingValues').html("Editar la Definición de Valores");
+                    }
                     $('#saveBtnValues').val("edit-values");
                     $('#ajaxValuesModal').modal('show');
                     $('#valuesForm').trigger("reset");
