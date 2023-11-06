@@ -32,6 +32,39 @@
                     <div class="card-body">
                         <div class="container">
                             <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header text-center">
+                                            <h2>
+                                                {{ $profile->name }}
+                                            </h2>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item"><label>Periodo: </label>
+
+                                                    {{ Carbon\Carbon::parse($profile->year_start)->format('Y') }} -
+                                                    {{ Carbon\Carbon::parse($profile->year_end)->format('Y') }}
+
+                                                <li class="list-group-item"><label>Ejes: </label>
+                                                    <div class="btn btn-danger btn-circle">
+                                                        {{ $profile->children->count() }}</div>
+                                                <li class="list-group-item">
+                                                    <label>Objetivos: </label>
+                                                    <div class="btn btn-danger btn-circle">
+                                                        {{ $profile->where('level', 'goal')->count() }}
+                                                    </div>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <label>Acciones Totales:</label>
+                                                    <div class="btn btn-danger btn-circle">
+                                                        {{ $profile->where('level', 'axi')->count() }}
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="col mision">
                                     <div class="card">
                                         <div class="card-header d-flex align-items-center">
