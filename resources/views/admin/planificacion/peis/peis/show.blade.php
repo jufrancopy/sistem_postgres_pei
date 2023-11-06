@@ -48,7 +48,7 @@
 
                                                 <li class="list-group-item"><label>Ejes: </label>
                                                     <div class="btn btn-danger btn-circle">
-                                                        {{ $profile->where('level', 'exi')->count() }}
+                                                        {{ $profile->where('level', 'axi')->count() }}
                                                     </div>
                                                 </li>
                                                 <li class="list-group-item">
