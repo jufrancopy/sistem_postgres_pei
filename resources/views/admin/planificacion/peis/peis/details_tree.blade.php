@@ -45,11 +45,11 @@
                     {
                         name: '{!! $matriz->name !!}',
                         children: [
-                            @foreach ($matriz->children as $axi)
+                            @foreach ($matriz->children->sortBy('order_item') as $axi)
                                 {
                                     name: '<p class="badge badge-success">EJE</p> {!! $axi->name !!}',
                                     children: [
-                                        @foreach ($axi->children as $goal)
+                                        @foreach ($axi->children->sortBy('order_item') as $goal)
                                             {
                                                 name: '<sup class="badge badge-primary">Objetivo</sup> {!! $goal->name !!}',
                                                 children: [
@@ -60,9 +60,10 @@
                                                             '<h6 class="text-white">Lista de acciones de {!! $goal->name !!}</h6>' +
                                                             '</div>' +
                                                             '<div class="card-body">' +
-                                                            @foreach ($goal->children as $action)
+                                                            @foreach ($goal->children->sortBy('order_item') as $action)
                                                                 '<table class="table table-responsive">' +
                                                                 '<tr>' +
+                                                                '<th>Nro.</th>' +
                                                                 '<th>Acción</th>' +
                                                                 '<th>Indicador</th>' +
                                                                 '<th>Línea de Base</th>' +
@@ -70,6 +71,7 @@
                                                                 '<th>Responsable</th>' +
                                                                 '</tr>' +
                                                                 '<tr>' +
+                                                                '<td>{{ $action->order_item }}</td>' +
                                                                 '<td>{!! $action->name !!}</td>' +
                                                                 '<td>{!! $action->indicator !!}</td>' +
                                                                 '<td>{!! $action->baseline !!}</td>' +
@@ -108,176 +110,6 @@
                 autoOpen: true,
                 openFolderDelay: 1000,
                 dragAndDrop: true
-            });
-
-            // Esta función agregará los miembros al modal
-            function membersModalFODA(members) {
-                var memberListFODA = $(
-                    '#memberListFODA'); // Encuentra el contenedor de la lista de miembros
-
-                // Vacía la lista actual (si hubiera elementos anteriores)
-                memberListFODA.empty();
-
-                // Itera sobre los miembros y agrégalos a la lista
-                members.forEach(function(member) {
-                    var row = '<tr>' +
-                        '<td>' + member.name + '</td>' +
-                        '<td>' + member.email + '</td>' +
-                        '</tr>';
-                    memberListFODA.append(row);
-                });
-            }
-
-            // Esta función agregará los miembros al modal
-            function membersModalPEI(members) {
-                var memberListPEI = $('#memberListPEI'); // Encuentra el contenedor de la lista de miembros
-
-                // Vacía la lista actual (si hubiera elementos anteriores)
-                memberListPEI.empty();
-
-                // Itera sobre los miembros y agrégalos a la lista
-                members.forEach(function(member) {
-                    var row = '<tr>' +
-                        '<td>' + member.name + '</td>' +
-                        '<td>' + member.email + '</td>' +
-                        '</tr>';
-                    memberListPEI.append(row);
-                });
-            }
-
-            $('body').on('click', '#showMatrizFoda', function() {
-                var fodaProfileID = $(this).data('id');
-
-                $.get("{{ route('foda-analisis.index') }}" + '/' + fodaProfileID + '/matriz', function(
-                    data) {
-
-                    // Listado de mimbros del Grupo
-                    var members = data.members;
-                    membersModalFODA(members);
-
-                    // Construye el contenido de la modal
-                    $('#modalFODAHeading').html("FODA " + data.profile.name);
-                    $('#name').text(data.profile.name);
-                    $('#context').text(data.profile.context);
-                    $('#type').text(data.profile.type);
-                    $('#model').text(data.profile.model.name);
-                    $('#group').text(data.profile.group.name);
-
-
-                    var modalContent = '<div class="card-body">';
-                    modalContent += '<div class="table-bordered">';
-                    modalContent += '<table class="table table-striped table-hover">';
-                    modalContent += '<thead>';
-                    modalContent += '<tr>';
-                    modalContent += '<th><h3>Análisis Interno</h3></th>';
-                    modalContent += '<th><h3>Análisis Externo</h3></th>';
-                    modalContent += '</tr>';
-                    modalContent += '</thead>';
-                    modalContent += '<tbody>';
-                    modalContent += '<tr>';
-                    modalContent += '<th class="table-danger">Debilidades</th>';
-                    modalContent += '<th class="table-danger">Amenazas</th>';
-                    modalContent += '</tr>';
-                    modalContent += '<tr>';
-                    modalContent += '<td>';
-
-                    // Construye la sección de Debilidades con base en los datos recibidos
-                    data.debilidades.forEach(function(debilidad) {
-                        modalContent += '<ul>';
-                        modalContent += '<li>' + debilidad.aspecto.name;
-
-                        // Aquí puedes aplicar el switch para determinar la clase CSS según el tipo
-                        // ...
-
-                        modalContent += '</li>';
-                        modalContent += '</ul>';
-                    });
-
-                    modalContent += '</td>';
-                    modalContent += '<td>';
-
-                    // Construye la sección de Amenazas con base en los datos recibos
-                    data.amenazas.forEach(function(amenaza) {
-                        modalContent += '<ul>';
-                        modalContent += '<li>' + amenaza.aspecto.name;
-
-                        // Aquí puedes aplicar el switch para determinar la clase CSS según el tipo
-                        // ...
-
-                        modalContent += '</li>';
-                        modalContent += '</ul>';
-                    });
-
-                    modalContent += '</td>';
-                    modalContent += '</tr>';
-                    modalContent += '<tr>';
-                    modalContent += '<th class="table-success">Fortalezas</th>';
-                    modalContent += '<th class="table-success">Oportunidades</th>';
-                    modalContent += '</tr>';
-                    modalContent += '<td>';
-
-                    // Construye la sección de Fortalezas con base en los datos recibidos
-                    data.fortalezas.forEach(function(fortaleza) {
-                        modalContent += '<ul>';
-                        modalContent += '<li>' + fortaleza.aspecto.name;
-
-                        // Aquí puedes aplicar el switch para determinar la clase CSS según el tipo
-                        // ...
-
-                        modalContent += '</li>';
-                        modalContent += '</ul>';
-                    });
-
-                    modalContent += '</td>';
-                    modalContent += '<td>';
-
-                    // Construye la sección de Oportunidades con base en los datos recibidos
-                    data.oportunidades.forEach(function(oportunidad) {
-                        modalContent += '<ul>';
-                        modalContent += '<li>' + oportunidad.aspecto.name;
-
-                        // Aquí puedes aplicar el switch para determinar la clase CSS según el tipo
-                        // ...
-
-                        modalContent += '</li>';
-                        modalContent += '</ul>';
-                    });
-
-                    modalContent += '</td>';
-                    modalContent += '</tr>';
-                    modalContent += '</tbody>';
-                    modalContent += '</table>';
-                    modalContent += '</div>';
-                    modalContent += '</div>';
-
-                    // Establece el contenido de la modal
-                    $('#modalBody').html(modalContent);
-
-                    // Abre la modal
-                    $('#ajaxShowMatrizFoda').modal('show');
-                    $('.modal-body').html(modalContent);
-
-                });
-            });
-
-            $('body').on('click', '#showPeiDetailes', function() {
-                var peiProfileID = $(this).data('id');
-                $.get("{{ route('pei-profiles.index') }}" + '/' + peiProfileID + '/detail', function(
-                    data) {
-                    $('#modalPEIHeading').html("PEI " + data.name);
-                    $('#ajaxShowPeiDetails').modal('show');
-                    $('.headerPei #name').text(data.profile.name);
-                    $('.headerPei #type').text(data.profile.type);
-                    $('.headerPei #group').text(data.profile.group.name);
-                    $('#mision').html(data.profile.mision);
-                    $('#vision').html(data.profile.vision);
-                    $('#values').html(data.profile.values);
-
-                    var members = data.members;
-                    console.log(members)
-                    membersModalPEI(members);
-                });
-
             });
         })
     </script>

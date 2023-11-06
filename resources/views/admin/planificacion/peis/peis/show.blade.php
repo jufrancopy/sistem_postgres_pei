@@ -483,6 +483,7 @@
                                             'id' => 'actions',
                                         ]) }}
                                     </div>
+
                                     <div class="actions_order_item mb-2">
                                         {{ Form::label('actions_order_item', 'Orden:', ['class' => 'control-label']) }}
                                         {{ Form::number('order_item', null, [
@@ -490,7 +491,6 @@
                                             'id' => 'actions_order_item',
                                         ]) }}
                                     </div>
-                                    <br>
                                     <div class="form-group indicator">
                                         {{ Form::label('indicator', 'Indicador:', ['class' => 'control-label']) }}
                                         {{ Form::text('indicator', null, ['class' => 'form-control', 'id' => 'actions_indicator']) }}
@@ -787,12 +787,10 @@
                     $('#vision').val(data.profile.vision);
                     $('#dependencies').val(data.profile.dependency_id);
 
-
                     //Prevalues Analyst - Input Hidden
                     $('.mision_analysts #mision_analysts').empty()
                     $('.mision_analysts #mision_analysts').select2()
                     var selectAnalysts = $('.mision_analysts #mision_analysts');
-                    console.log(data.analystsChecked)
                     data.analystsChecked.forEach(function(d) {
                         var option = new Option(d.text, d.id, true, true);
                         selectAnalysts.append(option).trigger('change');
@@ -1018,17 +1016,18 @@
                     $('#ajaxActionsModal').modal('show');
                     $('#actionsForm').trigger("reset");
 
-                    console.log(data.profile)
                     if (typeBtn === 'create') {
                         $('#actions_parent_id').val(data.profile.id);
                         actionsEditor.setData('');
                         $('#actions_order_item').val('');
+                        $('#saveBtnActions').val('create');
 
                     } else if (typeBtn === 'edit') {
                         $('#actions_profile_id').val(data.profile.id);
                         $('#actions_parent_id').val(data.profile.parent_id);
                         actionsEditor.setData(data.profile.name)
                         $('#actions_order_item').val(data.profile.order_item);
+                        $('#saveBtnActions').val('edit');
                     }
 
                     $('#actions_type').val(data.profile.type);
@@ -1489,9 +1488,7 @@
                                 'aria-labelledby="headingGoal_' + goalsId + '" ' +
                                 'data-parent="#accordionGoal_' + goalsId + '">' +
                                 '<div class="row contentActions">' +
-                                '<div class="card-body">' +
-                                '<div class="accordionAction" id="accordionAction_' +
-                                goalsId + '"> ';
+                                '<div class="card-body">';
                             $('.contentGoals #accordionGoal_' + parentId).prepend(
                                 newGoalsElement);
 
@@ -1523,6 +1520,7 @@
                 $(this).html('Enviando..');
 
                 var saveBtnValue = $(this).val();
+                console.log("🚀 ~ file: show.blade.php:1524 ~ $ ~ saveBtnValue:", saveBtnValue)
 
                 var data = new FormData();
                 var form_data = $('#actionsForm').serializeArray();
@@ -1558,29 +1556,55 @@
                         if (saveBtnValue === "create") {
                             // Crear una nueva fila de acción (action) y agregarla a la tabla existente
                             var newRowHtml = `
-                                <tr>
-                                    <td>${data.profile.name}</td>
-                                    <td>${data.profile.indicator}</td>
-                                    <td>${data.profile.baseline}</td>
-                                    <td>${data.profile.target}</td>
-                                    <td>${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}</td>
-                                    <td>
-                                        <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
-                                            <i class="fa fa-edit" aria-hidden="true"></i>
-                                        </a>
-                                        <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
-                                            <i class="fa fa-trash" aria-hidden="true"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            `;
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <div class="card-body" id="actionsBlock_${ actionsId }">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Nro.</th>
+                                                            <th>Acción</th>
+                                                            <th>Indicador</th>
+                                                            <th>Línea de Base</th>
+                                                            <th>Meta</th>
+                                                            <th>Responsable</th>
+                                                            <th>Acciones</th>
+                                                        </tr>
+                                                    </thead>                                  
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>${data.profile.order_item}</td>
+                                                            <td>${data.profile.name}</td>
+                                                            <td>${data.profile.indicator}</td>
+                                                            <td>${data.profile.baseline}</td>
+                                                            <td>${data.profile.target}</td>
+                                                            <td>${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}</td>
+                                                            <td>
+                                                                <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
+                                                                    <i class="fa fa-edit" aria-hidden="true"></i>
+                                                                </a>
+                                                                <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
+                                                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </h5>
+                                </div>
+                            </div>`;
 
                             // Agregar la nueva fila al final de la tabla del objetivo correspondiente
-                            $(`.actionDetail table tbody`).append(newRowHtml);
+                            $(`.actionDetail #actionDetail`).append(
+                                newRowHtml);
                         } else if (saveBtnValue === "edit") {
                             // Actualiza una fila de acción existente
                             var updatedHtml = `
-                            <tr>
+                                <td>${data.profile.order_item}</td>
                                 <td>${data.profile.name}</td>
                                 <td>${data.profile.indicator}</td>
                                 <td>${data.profile.baseline}</td>
@@ -1593,20 +1617,12 @@
                                     <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
                                         <i class="fa fa-trash" aria-hidden="true"></i>
                                     </a>
-                                </td>
-                            </tr>
-                            
+                                </td>                            
                         `;
+                            $(`#actionsBlock_${actionsId} table tbody tr`).html(updatedHtml);
 
-                            // Reemplaza el contenido de la fila de acción correspondiente
-
-                            $(`#accordionAction_${actionsId} table tbody`)
-                                .append(updatedHtml);
 
                         }
-
-
-
 
                         $('#actionsForm').trigger("reset");
                         $('#ajaxActionsModal').modal('hide');
@@ -1631,7 +1647,6 @@
             // Agregar un controlador de eventos para el botón de eliminación
             $('.contentMain').on('click', '.deleteItem', function() {
                 var axisId = $(this).data('id');
-                console.log("🚀 ~ file: show.blade.php:1564 ~ $ ~ axisId:", axisId)
 
                 // Muestra una confirmación en SweetAlert
                 Swal.fire({
@@ -1649,8 +1664,7 @@
                             type: "DELETE",
                             url: "{{ route('pei-profiles.store') }}" + '/' + axisId,
                             success: function(data) {
-                                // Realiza alguna lógica adicional si es necesario
-                                console.log(data.profile);
+
                             },
                             error: function(data) {
                                 console.log('Error:', data);
