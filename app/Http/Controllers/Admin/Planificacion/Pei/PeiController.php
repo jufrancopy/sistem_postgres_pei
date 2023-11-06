@@ -292,10 +292,30 @@ class PeiController extends Controller
         ]);
     }
 
+    public function sortRecursive($data)
+    {
+        foreach ($data as &$item) {
+            if (isset($item['children']) && count($item['children']) > 0) {
+                $item['children'] = $this->sortRecursive($item['children']);
+            }
+        }
+
+        usort($data, function ($a, $b) {
+            return $a['order_item'] - $b['order_item'];
+        });
+
+        return $data;
+    }
+
+
+
     public function show(Request $request, $id)
     {
         $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])
             ->findOrFail($id);
+
+        // $profileArray = $profile->toArray();
+        // $sortedData = $this->sortRecursive($profileArray);
 
         $type = $profile->type;
 

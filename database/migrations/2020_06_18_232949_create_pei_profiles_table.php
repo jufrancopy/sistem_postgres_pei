@@ -30,6 +30,7 @@ class CreatePeiProfilesTable extends Migration
             $table->decimal('denominator')->nullable();
             $table->decimal('goal')->nullable();
             $table->decimal('progress')->nullable();
+            $table->integer('order_item')->nullable();
 
             //Nuevos Inputs que no se incluyeron en mi mgiracion primaria
             $table->text('action')->nullable();
