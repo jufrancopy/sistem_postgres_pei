@@ -307,8 +307,6 @@ class PeiController extends Controller
         return $data;
     }
 
-
-
     public function show(Request $request, $id)
     {
         $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])
