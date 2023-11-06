@@ -16,6 +16,91 @@
         </nav>
 
         <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h2>
+                            {{ $profile->first()->name }}
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><label>Periodo: </label>
+                                {{ Carbon\Carbon::parse($profile->first()->year_start)->format('Y') }} -
+                                {{ Carbon\Carbon::parse($profile->first()->year_end)->format('Y') }}
+                            <li class="list-group-item"><label><i class="fa fa-arrows-h" aria-hidden="true"></i>
+                                    Ejes: </label>
+                                <div class="btn btn-danger btn-circle">
+                                    {{ $profile->first()->where('level', 'axi')->count() }}
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <label><i class="fa fa-bullseye" aria-hidden="true"></i>
+                                    Objetivos: </label>
+                                <div class="btn btn-danger btn-circle">
+                                    {{ $profile->first()->where('level', 'goal')->count() }}
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <label><i class="fa fa-rocket" aria-hidden="true"></i>
+                                    Acciones:</label>
+                                <div class="btn btn-danger btn-circle">
+                                    {{ $profile->first()->where('level', 'action')->count() }}
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+
+                                <label><i class="fa fa-users" aria-hidden="true"></i> Grupos de
+                                    Trabajo:
+                                </label><br>
+                                @php
+                                    $totalMembers = 0; // Inicializa el contador de miembros
+                                @endphp
+
+                                @foreach ($profile->first()->group->descendants as $group)
+                                    <span data-toggle="collapse" href="#group_{{ $group->id }}" role="button"
+                                        aria-expanded="false" aria-controls="group_{{ $group->id }}"
+                                        class="badge badge-secondary">{{ $group->name }}
+                                    </span>
+                                    <div class="collapse" id="group_{{ $group->id }}">
+                                        <div class="card card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr class="table-success">
+                                                            <th>Nro</th>
+                                                            <th>Participantes</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($group->members as $index => $member)
+                                                            @php
+                                                                $totalMembers++; // Incrementa el contador de miembros
+                                                            @endphp
+                                                            <tr>
+                                                                <td>{{ $index + 1 }}</td>
+                                                                <td>
+                                                                    <span
+                                                                        class="badge badge-secondary">{{ $member->name }}</span>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </li>
+                            <li class="list-group-item"><label><i class="fa fa-user" aria-hidden="true"></i> Participantes
+                                    Totales:
+                                </label>
+                                <div class="btn btn-danger btn-circle">{{ $totalMembers }}</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">

@@ -42,26 +42,78 @@
                                         <div class="card-body">
                                             <ul class="list-group list-group-flush">
                                                 <li class="list-group-item"><label>Periodo: </label>
-
                                                     {{ Carbon\Carbon::parse($profile->year_start)->format('Y') }} -
                                                     {{ Carbon\Carbon::parse($profile->year_end)->format('Y') }}
-
-                                                <li class="list-group-item"><label>Ejes: </label>
+                                                <li class="list-group-item"><label><i class="fa fa-arrows-h"
+                                                            aria-hidden="true"></i>
+                                                        Ejes: </label>
                                                     <div class="btn btn-danger btn-circle">
                                                         {{ $profile->where('level', 'axi')->count() }}
                                                     </div>
                                                 </li>
                                                 <li class="list-group-item">
-                                                    <label>Objetivos: </label>
+                                                    <label><i class="fa fa-bullseye" aria-hidden="true"></i>
+                                                        Objetivos: </label>
                                                     <div class="btn btn-danger btn-circle">
                                                         {{ $profile->where('level', 'goal')->count() }}
                                                     </div>
                                                 </li>
                                                 <li class="list-group-item">
-                                                    <label>Acciones:</label>
+                                                    <label><i class="fa fa-rocket" aria-hidden="true"></i>
+                                                        Acciones:</label>
                                                     <div class="btn btn-danger btn-circle">
                                                         {{ $profile->where('level', 'action')->count() }}
                                                     </div>
+                                                </li>
+                                                <li class="list-group-item">
+
+                                                    <label><i class="fa fa-users" aria-hidden="true"></i> Grupos de
+                                                        Trabajo:
+                                                    </label><br>
+                                                    @php
+                                                        $totalMembers = 0; // Inicializa el contador de miembros
+                                                    @endphp
+
+                                                    @foreach ($profile->group->descendants as $group)
+                                                        <span data-toggle="collapse" href="#group_{{ $group->id }}"
+                                                            role="button" aria-expanded="false"
+                                                            aria-controls="group_{{ $group->id }}"
+                                                            class="badge badge-secondary">{{ $group->name }}
+                                                        </span>
+                                                        <div class="collapse" id="group_{{ $group->id }}">
+                                                            <div class="card card-body">
+                                                                <div class="table-responsive">
+                                                                    <table class="table table-bordered">
+                                                                        <thead>
+                                                                            <tr class="table-success">
+                                                                                <th>Nro</th>
+                                                                                <th>Participantes</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            @foreach ($group->members as $index => $member)
+                                                                                @php
+                                                                                    $totalMembers++; // Incrementa el contador de miembros
+                                                                                @endphp
+                                                                                <tr>
+                                                                                    <td>{{ $index + 1 }}</td>
+                                                                                    <td>
+                                                                                        <span
+                                                                                            class="badge badge-secondary">{{ $member->name }}</span>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            @endforeach
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </li>
+                                                <li class="list-group-item"><label><i class="fa fa-user"
+                                                            aria-hidden="true"></i> Participantes Totales:
+                                                    </label>
+                                                    <div class="btn btn-danger btn-circle">{{ $totalMembers }}</div>
                                                 </li>
                                             </ul>
                                         </div>
@@ -114,8 +166,8 @@
                                     <div class="card">
                                         <div class="card-header d-flex align-items-center">
                                             <h6 class="mb-0">Valores</h6>
-                                            <a class="btn btn-info text-white btn-circle ml-auto" href="javascript:void(0)"
-                                                data-type="values" id="compareHistorical">
+                                            <a class="btn btn-info text-white btn-circle ml-auto"
+                                                href="javascript:void(0)" data-type="values" id="compareHistorical">
                                                 <i class="fa fa-eye" aria-hidden="true"></i>
                                             </a>
                                         </div>
