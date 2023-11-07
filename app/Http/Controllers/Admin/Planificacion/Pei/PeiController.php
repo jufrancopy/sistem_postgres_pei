@@ -79,6 +79,26 @@ class PeiController extends Controller
 
         return response()->json(['axis' => $axis]);
     }
+
+    public function showGoalsList($idProfile)
+    {
+
+        $profile = PeiProfile::findOrFail($idProfile);
+        
+        $goals = $profile->where('level', 'goal')->with(['strategies'])->get();
+
+        return response()->json(['goals' => $goals]);
+    }
+
+    public function showActionsList($idProfile)
+    {
+
+        $profile = PeiProfile::findOrFail($idProfile);
+        
+        $actions = $profile->where('level', 'action')->with(['responsibles'])->get();
+
+        return response()->json(['actions' => $actions]);
+    }
     // public function dataDetailsTree($idProfile)
     // {
 
