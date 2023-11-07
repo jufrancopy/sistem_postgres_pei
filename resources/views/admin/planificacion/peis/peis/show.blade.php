@@ -32,41 +32,23 @@
                     <div class="card-body">
                         <div class="container">
                             <div class="row">
-                                <div class="col-12">
+                                <div class="col-12 detailHeader">
                                     <div class="card">
-                                        <div class="card-header text-center">
+                                        <div class="card-header">
                                             <h2>
                                                 {{ $profile->name }}
                                             </h2>
+                                            <div class="col">
+                                                <label><i class="fa fa-calendar" aria-hidden="true"></i> Periodo:
+                                                </label>
+                                                {{ Carbon\Carbon::parse($profile->year_start)->format('Y') }} -
+                                                {{ Carbon\Carbon::parse($profile->year_end)->format('Y') }}
+                                            </div>
                                         </div>
+
                                         <div class="card-body">
                                             <ul class="list-group list-group-flush">
-                                                <li class="list-group-item"><label>Periodo: </label>
-                                                    {{ Carbon\Carbon::parse($profile->year_start)->format('Y') }} -
-                                                    {{ Carbon\Carbon::parse($profile->year_end)->format('Y') }}
-                                                <li class="list-group-item"><label><i class="fa fa-arrows-h"
-                                                            aria-hidden="true"></i>
-                                                        Ejes: </label>
-                                                    <div class="btn btn-danger btn-circle">
-                                                        {{ $profile->where('level', 'axi')->count() }}
-                                                    </div>
-                                                </li>
                                                 <li class="list-group-item">
-                                                    <label><i class="fa fa-bullseye" aria-hidden="true"></i>
-                                                        Objetivos: </label>
-                                                    <div class="btn btn-danger btn-circle">
-                                                        {{ $profile->where('level', 'goal')->count() }}
-                                                    </div>
-                                                </li>
-                                                <li class="list-group-item">
-                                                    <label><i class="fa fa-rocket" aria-hidden="true"></i>
-                                                        Acciones:</label>
-                                                    <div class="btn btn-danger btn-circle">
-                                                        {{ $profile->where('level', 'action')->count() }}
-                                                    </div>
-                                                </li>
-                                                <li class="list-group-item">
-
                                                     <label><i class="fa fa-users" aria-hidden="true"></i> Grupos de
                                                         Trabajo:
                                                     </label><br>
@@ -110,15 +92,47 @@
                                                         </div>
                                                     @endforeach
                                                 </li>
-                                                <li class="list-group-item"><label><i class="fa fa-user"
-                                                            aria-hidden="true"></i> Participantes Totales:
+                                            </ul>
+
+                                            <div class="row border">
+
+                                                <div class="col">
+                                                    <label><i class="fa fa-arrows-h" aria-hidden="true"></i> Ejes: </label>
+                                                    <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
+                                                        href="javascript:void(0)" data-id="{{ $profile->id }}"
+                                                        id="showAxisList">
+                                                        {{ $profile->where('level', 'axi')->count() }}
+                                                    </a>
+
+                                                </div>
+
+
+                                                <div class="col">
+                                                    <label><i class="fa fa-bullseye" aria-hidden="true"></i> Objetivos:
+                                                    </label>
+                                                    <div class="btn btn-danger btn-circle">
+                                                        {{ $profile->where('level', 'goal')->count() }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="col">
+                                                    <label><i class="fa fa-rocket" aria-hidden="true"></i> Acciones:</label>
+                                                    <div class="btn btn-danger btn-circle">
+                                                        {{ $profile->where('level', 'action')->count() }}
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <label><i class="fa fa-user" aria-hidden="true"></i>
+                                                        Participantes:
                                                     </label>
                                                     <div class="btn btn-danger btn-circle">{{ $totalMembers }}</div>
-                                                </li>
-                                            </ul>
+                                                </div>
+
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="col mision">
                                     <div class="card">
                                         <div class="card-header d-flex align-items-center">
@@ -633,6 +647,35 @@
                                             <tr>
                                                 <th>Grupo</th>
                                                 <th>Definicion</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="ajaxAxisListlModal" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+
+                            <div class="card-header card-header-info">
+                                <h4 class="modal-title" id="modalHeadingAxisList"></h4>
+                            </div>
+
+                            <div class="modal-body">
+                                <div class="table-responsive" id="axisList">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Nro.</th>
+                                                <th>Nombre</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1249,6 +1292,34 @@
 
 
                 });
+            });
+
+            $('body').on('click', '#showAxisList', function() {
+                var profileID = $(this).data('id');
+
+                $.get("{{ route('pei-profiles.index') }}" +
+                    '/' + profileID + '/axis-list',
+                    function(data) {
+                        $('#modalHeadingAxisList').html(
+                            'Lista de Ejes');
+                        $('#ajaxAxisListlModal').modal('show');
+                        compareList
+
+                        var tableBody = $('#axisList .table tbody');
+                        tableBody.empty(); // Limpiar el contenido de la tabla
+
+                        // Itera sobre los datos y agrega filas a la tabla
+                        data.axis.forEach(function(row, index) {
+                            var newRow = $('<tr>');
+                            newRow.append($('<td>').text(index + 1));
+                            newRow.append($('<td>').html(row.name));
+
+
+                            tableBody.append(newRow);
+                        });
+
+
+                    });
             });
 
             $('#saveBtnMision').click(function(e) {

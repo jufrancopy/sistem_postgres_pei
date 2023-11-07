@@ -70,70 +70,79 @@ class PeiController extends Controller
         return view('admin.planificacion.peis.peis.details_tree', get_defined_vars());
     }
 
-    public function dataDetailsTree($idProfile)
+    public function showAxisList($idProfile)
     {
 
-        $profile = PeiProfile::orderBy('id', 'ASC')->withDepth()->with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->get()->linkNodes();
+        $profile = PeiProfile::findOrFail($idProfile);
 
-        // $profile = PeiProfile::orderBy('id', 'ASC')
-        //     ->withDepth()
-        //     ->with('analysts')
-        //     ->get()
-        //     ->linkNodes();
+        $axis = $profile->where('level', 'axi')->get();
 
-        $formattedData = [];
-
-        foreach ($profile as $depth0) {
-            $depth0Array = [
-                "id" => $depth0->id,
-                "text" => $depth0->name,
-                "data" => [],
-                "children" => [],
-            ];
-
-            foreach ($depth0->children as $depth1) {
-                $depth1Array = [
-                    "id" => $depth1->id,
-                    "text" => htmlspecialchars($depth1->name), // Escapamos caracteres HTML
-                    "data" => [],
-                    "children" => [],
-                    "state" => ["opened" => true],
-                ];
-
-                foreach ($depth1->children as $depth2) {
-                    $depth2Array = [
-                        "id" => $depth2->id,
-                        "text" => htmlspecialchars($depth2->name), // Escapamos caracteres HTML
-                        "children" => [],
-                        "state" => ["opened" => true],
-                    ];
-
-                    foreach ($depth2->children as $action) {
-                        $actionArray = [
-                            "id" => $action->id,
-                            "text" => htmlspecialchars($action->name), // Escapamos caracteres HTML
-                            "data" => [
-                                "indicator" => $action->indicator,
-                                "baseline" => $action->baseline,
-                                "target" => $action->target,
-                                "responsible" => "Julio",
-                            ],
-                        ];
-
-                        $depth2Array["children"][] = $actionArray;
-                    }
-
-                    $depth1Array["children"][] = $depth2Array;
-                }
-
-                $depth0Array["children"][] = $depth1Array;
-            }
-
-            $formattedData[] = $depth0Array;
-        }
-
-        return response()->json($formattedData);
+        return response()->json(['axis' => $axis]);
     }
+    // public function dataDetailsTree($idProfile)
+    // {
+
+    //     $profile = PeiProfile::orderBy('id', 'ASC')->withDepth()->with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->get()->linkNodes();
+
+    //     // $profile = PeiProfile::orderBy('id', 'ASC')
+    //     //     ->withDepth()
+    //     //     ->with('analysts')
+    //     //     ->get()
+    //     //     ->linkNodes();
+
+    //     $formattedData = [];
+
+    //     foreach ($profile as $depth0) {
+    //         $depth0Array = [
+    //             "id" => $depth0->id,
+    //             "text" => $depth0->name,
+    //             "data" => [],
+    //             "children" => [],
+    //         ];
+
+    //         foreach ($depth0->children as $depth1) {
+    //             $depth1Array = [
+    //                 "id" => $depth1->id,
+    //                 "text" => htmlspecialchars($depth1->name), // Escapamos caracteres HTML
+    //                 "data" => [],
+    //                 "children" => [],
+    //                 "state" => ["opened" => true],
+    //             ];
+
+    //             foreach ($depth1->children as $depth2) {
+    //                 $depth2Array = [
+    //                     "id" => $depth2->id,
+    //                     "text" => htmlspecialchars($depth2->name), // Escapamos caracteres HTML
+    //                     "children" => [],
+    //                     "state" => ["opened" => true],
+    //                 ];
+
+    //                 foreach ($depth2->children as $action) {
+    //                     $actionArray = [
+    //                         "id" => $action->id,
+    //                         "text" => htmlspecialchars($action->name), // Escapamos caracteres HTML
+    //                         "data" => [
+    //                             "indicator" => $action->indicator,
+    //                             "baseline" => $action->baseline,
+    //                             "target" => $action->target,
+    //                             "responsible" => "Julio",
+    //                         ],
+    //                     ];
+
+    //                     $depth2Array["children"][] = $actionArray;
+    //                 }
+
+    //                 $depth1Array["children"][] = $depth2Array;
+    //             }
+
+    //             $depth0Array["children"][] = $depth1Array;
+    //         }
+
+    //         $formattedData[] = $depth0Array;
+    //     }
+
+    //     return response()->json($formattedData);
+    // }
 
     public function showDetailForGroup($idPerfil)
     {
