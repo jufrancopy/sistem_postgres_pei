@@ -20,6 +20,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idPerfil}/detail', 'Admin\Planificacion\Pei\PeiController@showDetailForGroup');
     Route::get('pei-profiles-compareHistorical', 'Admin\Planificacion\Pei\PeiController@compareHistorical')->name('pei-profiles-compareHistorical');
     Route::get('pei-profiles-details/{idProfile}', 'Admin\Planificacion\Pei\PeiController@showDetailsTree')->name('pei-profiles.details');
+    Route::get('pei-profiles/{idProfile}/axis-list', 'Admin\Planificacion\Pei\PeiController@showAxisList')->name('pei-profiles-axis-list');
 
     // Relevamientos
     Route::get('proyectos-epc-relevamientos/{estandarId}', 'Admin\Proyectos\EPC\RelevamientoController@getFormulario')->name('proyectos-epc-relevamientos-form-dependencia');
