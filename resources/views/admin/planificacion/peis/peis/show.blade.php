@@ -103,24 +103,26 @@
                                                         id="showAxisList">
                                                         {{ $profile->where('level', 'axi')->count() }}
                                                     </a>
-
                                                 </div>
 
-
                                                 <div class="col">
-                                                    <label><i class="fa fa-bullseye" aria-hidden="true"></i> Objetivos:
-                                                    </label>
-                                                    <div class="btn btn-danger btn-circle">
+                                                    <label><i class="fa fa-arrows-h" aria-hidden="true"></i> Objetivos: </label>
+                                                    <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
+                                                        href="javascript:void(0)" data-id="{{ $profile->id }}"
+                                                        id="showGoalsList">
                                                         {{ $profile->where('level', 'goal')->count() }}
-                                                    </div>
+                                                    </a>
                                                 </div>
 
                                                 <div class="col">
-                                                    <label><i class="fa fa-rocket" aria-hidden="true"></i> Acciones:</label>
-                                                    <div class="btn btn-danger btn-circle">
+                                                    <label><i class="fa fa-arrows-h" aria-hidden="true"></i> Acciones: </label>
+                                                    <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
+                                                        href="javascript:void(0)" data-id="{{ $profile->id }}"
+                                                        id="showActionsList">
                                                         {{ $profile->where('level', 'action')->count() }}
-                                                    </div>
+                                                    </a>
                                                 </div>
+
                                                 <div class="col">
                                                     <label><i class="fa fa-user" aria-hidden="true"></i>
                                                         Participantes:
@@ -689,6 +691,70 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="modal fade" id="ajaxGoalsListModal" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+
+                            <div class="card-header card-header-info">
+                                <h4 class="modal-title" id="modalHeadingGoalsList"></h4>
+                            </div>
+
+                            <div class="modal-body">
+                                <div class="table-responsive" id="goalsList">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Nro.</th>
+                                                <th>Nombre</th>
+                                                <th>Estrategias del Cruce de Ambientes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="ajaxActionsListModal" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+
+                            <div class="card-header card-header-info">
+                                <h4 class="modal-title" id="modalHeadingActionsList"></h4>
+                            </div>
+
+                            <div class="modal-body">
+                                <div class="table-responsive" id="actionsList">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Nro.</th>
+                                                <th>Acción</th>
+                                                <th>Indicador</th>
+                                                <th>Línea de Base</th>
+                                                <th>Meta</th>
+                                                <th>Responsable</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody >
+                                            <tr>
+                                                
+                                                
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {{-- Fin Modales --}}
 
             </div>
@@ -1185,6 +1251,7 @@
                     });
 
                     var url = '/admin/globales/get-dependencies/' + data.profile.dependency_id;
+                    console.log("🚀 ~ file: show.blade.php:1188 ~ $.get ~ url:", url)
                     $('#responsibles').select2({
                         allowClear: true,
                         ajax: {
@@ -1192,7 +1259,6 @@
                             dataType: 'json',
                             delay: 250,
                             processResults: function(data) {
-                                console.log(data)
                                 return {
                                     results: $.map(data, function(item) {
                                         return {
@@ -1295,6 +1361,8 @@
             });
 
             $('body').on('click', '#showAxisList', function() {
+
+                
                 var profileID = $(this).data('id');
 
                 $.get("{{ route('pei-profiles.index') }}" +
@@ -1317,6 +1385,83 @@
 
                             tableBody.append(newRow);
                         });
+
+
+                    });
+            });
+
+            $('body').on('click', '#showGoalsList', function() {
+                var profileID = $(this).data('id');
+
+                $.get("{{ route('pei-profiles.index') }}" +
+                    '/' + profileID + '/goals-list',
+                    function(data) {
+                        $('#modalHeadingGoalsList').html(
+                            'Lista de Objetivos');
+                        $('#ajaxGoalsListModal').modal('show');
+                        compareList
+
+                        var tableBody = $('#goalsList .table tbody');
+                        tableBody.empty(); // Limpiar el contenido de la tabla
+                        
+                        // Itera sobre los datos y agrega filas a la tabla
+                        data.goals.forEach(function(row, index) {
+                            var newRow = $('<tr>');
+                            newRow.append($('<td>').text(index + 1));
+                            newRow.append($('<td>').html(row.name));
+
+                            // Crear una celda para mostrar todas las estrategias
+                            var strategiesCell = $('<td>');
+
+                            row.strategies.forEach(function(strategy) {
+                                // Agregar cada estrategia a la celda
+                                strategiesCell.append(strategy.estrategia + '<br>');
+                            });
+
+                            newRow.append(strategiesCell);
+                            tableBody.append(newRow);
+                        });
+
+
+
+                    });
+            });
+            
+            $('body').on('click', '#showActionsList', function() {
+                var profileID = $(this).data('id');
+
+                $.get("{{ route('pei-profiles.index') }}" +
+                    '/' + profileID + '/actions-list',
+                    function(data) {
+                        console.log(data)
+                        $('#modalHeadingActionsList').html(
+                            'Lista de Acciones');
+                        $('#ajaxActionsListModal').modal('show');
+
+                        var tableBody = $('#actionsList .table tbody');
+                        tableBody.empty(); // Limpiar el contenido de la tabla
+                        
+                        // Itera sobre los datos y agrega filas a la tabla
+                        data.actions.forEach(function(row, index) {
+                            var newRow = $('<tr>');
+                            newRow.append($('<td>').text(index + 1));
+                            newRow.append($('<td>').html(row.name));
+                            newRow.append($('<td>').html(row.indicator));
+                            newRow.append($('<td>').html(row.baseline));
+                            newRow.append($('<td>').html(row.target));
+
+                            // Crear una celda para mostrar todas las estrategias
+                            var responsaiblesCell = $('<td>');
+
+                            row.responsibles.forEach(function(responsible) {
+                                // Agregar cada estrategia a la celda
+                                responsaiblesCell.append(responsible.dependency + '<br>');
+                            });
+
+                            newRow.append(responsaiblesCell);
+                            tableBody.append(newRow);
+                        });
+
 
 
                     });

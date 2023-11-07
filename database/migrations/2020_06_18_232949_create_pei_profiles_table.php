@@ -31,6 +31,8 @@ class CreatePeiProfilesTable extends Migration
             $table->decimal('goal')->nullable();
             $table->decimal('progress')->nullable();
             $table->integer('order_item')->nullable();
+            $table->date('year_start ')->nullable();
+            $table->date('year_end ')->nullable();
 
             //Nuevos Inputs que no se incluyeron en mi mgiracion primaria
             $table->text('action')->nullable();
@@ -58,6 +60,7 @@ class CreatePeiProfilesTable extends Migration
 
             $table->softDeletes();
             $table->timestamps();
+            
         });
     }
 

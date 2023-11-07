@@ -65,7 +65,7 @@ class OrganigramaController extends Controller
         if ($request->has('q')) {
             $search = $request->q;
             $rootNode = Organigrama::find($idRoot);
-
+            
             if ($rootNode) {
                 // Utiliza descendants para obtener todos los hijos del nodo raíz
                 $children = $rootNode->descendants()->where('dependency', 'LIKE', "%$search%")->get(['id', 'dependency']);
