@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Admin\Planificacion\Pei;
 
-use App\Admin\Planificacion\Pei\Pei;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Kalnoy\Nestedset\NodeTrait;
-use Yajra\DataTables\DataTables;
 use Illuminate\Support\Carbon;
-
-use App\Models\User;
-use App\Admin\Planificacion\Pei\PeiProfile;
 use Illuminate\Support\Facades\Auth;
+
+use Yajra\DataTables\DataTables;
+use App\Admin\Planificacion\Pei\PeiProfile;
+use App\Admin\Globales\Organigrama;
+
+use App\Charts\ActionForDependencies;
+
 
 class PeiController extends Controller
 {
@@ -67,6 +68,33 @@ class PeiController extends Controller
         $idProfile = $idProfile;
         $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->descendantsAndSelf($idProfile)->toTree();
 
+        // Inicializa un arreglo asociativo para hacer un seguimiento de la cantidad de acciones por responsable
+        $responsiblesActionsCount = [];
+
+        foreach ($profile->first()->children as $axi) {
+            foreach ($axi->children as $goal) {
+                foreach ($goal->children as $action) {
+                    $responsibles = $action->responsibles;
+
+                    foreach ($responsibles as $responsible) {
+                        $responsiblesId = $responsible->id;
+                        $responsiblesActionsCount[$responsiblesId] = ($responsiblesActionsCount[$responsiblesId] ?? 0) + 1;
+                    }
+                }
+            }
+        }
+
+        foreach ($responsiblesActionsCount as $responsibleId => $actionsCount) {
+            $responsible = Organigrama::find($responsibleId);
+            ['dependency' => $responsible->dependency, 'actionsCount' => $actionsCount];
+        }
+
+
+        $chart = new ActionForDependencies;
+        $chart->labels(['One', 'Two', 'Three']);
+        $chart->dataset('My dataset 1', 'line', [1, 2, 3, 4]);
+
+
         return view('admin.planificacion.peis.peis.details_tree', get_defined_vars());
     }
 
@@ -84,7 +112,7 @@ class PeiController extends Controller
     {
 
         $profile = PeiProfile::findOrFail($idProfile);
-        
+
         $goals = $profile->where('level', 'goal')->with(['strategies'])->get();
 
         return response()->json(['goals' => $goals]);
@@ -94,7 +122,7 @@ class PeiController extends Controller
     {
 
         $profile = PeiProfile::findOrFail($idProfile);
-        
+
         $actions = $profile->where('level', 'action')->with(['responsibles'])->get();
 
         return response()->json(['actions' => $actions]);
