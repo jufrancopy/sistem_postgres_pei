@@ -20,9 +20,9 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="card"">
+                            <div class="card">
                                 <div class="card-header">
-                                    <h6>Dependecias con Más Actividades</h6>
+                                    <h6>Resumen del Perfíl</h6>
                                 </div>
                                 <div class="card-header">
                                     <h2>
@@ -84,7 +84,7 @@
                         <div class="col-md-6">
                             <div class="card" style="height: 16rem;">
                                 <div class="card-header">
-                                    <h6>Dependecias con Más Actividades</h6>
+                                    <h6>Actividades por Gerencia</h6>
                                 </div>
                                 <div id="piechart" style="width: 200; height: 200;"></div>
                             </div>
@@ -94,9 +94,9 @@
 
 
                 <div class="container">
-                    <div class="card shadow">
+                    <div class="card">
                         <div class="card-header">
-                            <h6>Resumen</h6>
+                            <h6>Resumen de Tareas</h6>
                         </div>
                         <div class="card-body">
                             <div class="row border">
@@ -155,19 +155,21 @@
                         </div>
                     </div>
                 </div>
-            </div>
+                <div class="container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>Tareas</h6>
+                            <div class="card-body">
+                                <div id="treeProfile">
 
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="card-body">
-                            <div id="treeProfile">
-
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+
 
             {{-- Inicio Modals --}}
             <div class="modal fade" id="ajaxAxisListlModal" aria-hidden="true">
