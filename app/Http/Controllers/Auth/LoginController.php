@@ -41,8 +41,10 @@ class LoginController extends Controller
     {
         if ($user->role == 'Administrador') {
             return redirect()->route('admin');
-        } else {
+        } elseif ($user->role == 'Analista') {
             return redirect()->route('tasks.index');
+        } else {
+            return redirect()->route('pei-profiles.index');
         }
     }
 }
