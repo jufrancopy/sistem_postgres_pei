@@ -20,7 +20,7 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="card" style="height: 16rem;">
+                            <div class="card"">
                                 <div class="card-header">
                                     <h6>Dependecias con Más Actividades</h6>
                                 </div>
