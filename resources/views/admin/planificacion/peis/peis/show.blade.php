@@ -106,7 +106,8 @@
                                                 </div>
 
                                                 <div class="col">
-                                                    <label><i class="fa fa-arrows-h" aria-hidden="true"></i> Objetivos: </label>
+                                                    <label><i class="fa fa-arrows-h" aria-hidden="true"></i> Objetivos:
+                                                    </label>
                                                     <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
                                                         href="javascript:void(0)" data-id="{{ $profile->id }}"
                                                         id="showGoalsList">
@@ -115,7 +116,8 @@
                                                 </div>
 
                                                 <div class="col">
-                                                    <label><i class="fa fa-arrows-h" aria-hidden="true"></i> Acciones: </label>
+                                                    <label><i class="fa fa-arrows-h" aria-hidden="true"></i> Acciones:
+                                                    </label>
                                                     <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
                                                         href="javascript:void(0)" data-id="{{ $profile->id }}"
                                                         id="showActionsList">
@@ -161,8 +163,8 @@
                                     <div class="card">
                                         <div class="card-header d-flex align-items-center">
                                             <h6 class="mb-0">Visión</h6>
-                                            <a class="btn btn-info text-white btn-circle ml-auto" href="javascript:void(0)"
-                                                data-type="vision" id="compareHistorical">
+                                            <a class="btn btn-info text-white btn-circle ml-auto"
+                                                href="javascript:void(0)" data-type="vision" id="compareHistorical">
                                                 <i class="fa fa-eye" aria-hidden="true"></i>
                                             </a>
                                         </div>
@@ -687,6 +689,12 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                <div class="col-sm-offset-2 col-sm-10">
+                                    <div class="text-center">
+                                        <button type="button" class="btn btn-info" data-dismiss="modal">Cerrar
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -717,6 +725,12 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                <div class="col-sm-offset-2 col-sm-10">
+                                    <div class="text-center">
+                                        <button type="button" class="btn btn-info" data-dismiss="modal">Cerrar
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -743,13 +757,16 @@
                                                 <th>Responsable</th>
                                             </tr>
                                         </thead>
-                                        <tbody >
-                                            <tr>
-                                                
-                                                
-                                            </tr>
+                                        <tbody>
+                                            <tr></tr>
                                         </tbody>
                                     </table>
+                                </div>
+                                <div class="col-sm-offset-2 col-sm-10">
+                                    <div class="text-center">
+                                        <button type="button" class="btn btn-info" data-dismiss="modal">Cerrar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1362,7 +1379,7 @@
 
             $('body').on('click', '#showAxisList', function() {
 
-                
+
                 var profileID = $(this).data('id');
 
                 $.get("{{ route('pei-profiles.index') }}" +
@@ -1403,7 +1420,7 @@
 
                         var tableBody = $('#goalsList .table tbody');
                         tableBody.empty(); // Limpiar el contenido de la tabla
-                        
+
                         // Itera sobre los datos y agrega filas a la tabla
                         data.goals.forEach(function(row, index) {
                             var newRow = $('<tr>');
@@ -1426,7 +1443,7 @@
 
                     });
             });
-            
+
             $('body').on('click', '#showActionsList', function() {
                 var profileID = $(this).data('id');
 
@@ -1440,7 +1457,7 @@
 
                         var tableBody = $('#actionsList .table tbody');
                         tableBody.empty(); // Limpiar el contenido de la tabla
-                        
+
                         // Itera sobre los datos y agrega filas a la tabla
                         data.actions.forEach(function(row, index) {
                             var newRow = $('<tr>');
@@ -1455,7 +1472,8 @@
 
                             row.responsibles.forEach(function(responsible) {
                                 // Agregar cada estrategia a la celda
-                                responsaiblesCell.append(responsible.dependency + '<br>');
+                                responsaiblesCell.append(responsible.dependency +
+                                    '<br>');
                             });
 
                             newRow.append(responsaiblesCell);

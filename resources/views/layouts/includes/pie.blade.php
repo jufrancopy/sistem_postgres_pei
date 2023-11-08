@@ -31,7 +31,7 @@
 <script src="{{ asset('assets/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('assets/jstree/jstree.js') }}"></script>
 <script src="{{ asset('assets/jstree/jstreetable.min.js') }}"></script>
-<script src="{{ asset('assets/') }}"></script>
+<script src="{{ asset('assets/googleCharts/loader.js') }}"></script>
 <script src="{{ asset('js/bootstrap.min.js') }}"></script>
 
 <script src="{{ asset('master/assets/js/core/bootstrap-material-design.min.js') }}" type="text/javascript"></script>
