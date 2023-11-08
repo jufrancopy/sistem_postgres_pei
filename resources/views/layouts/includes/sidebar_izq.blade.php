@@ -5,9 +5,7 @@
     -->
 <div class="logo">
     <a href="{{ route('planificacion-dashboard') }}" class="simple-text logo-normal">
-        {{-- <img src="{{ asset('images/siplan.ong') }}" alt=""> --}}
         SIPLAN
-
     </a>
 </div>
 <div class="sidebar-wrapper">
@@ -49,8 +47,7 @@
                 </a>
             </li>
         </ul>
-    @endhasanyrole
-    @hasanyrole('Analista')
+    @else
         <li class="nav-item ">
             <a class="nav-link" href="{{ route('tasks.index') }}">
                 <i class="material-icons">assignment</i>
@@ -69,13 +66,5 @@
                 <p>Cruce de Ambientes</p>
             </a>
         </li> --}}
-    @endhasanyrole
-    @hasanyrole('Participantes')
-        <li class="nav-item ">
-            <a class="nav-link" href="{{ route('pei-profiles.index') }}">
-                <i class="material-icons">assignment</i>
-                <p>PEI</p>
-            </a>
-        </li>
     @endhasanyrole
 </div>
