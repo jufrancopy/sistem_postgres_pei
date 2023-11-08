@@ -224,7 +224,9 @@ class TaskController extends Controller
                             'task' => $typeTask->name,
                             'status' => $typeTask->pivot->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
                             'action' =>
-                            ' <a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-task-id="' . $id . '"><i class="fas fa-tasks"></i></a>',
+                            ' <a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-task-id="' . $id . '"><i class="fas fa-tasks"></i></a>' .
+                                ' <a href="' . route('pei-profiles.details', $typeTask->typetaskable_id) . '" class="btn btn-info btn-circle" data-task-id="' . $id . '"><i class="fas fa-tree"></i></a>',
+
                         ];
                     } else {
                         $data[] = [
