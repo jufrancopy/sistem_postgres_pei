@@ -288,7 +288,7 @@
                             <h4 class="modal-title" id="modalHeadingParticipantsList"></h4>
                         </div>
 
-                        <div class="modal-body">
+                        <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
                             <div class="table-responsive" id="participantsList">
                                 <table class="table table-striped">
                                     <thead>
