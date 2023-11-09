@@ -279,6 +279,40 @@
                     </div>
                 </div>
             </div>
+
+            <div class="modal fade" id="ajaxParticipantsListModal" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+
+                        <div class="card-header card-header-info">
+                            <h4 class="modal-title" id="modalHeadingParticipantsList"></h4>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="table-responsive" id="participantsList">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Nro.</th>
+                                            <th>nombre</th>
+                                            <th>Correo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <div class="text-center">
+                                    <button type="button" class="btn btn-info" data-dismiss="modal">Cerrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {{-- Fin Modals --}}
         </div>
     </div>
@@ -495,7 +529,36 @@
 
                     });
             });
+
+            $('body').on('click', '#showParticipantsList', function() {
+                var profileID = $(this).data('id');
+
+                $.get("{{ route('pei-profiles.index') }}" +
+                    '/' + profileID + '/members-list',
+                    function(data) {
+                        $('#modalHeadingParticipantsList').html(
+                            'Lista de Participantes');
+                        $('#ajaxParticipantsListModal').modal('show');
+
+                        var tableBody = $('#participantsList .table tbody');
+                        tableBody.empty(); // Limpiar el contenido de la tabla
+
+                        // Itera sobre los datos y agrega filas a la tabla
+                        
+                        data.members.forEach(function(row, index) {
+                            var newRow = $('<tr>');
+                            newRow.append($('<td>').text(index + 1));
+                            newRow.append($('<td>').html(row.name));
+                            newRow.append($('<td>').html(row.email));
+                            tableBody.append(newRow);
+                        });
+
+
+
+                    });
+            });
         })
     </script>
 
 @stop
+

@@ -1379,7 +1379,6 @@
 
             $('body').on('click', '#showAxisList', function() {
 
-
                 var profileID = $(this).data('id');
 
                 $.get("{{ route('pei-profiles.index') }}" +
@@ -1445,6 +1444,47 @@
             });
 
             $('body').on('click', '#showActionsList', function() {
+                var profileID = $(this).data('id');
+
+                $.get("{{ route('pei-profiles.index') }}" +
+                    '/' + profileID + '/actions-list',
+                    function(data) {
+                        console.log(data)
+                        $('#modalHeadingActionsList').html(
+                            'Lista de Acciones');
+                        $('#ajaxActionsListModal').modal('show');
+
+                        var tableBody = $('#actionsList .table tbody');
+                        tableBody.empty(); // Limpiar el contenido de la tabla
+
+                        // Itera sobre los datos y agrega filas a la tabla
+                        data.actions.forEach(function(row, index) {
+                            var newRow = $('<tr>');
+                            newRow.append($('<td>').text(index + 1));
+                            newRow.append($('<td>').html(row.name));
+                            newRow.append($('<td>').html(row.indicator));
+                            newRow.append($('<td>').html(row.baseline));
+                            newRow.append($('<td>').html(row.target));
+
+                            // Crear una celda para mostrar todas las estrategias
+                            var responsaiblesCell = $('<td>');
+
+                            row.responsibles.forEach(function(responsible) {
+                                // Agregar cada estrategia a la celda
+                                responsaiblesCell.append(responsible.dependency +
+                                    '<br>');
+                            });
+
+                            newRow.append(responsaiblesCell);
+                            tableBody.append(newRow);
+                        });
+
+
+
+                    });
+            });
+
+            $('body').on('click', '#showParticipantsList', function() {
                 var profileID = $(this).data('id');
 
                 $.get("{{ route('pei-profiles.index') }}" +
