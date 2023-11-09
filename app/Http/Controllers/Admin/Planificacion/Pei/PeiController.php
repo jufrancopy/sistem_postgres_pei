@@ -72,7 +72,6 @@ class PeiController extends Controller
         $idProfile = $idProfile;
         $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->descendantsAndSelf($idProfile)->toTree();
 
-        // Inicializa un arreglo asociativo para hacer un seguimiento de la cantidad de acciones por responsable
         $responsiblesActionsCount = [];
 
         foreach ($profile->first()->children as $axi) {
@@ -82,6 +81,7 @@ class PeiController extends Controller
 
                     foreach ($responsibles as $responsible) {
                         $responsiblesId = $responsible->id;
+                        // Si tenemos valor, sumamos 1, si no tenemos valor, valor es 0
                         $responsiblesActionsCount[$responsiblesId] = ($responsiblesActionsCount[$responsiblesId] ?? 0) + 1;
                     }
                 }
@@ -93,11 +93,7 @@ class PeiController extends Controller
             ['dependency' => $responsible->dependency, 'actionsCount' => $actionsCount];
         }
 
-
-        // $chart = new ActionForDependencies;
-        // $chart->labels(['One', 'Two', 'Three']);
-        // $chart->dataset('My dataset 1', 'line', [1, 2, 3, 4]);
-
+        
 
         return view('admin.planificacion.peis.peis.details_tree', get_defined_vars());
     }
@@ -131,70 +127,24 @@ class PeiController extends Controller
 
         return response()->json(['actions' => $actions]);
     }
-    // public function dataDetailsTree($idProfile)
-    // {
 
-    //     $profile = PeiProfile::orderBy('id', 'ASC')->withDepth()->with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->get()->linkNodes();
 
-    //     // $profile = PeiProfile::orderBy('id', 'ASC')
-    //     //     ->withDepth()
-    //     //     ->with('analysts')
-    //     //     ->get()
-    //     //     ->linkNodes();
+    public function showMembersList($idProfile)
+    {
 
-    //     $formattedData = [];
+        $profile = PeiProfile::findOrFail($idProfile);
 
-    //     foreach ($profile as $depth0) {
-    //         $depth0Array = [
-    //             "id" => $depth0->id,
-    //             "text" => $depth0->name,
-    //             "data" => [],
-    //             "children" => [],
-    //         ];
+        $members = [];
 
-    //         foreach ($depth0->children as $depth1) {
-    //             $depth1Array = [
-    //                 "id" => $depth1->id,
-    //                 "text" => htmlspecialchars($depth1->name), // Escapamos caracteres HTML
-    //                 "data" => [],
-    //                 "children" => [],
-    //                 "state" => ["opened" => true],
-    //             ];
+        foreach($profile->group->descendants as $group){
+            foreach($group->members as $member){
+                $members[] = ['name'=>$member->name, 'email'=>$member->email];  
+            }
+             
+        }
 
-    //             foreach ($depth1->children as $depth2) {
-    //                 $depth2Array = [
-    //                     "id" => $depth2->id,
-    //                     "text" => htmlspecialchars($depth2->name), // Escapamos caracteres HTML
-    //                     "children" => [],
-    //                     "state" => ["opened" => true],
-    //                 ];
-
-    //                 foreach ($depth2->children as $action) {
-    //                     $actionArray = [
-    //                         "id" => $action->id,
-    //                         "text" => htmlspecialchars($action->name), // Escapamos caracteres HTML
-    //                         "data" => [
-    //                             "indicator" => $action->indicator,
-    //                             "baseline" => $action->baseline,
-    //                             "target" => $action->target,
-    //                             "responsible" => "Julio",
-    //                         ],
-    //                     ];
-
-    //                     $depth2Array["children"][] = $actionArray;
-    //                 }
-
-    //                 $depth1Array["children"][] = $depth2Array;
-    //             }
-
-    //             $depth0Array["children"][] = $depth1Array;
-    //         }
-
-    //         $formattedData[] = $depth0Array;
-    //     }
-
-    //     return response()->json($formattedData);
-    // }
+        return response()->json(['members' => $members]);
+    }
 
     public function showDetailForGroup($idPerfil)
     {
