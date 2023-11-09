@@ -180,7 +180,7 @@
                             <h4 class="modal-title" id="modalHeadingAxisList"></h4>
                         </div>
 
-                        <div class="modal-body">
+                        <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
                             <div class="table-responsive" id="axisList">
                                 <table class="table">
                                     <thead>
@@ -215,7 +215,7 @@
                             <h4 class="modal-title" id="modalHeadingGoalsList"></h4>
                         </div>
 
-                        <div class="modal-body">
+                        <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
                             <div class="table-responsive" id="goalsList">
                                 <table class="table">
                                     <thead>
@@ -251,7 +251,7 @@
                             <h4 class="modal-title" id="modalHeadingActionsList"></h4>
                         </div>
 
-                        <div class="modal-body">
+                        <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
                             <div class="table-responsive" id="actionsList">
                                 <table class="table table-striped">
                                     <thead>
