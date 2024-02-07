@@ -73,7 +73,7 @@
         },    
 
         {
-            name: 'Proyectos',
+            name: 'Gestión de Inmuebles',
             children: [
                 { name: '<a href="#">Ver</a>'},
             ]
