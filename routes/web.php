@@ -96,6 +96,9 @@ Route::group(['middleware' => ['auth']], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
 
+        //Localities
+        Route::resource('localities', 'Admin\Globales\LocalityController');
+
         //Roles and permissions
         Route::resource('users', 'Admin\UserController');
         Route::resource('permisos', 'Admin\PermissionController');
