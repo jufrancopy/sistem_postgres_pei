@@ -63,7 +63,7 @@
         {
             name: 'Globales.',
             children: [
-                { name: '<a href="{{route('globales.groups.index')}}">Grupos de Análisis</a>'},
+                { name: '<a href="{{route('globales.groups.index')}}">Grupos</a>'},
                 { name: '<a href="{{route('globales.users.index')}}">Usuarios</a>'},
                 { name: '<a href="{{route('globales.roles.index')}}">Roles</a>'},
                 { name: '<a href="{{route('globales.permisos.index')}}">Permisos</a>'},
@@ -89,6 +89,12 @@
             name: 'Servicios',
             children: [
                 { name: '<a href="{{route('globales.servicios.index')}}">Servicios</a>'}
+            ]
+        },
+        {
+            name: 'Configuraciones',
+            children: [
+                { name: '<a href="{{route('globales.localities.index')}}">Departamentos, Ciudades y Localidades</a>'}
             ]
         },
     ];
