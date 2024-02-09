@@ -21,9 +21,9 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Ciudad</th>
                                         <th>Departamento</th>
-                                        <th width="280px">Acciones</th>
+                                        <th>Ciudad</th>
+                                        <th>Localidad</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -122,12 +122,7 @@
                     }, {
                         data: 'desc_barrio_loc',
                         name: 'desc_barrio_loc'
-                    }, {
-                        data: 'action',
-                        name: 'action',
-                        orderable: false,
-                        searchable: false
-                    }, ]
+                    } ]
                 });
                 $('#').click(function() {
                     $('#saveBtn').val("create-user");
