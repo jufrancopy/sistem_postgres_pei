@@ -4236,16 +4236,16 @@
         },
         {
             "name": "phenx/php-svg-lib",
-            "version": "0.5.1",
+            "version": "0.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dompdf/php-svg-lib.git",
-                "reference": "8a8a1ebcf6aea861ef30197999f096f7bd4b4456"
+                "reference": "732faa9fb4309221e2bd9b2fda5de44f947133aa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dompdf/php-svg-lib/zipball/8a8a1ebcf6aea861ef30197999f096f7bd4b4456",
-                "reference": "8a8a1ebcf6aea861ef30197999f096f7bd4b4456",
+                "url": "https://api.github.com/repos/dompdf/php-svg-lib/zipball/732faa9fb4309221e2bd9b2fda5de44f947133aa",
+                "reference": "732faa9fb4309221e2bd9b2fda5de44f947133aa",
                 "shasum": ""
             },
             "require": {
@@ -4276,9 +4276,9 @@
             "homepage": "https://github.com/PhenX/php-svg-lib",
             "support": {
                 "issues": "https://github.com/dompdf/php-svg-lib/issues",
-                "source": "https://github.com/dompdf/php-svg-lib/tree/0.5.1"
+                "source": "https://github.com/dompdf/php-svg-lib/tree/0.5.2"
             },
-            "time": "2023-12-11T20:56:08+00:00"
+            "time": "2024-02-07T12:49:40+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -6796,16 +6796,16 @@
         },
         {
             "name": "staudenmeir/laravel-adjacency-list",
-            "version": "v1.12.10",
+            "version": "v1.12.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/staudenmeir/laravel-adjacency-list.git",
-                "reference": "a2670e755876e2d68a556f2802d4a9e3b7d6bf48"
+                "reference": "79dc39b9b4a22d6d5447ba4df106d61603ab5c5b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/staudenmeir/laravel-adjacency-list/zipball/a2670e755876e2d68a556f2802d4a9e3b7d6bf48",
-                "reference": "a2670e755876e2d68a556f2802d4a9e3b7d6bf48",
+                "url": "https://api.github.com/repos/staudenmeir/laravel-adjacency-list/zipball/79dc39b9b4a22d6d5447ba4df106d61603ab5c5b",
+                "reference": "79dc39b9b4a22d6d5447ba4df106d61603ab5c5b",
                 "shasum": ""
             },
             "require": {
@@ -6844,7 +6844,7 @@
             "description": "Recursive Laravel Eloquent relationships with CTEs",
             "support": {
                 "issues": "https://github.com/staudenmeir/laravel-adjacency-list/issues",
-                "source": "https://github.com/staudenmeir/laravel-adjacency-list/tree/v1.12.10"
+                "source": "https://github.com/staudenmeir/laravel-adjacency-list/tree/v1.12.11"
             },
             "funding": [
                 {
@@ -6852,7 +6852,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2024-01-30T15:39:49+00:00"
+            "time": "2024-02-08T14:16:19+00:00"
         },
         {
             "name": "staudenmeir/laravel-cte",
@@ -9542,36 +9542,36 @@
     "packages-dev": [
         {
             "name": "barryvdh/laravel-debugbar",
-            "version": "v3.9.2",
+            "version": "v3.10.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/barryvdh/laravel-debugbar.git",
-                "reference": "bfd0131c146973cab164e50f5cdd8a67cc60cab1"
+                "reference": "60d3f5d6298a8b23028927302318856e50cbe59b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/barryvdh/laravel-debugbar/zipball/bfd0131c146973cab164e50f5cdd8a67cc60cab1",
-                "reference": "bfd0131c146973cab164e50f5cdd8a67cc60cab1",
+                "url": "https://api.github.com/repos/barryvdh/laravel-debugbar/zipball/60d3f5d6298a8b23028927302318856e50cbe59b",
+                "reference": "60d3f5d6298a8b23028927302318856e50cbe59b",
                 "shasum": ""
             },
             "require": {
-                "illuminate/routing": "^9|^10",
-                "illuminate/session": "^9|^10",
-                "illuminate/support": "^9|^10",
-                "maximebf/debugbar": "^1.18.2",
+                "illuminate/routing": "^9|^10|^11",
+                "illuminate/session": "^9|^10|^11",
+                "illuminate/support": "^9|^10|^11",
+                "maximebf/debugbar": "1.20.x",
                 "php": "^8.0",
-                "symfony/finder": "^6"
+                "symfony/finder": "^6|^7"
             },
             "require-dev": {
                 "mockery/mockery": "^1.3.3",
-                "orchestra/testbench-dusk": "^5|^6|^7|^8",
+                "orchestra/testbench-dusk": "^5|^6|^7|^8|^9",
                 "phpunit/phpunit": "^8.5.30|^9.0",
                 "squizlabs/php_codesniffer": "^3.5"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.8-dev"
+                    "dev-master": "3.10-dev"
                 },
                 "laravel": {
                     "providers": [
@@ -9610,7 +9610,7 @@
             ],
             "support": {
                 "issues": "https://github.com/barryvdh/laravel-debugbar/issues",
-                "source": "https://github.com/barryvdh/laravel-debugbar/tree/v3.9.2"
+                "source": "https://github.com/barryvdh/laravel-debugbar/tree/v3.10.2"
             },
             "funding": [
                 {
@@ -9622,26 +9622,26 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-08-25T18:43:57+00:00"
+            "time": "2024-02-13T09:14:41+00:00"
         },
         {
             "name": "maximebf/debugbar",
-            "version": "v1.19.1",
+            "version": "v1.20.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/maximebf/php-debugbar.git",
-                "reference": "03dd40a1826f4d585ef93ef83afa2a9874a00523"
+                "reference": "72fea42726383318e44e80dd94c77f958274ef47"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/maximebf/php-debugbar/zipball/03dd40a1826f4d585ef93ef83afa2a9874a00523",
-                "reference": "03dd40a1826f4d585ef93ef83afa2a9874a00523",
+                "url": "https://api.github.com/repos/maximebf/php-debugbar/zipball/72fea42726383318e44e80dd94c77f958274ef47",
+                "reference": "72fea42726383318e44e80dd94c77f958274ef47",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1|^8",
                 "psr/log": "^1|^2|^3",
-                "symfony/var-dumper": "^4|^5|^6"
+                "symfony/var-dumper": "^4|^5|^6|^7"
             },
             "require-dev": {
                 "phpunit/phpunit": ">=7.5.20 <10.0",
@@ -9655,7 +9655,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.18-dev"
+                    "dev-master": "1.20-dev"
                 }
             },
             "autoload": {
@@ -9686,9 +9686,9 @@
             ],
             "support": {
                 "issues": "https://github.com/maximebf/php-debugbar/issues",
-                "source": "https://github.com/maximebf/php-debugbar/tree/v1.19.1"
+                "source": "https://github.com/maximebf/php-debugbar/tree/v1.20.0"
             },
-            "time": "2023-10-12T08:10:52+00:00"
+            "time": "2024-02-12T10:29:57+00:00"
         }
     ],
     "aliases": [],

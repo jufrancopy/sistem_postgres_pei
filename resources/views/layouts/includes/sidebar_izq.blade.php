@@ -46,6 +46,13 @@
                     <p>Proyectos</p>
                 </a>
             </li>
+
+            <li class="nav-item ">
+                <a class="nav-link" href="{{ route('globales.patrimonies.index') }}">
+                    <i class="material-icons">account_balance</i>
+                    <p>Patrimonios</p>
+                </a>
+            </li>
         </ul>
     @else
         <li class="nav-item ">
