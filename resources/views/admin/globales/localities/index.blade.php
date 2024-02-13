@@ -15,7 +15,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                     <div class="card-body">
+                    <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-bordered data-table display nowrap" id="data-table">
                                 <thead>
@@ -122,7 +122,7 @@
                     }, {
                         data: 'desc_barrio_loc',
                         name: 'desc_barrio_loc'
-                    } ]
+                    }]
                 });
                 $('#').click(function() {
                     $('#saveBtn').val("create-user");

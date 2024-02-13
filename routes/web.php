@@ -98,6 +98,7 @@ Route::group(['middleware' => ['auth']], function () {
 
         //Localities
         Route::resource('localities', 'Admin\Globales\LocalityController');
+        Route::resource('patrimonies', 'Admin\Globales\PatrimonyController');
 
         //Roles and permissions
         Route::resource('users', 'Admin\UserController');
