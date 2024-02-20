@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('patromonies', function (Blueprint $table) {
             $table->id();
             $table->string('type'); //BIEN INMUEBLE DE:
-            $table->integer('currentAccount');//CANTIDAD DE CTAS CTES
+            $table->integer('quantityAccount');//CANTIDAD DE CTAS CTES
             $table->string('detailLocation');//LOTE/MA/DPTO.
             $table->integer('estateQuantity');//CANTIDAD  DE FINCAS
             $table->string('department');//DEPARTAMENTO

@@ -31,19 +31,6 @@
                             </table>
                         </div>
                     </div>
-
-                    <div class="modal fade" id="ajaxModal" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="card-header card-header-info">
-                                    <h4 class="modal-title" id="modalHeading"></h4>
-                                </div>
-                                <div class="modal-body">
-                                    Lista de Ciudades
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
