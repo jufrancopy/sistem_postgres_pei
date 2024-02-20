@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Backend\Locality;
 
@@ -41,104 +42,38 @@ class LocalityController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    public function getTask(Request $request)
+    public function getCities($state)
     {
-        $data = [];
+        $states = Locality::where('desc_dpto', $state)
+            ->select(DB::raw('count(*) as cities, desc_dist'))
+            ->groupBy('desc_dist')
+            ->get();
 
-        if ($request->has('q')) {
-            $search = $request->q;
-            $fodaData = FodaPerfil::select("id", "name", DB::raw("'FODA' as model"))
-                ->where('name', 'LIKE', "%$search%")
-                ->get();
-
-            $peiData = PeiProfile::select("id", "name", DB::raw("'PEI' as model"))
-                ->where('name', 'LIKE', "%$search%")
-                ->get();
-
-            $data = $fodaData->concat($peiData);
-        }
-
-
-        return response()->json($data);
+        return $states;
     }
 
-    public function getTaskType(Request $request)
+    public function getLocalities($city)
     {
-        $data = [];
+        $localities = Locality::where('desc_dist', $city)
+            ->select(DB::raw('count(*) as localities, desc_barrio_loc'))
+            ->groupBy('desc_barrio_loc')
+            ->get();
 
-        if ($request->has('q')) {
-            $search = $request->q;
-            $data = Locality::select("id", "name")
-                ->where('name', 'LIKE', "%$search%")
-                ->get();
-        }
-        return response()->json($data);
-    }
-
-
-    public function store(Request $request)
-    {
-        if ($request->ajax()) {
-            $request->validate(
-                [
-                    'task_id'              => 'required',
-                ],
-                [
-                    'task_id.required'     => 'Campo nombre es requerido',
-                ]
-            );
-        };
-
-
-        $typeTask = Locality::updateOrCreate(
-            ['id' => $request->typeTask_id],
-            [
-                'name' => $request->name,
-                'typetaskable_id' => $request->task_id,
-                'typetaskable_type' => $request->typetaskable_type,
-
-            ]
-        );
-
-        if ($typeTask->wasRecentlyCreated) {
-            return response()->json(['success' => 'Tipo de Tarea creado con éxito']);
-        } else {
-            return response()->json(['success' => 'Tipo de Tarea actualizado con éxito']);
-        }
-    }
-
-    public function getTypeTasks(Request $request)
-    {
-        $data = [];
-
-        if ($request->has('q')) {
-            $search = $request->q;
-            $data = Locality::select("id", "name")
-                ->where('name', 'LIKE', "%$search%")
-                ->get();
-        }
-        return response()->json($data);
-    }
-
-    public function dataTypeTask(Request $request, $idSelection)
-    {
-        $data = Locality::findOrFail($idSelection);
-
-        return response()->json($data);
+        return $localities;
     }
 
     public function edit($id)
     {
-        $typeTask = Locality::findOrFail($id);
+        $localities = Locality::findOrFail($id);
 
-        return response()->json($typeTask);
+        return response()->json($localities);
     }
 
 
     public function destroy(Request $request, $id)
     {
-        $typeTask = Locality::find($id)->delete();
+        $locality = Locality::find($id)->delete();
 
-        return response()->json([$typeTask]);
+        return response()->json([$locality]);
     }
 }

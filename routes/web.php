@@ -100,6 +100,10 @@ Route::group(['middleware' => ['auth']], function () {
         Route::resource('localities', 'Admin\Globales\LocalityController');
         Route::resource('patrimonies', 'Admin\Globales\PatrimonyController');
 
+        // Get data from Select2
+        Route::get('/locality/{state}/cities', 'Admin\Globales\LocalityController@getCities');
+        Route::get('/locality/{city}/localities', 'Admin\Globales\LocalityController@getLocalities');
+
         //Roles and permissions
         Route::resource('users', 'Admin\UserController');
         Route::resource('permisos', 'Admin\PermissionController');
