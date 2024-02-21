@@ -1,35 +1,41 @@
 @extends('layouts.master')
-@section('title', 'Tipos de Tareas')
+@section('title', 'Tareas')
 
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Departamentos, Ciudades y Localidades</h4>
+            <h4 class="card-title "> Patrimonios</h4>
         </div>
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Lista de Cidudades por Departamentos</li>
+                <li class="breadcrumb-item active" aria-current="page"> Patrimonios</li>
             </ol>
         </nav>
+
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <div class="success"></div>
-                        <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)"
-                            id="createNewPatrimony">
-                            Nuevo Patrimoio</a>
+                        @hasanyrole('Administrador')
+                            <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)"
+                                id="createNewPatrimony">
+                                Agregar Patrimonio</a>
+                        @endhasanyrole
                     </div>
+
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-bordered data-table display nowrap" id="data-table">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
+                                        <th>Tipo</th>
+                                        <th>Ctas. Ctes.</th>
+                                        <th>Detalle</th>
+                                        <th>Fincas</th>
                                         <th>Departamento</th>
-                                        <th>Ciudad</th>
-                                        <th>Localidad</th>
+                                        <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -38,14 +44,13 @@
                         </div>
                     </div>
 
-                    <div class="modal fade" id="ajaxModalPatrimony" aria-hidden="true">
+                    <div class="modal fade" id="patrimonyModal" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="card-header card-header-info">
                                     <h4 class="modal-title" id="modalHeading"></h4>
                                 </div>
                                 <div class="modal-body">
-
                                     <form id="patrimonyForm" name="patrimonyForm" class="form-horizontal">
                                         <div class="alert alert-danger errors" role="alert"></div>
 
@@ -93,7 +98,7 @@
                                             {!! Form::label('state', 'Departamento:') !!}
                                             {!! Form::select('state', $states, null, ['class' => 'form-control', 'id' => 'state', 'style' => 'width:100%']) !!}
                                         </div>
-                                        
+
                                         <div class="form-group city">
                                             {!! Form::label('city', 'Ciudad:') !!}
                                             {!! Form::select('city', [], null, ['class' => 'form-control', 'id' => 'city', 'style' => 'width:100%']) !!}
@@ -126,98 +131,145 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="modal fade" id="patrimonyDetailModal" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="card-header card-header-info">
+                                    <h4 class="modal-title" id="modalDetailHeading"></h4>
+                                </div>
+                                <div class="modal-body">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    @stop
+    </div>
+@stop
 
-    @section('scripts')
-        {{-- My custom scripts --}}
-        <script type="text/javascript">
-            $(function() {
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    }
-                });
+@section('scripts')
+    {{-- My custom scripts --}}
+    <script type="text/javascript">
+        $(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
 
-                var table = $('.data-table').DataTable({
-                    processing: true,
-                    serverSide: true,
-                    dom: 'Bfrtip',
-                    buttons: [{
-                            extend: 'copy',
-                            text: '<i class="fa fa-copy"></i>',
-                            titleAttr: 'Copy'
-                        },
-                        {
-                            extend: 'excel',
-                            text: '<i class="fa fa-file-excel"></i>',
-                            titleAttr: 'Excel'
-                        },
-                        {
-                            extend: 'csv',
-                            text: '<i class="fas fa-file-csv"></i>',
-                            titleAttr: 'CSV'
-                        },
-                        {
-                            extend: 'pdf',
-                            text: '<i class="fa fa-file-pdf"></i>',
-                            titleAttr: 'PDF'
-                        },
-                        {
-                            extend: 'print',
-                            text: '<i class="fa fa-print"></i>',
-                            titleAttr: 'Imprimir'
-                        }
-                    ],
-                    language: {
-                        "decimal": "",
-                        "emptyTable": "No hay información",
-                        "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
-                        "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
-                        "infoFiltered": "(Filtrado de _MAX_ total entradas)",
-                        "infoPostFix": "",
-                        "thousands": ",",
-                        "lengthMenu": "Mostrar _MENU_ Entradas",
-                        "loadingRecords": "Cargando...",
-                        "processing": "Procesando...",
-                        "search": "Buscar:",
-                        "zeroRecords": "Sin resultados encontrados",
-                        "paginate": {
-                            "first": "Primero",
-                            "last": "Ultimo",
-                            "next": "Siguiente",
-                            "previous": "Anterior"
-                        }
+            var table = $('.data-table').DataTable({
+                processing: true,
+                serverSide: true,
+                dom: 'Bfrtip',
+                buttons: [{
+                        extend: 'copy',
+                        text: '<i class="fa fa-copy"></i>',
+                        titleAttr: 'Copy'
                     },
-                    ajax: "{{ route('globales.patrimonies.index') }}",
-                    columns: [{
+                    {
+                        extend: 'excel',
+                        text: '<i class="fa fa-file-excel"></i>',
+                        titleAttr: 'Excel'
+                    },
+                    {
+                        extend: 'csv',
+                        text: '<i class="fas fa-file-csv"></i>',
+                        titleAttr: 'CSV'
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="fa fa-file-pdf"></i>',
+                        titleAttr: 'PDF'
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fa fa-print"></i>',
+                        titleAttr: 'Imprimir'
+                    }
+                ],
+                language: {
+                    "decimal": "",
+                    "emptyTable": "No hay información",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ Entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "Sin resultados encontrados",
+                    "paginate": {
+                        "first": "Primero",
+                        "last": "Ultimo",
+                        "next": "Siguiente",
+                        "previous": "Anterior"
+                    }
+                },
+                ajax: "{{ route('globales.patrimonies.index') }}",
+                columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex'
                     }, {
-                        data: 'desc_dpto',
-                        name: 'desc_dpto'
+                        data: 'type',
+                        name: 'type'
                     }, {
-                        data: 'desc_dist',
-                        name: 'desc_dist'
-                    }, {
-                        data: 'desc_barrio_loc',
-                        name: 'desc_barrio_loc'
-                    }]
-                });
-                $('#').click(function() {
-                    $('#saveBtn').val("create-user");
-                    $('#group_id').val('');
-                    $('#typeTaskForm').trigger("reset");
-                    $('#modalHeading').html("Nuevo Tipo de Tarea");
-                    $('#ajaxModal').modal('show');
+                        data: 'quantityAccount',
+                        name: 'quantityAccount'
+                    },
+                    {
+                        data: 'detailLocation',
+                        name: 'detailLocation'
+                    },
+                    {
+                        data: 'estateQuantity',
+                        name: 'estateQuantity'
+                    },
+                    {
+                        data: 'department',
+                        name: 'department'
+                    },
 
-                });
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
+                    },
+                ]
             });
 
-              // Inicialization CKEditor
-              var descriptionEditor;
+            // Función para inicializar Select2
+            function initializeSelect2(selector, placeholder, url, defaultOption) {
+                selector.select2({
+                    placeholder: placeholder,
+                    ajax: {
+                        url: url,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function(data) {
+                            return {
+                                results: $.map(data, function(item) {
+                                    return {
+                                        text: item.name || item
+                                            .dependency, // Use 'name' or 'dependency' depending on the selector
+                                        id: item.id
+                                    };
+                                })
+                            };
+                        },
+                        cache: true
+                    }
+                });
+
+            }
+
+            var descriptionEditor;
+
             ClassicEditor
                 .create(document.querySelector('#description'))
                 .then(editor => {
@@ -227,14 +279,18 @@
                     console.error(err.stack);
                 });
 
-
             // Improved block by ChatGPT
             // When clicked, initialize the functions
+            $('#showDetailPatrimony').click(function() {
+                initializeDetailPatrimony()
+            });
+
             $('#createNewPatrimony').click(function() {
                 initializeForm();
                 setupSelect2();
                 setupEventListeners();
             });
+
 
             // Function to initialize the form
             function initializeForm() {
@@ -242,9 +298,21 @@
                 $('#patrimony_id').val('');
                 $('#patrimonyForm').trigger("reset");
                 $('#modalHeading').html("Nuevo Patrimonio");
-                $('#ajaxModalPatrimony').modal('show');
+                $('#patrimonyModal').modal('show');
                 $('.errors').removeClass("alert alert-danger");
             }
+
+            $('body').on('click', '.showDetailPatrimony', function() {
+                var patrimonyID = $(this).data('id');
+
+                $.get("{{ route('globales.patrimonies.index') }}" + '/' + patrimonyID, function(
+                    data) {
+                        console.log(data)
+                    $('#patrimonyDetailModal').modal('show')
+
+
+                });
+            });
 
             // Initialize all Select2 elements
             function setupSelect2() {
@@ -262,11 +330,11 @@
             // Function to get data when choosing a department
             function onSelectStateChange() {
                 var state = $(this).val();
-                console.log('Department:', state);
+                console.log('Departmento:', state);
 
                 // Route to fetch cities based on the selected department
                 $.get('/admin/globales/locality/' + state + '/cities', function(res) {
-                    updateSelectOptions('#city', res, 'Selecciona una Ciudad');
+                    updateSelectOptions('#city', res, 'Selecciona una ciudad');
                     $('#locality').change();
                 });
             }
@@ -278,7 +346,7 @@
 
                 // When selecting a city, look for associated localities or neighborhoods
                 $.get('/admin/globales/locality/' + city + '/localities', function(data) {
-                    updateSelectOptions('#locality', data, 'Selecciona un Barrio  o Localidad');
+                    updateSelectOptions('#locality', data, 'Selecciona un Barrio o Localidad');
                 });
             }
 
@@ -288,12 +356,16 @@
 
                 for (var i = 0; i < data.length; ++i) {
                     var optionValue = data[i].desc_dist || data[i].desc_barrio_loc; // Check both properties
-                    var optionText = optionValue || 'Undefined'; // Undefined
+                    var optionText = optionValue || 'Indefinido'; // Undefined
 
                     html_select += '<option value="' + optionValue + '">' + optionText + '</option>';
                 }
 
                 $(selectId).html(html_select).trigger('change');
             }
-        </script>
-    @stop
+
+
+
+        });
+    </script>
+@stop

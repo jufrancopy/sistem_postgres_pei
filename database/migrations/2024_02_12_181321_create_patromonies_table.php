@@ -13,15 +13,18 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('patromonies', function (Blueprint $table) {
+        Schema::create('patrimonies', function (Blueprint $table) {
             $table->id();
             $table->string('type'); //BIEN INMUEBLE DE:
             $table->integer('quantityAccount');//CANTIDAD DE CTAS CTES
             $table->string('detailLocation');//LOTE/MA/DPTO.
             $table->integer('estateQuantity');//CANTIDAD  DE FINCAS
             $table->string('department');//DEPARTAMENTO
-            $table->string('description');//DESCRIPCION
-            $table->string('locality'); //DISTRITO - CIUDAD 
+            $table->string('city');//Ciudad
+            $table->string('locality'); //DISTRITO - CIUDAD
+            $table->string('description');//DESCRIPCION 
+            $table->decimal('latitude');//LATITUD 
+            $table->decimal('longitude');//LONGITUD 
             $table->string('location'); //UBICACIÓN
             $table->string('estateNumber');  //SITUACION ACTUAL DEL INMUEBLE
             $table->string('registryNumber');  //FINCA MATRICULA Nº             
@@ -56,6 +59,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('patromonies');
+        Schema::dropIfExists('patrimonies');
     }
 };

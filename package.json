@@ -10,8 +10,10 @@
         "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
     },
     "devDependencies": {
+        "@popperjs/core": "^2.11.6",
+        "@vitejs/plugin-vue": "^4.5.0",
         "axios": "^0.18",
-        "bootstrap": "^4.0.0",
+        "bootstrap": "^5.2.3",
         "cross-env": "^5.1",
         "jquery": "^3.6.1",
         "jquery-ui": "^1.13.2",
@@ -19,9 +21,9 @@
         "lodash": "^4.17.5",
         "popper.js": "^1.12",
         "resolve-url-loader": "^2.3.1",
-        "sass": "^1.15.2",
-        "sass-loader": "^7.1.0",
-        "vue": "^2.5.17",
+        "sass": "^1.56.1",
+        "sass-loader": "^11.0.1",
+        "vue": "^3.2.37",
         "vue-template-compiler": "^2.6.14"
     },
     "dependencies": {
