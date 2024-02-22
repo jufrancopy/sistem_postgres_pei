@@ -139,7 +139,9 @@
                                     <h4 class="modal-title" id="modalDetailHeading"></h4>
                                 </div>
                                 <div class="modal-body">
-
+                                    <div class="maps">
+                                        <x-maps-google :centerPoint="['lat' => 52.16, 'long' => 5]"></x-maps-google>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -307,7 +309,7 @@
 
                 $.get("{{ route('globales.patrimonies.index') }}" + '/' + patrimonyID, function(
                     data) {
-                        console.log(data)
+
                     $('#patrimonyDetailModal').modal('show')
 
 
@@ -363,8 +365,6 @@
 
                 $(selectId).html(html_select).trigger('change');
             }
-
-
 
         });
     </script>

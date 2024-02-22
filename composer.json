@@ -26,6 +26,7 @@
         "laravel/tinker": "^2.0",
         "laravel/ui": "^4.4",
         "laravelcollective/html": "^6.2",
+        "larswiegers/laravel-maps": "^0.18.0",
         "mockery/mockery": "^1.0",
         "nesbot/carbon": "^2.71",
         "nunomaduro/collision": "^6.1",
