@@ -242,7 +242,6 @@ return [
         // 'Debugbar' => Barryvdh\Debugbar\Facade::class,
         'PDF' => Barryvdh\DomPDF\Facade::class,
 
-
     ],
 
 ];
