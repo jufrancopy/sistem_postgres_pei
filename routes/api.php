@@ -20,7 +20,7 @@ Route::middleware('auth:api')
          return $request->user();
  });
 
- Route::get('/patrimonies', 'Admin\Globales\PatrimonyController@index');
+ Route::get('/patrimonies', 'Admin\Globales\PatrimonyController@mapPais');
 
 
 // Route::group(['middleware' => ['auth', 'api']], function () {

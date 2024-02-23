@@ -20,5 +20,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.15.7/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="{{ asset('assets/jstree/themes/default/style.min.css') }}">
 
-
+    {{-- Require Google MAPS --}}
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
 </head>

@@ -26,6 +26,9 @@ return new class extends Migration
             $table->decimal('latitude');//LATITUD 
             $table->decimal('longitude');//LONGITUD 
             $table->string('location'); //UBICACIÓN
+            $table->string('infrastructureType'); //Tipo de Infraestructura
+            $table->date('startDateContract'); //Tipo de Infraestructura
+            $table->date('endDateContract'); //Tipo de Infraestructura
             $table->string('estateNumber');  //SITUACION ACTUAL DEL INMUEBLE
             $table->string('registryNumber');  //FINCA MATRICULA Nº             
             $table->integer('cadastreCurrentAccount');  //CTA. CTE. CTRAL.  Y/0 PADRON N° 
