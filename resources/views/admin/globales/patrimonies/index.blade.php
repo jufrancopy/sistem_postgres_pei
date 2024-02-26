@@ -16,8 +16,8 @@
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="pills-realSstates-tab" data-toggle="pill" href="#pills-realSstates" role="tab"
-                        aria-controls="pills-realSstates" aria-selected="true">Inmuebles</a>
+                    <a class="nav-link active" id="pills-realSstates-tab" data-toggle="pill" href="#pills-realSstates"
+                        role="tab" aria-controls="pills-realSstates" aria-selected="true">Inmuebles</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="pills-maps-tab" data-toggle="pill" href="#pills-maps" role="tab"
@@ -30,9 +30,9 @@
             </ul>
         </nav>
 
-
         <div class="tab-content" id="pills-tabContent">
-            <div class="tab-pane fade show active" id="pills-realSstates" role="tabpanel" aria-labelledby="pills-realSstates-tab">
+            <div class="tab-pane fade show active" id="pills-realSstates" role="tabpanel"
+                aria-labelledby="pills-realSstates-tab">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="card">
@@ -76,81 +76,10 @@
                                         <div class="modal-body">
                                             <form id="patrimonyForm" name="patrimonyForm" class="form-horizontal">
                                                 <div class="alert alert-danger errors" role="alert"></div>
-
-                                                {{ Form::hidden('patrimony_id', null, ['id' => 'group_id']) }}
-
-                                                <div class="form-group">
-                                                    {{ Form::label('type', 'Tipo') }}
-                                                    {{ Form::select(
-                                                        'type',
-                                                        [
-                                                            'BIEN DE USO' => 'BIEN DE USO',
-                                                            'BIEN DE RENTA' => 'BIEN DE RENTA',
-                                                        ],
-                                                        null,
-                                                        ['class' => 'form-control', 'placeholder' => '', 'id' => 'type', 'style' => 'width:100%'],
-                                                    ) }}
-                                                </div>
-
-                                                <div class="form-group">
-                                                    {{ Form::label('quantityAccountCurrent', 'Cantidad de Cuenta Corriente:', ['class' => 'control-label']) }}
-                                                    {{ Form::number('quantityAccountCurrent', null, ['class' => 'form-control', 'id' => 'quantityAccountCurrent']) }}
-                                                </div>
-
-                                                <div class="form-group">
-                                                    {{ Form::label('detailLocation', 'Detalle de Ubicación:', ['class' => 'control-label']) }}
-                                                    {{ Form::text('detailLocation', null, ['class' => 'form-control', 'id' => 'detailLocation']) }}
-                                                </div>
-
-                                                <div class="form-group">
-                                                    {{ Form::label('estateQuantity', 'Cantidad de Fincas:', ['class' => 'control-label']) }}
-                                                    {{ Form::number('estateQuantity', null, ['class' => 'form-control', 'id' => 'estateQuantity']) }}
-                                                </div>
-
-                                                <div class="form-group">
-                                                    {{ Form::label('currentAccount', 'Cuenta Corriente:', ['class' => 'control-label']) }}
-                                                    {{ Form::number('currentAccount', null, ['class' => 'form-control', 'id' => 'currentAccount']) }}
-                                                </div>
-
-                                                {{-- <div class="form-group">
-                                                    {{ Form::label('department', 'Departamento:', ['class' => 'control-label']) }}
-                                                    {{ Form::text('department', null, ['class' => 'form-control', 'id' => 'department']) }}
-                                                </div> --}}
-
-                                                <div class="form-group">
-                                                    {!! Form::label('state', 'Departamento:') !!}
-                                                    {!! Form::select('state', $states, null, ['class' => 'form-control', 'id' => 'state', 'style' => 'width:100%']) !!}
-                                                </div>
-
-                                                <div class="form-group city">
-                                                    {!! Form::label('city', 'Ciudad:') !!}
-                                                    {!! Form::select('city', [], null, ['class' => 'form-control', 'id' => 'city', 'style' => 'width:100%']) !!}
-                                                </div>
-
-                                                <div class="form-group locality">
-                                                    {!! Form::label('locality', 'Barrio:') !!}
-                                                    {!! Form::select('locality', [], null, ['class' => 'form-control', 'id' => 'locality', 'style' => 'width:100%']) !!}
-                                                </div>
-
-                                                <div class="description mb-2">
-                                                    {{ Form::label('description', 'Descripción:', ['class' => 'control-label']) }}
-                                                    {{ Form::textarea('description', null, [
-                                                        'class' => 'form-control editor',
-                                                        'id' => 'description',
-                                                    ]) }}
-                                                </div>
-
-                                                <div class="col-sm-offset-2 col-sm-10">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-dismiss="modal">Cerrar</button>
-                                                    <button type="submit" class="btn btn-success" id="saveBtn"
-                                                        value="create">Guardar
-                                                        cambios
-                                                    </button>
-                                                </div>
-
+                                                @include('admin.globales.patrimonies.partials.form')
                                             </form>
                                         </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -189,7 +118,24 @@
 
     </div>
 @stop
+@section('css')
+    <style>
+        .holder {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            /* Altura deseada */
+            overflow: hidden;
+        }
 
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Ajusta según tus necesidades: cover, contain, etc. */
+        }
+    </style>
+@stop
 @section('scripts')
     {{-- My custom scripts --}}
     <script type="text/javascript">
@@ -410,15 +356,10 @@
                 }
             });
 
-
-
-
             // Improved block by ChatGPT
-            // When clicked, initialize the functions
             $('#showDetailPatrimony').click(function() {
                 initializeDetailPatrimony()
             });
-
 
             $('#createNewPatrimony').click(function() {
                 initializeForm();
@@ -434,6 +375,71 @@
                 $('#modalHeading').html("Nuevo Patrimonio");
                 $('#patrimonyModal').modal('show');
                 $('.errors').removeClass("alert alert-danger");
+                // var imgPreview = "{{ asset('images/students/web/sin_foto.png') }}";
+
+                var imgPreview = "https://placebear.com/640/360";
+                $('.holder img').attr('src', imgPreview);
+
+                $('#mainPhotoFile').change(function() {
+                    const file = this.files[0];
+                    if (file) {
+                        let reader = new FileReader();
+                        reader.onload = function(event) {
+                            $('.holder img').attr('src', event.target.result);
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Initialize all Select2 elements
+            function setupSelect2() {
+                $('#type, #state, #city, #locality, #infrastructureType').select2();
+                $('#state, #city, #locality, #infrastructureType').val([]).trigger('change.select2');
+                // $('#state, #city, #locality').empty().trigger('change.select2');
+            }
+
+            // Function to capture changes in the selectors
+            function setupEventListeners() {
+                $('#state').on('change', onSelectStateChange);
+                $('#city').on('change', onSelectCityChange);
+            }
+
+            // Function to get data when choosing a department
+            function onSelectStateChange() {
+                var state = $(this).val();
+                console.log('Departmento:', state);
+
+                // Route to fetch cities based on the selected department
+                $.get('/admin/globales/locality/' + state + '/cities', function(res) {
+                    updateSelectOptions('#city', res, 'Selecciona una ciudad');
+                    $('#locality').change();
+                });
+            }
+
+            // Capture a chosen city
+            function onSelectCityChange() {
+                var city = $(this).val();
+                console.log('City:', city);
+
+                // When selecting a city, look for associated localities or neighborhoods
+                $.get('/admin/globales/locality/' + city + '/localities', function(data) {
+                    updateSelectOptions('#locality', data, 'Selecciona un Barrio o Localidad');
+                });
+            }
+
+            // Load data with the required parameters into the selector
+            function updateSelectOptions(selectId, data, defaultOption) {
+                var html_select = '<option value="">' + defaultOption + '</option>';
+
+                for (var i = 0; i < data.length; ++i) {
+                    var optionValue = data[i].desc_dist || data[i].desc_barrio_loc; // Check both properties
+                    var optionText = optionValue || 'Indefinido'; // Undefined
+
+                    html_select += '<option value="' + optionValue + '">' + optionText + '</option>';
+                }
+
+                $(selectId).html(html_select).trigger('change');
             }
 
             $('body').on('click', '.showDetailPatrimony', function() {
@@ -483,55 +489,198 @@
                 });
             });
 
-            // Initialize all Select2 elements
-            function setupSelect2() {
-                $('#type, #state, #city, #locality').select2();
-                $('#state, #city, #locality').val([]).trigger('change.select2');
-                // $('#state, #city, #locality').empty().trigger('change.select2');
-            }
+            $('body').on('click', '.editProfile', function() {
+                var profileID = $(this).data('id');
+                $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
+                    $('#modalHeading').html("Editar Perfil " + data.profile.name);
+                    $('#saveBtn').val("edit-profile");
+                    $('#ajaxModal').modal('show');
+                    $('#profileForm').trigger("reset");
+                    $('.errors').removeClass("alert alert-danger")
+                    $('#profile_id').val(data.profile.id);
+                    $('#group_id').val(data.profile.group_id);
+                    $('#name').val(data.profile.name);
+                    $('#year_start').val(data.profile.year_start);
+                    $('#year_end').val(data.profile.year_end);
+                    $('#mision').val(data.profile.mision);
+                    $('#vision').val(data.profile.vision);
+                    $('#values').val(data.profile.values);
 
-            // Function to capture changes in the selectors
-            function setupEventListeners() {
-                $('#state').on('change', onSelectStateChange);
-                $('#city').on('change', onSelectCityChange);
-            }
+                    // Inicializa los selectores de dependencia y grupo raíz
+                    initializeSelect2($("#group_roots"), 'Seleccione Grupo Raíz de trabajo',
+                        '{{ route('globales.get-root-groups') }}');
 
-            // Function to get data when choosing a department
-            function onSelectStateChange() {
-                var state = $(this).val();
-                console.log('Departmento:', state);
 
-                // Route to fetch cities based on the selected department
-                $.get('/admin/globales/locality/' + state + '/cities', function(res) {
-                    updateSelectOptions('#city', res, 'Selecciona una ciudad');
-                    $('#locality').change();
+                    var profileType = data.profile.type;
+
+                    var selectTypeProfile = $('#type_profile').select2()
+                    selectTypeProfile.val(profileType).trigger('change');;
+                    selectTypeProfile.change(function() {
+                        if ($(this).val() === 'corporative') {
+                            $('.form-group.dependencies').show();
+                            $('.form-group.groups').hide();
+                            $('#type').val('corporative');
+                        } else if ($(this).val() === 'group') {
+                            $('.form-group.dependencies').hide();
+                            $('.form-group.groups').show();
+                            $('#type').val('group');
+                        }
+                    });
+
+                    // Luego, condiciona la visibilidad según el valor de 'profileType'.
+                    if (profileType === 'corporative') {
+                        $('.form-group.dependencies').show();
+                        $('.form-group.groups').hide();
+                        $('#type').val('corporative');
+                    } else if (profileType === 'group') {
+                        $('.form-group.dependencies').hide();
+                        $('.form-group.groups').show();
+                        $('#type').val('group');
+                    }
+
+                    //Función para precargar selectores relacionados...
+                    function initSelect2WithRelationship(control, key, value) {
+                        var data = {
+                            id: key,
+                            text: value
+                        };
+                        var initOption = new Option(data.text, data.id, true,
+                            true); // Establece el tercer y cuarto parámetro en "true"
+                        control.empty().append(initOption).trigger('change');
+                    }
+
+                    //Inizialización de selector con función de datos relacionales
+                    initSelect2WithRelationship($('#dependencies'), data.profile.dependency_id, data
+                        .profile
+                        .dependency.dependency);
+
+                    //Selector que busca dependencias si se requiere asociar
+                    $('#dependencies').select2({
+                        placeholder: 'Seleccione la dependencia',
+                        ajax: {
+                            url: '{{ route('globales.get-dependencies') }}',
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(data) {
+                                return {
+                                    results: $.map(data, function(item) {
+                                        return {
+                                            text: item.dependency,
+                                            id: item.id
+                                        }
+                                    })
+                                };
+                            },
+                            cache: true
+                        }
+                    });
+
+                    //Inizialización de selector con función de datos relacionales
+
+                    initSelect2WithRelationship($('#group_roots'), data.profile.group_id, data
+                        .profile
+                        .group.name);
+
+                    // Cuando se cambia el grupo raíz
+                    $('#group_roots').on('change', function() {
+                        var groupRootID = $(this).val();
+                        //Buscamos los grupos asociados al Grupo Raíz o Evento
+                        var url = 'admin/globales/get-groups/' + groupRootID;
+
+                        // Reinicializar el selector de grupos
+                        initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
+                    });
+
+                    //Clearing selections
+                    $('#analysts').empty()
+                    $('#analysts').select2()
+                    var selectAnalysts = $('#analysts');
+                    data.analystsChecked.forEach(function(d) {
+                        var option = new Option(d.text, d.id, true, true);
+                        selectAnalysts.append(option).trigger('change');
+                        selectAnalysts.trigger({
+                            type: 'select2:select',
+                            params: {
+                                data: data
+                            }
+                        });
+                    });
+
+                    //Analysts
+                    var url = '{{ route('globales.get-users') }}';
+                    var analysts = $('#analysts').select2({
+                        placeholder: 'Seleccione Analistas',
+                        ajax: {
+                            url: url,
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(data) {
+                                return {
+                                    results: $.map(data, function(item) {
+                                        return {
+                                            text: item.name,
+                                            id: item.id
+                                        }
+                                    })
+                                };
+                            },
+                            cache: true
+                        }
+                    });
+
+                    selectAnalysts.val(data.analystsChecked.map(function(d) {
+                        return d.id;
+                    })).trigger('change');
+
                 });
-            }
+            });
 
-            // Capture a chosen city
-            function onSelectCityChange() {
-                var city = $(this).val();
-                console.log('City:', city);
+            $('#saveBtnMision').click(function(e) {
+                e.preventDefault();
+                $(this).html('Enviando..');
 
-                // When selecting a city, look for associated localities or neighborhoods
-                $.get('/admin/globales/locality/' + city + '/localities', function(data) {
-                    updateSelectOptions('#locality', data, 'Selecciona un Barrio o Localidad');
+                var data = new FormData();
+                var form_data = $('#patrimonyForm').serializeArray();
+
+                $.each(form_data, function(key, input) {
+                    data.append(input.name, input.value);
                 });
-            }
 
-            // Load data with the required parameters into the selector
-            function updateSelectOptions(selectId, data, defaultOption) {
-                var html_select = '<option value="">' + defaultOption + '</option>';
+                data.append('patrimony', patrimonyEditor.getData());
 
-                for (var i = 0; i < data.length; ++i) {
-                    var optionValue = data[i].desc_dist || data[i].desc_barrio_loc; // Check both properties
-                    var optionText = optionValue || 'Indefinido'; // Undefined
+                $.ajax({
+                    data: data,
+                    url: "{{ route('globales.patrimonies.store') }}",
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        Swal.fire(
+                            'Excelente!',
+                            'Inmueble agregado Satisfactoriamente.',
+                            'success'
+                        )
+                        $('#patrimonyForm').trigger("reset");
+                        $('#patrimonyModal').modal('hide');
+                        table.draw();
 
-                    html_select += '<option value="' + optionValue + '">' + optionText + '</option>';
-                }
+                    },
+                    error: function(data) {
+                        var obj = data.responseJSON.errors;
+                        $.each(obj, function(key, value) {
+                            // Alert Toastr
+                            toastr.options = {
+                                closeButton: true,
+                                progressBar: true,
+                            };
+                            toastr.error("Atención: " + value);
+                        });
 
-                $(selectId).html(html_select).trigger('change');
-            }
+                        $('#saveBtnMision').html('Guardar Cambios');
+                    }
+                });
+            });
 
         });
     </script>
