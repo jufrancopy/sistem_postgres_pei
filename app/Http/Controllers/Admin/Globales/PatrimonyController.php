@@ -39,14 +39,20 @@ class PatrimonyController extends Controller
             ->select(DB::raw('count(*) as states, desc_dpto'))
             ->groupBy('desc_dpto')
             ->pluck('desc_dpto', 'desc_dpto');
-        
+
         return view('admin.globales.patrimonies.index', get_defined_vars());
     }
 
-    public function mapPais(){
+    public function store(Request $request, $id)
+    {
+        dd($request->all());
+    }
+
+    public function mapPais()
+    {
         $patrimonies = Patrimony::all();
         $map_makes = array();
-        foreach($patrimonies as $key => $patrimony){
+        foreach ($patrimonies as $key => $patrimony) {
             $map_makes[] = (object)array(
                 'type' => $patrimony->type,
                 'quantityAccount' => $patrimony->quantityAccount,
