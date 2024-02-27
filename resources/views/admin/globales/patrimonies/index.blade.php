@@ -68,7 +68,7 @@
 
 
                             <div class="modal fade" id="patrimonyModal" aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
+                                <div class="modal-dialog modal-lg" style="overflow: auto">
                                     <div class="modal-content">
                                         <div class="card-header card-header-info">
                                             <h4 class="modal-title" id="modalHeading"></h4>
@@ -635,7 +635,7 @@
                 });
             });
 
-            $('#saveBtnMision').click(function(e) {
+            $('#saveBtnPatrimony').click(function(e) {
                 e.preventDefault();
                 $(this).html('Enviando..');
 
@@ -677,7 +677,7 @@
                             toastr.error("Atención: " + value);
                         });
 
-                        $('#saveBtnMision').html('Guardar Cambios');
+                        $('#saveBtnPatrimony').html('Guardar Cambios');
                     }
                 });
             });
