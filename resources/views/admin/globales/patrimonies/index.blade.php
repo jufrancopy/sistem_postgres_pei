@@ -12,6 +12,7 @@
                 <li class="breadcrumb-item active" aria-current="page"> Patrimonios</li>
             </ol>
         </nav>
+        
 
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
@@ -254,13 +255,13 @@
 
             }
 
-            var descriptionEditor;
+            var patrimonyEditor;
 
             ClassicEditor
 
                 .create(document.querySelector('#description'))
                 .then(editor => {
-                    descriptionEditor = editor;
+                    patrimonyEditor  = editor;
                 })
                 .catch(err => {
                     console.error(err.stack);
@@ -641,12 +642,25 @@
 
                 var data = new FormData();
                 var form_data = $('#patrimonyForm').serializeArray();
-
+                
                 $.each(form_data, function(key, input) {
-                    data.append(input.name, input.value);
+                    data.append(input.name, input.value);  
                 });
 
-                data.append('patrimony', patrimonyEditor.getData());
+                //evidenceFile data
+                var fileEvidence = $('input[name="evidenceFile"]')[0].files;
+                for (var i = 0; i < fileEvidence.length; i++) {
+                    data.append("evidenceFile", fileEvidence[i]);
+                }
+
+                //mainPhotoFile data
+                var mainPhotoFile = $('input[name="mainPhotoFile"]')[0].files;
+                for (var i = 0; i < mainPhotoFile.length; i++) {
+                    data.append("mainPhotoFile", mainPhotoFile[i]);
+                }
+
+                //Append to input "description" data textarea
+                data.append('description', patrimonyEditor.getData());
 
                 $.ajax({
                     data: data,

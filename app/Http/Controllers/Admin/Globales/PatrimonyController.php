@@ -43,9 +43,9 @@ class PatrimonyController extends Controller
         return view('admin.globales.patrimonies.index', get_defined_vars());
     }
 
-    public function store(Request $request, $id)
+    public function store(Request $request)
     {
-        dd($request->all());
+        
     }
 
     public function mapPais()

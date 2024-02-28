@@ -19,6 +19,11 @@
     </div>
 
     <div class="form-group">
+        {{ Form::label('cadastralCurrentAccount', 'Cuenta Corriente Catastral:', ['class' => 'control-label']) }}
+        {{ Form::number('cadastralCurrentAccount', null, ['class' => 'form-control', 'id' => 'cadastralCurrentAccount']) }}
+    </div>
+
+    <div class="form-group">
         {{ Form::label('detailLocation', 'Detalle de Ubicación:', ['class' => 'control-label']) }}
         {{ Form::text('detailLocation', null, ['class' => 'form-control', 'id' => 'detailLocation']) }}
     </div>
@@ -115,7 +120,7 @@
 
     <div class="col-sm-offset-2 col-sm-10">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-        <button type="submit" class="btn btn-success" id="saveBtn" value="create">Guardar
+        <button type="submit" class="btn btn-success" id="saveBtnPatrimony" value="create">Guardar
             cambios
         </button>
     </div>
