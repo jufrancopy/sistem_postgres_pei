@@ -16,22 +16,22 @@ return new class extends Migration
         Schema::create('patrimonies', function (Blueprint $table) {
             $table->id();
             $table->string('type'); //BIEN INMUEBLE DE:
-            $table->integer('quantityAccount'); //CANTIDAD DE CTAS CTES
+            $table->integer('quantityAccountCurrent'); //CANTIDAD DE CTAS CTES
             $table->string('detailLocation'); //LOTE/MA/DPTO.
             $table->integer('estateQuantity'); //CANTIDAD  DE FINCAS
             $table->string('department'); //DEPARTAMENTO
             $table->string('city'); //Ciudad
             $table->string('locality'); //DISTRITO - CIUDAD
-            $table->string('description'); //DESCRIPCION 
             $table->decimal('latitude'); //LATITUD 
             $table->decimal('longitude'); //LONGITUD 
-            $table->string('location'); //UBICACIÓN
+            $table->string('locationAddress'); //UBICACIÓN
             $table->string('infrastructureType'); //Tipo de Infraestructura
-            $table->date('startDateContract'); //Fecha de Inicio del Contrato
-            $table->date('endDateContract'); //Fecha Fin del Contrato
+            $table->text('description'); //UBICACIÓN
             $table->string('registryNumber');  //FINCA MATRICULA Nº             
-            $table->integer('cadastreCurrentAccount');  //CTA. CTE. CTRAL.  Y/0 PADRON N° 
-            $table->integer('estateStatus'); //SITUACION ACTUAL DEL INMUEBLE 
+            $table->integer('cadastralCurrentAccount');  //CTA. CTE. CTRAL.  Y/0 PADRON N° 
+            $table->integer('estateStatus'); //SITUACION ACTUAL DEL INMUEBLE
+            $table->date('startDateContract'); //Fecha de Inicio del Contrato
+            $table->date('endDateContract'); //Fecha Fin del Contrato 
             $table->integer('committedInvestment'); //INVERSION COMPROMETIDA 
             $table->integer('transfer'); //TRANFERENCIA   
             $table->integer('balanceForTransfer'); //SALDO A TRANSFERIR 
@@ -39,6 +39,8 @@ return new class extends Migration
             $table->string('rentAmount'); //CANON
             $table->integer('rentAmountPeriod'); //PERIODO DEL CANON
             $table->string('contractResolution'); //PERIODO VIGENTE-DESDE 
+            $table->string('contractNumber'); //NRO DE CONTRATO
+            $table->string('currentPeriodStart'); //PERIODO VIGENTE-DESDE 
             $table->string('currentPeriodEnd'); //PERIODO VIGENTE-HASTA 
             $table->string('statusDocumentation'); //TENENCIA DE TITULO
             $table->float('landAreaMt2'); //SUPERFICIE TERRENO M2
