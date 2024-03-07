@@ -69,12 +69,12 @@
 
 
                             <div class="modal fade" id="patrimonyModal" aria-hidden="true">
-                                <div class="modal-dialog modal-lg" style="overflow: auto">
+                                <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
                                         <div class="card-header card-header-info">
                                             <h4 class="modal-title" id="modalHeading"></h4>
                                         </div>
-                                        <div class="modal-body">
+                                        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                                             <form id="patrimonyForm" name="patrimonyForm" class="form-horizontal">
                                                 <div class="alert alert-danger errors" role="alert"></div>
                                                 @include('admin.globales.patrimonies.partials.form')
@@ -140,6 +140,7 @@
 @section('scripts')
     {{-- My custom scripts --}}
     <script type="text/javascript">
+    
         $(function() {
             $.ajaxSetup({
                 headers: {
@@ -205,16 +206,16 @@
                         data: 'type',
                         name: 'type'
                     }, {
-                        data: 'quantityAccount',
-                        name: 'quantityAccount'
+                        data: 'quantity_account_current',
+                        name: 'quantity_account_current'
                     },
                     {
-                        data: 'detailLocation',
-                        name: 'detailLocation'
+                        data: 'detail_location',
+                        name: 'detail_location'
                     },
                     {
-                        data: 'estateQuantity',
-                        name: 'estateQuantity'
+                        data: 'estate_quantity',
+                        name: 'estate_quantity'
                     },
                     {
                         data: 'department',

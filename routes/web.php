@@ -95,6 +95,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::group(['prefix' => 'admin/globales', 'as' => 'globales.'], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
+        Route::resource('activities', 'Admin\Globales\ActivityController');
 
         //Localities
         Route::resource('localities', 'Admin\Globales\LocalityController');
