@@ -53,6 +53,13 @@
                     <p>Patrimonios</p>
                 </a>
             </li>
+
+            <li class="nav-item ">
+                <a class="nav-link" href="{{ route('globales.activities.index') }}">
+                    <i class="material-icons">rocket_launch</i>
+                    <p>Acitividades</p>
+                </a>
+            </li>
         </ul>
     @else
         <li class="nav-item ">

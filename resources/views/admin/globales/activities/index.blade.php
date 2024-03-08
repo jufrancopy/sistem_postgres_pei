@@ -9,7 +9,7 @@
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Lista de Eventos</li>
+                <li class="breadcrumb-item active" aria-current="page">Lista de Actividades</li>
             </ol>
         </nav>
 
@@ -18,8 +18,9 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="success"></div>
-                        <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)" id="createNewGroup">
-                            Nuevo Scrum</a>
+                        <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)"
+                            id="createNewActivity">
+                            Nueva Actividad</a>
                     </div>
 
                     <div class="card-body">
@@ -29,7 +30,8 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Nombre</th>
-                                        <th>Apellido</th>
+                                        <th>Tipo</th>
+                                        <th>Responables</th>
                                         <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>
@@ -39,22 +41,39 @@
                         </div>
                     </div>
 
-                    <div class="modal fade" id="ajaxModal" aria-hidden="true">
+                    <div class="modal fade" id="activityModal" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title" id="modalHeading"></h4>
+                                <div class="card-header card-header-info">
+                                    <h4 class="modal-title" id="activityHeading"></h4>
                                 </div>
                                 <div class="modal-body">
-                                    <form id="groupForm" name="groupForm" class="form-horizontal">
+                                    <form id="activityForm" name="activityForm" class="form-horizontal">
                                         <div class="alert alert-danger errors" role="alert"></div>
 
-                                        {{ Form::hidden('group_id', null, ['id' => 'group_id']) }}
-                                        {{ Form::hidden('parent_id', null, ['id' => 'parent_id']) }}
+                                        {{ Form::hidden('activity_id', null, ['id' => 'activity_id']) }}
 
                                         <div class="form-group">
                                             {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
                                             {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
+                                        </div>
+
+                                        <div class="form-group">
+                                            {{ Form::label('type', 'Tipo:') }}
+                                            {!! Form::select('type', ['scrum' => 'Scrum', 'kanba' => 'Kanba'], null, [
+                                                'id' => 'type',
+                                                'placeholder' => '',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
+
+                                        <div class="form-group">
+                                            {{ Form::label('responsibles', 'Asignar Responsables:') }}
+                                            {!! Form::select('responsible_id[]', [], null, [
+                                                'id' => 'responsibles',
+                                                'style' => 'width:100%',
+                                                'multiple',
+                                            ]) !!}
                                         </div>
 
 
@@ -137,27 +156,78 @@
                             "previous": "Anterior"
                         }
                     },
-                    ajax: "{{ route('globales.groups.index') }}",
+                    ajax: "{{ route('globales.activities.index') }}",
                     columns: [{
-                        data: 'DT_RowIndex',
-                        name: 'DT_RowIndex'
-                    }, {
-                        data: 'name',
-                        name: 'name'
-                    }, {
-                        data: 'action',
-                        name: 'action',
-                        orderable: false,
-                        searchable: false
-                    }, ]
+                            data: 'DT_RowIndex',
+                            name: 'DT_RowIndex'
+                        }, {
+                            data: 'name',
+                            name: 'name'
+                        }, {
+                            data: 'type',
+                            name: 'type'
+                        },
+                        {
+                            data: 'responsibles',
+                            name: 'responsibles',
+                            render: function(data, type, full, meta) {
+                                var responsiblesArray = data.split(', ');
+
+                                var responsiblesHtml = '';
+
+                                responsiblesArray.forEach(function(task) {
+                                    responsiblesHtml += '<span class="badge badge-secondary">' +
+                                        task + '</span> ';
+                                });
+
+                                return responsiblesHtml;
+                            }
+                        },
+                        {
+                            data: 'action',
+                            name: 'action',
+                            orderable: false,
+                            searchable: false
+                        },
+                    ]
                 });
-                $('#createNewGroup').click(function() {
+
+
+                $('#createNewActivity').click(function() {
                     $('#saveBtn').val("create-user");
-                    $('#group_id').val('');
-                    $('#groupForm').trigger("reset");
-                    $('#modalHeading').html("Nuevo Evento");
-                    $('#ajaxModal').modal('show');
+                    $('#activity_id').val('');
+                    $('#activityForm').trigger("reset");
+                    $('#activityHeading').html("Nueva Actividad");
+                    $('#activityModal').modal('show');
+                    $('#type').select2({
+                        placeholder: 'Elige un Tipo'
+                    });
                     $('.errors').removeClass("alert alert-danger")
+
+                    //Responsibles
+                    var url = '{{ route('globales.get-users') }}';
+                    $("#responsibles").val([]).change();
+                    $("#responsibles").trigger("change");
+
+                    $('#responsibles').select2({
+                        allowClear: true,
+                        ajax: {
+                            url: url,
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(data) {
+                                return {
+                                    results: $.map(data, function(item) {
+                                        return {
+                                            text: item.name,
+                                            id: item.id
+                                        }
+                                    })
+                                };
+                            },
+                            cache: true
+                        }
+                    });
                 });
 
                 $('body').on('click', '.editGroup', function() {
@@ -165,10 +235,10 @@
                     $.get("{{ route('globales.groups.index') }}" + '/' + groupID + '/edit', function(data) {
                         $('#modalHeading').html("Editar Evento " + data.group.name);
                         $('#saveBtn').val("edit-user");
-                        $('#ajaxModal').modal('show');
-                        $('#groupForm').trigger("reset");
+                        $('#activityModal').modal('show');
+                        $('#activityForm').trigger("reset");
                         $('.errors').removeClass("alert alert-danger")
-                        $('#group_id').val(data.group.id);
+                        $('#activity_id').val(data.group.id);
                         $('#name').val(data.group.name);
                     });
                 });
@@ -177,19 +247,20 @@
                     e.preventDefault();
                     $(this).html('Enviando..');
                     $.ajax({
-                        data: $('#groupForm').serialize(),
+                        data: $('#activityForm').serialize(),
                         url: "{{ route('globales.groups.store') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function(data) {
                             if (data) {
-                                $(".success").text(data.success).addClass('alert alert-success');
+                                $(".success").text(data.success).addClass(
+                                    'alert alert-success');
                                 setTimeout(function() {
                                     $(".success").hide().html('');
                                 }, 5000);
                             }
-                            $('#groupForm').trigger("reset");
-                            $('#ajaxModal').modal('hide');
+                            $('#activityForm').trigger("reset");
+                            $('#activityModal').modal('hide');
                             table.draw();
                         },
 
@@ -228,7 +299,8 @@
                             var cicle_id = $(this).data("id");
                             $.ajax({
                                 type: "DELETE",
-                                url: "{{ route('globales.groups.store') }}" + '/' + cicle_id,
+                                url: "{{ route('globales.groups.store') }}" + '/' +
+                                    cicle_id,
                                 success: function(data) {
                                     table.draw();
                                 },
