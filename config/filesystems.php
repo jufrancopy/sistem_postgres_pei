@@ -55,6 +55,16 @@ return [
             'visibility' => 'public',
         ],
 
+        'students' => [
+            'driver' => 'local',
+            'root' => public_path('images/patrimonies'),
+        ],
+
+        'students' => [
+            'driver' => 'local',
+            'root' => public_path('pdfs/patrimonies'),
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

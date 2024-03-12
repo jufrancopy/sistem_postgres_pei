@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Config;
+use Intervention\Image\Facades\Image;
+
 use App\Models\Patrimony;
 
 
@@ -58,6 +62,22 @@ class PatrimonyController extends Controller
             );
         };
 
+        // Image Validations
+        if ($request->file('mainPhotoFile')) {
+            $mainPhotoFile = '/' . date('d-m-Y');
+            $mainPhotoExt = trim($request->file('file')->getClientOriginalExtension());
+            $evidenceUploadPath = Config::get('filesystems.disks.patrimonies.root');
+            $name = Str::slug(str_replace($mainPhotoExt, '', $request->file('file')->getClientOriginalName()));
+            $mainPhotoFileName = rand(1, 999) . '-' . $name . '.' . $mainPhotoExt;
+            $finalPhotoFile = $evidenceUploadPath . '/' . $mainPhotoFile . '/' . $mainPhotoFileName;
+            $finalPhotoPath = date('d-m-Y');
+        } else {
+            // Insertion to DB
+            $patrimony = Patrimony::findOrFail($request->patrimony_id);
+            $mainPhotoPath = $patrimony->evidence_file_path; //crear migracion
+            $mainPhotoName = $patrimony->evidence_file_name;
+        }
+
         $pdfFile = $request->file('evidenceFile');
 
         // Verificar si se ha cargado correctamente
@@ -66,42 +86,45 @@ class PatrimonyController extends Controller
             $pdfFileName = time() . '_' . $pdfFile->getClientOriginalName();
 
             // Guardar el archivo PDF en el sistema de archivos de Laravel (en la carpeta de almacenamiento 'public', por ejemplo)
-            $pdfFile->storeAs('public/pdf', $pdfFileName);
+            $pdfFile->storeAs('public/pdfs/patrimonies', $pdfFileName);
 
-            $patrimony = Patrimony::create([
-                'type' => $request->type,
-                'quantity_account_current' => $request->quantityAccountCurrent,
-                'detail_location' => $request->detailLocation,
-                'estate_quantity' => $request->estateQuantity,
-                'department' => $request->department,
-                'city' => $request->city,
-                'locality' => $request->locality,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
-                'location_address' => $request->locationAddress,
-                'infrastructure_type' => $request->infrastructureType,
-                'description' => $request->description,
-                'registry_number' => $request->registry_number,
-                'estate_status' => $request->estate_status,
-                'committed_investment' => $request->committed_investment,
-                'transfer' => $request->transfer,
-                'balance_for_transfer' => $request->balance_for_transfer,
-                'tenant' => $request->tenant,
-                'rent_amount' => $request->rent_amount,
-                'contract_resolution' => $request->contract_resolution,
-                'contract_number' => $request->contract_number,
-                'current_period_start' => $request->current_period_start,
-                'current_period_end' => $request->current_period_end,
-                'status_documentation' => $request->status_documentation,
-                'land_area_mt2' => $request->land_area_mt2,
-                'land_area_hectares' => $request->land_area_hectares,
-                'land_sub_area' => $request->land_sub_area,
-                'built_area_m2' => $request->land_area_mt2,
-                'built_value_gs' => $request->built_value_gs,
-                'property_value_gs' => $request->property_value_gs,
-                'total_value_gs' => $request->total_value_gs,
-                'possession_rent_without_title' => $request->possession_rent_without_title,
-            ]);
+            $patrimony = Patrimony::updateOrCreate(
+                ['id' => $request->patrimony_id],
+                [
+                    'type' => $request->type,
+                    'quantity_account_current' => $request->quantityAccountCurrent,
+                    'detail_location' => $request->detailLocation,
+                    'estate_quantity' => $request->estateQuantity,
+                    'department' => $request->department,
+                    'city' => $request->city,
+                    'locality' => $request->locality,
+                    'latitude' => $request->latitude,
+                    'longitude' => $request->longitude,
+                    'location_address' => $request->locationAddress,
+                    'infrastructure_type' => $request->infrastructureType,
+                    'description' => $request->description,
+                    'registry_number' => $request->registry_number,
+                    'estate_status' => $request->estate_status,
+                    'committed_investment' => $request->committed_investment,
+                    'transfer' => $request->transfer,
+                    'balance_for_transfer' => $request->balance_for_transfer,
+                    'tenant' => $request->tenant,
+                    'rent_amount' => $request->rent_amount,
+                    'contract_resolution' => $request->contract_resolution,
+                    'contract_number' => $request->contract_number,
+                    'current_period_start' => $request->current_period_start,
+                    'current_period_end' => $request->current_period_end,
+                    'status_documentation' => $request->status_documentation,
+                    'land_area_mt2' => $request->land_area_mt2,
+                    'land_area_hectares' => $request->land_area_hectares,
+                    'land_sub_area' => $request->land_sub_area,
+                    'built_area_m2' => $request->land_area_mt2,
+                    'built_value_gs' => $request->built_value_gs,
+                    'property_value_gs' => $request->property_value_gs,
+                    'total_value_gs' => $request->total_value_gs,
+                    'possession_rent_without_title' => $request->possession_rent_without_title,
+                ]
+            );
         }
     }
 
