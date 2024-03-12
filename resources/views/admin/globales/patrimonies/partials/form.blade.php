@@ -1,4 +1,4 @@
-    {{ Form::hidden('patrimony_id', null, ['id' => 'group_id']) }}
+    {{ Form::hidden('patrimony_id', null, ['id' => 'patrimony_id']) }}
 
     <div class="form-group">
         {{ Form::label('type', 'Tipo') }}
