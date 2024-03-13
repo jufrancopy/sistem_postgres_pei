@@ -55,12 +55,12 @@ return [
             'visibility' => 'public',
         ],
 
-        'students' => [
+        'patrimonies' => [
             'driver' => 'local',
             'root' => public_path('images/patrimonies'),
         ],
 
-        'students' => [
+        'pdfs_patrimonies' => [
             'driver' => 'local',
             'root' => public_path('pdfs/patrimonies'),
         ],

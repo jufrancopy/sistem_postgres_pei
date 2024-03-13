@@ -39,7 +39,7 @@ class PatrimonyController extends Controller
                 ->make(true);
         }
 
-        $states = DB::table('localities')
+        $departments = DB::table('localities')
             ->select(DB::raw('count(*) as states, desc_dpto'))
             ->groupBy('desc_dpto')
             ->pluck('desc_dpto', 'desc_dpto');
@@ -49,82 +49,92 @@ class PatrimonyController extends Controller
 
     public function store(Request $request)
     {
-        if ($request->ajax()) {
-            $request->validate(
-                [
-                    'type'              => 'required',
-                    'department'              => 'required',
-                ],
-                [
-                    'type.required'     => 'Indique el Tipo de Inmueble',
-                    'department.required'     => 'Indique en que Departamento se ubica el Inmueble',
-                ]
-            );
-        };
+        $request->validate([
+            'type'              => 'required',
+            'department'        => 'required',
+            'mainPhotoFile'     => 'nullable|file|mimes:jpeg,png,jpg,gif|max:2048',
+            'evidenceFile'      => 'nullable|mimes:pdf|max:2048', // Validación para PDF
+        ], [
+            'type.required'         => 'Indique el Tipo de Inmueble',
+            'department.required'   => 'Indique en qué Departamento se ubica el Inmueble',
+            'mainPhotoFile.image'   => 'El archivo principal debe ser una imagen',
+            'mainPhotoFile.mimes'   => 'El archivo principal debe ser de tipo: jpeg, png, jpg, gif',
+            'mainPhotoFile.max'     => 'El archivo principal no debe ser mayor de 2MB',
+            'evidenceFile.mimes'    => 'El archivo de evidencia debe ser de tipo PDF',
+            'evidenceFile.max'      => 'El archivo de evidencia no debe ser mayor de 2MB',
+        ]);
 
         // Image Validations
         if ($request->file('mainPhotoFile')) {
             $mainPhotoFile = '/' . date('d-m-Y');
-            $mainPhotoExt = trim($request->file('file')->getClientOriginalExtension());
+            $mainPhotoExt = trim($request->file('mainPhotoFile')->getClientOriginalExtension());
             $evidenceUploadPath = Config::get('filesystems.disks.patrimonies.root');
-            $name = Str::slug(str_replace($mainPhotoExt, '', $request->file('file')->getClientOriginalName()));
+            $name = Str::slug(str_replace($mainPhotoExt, '', $request->file('mainPhotoFile')->getClientOriginalName()));
             $mainPhotoFileName = rand(1, 999) . '-' . $name . '.' . $mainPhotoExt;
-            $finalPhotoFile = $evidenceUploadPath . '/' . $mainPhotoFile . '/' . $mainPhotoFileName;
-            $finalPhotoPath = date('d-m-Y');
+            $mainPhotoName = $evidenceUploadPath . '/' . $mainPhotoFile . '/' . $mainPhotoFileName;
+            $mainPhotoPath = date('d-m-Y');
         } else {
             // Insertion to DB
             $patrimony = Patrimony::findOrFail($request->patrimony_id);
-            $mainPhotoPath = $patrimony->evidence_file_path; //crear migracion
-            $mainPhotoName = $patrimony->evidence_file_name;
+            $mainPhotoPath = $patrimony->main_photo_file; //crear migracion
+            $mainPhotoName = $patrimony->main_photo_file_path;
         }
 
         $pdfFile = $request->file('evidenceFile');
 
         // Verificar si se ha cargado correctamente
-        if ($pdfFile->isValid()) {
-            // Generar un nombre único para el archivo PDF
-            $pdfFileName = time() . '_' . $pdfFile->getClientOriginalName();
+        if ($pdfFile !== null) {
+            if ($pdfFile->isValid()) {
+                // Generar un nombre único para el archivo PDF
+                $pdfFileName = time() . '_' . $pdfFile->getClientOriginalName();
+                $pdfFilePath = date('d-m-Y');
 
-            // Guardar el archivo PDF en el sistema de archivos de Laravel (en la carpeta de almacenamiento 'public', por ejemplo)
-            $pdfFile->storeAs('public/pdfs/patrimonies', $pdfFileName);
+                // Guardar el archivo PDF en el sistema de archivos de Laravel (en la carpeta de almacenamiento 'public', por ejemplo)
+                $pdfFile->storeAs('pdfs/patrimonies', $pdfFileName);
 
-            $patrimony = Patrimony::updateOrCreate(
-                ['id' => $request->patrimony_id],
-                [
-                    'type' => $request->type,
-                    'quantity_account_current' => $request->quantityAccountCurrent,
-                    'detail_location' => $request->detailLocation,
-                    'estate_quantity' => $request->estateQuantity,
-                    'department' => $request->department,
-                    'city' => $request->city,
-                    'locality' => $request->locality,
-                    'latitude' => $request->latitude,
-                    'longitude' => $request->longitude,
-                    'location_address' => $request->locationAddress,
-                    'infrastructure_type' => $request->infrastructureType,
-                    'description' => $request->description,
-                    'registry_number' => $request->registry_number,
-                    'estate_status' => $request->estate_status,
-                    'committed_investment' => $request->committed_investment,
-                    'transfer' => $request->transfer,
-                    'balance_for_transfer' => $request->balance_for_transfer,
-                    'tenant' => $request->tenant,
-                    'rent_amount' => $request->rent_amount,
-                    'contract_resolution' => $request->contract_resolution,
-                    'contract_number' => $request->contract_number,
-                    'current_period_start' => $request->current_period_start,
-                    'current_period_end' => $request->current_period_end,
-                    'status_documentation' => $request->status_documentation,
-                    'land_area_mt2' => $request->land_area_mt2,
-                    'land_area_hectares' => $request->land_area_hectares,
-                    'land_sub_area' => $request->land_sub_area,
-                    'built_area_m2' => $request->land_area_mt2,
-                    'built_value_gs' => $request->built_value_gs,
-                    'property_value_gs' => $request->property_value_gs,
-                    'total_value_gs' => $request->total_value_gs,
-                    'possession_rent_without_title' => $request->possession_rent_without_title,
-                ]
-            );
+                $patrimony = Patrimony::updateOrCreate(
+                    ['id' => $request->patrimony_id],
+                    [
+                        'type' => $request->type,
+                        'quantity_account_current' => $request->quantityAccountCurrent,
+                        'detail_location' => $request->detailLocation,
+                        'estate_quantity' => $request->estateQuantity,
+                        'department' => $request->department,
+                        'city' => $request->city,
+                        'locality' => $request->locality,
+                        'latitude' => $request->latitude,
+                        'longitude' => $request->longitude,
+                        'location_address' => $request->locationAddress,
+                        'infrastructure_type' => $request->infrastructureType,
+                        'description' => $request->description,
+                        'registry_number' => $request->registryNumber,
+                        'estate_status' => $request->estateStatus,
+                        'committed_investment' => $request->committedInvestment,
+                        'transfer' => $request->transfer,
+                        'balance_for_transfer' => $request->balanceForTransfer,
+                        'tenant' => $request->tenant,
+                        'rent_amount' => $request->rentAmount,
+                        'contract_resolution' => $request->contractResolution,
+                        'contract_number' => $request->contractNumber,
+                        'current_period_start' => $request->currentPeriodStart,
+                        'current_period_end' => $request->currentPeriodEnd,
+                        'status_documentation' => $request->statusDocumentation,
+                        'land_area_mt2' => $request->landAreaMt2,
+                        'land_area_hectares' => $request->landAreaHectares,
+                        'land_sub_area' => $request->landSubArea,
+                        'built_area_m2' => $request->landAreaMt2,
+                        'built_value_gs' => $request->builtValueGs,
+                        'property_value_gs' => $request->property_value_gs,
+                        'total_value_gs' => $request->total_value_gs,
+                        'possession_rent_without_title' => $request->possession_rent_without_title,
+                        'main_photo_file' => $mainPhotoName,
+                        'main_photo_file_path' => $mainPhotoPath,
+                        'evidence_file' => $pdfFileName,
+                        'evidence_file_path' => $pdfFilePath,
+                        
+                    ]
+                );
+            }
         }
     }
 
