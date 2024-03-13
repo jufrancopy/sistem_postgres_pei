@@ -107,7 +107,6 @@
             <div class="tab-pane fade" id="pills-maps" role="tabpanel" aria-labelledby="pills-maps-tab">
                 <div class="row">
                     <div class="col-md-12">
-
                         <div id="mapPais" style="height: 400px;"></div>
                     </div>
                 </div>
@@ -396,8 +395,8 @@
 
             // Initialize all Select2 elements
             function setupSelect2() {
-                $('#type, #state, #city, #locality, #infrastructureType').select2();
-                $('#state, #city, #locality, #infrastructureType').val([]).trigger('change.select2');
+                $('#type, #state, #city, #locality, #infrastructureType, #estateStatus, #rentAmountPeriod, #statusDocumentation').select2();
+                $('#state, #city, #locality, #infrastructureType, #estateStatus, #rentAmountPeriod, #statusDocumentation').val([]).trigger('change.select2');
                 // $('#state, #city, #locality').empty().trigger('change.select2');
             }
 

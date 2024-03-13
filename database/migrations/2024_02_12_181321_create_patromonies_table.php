@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('location_address')->nullable(); // UBICACIÓN
             $table->string('infrastructure_type'); // Tipo de Infraestructura
             $table->text('description')->nullable(); // UBICACIÓN
-            $table->string('registry_number');  // FINCA MATRICULA Nº             
+            $table->string('registry_number')->nullable();  // FINCA MATRICULA Nº             
             $table->string('cadastral_current_account')->nullable();  // CTA. CTE. CTRAL.  Y/0 PADRON N° 
             $table->string('estate_status')->nullable(); // SITUACION ACTUAL DEL INMUEBLE
             $table->string('committed_investment')->nullable(); // INVERSION COMPROMETIDA 
@@ -45,10 +45,16 @@ return new class extends Migration
             $table->string('land_area_hectares')->nullable(); // SUPERFICIE TERRENO HA 
             $table->string('land_sub_area')->nullable(); // SUPERFICIE (SOLO PARA LOS SUB NUMEROS)
             $table->string('built_area_m2')->nullable(); // SUPERFICIE EDIFICADA M2
-            $table->string('built_value_gs'); // Valor Edificado Gs.
+            $table->string('built_value_gs')->nullable(); // Valor Edificado Gs.
             $table->string('property_value_gs')->nullable(); // Valor Terreno Gs.
             $table->string('total_value_gs')->nullable(); // Valor Total.
             $table->string('possession_rent_without_title')->nullable(); // Valor Total.
+
+            $table->string('main_photo_file', 128)->nullable();
+            $table->string('main_photo_file_path', 128)->nullable();
+
+            $table->string('evidence_file', 128)->nullable();
+            $table->string('evidence_file_path', 128)->nullable();
 
             $table->timestamps();
         });
