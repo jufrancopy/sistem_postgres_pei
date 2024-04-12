@@ -114,7 +114,13 @@ class PatrimonyController extends Controller
                         'balance_for_transfer' => $request->balanceForTransfer,
                         'tenant' => $request->tenant,
                         'rent_amount' => $request->rentAmount,
+                        'rent_amount_period' => $request->rentAmountPeriod,
                         'contract_resolution' => $request->contractResolution,
+                        
+                        
+                        
+                        'contract_number' => $request->startDateContract,
+                        'contract_number' => $request->endDateContract,
                         'contract_number' => $request->contractNumber,
                         'current_period_start' => $request->currentPeriodStart,
                         'current_period_end' => $request->currentPeriodEnd,
@@ -122,16 +128,16 @@ class PatrimonyController extends Controller
                         'land_area_mt2' => $request->landAreaMt2,
                         'land_area_hectares' => $request->landAreaHectares,
                         'land_sub_area' => $request->landSubArea,
-                        'built_area_m2' => $request->landAreaMt2,
+                        'built_area_m2' => $request->builtAreaM2,
                         'built_value_gs' => $request->builtValueGs,
-                        'property_value_gs' => $request->property_value_gs,
-                        'total_value_gs' => $request->total_value_gs,
-                        'possession_rent_without_title' => $request->possession_rent_without_title,
+                        'property_value_gs' => $request->propertyValueGs,
+                        'total_value_gs' => $request->totalValueGs,
+                        'possession_rent_without_title' => $request->possessionRentWithoutTitle,
                         'main_photo_file' => $mainPhotoName,
                         'main_photo_file_path' => $mainPhotoPath,
                         'evidence_file' => $pdfFileName,
                         'evidence_file_path' => $pdfFilePath,
-                        
+
                     ]
                 );
             }

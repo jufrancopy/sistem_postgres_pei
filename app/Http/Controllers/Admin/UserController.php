@@ -1,169 +1,158 @@
 <?php
 
-
 namespace App\Http\Controllers\Admin;
 
-
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
+
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-
+use Yajra\DataTables\DataTables;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    public function __construct()
+    {
+        $this->middleware(['auth', 'role:Administrador']);
+    }
+
     public function index(Request $request)
     {
-        $data = User::orderBy('id', 'DESC')->paginate(100);
-        return view('admin.users.index', compact('data'))
+        if ($request->ajax()) {
+            $data = User::latest()->get();
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($row) {
+
+                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editUser"><i class="far fa-edit"></i></a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteUser"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        
+        return view('admin.users.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    public function getUsers(Request $request)
+    public function getTask(Request $request)
     {
         $data = [];
 
         if ($request->has('q')) {
             $search = $request->q;
-            $data = User::select("id", "name")
+            $fodaData = FodaPerfil::select("id", "name", DB::raw("'FODA' as model"))
+                ->where('name', 'LIKE', "%$search%")
+                ->get();
+
+            $peiData = PeiProfile::select("id", "name", DB::raw("'PEI' as model"))
+                ->where('name', 'LIKE', "%$search%")
+                ->get();
+
+            $data = $fodaData->concat($peiData);
+        }
+
+
+        return response()->json($data);
+    }
+
+    public function getTaskType(Request $request)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $data = TypeTask::select("id", "name")
                 ->where('name', 'LIKE', "%$search%")
                 ->get();
         }
-
-        return response()->json($data);
-    }
-
-    public function dataUser(Request $request, $idSelection)
-    {
-        $data = User::findOrFail($idSelection);
-
         return response()->json($data);
     }
 
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-
-        $roles = Role::orderBy('name', 'ASC')->pluck('name', 'id');
-        $rolesChecked = [];
-        return view('admin.users.create', get_defined_vars());
-    }
-
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|same:confirm-password',
-            'roles' => 'required'
-        ]);
+        if ($request->ajax()) {
+            $request->validate(
+                [
+                    'name'              => 'required',
+                    'email'           => 'required',
+                    'type'              => 'required',
+                    'model_id'          => 'required',
+                ],
+                [
+                    'name.required'             => 'Agregue el nombre del Modelo',
+                    'context.required'          => 'Indique el Contexto',
+                    'type.required'             => 'Indique el Tipo',
+                    'model_id.required'         => 'Seleccione el Modelo de Análisis'
 
-        $input = $request->all();
-        $input['password'] = Hash::make($input['password']);
+                ]
+            );
+        };
 
-        $user = User::create($input);
-        $user->assignRole($request->input('roles'));
+        
+        $user = User::updateOrCreate(
+            ['id' => $request->user_id],
+            [
+                'name' => $request->name,
+                'email' => $request->email,
+                'type' => $request->type,
+                'model_id' => $request->model_id,
+                'dependency_id' => $request->dependency_id,
+                'group_id' => $request->group_id,
+            ]
+        );
 
-        return redirect()->route('globales.users.index')
-            ->with('success', 'Usuario creado satisfactoriamente');
+        //Insert into pivot table 
+        $categories = $request->category_id;
+        $profile->categories()->sync($categories);
+
+        if ($profile->wasRecentlyCreated) {
+            return response()->json(['success' => 'Perfil creado correctamente.']);
+        } else {
+            return response()->json(['success' => 'Perfil actualizado correctamente.']);
+        }
     }
 
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public function getTypeTasks(Request $request)
     {
-        $user = User::find($id);
-        return view('admin.users.show', compact('user'));
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+            $data = TypeTask::select("id", "name")
+                ->where('name', 'LIKE', "%$search%")
+                ->get();
+        }
+        return response()->json($data);
     }
 
+    public function dataTypeTask(Request $request, $idSelection)
+    {
+        $data = TypeTask::findOrFail($idSelection);
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+        return response()->json($data);
+    }
+
     public function edit($id)
     {
-        $user = User::find($id);
-        $roles = Role::pluck('name', 'name')->all();
-        $userRole = $user->roles->pluck('name', 'name')->all();
+        $typeTask = TypeTask::findOrFail($id);
 
-
-        return view('admin.users.edit', get_defined_vars());
+        return response()->json($typeTask);
     }
 
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function destroy(Request $request, $id)
     {
-        $this->validate($request, [
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'password' => 'same:confirm-password',
-            'roles' => 'required'
-        ]);
+        $typeTask = TypeTask::find($id)->delete();
 
-
-        $input = $request->all();
-        if (!empty($input['password'])) {
-            $input['password'] = Hash::make($input['password']);
-        } else {
-            $input = array_except($input, array('password'));
-        }
-
-        $user = User::find($id);
-        $user->update($input);
-        DB::table('model_has_roles')->where('model_id', $id)->delete();
-
-        $user->assignRole($request->input('roles'));
-
-        return redirect()->route('globales.users.index')
-            ->with('success', 'Usuario Actualizado satisfactoriamente');
-    }
-
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        User::find($id)->delete();
-        return redirect()->route('globales.users.index')
-            ->with('success', 'Usuario fue eliminado de la Base de Datos');
+        return response()->json([$typeTask]);
     }
 }
