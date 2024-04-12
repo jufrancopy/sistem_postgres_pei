@@ -30,6 +30,12 @@ class RoleController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
+    public function getRoles(){
+        $roles=Role::orderBy('id', 'DESC')->get();
+        
+        return $roles;
+    }
+
     public function create()
     {
         $permission = Permission::get();

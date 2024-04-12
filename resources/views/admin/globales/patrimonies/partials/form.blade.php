@@ -127,7 +127,7 @@
 
     <div class="form-group">
         {{ Form::label('tenant', 'Arrendatario:', ['class' => 'control-label']) }}
-        {{ Form::number('tenant', null, ['class' => 'form-control', 'id' => 'tenant']) }}
+        {{ Form::text('tenant', null, ['class' => 'form-control', 'id' => 'tenant']) }}
     </div>
 
     <div class="form-group">

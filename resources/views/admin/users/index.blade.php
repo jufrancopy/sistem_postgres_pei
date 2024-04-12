@@ -1,83 +1,309 @@
-@extends('layouts.master') @section('content')
-<div class="content">
-    <div class="container-fluid">
+@extends('layouts.master')
+@section('title', 'Usuarios')
+
+@section('content')
+    <div class="card">
+        <div class="card-header card-header-info">
+            <h4 class="card-title ">Usuarios</h4>
+        </div>
+        <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Usuarios</li>
+            </ol>
+        </nav>
+
         <div class="row">
             <div class="col-md-12">
-                @if ($message = Session::get('success'))
-                <div class="alert alert-success">
-                    <p>{{ $message }}</p>
-                </div>
-                @endif
                 <div class="card">
-                    <div class="card-header card-header-info">
-                        <h4 class="card-title ">Panel de Usuarios</h4>
-                        @can('role-create')
-                        <a class="btn btn-success" href="{{ route('globales.users.create') }}"> Crear nuevo usuario</a> 
-                        @endcan
-                        <div class="pull-right">
-                            <a class="btn btn-warning" href="{{ route('globales.dashboard') }}"> Atras</a>
+                    <div class="card-header">
+                        <div class="success"></div>
+                        <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)" id="createNewUsers">
+                            Agregar Usuario</a>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered data-table display nowrap" id="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Correo</th>
+                                        <th width="280px">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover">
-                                    <!-- AquiBuscador -->
-                                    <div class="float-right">
-                                        {!! Form::open(['route' => 'globales.users.index','method' => 'GET', 'class'=>'navbar-form navbar-left pull-right','role'=>'search']) !!}
+
+                    <div class="modal fade" id="userModal" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="card-header card-header-info">
+                                    <h4 class="modal-title" id="modalHeading"></h4>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="userForm" name="userForm" class="form-horizontal">
+                                        {{ Form::hidden('user_id', null, ['id' => 'user_id']) }}
                                         <div class="form-group">
-                                            {!! Form::text('ci',null, ['class'=>'form-control','placeholder'=>'Buscar Usuario']) !!}
+                                            {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
+                                            {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
                                         </div>
 
-                                        <button type="submit" class="btn btn-default pull-right">Buscar</button>
+                                        <div class="form-group">
+                                            {{ Form::label('email', 'Correo:', ['class' => 'control-label']) }}
+                                            {{ Form::text('email', null, ['class' => 'form-control', 'id' => 'name']) }}
+                                        </div>
 
-                                    </div>
+                                        <div class="form-group">
+                                            {{ Form::label('password', 'Contraseña:', ['class' => 'control-label']) }}
+                                            {{ Form::password('password', ['class' => 'form-control', 'id' => 'password']) }}
+                                        </div>
 
-                                    {!!Form::close()!!}
-                                    <!-- Fin Buscador -->
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Nombre</th>
-                                            <th>Correo</th>
-                                            <th>Roles</th>
-                                            <th width="280px">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($data as $key => $user)
-                                        <tr>
-                                            <td>{{ ++$i }}</td>
-                                            <td>{{ $user->name }}</td>
-                                            <td>{{ $user->email }}</td>
-                                            <td>
-                                                @if(!empty($user->getRoleNames())) 
-                                                @foreach($user->getRoleNames() as $v)
-                                                <label class="badge badge-success">{{ $v }}</label> 
-                                                @endforeach @endif
-                                            </td>
-                                            <td>
-                                                <a class="btn btn-sm btn-info" href="{{ route('globales.users.show',$user->id) }}">Ver</a>
-                                                <a class="btn btn-sm btn-primary" href="{{ route('globales.users.edit',$user->id) }}">Editar</a> 
-                                                
+                                        <div class="form-group">
+                                            {{ Form::label('confirm-password', 'Confirmar Contraseña:', ['class' => 'control-label']) }}
+                                            {{ Form::password('confirm-password', ['class' => 'form-control', 'id' => 'confirm-password']) }}
+                                        </div>
 
-                                                {!! Form::open(['route' => ['globales.users.destroy', $user->id], 'method' => 'DELETE', 'style'=>'display:inline']) !!}
-                                                <button class="btn btn-sm btn-danger" onclick="return confirm('Estas seguro de eliminar a {{$user->name}}. Si lo eliminas también eliminarás los datos asociados a el.')">
-                                                Eliminar
-                                                </button>
-                                                {!! Form::close() !!}
-                                            </td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+
+                                        <div class="form-group">
+                                            {{ Form::label('group_id', 'Elija Grupo Raíz:') }}
+                                            {!! Form::select('group_id', [], null, [
+                                                'placeholder' => '',
+                                                'id' => 'groups',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
+
+                                        <div class="form-group">
+                                            {{ Form::label('roles', 'Roles:') }}
+                                            {!! Form::select('roles', [], null, [
+                                                'id' => 'roles',
+                                                'style' => 'width:100%',
+                                                'multiple' => 'multiple', // Agregado para permitir selección múltiple
+                                            ]) !!}
+                                        </div>
+
+                                        <div class="col-sm-offset-2 col-sm-10">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">Cerrar</button>
+                                            <button type="submit" class="btn btn-success" id="saveBtn"
+                                                value="create">Guardar
+                                                cambios
+                                            </button>
+                                        </div>
+
+                                    </form>
+                                </div>
                             </div>
-                        </div>
-                        <div class="card-footer" style="text-align: center;">
-                            {!! $data->render() !!}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    @endsection
+    @stop
+
+    @section('scripts')
+        {{-- My custom scripts --}}
+        <script type="text/javascript">
+            $(function() {
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+
+                var table = $('.data-table').DataTable({
+                    processing: true,
+                    serverSide: true,
+                    dom: 'Bfrtip',
+                    buttons: [{
+                            extend: 'copy',
+                            text: '<i class="fa fa-copy"></i>',
+                            titleAttr: 'Copy'
+                        },
+                        {
+                            extend: 'excel',
+                            text: '<i class="fa fa-file-excel"></i>',
+                            titleAttr: 'Excel'
+                        },
+                        {
+                            extend: 'csv',
+                            text: '<i class="fas fa-file-csv"></i>',
+                            titleAttr: 'CSV'
+                        },
+                        {
+                            extend: 'pdf',
+                            text: '<i class="fa fa-file-pdf"></i>',
+                            titleAttr: 'PDF'
+                        },
+                        {
+                            extend: 'print',
+                            text: '<i class="fa fa-print"></i>',
+                            titleAttr: 'Imprimir'
+                        }
+                    ],
+                    language: {
+                        "decimal": "",
+                        "emptyTable": "No hay información",
+                        "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                        "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                        "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                        "infoPostFix": "",
+                        "thousands": ",",
+                        "lengthMenu": "Mostrar _MENU_ Entradas",
+                        "loadingRecords": "Cargando...",
+                        "processing": "Procesando...",
+                        "search": "Buscar:",
+                        "zeroRecords": "Sin resultados encontrados",
+                        "paginate": {
+                            "first": "Primero",
+                            "last": "Ultimo",
+                            "next": "Siguiente",
+                            "previous": "Anterior"
+                        }
+                    },
+                    ajax: "{{ route('globales.users.index') }}",
+                    columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex'
+                    }, {
+                        data: 'name',
+                        name: 'name'
+                    }, {
+                        data: 'email',
+                        name: 'email'
+                    }, {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
+                    }, ]
+                });
+
+                // Función para inicializar Select2
+                function initializeSelect2(selector, placeholder, url, defaultOption) {
+                    selector.select2({
+                        placeholder: placeholder,
+                        ajax: {
+                            url: url,
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(data) {
+                                return {
+                                    results: $.map(data, function(item) {
+                                        return {
+                                            text: item.name || item
+                                                .dependency, // Use 'name' or 'dependency' depending on the selector
+                                            id: item.id
+                                        };
+                                    })
+                                };
+                            },
+                            cache: true
+                        }
+                    });
+                }
+
+                $('#createNewUsers').click(function() {
+                    $('#saveBtn').val("create-user");
+                    $('#user_id').val('');
+                    $('#userForm').trigger("reset");
+                    $('#modalHeading').html("Nuevo Tipo de Tarea");
+                    $('#userModal').modal('show');
+
+                    //Grupo
+                    var groups = $('#groups').select2();
+                    groups.empty();
+                    initializeSelect2(groups, 'Seleccione Grupo de Trabajo trabajo',
+                        '{{ route('globales.get-root-groups') }}');
+
+                    var url = "get-roles";
+                    var roles = $('#roles').select2();
+                    initializeSelect2(roles, 'Seleccione los Roles', url);                    
+
+                });
+
+                $('body').on('click', '.editUser', function() {
+                    var userID = $(this).data('id');
+                    $.get("{{ route('globales.users.index') }}" + '/' + userID + '/edit', function(data) {
+                        $('#modalHeading').html("Editar Tipo de Tarea " + data.name);
+                        $('#saveBtn').val("edit-type_task");
+                        $('#userModal').modal('show');
+                        $('#userForm').trigger("reset");
+                        $('#typeTask_id').val(data.id);
+                        $('#name').val(data.name);
+                        $('#routes').select2();
+                        $('#routes').val(data.route).trigger('change');
+                    });
+                });
+
+                $('#saveBtn').click(function(e) {
+                    e.preventDefault();
+                    $(this).html('Enviando..');
+
+                    var data = $('#userForm').serialize();
+                    var url = "{{ route('globales.users.store') }}"
+                    $.ajax({
+                        data: data,
+                        url: url,
+                        type: "POST",
+                        dataType: 'json',
+                        success: function(data) {
+                            $('#userForm').trigger("reset");
+                            $('#userModal').modal('hide');
+                            table.draw();
+                        },
+
+                        error: function(data) {
+                            var obj = data.responseJSON.errors;
+                            $.each(obj, function(key, value) {
+                                // Alert Toastr
+                                toastr.options = {
+                                    closeButton: true,
+                                    progressBar: true,
+                                };
+                                toastr.error("Atención: " + value);
+                            });
+                            $('#saveBtn').html('Guardar Cambios');
+                        }
+
+                    });
+                });
+
+                $('body').on('click', '.deleteTypeTask', function() {
+                    Swal.fire({
+                        title: 'Estás seguro de eliminarlo?',
+                        text: "Si lo haces, no podras revertirlo!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Estoy seguro!'
+                    }).then((isConfirm) => {
+                        if (isConfirm.value) {
+                            Swal.fire(
+                                'Borrado!',
+                                'El registro ha sido eliminado correctamente.',
+                                'success'
+                            )
+                            var typeTaskID = $(this).data("id");
+                            $.ajax({
+                                type: "DELETE",
+                                url: "{{ route('tasks-type.store') }}" + '/' + typeTaskID,
+                                success: function(data) {
+                                    table.draw();
+                                },
+                                error: function(data) {
+                                    console.log('Error:', data);
+                                }
+                            });
+                        }
+                    })
+                });
+            });
+        </script>
+    @stop

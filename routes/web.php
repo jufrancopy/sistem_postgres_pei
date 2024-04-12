@@ -109,6 +109,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::resource('users', 'Admin\UserController');
         Route::resource('permisos', 'Admin\PermissionController');
         Route::resource('roles', 'Admin\RoleController');
+        Route::get('get-roles', 'Admin\RoleController@getRoles')->name('get-roles');
 
         Route::get('formularios-dependecies', 'Admin\Globales\Formulario\FormularioController@getDependencies')->name('formularios.get-dependencies');
         Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');
