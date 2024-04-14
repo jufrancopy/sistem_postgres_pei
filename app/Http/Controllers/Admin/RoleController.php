@@ -23,17 +23,25 @@ class RoleController extends Controller
     {
 
         // $roles=Role::name($request->get('name'))->orderBy('id','DESC')->paginate(10);
-        $roles=Role::orderBy('id','DESC')->paginate(10);
-        
-        
+        $roles = Role::orderBy('id', 'DESC')->paginate(10);
+
+
         return view('admin.roles.index', compact('roles'))
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    public function getRoles(){
-        $roles=Role::orderBy('id', 'DESC')->get();
-        
+    public function getRoles()
+    {
+        $roles = Role::orderBy('id', 'DESC')->get();
+
         return $roles;
+    }
+
+    public function getRole($idUser)
+    {
+        $role = Role::findOrFail($idUser);
+
+        return $role;
     }
 
     public function create()
@@ -57,7 +65,7 @@ class RoleController extends Controller
         return redirect()->route('globales.roles.index')
             ->with('success', 'Rol creado satisfactoriamente');
     }
-    
+
     public function show($id)
     {
         $role = Role::find($id);
@@ -68,7 +76,7 @@ class RoleController extends Controller
 
         return view('admin.roles.show', compact('role', 'rolePermissions'));
     }
-    
+
 
     public function edit($id)
     {
@@ -99,7 +107,7 @@ class RoleController extends Controller
         return redirect()->route('globales.roles.index')
             ->with('success', 'Rol actualizado satisfactoriamente');
     }
-    
+
     public function destroy($id)
     {
         DB::table("roles")->where('id', $id)->delete();

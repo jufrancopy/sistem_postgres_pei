@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('planificacion_pei_profiles_has_strategies');
+        Schema::dropIfExists('planificacion.planificacion_pei_profiles_has_strategies');
     }
 };

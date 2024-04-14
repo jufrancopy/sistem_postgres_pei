@@ -110,6 +110,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::resource('permisos', 'Admin\PermissionController');
         Route::resource('roles', 'Admin\RoleController');
         Route::get('get-roles', 'Admin\RoleController@getRoles')->name('get-roles');
+        Route::get('get-role/{userId}', 'Admin\RoleController@getRole')->name('get-role');
 
         Route::get('formularios-dependecies', 'Admin\Globales\Formulario\FormularioController@getDependencies')->name('formularios.get-dependencies');
         Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');
@@ -144,6 +145,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-group-parent/{idSelection}', 'Admin\Globales\GroupController@dataGroupParent')->name('get-group-parent');
         Route::get('get-group/{idSelection}', 'Admin\Globales\GroupController@dataGroup')->name('get-group');
         Route::get('get-users', 'Admin\UserController@getUsers')->name('get-users');
+        Route::get('get-users/{idGroup}', 'Admin\UserController@getUsersForGroup')->name('get-users-group');
     });
 
     //Rutas del Modulo FODA

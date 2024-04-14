@@ -30,6 +30,8 @@
                                         <th>ID</th>
                                         <th>Nombre</th>
                                         <th>Correo</th>
+                                        <th>Roles</th>
+                                        <th>Grupo</th>
                                         <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>
@@ -55,7 +57,7 @@
 
                                         <div class="form-group">
                                             {{ Form::label('email', 'Correo:', ['class' => 'control-label']) }}
-                                            {{ Form::text('email', null, ['class' => 'form-control', 'id' => 'name']) }}
+                                            {{ Form::text('email', null, ['class' => 'form-control', 'id' => 'email']) }}
                                         </div>
 
                                         <div class="form-group">
@@ -68,9 +70,8 @@
                                             {{ Form::password('confirm-password', ['class' => 'form-control', 'id' => 'confirm-password']) }}
                                         </div>
 
-
                                         <div class="form-group">
-                                            {{ Form::label('group_id', 'Elija Grupo Raíz:') }}
+                                            {{ Form::label('group_id', 'Grupo:') }}
                                             {!! Form::select('group_id', [], null, [
                                                 'placeholder' => '',
                                                 'id' => 'groups',
@@ -80,7 +81,7 @@
 
                                         <div class="form-group">
                                             {{ Form::label('roles', 'Roles:') }}
-                                            {!! Form::select('roles', [], null, [
+                                            {!! Form::select('roles[]', [], null, [
                                                 'id' => 'roles',
                                                 'style' => 'width:100%',
                                                 'multiple' => 'multiple', // Agregado para permitir selección múltiple
@@ -168,24 +169,58 @@
                     },
                     ajax: "{{ route('globales.users.index') }}",
                     columns: [{
-                        data: 'DT_RowIndex',
-                        name: 'DT_RowIndex'
-                    }, {
-                        data: 'name',
-                        name: 'name'
-                    }, {
-                        data: 'email',
-                        name: 'email'
-                    }, {
-                        data: 'action',
-                        name: 'action',
-                        orderable: false,
-                        searchable: false
-                    }, ]
+                            data: 'DT_RowIndex',
+                            name: 'DT_RowIndex'
+                        },
+                        {
+                            data: 'name',
+                            name: 'name'
+                        },
+                        {
+                            data: 'email',
+                            name: 'email'
+                        },
+                        {
+                            data: 'roles',
+                            name: 'roles',
+                            render: function(data, type, full, meta) {
+                                var rolesArray = data.split(', ');
+
+                                var rolesHtml = '';
+
+                                // Recorremos el arreglo de categorías y aplicamos la clase "badge" a cada una
+                                rolesArray.forEach(function(role) {
+                                    rolesHtml += '<span class="badge badge-secondary">' +
+                                        role + '</span> ';
+                                });
+
+                                return rolesHtml; // Devolvemos el HTML personalizado para la columna de categorías
+                            }
+                        },
+                        {
+                            data: 'group',
+                            name: 'group',
+                            render: function(data, type, row) {
+                                if (type === 'display' && data) {
+                                    return '<div style="white-space: normal;" title="' + data + '">' +
+                                        data + '</div>';
+                                } else {
+                                    return data;
+                                }
+                            }
+                        },
+                        {
+                            data: 'action',
+                            name: 'action',
+                            orderable: false,
+                            searchable: false
+                        }
+                    ]
+
                 });
 
                 // Función para inicializar Select2
-                function initializeSelect2(selector, placeholder, url, defaultOption) {
+                function initializeSelect2WithSearch(selector, placeholder, url, defaultOption) {
                     selector.select2({
                         placeholder: placeholder,
                         ajax: {
@@ -196,8 +231,7 @@
                                 return {
                                     results: $.map(data, function(item) {
                                         return {
-                                            text: item.name || item
-                                                .dependency, // Use 'name' or 'dependency' depending on the selector
+                                            text: item.name,
                                             id: item.id
                                         };
                                     })
@@ -208,37 +242,100 @@
                     });
                 }
 
+                // Función para inicializar selectores con relación AJAX
+                function initializeSelect2WithValues(url, control, selectedData) {
+                    $.ajax({
+                        type: 'GET',
+                        url: url
+                    }).then(function(data) {
+                        var option = new Option(data.name, data.id, true, true);
+                        control.append(option).trigger('change');
+                        control.trigger({
+                            type: 'select2:select',
+                            params: {
+                                data: data
+                            }
+                        });
+                    });
+                }
+
                 $('#createNewUsers').click(function() {
                     $('#saveBtn').val("create-user");
                     $('#user_id').val('');
                     $('#userForm').trigger("reset");
-                    $('#modalHeading').html("Nuevo Tipo de Tarea");
+                    $('#modalHeading').html("Nuevo Usuario");
                     $('#userModal').modal('show');
 
                     //Grupo
                     var groups = $('#groups').select2();
                     groups.empty();
-                    initializeSelect2(groups, 'Seleccione Grupo de Trabajo trabajo',
+                    initializeSelect2WithSearch(groups, 'Seleccione Grupo de Trabajo trabajo',
                         '{{ route('globales.get-root-groups') }}');
 
-                    var url = "get-roles";
+                    // Roles
                     var roles = $('#roles').select2();
-                    initializeSelect2(roles, 'Seleccione los Roles', url);                    
+                    roles.empty();
+                    initializeSelect2WithSearch(roles, 'Seleccione los Roles',
+                        '{{ route('globales.get-roles') }}');
 
                 });
 
                 $('body').on('click', '.editUser', function() {
                     var userID = $(this).data('id');
                     $.get("{{ route('globales.users.index') }}" + '/' + userID + '/edit', function(data) {
-                        $('#modalHeading').html("Editar Tipo de Tarea " + data.name);
+                        console.log(data)
+                        $('#modalHeading').html("Editar Usuario " + data.name);
                         $('#saveBtn').val("edit-type_task");
                         $('#userModal').modal('show');
                         $('#userForm').trigger("reset");
-                        $('#typeTask_id').val(data.id);
-                        $('#name').val(data.name);
-                        $('#routes').select2();
-                        $('#routes').val(data.route).trigger('change');
+                        $('#user_id').val(data.user.id);
+                        $('#name').val(data.user.name);
+                        $('#email').val(data.user.email);
+
+                        if (data.password) {
+                            $('#password').val("********"); // Mostrar un valor genérico
+                            $('#confirm-password').val("********"); // Mostrar un valor genérico
+                        } else {
+                            $('#password').val(""); // Vaciar el campo
+                            $('#confirm-password').val(""); // Vaciar el campo
+                        }
+
+                        // Group initial Value
+                        var groupsSelect = $('#groups').select2();
+
+                        //Ruta para buscar detalles de un grupo
+                        var urlGroup = '/admin/globales/get-group/' + data.user.group_id;
+                        initializeSelect2WithValues(urlGroup, groupsSelect)
+
+                        //Ruta para cargar todos los Grupos 
+                        var routeGroups = '{{ route('globales.get-root-groups') }}'
+                        groupsSelect.empty();
+                        initializeSelect2WithSearch(groupsSelect, 'Seleccione Grupo de Trabajo trabajo',
+                            routeGroups
+                        );
+
+                        //Roles
+                        var rolesSelect = $('#roles').select2();
+                        rolesSelect.empty();
+
+                        //Inicializamos el selector para buscar grupos
+                        initializeSelect2WithSearch(rolesSelect, 'Seleccione los Roles',
+                            '{{ route('globales.get-roles') }}');
+
+                        // Roles - Selector Múltiple - Se obtiene un arreglo con los valores preseleccionados
+                        //desde el controlador
+                        data.rolesChecked.forEach(function(d) {
+                            var option = new Option(d.text, d.id, true, true);
+                            rolesSelect.append(option).trigger('change');
+                            rolesSelect.trigger({
+                                type: 'select2:select',
+                                params: {
+                                    data: data
+                                }
+                            });
+                        });
                     });
+
                 });
 
                 $('#saveBtn').click(function(e) {
@@ -274,7 +371,7 @@
                     });
                 });
 
-                $('body').on('click', '.deleteTypeTask', function() {
+                $('body').on('click', '.deleteUser', function() {
                     Swal.fire({
                         title: 'Estás seguro de eliminarlo?',
                         text: "Si lo haces, no podras revertirlo!",
@@ -293,7 +390,7 @@
                             var typeTaskID = $(this).data("id");
                             $.ajax({
                                 type: "DELETE",
-                                url: "{{ route('tasks-type.store') }}" + '/' + typeTaskID,
+                                url: "{{ route('globales.users.store') }}" + '/' + typeTaskID,
                                 success: function(data) {
                                     table.draw();
                                 },

@@ -34,125 +34,152 @@ class UserController extends Controller
 
                     return $btn;
                 })
+                ->addColumn('roles', function (User $user) {
+                    $roleNames = $user->roles->pluck('name')->implode(', ');
+                    return $roleNames;
+                })
+                ->addColumn('group', function ($row) {
+                    return $row->group->name ?? '-';
+                })
                 ->rawColumns(['action'])
                 ->make(true);
         }
-        
+
         return view('admin.users.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    public function getTask(Request $request)
+    public function getUsers(Request $request)
     {
         $data = [];
 
         if ($request->has('q')) {
             $search = $request->q;
-            $fodaData = FodaPerfil::select("id", "name", DB::raw("'FODA' as model"))
+            $data = User::select("id", "name")
                 ->where('name', 'LIKE', "%$search%")
                 ->get();
-
-            $peiData = PeiProfile::select("id", "name", DB::raw("'PEI' as model"))
-                ->where('name', 'LIKE', "%$search%")
-                ->get();
-
-            $data = $fodaData->concat($peiData);
         }
-
 
         return response()->json($data);
     }
 
-    public function getTaskType(Request $request)
+    public function dataUser(Request $request, $idSelection)
+    {
+        $data = User::findOrFail($idSelection);
+
+        return response()->json($data);
+    }
+
+    public function getUsersForGroup(Request $request, $idGroup)
+    {
+        $data = User::where('group_id', $idGroup)->get();
+
+        return response()->json($data);
+    }
+
+
+    public function getRoles(Request $request)
     {
         $data = [];
 
         if ($request->has('q')) {
             $search = $request->q;
-            $data = TypeTask::select("id", "name")
+            $data = User::select("id", "name")
                 ->where('name', 'LIKE', "%$search%")
                 ->get();
         }
+
         return response()->json($data);
     }
 
+    public function getRole(Request $request, $idUser)
+    {
+        $data = Role::findOrFail($idUser);
+
+        return response()->json($data);
+    }
 
     public function store(Request $request)
     {
-        if ($request->ajax()) {
-            $request->validate(
-                [
-                    'name'              => 'required',
-                    'email'           => 'required',
-                    'type'              => 'required',
-                    'model_id'          => 'required',
-                ],
-                [
-                    'name.required'             => 'Agregue el nombre del Modelo',
-                    'context.required'          => 'Indique el Contexto',
-                    'type.required'             => 'Indique el Tipo',
-                    'model_id.required'         => 'Seleccione el Modelo de Análisis'
+        $validationRules = [
+            'name' => 'required',
+            'email' => 'required|email',
+            'confirm-password' => 'nullable|same:password', // La confirmación de la contraseña debe ser igual a la contraseña
+        ];
 
-                ]
-            );
-        };
+        // Añadir la contraseña a los datos del usuario solo si se proporciona una nueva contraseña
+        if ($request->filled('password') && $request->password !== '********') {
+            $userData['password'] = bcrypt($request->password);
+        }
 
-        
+
+        $request->validate($validationRules, [
+            'name.required' => 'Por favor ingrese el nombre del usuario.',
+            'email.required' => 'Por favor ingrese el correo electrónico del usuario.',
+            'email.email' => 'El correo electrónico debe ser una dirección de correo válida.',
+            'password.required' => 'Por favor ingrese una contraseña.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'confirm-password.same' => 'Las contraseñas no coinciden.',
+        ]);
+
+        $userData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'group_id' => $request->group_id
+        ];
+
+        // Añadir la contraseña a los datos del usuario solo si se proporciona una nueva contraseña
+        if ($request->filled('password')) {
+            $userData['password'] = bcrypt($request->password);
+        }
+
         $user = User::updateOrCreate(
             ['id' => $request->user_id],
-            [
-                'name' => $request->name,
-                'email' => $request->email,
-                'type' => $request->type,
-                'model_id' => $request->model_id,
-                'dependency_id' => $request->dependency_id,
-                'group_id' => $request->group_id,
-            ]
+            $userData
         );
 
-        //Insert into pivot table 
-        $categories = $request->category_id;
-        $profile->categories()->sync($categories);
+        // Asignar los roles al usuario
+        $user->syncRoles($request->input('roles'));
 
-        if ($profile->wasRecentlyCreated) {
-            return response()->json(['success' => 'Perfil creado correctamente.']);
+        // Devolver una respuesta JSON con el mensaje de éxito o error. 
+        if ($user) {
+            if ($user->wasRecentlyCreated) {
+                return response()->json(['success' => 'Usuario creado correctamente.']);
+            } else {
+                return response()->json(['success' => 'Usuario actualizado correctamente.']);
+            }
         } else {
-            return response()->json(['success' => 'Perfil actualizado correctamente.']);
+            return response()->json(['error' => 'Ha ocurrido un error al guardar el usuario.'], 500);
         }
     }
 
-    public function getTypeTasks(Request $request)
-    {
-        $data = [];
-
-        if ($request->has('q')) {
-            $search = $request->q;
-            $data = TypeTask::select("id", "name")
-                ->where('name', 'LIKE', "%$search%")
-                ->get();
-        }
-        return response()->json($data);
-    }
-
-    public function dataTypeTask(Request $request, $idSelection)
-    {
-        $data = TypeTask::findOrFail($idSelection);
-
-        return response()->json($data);
-    }
 
     public function edit($id)
     {
-        $typeTask = TypeTask::findOrFail($id);
+        $data = [];
+        $data['user'] = User::findOrFail($id);
+        $password = $data['user']->password;
+        if ($password) {
+            $data['password'] = 'yes';
+        } else {
+            $data['password'] = 'no';
+        }
 
-        return response()->json($typeTask);
+        $rolesChecked = [];
+        foreach ($data['user']->roles as $role) {
+            $rolesChecked[] = ['text' => $role->name, 'id' => $role->id];
+        }
+
+        $data['rolesChecked'] = $rolesChecked;
+
+        return response()->json($data);
     }
 
 
     public function destroy(Request $request, $id)
     {
-        $typeTask = TypeTask::find($id)->delete();
+        $user = User::find($id)->delete();
 
-        return response()->json([$typeTask]);
+        return response()->json([$user]);
     }
 }

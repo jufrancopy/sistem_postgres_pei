@@ -50,7 +50,6 @@
                                 </div>
                                 <div class="modal-body">
                                     <form id="subGroupForm" name="subGroupForm" class="form-horizontal">
-                                        <div class="alert alert-danger errors" role="alert"></div>
 
                                         {{ Form::hidden('group_id', null, ['id' => 'group_id']) }}
                                         {{ Form::hidden('parent_id', $group->id, ['id' => 'parent_id']) }}
@@ -164,13 +163,12 @@
 
                             var membersHtml = '';
 
-                            // Recorremos el arreglo de categorías y aplicamos la clase "badge" a cada una
                             membersArray.forEach(function(member) {
                                 membersHtml += '<span class="badge badge-secondary">' +
                                     member + '</span> ';
                             });
 
-                            return membersHtml; // Devolvemos el HTML personalizado para la columna de categorías
+                            return membersHtml;
                         }
                     }, {
                         data: 'action',
@@ -179,42 +177,47 @@
                         searchable: false
                     }, ]
                 });
-                $('#createNewGroup').click(function() {
-                    $('#saveBtn').val("create-user");
-                    $('#group_id').val('');
-                    $('#subGroupForm').trigger("reset");
-                    $('#modalHeading').html("Nuevo Grupo");
-                    $('#ajaxModal').modal('show');
-                    $('.errors').removeClass("alert alert-danger")
 
-                    //members
-                    var url = '{{ route('globales.get-users') }}';
-                    $("#members").val([]).change();
-                    $("#members").val("");
-                    $("#members").trigger("change");
-
-                    $('#members').select2({
-                        placeholder: 'Seleccione los miembros para el grupo',
-                        allowClear: true,
+                // Función para inicializar Select2
+                function initializeSelect2(selector, placeholder, url, defaultOption) {
+                    selector.select2({
+                        placeholder: placeholder,
                         ajax: {
                             url: url,
                             dataType: 'json',
                             delay: 250,
                             processResults: function(data) {
-                                console.log(data)
                                 return {
                                     results: $.map(data, function(item) {
                                         return {
-                                            text: item.name,
+                                            text: item.name || item
+                                                .dependency, // Use 'name' or 'dependency' depending on the selector
                                             id: item.id
-                                        }
+                                        };
                                     })
                                 };
                             },
                             cache: true
                         }
                     });
+                }
 
+                $('#createNewGroup').click(function() {
+                    $('#saveBtn').val("create-user");
+                    $('#group_id').val('');
+                    $('#subGroupForm').trigger("reset");
+                    $('#modalHeading').html("Nuevo Grupo");
+                    $('#ajaxModal').modal('show');
+
+                    //Limpiamos el Selector
+                    var membersSelect = $("#members");
+                    membersSelect.empty();
+
+                    //Obtenermos los usuarios que están asociados al grupo
+                    var groupId = '{{ $group->id }}'
+                    var url = '/admin/globales/get-users/' + groupId;
+
+                    initializeSelect2(membersSelect, 'Seleccione Miembros', url);
                 });
 
                 $('body').on('click', '.editGroup', function() {
@@ -228,42 +231,25 @@
                         $('#group_id').val(data.group.id);
                         $('#name').val(data.group.name);
 
+                        //Limpiamos el Selector
+                        var membersSelect = $("#members");
+                        membersSelect.empty();
 
-                        //Clearing selections
-                        $('#members').select2()
-                        $("#members").val([]).change();
-                        var selectMembers = $('#members');
+                        //Obtenermos los usuarios que están asociados al grupo
+                        var groupId = data.group.parent_id
+                        var url = '/admin/globales/get-users/' + groupId;
+                        initializeSelect2(membersSelect, 'Seleccione Miembros', url);
+
+                        //Llamamos los datos precargados desde el controlador
                         data.membersChecked.forEach(function(d) {
                             var option = new Option(d.text, d.id, true, true);
-                            selectMembers.append(option).trigger('change');
-                            selectMembers.trigger({
+                            membersSelect.append(option).trigger('change');
+                            membersSelect.trigger({
                                 type: 'select2:select',
                                 params: {
                                     data: data
                                 }
                             });
-                        });
-
-                        //Members
-                        var url = '{{ route('globales.get-users') }}';
-                        var members = $('#members').select2({
-                            placeholder: 'Seleccione las Miembros',
-                            ajax: {
-                                url: url,
-                                dataType: 'json',
-                                delay: 250,
-                                processResults: function(data) {
-                                    return {
-                                        results: $.map(data, function(item) {
-                                            return {
-                                                text: item.name,
-                                                id: item.id
-                                            }
-                                        })
-                                    };
-                                },
-                                cache: true
-                            }
                         });
                     });
                 });
