@@ -4,12 +4,12 @@
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Evento</h4>
+            <h4 class="card-title ">Nuevo Grupo</h4>
         </div>
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Lista de Eventos</li>
+                <li class="breadcrumb-item active" aria-current="page">Lista de Grupos</li>
             </ol>
         </nav>
 
@@ -19,7 +19,7 @@
                     <div class="card-header">
                         <div class="success"></div>
                         <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)" id="createNewGroup">
-                            Nuevo Evento</a>
+                            Nuevo Grupo</a>
                     </div>
 
                     <div class="card-body">
@@ -41,12 +41,11 @@
                     <div class="modal fade" id="ajaxModal" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
-                                <div class="modal-header">
+                                <div class="card-header card-header-info">
                                     <h4 class="modal-title" id="modalHeading"></h4>
                                 </div>
                                 <div class="modal-body">
                                     <form id="groupForm" name="groupForm" class="form-horizontal">
-                                        <div class="alert alert-danger errors" role="alert"></div>
 
                                         {{ Form::hidden('group_id', null, ['id' => 'group_id']) }}
                                         {{ Form::hidden('parent_id', null, ['id' => 'parent_id']) }}
@@ -155,14 +154,14 @@
                     $('#saveBtn').val("create-user");
                     $('#group_id').val('');
                     $('#groupForm').trigger("reset");
-                    $('#modalHeading').html("Nuevo Evento");
+                    $('#modalHeading').html("Nuevo Grupo");
                     $('#ajaxModal').modal('show');
                 });
 
                 $('body').on('click', '.editGroup', function() {
                     var groupID = $(this).data('id');
                     $.get("{{ route('globales.groups.index') }}" + '/' + groupID + '/edit', function(data) {
-                        $('#modalHeading').html("Editar Evento " + data.group.name);
+                        $('#modalHeading').html("Editar Grupo");
                         $('#saveBtn').val("edit-user");
                         $('#ajaxModal').modal('show');
                         $('#groupForm').trigger("reset");
