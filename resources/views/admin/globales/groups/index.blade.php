@@ -150,13 +150,13 @@
                         searchable: false
                     }, ]
                 });
+
                 $('#createNewGroup').click(function() {
                     $('#saveBtn').val("create-user");
                     $('#group_id').val('');
                     $('#groupForm').trigger("reset");
                     $('#modalHeading').html("Nuevo Evento");
                     $('#ajaxModal').modal('show');
-                    $('.errors').removeClass("alert alert-danger")
                 });
 
                 $('body').on('click', '.editGroup', function() {

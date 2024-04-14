@@ -114,10 +114,8 @@ class UserController extends Controller
         $roles = Role::pluck('name', 'name')->all();
         $userRole = $user->roles->pluck('name', 'name')->all();
 
-
         return view('admin.users.edit', get_defined_vars());
     }
-
 
     /**
      * Update the specified resource in storage.
@@ -152,7 +150,6 @@ class UserController extends Controller
         return redirect()->route('globales.users.index')
             ->with('success', 'Usuario Actualizado satisfactoriamente');
     }
-
 
     /**
      * Remove the specified resource from storage.
