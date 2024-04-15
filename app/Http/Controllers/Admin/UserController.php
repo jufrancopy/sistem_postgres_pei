@@ -11,6 +11,7 @@ use Spatie\Permission\Models\Role;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\DataTables;
 
 class UserController extends Controller
@@ -77,7 +78,6 @@ class UserController extends Controller
         return response()->json($data);
     }
 
-
     public function getRoles(Request $request)
     {
         $data = [];
@@ -103,8 +103,12 @@ class UserController extends Controller
     {
         $validationRules = [
             'name' => 'required',
-            'email' => 'required|email',
-            'confirm-password' => 'nullable|same:password', // La confirmación de la contraseña debe ser igual a la contraseña
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users')->ignore($request->id), // Ignorar el correo electrónico del usuario actual
+            ],
+            'confirm-password' => 'nullable|same:password',
         ];
 
         // Añadir la contraseña a los datos del usuario solo si se proporciona una nueva contraseña
@@ -112,11 +116,12 @@ class UserController extends Controller
             $userData['password'] = bcrypt($request->password);
         }
 
-
+        // Ejecuta la validación
         $request->validate($validationRules, [
             'name.required' => 'Por favor ingrese el nombre del usuario.',
             'email.required' => 'Por favor ingrese el correo electrónico del usuario.',
             'email.email' => 'El correo electrónico debe ser una dirección de correo válida.',
+            'email.unique' => 'El correo electrónico ya está en uso.',
             'password.required' => 'Por favor ingrese una contraseña.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'confirm-password.same' => 'Las contraseñas no coinciden.',
