@@ -106,7 +106,9 @@ class UserController extends Controller
             'email' => [
                 'required',
                 'email',
-                Rule::unique('users')->ignore($request->id), // Ignorar el correo electrónico del usuario actual
+                Rule::unique('users')->ignore($request->id)->where(function ($query) use ($request) {
+                    return $query->where('email', '!=', $request->email); // Ignorar el correo electrónico del usuario actual solo si se cambia
+                }),
             ],
             'confirm-password' => 'nullable|same:password',
         ];
