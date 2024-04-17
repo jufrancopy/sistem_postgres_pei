@@ -224,13 +224,15 @@ class FodaPerfilController extends Controller
     {
         $profile = FodaPerfil::with(['dependency', 'model', 'categories', 'group'])->find($id);
 
+        $rootGroup = $profile->group->root()->first();
+
         $categoriesChecked = [];
 
         foreach ($profile->categories as $category) {
             $categoriesChecked[] = ['id' => $category->id, 'text' => $category->name];
         }
 
-        return response()->json(['profile' => $profile, 'categoriesChecked' => $categoriesChecked]);
+        return response()->json(['profile' => $profile, 'categoriesChecked' => $categoriesChecked, 'rootGroup' => $rootGroup]);
     }
 
     public function destroy(Request $request, $id)
