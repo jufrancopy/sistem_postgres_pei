@@ -289,10 +289,9 @@
                 $('#profile_id').val('');
                 $('#modalProfilelHeading').html("Nuevo Perfil");
                 $('#modalProfile').modal('show');
-                $('.form-group.groups').hide();
                 $('.form-group.group_roots').hide();
+                $('.form-group.groups').hide();
                 $('.form-group.dependencies').show();
-
 
                 //Inicializamos Select2 en Type
                 var type = $('#type').select2({
@@ -303,6 +302,9 @@
                         $('.form-group.groups').show();
                         $('.form-group.group_roots').show();
                         $('.form-group.dependencies').hide();
+                        $('#group_roots').empty().trigger('change')
+                        $('#groups').empty().trigger('change')
+                        $('#models').empty().trigger('change')
                     } else {
                         $('.form-group.groups').hide();
                         $('.form-group.group_roots').hide();
