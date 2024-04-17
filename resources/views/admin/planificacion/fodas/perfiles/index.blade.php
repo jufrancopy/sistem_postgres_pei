@@ -309,6 +309,7 @@
                         $('.form-group.groups').hide();
                         $('.form-group.group_roots').hide();
                         $('.form-group.dependencies').show();
+                        $('#models').empty().trigger('change')
                     }
                 });
 
