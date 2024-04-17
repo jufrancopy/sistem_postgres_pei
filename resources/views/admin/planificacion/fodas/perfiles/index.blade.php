@@ -293,8 +293,6 @@
                 $('.form-group.group_roots').hide();
                 $('.form-group.dependencies').show();
 
-                $('#name').val();
-                $('#context').val();
 
                 //Inicializamos Select2 en Type
                 var type = $('#type').select2({
@@ -353,7 +351,6 @@
                 });
             });
 
-
             $('body').on('click', '.editProfile', function() {
                 var profileId = $(this).data('id');
                 $.get("{{ route('foda-perfiles.index') }}" + '/' + profileId + '/edit', function(data) {
@@ -378,39 +375,9 @@
                     $typeSelect.val(initialTypeValue).trigger('change');
                     toggleElementsBasedOnType(initialTypeValue);
 
-                    initValueSelect2($('#models'), data.profile.model_id, data.profile.model
-                        .name);
-
-                    //Precargar Modelo
-                    $('#models').on('change', function() {
-                        var modelId = $(this).val();
-                        var url = 'get-foda-categories/' + modelId
-
-                        $('#categories').select2({
-                            placeholder: 'Seleccione las Categorías para Analizar',
-                            ajax: {
-                                url: url,
-                                dataType: 'json',
-                                delay: 250,
-                                processResults: function(data) {
-                                    return {
-                                        results: $.map(data, function(item) {
-                                            return {
-                                                text: item.name,
-                                                id: item.id
-                                            }
-                                        })
-                                    };
-                                },
-                                cache: true
-                            }
-                        });
-                    });
-
                     //Clearing selections
-                    $('#categories').select2()
-                    $("#categories").val([]).change();
-                    var selectCategories = $('#categories');
+                    var selectCategories = $('#categories').select2()
+                    selectCategories.val([]);
                     data.categoriesChecked.forEach(function(d) {
                         var option = new Option(d.text, d.id, true, true);
                         selectCategories.append(option).trigger('change');
@@ -422,23 +389,104 @@
                         });
                     });
 
-
                     // Función para mostrar u ocultar elementos dependiendo del valor de 'type'
                     function toggleElementsBasedOnType(typeValue) {
                         if (typeValue === 'grupal') {
                             $('.form-group.groups').show();
                             $('.form-group.group_roots').show();
                             $('.form-group.dependencies').hide();
+
+                            //Inicializamos Grupo Raiz con sus valores
                             initValueSelect2($('#group_roots'), data.rootGroup.id, data.rootGroup
                                 .name);
+
+                            //Inicializamos Grupos con sus valores 
                             initValueSelect2($('#groups'), data.profile.group.id, data.profile.group
                                 .name);
+
+                            //Inicializamos Selector Modelos
+                            var models = $('#models')
+
+                            // Inicializar el buscador de Modelos
+                            initializeSelect2(models, 'Seleccione el Modelo',
+                                '{{ route('get-models') }}');
+
+                            //Inicializamos Selector Modelo con valor preseleccionado
+                            initValueSelect2(models, data.profile.model_id, data.profile.model
+                                .name);
+
+                            //Selector de Categorias con el Cambio de Modelo
+                            models.on('change', function() {
+                                var modelId = $(this).val();
+                                var url = 'get-foda-categories/' + modelId
+
+                                //Listamos Categorias segùn modelo
+                                $('#categories').select2({
+                                    placeholder: 'Seleccione las Categorías para Analizar',
+                                    ajax: {
+                                        url: url,
+                                        dataType: 'json',
+                                        delay: 250,
+                                        processResults: function(data) {
+                                            return {
+                                                results: $.map(data, function(
+                                                    item) {
+                                                    return {
+                                                        text: item.name,
+                                                        id: item.id
+                                                    }
+                                                })
+                                            };
+                                        },
+                                        cache: true
+                                    }
+                                });
+                            });
                         } else {
                             $('#group_roots').select2().val('').trigger('change');
                             $('#groups').select2().val('').trigger('change');
                             $('.form-group.groups').hide();
                             $('.form-group.group_roots').hide();
                             $('.form-group.dependencies').show();
+
+                            //Inicializamos Selector Modelos
+                            var models = $('#models')
+
+                            // Inicializar el buscador de Modelos
+                            initializeSelect2(models, 'Seleccione el Modelo',
+                                '{{ route('get-models') }}');
+
+                            //Inicializamos Selector Modelo con valor preseleccionado
+                            initValueSelect2(models, data.profile.model_id, data.profile.model
+                                .name);
+
+                            //Selector de Categorias con el Cambio de Modelo
+                            models.on('change', function() {
+                                var modelId = $(this).val();
+                                var url = 'get-foda-categories/' + modelId
+
+                                //Listamos Categorias segùn modelo
+                                $('#categories').select2({
+                                    placeholder: 'Seleccione las Categorías para Analizar',
+                                    ajax: {
+                                        url: url,
+                                        dataType: 'json',
+                                        delay: 250,
+                                        processResults: function(data) {
+                                            return {
+                                                results: $.map(data, function(
+                                                    item) {
+                                                    return {
+                                                        text: item.name,
+                                                        id: item.id
+                                                    }
+                                                })
+                                            };
+                                        },
+                                        cache: true
+                                    }
+                                });
+                            });
                         }
                     }
 
@@ -446,16 +494,12 @@
                     $typeSelect.on('change', function() {
                         var selectedTypeValue = $(this).val();
                         toggleElementsBasedOnType(selectedTypeValue);
+
                     });
-
-
 
                     //Precargar Dependencia
                     initValueSelect2($('#dependency'), data.profile.dependency.id, data.profile
                         .dependency.dependency);
-
-
-                    initValueSelect2($('#models'), data.profile.model_id, data.profile.model.name);
 
                     function initValueSelect2(control, key, value) {
                         var data = {
@@ -469,31 +513,8 @@
                     // Inicializar el selector de grupo raíz
                     initializeSelect2($("#group_roots"), 'Seleccione Grupo Raíz de trabajo',
                         '{{ route('globales.get-root-groups') }}');
-
-                    //Models
-                    $('#models').select2({
-                        placeholder: 'Seleccione el Modelo',
-                        ajax: {
-                            url: '{{ route('get-models') }}',
-                            dataType: 'json',
-                            delay: 250,
-                            processResults: function(data) {
-                                return {
-                                    results: $.map(data, function(item) {
-                                        return {
-                                            text: item.name,
-                                            id: item.id
-                                        }
-                                    })
-                                };
-                            },
-                            cache: true
-                        }
-                    });
                 });
             });
-
-
 
             $('#saveBtn').click(function(e) {
                 e.preventDefault();

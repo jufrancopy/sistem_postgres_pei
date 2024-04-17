@@ -120,47 +120,46 @@ class FodaPerfilController extends Controller
 
     public function store(Request $request)
     {
-        if ($request->ajax()) {
-            $request->validate(
-                [
-                    'name'              => 'required',
-                    'context'           => 'required',
-                    'type'              => 'required',
-                    'model_id'          => 'required',
-                ],
-                [
-                    'name.required'             => 'Agregue el nombre del Modelo',
-                    'context.required'          => 'Indique el Contexto',
-                    'type.required'             => 'Indique el Tipo',
-                    'model_id.required'         => 'Seleccione el Modelo de Análisis'
+        $request->validate([
+            'name' => 'required',
+            'context' => 'required',
+            'type' => 'required',
+            'model_id' => 'required',
+            $request->type == 'individual' ? 'dependency_id' : 'group_id' => 'required',
+        ], [
+            'name.required' => 'Agregue el nombre del Modelo',
+            'context.required' => 'Indique el Contexto',
+            'type.required' => 'Indique el Tipo',
+            $request->type == 'individual' ? 'dependency_id.required' : 'group_id.required' => $request->type == 'individual' ? 'Indique la Dependencia Responsable' : 'Seleccione un Grupo de Análisis',
+            'model_id.required' => 'Seleccione el Modelo de Análisis'
+        ]);
 
-                ]
-            );
-        };
+        $profileId = $request->profile_id;
+        $data = [
+            'name' => $request->name,
+            'context' => $request->context,
+            'type' => $request->type,
+            'model_id' => $request->model_id,
+        ];
 
-        $profileId = Str::uuid();
-        $profile = FodaPerfil::updateOrCreate(
-            ['id' => $profileId],
-            [
-                'name' => $request->name,
-                'context' => $request->context,
-                'type' => $request->type,
-                'model_id' => $request->model_id,
-                'dependency_id' => $request->dependency_id,
-                'group_id' => $request->group_id,
-            ]
-        );
+        if ($request->type == 'individual') {
+            $data['dependency_id'] = $request->dependency_id;
+        } else {
+            $data['group_id'] = $request->group_id;
+        }
+
+        $profile = $profileId ? FodaPerfil::find($profileId) : new FodaPerfil(['id' => Str::uuid()]);
+
+        $profile->fill($data)->save();
 
         //Insert into pivot table 
         $categories = $request->category_id;
         $profile->categories()->sync($categories);
 
-        if ($profile->wasRecentlyCreated) {
-            return response()->json(['success' => 'Perfil creado correctamente.']);
-        } else {
-            return response()->json(['success' => 'Perfil actualizado correctamente.']);
-        }
+        $message = $profileId ? 'Perfil actualizado correctamente.' : 'Perfil creado correctamente.';
+        return response()->json(['success' => $message]);
     }
+
 
     public function createGroupRootProfile(Request $request)
     {
