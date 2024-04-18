@@ -192,6 +192,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-aspectos-elegir-modelo', 'Admin\Planificacion\Foda\FodaAspectoController@elegirModelo')->name('foda-aspectos-elegir-modelo');
     Route::get('/foda-perfiles-modelo/{id}/categorias', 'Admin\Planificacion\Foda\FodaPerfilController@getCategorias');
     Route::get('foda-perfiles/{idPerfil}/add-group', 'Admin\Planificacion\Foda\FodaPerfilController@addGroup')->name('foda.add.group');
+    Route::get('foda-profiles/{idProfile}/details', 'Admin\Planificacion\Foda\FodaPerfilController@showDetails')->name('foda.show.details');
     Route::get('foda-list-groups', 'Admin\Planificacion\Foda\FodaAnalisisController@getListGroup')->name('foda-list-groups');
     Route::get('foda-matriz-groups/{idGroup}', 'Admin\Planificacion\Foda\FodaAnalisisController@getMatrizForGroup')->name('foda-matriz-groups');
     Route::get('foda-matriz-groups/{idGroup}/crossing', 'Admin\Planificacion\Foda\FodaAnalisisController@getMatrizForCrossing')->name('foda-matriz-groups-crossing');

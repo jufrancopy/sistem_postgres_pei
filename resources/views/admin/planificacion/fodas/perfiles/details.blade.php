@@ -4,14 +4,13 @@
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Árbol Detalles PEI {{ $profile->first()->name }}</h4>
+            <h4 class="card-title ">Árbol Detalles de Análisis FODA</h4>
         </div>
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('pei-profiles.index') }}">Módulo de Planificación
-                        Estratégica</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Árbol Detalles PEI</li>
+                <li class="breadcrumb-item"><a href="{{ route('foda-perfiles.index') }}">Módulo de Análisis FODA</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Árbol </li>
             </ol>
         </nav>
 
@@ -26,68 +25,62 @@
                                 </div>
                                 <div class="card-header">
                                     <h2>
-                                        {{ $profile->first()->name }}
+                                        {{ $fodaProfile->name }}
                                     </h2>
-                                    <div class="col">
-                                        <label><i class="fa fa-calendar" aria-hidden="true"></i> Periodo:
-                                        </label>
-                                        {{ Carbon\Carbon::parse($profile->first()->year_start)->format('Y') }} -
-                                        {{ Carbon\Carbon::parse($profile->first()->year_end)->format('Y') }}
-                                    </div>
+
 
                                     <div class="col">
                                         <label><i class="fa fa-users" aria-hidden="true"></i> Grupos de
                                             Trabajo:
                                         </label><br>
                                         @php
-                                            $totalMembers = 0; // Inicializa el contador de miembros
+                                            $totalMembers = 0;
                                         @endphp
-
-                                        @foreach ($profile->first()->group->descendants as $group)
-                                            <span data-toggle="collapse" href="#group_{{ $group->id }}" role="button"
-                                                aria-expanded="false" aria-controls="group_{{ $group->id }}"
-                                                class="badge badge-secondary">{{ $group->name }}
-                                            </span>
-                                            <div class="collapse" id="group_{{ $group->id }}">
-                                                <div class="card card-body">
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered">
-                                                            <thead>
-                                                                <tr class="table-success">
-                                                                    <th>Nro</th>
-                                                                    <th>Participantes</th>
+                                        <span data-toggle="collapse" href="#group_{{ $fodaProfile->group->id }}"
+                                            role="button" aria-expanded="false"
+                                            aria-controls="group_{{ $fodaProfile->group->id }}"
+                                            class="badge badge-secondary">{{ $fodaProfile->group->name }}
+                                        </span>
+                                        <div class="collapse" id="group_{{ $fodaProfile->group->id }}">
+                                            <div class="card card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered">
+                                                        <thead>
+                                                            <tr class="table-success">
+                                                                <th>Nro</th>
+                                                                <th>Participantes</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($fodaProfile->group->members as $index => $member)
+                                                                @php
+                                                                    $totalMembers++; // Incrementa el contador de miembros
+                                                                @endphp
+                                                                <tr>
+                                                                    <td>{{ $index + 1 }}</td>
+                                                                    <td>
+                                                                        <span
+                                                                            class="badge badge-secondary">{{ $member->name }}</span>
+                                                                    </td>
                                                                 </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                @foreach ($group->members as $index => $member)
-                                                                    @php
-                                                                        $totalMembers++; // Incrementa el contador de miembros
-                                                                    @endphp
-                                                                    <tr>
-                                                                        <td>{{ $index + 1 }}</td>
-                                                                        <td>
-                                                                            <span
-                                                                                class="badge badge-secondary">{{ $member->name }}</span>
-                                                                        </td>
-                                                                    </tr>
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
-                                        @endforeach
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="card" style="height: 16rem;">
+                            {{-- <div class="card" style="height: 16rem;">
                                 <div class="card-header">
                                     <h6>Actividades por Gerencia</h6>
                                 </div>
                                 <div id="piechart" style="width: 200; height: 200;"></div>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -98,7 +91,7 @@
                         <div class="card-header">
                             <h6>Resumen de Tareas</h6>
                         </div>
-                        <div class="card-body">
+                        {{-- <div class="card-body">
                             <div class="row border">
                                 <div class="col-md-3 border-right border-info">
                                     <div class="d-flex justify-content-between align-items-center">
@@ -152,7 +145,7 @@
                                 </div>
                             </div>
 
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
                 <div class="container">
@@ -328,81 +321,32 @@
                 }
             });
 
-            // Gráficos
-            google.charts.load('current', {
-                'packages': ['corechart']
-            });
-            google.charts.setOnLoadCallback(drawChart);
-
-            function drawChart() {
-                var data = google.visualization.arrayToDataTable([
-                    ['Task', 'Actions Count'], // Encabezados de la tabla
-                    @foreach ($responsiblesActionsCount as $responsibleId => $actionsCount)
-                        @php
-                            $responsible = App\Admin\Globales\Organigrama::find($responsibleId);
-                        @endphp
-                            ['{{ $responsible->dependency }}', {{ $actionsCount }}], // Cada fila de datos
-                    @endforeach
-                ]);
-
-                var options = {
-                    title: 'Actividades por Dependencia'
-                };
-
-                var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-
-                chart.draw(data, options);
-            }
+            // Aqui Grafico Google
 
 
             var data = [
-                @foreach ($profile as $matriz)
+                @foreach ($model as $matriz)
                     {
                         name: '{!! $matriz->name !!}',
                         children: [
-                            @foreach ($matriz->children->sortBy('order_item') as $axi)
+                            @foreach ($matriz->children->sortBy('order_item') as $category)
                                 {
-                                    name: '<p class="badge badge-success">EJE</p> {!! $axi->name !!}',
+                                    name: '<p class="badge badge-success">Categoría</p> {!! $category->name !!}',
                                     children: [
-                                        @foreach ($axi->children->sortBy('order_item') as $goal)
+                                        @foreach ($category->children->sortBy('order_item') as $aspect)
                                             {
-                                                name: '<sup class="badge badge-primary">Objetivo</sup> {!! $goal->name !!}',
+                                                name: '<sup class="badge badge-primary">Aspecto</sup> {!! $aspect->name !!}',
                                                 children: [
 
                                                     {
                                                         name: '<div class="card">' +
                                                             '<div class="card-header bg-info">' +
-                                                            '<h6 class="text-white">Lista de acciones de {!! $goal->name !!}</h6>' +
+                                                            '<h6 class="text-white">Referencia de Analisis</h6>' +
                                                             '</div>' +
                                                             '<div class="card-body">' +
-                                                            @foreach ($goal->children->sortBy('order_item') as $action)
-                                                                '<table class="table table-responsive">' +
-                                                                '<tr>' +
-                                                                '<th>Nro.</th>' +
-                                                                '<th>Acción</th>' +
-                                                                '<th>Indicador</th>' +
-                                                                '<th>Línea de Base</th>' +
-                                                                '<th>Meta</th>' +
-                                                                '<th>Responsable</th>' +
-                                                                '</tr>' +
-                                                                '<tr>' +
-                                                                '<td>{{ $action->order_item }}</td>' +
-                                                                '<td>{!! $action->name !!}</td>' +
-                                                                '<td>{!! $action->indicator !!}</td>' +
-                                                                '<td>{!! $action->baseline !!}</td>' +
-                                                                '<td>{!! $action->target !!}</td>' +
-                                                                '<td>' +
-                                                                @foreach ($action->responsibles as $responsible)
-                                                                    '<span class="badge badge-secondary">{{ $responsible->dependency }}</span> ' +
-                                                                @endforeach
-                                                                '</td>' +
-                                                                '</tr>' +
-                                                                '</table>' +
-                                                                '<hr>' +
-                                                                '<br>' +
-                                                            @endforeach
-                                                        '</div>' +
-                                                        '</div>',
+                                                            '{!! $aspect->description !!}' +
+                                                            '</div>' +
+                                                            '</div>',
                                                     },
 
                                                 ]
