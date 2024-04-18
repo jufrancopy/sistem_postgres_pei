@@ -36,40 +36,65 @@
                                         @php
                                             $totalMembers = 0;
                                         @endphp
-                                        <span data-toggle="collapse" href="#group_{{ $fodaProfile->group->id }}"
-                                            role="button" aria-expanded="false"
-                                            aria-controls="group_{{ $fodaProfile->group->id }}"
-                                            class="badge badge-secondary">{{ $fodaProfile->group->name }}
-                                        </span>
-                                        <div class="collapse" id="group_{{ $fodaProfile->group->id }}">
-                                            <div class="card card-body">
-                                                <div class="table-responsive">
-                                                    <table class="table table-bordered">
-                                                        <thead>
-                                                            <tr class="table-success">
-                                                                <th>Nro</th>
-                                                                <th>Participantes</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            @foreach ($fodaProfile->group->members as $index => $member)
-                                                                @php
-                                                                    $totalMembers++; // Incrementa el contador de miembros
-                                                                @endphp
-                                                                <tr>
-                                                                    <td>{{ $index + 1 }}</td>
-                                                                    <td>
-                                                                        <span
-                                                                            class="badge badge-secondary">{{ $member->name }}</span>
-                                                                    </td>
+
+                                        @if ($fodaProfile->group)
+                                            <span data-toggle="collapse" href="#group_{{ $fodaProfile->group->id }}"
+                                                role="button" aria-expanded="false"
+                                                aria-controls="group_{{ $fodaProfile->group->id }}"
+                                                class="badge badge-secondary">{{ $fodaProfile->group->name }}
+                                            </span>
+                                        @else
+                                            <span data-toggle="collapse" href="#group" role="button" aria-expanded="false"
+                                                aria-controls="group" class="badge badge-secondary">Pendiente
+                                            </span>
+                                        @endif
+                                        @if ($fodaProfile->group)
+                                            <div class="collapse" id="group_{{ $fodaProfile->group->id }}">
+                                                <div class="card card-body">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered">
+                                                            <thead>
+                                                                <tr class="table-success">
+                                                                    <th>Nro</th>
+                                                                    <th>Participantes</th>
                                                                 </tr>
-                                                            @endforeach
-                                                        </tbody>
-                                                    </table>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach ($fodaProfile->group->members as $index => $member)
+                                                                    @php
+                                                                        $totalMembers++; // Incrementa el contador de miembros
+                                                                    @endphp
+                                                                    <tr>
+                                                                        <td>{{ $index + 1 }}</td>
+                                                                        <td>
+                                                                            <span
+                                                                                class="badge badge-secondary">{{ $member->name }}</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-
+                                        @else
+                                            <div class="collapse" id="group">
+                                                <div class="card card-body">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered">
+                                                            <thead>
+                                                                <tr class="table-success">
+                                                                    <th>Nro</th>
+                                                                    <th>Participantes</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
