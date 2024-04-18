@@ -307,7 +307,7 @@ class FodaPerfilController extends Controller
     {
         $profile = FodaPerfil::with(['dependency', 'model', 'categories', 'group'])->find($id);
 
-        $rootGroup = $profile->group->root()->first();
+        $rootGroup = $profile->group->parent;
 
         $categoriesChecked = [];
 
