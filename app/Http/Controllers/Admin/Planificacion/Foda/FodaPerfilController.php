@@ -12,8 +12,10 @@ use App\Admin\Planificacion\Foda\FodaCategoria;
 use App\Admin\Planificacion\Foda\FodaModelo;
 use App\Admin\Globales\Organigrama;
 
+use Illuminate\Support\Facades\DB;
 use Kalnoy\Nestedset\NodeTrait;
 use Yajra\DataTables\DataTables;
+
 
 class FodaPerfilController extends Controller
 {
@@ -52,7 +54,9 @@ class FodaPerfilController extends Controller
 
                     $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editProfile"><i class="far fa-edit"></i></a>';
 
-                    $btn = $btn . ' <a href="/foda-analisis-ambientes/' . $row->id . '" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-info btn-circle"><i class="far fa-eye" aria-hidden="true"></i></a>';
+                    $btn = $btn . ' <a href="/foda-analisis-ambientes/' . $row->id . '" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-warning btn-circle"><i class="far fa-eye" aria-hidden="true"></i></a>';
+
+                    $btn = $btn . ' <a href="/foda-profiles/' . $row->id . "/details" . '" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-info btn-circle"><i class="fa fa-search" aria-hidden="true"></i></a>';
 
                     $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteProfile"><i class="fa fa-trash" aria-hidden="true"></i></a>';
 
@@ -160,7 +164,6 @@ class FodaPerfilController extends Controller
         return response()->json(['success' => $message]);
     }
 
-
     public function createGroupRootProfile(Request $request)
     {
         if ($request->ajax()) {
@@ -206,6 +209,87 @@ class FodaPerfilController extends Controller
             // return response()->json(['redirect' => route('foda-matriz-groups', $profile->group_id), 'message' => 'Perfil Grupal actualizado correctamente.']);
             return redirect()->route('foda-matriz-groups', $groupRootId)->with(['success' => 'Perfil asignado correctamente']);
         }
+    }
+
+    public function showDetails(Request $request, $idProfile)
+    {
+        // $profile = FodaPerfil::findOrFail($idProfile);
+        // $modelId = $profile->model_id;
+        // $model = FodaModelo::findOrFail($modelId);
+
+        // $query = DB::table('planificacion.foda_perfiles AS profile')
+        //     ->join('planificacion.foda_models AS model', 'profile.model_id', '=', 'model.id')
+        //     ->join('groups AS group', 'profile.group_id', '=', 'group.id')
+        //     ->join('organigramas AS dependency', 'profile.dependency_id', '=', 'dependency.id')
+        //     ->select(DB::raw('model.id, model.parent_id, model.type, model.name, model.environment, model.description, ARRAY[model.id] as ruta, 0 as deph'))
+        //     ->where('profile.id', $idProfile);
+
+        // $subQuery = DB::table('planificacion.foda_models as m')
+        //     ->select(DB::raw('m.id, m.parent_id, m.type, m.name, m.environment, m.description,
+        // t.ruta || ARRAY[m.id] as ruta, t.deph + 1 as deph'))
+        //     ->join('tree as t', 't.id', '=', 'm.parent_id');
+        // $query->unionAll($subQuery);
+
+        // $collection = DB::table('tree')
+        //     ->select(['tree.*', DB::raw('array_to_json(ruta) as path')])
+        //     ->withRecursiveExpression('tree', $query)
+        //     ->orderBy('tree.ruta')
+        //     ->get();
+
+        // $closure = (function ($item) use (&$closure, $collection) {
+        //     $key = $item->keys()->shift();
+        //     if (!empty($key) || $key === 0) {
+        //         if (!isset($collection[$key]->defined)) {
+        //             $collection[$key]->defined = true;
+        //             $collection[$key]->rowspan = 1;
+        //         } else {
+        //             $collection[$key]->rowspan++;
+        //         }
+        //         $closure($collection
+        //             ->where('id', $collection[$key]->parent_id));
+        //     }
+        // });
+
+        // $collection->reverse()->map(function ($item, $key) use ($closure, $collection) {
+        //     $item->last = false;
+        //     $last = $collection->last();
+        //     if (($last->id != $item->id && $collection[$key + 1]->deph <= $item->deph)
+        //         || $last->id == $item->id
+        //     ) {
+        //         $item->last = true;
+        //         $item->colspan = $collection->max('deph') - $item->deph + 1;
+        //         $closure($collection->where('id', $item->parent_id));
+        //     }
+        //     unset($item->defined);
+        // });
+
+        $fodaProfile = FodaPerfil::findOrFail($idProfile);
+        $modeId =  $fodaProfile->model_id;
+        $model = FodaModelo::with(['descendants'])->descendantsAndSelf($modeId)->toTree();
+
+        // $responsiblesActionsCount = [];
+
+        // foreach ($profile->first()->children as $axi) {
+        //     foreach ($axi->children as $goal) {
+        //         foreach ($goal->children as $action) {
+        //             $responsibles = $action->responsibles;
+
+        //             foreach ($responsibles as $responsible) {
+        //                 $responsiblesId = $responsible->id;
+        //                 // Si tenemos valor, sumamos 1, si no tenemos valor, valor es 0
+        //                 $responsiblesActionsCount[$responsiblesId] = ($responsiblesActionsCount[$responsiblesId] ?? 0) + 1;
+        //             }
+        //         }
+        //     }
+        // }
+
+        // foreach ($responsiblesActionsCount as $responsibleId => $actionsCount) {
+        //     $responsible = Organigrama::find($responsibleId);
+        //     ['dependency' => $responsible->dependency, 'actionsCount' => $actionsCount];
+        // }
+
+
+        return view('admin.planificacion.fodas.perfiles.details', get_defined_vars());
     }
     public function show($id)
     {

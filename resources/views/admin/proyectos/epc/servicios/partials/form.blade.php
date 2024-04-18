@@ -6,14 +6,14 @@
 <div class="form-group">
     {{ Form::label('type', 'Tipo') }}
     {{ Form::select(
-    'type',
-    [
-        'final' => 'Final',
-        'de_apoyo' => 'De Apoyo',
-    ],
-    null,
-    ['class' => 'form-control', 'placeholder'=>'', 'id'=>'type'],
-) }}
+        'type',
+        [
+            'final' => 'Final',
+            'de_apoyo' => 'De Apoyo',
+        ],
+        null,
+        ['class' => 'form-control', 'placeholder' => '', 'id' => 'type'],
+    ) }}
 </div>
 
 {{-- <div class="form-group">
@@ -28,8 +28,7 @@
 
 <div class="form-group">
     <label for="equipamientos">Equipamientos:
-        <button type="button" class="btn btn-success btn-circle" id="addEquipamientoCantidad"><i
-                class="fa fa-plus"></i>
+        <button type="button" class="btn btn-success btn-circle" id="addEquipamientoCantidad"><i class="fa fa-plus"></i>
         </button>
 
     </label>
@@ -91,7 +90,7 @@
             placeholder: "Seleccion el Tipo",
         });
         CKEDITOR.replace('description');
-        
+
         $(document).ready(function() {
             var addEquipamientoCantidad = function(data) {
                 var $divRow = $('<div>').addClass('row')
@@ -231,7 +230,7 @@
                 })
 
                 addSelect2($otroServicio, 'otroServicios', '/otro-servicios/get',
-                'Seleccionar Otros Servicios');
+                    'Seleccionar Otros Servicios');
             }
             var addSelect2 = function($element, name, url, placeholder) {
                 var parameters = {};
