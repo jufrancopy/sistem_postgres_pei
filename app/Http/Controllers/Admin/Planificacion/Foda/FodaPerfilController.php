@@ -11,10 +11,12 @@ use App\Admin\Planificacion\Foda\FodaPerfil;
 use App\Admin\Planificacion\Foda\FodaCategoria;
 use App\Admin\Planificacion\Foda\FodaModelo;
 use App\Admin\Globales\Organigrama;
-
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Kalnoy\Nestedset\NodeTrait;
 use Yajra\DataTables\DataTables;
+use App\Admin\Planificacion\Foda\FodaAnalisis;
+
 
 
 class FodaPerfilController extends Controller
@@ -139,6 +141,8 @@ class FodaPerfilController extends Controller
         ]);
 
         $profileId = $request->profile_id;
+        $isNewProfile = !$profileId;
+
         $data = [
             'name' => $request->name,
             'context' => $request->context,
@@ -155,6 +159,34 @@ class FodaPerfilController extends Controller
         $profile = $profileId ? FodaPerfil::find($profileId) : new FodaPerfil(['id' => Str::uuid()]);
 
         $profile->fill($data)->save();
+
+        // Obtener el modelo FodaModelo por su ID
+        $modelo = FodaModelo::find($request->model_id);
+
+        // Obtener los aspectos del modelo
+        $aspectos = $modelo->descendants()->get();
+
+
+        // Lógica para insertar en FodaAnalisis solo si el perfil es nuevo
+        if ($isNewProfile) {
+            // Obtener el modelo FodaModelo por su ID
+            $modelo = FodaModelo::find($request->model_id);
+
+            // Obtener los aspectos del modelo
+            $aspectos = $modelo->descendants()->get();
+
+            // Iterar sobre los aspectos y crear un registro en la tabla FodaAnalisis para cada uno
+            foreach ($aspectos as $aspecto) {
+                FodaAnalisis::create([
+                    'user_id' => Auth::id(),
+                    'perfil_id' => $profile->id,
+                    'aspecto_id' => $aspecto->id,
+                    'tipo' => 'Pendiente',
+                    'ocurrencia' => null,
+                    'impacto' => null
+                ]);
+            }
+        }
 
         //Insert into pivot table 
         $categories = $request->category_id;
@@ -211,86 +243,188 @@ class FodaPerfilController extends Controller
         }
     }
 
+
+
     public function showDetails(Request $request, $idProfile)
     {
-        // $profile = FodaPerfil::findOrFail($idProfile);
-        // $modelId = $profile->model_id;
-        // $model = FodaModelo::findOrFail($modelId);
-
-        // $query = DB::table('planificacion.foda_perfiles AS profile')
-        //     ->join('planificacion.foda_models AS model', 'profile.model_id', '=', 'model.id')
-        //     ->join('groups AS group', 'profile.group_id', '=', 'group.id')
-        //     ->join('organigramas AS dependency', 'profile.dependency_id', '=', 'dependency.id')
-        //     ->select(DB::raw('model.id, model.parent_id, model.type, model.name, model.environment, model.description, ARRAY[model.id] as ruta, 0 as deph'))
-        //     ->where('profile.id', $idProfile);
-
-        // $subQuery = DB::table('planificacion.foda_models as m')
-        //     ->select(DB::raw('m.id, m.parent_id, m.type, m.name, m.environment, m.description,
-        // t.ruta || ARRAY[m.id] as ruta, t.deph + 1 as deph'))
-        //     ->join('tree as t', 't.id', '=', 'm.parent_id');
-        // $query->unionAll($subQuery);
-
-        // $collection = DB::table('tree')
-        //     ->select(['tree.*', DB::raw('array_to_json(ruta) as path')])
-        //     ->withRecursiveExpression('tree', $query)
-        //     ->orderBy('tree.ruta')
-        //     ->get();
-
-        // $closure = (function ($item) use (&$closure, $collection) {
-        //     $key = $item->keys()->shift();
-        //     if (!empty($key) || $key === 0) {
-        //         if (!isset($collection[$key]->defined)) {
-        //             $collection[$key]->defined = true;
-        //             $collection[$key]->rowspan = 1;
-        //         } else {
-        //             $collection[$key]->rowspan++;
-        //         }
-        //         $closure($collection
-        //             ->where('id', $collection[$key]->parent_id));
-        //     }
-        // });
-
-        // $collection->reverse()->map(function ($item, $key) use ($closure, $collection) {
-        //     $item->last = false;
-        //     $last = $collection->last();
-        //     if (($last->id != $item->id && $collection[$key + 1]->deph <= $item->deph)
-        //         || $last->id == $item->id
-        //     ) {
-        //         $item->last = true;
-        //         $item->colspan = $collection->max('deph') - $item->deph + 1;
-        //         $closure($collection->where('id', $item->parent_id));
-        //     }
-        //     unset($item->defined);
-        // });
-
         $fodaProfile = FodaPerfil::findOrFail($idProfile);
-        $modeId =  $fodaProfile->model_id;
-        $model = FodaModelo::with(['descendants'])->descendantsAndSelf($modeId)->toTree();
 
-        // $responsiblesActionsCount = [];
+        // Obtener los aspecto_id de los registros en FodaAnalisis
+        $aspectIds = FodaAnalisis::where('perfil_id', $idProfile)->pluck('aspecto_id');
 
-        // foreach ($profile->first()->children as $axi) {
-        //     foreach ($axi->children as $goal) {
-        //         foreach ($goal->children as $action) {
-        //             $responsibles = $action->responsibles;
+        // Obtener todos los aspectos relacionados directamente de la tabla FodaModelo
+        $aspects = FodaModelo::whereIn('id', $aspectIds)->get();
 
-        //             foreach ($responsibles as $responsible) {
-        //                 $responsiblesId = $responsible->id;
-        //                 // Si tenemos valor, sumamos 1, si no tenemos valor, valor es 0
-        //                 $responsiblesActionsCount[$responsiblesId] = ($responsiblesActionsCount[$responsiblesId] ?? 0) + 1;
-        //             }
-        //         }
-        //     }
-        // }
+        // Filtrar los aspectos por entorno (environment)
+        $environments = $aspects->pluck('environment')->unique();
 
-        // foreach ($responsiblesActionsCount as $responsibleId => $actionsCount) {
-        //     $responsible = Organigrama::find($responsibleId);
-        //     ['dependency' => $responsible->dependency, 'actionsCount' => $actionsCount];
-        // }
-
+        // Construir el árbol para cada entorno
+        $tree = $environments->map(function ($environment) use ($aspects) {
+            return $this->buildTreeForEnvironment($environment, $aspects);
+        })->values();
 
         return view('admin.planificacion.fodas.perfiles.details', get_defined_vars());
     }
+
+    function buildTreeForEnvironment($environment, $aspects)
+    {
+        
+        // Filtrar los aspectos por entorno
+        $environmentAspects = $aspects->where('environment', $environment);
+        
+        // Obtener las categorías únicas para este entorno
+        $categories = $environmentAspects->where('type', 'category')->unique('name');
+
+        // Construir el árbol para cada categoría
+        $tree = $categories->map(function ($category) use ($environmentAspects, $environment) {
+                $children = $environmentAspects->where('parent_id', $category->id)->map(function ($aspect) use ($environment) {
+
+                // Obtener los valores de análisis para este aspecto
+                $buttonHTML = '<a href="#" class="editAspect" data-environment="' . $environment . '" data-id="' . $aspect->id . '">...</a>';
+
+                $analysis = FodaAnalisis::where('aspecto_id', $aspect->id)->first();
+                
+                // Aplicar lógica para determinar el valor de ocurrencia
+                switch ($analysis->ocurrencia) {
+                    case 0.1:
+                        $ocurrencia = 'Baja';
+                        break;
+                    case 0.3:
+                        $ocurrencia = 'Media';
+                        break;
+                    case 0.5:
+                        $ocurrencia = 'Alta';
+                        break;
+                    case 0.7:
+                        $ocurrencia = 'Muy Alta';
+                        break;
+                    case 0.9:
+                        $ocurrencia = 'Cierta';
+                        break;
+                    default:
+                        $ocurrencia = 'Pendiente de Análisis';
+                }
+
+                // Aplicar lógica para determinar el valor de impacto
+                switch ($analysis->impacto) {
+                    case 0.05:
+                        $impacto = 'Muy Bajo';
+                        break;
+                    case 0.1:
+                        $impacto = 'Bajo';
+                        break;
+                    case 0.2:
+                        $impacto = 'Moderado';
+                        break;
+                    case 0.4:
+                        $impacto = 'Alto';
+                        break;
+                    case 0.8:
+                        $impacto = 'Muy Alto';
+                        break;
+                    default:
+                        $impacto = 'Pendiente de Análisis';
+                }
+
+                // Calcular el total
+                $total = $analysis->ocurrencia * $analysis->impacto;
+
+                // Aplicar lógica para determinar el estilo y texto del total
+                if ($total == 0.0) {
+                    $totalHtml = '<strong class="badge badge-primary">Pendiente</strong>';
+                } elseif ($total >= 0.18) {
+                    $totalHtml = '<strong class="badge badge-success">' . $total . '</strong>';
+                } else {
+                    $totalHtml = '<strong class="badge badge-danger">Insuficiente (' . $total . ')</strong>';
+                }
+
+                // Construir la tabla HTML con los valores de análisis
+                $tableHTML = '<table class="table table-bordered">' .
+                    '<tr>' .
+                    '<th>Impacto</th>' .
+                    '<th>Ocurrencia</th>' .
+                    '<th>Ponderación</th>' .
+                    '<th colspan=2>Acciones</th>' .
+                    '</tr>' .
+                    '<tr>' .
+                    '<td>' . $impacto . ' (' . $analysis->impacto . ')</td>' .
+                    '<td>' . $ocurrencia . ' (' . $analysis->ocurrencia . ')</td>' .
+                    '<td>' . $totalHtml . '</td>' .
+                    '<td>' .
+                    '<a href="#" class="editAspect" data-environment="'.$environment.'" data-id="' . $analysis->id . '"><i class="fa fa-search btn btn-info btn-circle" aria-hidden="true"></i></a>'.
+                    '</td>' .
+                    '</tr>' .
+                    '</table>';
+
+                return [
+                    'name' => '<sup class="badge badge-secondary">Aspecto</sup> ' . $aspect->name,
+                    'children' => [
+                        [
+                            'name' => $tableHTML, 
+                            'button'=> $buttonHTML
+                        ]
+                    ]
+                ];
+            });
+
+            return [
+                'name' => '<sup class="badge badge-secondary">Categoría</sup> ' . $category->name,
+                'children' => $children->values()->toArray()
+            ];
+        });
+
+        // Devolver el árbol para este entorno
+        return [
+            'name' => '<sup class="badge badge-secondary">Ambiente</sup>' . $environment,
+            'children' => $tree->values()->toArray()
+        ];
+    }
+
+
+
+    // function buildTree($category, $aspects, $editRoute)
+    // {
+    //     $children = $aspects->filter(function ($item) use ($category) {
+    //         return $item->parent_id == $category->id;
+    //     })->map(function ($aspect) use ($editRoute, $aspects) {
+    //         if ($aspect->type == 'category') {
+    //             return $this->buildTree($aspect, $aspects, $editRoute);
+    //         } else {
+    //             $tableHTML = '<table class="table table-bordered">' .
+    //                 '<tr>' .
+    //                 '<th>Impacto</th>' .
+    //                 '<th>Ocurrencia</th>' .
+    //                 '<th>Ponderación</th>' .
+    //                 '<th colspan=2>Acciones</th>' .
+    //                 '</tr>' .
+    //                 '<tr>' .
+    //                 '<td>Baja</td>' .
+    //                 '<td>Alta</td>' .
+    //                 '<td>Ponderación</td>' .
+    //                 '<td>' .
+    //                 '<a href="' . route('foda-analisis.edit', $aspect->id) . '"><i class="fa fa-search btn btn-info btn-circle" aria-hidden="true"></i></a>' .
+    //                 '</td>' .
+    //                 '</tr>' .
+    //                 '</table>';
+
+    //             return [
+    //                 'name' => '<sup class="badge badge-primary">Aspecto</sup> ' . $aspect->name,
+    //                 'children' => [
+    //                     [
+    //                         'name' => $tableHTML
+    //                     ]
+    //                 ]
+    //             ];
+    //         }
+    //     });
+
+    //     return [
+    //         'name' => '<sup class="badge badge-success">Categoría</sup> ' . $category->name,
+    //         'children' => $children->values()->toArray()
+    //     ];
+    // }
+
+
     public function show($id)
     {
         $perfil = FodaPerfil::find($id);
