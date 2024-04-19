@@ -331,6 +331,64 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Formulario Analisis --}}
+            <div class="modal fade" id="modalAnalysis" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="card-header card-header-info">
+                            <h4 class="modal-title" id="headingAnalysis"></h4>
+                        </div>
+                        <div class="modal-body">
+                            <form id="analysisForm" name="analysisForm" class="form-horizontal">
+                                <div class="form-group">
+                                    {{ Form::hidden('user_id', auth()->user()->id) }}
+                                    {{ Form::hidden('perfil_id', null, ['class' => 'form-control', 'id' => 'perfil_id']) }}
+                                    {{ Form::hidden('aspecto_id', null, ['class' => 'form-control', 'id' => 'aspecto_id']) }}
+                                    {{ Form::label('tipo', 'Tipo:', ['class' => 'form-control', 'id' => 'tipo']) }}
+
+                                    <div class="form-group">
+                                        {{ Form::label('ocurrencia', 'Nivel de Ocurrencia') }}
+                                        {{ Form::select(
+                                            'ocurrencia',
+                                            ['0.10' => 'Baja', '0.30' => 'Media', '0.50' => 'Alta', '0.70' => 'Muy Alta', '0.90' => 'Cierta'],
+                                            null,
+                                            [
+                                                'class' => 'form-control',
+                                                'placeholder' => '',
+                                                'id' => 'ocurrencia',
+                                                'style' => 'width:100%',
+                                            ],
+                                        ) }}
+                                    </div>
+
+                                    <div class="form-group">
+                                        {{ Form::label('impacto', 'Nivel de Impacto') }}
+                                        {{ Form::select(
+                                            'impacto',
+                                            ['0.05' => 'Muy Bajo', '0.10' => 'Bajo', '0.20' => 'Moderado', '0.40' => 'Alto', '0.80' => 'Muy Alto'],
+                                            null,
+                                            [
+                                                'class' => 'form-control',
+                                                'placeholder' => '',
+                                                'id' => 'impacto',
+                                                'style' => 'width:100%',
+                                            ],
+                                        ) }}
+                                    </div>
+
+                                    <div class="col-sm-offset-2 col-sm-10">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-dismiss="modal">Cerrar</button>
+                                        <button type="submit" class="btn btn-success" id="saveBtn"
+                                            value="create">Guardar cambios</button>
+                                    </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {{-- Fin Modals --}}
         </div>
     </div>
@@ -347,43 +405,31 @@
             });
 
             // Aqui Grafico Google
+            var data = {!! json_encode($tree) !!};
 
-
-            var data = [
-                @foreach ($model as $matriz)
-                    {
-                        name: '{!! $matriz->name !!}',
-                        children: [
-                            @foreach ($matriz->children->sortBy('order_item') as $category)
-                                {
-                                    name: '<p class="badge badge-success">Categoría</p> {!! $category->name !!}',
-                                    children: [
-                                        @foreach ($category->children->sortBy('order_item') as $aspect)
-                                            {
-                                                name: '<sup class="badge badge-primary">Aspecto</sup> {!! $aspect->name !!}',
-                                                children: [
-
-                                                    {
-                                                        name: '<div class="card">' +
-                                                            '<div class="card-header bg-info">' +
-                                                            '<h6 class="text-white">Referencia de Analisis</h6>' +
-                                                            '</div>' +
-                                                            '<div class="card-body">' +
-                                                            '{!! $aspect->description !!}' +
-                                                            '</div>' +
-                                                            '</div>',
-                                                    },
-
-                                                ]
-                                            },
-                                        @endforeach
-                                    ]
-                                },
-                            @endforeach
-                        ]
-                    },
-                @endforeach
-            ];
+            // Función para inicializar Select2
+            function initializeSelect2(selector, placeholder, url) {
+                selector.val("").select2({
+                    placeholder: placeholder,
+                    ajax: {
+                        url: url,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function(data) {
+                            return {
+                                results: $.map(data, function(item) {
+                                    return {
+                                        text: item.name || item
+                                            .dependency, // Use 'name' or 'dependency' depending on the selector
+                                        id: item.id
+                                    }
+                                })
+                            };
+                        },
+                        cache: true
+                    }
+                });
+            }
 
             $('#treeProfile').tree({
                 data: data,
@@ -507,7 +553,7 @@
                     function(data) {
                         $('#modalHeadingParticipantsList').html(
                             'Lista de Participantes');
-                        $('#ajaxParticipantsListModal').modal('show');
+                        $('#modalAnalysis').modal('show');
 
                         var tableBody = $('#participantsList .table tbody');
                         tableBody.empty(); // Limpiar el contenido de la tabla
@@ -526,6 +572,75 @@
 
                     });
             });
+
+            $('body').on('click', '.editAspect', function() {
+                event.preventDefault();
+                var aspectId = $(this).data('id');
+                var environment = $(this).data('environment');
+
+                $.get("{{ route('foda-analisis.index') }}" + '/' + aspectId + '/edit', function(data) {
+                    console.log(data)
+                    $('#headingAnalysis').html('Analizar');
+                    $('#modalAnalysis').modal('show');
+                    $('#perfil_id').val(data.perfil_id);
+                    $('#aspecto_id').val(data.aspecto_id);
+                    $('#tipo').val(data.tipo);
+
+                    //Inicialización de selectores
+                    $('#ocurrencia').select2({
+                        placeholder: 'Seleccione Nivel de Ocurrencia'
+                    });
+                    $('#impacto').select2({
+                        placeholder: 'Seleccione Nivel de Impacto'
+                    });
+
+                    // Modificar el contenido del modal según el ambiente
+                    if (environment === 'Interno') {
+                        $('#modalAnalysis #headingAnalysis').text('Analizar');
+                        $('#modalAnalysis #tipo').empty().append(
+                            $('<label>').append(
+                                $('<input>').attr({
+                                    type: 'radio',
+                                    name: 'tipo',
+                                    value: 'Fortaleza'
+                                }),
+                                $('<p>').addClass('badge badge-success').text('Fortaleza')
+                            ),
+                            $('<label>').append(
+                                $('<input>').attr({
+                                    type: 'radio',
+                                    name: 'tipo',
+                                    value: 'Debilidad'
+                                }),
+                                $('<p>').addClass('badge badge-danger').text('Debilidad')
+                            )
+                        );
+                    } else {
+                        $('#modalAnalysis #headingAnalysis').text('Analizar');
+                        $('#modalAnalysis #tipo').empty().append(
+                            $('<label>').append(
+                                $('<input>').attr({
+                                    type: 'radio',
+                                    name: 'tipo',
+                                    value: 'Oportunidad '
+                                }),
+                                $('<p>').addClass('badge badge-success').text('Oportunidad')
+                            ),
+                            $('<label>').append(
+                                $('<input>').attr({
+                                    type: 'radio',
+                                    name: 'tipo',
+                                    value: 'Amenaza'
+                                }),
+                                $('<p>').addClass('badge badge-danger').text('Amenaza')
+                            )
+                        );
+                    }
+
+
+                });
+
+            })
         })
     </script>
 

@@ -462,14 +462,21 @@ class FodaAnalisisController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $analisis = FodaAnalisis::find($id);
-        $aspectoID = $analisis->aspecto_id;
-        $aspecto = FodaModelo::find($aspectoID);
-        $categoriaID = $aspecto->parent_id;
-        $categoria = FodaModelo::find($categoriaID);
-        $ambiente = $categoria->environment;
+        // $analisis = FodaAnalisis::find($id);
+        // $aspectoID = $analisis->aspecto_id;
+        // $aspecto = FodaModelo::find($aspectoID);
+        // $categoriaID = $aspecto->parent_id;
+        // $categoria = FodaModelo::find($categoriaID);
+        // $ambiente = $categoria->environment;
 
-        return view('admin.planificacion.fodas.analisis.edit', get_defined_vars());
+        // return view('admin.planificacion.fodas.analisis.edit', get_defined_vars());
+
+        $data = FodaAnalisis::where('id', $id)->first();
+        
+
+        
+
+        return response()->json($data);
     }
 
     public function update(Request $request, $id)
