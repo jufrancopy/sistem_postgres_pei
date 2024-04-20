@@ -93,7 +93,7 @@ class PeiController extends Controller
             ['dependency' => $responsible->dependency, 'actionsCount' => $actionsCount];
         }
 
-        
+
 
         return view('admin.planificacion.peis.peis.details_tree', get_defined_vars());
     }
@@ -136,11 +136,10 @@ class PeiController extends Controller
 
         $members = [];
 
-        foreach($profile->group->descendants as $group){
-            foreach($group->members as $member){
-                $members[] = ['name'=>$member->name, 'email'=>$member->email];  
+        foreach ($profile->group->descendants as $group) {
+            foreach ($group->members as $member) {
+                $members[] = ['name' => $member->name, 'email' => $member->email];
             }
-             
         }
 
         return response()->json(['members' => $members]);

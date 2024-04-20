@@ -342,7 +342,7 @@
                         <div class="modal-body">
                             <form id="analysisForm" name="analysisForm" class="form-horizontal">
                                 <div class="form-group">
-                                    {{ Form::hidden('user_id', auth()->user()->id) }}
+                                    {{ Form::hidden('analysis_id', null, ['class' => 'form-control', 'id' => 'analysis_id']) }}
                                     {{ Form::hidden('perfil_id', null, ['class' => 'form-control', 'id' => 'perfil_id']) }}
                                     {{ Form::hidden('aspecto_id', null, ['class' => 'form-control', 'id' => 'aspecto_id']) }}
                                     {{ Form::label('tipo', 'Tipo:', ['class' => 'form-control', 'id' => 'tipo']) }}
@@ -404,8 +404,27 @@
                 }
             });
 
-            // Aqui Grafico Google
-            var data = {!! json_encode($tree) !!};
+            //Obtenemos el Arbol para Analisis FODA
+            var urlTree = "{{ route('foda-perfiles.index') }}" + '/' + '{{ $fodaProfile->id }}' + '/get-tree'
+            $.ajax({
+                url: urlTree,
+                type: 'GET',
+                success: function(data) {
+                    $('#treeProfile').tree({
+                        data: data,
+                        autoEscape: false,
+                        saveState: true,
+                        closedIcon: $('<i class="fas fa-arrow-circle-right"></i>'),
+                        openedIcon: $('<i class="fas fa-arrow-circle-down"></i>'),
+                        autoOpen: true,
+                        openFolderDelay: 1000,
+                        dragAndDrop: true
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
 
             // Función para inicializar Select2
             function initializeSelect2(selector, placeholder, url) {
@@ -430,17 +449,6 @@
                     }
                 });
             }
-
-            $('#treeProfile').tree({
-                data: data,
-                autoEscape: false,
-                saveState: true,
-                closedIcon: $('<i class="fas fa-arrow-circle-right"></i>'),
-                openedIcon: $('<i class="fas fa-arrow-circle-down"></i>'),
-                autoOpen: true,
-                openFolderDelay: 1000,
-                dragAndDrop: true
-            });
 
             $('body').on('click', '#showAxisList', function() {
                 var profileID = $(this).data('id');
@@ -577,32 +585,38 @@
                 event.preventDefault();
                 var aspectId = $(this).data('id');
                 var environment = $(this).data('environment');
+                var nodeId = $(this).data('node');
 
                 $.get("{{ route('foda-analisis.index') }}" + '/' + aspectId + '/edit', function(data) {
-                    console.log(data)
-                    $('#headingAnalysis').html('Analizar');
                     $('#modalAnalysis').modal('show');
+                    $('#analysis_id').val(data.id);
                     $('#perfil_id').val(data.perfil_id);
                     $('#aspecto_id').val(data.aspecto_id);
-                    $('#tipo').val(data.tipo);
+                    $('#saveBtn').attr('data-node', nodeId);
 
                     //Inicialización de selectores
                     $('#ocurrencia').select2({
                         placeholder: 'Seleccione Nivel de Ocurrencia'
-                    });
+                    }).val(data.ocurrencia).trigger(
+                    'change'); // Establecer el valor predeterminado y disparar el evento 'change'
+
                     $('#impacto').select2({
                         placeholder: 'Seleccione Nivel de Impacto'
-                    });
+                    }).val(data.impacto).trigger(
+                    'change'); // Establecer el valor predeterminado y disparar el evento 'change'
+
 
                     // Modificar el contenido del modal según el ambiente
                     if (environment === 'Interno') {
-                        $('#modalAnalysis #headingAnalysis').text('Analizar');
+                        $('#modalAnalysis #headingAnalysis').text('Analizar - ' + data.model.name);
                         $('#modalAnalysis #tipo').empty().append(
                             $('<label>').append(
                                 $('<input>').attr({
                                     type: 'radio',
                                     name: 'tipo',
-                                    value: 'Fortaleza'
+                                    value: 'Fortaleza',
+                                    checked: data.tipo ===
+                                        'Fortaleza' // Marcar como seleccionado si data.tipo es 'Fortaleza'
                                 }),
                                 $('<p>').addClass('badge badge-success').text('Fortaleza')
                             ),
@@ -610,19 +624,23 @@
                                 $('<input>').attr({
                                     type: 'radio',
                                     name: 'tipo',
-                                    value: 'Debilidad'
+                                    value: 'Debilidad',
+                                    checked: data.tipo ===
+                                        'Debilidad' // Marcar como seleccionado si data.tipo es 'Debilidad'
                                 }),
                                 $('<p>').addClass('badge badge-danger').text('Debilidad')
                             )
                         );
                     } else {
-                        $('#modalAnalysis #headingAnalysis').text('Analizar');
+                        $('#modalAnalysis #headingAnalysis').text('Analizar - ' + data.model.name);
                         $('#modalAnalysis #tipo').empty().append(
                             $('<label>').append(
                                 $('<input>').attr({
                                     type: 'radio',
                                     name: 'tipo',
-                                    value: 'Oportunidad '
+                                    value: 'Oportunidad',
+                                    checked: data.tipo ===
+                                        'Oportunidad' // Marcar como seleccionado si data.tipo es 'Oportunidad'
                                 }),
                                 $('<p>').addClass('badge badge-success').text('Oportunidad')
                             ),
@@ -630,17 +648,76 @@
                                 $('<input>').attr({
                                     type: 'radio',
                                     name: 'tipo',
-                                    value: 'Amenaza'
+                                    value: 'Amenaza',
+                                    checked: data.tipo ===
+                                        'Amenaza' // Marcar como seleccionado si data.tipo es 'Amenaza'
                                 }),
                                 $('<p>').addClass('badge badge-danger').text('Amenaza')
                             )
                         );
                     }
 
-
                 });
 
             })
+
+            $('#saveBtn').click(function(e) {
+                e.preventDefault();
+                $(this).html('Enviando..');
+                var nodeId = $(this).data('node');
+
+                $.ajax({
+                    data: $('#analysisForm').serialize(),
+                    url: "{{ route('foda-analisis.store') }}",
+                    type: "POST",
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data) {
+                            $(".success").text(data.success).addClass('alert alert-success');
+                            setTimeout(function() {
+                                $(".success").hide().html('');
+                            }, 5000);
+                        }
+                        $('#analysisForm').trigger("reset");
+                        $('#modalAnalysis').modal('hide');
+
+                        // Después de guardar el análisis, obtener el árbol actualizado
+                        var urlTree = "{{ route('foda-perfiles.index') }}" + '/' +
+                            '{{ $fodaProfile->id }}' + '/get-tree';
+
+                        $.ajax({
+                            url: urlTree,
+                            type: 'GET',
+                            success: function(data) {
+                                // Actualizar el árbol en la página
+
+                                $('#treeProfile').tree('loadData',
+                                    data);
+
+                                // $('#treeProfile').tree('openNode', $('#treeProfile')
+                                //     .tree('getNodeById', nodeId));
+                            },
+                            error: function(xhr, status, error) {
+                                console.error(error);
+                            }
+                        });
+                    },
+
+                    error: function(data) {
+                        var obj = data.responseJSON.errors;
+                        $.each(obj, function(key, value) {
+                            // Alert Toastr
+                            toastr.options = {
+                                closeButton: true,
+                                progressBar: true,
+                            };
+                            toastr.error("Atención: " + value);
+                        });
+                        $('#saveBtn').html('Guardar Cambios');
+                    }
+
+                });
+            });
         })
     </script>
 
