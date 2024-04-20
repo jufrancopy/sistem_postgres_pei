@@ -418,8 +418,14 @@ class FodaPerfilController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $profile = FodaPerfil::find($id)->delete();
+        $analisis = FodaAnalisis::where('perfil_id', $id)->get();
+        foreach ($analisis as $analysis) {
+            $analysis->delete();
+        }
 
-        return response()->json([$profile]);
+        $perfil = FodaPerfil::find($id);
+        $perfil->delete();
+
+        return response()->json(['success' => 'Perfil eliminado correctamente.']);
     }
 }
