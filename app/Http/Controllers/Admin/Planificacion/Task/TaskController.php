@@ -233,7 +233,7 @@ class TaskController extends Controller
                             'task' => $typeTask->name,
                             'status' => $typeTask->pivot->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
                             'action' =>
-                            ' <a href="' . route('foda-analisis-ambientes', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle routeId" data-task-id="' . $id . '"><i class="fas fa-tasks"></i></a>' .
+                            ' <a href="' . route('foda.get.tree', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle routeId" data-task-id="' . $id . '"><i class="fas fa-tasks"></i></a>' .
                                 ' <a href="' . route('foda-analisis-matriz', $typeTask->typetaskable_id) . '" class="btn btn-warning btn-circle routeId" data-task-id="' . $id . '"><i class="fas fa-eye"></i></a>',
                         ];
                     }
