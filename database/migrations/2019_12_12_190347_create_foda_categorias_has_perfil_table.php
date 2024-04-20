@@ -13,6 +13,7 @@ class CreateFodaCategoriasHasPerfilTable extends Migration
      */
     public function up()
     {
+        //Esta tabla dejamos de usar con la actualización del Módulo de FODA Perfiles
         Schema::create('planificacion.foda_categorias_has_perfil', function (Blueprint $table) {
             $table->uuid('perfil_id');
             $table->foreign('perfil_id')->references('id')->on('planificacion.foda_perfiles')
