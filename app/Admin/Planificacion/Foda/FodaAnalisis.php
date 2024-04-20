@@ -37,7 +37,7 @@ class FodaAnalisis extends Model
 
     public function model()
     {
-        return $this->belongsTo(FodaModelo::class, 'model_id');
+        return $this->belongsTo(FodaModelo::class, 'aspecto_id');
     }
 
     public function scopeNombre($query, $nombre)

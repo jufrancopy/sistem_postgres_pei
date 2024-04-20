@@ -22,8 +22,7 @@ use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
 
 use App\Admin\Planificacion\Task\Task;
 use App\Admin\Planificacion\Task\TypeTask;
-
-
+use Illuminate\Support\Facades\Auth;
 
 class FodaAnalisisController extends Controller
 {
@@ -100,15 +99,20 @@ class FodaAnalisisController extends Controller
     {
         $idPerfil = $request->idPerfil;
         $perfil = FodaPerfil::with(['group', 'model'])->find($idPerfil);
-        // Accede a los miembros del grupo relacionado
-        $members = $perfil->group->members;
 
-        // Ahora puedes trabajar con la colección de miembros
-        foreach ($members as $member) {
-            // Accede a las propiedades de cada miembro
-            $userName = $member->name;
-            $userEmail = $member->email;
-            // ...otros campos de usuario...
+        // Verificar si el perfil y el grupo están definidos y si el grupo tiene miembros
+        if ($perfil->group && $perfil->group->members) {
+            // Acceder a los miembros del grupo
+            $members = $perfil->group->members;
+            // Ahora puedes trabajar con la colección de miembros
+            foreach ($members as $member) {
+                // Accede a las propiedades de cada miembro
+                $userName = $member->name;
+                $userEmail = $member->email;
+                // ...otros campos de usuario...
+            }
+            // Realizar cualquier operación con los miembros
+            // ...
         }
 
         $matriz =    0.17;
@@ -420,26 +424,55 @@ class FodaAnalisisController extends Controller
 
     public function store(Request $request)
     {
-        $count = count($request->input('aspecto_id'));
-        for ($i = 0; $i < $count; ++$i) {
-            $analisis = FodaAnalisis::create([
-                'user_id'       => $request->user_id,
-                'aspecto_id'    => $request->aspecto_id[$i],
-                'perfil_id'     => $request->perfil_id,
-                'tipo'          => $request->tipo,
-                'ocurrencia'    => $request->ocurrencia,
-                'impacto'       => $request->impacto,
-            ]);
-        }
-        $idPerfil = $analisis->perfil_id;
-        $aspectoID = $analisis->aspecto_id;
-        $aspectos = FodaModelo::find($aspectoID);
-        $categoriaID = $aspectos->parent_id;
-        $categoria = FodaModelo::find($categoriaID);
+        if ($request->ajax()) {
+            $request->validate(
+                [
+                    'ocurrencia'   => 'required',
+                    'impacto'      => 'required',
+                    'tipo'         => 'required',
+                ],
+                [
+                    'ocurrencia.required'     => 'Debe Indicar un nivel de Ocurrencia',
+                    'impacto.required'     => 'Debe indicar un nivel de Impacto',
+                    'tipo.required'     => 'Indique el Tipo',
+                ]
+            );
+        };
 
-        return redirect()->route('foda-listado-categorias-aspectos', ['idCategoria' => $categoriaID, 'idPerfil' => $idPerfil])
-            ->with('success', 'Aspectos Listos para analizar');
+        $analysis = FodaAnalisis::updateOrCreate(
+            ['id' => $request->analysis_id],
+            [
+                'user_id' => Auth::id(),
+                'perfil_id' => $request->perfil_id,
+                'ocurrencia' => $request->ocurrencia,
+                'impacto' => $request->impacto,
+                'tipo' => $request->tipo,
+
+            ]
+        );
+
+        return response()->json(['success' => 'Análisis creado satisfactoriamente']);
     }
+    // $count = count($request->input('aspecto_id'));
+    // for ($i = 0; $i < $count; ++$i) {
+    //     $analisis = FodaAnalisis::create([
+    //         'user_id'       => $request->user_id,
+    //         'aspecto_id'    => $request->aspecto_id[$i],
+    //         'perfil_id'     => $request->perfil_id,
+    //         'tipo'          => $request->tipo,
+    //         'ocurrencia'    => $request->ocurrencia,
+    //         'impacto'       => $request->impacto,
+    //     ]);
+    // }
+    // $idPerfil = $analisis->perfil_id;
+    // $aspectoID = $analisis->aspecto_id;
+    // $aspectos = FodaModelo::find($aspectoID);
+    // $categoriaID = $aspectos->parent_id;
+    // $categoria = FodaModelo::find($categoriaID);
+
+    // return redirect()->route('foda-listado-categorias-aspectos', ['idCategoria' => $categoriaID, 'idPerfil' => $idPerfil])
+    //     ->with('success', 'Aspectos Listos para analizar');
+
 
     public function show(Request $request, $id)
     {
@@ -471,10 +504,8 @@ class FodaAnalisisController extends Controller
 
         // return view('admin.planificacion.fodas.analisis.edit', get_defined_vars());
 
-        $data = FodaAnalisis::where('id', $id)->first();
-        
+        $data = FodaAnalisis::with('model')->where('id', $id)->first();
 
-        
 
         return response()->json($data);
     }

@@ -157,45 +157,41 @@ class FodaPerfilController extends Controller
         }
 
         $profile = $profileId ? FodaPerfil::find($profileId) : new FodaPerfil(['id' => Str::uuid()]);
-
         $profile->fill($data)->save();
+
+        // Ahora que el perfil ha sido guardado, obtenemos su ID
+        $profileId = $profile->id;
 
         // Obtener el modelo FodaModelo por su ID
         $modelo = FodaModelo::find($request->model_id);
 
         // Obtener los aspectos del modelo
-        $aspectos = $modelo->descendants()->get();
+        $nuevosAspectos = $modelo->descendants()->pluck('id');
 
-        if ($isNewProfile) {
-            // Iterar sobre los aspectos y crear un registro en la tabla FodaAnalisis solo si el perfil es nuevo
-            foreach ($aspectos as $aspecto) {
-                FodaAnalisis::create([
-                    'user_id' => Auth::id(),
-                    'perfil_id' => $profile->id,
-                    'aspecto_id' => $aspecto->id,
-                    'tipo' => 'Pendiente',
-                    'ocurrencia' => null,
-                    'impacto' => null
-                ]);
-            }
-        } else {
-            // Actualizar los registros FodaAnalisis si el perfil ya existe y ha sido modificado
-            foreach ($aspectos as $aspecto) {
-                $analysis = FodaAnalisis::where('perfil_id', $profileId)
-                    ->where('aspecto_id', $aspecto->id)
-                    ->first();
+        // Obtener los análisis existentes asociados al perfil
+        $analisisExistente = FodaAnalisis::where('perfil_id', $profileId)->pluck('aspecto_id');
 
-                if (!$analysis) {
-                    FodaAnalisis::create([
-                        'user_id' => Auth::id(),
-                        'perfil_id' => $profileId,
-                        'aspecto_id' => $aspecto->id,
-                        'tipo' => 'Pendiente',
-                        'ocurrencia' => null,
-                        'impacto' => null
-                    ]);
-                }
-            }
+        // Determinar los aspectos que deben eliminarse
+        $aspectosEliminar = $analisisExistente->diff($nuevosAspectos);
+
+        // Eliminar los análisis que ya no están presentes en el nuevo modelo
+        FodaAnalisis::where('perfil_id', $profileId)
+            ->whereIn('aspecto_id', $aspectosEliminar)
+            ->delete();
+
+        // Determinar los aspectos que deben agregarse
+        $aspectosAgregar = $nuevosAspectos->diff($analisisExistente);
+
+        // Crear nuevos análisis para los aspectos que no estaban presentes antes
+        foreach ($aspectosAgregar as $aspectoAgregar) {
+            FodaAnalisis::create([
+                'user_id' => Auth::id(),
+                'perfil_id' => $profileId,
+                'aspecto_id' => $aspectoAgregar,
+                'tipo' => 'Pendiente',
+                'ocurrencia' => null,
+                'impacto' => null
+            ]);
         }
 
         //Insert into pivot table 
@@ -205,7 +201,6 @@ class FodaPerfilController extends Controller
         $message = $profileId ? 'Perfil actualizado correctamente.' : 'Perfil creado correctamente.';
         return response()->json(['success' => $message]);
     }
-
 
     public function createGroupRootProfile(Request $request)
     {
@@ -258,39 +253,27 @@ class FodaPerfilController extends Controller
     {
         $fodaProfile = FodaPerfil::findOrFail($idProfile);
 
-        // Obtener los aspecto_id de los registros en FodaAnalisis
-        $aspectIds = FodaAnalisis::where('perfil_id', $idProfile)->pluck('aspecto_id');
-
-        // Obtener todos los aspectos relacionados directamente de la tabla FodaModelo
-        $aspects = FodaModelo::whereIn('id', $aspectIds)->get();
-
-        // Filtrar los aspectos por entorno (environment)
-        $environments = $aspects->pluck('environment')->unique();
-
-        // Construir el árbol para cada entorno
-        $tree = $environments->map(function ($environment) use ($aspects) {
-            return $this->buildTreeForEnvironment($environment, $aspects);
-        })->values();
-
         return view('admin.planificacion.fodas.perfiles.details', get_defined_vars());
     }
 
-    function buildTreeForEnvironment($environment, $aspects)
+    function buildTreeForEnvironment($environment, $aspects, $idProfile)
     {
         // Filtrar los aspectos por entorno
         $environmentAspects = $aspects->where('environment', $environment);
 
         // Obtener las categorías únicas para este entorno
         $categories = $environmentAspects->where('type', 'category')->unique('name');
-
+        // Inicializar un contador para los ids
+        $idCounter = 1;
         // Construir el árbol para cada categoría
-        $tree = $categories->map(function ($category) use ($environmentAspects, $environment) {
-            $children = $environmentAspects->where('parent_id', $category->id)->map(function ($aspect) use ($environment) {
+        $tree = $categories->map(function ($category) use ($environmentAspects, $environment, &$idCounter, $idProfile) {
+            $children = $environmentAspects->where('parent_id', $category->id)->map(function ($aspect) use ($environment, &$idCounter, $idProfile) {
+                // Generar un id único para cada nodo
 
                 // Obtener los valores de análisis para este aspecto
                 $buttonHTML = '<a href="#" class="editAspect" data-environment="' . $environment . '" data-id="' . $aspect->id . '">...</a>';
 
-                $analysis = FodaAnalisis::where('aspecto_id', $aspect->id)->first();
+                $analysis = FodaAnalisis::where('aspecto_id', $aspect->id)->where('perfil_id', $idProfile)->first();
 
                 // Aplicar lógica para determinar el valor de ocurrencia
                 switch ($analysis->ocurrencia) {
@@ -334,6 +317,25 @@ class FodaPerfilController extends Controller
                         $impacto = 'Pendiente de Análisis';
                 }
 
+                // Aplicar lógica para determinar el valor de impacto
+                switch ($analysis->tipo) {
+                    case "Fortaleza":
+                        $tipo = '<strong class="badge badge-success">Fortaleza</strong>';
+                        break;
+                    case "Debilidad":
+                        $tipo = '<strong class="badge badge-danger">Debilidad</strong>';
+                        break;
+                    case "Oportunidad":
+                        $tipo = '<strong class="badge badge-success">Oportunidad</strong>';
+                        break;
+                    case "Amenaza":
+                        $tipo = '<strong class="badge badge-danger">Amenaza</strong>';
+                        break;
+
+                    default:
+                        $tipo = 'Pendiente de Análisis';
+                }
+
                 // Calcular el total
                 $total = $analysis->ocurrencia * $analysis->impacto;
 
@@ -341,7 +343,7 @@ class FodaPerfilController extends Controller
                 if ($total == 0.0) {
                     $totalHtml = '<strong class="badge badge-primary">Pendiente</strong>';
                 } elseif ($total >= 0.18) {
-                    $totalHtml = '<strong class="badge badge-success">' . $total . '</strong>';
+                    $totalHtml = '<strong class="badge badge-success">Suficiente (' . $total . ')</strong>';
                 } else {
                     $totalHtml = '<strong class="badge badge-danger">Insuficiente (' . $total . ')</strong>';
                 }
@@ -351,21 +353,24 @@ class FodaPerfilController extends Controller
                     '<tr>' .
                     '<th>Impacto</th>' .
                     '<th>Ocurrencia</th>' .
+                    '<th>Tipo</th>' .
                     '<th>Ponderación</th>' .
                     '<th colspan=2>Acciones</th>' .
                     '</tr>' .
                     '<tr>' .
                     '<td>' . $impacto . ' (' . $analysis->impacto . ')</td>' .
                     '<td>' . $ocurrencia . ' (' . $analysis->ocurrencia . ')</td>' .
+                    '<td>' . $tipo . '</td>' .
                     '<td>' . $totalHtml . '</td>' .
                     '<td>' .
-                    '<a href="#" class="editAspect" data-environment="' . $environment . '" data-id="' . $analysis->id . '"><i class="fa fa-search btn btn-info btn-circle" aria-hidden="true"></i></a>' .
+                    '<a href="#" class="editAspect" data-node="' . $analysis->id . '" data-environment="' . $environment . '" data-id="' . $analysis->id . '"><i class="fa fa-search btn btn-info btn-circle" aria-hidden="true"></i></a>' .
                     '</td>' .
                     '</tr>' .
                     '</table>';
 
                 return [
                     'name' => '<sup class="badge badge-secondary">Aspecto</sup> ' . $aspect->name,
+                    'id' => $aspect->id,
                     'children' => [
                         [
                             'name' => $tableHTML,
@@ -377,6 +382,7 @@ class FodaPerfilController extends Controller
 
             return [
                 'name' => '<sup class="badge badge-secondary">Categoría</sup> ' . $category->name,
+                'id' => $category->id,
                 'children' => $children->values()->toArray()
             ];
         });
@@ -384,8 +390,30 @@ class FodaPerfilController extends Controller
         // Devolver el árbol para este entorno
         return [
             'name' => '<sup class="badge badge-secondary">Ambiente</sup>' . $environment,
+            'id' => $environment,
             'children' => $tree->values()->toArray()
         ];
+    }
+
+    public function getTree(Request $request, $idProfile)
+    {
+        $fodaProfile = FodaPerfil::findOrFail($idProfile);
+
+        // Obtener los aspecto_id de los registros en FodaAnalisis
+        $aspectIds = FodaAnalisis::where('perfil_id', $idProfile)->pluck('aspecto_id');
+
+        // Obtener todos los aspectos relacionados directamente de la tabla FodaModelo
+        $aspects = FodaModelo::whereIn('id', $aspectIds)->get();
+
+        // Filtrar los aspectos por entorno (environment)
+        $environments = $aspects->pluck('environment')->unique();
+
+        // Construir el árbol para cada entorno
+        $tree = $environments->map(function ($environment) use ($aspects, $idProfile) {
+            return $this->buildTreeForEnvironment($environment, $aspects, $idProfile);
+        })->values();
+
+        return response()->json($tree);
     }
 
     public function show($id)
