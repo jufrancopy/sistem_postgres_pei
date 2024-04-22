@@ -233,28 +233,23 @@ class TaskController extends Controller
         if ($request->ajax()) {
             $tasks = Task::with(['typeTasks'])->where('id', $id)->latest()->get();
 
-            $data = [];
-            foreach ($tasks as $task) {
-                foreach ($task->typeTasks as $typeTask) {
-                    if ($typeTask->typetaskable_type == "PEI") {
+            $task = Task::with(['typeTasks' => function ($query) {
+                $query->with('typetaskable'); // Carga los detalles de los tipos de tarea relacionados
+            }])->findOrFail($id);
 
-                        $data[] = [
-                            'task' => $typeTask->name,
-                            'status' => $typeTask->pivot->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
-                            'action' =>
-                            ' <a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-task-id="' . $id . '"><i class="fas fa-tasks"></i></a>' .
-                                ' <a href="' . route('pei-profiles.details', $typeTask->typetaskable_id) . '" class="btn btn-info btn-circle" data-task-id="' . $id . '"><i class="fas fa-tree"></i></a>',
-
-                        ];
-                    } else {
-                        $data[] = [
-                            'task' => $typeTask->name,
-                            'status' => $typeTask->pivot->status, // Supongo que todas las tareas relacionadas comparten el mismo estado
-                            'action' =>
-                            ' <a href="' . route('foda.show.details', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle routeId" data-task-id="' . $id . '"><i class="fas fa-tasks"></i></a>' .
-                                ' <a href="' . route('foda-analisis-matriz', $typeTask->typetaskable_id) . '" class="btn btn-warning btn-circle routeId" data-task-id="' . $id . '"><i class="fas fa-eye"></i></a>',
-                        ];
-                    }
+            foreach ($task->typeTasks as $typeTask) {
+                if($typeTask->typetaskable_type =="App\Admin\Planificacion\Pei\PeiProfile"){
+                    $data[] = [
+                        'task' => $typeTask->typetaskable->name ." (PEI)", // Accede al nombre del tipo de tarea relacionado
+                        'status' => $typeTask->status, // Accede al estado del tipo de tarea
+                        'action' => '<a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
+                    ];
+                }else if($typeTask->typetaskable_type =="App\Admin\Planificacion\Foda\FodaPerfil"){
+                    $data[] = [
+                        'task' => $typeTask->typetaskable->name." (FODA)", // Accede al nombre del tipo de tarea relacionado
+                        'status' => $typeTask->status, // Accede al estado del tipo de tarea
+                        'action' => '<a href="' . route('foda.show.details', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
+                    ];
                 }
             }
 

@@ -50,14 +50,6 @@ class FodaAnalisisController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    public function listadoPerfiles(Request $request)
-    {
-        $perfiles = FodaPerfil::orderBy('id', 'DESC')->paginate(10);
-
-        return view('admin.planificacion.fodas.analisis.perfiles', get_defined_vars())
-            ->with('i', ($request->input('page', 1) - 1) * 5);
-    }
-
     public function seleccionarAmbiente(Request $request, $id)
     {
         $perfil = FodaPerfil::find($id);
@@ -109,10 +101,7 @@ class FodaAnalisisController extends Controller
                 // Accede a las propiedades de cada miembro
                 $userName = $member->name;
                 $userEmail = $member->email;
-                // ...otros campos de usuario...
             }
-            // Realizar cualquier operación con los miembros
-            // ...
         }
 
         $matriz =    0.17;
@@ -172,19 +161,28 @@ class FodaAnalisisController extends Controller
 
         if ($request->ajax()) {
             $data = Group::where('parent_id', null)->latest()->get();
+            
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-
-                    $btn = ' <a href="' . route('foda-matriz-groups', $row->id) . '" class="btn btn-info btn-circle"><i class="fa fa-eye" aria-hidden="true"></i></a>';
-
-                    $btn .= ' <a href="' . route('foda-matriz-groups', $row->id) . '' . '/crossing' . '" class="btn btn-warning btn-circle"><i class="fa-solid fa-xmark"></i></a>';
-
+                    $showCrossingButton = FodaPerfil::where('group_id', $row->id)
+                        ->where('type', 'consolidado')
+                        ->exists();
+        
+                    // Mostrar el botón solo si se cumple la condición
+                    if ($showCrossingButton) {
+                        $btn = ' <a href="' . route('foda-matriz-groups', $row->id) . '" class="btn btn-info btn-circle"><i class="fa fa-eye" aria-hidden="true"></i></a>';
+                        $btn = ' <a href="' . route('foda-matriz-groups', $row->id) . '/crossing" class="btn btn-warning btn-circle"><i class="fa-solid fa-xmark"></i></a>';
+                    } else {
+                        $btn = ' <a href="' . route('foda-matriz-groups', $row->id) . '" class="btn btn-info btn-circle"><i class="fa fa-eye" aria-hidden="true"></i></a>';
+                    }
+        
                     return $btn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
         }
+        
         return view('admin.planificacion.fodas.groups.list_tasks');
     }
 

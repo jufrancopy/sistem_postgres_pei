@@ -29,7 +29,7 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Nombre</th>
-                                        <th>Contexto</th>
+                                        <th>Tipo</th>
                                         <th>Dependencia</th>
                                         <th>Modelo</th>
                                         {{-- <th>Categorías</th> --}}
@@ -106,16 +106,6 @@
                                                 'style' => 'width:100%',
                                             ]) !!}
                                         </div>
-
-                                        {{-- <div class="form-group">
-                                            {!! Form::label('categories', 'Asigne una o varias Categorias:') !!}
-                                            {!! Form::select('category_id[]', [], null, [
-                                                'class' => 'form-control',
-                                                'style' => 'width:100%',
-                                                'id' => 'categories',
-                                                'multiple',
-                                            ]) !!}
-                                        </div> --}}
 
                                         <div class="col-sm-offset-2 col-sm-10">
                                             <button type="button" class="btn btn-secondary"
@@ -205,8 +195,8 @@
                         data: 'name',
                         name: 'name'
                     }, {
-                        data: 'context',
-                        name: 'context'
+                        data: 'type',
+                        name: 'type'
                     }, {
                         data: 'dependency',
                         name: 'dependency'
@@ -214,23 +204,6 @@
                         data: 'model',
                         name: 'model'
                     },
-                    // {
-                    //     data: 'categories',
-                    //     name: 'categories',
-                    //     render: function(data, type, full, meta) {
-                    //         var categoriesArray = data.split(', ');
-
-                    //         var categoriesHtml = '';
-
-                    //         // Recorremos el arreglo de categorías y aplicamos la clase "badge" a cada una
-                    //         categoriesArray.forEach(function(category) {
-                    //             categoriesHtml += '<span class="badge badge-secondary">' +
-                    //                 category + '</span> ';
-                    //         });
-
-                    //         return categoriesHtml; // Devolvemos el HTML personalizado para la columna de categorías
-                    //     }
-                    // },
                     {
                         data: 'action',
                         name: 'action',
@@ -337,22 +310,6 @@
 
                 // Inicializar el selector de modelos
                 initializeSelect2($("#models"), 'Seleccione el Modelo', '{{ route('get-models') }}');
-
-                // // Cuando se cambia el modelo
-                // var selectCategories = $("#categories")
-                // selectCategories.empty().trigger('change')
-                // $('#models').on('change', function() {
-                //     var modelId = $(this).val();
-                //     var url = 'get-foda-categories/' + modelId;
-
-                //     // Reinicializar el selector de categorías
-                //     initializeSelect2($("#categories"), 'Seleccione las Categorías para Analizar',
-                //         url);
-                // });
-
-                // selectCategories.select2({
-                //     placeholder: "Seleccione los Factores"
-                // });
             });
 
             $('body').on('click', '.editProfile', function() {
@@ -378,20 +335,6 @@
                     var initialTypeValue = data.profile.type;
                     $typeSelect.val(initialTypeValue).trigger('change');
                     toggleElementsBasedOnType(initialTypeValue);
-
-                    // //Clearing selections
-                    // var selectCategories = $('#categories').select2()
-                    // selectCategories.val([]);
-                    // data.categoriesChecked.forEach(function(d) {
-                    //     var option = new Option(d.text, d.id, true, true);
-                    //     selectCategories.append(option).trigger('change');
-                    //     selectCategories.trigger({
-                    //         type: 'select2:select',
-                    //         params: {
-                    //             data: data
-                    //         }
-                    //     });
-                    // });
 
                     // Función para mostrar u ocultar elementos dependiendo del valor de 'type'
                     function toggleElementsBasedOnType(typeValue) {

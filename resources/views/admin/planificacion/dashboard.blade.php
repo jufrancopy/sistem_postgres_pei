@@ -104,10 +104,7 @@
                                 name: '<a href="{{ route('foda-perfiles.index') }}">Perfiles</a>'
                             },
                             {
-                                name: '<a href="{{ route('foda-listado-perfiles') }}">Cruce de Ambientes</a>'
-                            },
-                            {
-                                name: '<a href="{{ route('foda-list-groups') }}">Matríz</a>'
+                                name: '<a href="{{ route('foda-list-groups') }}">Matrices Grupales</a>'
                             },
                         ]
                     },
