@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Admin\Globales\Group;
+use App\Admin\Planificacion\Task\TasksHasTypeTasks;
+
 
 class Task extends Model
 {
@@ -24,18 +26,13 @@ class Task extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function typeTasks()
-    {
-        return $this->belongsToMany('App\Admin\Planificacion\Task\TypeTask', 'planificacion.tasks_has_type_tasks', 'task_id', 'type_task_id')->withPivot('status');
-    }
-
     public function group()
     {
         return $this->belongsTo(Group::class);
     }
 
-    public function taskable()
+    public function typeTasks()
     {
-        return $this->morphTo('taskable', 'taskable_id');
+        return $this->hasMany(TasksHasTypeTasks::class, 'task_id');
     }
 }

@@ -85,39 +85,57 @@ class TaskController extends Controller
     public function store(Request $request)
     {
         if ($request->ajax()) {
-            $request->validate(
-                [
-                    'group_id'              => 'required',
-                    'details'                => 'required',
-                ],
-                [
-                    'group_id.required'         => 'Campo nombre es requerido',
-                    'details.required'          => 'Describa brevemente la acitividad',
-                ]
-            );
-        };
+            $request->validate([
+                'group_id' => 'required',
+                'details' => 'required',
+                'typetaskable_type' => 'required|array', // Asegurar que typetaskable_type sea un arreglo
+                'status' => 'required', // Asegurar que el campo status esté presente
+            ], [
+                'group_id.required' => 'El campo grupo es requerido',
+                'details.required' => 'Describa brevemente la actividad',
+                'typetaskable_type.required' => 'El campo typetaskable_type es requerido',
+                'status.required' => 'El campo status es requerido',
+            ]);
+        }
 
-        $task = Task::updateOrCreate(
-            ['id' => $request->task_id],
-            [
-                'group_id' => $request->group_id,
-                'details' => $request->details,
-                'status' => $request->status,
-            ]
-        );
+        // Crear o actualizar la tarea
+        $taskData = [
+            'group_id' => $request->group_id,
+            'details' => $request->details,
+            'status' => $request->status,
+        ];
+        $task = Task::updateOrCreate(['id' => $request->task_id], $taskData);
 
+        // Asociar los analistas
         $analysts = $request->analyst_id;
         $task->analysts()->sync($analysts);
 
-        $tasks = $request->typetask_id;
-        $task->typeTasks()->sync($tasks);
 
+        // Asociar los tipos de tareas
+        $typetaskData = [];
+        foreach ($request->typetaskable_type as $jsonString) {
+            $decodedArray = json_decode($jsonString, true); // Decodificar el JSON en un array asociativo
+            foreach ($decodedArray as $item) {
+                $typetaskData[] = [
+                    'typetaskable_type' => $item['model'], // Acceder al modelo desde el arreglo de modelos
+                    'typetaskable_id' => $item['id'], // Acceder al ID desde el arreglo de IDs
+                    'status' => $request->status,
+                ];
+            }
+        }
+        $task->typeTasks()->createMany($typetaskData);
+
+        // Retornar una respuesta apropiada
         if ($task->wasRecentlyCreated) {
-            return response()->json(['success' => 'Tarea creado con éxito']);
+            return response()->json(['success' => 'Tarea creada con éxito']);
         } else {
             return response()->json(['success' => 'Tarea actualizada con éxito']);
         }
     }
+
+
+
+
 
     public function getTasks(Request $request)
     {
