@@ -21,7 +21,7 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Grupo</th>
+                                        <th>Evento</th>
                                         <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>

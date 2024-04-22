@@ -29,7 +29,7 @@ class FodaPerfilController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = FodaPerfil::latest()->get();
+            $data = FodaPerfil::where('type', '!=', 'consolidado')->latest()->get();
             // Determinar si hay elementos tipo grupo
             $groupType = FodaPerfil::where('type', 'grupal')->exists();
             return DataTables::of($data)
@@ -47,25 +47,24 @@ class FodaPerfilController extends Controller
                     return $profile->model->name;
                 })
 
-                // ->addColumn('categories', function (FodaPerfil $profile) {
-                //     $categoryNames = $profile->categories->pluck('name')->implode(', '); // Cambia 'nombre' al nombre del campo de categoría en tu modelo
-                //     return $categoryNames;
-                // })
-
                 ->addColumn('action', function ($row) use ($groupType) {
 
                     $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editProfile"><i class="far fa-edit"></i></a>';
 
-                    $btn = $btn . ' <a href="/foda-analisis-ambientes/' . $row->id . '" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-warning btn-circle"><i class="far fa-eye" aria-hidden="true"></i></a>';
-
                     $btn = $btn . ' <a href="/foda-profiles/' . $row->id . "/details" . '" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-info btn-circle"><i class="fa fa-search" aria-hidden="true"></i></a>';
+                    
+                    // Agregar el botón "Crear Grupo" solo si existe tipo grupo
+                    // if ($row->type === 'grupal') {
+                    //     $btn .= ' <a href="' . route('foda.add.group', $row->id) . '" class="btn btn-success btn-circle"><i class="fa fa-users" aria-hidden="true"></i></a>';
+                    // }
+
+                    if ($row->type === 'individual') {
+                        $btn .= ' <a href="' . route('foda-analisis-matriz', $row->id) . '" class="btn btn-warning btn-circle"><i class="fa-solid fa-xmark" aria-hidden="true"></i></a>';
+                    }
 
                     $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteProfile"><i class="fa fa-trash" aria-hidden="true"></i></a>';
-
-                    // Agregar el botón "Crear Grupo" solo si existe tipo grupo
-                    if ($row->type === 'grupal') {
-                        $btn .= ' <a href="' . route('foda.add.group', $row->id) . '" class="btn btn-success btn-circle"><i class="fa fa-users" aria-hidden="true"></i></a>';
-                    }
+                    
+                    
 
                     return $btn;
                 })
@@ -419,7 +418,7 @@ class FodaPerfilController extends Controller
     public function show($id)
     {
         $perfil = FodaPerfil::find($id);
-        $categorias = $perfil->categorias()->orderBy('nombre', 'ASC')->get();
+        // $categorias = $perfil->categorias()->orderBy('nombre', 'ASC')->get();
         $categoriasChecked = [];
 
         foreach ($perfil->categorias as $categoria) {
