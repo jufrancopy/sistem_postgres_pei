@@ -101,11 +101,12 @@ class TypeTaskController extends Controller
 
         if ($request->has('q')) {
             $search = $request->q;
-            $fodaData = FodaPerfil::select("id", "name", DB::raw("'FODA' as model"))
+
+            $fodaData = FodaPerfil::select("id", "name", DB::raw("'" . FodaPerfil::class . "' as model"))
                 ->where('name', 'LIKE', "%$search%")
                 ->get();
 
-            $peiData = PeiProfile::select("id", "name", DB::raw("'PEI' as model"))
+            $peiData = PeiProfile::select("id", "name", DB::raw("'" . PeiProfile::class . "' as model"))
                 ->where('name', 'LIKE', "%$search%")
                 ->get();
 

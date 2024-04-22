@@ -198,6 +198,7 @@
                         // Obtener el valor seleccionado
                         var selectedValue = e.params.data;
 
+
                         // Verificar si se ha seleccionado algún valor
                         if (selectedValue) {
                             // Obtener el valor de item.model de la cadena completa
