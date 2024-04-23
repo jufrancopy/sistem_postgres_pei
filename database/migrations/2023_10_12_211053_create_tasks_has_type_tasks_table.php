@@ -24,9 +24,6 @@ class CreateTasksHasTypeTasksTable extends Migration
             $table->uuid('typetaskable_id')->nullable();
             $table->string('typetaskable_type')->nullable();
 
-            $table->unsignedInteger('status')->default(0);
-
-
             $table->timestamps();
         });
     }
