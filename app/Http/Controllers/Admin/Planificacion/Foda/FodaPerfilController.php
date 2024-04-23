@@ -433,6 +433,8 @@ class FodaPerfilController extends Controller
 
         $rootGroup = $profile->group ? $profile->group->parent : null;
 
+        $rootDependency = $profile->dependency ? $profile->dependency->parent : null;
+
 
         $categoriesChecked = [];
 
@@ -440,7 +442,7 @@ class FodaPerfilController extends Controller
             $categoriesChecked[] = ['id' => $category->id, 'text' => $category->name];
         }
 
-        return response()->json(['profile' => $profile, 'categoriesChecked' => $categoriesChecked, 'rootGroup' => $rootGroup]);
+        return response()->json(['profile' => $profile, 'categoriesChecked' => $categoriesChecked, 'rootGroup' => $rootGroup, 'rootDependency'=>$rootDependency]);
     }
 
     public function destroy(Request $request, $id)

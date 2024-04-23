@@ -58,6 +58,12 @@ class OrganigramaController extends Controller
         return response()->json($data);
     }
 
+    public function getDependenciesRoot(){
+        $data = Organigrama::whereIsRoot()->get();
+
+        return response()->json($data);
+    }
+    
     public function getDependenciesFromRoot(Request $request, $idRoot)
     {
         $data = [];
