@@ -119,7 +119,6 @@ class TaskController extends Controller
                 $typetaskData[] = [
                     'typetaskable_type' => $item['model'], // Acceder al modelo desde el arreglo de modelos
                     'typetaskable_id' => $item['id'], // Acceder al ID desde el arreglo de IDs
-                    'status' => $request->status,
                 ];
             }
         }
