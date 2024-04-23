@@ -81,6 +81,15 @@
                                             ]) !!}
                                         </div>
 
+                                        <div class="form-group dependencies_roots" style="display: none;">
+                                            {{ Form::label('dependencies_roots', 'Elija Dependencia Raíz:') }}
+                                            {!! Form::select('dependencies_roots', [], null, [
+                                                'placeholder' => '',
+                                                'id' => 'dependencies_roots',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
+
                                         <div class="form-group groups" style="display: none;">
                                             {{ Form::label('groups', 'Grupo De Análisis:') }}
                                             {!! Form::select('group_id', [], null, [
@@ -266,6 +275,7 @@
                 $('.form-group.group_roots').hide();
                 $('.form-group.groups').hide();
                 $('.form-group.dependencies').show();
+                $('.form-group.dependencies_roots').show();
 
                 //Inicializamos Select2 en Type
                 var type = $('#type').select2({
@@ -277,14 +287,29 @@
                         $('.form-group.group_roots').show();
                         $('.form-group.dependencies').hide();
                         $('#group_roots').empty().trigger('change')
+                        $('.form-group.dependencies_roots').hide();
                         $('#groups').empty().trigger('change')
                         $('#models').empty().trigger('change')
                     } else {
                         $('.form-group.groups').hide();
                         $('.form-group.group_roots').hide();
+                        $('.form-group.dependencies_roots').show();
                         $('.form-group.dependencies').show();
                         $('#models').empty().trigger('change')
                     }
+                });
+
+                // Inicializar el selector de dependencia
+                initializeSelect2($("#dependencies_roots"), 'Seleccione la dependencia Raiz',
+                    '{{ route('globales.get-dependencies-root') }}');
+
+                // Cuando se cambia Dependencia raíz
+                $('#dependencies_roots').on('change', function() {
+                    var dependencyRootID = $(this).val();
+                    var url = 'admin/globales/get-dependencies/' + dependencyRootID;
+
+                    // Reinicializar el selector de grupos
+                    initializeSelect2($("#dependency"), 'Seleccione la Dependencia', url);
                 });
 
                 // Inicializar el selector de dependencia
@@ -324,6 +349,7 @@
                     $('#name').val(data.profile.name);
                     $('#context').val(data.profile.context);
                     $('#group_roots').select2();
+                    $('#dependencies_roots').select2();
                     $('#groups').select2();
                     $('#models').select2();
                     $('#categories').select2();
@@ -342,6 +368,7 @@
                             $('.form-group.groups').show();
                             $('.form-group.group_roots').show();
                             $('.form-group.dependencies').hide();
+                            $('.form-group.dependencies_roots').hide();
 
                             //Inicializamos Grupo Raiz con sus valores
                             initValueSelect2($('#group_roots'), data.rootGroup.id, data.rootGroup
@@ -395,6 +422,7 @@
                             $('.form-group.groups').hide();
                             $('.form-group.group_roots').hide();
                             $('.form-group.dependencies').show();
+                            $('.form-group.dependencies_roots').show();
 
                             //Inicializamos Selector Modelos
                             var models = $('#models')
@@ -406,6 +434,32 @@
                             //Inicializamos Selector Modelo con valor preseleccionado
                             initValueSelect2(models, data.profile.model_id, data.profile.model
                                 .name);
+
+                            // Inicializar el selector de dependencia Raíz
+                            initializeSelect2($("#dependencies_roots"),
+                                'Seleccione la dependencia Raiz',
+                                '{{ route('globales.get-dependencies-root') }}');
+
+                            // Cuando se cambia Dependencia raíz
+                            $('#dependencies_roots').on('change', function() {
+                                var dependencyRootID = $(this).val();
+                                var url = 'admin/globales/get-dependencies/' +
+                                    dependencyRootID;
+
+                                // Reinicializar el selector de grupos
+                                initializeSelect2($("#dependency"),
+                                    'Seleccione la Dependencia', url);
+                            });
+
+                            //Inicializamos Grupo Raiz con sus valores
+                            initValueSelect2($('#dependencies_roots'), data.rootDependency.id, data
+                                .rootDependency
+                                .dependency);
+
+                            //Inicializamos Grupos con sus valores 
+                            initValueSelect2($('#dependency'), data.profile.dependency.id, data
+                                .profile.dependency
+                                .dependency);
 
                             //Selector de Categorias con el Cambio de Modelo
                             models.on('change', function() {

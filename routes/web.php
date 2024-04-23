@@ -125,6 +125,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-dependencies', 'Admin\Globales\OrganigramaController@getDependencies')->name('get-dependencies');
         Route::get('get-dependencies/{idRoot}', 'Admin\Globales\OrganigramaController@getDependenciesFromRoot')->name('has-dependencies');
         Route::get('get-dependency/{idSelection}', 'Admin\Globales\OrganigramaController@getDependency')->name('get-dependency');
+        Route::get('get-dependencies-root', 'Admin\Globales\OrganigramaController@getDependenciesRoot')->name('get-dependencies-root');
 
         //Variables de Encuesta
         Route::resource('variables', 'Admin\Globales\Formulario\VariableController');
