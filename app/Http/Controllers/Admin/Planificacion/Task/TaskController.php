@@ -163,7 +163,7 @@ class TaskController extends Controller
         $typeTasksChecked = [];
 
         foreach ($task->typeTasks as $typeTask) {
-            $typeTasksChecked[] = ['id' => $typeTask->id, 'text' => $typeTask->name];
+            $typeTasksChecked[] = ['id' => $typeTask->typetaskable_id, 'text' => $typeTask->typetaskable_type];
         }
 
         $analystsChecked = [];
@@ -198,17 +198,19 @@ class TaskController extends Controller
             if ($tasks->isNotEmpty()) {
                 $typeTaskIds = [];
                 foreach ($tasks[0]->typeTasks as $typeTask) {
-                    if ($typeTask->typetaskable_type == 'FODA') {
+                    if ($typeTask->typetaskable_type == 'App\Admin\Planificacion\Foda\FodaPerfil') {
                         $typeTaskableId = $typeTask->typetaskable_id;
                         $idName = 'showMatrizFoda';
                         $routeName = 'foda-analisis-matriz';
-                    } elseif ($typeTask->typetaskable_type == 'PEI') {
+                        $label = 'FODA';
+                    } elseif ($typeTask->typetaskable_type == 'App\Admin\Planificacion\Pei\PeiProfile') {
                         $typeTaskableId = $typeTask->typetaskable_id;
                         $idName = 'showPeiDetailes';
                         $routeName = 'pei-profiles.show';
+                        $label = 'PEI';
                     }
 
-                    $typeTaskIds[] = '<a href="' . route($routeName, $typeTaskableId) . '" data-id="' . $typeTaskableId . '" id="' . $idName . '"><span class="badge badge-secondary">' . $typeTask->typetaskable_type . '</span></a>';
+                    $typeTaskIds[] = '<a href="' . route($routeName, $typeTaskableId) . '" data-id="' . $typeTaskableId . '" id="' . $idName . '"><span class="badge badge-secondary">' . $label . '</span></a>';
                 }
 
                 if (!empty($typeTaskIds)) {
@@ -227,6 +229,7 @@ class TaskController extends Controller
         return response()->json($result);
     }
 
+
     public function show(Request $request, $id)
     {
         if ($request->ajax()) {
@@ -237,15 +240,15 @@ class TaskController extends Controller
             }])->findOrFail($id);
 
             foreach ($task->typeTasks as $typeTask) {
-                if($typeTask->typetaskable_type =="App\Admin\Planificacion\Pei\PeiProfile"){
+                if ($typeTask->typetaskable_type == "App\Admin\Planificacion\Pei\PeiProfile") {
                     $data[] = [
-                        'task' => $typeTask->typetaskable->name ." (PEI)", // Accede al nombre del tipo de tarea relacionado
+                        'task' => $typeTask->typetaskable->name . " (PEI)", // Accede al nombre del tipo de tarea relacionado
                         'status' => $typeTask->status, // Accede al estado del tipo de tarea
                         'action' => '<a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
                     ];
-                }else if($typeTask->typetaskable_type =="App\Admin\Planificacion\Foda\FodaPerfil"){
+                } else if ($typeTask->typetaskable_type == "App\Admin\Planificacion\Foda\FodaPerfil") {
                     $data[] = [
-                        'task' => $typeTask->typetaskable->name." (FODA)", // Accede al nombre del tipo de tarea relacionado
+                        'task' => $typeTask->typetaskable->name . " (FODA)", // Accede al nombre del tipo de tarea relacionado
                         'status' => $typeTask->status, // Accede al estado del tipo de tarea
                         'action' => '<a href="' . route('foda.show.details', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
                     ];
