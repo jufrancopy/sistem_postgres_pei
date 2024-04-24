@@ -113,7 +113,6 @@ class TypeTaskController extends Controller
             $data = $fodaData->concat($peiData);
         }
 
-
         return response()->json($data);
     }
 
