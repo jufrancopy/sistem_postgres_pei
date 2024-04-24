@@ -83,6 +83,7 @@
                                         <div class="form-group">
                                             {{ Form::label('analysts', 'Asignar Analistas:') }}
                                             {!! Form::select('analyst_id[]', [], null, [
+                                                'placeholder' => '',
                                                 'id' => 'analysts',
                                                 'style' => 'width:100%',
                                                 'multiple',
@@ -254,39 +255,13 @@
                 detailsEditor.setData('');
 
                 //Type Tasks
-                // var url = '{{ route('get-type-tasks') }}';
-                // var selectTypeTasks = $('#typetasks').select2();
-                // selectTypeTasks.empty();
-
-                // selectTypeTasks.select2({
-                //     allowClear: true,
-                //     ajax: {
-                //         url: url,
-                //         dataType: 'json',
-                //         delay: 250,
-                //         processResults: function(data) {
-                //             return {
-                //                 results: $.map(data, function(item) {
-                //                     return {
-                //                         text: item.name,
-                //                         id: item.id
-                //                     };
-                //                 })
-                //             };
-                //         },
-                //         cache: true
-                //     }
-                // });
-
-                //Type Tasks
                 var url = '{{ route('get-tasks') }}';
-                $("#typetasks").val([]).change();
-                $("#typetasks").trigger("change");
+                $('#typetasks').empty().trigger('change');
 
                 var selectedModels = []; // Arreglo para almacenar los modelos seleccionados
 
                 $('#typetasks').select2({
-                    allowClear: true,
+                    allowClear: false,
                     ajax: {
                         url: url,
                         dataType: 'json',
@@ -294,26 +269,36 @@
                         processResults: function(data) {
                             return {
                                 results: $.map(data, function(item) {
+                                    // Lógica para obtener la abreviatura del modelo
+                                    var abbreviation;
+                                    if (item.model ===
+                                        'App\\Admin\\Planificacion\\Foda\\FodaPerfil') {
+                                        abbreviation = 'FODA';
+                                    } else if (item.model ===
+                                        'App\\Admin\\Planificacion\\Pei\\PeiProfile') {
+                                        abbreviation = 'PEI';
+                                    } else {
+                                        // Si hay otros modelos, se pueden agregar más condiciones aquí
+                                        abbreviation = item.model;
+                                    }
+
                                     return {
-                                        text: item.name + ' (' + item.model + ')',
+                                        text: item.name + ' (' + abbreviation + ')',
                                         id: item.id,
-                                        model: item
-                                            .model // Agregar el modelo al objeto de resultado
+                                        model: item.model
                                     };
                                 })
                             };
                         },
                         cache: true
                     }
+
                 }).on('select2:select', function(e) {
                     var selectedModel = e.params.data.model; // Obtener el modelo seleccionado
                     selectedModels.push(
                         selectedModel); // Agregar el modelo al arreglo de modelos seleccionados
 
                 });
-
-                // Arreglo para almacenar los modelos seleccionados junto con sus IDs de typetasks
-                var selectedModels = [];
 
                 //Agregar un oyente de eventos al selector
                 $('#typetasks').on('select2:select', function(e) {
@@ -327,26 +312,12 @@
                     selectedValues.forEach(function(value) {
                         var typetaskId = value.id;
                         var modelName = value.text.match(/\(([^)]+)\)/)[1];
-                        var modelPath = value
-                            .model; // Obtener la ruta completa del modelo directamente desde el objeto value
+                        console.log(modelName)
+                        var modelPath = value.model;
                         selectedModels.push({
                             id: typetaskId,
-                            model: modelPath // Utilizar la ruta completa del modelo
+                            model: modelPath
                         });
-                    });
-
-                    // Actualizar el valor del campo oculto "typetaskable_type[]"
-                    $('#model').val(JSON.stringify(selectedModels));
-                });
-
-                // Agregar un oyente de eventos cuando se deseleccione un elemento
-                $('#typetasks').on('select2:unselect', function(e) {
-                    // Obtener el ID del elemento deseleccionado
-                    var unselectedId = e.params.data.id;
-
-                    // Eliminar el elemento correspondiente del arreglo selectedModels
-                    selectedModels = selectedModels.filter(function(item) {
-                        return item.id !== unselectedId;
                     });
 
                     // Actualizar el valor del campo oculto "typetaskable_type[]"
@@ -358,7 +329,6 @@
                 initializeSelect2(groupRoots, 'Seleccione Grupo Raíz de trabajo',
                     '{{ route('globales.get-root-groups') }}');
 
-
                 // Cuando se cambia el grupo raíz
                 groupRoots.on('change', function() {
                     var groupRootID = $(this).val();
@@ -369,13 +339,18 @@
                     initializeSelect2(groupSelect, 'Seleccione el Grupo', url);
                 });
 
-                var groupSelect = $("#groups");
+                var groupSelect = $("#groups").select2({
+                    placeholder: 'Seleccione el Grupo'
+                });
                 groupSelect.empty();
 
                 //Analysts
-                var url = '{{ route('globales.get-users') }}';
+                $("#analysts").select2({
+                    placeholder: 'Seleccione Analista'
+                })
                 $("#analysts").val([]).change();
                 $("#analysts").trigger("change");
+                var url = '{{ route('globales.get-users') }}';
 
                 $('#analysts').select2({
                     allowClear: true,
@@ -405,39 +380,90 @@
                     //Details
                     detailsEditor.setData(data.task.details);
 
+                    function updateSelectedModels() {
+                        selectedModels = [];
+                        var selectedValues = $('#typetasks').select2('data');
+                        selectedValues.forEach(function(value) {
+                            var typetaskId = value.id;
+                            var modelName = value.text.match(/\(([^)]+)\)/)[1];
+                            console.log(modelName);
+                            var modelPath = value.model;
+                            selectedModels.push({
+                                id: typetaskId,
+                                model: modelPath
+                            });
+                        });
+                        $('#model').val(JSON.stringify(selectedModels));
+                    }
+
                     //Clearing selections
                     var selectTypeTasks = $('#typetasks').select2();
-                    selectTypeTasks.empty();
+                    $('#typetasks').empty().trigger('change');
+
+                    // Agregar nuevas opciones
                     data.typeTasksChecked.forEach(function(d) {
                         var option = new Option(d.text, d.id, true, true);
-                        selectTypeTasks.append(option).trigger('change');
-                        selectTypeTasks.trigger({
-                            type: 'select2:select',
-                            params: {
-                                data: data
-                            }
-                        });
+                        $('#typetasks').append(option);
                     });
 
-                    var url = '{{ route('get-type-tasks') }}';
+                    //Type Tasks
+                    var url = '{{ route('get-tasks') }}';
+
+                    // Inicializar Select2 con las nuevas opciones
                     $('#typetasks').select2({
-                        allowClear: true,
+                        allowClear: false,
                         ajax: {
-                            url: url,
+                            url: '{{ route('get-tasks') }}',
                             dataType: 'json',
                             delay: 250,
                             processResults: function(data) {
                                 return {
                                     results: $.map(data, function(item) {
+                                        var abbreviation;
+                                        if (item.model ===
+                                            'App\\Admin\\Planificacion\\Foda\\FodaPerfil'
+                                        ) {
+                                            abbreviation = 'FODA';
+                                        } else if (item.model ===
+                                            'App\\Admin\\Planificacion\\Pei\\PeiProfile'
+                                        ) {
+                                            abbreviation = 'PEI';
+                                        } else {
+                                            abbreviation = item.model;
+                                        }
                                         return {
-                                            text: item.name,
-                                            id: item.id
+                                            text: item.name + ' (' +
+                                                abbreviation + ')',
+                                            id: item.id,
+                                            model: item.model
                                         };
                                     })
                                 };
                             },
                             cache: true
                         }
+                    }).on('select2:select', function(e) {
+                        // Limpiar el arreglo selectedModels
+                        selectedModels = [];
+                        var selectedModel = e.params.data.model;
+
+                        // Obtener los valores seleccionados
+                        var selectedValues = $('#typetasks').select2('data');
+
+                        // Recorrer los valores seleccionados y agregarlos al arreglo selectedModels
+                        selectedValues.forEach(function(value) {
+                            var typetaskId = value.id;
+                            var modelName = value.text.match(/\(([^)]+)\)/)[1];
+                            console.log(modelName)
+                            var modelPath = value.model;
+                            selectedModels.push({
+                                id: typetaskId,
+                                model: modelPath
+                            });
+                        });
+
+                        // Actualizar el valor del campo oculto "typetaskable_type[]"
+                        $('#model').val(JSON.stringify(selectedModels));
                     });
 
                     // RootGroup

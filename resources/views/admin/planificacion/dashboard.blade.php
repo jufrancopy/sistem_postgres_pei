@@ -81,10 +81,6 @@
                             },
 
                             {
-                                name: '<a href="{{ route('tasks-type.index') }}">Tipos de Tarea</a>'
-                            },
-
-                            {
                                 name: '<a href="{{ route('tasks-list-tree') }}">Árbol de Tareas</a>'
                             },
                         ]
