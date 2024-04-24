@@ -29,6 +29,7 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
+                                        <th>Tarea</th>
                                         <th>Grupo</th>
                                         <th>Analista</th>
                                         {{-- <th>IDTAREA</th> --}}
@@ -182,7 +183,24 @@
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex'
-                    }, {
+                    },
+                    {
+                        data: 'tasks',
+                        name: 'tasks',
+                        render: function(data, type, full, meta) {
+                            var tasksArray = data.split(', ');
+
+                            var tasksHtml = '';
+
+                            tasksArray.forEach(function(task) {
+                                tasksHtml += '<span class="badge badge-secondary">' +
+                                    task + '</span> ';
+                            });
+
+                            return tasksHtml;
+                        }
+                    },
+                    {
                         data: 'group',
                         name: 'group'
                     }, {
@@ -193,9 +211,9 @@
 
                             var analystsHtml = '';
 
-                            analystsArray.forEach(function(task) {
+                            analystsArray.forEach(function(analyst) {
                                 analystsHtml += '<span class="badge badge-secondary">' +
-                                    task + '</span> ';
+                                    analyst + '</span> ';
                             });
 
                             return analystsHtml;
@@ -374,27 +392,31 @@
                 });
             });
 
+
+            // Función para actualizar el campo #model
+            function updateModelField() {
+                selectedModels = [];
+                var selectedValues = $('#typetasks').select2('data');
+                selectedValues.forEach(function(value) {
+                    var typetaskId = value.id;
+                    var modelName = value.text.match(/\(([^)]+)\)/)[1];
+                    console.log(modelName);
+                    var modelPath = value.model;
+                    selectedModels.push({
+                        id: typetaskId,
+                        model: modelPath
+                    });
+                });
+                $('#model').val(JSON.stringify(selectedModels));
+            }
+
             $('body').on('click', '.editTask', function() {
                 var taskID = $(this).data('id');
                 $.get("{{ route('tasks.index') }}" + '/' + taskID + '/edit', function(data) {
                     //Details
                     detailsEditor.setData(data.task.details);
 
-                    function updateSelectedModels() {
-                        selectedModels = [];
-                        var selectedValues = $('#typetasks').select2('data');
-                        selectedValues.forEach(function(value) {
-                            var typetaskId = value.id;
-                            var modelName = value.text.match(/\(([^)]+)\)/)[1];
-                            console.log(modelName);
-                            var modelPath = value.model;
-                            selectedModels.push({
-                                id: typetaskId,
-                                model: modelPath
-                            });
-                        });
-                        $('#model').val(JSON.stringify(selectedModels));
-                    }
+
 
                     //Clearing selections
                     var selectTypeTasks = $('#typetasks').select2();
