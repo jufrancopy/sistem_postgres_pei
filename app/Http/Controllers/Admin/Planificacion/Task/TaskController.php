@@ -69,10 +69,28 @@ class TaskController extends Controller
                 })
 
                 ->addColumn('tasks', function (Task $task) {
-                    // $taskNames = $task->typeTasks->pluck('name')->implode(', ');
-                    $taskNames = $task->typeTasks->pluck('typetaskable_id')->implode(', ');
-                    return $taskNames;
+                    $taskNames = $task->typeTasks->pluck('typetaskable_type');
+                
+                    // Array para almacenar los nombres modificados de los tipos de tarea
+                    $modifiedTaskNames = [];
+                
+                    foreach ($taskNames as $taskName) {
+                        if ($taskName == 'App\Admin\Planificacion\Pei\PeiProfile') {
+                            $modifiedTaskNames[] = "PEI";
+                        } elseif ($taskName == 'App\Admin\Planificacion\Foda\FodaPerfil') {
+                            $modifiedTaskNames[] = "FODA";
+                        } else {
+                            // Si no coincide con ninguna condición, mantener el nombre original
+                            $modifiedTaskNames[] = $taskName;
+                        }
+                    }
+                
+                    // Convertir el array de nombres modificados a una cadena separada por comas
+                    $formattedTaskNames = implode(', ', $modifiedTaskNames);
+                
+                    return $formattedTaskNames;
                 })
+                
 
                 ->rawColumns(['action'])
                 ->make(true);
@@ -131,10 +149,6 @@ class TaskController extends Controller
             return response()->json(['success' => 'Tarea actualizada con éxito']);
         }
     }
-
-
-
-
 
     public function getTasks(Request $request)
     {
@@ -228,7 +242,6 @@ class TaskController extends Controller
         }
         return response()->json($result);
     }
-
 
     public function show(Request $request, $id)
     {
