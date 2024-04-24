@@ -274,6 +274,7 @@
 
                 //Type Tasks
                 var url = '{{ route('get-tasks') }}';
+
                 $('#typetasks').empty().trigger('change');
 
                 var selectedModels = []; // Arreglo para almacenar los modelos seleccionados
@@ -315,7 +316,6 @@
                     var selectedModel = e.params.data.model; // Obtener el modelo seleccionado
                     selectedModels.push(
                         selectedModel); // Agregar el modelo al arreglo de modelos seleccionados
-
                 });
 
                 //Agregar un oyente de eventos al selector
@@ -362,8 +362,6 @@
                 groupRoots.empty();
                 initializeSelect2(groupRoots, 'Seleccione Grupo Raíz de trabajo',
                     '{{ route('globales.get-root-groups') }}');
-
-
 
                 // Cuando se cambia el grupo raíz
                 groupRoots.on('change', function() {
@@ -413,53 +411,34 @@
             $('body').on('click', '.editTask', function() {
                 var taskID = $(this).data('id');
                 $.get("{{ route('tasks.index') }}" + '/' + taskID + '/edit', function(data) {
+
                     //Details
                     detailsEditor.setData(data.task.details);
 
-            // Función para actualizar el campo #model
-            function updateModelField() {
-                selectedModels = [];
-                var selectedValues = $('#typetasks').select2('data');
-                selectedValues.forEach(function(value) {
-                    var typetaskId = value.id;
-                    var modelName = value.text.match(/\(([^)]+)\)/)[1];
-                    console.log(modelName);
-                    var modelPath = value.model;
-                    selectedModels.push({
-                        id: typetaskId,
-                        model: modelPath
-                    });
-                });
-                $('#model').val(JSON.stringify(selectedModels));
-            }
+                    // Limpiar selecciones previas
+                    var selectTypeTasks = $('#typetasks');
+                    selectTypeTasks.val(null).trigger('change');
 
-            $('body').on('click', '.editTask', function() {
-                var taskID = $(this).data('id');
-                $.get("{{ route('tasks.index') }}" + '/' + taskID + '/edit', function(data) {
-                    //Details
-                    detailsEditor.setData(data.task.details);
-
-
-
-                    //Clearing selections
-                    var selectTypeTasks = $('#typetasks').select2();
-                    selectTypeTasks.empty().trigger('change');
-
+                    // Obtener los valores preseleccionados y agregarlos al selector
                     data.typeTasksChecked.forEach(function(d) {
                         var option = new Option(d.text, d.id, true, true);
                         selectTypeTasks.append(option).trigger('change');
+                    });
+
+                    // Disparar el evento de selección para los valores preseleccionados
+                    console.log(data.typeTasksChecked)
+                    data.typeTasksChecked.forEach(function(d) {
                         selectTypeTasks.trigger({
                             type: 'select2:select',
                             params: {
-                                data: data
+                                data: d
                             }
                         });
                     });
 
-                    //Type Tasks
+                    //Aqui se busca las tareas si queire cambiar
                     var url = '{{ route('get-tasks') }}';
-                    var selectedModels = []; // Arreglo para almacenar los modelos seleccionados
-
+                    var selectedModels = [];
                     $('#typetasks').select2({
                         allowClear: false,
                         ajax: {
@@ -495,13 +474,39 @@
                             },
                             cache: true
                         }
+
                     }).on('select2:select', function(e) {
-                        var selectedModel = e.params.data
-                            .model; // Obtener el modelo seleccionado
+                        var selectedModel = e.params.data.model;
                         selectedModels.push(
                             selectedModel
-                        ); // Agregar el modelo al arreglo de modelos seleccionados
+                        );
                     });
+
+
+                    // //Agregar un oyente de eventos al selector
+                    // $('#typetasks').on('select2:select', function(e) {
+
+                    //     // Limpiar el arreglo selectedModels
+                    //     selectedModels = [];
+
+                    //     // Obtener los valores seleccionados
+                    //     var selectedValues = $('#typetasks').select2('data');
+
+                    //     // Recorrer los valores seleccionados y agregarlos al arreglo selectedModels
+                    //     selectedValues.forEach(function(value) {
+                    //         var typetaskId = value.id;
+                    //         var modelName = value.text.match(/\(([^)]+)\)/)[1];
+                    //         console.log(modelName)
+                    //         var modelPath = value.model;
+                    //         selectedModels.push({
+                    //             id: typetaskId,
+                    //             model: modelPath
+                    //         });
+                    //     });
+
+                    //     // Actualizar el valor del campo oculto "typetaskable_type[]"
+                    //     $('#model').val(JSON.stringify(selectedModels));
+                    // });
 
                     // RootGroup
                     var groupRoots = $('#group_roots').select2();
