@@ -302,6 +302,7 @@
 
                 //Agregar un oyente de eventos al selector
                 $('#typetasks').on('select2:select', function(e) {
+
                     // Limpiar el arreglo selectedModels
                     selectedModels = [];
 
@@ -324,10 +325,27 @@
                     $('#model').val(JSON.stringify(selectedModels));
                 });
 
+                // Agregar un oyente de eventos cuando se deseleccione un elemento
+                $('#typetasks').on('select2:unselect', function(e) {
+
+                    // Obtener el ID del elemento deseleccionado
+                    var unselectedId = e.params.data.id;
+
+                    // Eliminar el elemento correspondiente del arreglo selectedModels
+                    selectedModels = selectedModels.filter(function(item) {
+                        return item.id !== unselectedId;
+                    });
+
+                    // Actualizar el valor del campo oculto "typetaskable_type[]"
+                    $('#model').val(JSON.stringify(selectedModels));
+                });
+
                 var groupRoots = $('#group_roots').select2();
                 groupRoots.empty();
                 initializeSelect2(groupRoots, 'Seleccione Grupo Raíz de trabajo',
                     '{{ route('globales.get-root-groups') }}');
+
+
 
                 // Cuando se cambia el grupo raíz
                 groupRoots.on('change', function() {
@@ -380,45 +398,35 @@
                     //Details
                     detailsEditor.setData(data.task.details);
 
-                    function updateSelectedModels() {
-                        selectedModels = [];
-                        var selectedValues = $('#typetasks').select2('data');
-                        selectedValues.forEach(function(value) {
-                            var typetaskId = value.id;
-                            var modelName = value.text.match(/\(([^)]+)\)/)[1];
-                            console.log(modelName);
-                            var modelPath = value.model;
-                            selectedModels.push({
-                                id: typetaskId,
-                                model: modelPath
-                            });
-                        });
-                        $('#model').val(JSON.stringify(selectedModels));
-                    }
-
                     //Clearing selections
                     var selectTypeTasks = $('#typetasks').select2();
-                    $('#typetasks').empty().trigger('change');
+                    selectTypeTasks.empty().trigger('change');
 
-                    // Agregar nuevas opciones
                     data.typeTasksChecked.forEach(function(d) {
                         var option = new Option(d.text, d.id, true, true);
-                        $('#typetasks').append(option);
+                        selectTypeTasks.append(option).trigger('change');
+                        selectTypeTasks.trigger({
+                            type: 'select2:select',
+                            params: {
+                                data: data
+                            }
+                        });
                     });
 
                     //Type Tasks
                     var url = '{{ route('get-tasks') }}';
+                    var selectedModels = []; // Arreglo para almacenar los modelos seleccionados
 
-                    // Inicializar Select2 con las nuevas opciones
                     $('#typetasks').select2({
                         allowClear: false,
                         ajax: {
-                            url: '{{ route('get-tasks') }}',
+                            url: url,
                             dataType: 'json',
                             delay: 250,
                             processResults: function(data) {
                                 return {
                                     results: $.map(data, function(item) {
+                                        // Lógica para obtener la abreviatura del modelo
                                         var abbreviation;
                                         if (item.model ===
                                             'App\\Admin\\Planificacion\\Foda\\FodaPerfil'
@@ -429,8 +437,10 @@
                                         ) {
                                             abbreviation = 'PEI';
                                         } else {
+                                            // Si hay otros modelos, se pueden agregar más condiciones aquí
                                             abbreviation = item.model;
                                         }
+
                                         return {
                                             text: item.name + ' (' +
                                                 abbreviation + ')',
@@ -443,27 +453,11 @@
                             cache: true
                         }
                     }).on('select2:select', function(e) {
-                        // Limpiar el arreglo selectedModels
-                        selectedModels = [];
-                        var selectedModel = e.params.data.model;
-
-                        // Obtener los valores seleccionados
-                        var selectedValues = $('#typetasks').select2('data');
-
-                        // Recorrer los valores seleccionados y agregarlos al arreglo selectedModels
-                        selectedValues.forEach(function(value) {
-                            var typetaskId = value.id;
-                            var modelName = value.text.match(/\(([^)]+)\)/)[1];
-                            console.log(modelName)
-                            var modelPath = value.model;
-                            selectedModels.push({
-                                id: typetaskId,
-                                model: modelPath
-                            });
-                        });
-
-                        // Actualizar el valor del campo oculto "typetaskable_type[]"
-                        $('#model').val(JSON.stringify(selectedModels));
+                        var selectedModel = e.params.data
+                            .model; // Obtener el modelo seleccionado
+                        selectedModels.push(
+                            selectedModel
+                        ); // Agregar el modelo al arreglo de modelos seleccionados
                     });
 
                     // RootGroup
