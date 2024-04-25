@@ -80,6 +80,3 @@ ALTER TABLE public.model_has_roles ENABLE TRIGGER ALL;
 ALTER TABLE public.organigramas ENABLE TRIGGER ALL;
 ALTER TABLE public.role_has_permissions ENABLE TRIGGER ALL;
 
-
-Volcamos el Backups
-pg_restore -U postgres -d planificacion -Fc -a -v backups/backup_23_abr.sql
