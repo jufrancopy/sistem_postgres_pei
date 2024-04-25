@@ -266,7 +266,7 @@
 
             $('#createNewTasks').click(function() {
                 $('#saveBtn').val("create-user");
-                $('#group_id').val('');
+                $('#task_id').val('');
                 $('#taskForm').trigger("reset");
                 $('#modalHeading').html("Nueva Tarea");
                 $('#ajaxModal').modal('show');
