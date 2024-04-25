@@ -80,3 +80,21 @@ ALTER TABLE public.model_has_roles ENABLE TRIGGER ALL;
 ALTER TABLE public.organigramas ENABLE TRIGGER ALL;
 ALTER TABLE public.role_has_permissions ENABLE TRIGGER ALL;
 
+
+------------------------
+Errores
+
+autincremt
+CREATE SEQUENCE tasks_has_type_tasks_id_seq START WITH 1;
+ALTER TABLE tasks_has_type_tasks ALTER COLUMN id SET DEFAULT nextval('tasks_has_type_tasks_id_seq');
+
+SELECT nextval('tasks_has_type_tasks_id_seq');
+
+ALTER SEQUENCE tasks_has_type_tasks_id_seq RESTART WITH 80;
+ALTER SEQUENCE tasks_has_type_tasks_id_seq RESTART WITH 73;
+
+
+SELECT currval('tasks_has_type_tasks_id_seq');
+
+
+
