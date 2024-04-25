@@ -106,8 +106,8 @@ class TaskController extends Controller
             $request->validate([
                 'group_id' => 'required',
                 'details' => 'required',
-                'typetaskable_type' => 'required|array', // Asegurar que typetaskable_type sea un arreglo
-                'status' => 'required', // Asegurar que el campo status esté presente
+                'typetaskable_type' => 'required|array',
+                'status' => 'required',
             ], [
                 'group_id.required' => 'El campo grupo es requerido',
                 'details.required' => 'Describa brevemente la actividad',
@@ -115,62 +115,53 @@ class TaskController extends Controller
                 'status.required' => 'El campo status es requerido',
             ]);
         }
-
-        // Crear o actualizar la tarea
+    
         $taskData = [
             'group_id' => $request->group_id,
             'details' => $request->details,
             'status' => $request->status,
         ];
         $task = Task::updateOrCreate(['id' => $request->task_id], $taskData);
-
+    
         // Asociar los analistas
         $analysts = $request->analyst_id;
         $task->analysts()->sync($analysts);
-
-
+    
         // Asociar los tipos de tareas
         $typetaskData = [];
         foreach ($request->typetaskable_type as $jsonString) {
-            $decodedArray = json_decode($jsonString, true); // Decodificar el JSON en un array asociativo
+            $decodedArray = json_decode($jsonString, true);
             foreach ($decodedArray as $item) {
                 $typetaskData[] = [
-                    'typetaskable_type' => $item['model'], // Acceder al modelo desde el arreglo de modelos
-                    'typetaskable_id' => $item['id'], // Acceder al ID desde el arreglo de IDs
+                    'typetaskable_type' => $item['model'],
+                    'typetaskable_id' => $item['id'],
                 ];
             }
         }
-
-        // Obtener los IDs de los typetaskable que se deben mantener
-        $typetaskableIdsToKeep = collect($typetaskData)->pluck('typetaskable_id');
-
-        // Eliminar los registros que no están en la lista de IDs a mantener
-        $task->typeTasks()->whereNotIn('typetaskable_id', $typetaskableIdsToKeep)->delete();
-
-        // Crear o actualizar los registros según sea necesario
+    
+        // Eliminar los registros obsoletos
+        $task->typeTasks()->whereNotIn('typetaskable_id', collect($typetaskData)->pluck('typetaskable_id'))->delete();
+    
         foreach ($typetaskData as $data) {
-            // Verificar si ya existe un registro con typetaskable_id igual al que estamos tratando de crear
             $existingTypeTask = $task->typeTasks()->where('typetaskable_id', $data['typetaskable_id'])->first();
-
+        
             if ($existingTypeTask) {
-                // Si existe, actualiza el registro existente
+                // Actualizar el registro existente en lugar de insertar uno nuevo
                 $existingTypeTask->update($data);
             } else {
-                // Si no existe, crea un nuevo registro
+                // Si no existe, crear un nuevo registro
                 $task->typeTasks()->create($data);
             }
         }
-
-
-
-        // Retornar una respuesta apropiada
+    
         if ($task->wasRecentlyCreated) {
             return response()->json(['success' => 'Tarea creada con éxito']);
         } else {
             return response()->json(['success' => 'Tarea actualizada con éxito']);
         }
     }
-
+    
+    
     public function getTask(Request $request)
     {
         $data = [];
