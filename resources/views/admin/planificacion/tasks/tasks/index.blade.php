@@ -50,8 +50,8 @@
                                 </div>
                                 <div class="modal-body">
                                     <form id="taskForm" name="taskForm" class="form-horizontal">
-                                        {{ Form::hidden('task_id', null, ['id' => 'task_id']) }}
-                                        {{ Form::hidden('status', 0, ['id' => 'status']) }}
+                                        {{ Form::text('task_id', null, ['id' => 'task_id']) }}
+                                        {{ Form::text('status', 0, ['id' => 'status']) }}
                                         {{ Form::text('typetaskable_type[]', null, ['class' => 'form-control', 'id' => 'model']) }}
 
                                         <div class="form-group">
@@ -411,29 +411,24 @@
             $('body').on('click', '.editTask', function() {
                 var taskID = $(this).data('id');
                 $.get("{{ route('tasks.index') }}" + '/' + taskID + '/edit', function(data) {
+                    $('#modalHeading').html("Editar Tarea");
+                    $('#saveBtn').val("edit-tasks");
+                    $('#ajaxModal').modal('show');
+                    $('#taskForm').trigger("reset");
+                    $('#task_id').val(data.task.id);
+                    $('#model').empty().trigger('change')
 
                     //Details
                     detailsEditor.setData(data.task.details);
 
                     // Limpiar selecciones previas
-                    var selectTypeTasks = $('#typetasks');
-                    selectTypeTasks.val(null).trigger('change');
+                    var selectTypeTasks = $('#typetasks').select2();
+                    selectTypeTasks.empty().trigger('change');
 
                     // Obtener los valores preseleccionados y agregarlos al selector
                     data.typeTasksChecked.forEach(function(d) {
                         var option = new Option(d.text, d.id, true, true);
                         selectTypeTasks.append(option).trigger('change');
-                    });
-
-                    // Disparar el evento de selección para los valores preseleccionados
-                    console.log(data.typeTasksChecked)
-                    data.typeTasksChecked.forEach(function(d) {
-                        selectTypeTasks.trigger({
-                            type: 'select2:select',
-                            params: {
-                                data: d
-                            }
-                        });
                     });
 
                     //Aqui se busca las tareas si queire cambiar
@@ -482,31 +477,57 @@
                         );
                     });
 
+                    // Obtener los valores preseleccionados y agrear al Input Model
+                    var selectedModels = data.typeTasksCheckedInput.map(function(d) {
+                        return {
+                            id: d.id,
+                            model: d.text
+                        };
+                    });
 
-                    // //Agregar un oyente de eventos al selector
-                    // $('#typetasks').on('select2:select', function(e) {
+                    // Convertir los modelos seleccionados a una cadena JSON
+                    var jsonSelectedModels = JSON.stringify(selectedModels);
 
-                    //     // Limpiar el arreglo selectedModels
-                    //     selectedModels = [];
+                    // Insertar la cadena JSON en el input #model
+                    $('#model').val(jsonSelectedModels);
 
-                    //     // Obtener los valores seleccionados
-                    //     var selectedValues = $('#typetasks').select2('data');
+                    //Agregar un oyente de eventos al selector
+                    $('#typetasks').on('select2:select', function(e) {
 
-                    //     // Recorrer los valores seleccionados y agregarlos al arreglo selectedModels
-                    //     selectedValues.forEach(function(value) {
-                    //         var typetaskId = value.id;
-                    //         var modelName = value.text.match(/\(([^)]+)\)/)[1];
-                    //         console.log(modelName)
-                    //         var modelPath = value.model;
-                    //         selectedModels.push({
-                    //             id: typetaskId,
-                    //             model: modelPath
-                    //         });
-                    //     });
+                        // Limpiar el arreglo selectedModels
+                        selectedModels = [];
 
-                    //     // Actualizar el valor del campo oculto "typetaskable_type[]"
-                    //     $('#model').val(JSON.stringify(selectedModels));
-                    // });
+                        // Obtener los valores seleccionados
+                        var selectedValues = $('#typetasks').select2('data');
+                        // Recorrer los valores seleccionados y agregarlos al arreglo selectedModels
+                        selectedValues.forEach(function(value) {
+                            var typetaskId = value.id;
+                            var modelName = value.text.match(/\(([^)]+)\)/)[1];
+                            console.log(modelName)
+                            var modelPath = value.model;
+                            selectedModels.push({
+                                id: typetaskId,
+                                model: modelPath
+                            });
+                        });
+
+                        $('#model').val(JSON.stringify(selectedModels));
+                    });
+
+                    // Agregar un oyente de eventos cuando se deseleccione un elemento
+                    $('#typetasks').on('select2:unselect', function(e) {
+
+                        // Obtener el ID del elemento deseleccionado
+                        var unselectedId = e.params.data.id;
+
+                        // Eliminar el elemento correspondiente del arreglo selectedModels
+                        selectedModels = selectedModels.filter(function(item) {
+                            return item.id !== unselectedId;
+                        });
+
+                        // Actualizar el valor del campo oculto "typetaskable_type[]"
+                        $('#model').val(JSON.stringify(selectedModels));
+                    });
 
                     // RootGroup
                     var groupRoots = $('#group_roots').select2();
@@ -540,8 +561,6 @@
 
                     // RootGroup
                     var group = $('#groups').select2();
-
-                    //Clear Select
                     group.empty();
 
                     //Initialization Select2 with Relationship
@@ -566,7 +585,7 @@
 
                     //Clearing selections
                     var selectAnalysts = $('#analysts');
-                    selectAnalysts.val([]).trigger("change");
+                    selectAnalysts.empty().trigger("change");
                     data.analystsChecked.forEach(function(d) {
                         var option = new Option(d.text, d.id, true, true);
                         selectAnalysts.append(option).trigger('change');
@@ -598,13 +617,6 @@
                             cache: true
                         }
                     });
-
-
-                    $('#modalHeading').html("Editar Tarea");
-                    $('#saveBtn').val("edit-tasks");
-                    $('#ajaxModal').modal('show');
-                    $('#taskForm').trigger("reset");
-                    $('#task_id').val(data.task.id);
                 });
             });
 

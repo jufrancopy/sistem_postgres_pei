@@ -56,6 +56,7 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Tarea</th>
+                                        <th>Estado</th>
                                         <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>

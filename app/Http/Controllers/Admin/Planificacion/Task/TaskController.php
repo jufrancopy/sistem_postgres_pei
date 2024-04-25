@@ -70,10 +70,10 @@ class TaskController extends Controller
 
                 ->addColumn('tasks', function (Task $task) {
                     $taskNames = $task->typeTasks->pluck('typetaskable_type');
-                
+
                     // Array para almacenar los nombres modificados de los tipos de tarea
                     $modifiedTaskNames = [];
-                
+
                     foreach ($taskNames as $taskName) {
                         if ($taskName == 'App\Admin\Planificacion\Pei\PeiProfile') {
                             $modifiedTaskNames[] = "PEI";
@@ -84,13 +84,13 @@ class TaskController extends Controller
                             $modifiedTaskNames[] = $taskName;
                         }
                     }
-                
+
                     // Convertir el array de nombres modificados a una cadena separada por comas
                     $formattedTaskNames = implode(', ', $modifiedTaskNames);
-                
+
                     return $formattedTaskNames;
                 })
-                
+
 
                 ->rawColumns(['action'])
                 ->make(true);
@@ -140,7 +140,28 @@ class TaskController extends Controller
                 ];
             }
         }
-        $task->typeTasks()->createMany($typetaskData);
+
+        // Obtener los IDs de los typetaskable que se deben mantener
+        $typetaskableIdsToKeep = collect($typetaskData)->pluck('typetaskable_id');
+
+        // Eliminar los registros que no están en la lista de IDs a mantener
+        $task->typeTasks()->whereNotIn('typetaskable_id', $typetaskableIdsToKeep)->delete();
+
+        // Crear o actualizar los registros según sea necesario
+        foreach ($typetaskData as $data) {
+            // Verificar si ya existe un registro con typetaskable_id igual al que estamos tratando de crear
+            $existingTypeTask = $task->typeTasks()->where('typetaskable_id', $data['typetaskable_id'])->first();
+
+            if ($existingTypeTask) {
+                // Si existe, actualiza el registro existente
+                $existingTypeTask->update($data);
+            } else {
+                // Si no existe, crea un nuevo registro
+                $task->typeTasks()->create($data);
+            }
+        }
+
+
 
         // Retornar una respuesta apropiada
         if ($task->wasRecentlyCreated) {
@@ -148,6 +169,27 @@ class TaskController extends Controller
         } else {
             return response()->json(['success' => 'Tarea actualizada con éxito']);
         }
+    }
+
+    public function getTask(Request $request)
+    {
+        $data = [];
+
+        if ($request->has('q')) {
+            $search = $request->q;
+
+            $fodaData = FodaPerfil::select("id", "name", DB::raw("'" . FodaPerfil::class . "' as model"))
+                ->where('name', 'LIKE', "%$search%")
+                ->get();
+
+            $peiData = PeiProfile::select("id", "name", DB::raw("'" . PeiProfile::class . "' as model"))
+                ->where('name', 'LIKE', "%$search%")
+                ->get();
+
+            $data = $fodaData->concat($peiData);
+        }
+
+        return response()->json($data);
     }
 
     public function getTasks(Request $request)
@@ -174,10 +216,25 @@ class TaskController extends Controller
     {
         $task = Task::with(['group', 'analysts'])->find($id);
 
+        $typeTasksCheckedInput = [];
+
+        foreach ($task->typeTasks as $typeTask) {
+            $typeTasksCheckedInput[] = ['id' => $typeTask->typetaskable_id, 'text' => $typeTask->typetaskable_type];
+        }
+
         $typeTasksChecked = [];
 
         foreach ($task->typeTasks as $typeTask) {
-            $typeTasksChecked[] = ['id' => $typeTask->typetaskable_id, 'text' => $typeTask->typetaskable_type];
+            // Cargar el modelo al que pertenece el typetaskable_id
+            $model = app($typeTask->typetaskable_type)->find($typeTask->typetaskable_id);
+
+            // Verificar si el modelo se encontró y tiene el atributo 'name'
+            if ($model && $model->name) {
+                $typeTasksChecked[] = ['id' => $typeTask->typetaskable_id, 'text' => $model->name];
+            } else {
+                // Si el modelo no se encontró o no tiene el atributo 'name', puedes usar algún valor por defecto
+                $typeTasksChecked[] = ['id' => $typeTask->typetaskable_id, 'text' => 'Sin nombre'];
+            }
         }
 
         $analystsChecked = [];
@@ -189,7 +246,8 @@ class TaskController extends Controller
         return response()->json([
             'task' => $task,
             'analystsChecked' => $analystsChecked,
-            'typeTasksChecked' => $typeTasksChecked
+            'typeTasksChecked' => $typeTasksChecked,
+            'typeTasksCheckedInput' => $typeTasksCheckedInput
         ]);
     }
 

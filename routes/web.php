@@ -208,7 +208,7 @@ Route::group(['middleware' => ['auth']], function () {
     //Rutas de Elaboración del PEI
     Route::resource('tasks', 'Admin\Planificacion\Task\TaskController');
     // Route::resource('tasks-type', 'Admin\Planificacion\Task\TypeTaskController');
-    Route::get('get-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTask')->name('get-tasks');
+    Route::get('get-tasks', 'Admin\Planificacion\Task\TaskController@getTask')->name('get-tasks');
     Route::get('get-task/{idSelection}', 'Admin\Planificacion\Task\TaskController@dataTask')->name('get-task');
     // Route::get('get-type-tasks', 'Admin\Planificacion\Task\TypeTaskController@getTaskType')->name('get-type-tasks');
     Route::get('tasks-list-tree/', 'Admin\Planificacion\Task\TaskController@getTasksForGroup')->name('tasks-list-tree');
