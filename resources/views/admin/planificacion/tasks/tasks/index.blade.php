@@ -50,9 +50,9 @@
                                 </div>
                                 <div class="modal-body">
                                     <form id="taskForm" name="taskForm" class="form-horizontal">
-                                        {{ Form::text('task_id', null, ['id' => 'task_id']) }}
-                                        {{ Form::text('status', 0, ['id' => 'status']) }}
-                                        {{ Form::text('typetaskable_type[]', null, ['class' => 'form-control', 'id' => 'model']) }}
+                                        {{ Form::hidden('task_id', null, ['id' => 'task_id']) }}
+                                        {{ Form::hidden('status', 0, ['id' => 'status']) }}
+                                        {{ Form::hidden('typetaskable_type[]', null, ['class' => 'form-control', 'id' => 'model']) }}
 
                                         <div class="form-group">
                                             {!! Form::label('typetasks', 'Asignar Tareas:') !!}
