@@ -142,16 +142,18 @@ class TaskController extends Controller
         // Eliminar los registros obsoletos
         $task->typeTasks()->whereNotIn('typetaskable_id', collect($typetaskData)->pluck('typetaskable_id'))->delete();
     
-        // Crear o actualizar los registros según sea necesario
         foreach ($typetaskData as $data) {
             $existingTypeTask = $task->typeTasks()->where('typetaskable_id', $data['typetaskable_id'])->first();
-    
+        
             if ($existingTypeTask) {
+                // Actualizar el registro existente en lugar de insertar uno nuevo
                 $existingTypeTask->update($data);
             } else {
+                // Si no existe, crear un nuevo registro
                 $task->typeTasks()->create($data);
             }
         }
+        
     
         if ($task->wasRecentlyCreated) {
             return response()->json(['success' => 'Tarea creada con éxito']);
