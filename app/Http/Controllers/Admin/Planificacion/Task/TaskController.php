@@ -153,7 +153,6 @@ class TaskController extends Controller
                 $task->typeTasks()->create($data);
             }
         }
-        
     
         if ($task->wasRecentlyCreated) {
             return response()->json(['success' => 'Tarea creada con éxito']);
@@ -161,6 +160,7 @@ class TaskController extends Controller
             return response()->json(['success' => 'Tarea actualizada con éxito']);
         }
     }
+    
     
     public function getTask(Request $request)
     {
