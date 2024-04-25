@@ -50,9 +50,9 @@
                                 </div>
                                 <div class="modal-body">
                                     <form id="taskForm" name="taskForm" class="form-horizontal">
-                                        {{ Form::text('task_id', null, ['id' => 'task_id']) }}
-                                        {{ Form::text('status', 0, ['id' => 'status']) }}
-                                        {{ Form::text('typetaskable_type[]', null, ['class' => 'form-control', 'id' => 'model']) }}
+                                        {{ Form::hidden('task_id', null, ['id' => 'task_id']) }}
+                                        {{ Form::hidden('status', 0, ['id' => 'status']) }}
+                                        {{ Form::hidden('typetaskable_type[]', null, ['class' => 'form-control', 'id' => 'model']) }}
 
                                         <div class="form-group">
                                             {!! Form::label('typetasks', 'Asignar Tareas:') !!}
@@ -431,9 +431,10 @@
                         selectTypeTasks.append(option).trigger('change');
                     });
 
-                    //Aqui se busca las tareas si queire cambiar
+                    //Aqui se busca las tareas si quiere cambiar
                     var url = '{{ route('get-tasks') }}';
                     var selectedModels = [];
+
                     $('#typetasks').select2({
                         allowClear: false,
                         ajax: {
@@ -462,7 +463,8 @@
                                             text: item.name + ' (' +
                                                 abbreviation + ')',
                                             id: item.id,
-                                            model: item.model
+                                            model: item
+                                                .model // Asegurar que la propiedad 'model' esté presente
                                         };
                                     })
                                 };
@@ -470,12 +472,22 @@
                             cache: true
                         }
 
-                    }).on('select2:select', function(e) {
-                        var selectedModel = e.params.data.model;
-                        selectedModels.push(
-                            selectedModel
-                        );
+                    }).on('change', function(e) {
+                        var selectedOptions = $('#typetasks').select2('data');
+                        selectedModels = selectedOptions.map(function(option) {
+
+                            // Verificar si la propiedad 'model' está presente en la opción seleccionada
+                            var model = option.model ? option.model :
+                                ''; // Si no está presente, asignar una cadena vacía
+                            return {
+                                id: option.id,
+                                model: model
+                            };
+                        });
+                        // Actualizar el valor del input #model
+                        $('#model').val(JSON.stringify(selectedModels));
                     });
+
 
                     // Obtener los valores preseleccionados y agrear al Input Model
                     var selectedModels = data.typeTasksCheckedInput.map(function(d) {
@@ -491,29 +503,37 @@
                     // Insertar la cadena JSON en el input #model
                     $('#model').val(jsonSelectedModels);
 
-                    //Agregar un oyente de eventos al selector
+                    // Almacenar las opciones seleccionadas
+                    var selectedOptions = [];
+
+                    // Manejar la selección de opciones
                     $('#typetasks').on('select2:select', function(e) {
-
-                        // Limpiar el arreglo selectedModels
-                        selectedModels = [];
-
-                        // Obtener los valores seleccionados
-                        var selectedValues = $('#typetasks').select2('data');
-                        // Recorrer los valores seleccionados y agregarlos al arreglo selectedModels
-                        selectedValues.forEach(function(value) {
-                            var typetaskId = value.id;
-                            var modelName = value.text.match(/\(([^)]+)\)/)[1];
-                            console.log(modelName)
-                            var modelPath = value.model;
-                            selectedModels.push({
-                                id: typetaskId,
-                                model: modelPath
-                            });
-                        });
-
-                        $('#model').val(JSON.stringify(selectedModels));
+                        var selectedOption = e.params.data;
+                        selectedOptions.push(selectedOption);
+                        updateSelectedModels();
                     });
 
+                    // Actualizar el arreglo selectedModels
+                    function updateSelectedModels() {
+                        selectedModels = [];
+                        selectedOptions.forEach(function(option) {
+                            var typetaskId = option.id;
+                            var modelPath = option.model;
+                            var isAlreadySelected = selectedModels.some(function(item) {
+                                return item.id === typetaskId && item.model ===
+                                    modelPath;
+                            });
+                            if (!isAlreadySelected) {
+                                selectedModels.push({
+                                    id: typetaskId,
+                                    model: modelPath
+                                });
+                            }
+                        });
+                        // Actualizar el valor del input #model
+                        $('#model').val(JSON.stringify(selectedModels));
+                    }
+                    
                     // Agregar un oyente de eventos cuando se deseleccione un elemento
                     $('#typetasks').on('select2:unselect', function(e) {
 
@@ -550,6 +570,9 @@
                             });
                         });
                     }
+
+                    initializeSelect2(groupRoots, 'Seleccione Grupo Raíz de trabajo',
+                    '{{ route('globales.get-root-groups') }}');
 
                     //Change RootGroup
                     $('#group_roots').on('change', function() {
