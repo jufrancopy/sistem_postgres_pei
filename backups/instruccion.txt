@@ -1,9 +1,8 @@
 Pasos para volver mi Base de Datos o Backup
-———————————
-FORMA UNO
+
 Primero Borramos todo los schemas:
 DROP SCHEMA IF EXISTS public CASCADE;
-DROP SCHEMA IF EXISTS planificación CASCADE;
+DROP SCHEMA IF EXISTS planificacion CASCADE;
 DROP SCHEMA IF EXISTS estadistica CASCADE;
 DROP SCHEMA IF EXISTS proyecto CASCADE;
 
@@ -48,70 +47,26 @@ Elminamos el campo parent_id tipo integer y convertimos a UUID
 ALTER TABLE planificacion.pei_profiles
 DROP COLUMN parent_id;
 
-Creamos el campo nuevamente pero como UUID
 ALTER TABLE planificacion.pei_profiles
 ADD COLUMN parent_id UUID;
 
 Comentario: En pei_profiles, se crea el campo parent_id $table->nestedSet() con la migration, y predeterminado es tipo integer. Debemos convertir a UUID para compatibilizar con Illuminate\Database\Eloquent\Concerns\HasUuids; También foda_perfiles usa el mismo tipo
 
-Restauramos la base de datos fuera de postgres, desde la carpeta raiz del proyecto
-pg_restore -U postgres -d planificacion -Fc -a -v backups/backup_23_abr.sql
-—————————————--------------------------------------
-FORMA DOS
-Primero, si vamos a hacer un backup desde el servidor con los datos reales, necesitamos usar el siguiente comando desde el usuarios root. 
-1- Ingresamos al servidor
-$>ssh jucfra@2.59.156.228
 
-2- ejecutamos el comando pg_dump siguiente para el backup
-miserver$>sudo pg_dump -U postgres -d siplan -h localhost -Fc -f /home/jucfra/Downloads/BackupDataBase/2024/backup_24_abr.sql
-
-3- Copiamos a nuestro directorio local el backup
-$>scp jucfra@2.59.156.228:/home/jucfra/Downloads/BackupDataBase/2024/backup_23_abr.sql /Users/juliofranco/Desktop/Programacion/sistem_postgres_pei/backups
-
-4-Ya en nuestro entorno de trabajo ejecutamos
-$>php artisan migrate:rollback —force
-
-5-Una vez limpia la BD, ejecutamos de nuevo la migración
-$>php artisan migrate
-
-6-Accedemos a la base de datos con el usuario postgres:
-$>psql -U postgres 
-
-7-  Nos cambiamos a la base de datos
-postgres=#c\ siplan o planificacion
-
-8- Desactivamos las restricciones de claves foráneas 
-ALTER TABLE planificacion.foda_analisis DISABLE TRIGGER ALL;
-ALTER TABLE planificacion.foda_categorias_has_perfil DISABLE TRIGGER ALL;
-ALTER TABLE planificacion.foda_perfiles DISABLE TRIGGER ALL;
-ALTER TABLE planificacion.pei_profiles DISABLE TRIGGER ALL;
-ALTER TABLE planificacion.peis_profiles_has_analysts DISABLE TRIGGER ALL;
-ALTER TABLE planificacion.peis_profiles_has_responsibles DISABLE TRIGGER ALL;
-ALTER TABLE planificacion.tasks DISABLE TRIGGER ALL;
-ALTER TABLE planificacion.tasks_has_analysts DISABLE TRIGGER ALL;
-ALTER TABLE planificacion.tasks_has_type_tasks DISABLE TRIGGER ALL;
-ALTER TABLE public.groups_has_members DISABLE TRIGGER ALL;
-ALTER TABLE public.migrations DISABLE TRIGGER ALL;
-ALTER TABLE public.model_has_roles DISABLE TRIGGER ALL;
-ALTER TABLE public.organigramas DISABLE TRIGGER ALL;
-ALTER TABLE public.role_has_permissions DISABLE TRIGGER ALL;
-
-9- Eliminar la columna parent_id
-ALTER TABLE planificacion.foda_perfiles DROP COLUMN parent_id;
-ALTER TABLE planificacion.foda_perfiles DROP COLUMN parent_id;
-10- Agregar una nueva columna parent_id como tipo UUID
-ALTER TABLE planificacion.pei_profiles ADD COLUMN parent_id UUID;
-ALTER TABLE planificacion.pei_profiles ADD COLUMN parent_id UUID;
-
-
-11- Restauramos el backup descargado
-$>pg_restore -U postgres -d planificacion -Fc -a -v backups/backup_23_abr.sql
-
-12- Restauramos las restricciones de claves foráneas 
+Rehabilitamos las restricciones
 ALTER TABLE planificacion.foda_analisis ENABLE TRIGGER ALL;
 ALTER TABLE planificacion.foda_categorias_has_perfil ENABLE TRIGGER ALL;
+ALTER TABLE planificacion.foda_cruce_ambientes ENABLE TRIGGER ALL;
+ALTER TABLE planificacion.foda_cruce_ambientes_has_amenazas ENABLE TRIGGER ALL;
+ALTER TABLE planificacion.foda_cruce_ambientes_has_debilidades ENABLE TRIGGER ALL;
+ALTER TABLE planificacion.foda_cruce_ambientes_has_fortalezas ENABLE TRIGGER ALL;
+ALTER TABLE planificacion.foda_cruce_ambientes_has_oportunidades ENABLE TRIGGER ALL;
+ALTER TABLE planificacion.foda_groups_has_perfiles ENABLE TRIGGER ALL;
+ALTER TABLE planificacion.foda_models ENABLE TRIGGER ALL;
 ALTER TABLE planificacion.foda_perfiles ENABLE TRIGGER ALL;
 ALTER TABLE planificacion.pei_profiles ENABLE TRIGGER ALL;
+ALTER TABLE planificacion.pei_profiles_has_dependencies ENABLE TRIGGER ALL;
+ALTER TABLE planificacion.pei_profiles_has_strategies ENABLE TRIGGER ALL;
 ALTER TABLE planificacion.peis_profiles_has_analysts ENABLE TRIGGER ALL;
 ALTER TABLE planificacion.peis_profiles_has_responsibles ENABLE TRIGGER ALL;
 ALTER TABLE planificacion.tasks ENABLE TRIGGER ALL;
@@ -122,3 +77,7 @@ ALTER TABLE public.migrations ENABLE TRIGGER ALL;
 ALTER TABLE public.model_has_roles ENABLE TRIGGER ALL;
 ALTER TABLE public.organigramas ENABLE TRIGGER ALL;
 ALTER TABLE public.role_has_permissions ENABLE TRIGGER ALL;
+
+
+Volcamos el Backups
+pg_restore -U postgres -d planificacion -Fc -a -v backups/backup_23_abr.sql
