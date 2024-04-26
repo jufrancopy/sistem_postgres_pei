@@ -6,14 +6,26 @@
         <div class="card-header card-header-info">
             <h4 class="card-title ">Árbol Detalles PEI {{ $profile->first()->name }}</h4>
         </div>
-        <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('pei-profiles.index') }}">Módulo de Planificación
-                        Estratégica</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Árbol Detalles PEI</li>
-            </ol>
-        </nav>
+
+        @if (auth()->user()->hasRole('Participantes'))
+            <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item"><a href="{{ route('pei-profiles.index') }}">Módulo de Planificación
+                            Estratégica</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Árbol Detalles PEI</li>
+                </ol>
+            </nav>
+        @else
+            <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ route('tasks.index') }}">Módulo Tareas</a></li>
+                    <li class="breadcrumb-item taskUrl"><a href="#">Lista de Tareas</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Árbol PEI</li>
+                </ol>
+            </nav>
+        @endif
 
         <div class="row">
             <div class="col-12 detailHeader">
@@ -168,8 +180,6 @@
                     </div>
                 </div>
             </div>
-
-
 
             {{-- Inicio Modals --}}
             <div class="modal fade" id="ajaxAxisListlModal" aria-hidden="true">
@@ -426,6 +436,16 @@
                 openFolderDelay: 1000,
                 dragAndDrop: true
             });
+
+            // Recupera el valor del localStorage para insertar en la url
+            var taskID = localStorage.getItem('taskID');
+
+            // Construye la URL dinámica para la ruta tasks.show
+            var taskShowUrl = "{{ route('tasks.show', ['task' => ':taskID']) }}".replace(':taskID', taskID);
+
+            // Actualiza el valor del enlace en la clase .taskUrl
+            $('.taskUrl a').attr('href', taskShowUrl);
+
 
             $('body').on('click', '#showAxisList', function() {
                 var profileID = $(this).data('id');

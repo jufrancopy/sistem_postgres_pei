@@ -303,6 +303,7 @@ class TaskController extends Controller
 
     public function show(Request $request, $id)
     {
+        $idTask = $id;
         if ($request->ajax()) {
             $tasks = Task::with(['typeTasks'])->where('id', $id)->latest()->get();
 
@@ -322,7 +323,7 @@ class TaskController extends Controller
                     $data[] = [
                         'task' => $typeTask->typetaskable->name . " (FODA)", // Accede al nombre del tipo de tarea relacionado
                         'status' => $typeTask->status, // Accede al estado del tipo de tarea
-                        'action' => '<a href="' . route('foda.show.details', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
+                        'action' => '<a href="' . route('foda.show.details', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-id-task = "'.$idTask.'"><i class="fas fa-tasks"></i></a>',
                     ];
                 }
             }
