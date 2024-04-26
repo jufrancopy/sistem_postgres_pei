@@ -171,7 +171,6 @@ class TaskController extends Controller
         }
     }
 
-
     public function getTask(Request $request)
     {
         $data = [];
@@ -317,6 +316,7 @@ class TaskController extends Controller
                         'task' => $typeTask->typetaskable->name . " (PEI)", // Accede al nombre del tipo de tarea relacionado
                         'status' => $typeTask->status, // Accede al estado del tipo de tarea
                         'action' => '<a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
+                        'action' => '<a href="' . route('pei-profiles.details', $typeTask->typetaskable_id) . '" class="btn btn-info btn-circle"><i class="fa fa-cubes"></i></a>',
                     ];
                 } else if ($typeTask->typetaskable_type == "App\Admin\Planificacion\Foda\FodaPerfil") {
                     $data[] = [
