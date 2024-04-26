@@ -435,56 +435,57 @@
                     var url = '{{ route('get-tasks') }}';
                     var selectedModels = [];
 
+                    // Limpiar selecciones previas y configurar Select2
                     $('#typetasks').select2({
-                        allowClear: false,
+                        allowClear: false, // Permitir deseleccionar
                         ajax: {
                             url: url,
                             dataType: 'json',
                             delay: 250,
                             processResults: function(data) {
-                                return {
-                                    results: $.map(data, function(item) {
-                                        // Lógica para obtener la abreviatura del modelo
-                                        var abbreviation;
-                                        if (item.model ===
-                                            'App\\Admin\\Planificacion\\Foda\\FodaPerfil'
-                                        ) {
-                                            abbreviation = 'FODA';
-                                        } else if (item.model ===
-                                            'App\\Admin\\Planificacion\\Pei\\PeiProfile'
-                                        ) {
-                                            abbreviation = 'PEI';
-                                        } else {
-                                            // Si hay otros modelos, se pueden agregar más condiciones aquí
-                                            abbreviation = item.model;
-                                        }
+                                var results = $.map(data, function(item) {
+                                    // Lógica para obtener la abreviatura del modelo
+                                    var abbreviation;
+                                    if (item.model ===
+                                        'App\\Admin\\Planificacion\\Foda\\FodaPerfil'
+                                    ) {
+                                        abbreviation = 'FODA';
+                                    } else if (item.model ===
+                                        'App\\Admin\\Planificacion\\Pei\\PeiProfile'
+                                    ) {
+                                        abbreviation = 'PEI';
+                                    } else {
+                                        // Si hay otros modelos, se pueden agregar más condiciones aquí
+                                        abbreviation = item.model;
+                                    }
 
-                                        return {
-                                            text: item.name + ' (' +
-                                                abbreviation + ')',
-                                            id: item.id,
-                                            model: item
-                                                .model // Asegurar que la propiedad 'model' esté presente
-                                        };
-                                    })
+                                    return {
+                                        text: item.name + ' (' + abbreviation +
+                                            ')',
+                                        id: item.id,
+                                        model: item.model
+                                    };
+                                });
+
+                                return {
+                                    results: results
                                 };
                             },
                             cache: true
                         }
+                    });
 
-                    }).on('change', function(e) {
-                        var selectedOptions = $('#typetasks').select2('data');
-                        selectedModels = selectedOptions.map(function(option) {
+                    // Agregar un oyente de eventos cuando se deseleccione un elemento
+                    $('#typetasks').on('select2:unselect', function(e) {
+                        // Obtener el ID del elemento deseleccionado
+                        var unselectedId = e.params.data.id;
 
-                            // Verificar si la propiedad 'model' está presente en la opción seleccionada
-                            var model = option.model ? option.model :
-                                ''; // Si no está presente, asignar una cadena vacía
-                            return {
-                                id: option.id,
-                                model: model
-                            };
+                        // Actualizar selectedModels para reflejar las selecciones restantes después de deseleccionar un elemento
+                        selectedModels = selectedModels.filter(function(item) {
+                            return item.id !== unselectedId;
                         });
-                        // Actualizar el valor del input #model
+
+                        // Actualizar el valor del campo #model con las selecciones restantes
                         $('#model').val(JSON.stringify(selectedModels));
                     });
 
@@ -509,9 +510,21 @@
                     // Manejar la selección de opciones
                     $('#typetasks').on('select2:select', function(e) {
                         var selectedOption = e.params.data;
-                        selectedOptions.push(selectedOption);
-                        updateSelectedModels();
+                        // Verificar si el nuevo elemento ya está presente en la lista de elementos seleccionados
+                        var isAlreadySelected = selectedModels.some(function(item) {
+                            return item.id === selectedOption.id;
+                        });
+                        // Si el nuevo elemento no está presente, agregarlo a la lista de elementos seleccionados
+                        if (!isAlreadySelected) {
+                            selectedModels.push({
+                                id: selectedOption.id,
+                                model: selectedOption.model
+                            });
+                        }
+                        // Actualizar el valor del input #model con la lista actualizada de elementos seleccionados
+                        $('#model').val(JSON.stringify(selectedModels));
                     });
+
 
                     // Actualizar el arreglo selectedModels
                     function updateSelectedModels() {
@@ -533,7 +546,7 @@
                         // Actualizar el valor del input #model
                         $('#model').val(JSON.stringify(selectedModels));
                     }
-                    
+
                     // Agregar un oyente de eventos cuando se deseleccione un elemento
                     $('#typetasks').on('select2:unselect', function(e) {
 
@@ -570,9 +583,6 @@
                             });
                         });
                     }
-
-                    initializeSelect2(groupRoots, 'Seleccione Grupo Raíz de trabajo',
-                    '{{ route('globales.get-root-groups') }}');
 
                     //Change RootGroup
                     $('#group_roots').on('change', function() {

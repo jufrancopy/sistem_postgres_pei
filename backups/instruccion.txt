@@ -53,7 +53,7 @@ ADD COLUMN parent_id UUID;
 Comentario: En pei_profiles, se crea el campo parent_id $table->nestedSet() con la migration, y predeterminado es tipo integer. Debemos convertir a UUID para compatibilizar con Illuminate\Database\Eloquent\Concerns\HasUuids; También foda_perfiles usa el mismo tipo
 
 Volcamos el Backups
-pg_restore -U postgres -d planificacion -Fc -a -v backups/backup_23_abr.sql
+pg_restore -U postgres -d planificacion -Fc -a -v backups/backup_
 
 Rehabilitamos las restricciones
 ALTER TABLE planificacion.foda_analisis ENABLE TRIGGER ALL;

@@ -161,6 +161,8 @@ class TaskController extends Controller
             }
         }
 
+
+
         // Retornar una respuesta apropiada
         if ($task->wasRecentlyCreated) {
             return response()->json(['success' => 'Tarea creada con éxito']);
