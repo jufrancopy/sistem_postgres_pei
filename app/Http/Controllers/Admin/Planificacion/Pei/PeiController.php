@@ -67,37 +67,6 @@ class PeiController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
 
-    public function showDetailsTree($idProfile)
-    {
-        $idProfile = $idProfile;
-        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->descendantsAndSelf($idProfile)->toTree();
-
-        $responsiblesActionsCount = [];
-
-        foreach ($profile->first()->children as $axi) {
-            foreach ($axi->children as $goal) {
-                foreach ($goal->children as $action) {
-                    $responsibles = $action->responsibles;
-
-                    foreach ($responsibles as $responsible) {
-                        $responsiblesId = $responsible->id;
-                        // Si tenemos valor, sumamos 1, si no tenemos valor, valor es 0
-                        $responsiblesActionsCount[$responsiblesId] = ($responsiblesActionsCount[$responsiblesId] ?? 0) + 1;
-                    }
-                }
-            }
-        }
-
-        foreach ($responsiblesActionsCount as $responsibleId => $actionsCount) {
-            $responsible = Organigrama::find($responsibleId);
-            ['dependency' => $responsible->dependency, 'actionsCount' => $actionsCount];
-        }
-
-
-
-        return view('admin.planificacion.peis.peis.details_tree', get_defined_vars());
-    }
-
     public function showAxisList($idProfile)
     {
 
@@ -319,6 +288,35 @@ class PeiController extends Controller
             return view('admin.planificacion.peis.peis.show', get_defined_vars())
                 ->with('i', ($request->input('page', 1) - 1) * 5);
         }
+    }
+
+    public function showDetailsTree($idProfile)
+    {
+        $idProfile = $idProfile;
+        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->descendantsAndSelf($idProfile)->toTree();
+        $responsiblesActionsCount = [];
+
+        foreach ($profile->first()->children as $axi) {
+            foreach ($axi->children as $goal) {
+                foreach ($goal->children as $action) {
+                    $responsibles = $action->responsibles;
+
+                    foreach ($responsibles as $responsible) {
+                        $responsiblesId = $responsible->id;
+                        // Si tenemos valor, sumamos 1, si no tenemos valor, valor es 0
+                        $responsiblesActionsCount[$responsiblesId] = ($responsiblesActionsCount[$responsiblesId] ?? 0) + 1;
+                    }
+                }
+            }
+        }
+
+        foreach ($responsiblesActionsCount as $responsibleId => $actionsCount) {
+            $responsible = Organigrama::find($responsibleId);
+            ['dependency' => $responsible->dependency, 'actionsCount' => $actionsCount];
+        }
+
+
+        return view('admin.planificacion.peis.peis.details', get_defined_vars());
     }
 
     public function destroy(Request $request, $id)
