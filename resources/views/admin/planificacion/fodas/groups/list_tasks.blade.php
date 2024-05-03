@@ -156,29 +156,7 @@
                 detailsEditor.setData('');
 
                 //Type Tasks
-                var url = '{{ route('get-type-tasks') }}';
-                var selectTypeTasks = $('#typetasks').select2();
-                selectTypeTasks.empty();
-
-                selectTypeTasks.select2({
-                    allowClear: true,
-                    ajax: {
-                        url: url,
-                        dataType: 'json',
-                        delay: 250,
-                        processResults: function(data) {
-                            return {
-                                results: $.map(data, function(item) {
-                                    return {
-                                        text: item.name,
-                                        id: item.id
-                                    };
-                                })
-                            };
-                        },
-                        cache: true
-                    }
-                });
+                
 
                 var groupRoots = $('#group_roots').select2();
                 groupRoots.empty();
@@ -246,26 +224,7 @@
                         });
                     });
 
-                    var url = '{{ route('get-type-tasks') }}';
-                    $('#typetasks').select2({
-                        allowClear: true,
-                        ajax: {
-                            url: url,
-                            dataType: 'json',
-                            delay: 250,
-                            processResults: function(data) {
-                                return {
-                                    results: $.map(data, function(item) {
-                                        return {
-                                            text: item.name,
-                                            id: item.id
-                                        };
-                                    })
-                                };
-                            },
-                            cache: true
-                        }
-                    });
+                    
 
                     // RootGroup
                     var groupRoots = $('#group_roots').select2();
