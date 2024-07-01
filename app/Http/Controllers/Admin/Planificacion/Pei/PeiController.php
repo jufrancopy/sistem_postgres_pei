@@ -319,6 +319,14 @@ class PeiController extends Controller
         return view('admin.planificacion.peis.peis.details', get_defined_vars());
     }
 
+    public function getDetails($idProfile){
+        $profile = PeiProfile::findOrFail($idProfile);
+        
+        $goals = $profile->where('level', 'goal')->with(['strategies'])->get();
+
+        return response()->json(['profile'=>$profile, 'goals' => $goals]);
+    }
+
     public function destroy(Request $request, $id)
     {
         $profile = PeiProfile::find($id)->delete();

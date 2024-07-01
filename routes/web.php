@@ -24,6 +24,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/goals-list', 'Admin\Planificacion\Pei\PeiController@showGoalsList')->name('pei-profiles-goals-list');
     Route::get('pei-profiles/{idProfile}/actions-list', 'Admin\Planificacion\Pei\PeiController@showActionsList')->name('pei-profiles-actions-list');
     Route::get('pei-profiles/{idProfile}/members-list', 'Admin\Planificacion\Pei\PeiController@showMembersList')->name('pei-profiles-members-list');
+    Route::get('pei-profiles/{idProfile}/report-progress', 'Admin\Planificacion\Pei\PeiController@getDetails')->name('pei-profiles-reports');
 
     // Relevamientos
     Route::get('proyectos-epc-relevamientos/{estandarId}', 'Admin\Proyectos\EPC\RelevamientoController@getFormulario')->name('proyectos-epc-relevamientos-form-dependencia');
