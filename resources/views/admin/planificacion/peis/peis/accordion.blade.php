@@ -127,13 +127,19 @@
                                                                                                 href="javascript:void(0)"
                                                                                                 id="createActions"><i
                                                                                                     class="fa fa-edit"
-                                                                                                    aria-hidden="true"></i></a>
-                                                                                            <a class="btn btn-danger btn-circle deleteItem"
+                                                                                                    aria-hidden="true"></i>
+                                                                                            </a>
+                                                                                            {{-- <a class="btn btn-danger btn-circle deleteItem"
                                                                                                 data-id="{{ $action->id }}"
                                                                                                 href="javascript:void(0)"
                                                                                                 id="deleteProfile"><i
                                                                                                     class="fa fa-trash"
                                                                                                     aria-hidden="true"></i>
+                                                                                            </a> --}}
+                                                                                            <a class="btn btn-warning btn-circle reportProgress"
+                                                                                                data-id="{{ $action->id }}"
+                                                                                                href="javascript:void(0)"
+                                                                                                id="reportProgress"><i class="fas fa-chart-line"></i>
                                                                                             </a>
                                                                                         </td>
                                                                                     </tr>

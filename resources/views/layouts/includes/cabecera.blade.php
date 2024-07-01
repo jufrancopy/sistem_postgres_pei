@@ -22,5 +22,7 @@
 
     {{-- Require Google MAPS --}}
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.1/purify.min.js"></script>
+
     @yield('css')
 </head>
