@@ -540,7 +540,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ajaxReportProgressModal" aria-hidden="true">
+<div class="modal fade" id="ajaxDefineCriteriaModal" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
 
@@ -549,9 +549,9 @@
             </div>
 
             <div class="modal-body">
-                <form id="goalsForm" name="goalsForm" class="form-horizontal">
+                <form id="monitoringType" name="monitoringType" class="form-horizontal">
                     {{ Form::hidden('profile_id', null, ['id' => 'progress_profile_id']) }}
-                    {{ Form::hidden('parent_id', null, ['id' => 'progress_parent_id']) }}
+                    {{-- {{ Form::hidden('parent_id', null, ['id' => 'progress_parent_id']) }} --}}
 
                     <div class="progress_action mb-2">
                         {{ Form::label('name', 'Acción:', ['class' => 'control-label']) }}
@@ -581,7 +581,7 @@
                     </div>
 
                     <div class="progress_target mb-2">
-                        {{ Form::label('target', 'Linea de Base:', ['class' => 'control-label']) }}
+                        {{ Form::label('target', 'Meta', ['class' => 'control-label']) }}
                         {{ Form::text('target', null, [
                             'class' => 'form-control',
                             'id' => 'progress_target',
@@ -589,66 +589,87 @@
                         ]) }}
                     </div>
 
-                    <div id="parameters">
-                        <div class="form-group">
-                            <label for="description">Descripción:</label>
-                            <input type="text" class="form-control" id="description">
-                        </div>
-                        <div class="form-group">
-                            <label for="value">Valor (%):</label>
-                            <input type="text" class="form-control" id="value">
-                        </div>
-                        <div class="form-group">
-                            <label for="color">Color:</label>
-                            <select class="form-control" id="color">
-                                <option value="bg-danger">Rojo</option>
-                                <option value="bg-warning">Amarillo</option>
-                                <option value="bg-success">Verde</option>
-                                <option value="bg-info">Azul</option>
-                                <option value="bg-primary">Primario</option>
-                                <option value="bg-secondary">Secundario</option>
-                                <option value="bg-dark">Oscuro</option>
-                                <option value="bg-light">Claro</option>
-                            </select>
-                        </div>
-                        <button type="button" class="btn btn-primary" id="insertCheckbox">Insertar Checkbox</button>
-                    </div>
-
-                    <div id="checkboxContainer">
-                        <!-- Aquí se agregarán dinámicamente los checkboxes -->
-                    </div>
-
-
-
-                    <div id="checkboxContainer">
-                        <!-- Aquí se agregarán dinámicamente los checkboxes -->
-                    </div>
-
-
-                    <div class="calculator">
-                        <h3>Calculadora</h3>
-                        <input type="number" id="progress_denominator" class="form-control"
-                            placeholder="META NUMÉRICA">
-                        <input type="number" id="progress_numerator" class="form-control" placeholder="Logrado">
-                        {{-- <button type="button" class="btn btn-primary operation-btn" data-operation="add">Sumar (+)</button>
-                        <button type="button" class="btn btn-primary operation-btn" data-operation="subtract">Restar (-)</button>
-                        <button type="button" class="btn btn-primary operation-btn" data-operation="multiply">Multiplicar (x)</button>
-                        <button type="button" class="btn btn-primary operation-btn" data-operation="divide">Dividir (/)</button> --}}
-                        <button type="button" class="btn btn-primary operation-btn"
-                            data-operation="percentage">Porcentaje (%)</button>
-                    </div>
-                    <div class="progress_progress mb-2">
-                        {{ Form::label('progress', 'Resultado:', ['class' => 'control-label']) }}
-                        {{ Form::text('progress', null, [
+                    <div class="progress_report_type mb-2">
+                        {{ Form::label('report_type', 'Tipo de Reporte:', ['class' => 'control-label']) }}
+                        {{ Form::select('report_type', ['qualitative' => 'Cualitativo', 'quantitative' => 'Cuantitativo'], null, [
                             'class' => 'form-control',
-                            'id' => 'progress_progress',
-                            'readonly' => 'readonly',
+                            'placeholder' => '',
+                            'id' => 'progress_report_type',
+                            'style' => 'width: 100%',
                         ]) }}
+                    </div>
+
+                    <div class="qualitative">
+                        <div id="parameters" class="mt-4">
+                            <div class="form-group">
+                                <label for="description">Descripción:</label>
+                                <input type="text" class="form-control" id="description">
+                            </div>
+                            <div class="form-group">
+                                <label for="value">Valor (%):</label>
+                                <input type="text" class="form-control" id="value">
+                            </div>
+                            <div class="form-group">
+                                <label for="color">Color:</label>
+                                {{ Form::select(
+                                    'color',
+                                    [
+                                        'bg-danger' => 'Rojo',
+                                        'bg-warning' => 'Amarillo',
+                                        'bg-success' => 'Verde',
+                                        'bg-info' => 'Azul',
+                                        'bg-primary' => 'Primario',
+                                        'bg-secondary' => 'Secundario',
+                                        'bg-dark' => 'Oscuro',
+                                        'bg-light' => 'Claro',
+                                    ],
+                                    null,
+                                    [
+                                        'class' => 'form-control',
+                                        'placeholder'=> '',
+                                        'style'=> 'width:100%',
+                                        'id' => 'color',
+                                    ],
+                                ) }}
+
+                            </div>
+                            <button type="button" class="btn btn-primary" id="insertCheckbox">Insertar
+                                Parámetro</button>
+                        </div>
+
+                        <div id="checkboxContainer">
+
+                        </div>
+                    </div>
+
+                    <div class="quantitative">
+                        <div class="calculator">
+                            {{-- <h3>Calculadora</h3> --}}
+                            <input type="number" id="progress_denominator" class="form-control"
+                                placeholder="META NUMÉRICA">
+                            <input type="number" id="progress_numerator" class="form-control"
+                                placeholder="Logrado">
+                            {{-- <button type="button" class="btn btn-primary operation-btn" data-operation="add">Sumar (+)</button>
+                            <button type="button" class="btn btn-primary operation-btn" data-operation="subtract">Restar (-)</button>
+                            <button type="button" class="btn btn-primary operation-btn" data-operation="multiply">Multiplicar (x)</button>
+                            <button type="button" class="btn btn-primary operation-btn" data-operation="divide">Dividir (/)</button> --}}
+                            <button type="button" class="btn btn-primary operation-btn"
+                                data-operation="percentage">Porcentaje (%)</button>
+                        </div>
+
+                        <div class="progress_progress mb-2">
+                            {{ Form::label('progress', 'Resultado:', ['class' => 'control-label']) }}
+                            {{ Form::text('progress', null, [
+                                'class' => 'form-control',
+                                'id' => 'progress_progress',
+                                'readonly' => 'readonly',
+                            ]) }}
+                        </div>
                     </div>
 
                     <div class="col-sm-offset-2 col-sm-10">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-success" id="saveBtnGoals" value="create">Guardar
+                        <button type="submit" class="btn btn-success" id="saveBtnMonitoringType" value="create">Guardar
                             cambios
                         </button>
                     </div>
