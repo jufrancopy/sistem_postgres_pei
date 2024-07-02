@@ -45,7 +45,9 @@ class PeiProfile extends Model
         'baseline',
         'target',
         'user_id',
-        'order_item'
+        'order_item',
+        'report_type',
+        'parameters'
     ];
 
     public function task()

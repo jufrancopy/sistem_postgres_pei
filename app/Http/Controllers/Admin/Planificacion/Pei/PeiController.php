@@ -132,55 +132,65 @@ class PeiController extends Controller
 
     public function store(Request $request)
     {
+        $reportType = $request->report_type;
+        if ($reportType == 'qualitative') {
+            $parameters = $request->input('parameters', []); // Obtener los parámetros del request
+            $parametersJson = json_encode($parameters); // Convertir a JSON
+        }else{
+            $parametersJson = null; // Convertir a JSON
+        }
+
+
+        // Validación si la petición es AJAX
         if ($request->ajax()) {
             $request->validate(
                 [
-                    'name'              => 'required',
+                    'name' => 'required',
+                    // Agrega más validaciones según sea necesario para otros campos
                 ],
                 [
-                    'name.required'     => 'Campo nombre es requerido',
+                    'name.required' => 'El campo nombre es requerido',
+                    // Mensajes de validación personalizados para otros campos
                 ]
             );
-        };
+        }
 
         $user = Auth::user();
 
-        // If exist value in $request->profile_id save value, else create uuid
-        if ($request->profile_id) {
-            $profileId =  $request->profile_id;
-        } else {
-            $profileId = Str::uuid();
-        }
+        // Generar UUID si no se proporciona profile_id
+        $profileId = $request->profile_id ?? Str::uuid();
 
+        // Lógica de almacenamiento basada en el tipo de perfil
         if ($request->type == 'corporative') {
-            $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles'])
-                ->updateOrCreate(
-                    ['id' => $profileId],
-                    [
-                        'name' => $request->name,
-                        'year_start' => $request->year_start,
-                        'year_end' => $request->year_end,
-                        'type' => $request->type,
-                        'level' => $request->level,
-                        'mision' => $request->mision,
-                        'vision' => $request->vision,
-                        'values' => $request->values,
-                        'period' => $request->period,
-                        'numerator' => $request->numerator,
-                        'operator' => $request->operator,
-                        'denominator' => $request->denominator,
-                        'goal' => $request->goal,
-                        'progress' => $request->progress,
-                        'group_id' => $request->group_root_id,
-                        'dependency_id' => $request->dependency_id,
-                        'action' => $request->action,
-                        'indicator' => $request->indicator,
-                        'baseline' => $request->baseline,
-                        'target' => $request->target,
-                        'user_id' => $user->id,
-                        'order_item' => $request->order_item
-                    ]
-                );
+            $profile = PeiProfile::updateOrCreate(
+                ['id' => $profileId],
+                [
+                    'name' => $request->name,
+                    'year_start' => $request->year_start,
+                    'year_end' => $request->year_end,
+                    'type' => $request->type,
+                    'level' => $request->level,
+                    'mision' => $request->mision,
+                    'vision' => $request->vision,
+                    'values' => $request->values,
+                    'period' => $request->period,
+                    'numerator' => $request->numerator,
+                    'operator' => $request->operator,
+                    'denominator' => $request->denominator,
+                    'goal' => $request->goal,
+                    'progress' => $request->progress,
+                    'group_id' => $request->group_root_id,
+                    'dependency_id' => $request->dependency_id,
+                    'action' => $request->action,
+                    'indicator' => $request->indicator,
+                    'baseline' => $request->baseline,
+                    'target' => $request->target,
+                    'user_id' => $user->id,
+                    'order_item' => $request->order_item,
+                    'report_type' => $request->report_type,
+                    'parameters' => $parametersJson,
+                ]
+            );
         } else {
             $profile = PeiProfile::updateOrCreate(
                 ['id' => $profileId],
@@ -206,41 +216,43 @@ class PeiController extends Controller
                     'baseline' => $request->baseline,
                     'target' => $request->target,
                     'user_id' => $user->id,
-                    'order_item' => $request->order_item
+                    'order_item' => $request->order_item,
+                    'report_type' => $request->report_type,
+                    'parameters' => $parametersJson,
                 ]
             );
         }
 
+        // Manejo de relaciones
+        $profile->analysts()->sync($request->analyst_id);
+        $profile->strategies()->sync($request->strategy_id);
+        $profile->responsibles()->sync($request->responsible_id);
+
+        // Construir arrays para retornar en la respuesta JSON
+        $strategiesChecked = $profile->strategies->map(function ($strategy) {
+            return ['id' => $strategy->id, 'text' => $strategy->estrategia];
+        });
+
+        $responsiblesChecked = $profile->responsibles->map(function ($responsible) {
+            return ['id' => $responsible->id, 'name' => $responsible->dependency];
+        });
+
+        // Construir respuesta JSON
+        $responseData = [
+            'success' => $profile->wasRecentlyCreated ? 'Creado exitosamente' : 'Actualizado con éxito',
+            'profile' => $profile,
+            'strategiesChecked' => $strategiesChecked,
+            'responsiblesChecked' => $responsiblesChecked,
+        ];
+
+        // Retornar respuesta JSON adecuada según el caso
         if ($request->parent_id) {
-            $node = PeiProfile::find($request->parent_id);
-            $node->appendNode($profile);
+            $responseData['parent_id'] = $request->parent_id;
         }
 
-        $analysts = $request->analyst_id;
-        $profile->analysts()->sync($analysts);
-
-        $strategies = $request->strategy_id;
-        $profile->strategies()->sync($strategies);
-
-        $responsibles = $request->responsible_id;
-        $profile->responsibles()->sync($responsibles);
-
-        $strategiesChecked = [];
-        foreach ($profile->strategies as $strategy) {
-            $strategiesChecked[] = ['id' => $strategy->id, 'text' => $strategy->estrategia];
-        }
-
-        $responsiblesChecked = [];
-        foreach ($profile->responsibles as $responsible) {
-            $responsiblesChecked[] = ['id' => $responsible->id, 'name' => $responsible->dependency];
-        }
-
-        if ($profile->parent_id == null) {
-            return response()->json(['success' => 'Creado creado exitosamente', 'profile' => $profile, 'strategiesChecked' => $strategiesChecked, 'responsiblesChecked' => $responsiblesChecked]);
-        } else {
-            return response()->json(['success' => 'Actuazalido con éxito', 'profile' => $profile, 'parent_id' => $request->parent_id, 'strategiesChecked' => $strategiesChecked, 'responsiblesChecked' => $responsiblesChecked]);
-        }
+        return response()->json($responseData);
     }
+
 
     public function edit($id)
     {
@@ -319,12 +331,13 @@ class PeiController extends Controller
         return view('admin.planificacion.peis.peis.details', get_defined_vars());
     }
 
-    public function getDetails($idProfile){
+    public function getDetails($idProfile)
+    {
         $profile = PeiProfile::findOrFail($idProfile);
-        
+
         $goals = $profile->where('level', 'goal')->with(['strategies'])->get();
 
-        return response()->json(['profile'=>$profile, 'goals' => $goals]);
+        return response()->json(['profile' => $profile, 'goals' => $goals]);
     }
 
     public function destroy(Request $request, $id)

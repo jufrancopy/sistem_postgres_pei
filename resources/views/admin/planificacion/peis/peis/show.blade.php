@@ -988,15 +988,25 @@
                         return;
                     }
 
-                    // Crear el HTML del nuevo checkbox con la clase de color seleccionada
                     var checkboxHTML = `
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="checkbox${Date.now()}">
-                <label class="form-check-label ${color}" for="checkbox${Date.now()}">
-                    ${description} (${value}%)
-                </label>
-            </div>
-        `;
+                    <div class="form-check">
+                        <input type="checkbox" id="checkbox${Date.now()}" name="parameters[]" value="${description} (${value}%) ${color}" checked/> 
+                        <label class="form-check-label ${color}" for="checkbox${Date.now()}">
+                            <b class="text-white">${description} (${value}%)</b>
+                        </label>
+                        <a href="#" class="delete-checkbox"><i class="fa fa-trash text-danger"></i></a>
+                    </div>`;
+
+
+
+                    // Evento click para eliminar el checkbox
+                    $('body').on('click', '.delete-checkbox', function(e) {
+                        e
+                    .preventDefault(); // Evitar que el enlace actúe como un enlace normal
+
+                        // Obtener el contenedor del checkbox y eliminarlo
+                        $(this).closest('.form-check').remove();
+                    });
 
                     // Agregar el checkbox al contenedor
                     $('#checkboxContainer').append(checkboxHTML);
@@ -1006,22 +1016,53 @@
                     $('#value').val('');
                     $('#color').val('bg-danger'); // Reiniciar el color al predeterminado
                 });
+
                 $('body').on('click', '#reportProgress', function() {
                     var profileID = $(this).data('id');
 
                     $.get("{{ route('pei-profiles.index') }}" + '/' + profileID +
                         '/report-progress',
                         function(data) {
-                            $('#modalReportProgress').html('Formulario de Reporte de Avances');
-                            $('#ajaxReportProgressModal').modal('show');
+                            $('#modalReportProgress').html(
+                                'Definición de Criterios de Evaluación');
+                            $('#ajaxDefineCriteriaModal').modal('show');
 
                             // Llenar los campos del formulario con los datos recibidos
                             $('#progress_profile_id').val(data.profile.id);
-                            $('#progress_parent_id').val(data.profile.parent_id);
+                            // $('#progress_parent_id').val(data.profile.parent_id);
+
+                            $('#progress_report_type').val(null).trigger('change');
+
+                            $('#progress_report_type').select2({
+                                placeholder: 'Seleccione el Tipo de Reporte'
+                            });
+
+                            $('#color').select2({
+                                placeholder: 'Seleccione el Color'
+                            });
+
+                            $('.qualitative').hide();
+                            $('.quantitative').hide();
+
+                            $('#progress_report_type').change(function() {
+                                var selectedOption = $(this).val();
+
+                                // Ocultar todos los divs
+                                $('.quantitative, .qualitative').hide();
+
+                                // Mostrar el div correspondiente al tipo seleccionado
+                                if (selectedOption === 'quantitative') {
+                                    $('.quantitative').show();
+                                } else if (selectedOption === 'qualitative') {
+                                    $('.qualitative').show();
+                                }
+                            });
+
                             // Extraer el texto del contenido HTML
                             var tempDiv = document.createElement("div");
                             tempDiv.innerHTML = data.profile.name;
                             var plainText = tempDiv.textContent || tempDiv.innerText || "";
+
                             // Mostrar el texto limpio en el campo de texto
                             $('#progress_action').val(plainText);
                             $('#progress_group_id').val(data.profile.group_id);
@@ -1037,8 +1078,6 @@
                             $('#progress_baseline').val(data.profile.baseline);
                             $('#progress_target').val(data.profile.target);
                             $('#progress_dependency').val(data.profile.dependency_id);
-
-                            // Mostrar el modal con los datos cargados
 
                         }).fail(function() {
                         alert('Error al cargar los datos del perfil.');
@@ -1464,6 +1503,134 @@
 
                 data.append('name', actionsEditor.getData());
 
+                $.ajax({
+                    data: data,
+                    url: "{{ route('pei-profiles.store') }}",
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+
+                        Swal.fire(
+                            'Excelente!',
+                            'Has Agregado una nueva Acción.',
+                            'success'
+                        )
+
+                        var parentId = data.profile.parent_id;
+                        var actionsId = data.profile.id;
+                        var actionsName = data.profile.name;
+
+                        var goalId = data.profile
+                            .id; // Supongo que contiene el ID del objetivo al que deseas agregar o actualizar acciones
+
+                        if (saveBtnValue === "create") {
+                            // Crear una nueva fila de acción (action) y agregarla a la tabla existente
+                            var newRowHtml = `
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <div class="card-body" id="actionsBlock_${ actionsId }">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Nro.</th>
+                                                            <th>Acción</th>
+                                                            <th>Indicador</th>
+                                                            <th>Línea de Base</th>
+                                                            <th>Meta</th>
+                                                            <th>Responsable</th>
+                                                            <th>Acciones</th>
+                                                        </tr>
+                                                    </thead>                                  
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>${data.profile.order_item}</td>
+                                                            <td>${data.profile.name}</td>
+                                                            <td>${data.profile.indicator}</td>
+                                                            <td>${data.profile.baseline}</td>
+                                                            <td>${data.profile.target}</td>
+                                                            <td>${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}</td>
+                                                            <td>
+                                                                <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
+                                                                    <i class="fa fa-edit" aria-hidden="true"></i>
+                                                                </a>
+                                                                <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
+                                                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </h5>
+                                </div>
+                            </div>`;
+
+                            // Agregar la nueva fila al final de la tabla del objetivo correspondiente
+                            $(`.actionDetail #actionDetail`).append(
+                                newRowHtml);
+                        } else if (saveBtnValue === "edit") {
+                            // Actualiza una fila de acción existente
+                            var updatedHtml = `
+                                <td>${data.profile.order_item}</td>
+                                <td>${data.profile.name}</td>
+                                <td>${data.profile.indicator}</td>
+                                <td>${data.profile.baseline}</td>
+                                <td>${data.profile.target}</td>
+                                <td>${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}</td>
+                                <td>
+                                    <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
+                                        <i class="fa fa-edit" aria-hidden="true"></i>
+                                    </a>
+                                    <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
+                                        <i class="fa fa-trash" aria-hidden="true"></i>
+                                    </a>
+                                </td>                            
+                        `;
+                            $(`#actionsBlock_${actionsId} table tbody tr`).html(updatedHtml);
+
+
+                        }
+
+                        $('#actionsForm').trigger("reset");
+                        $('#ajaxActionsModal').modal('hide');
+                    },
+
+                    error: function(data) {
+                        var obj = data.responseJSON.errors;
+                        $.each(obj, function(key, value) {
+                            // Alert Toastr
+                            toastr.options = {
+                                closeButton: true,
+                                progressBar: true,
+                            };
+                            toastr.error("Atención: " + value);
+                        });
+                        $('#saveBtnVision').html('Guardar Cambios');
+                    }
+
+                });
+            });
+
+            $('#saveBtnMonitoringType').click(function(e) {
+                e.preventDefault();
+                $(this).html('Enviando..');
+
+                var saveBtnValue = $(this).val();
+
+                var data = new FormData();
+                var form_data = $('#monitoringType').serializeArray();
+                console.log("🚀 ~ $ ~ form_data:", form_data)
+
+                $.each(form_data, function(key, input) {
+                    data.append(input.name, input.value);
+                });
+
+                
                 $.ajax({
                     data: data,
                     url: "{{ route('pei-profiles.store') }}",
