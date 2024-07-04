@@ -140,7 +140,6 @@ class PeiController extends Controller
             $parametersJson = null; // Convertir a JSON
         }
 
-
         // Validación si la petición es AJAX
         if ($request->ajax()) {
             $request->validate(
@@ -179,7 +178,7 @@ class PeiController extends Controller
                     'denominator' => $request->denominator,
                     'goal' => $request->goal,
                     'progress' => $request->progress,
-                    'group_id' => $request->group_root_id,
+                    'group_id' => $request->group_id,
                     'dependency_id' => $request->dependency_id,
                     'action' => $request->action,
                     'indicator' => $request->indicator,
@@ -252,7 +251,6 @@ class PeiController extends Controller
 
         return response()->json($responseData);
     }
-
 
     public function edit($id)
     {
@@ -337,7 +335,13 @@ class PeiController extends Controller
 
         $goals = $profile->where('level', 'goal')->with(['strategies'])->get();
 
-        return response()->json(['profile' => $profile, 'goals' => $goals]);
+        $responsiblesChecked = [];
+
+        foreach ($profile->responsibles as $responsible) {
+            $responsiblesChecked[] = ['id' => $responsible->id, 'text' => $responsible->dependency];
+        }
+
+        return response()->json(['profile' => $profile, 'goals' => $goals, 'responsiblesChecked'=>$responsiblesChecked]);
     }
 
     public function destroy(Request $request, $id)
