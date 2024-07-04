@@ -551,7 +551,20 @@
             <div class="modal-body">
                 <form id="monitoringType" name="monitoringType" class="form-horizontal">
                     {{ Form::hidden('profile_id', null, ['id' => 'progress_profile_id']) }}
-                    {{-- {{ Form::hidden('parent_id', null, ['id' => 'progress_parent_id']) }} --}}
+                    {{ Form::hidden('parent_id', null, ['id' => 'progress_parent_id']) }}
+                    {{ Form::hidden('group_id', null, ['id' => 'progress_group_id']) }}
+                    {{ Form::hidden('mision', null, ['id' => 'progress_mision']) }}
+                    {{ Form::hidden('vision', null, ['id' => 'progress_vision']) }}
+                    {{ Form::hidden('type', 'institucional', ['id' => 'progress_type']) }}
+                    {{ Form::hidden('level', 'action', ['id' => 'progress_level']) }}
+                    {{ Form::hidden('period', null, ['class' => 'form-control', 'id' => 'progress_period']) }}
+                    {{ Form::hidden('numerator', null, ['class' => 'form-control', 'id' => 'progress_numerator']) }}
+                    {{ Form::hidden('operator', null, ['class' => 'form-control', 'id' => 'progress_numerator']) }}
+                    {{ Form::hidden('denominator', null, ['class' => 'form-control', 'id' => 'progress_denominator']) }}
+                    {{ Form::hidden('goal', null, ['class' => 'form-control', 'id' => 'progress_goal']) }}
+                    {{ Form::hidden('progress', null, ['class' => 'form-control', 'id' => 'progress_progress']) }}
+                    {{ Form::hidden('dependency_id', null, ['class' => 'form-control', 'id' => 'progress_dependency']) }}
+                    {{ Form::hidden('order_item', null, ['class' => 'form-control', 'id' => 'progress_order_item']) }}
 
                     <div class="progress_action mb-2">
                         {{ Form::label('name', 'Acción:', ['class' => 'control-label']) }}
@@ -587,6 +600,18 @@
                             'id' => 'progress_target',
                             'readonly',
                         ]) }}
+                    </div>
+
+                    {{ Form::label('responsiblesDetail', 'Responsables', ['class' => 'control-label']) }}
+                    <div id="responsiblesContainer" class="mb-2"></div>
+                    
+                    <div class="form-group progress_responsibles">
+                        {{ Form::label('progress_responsibles', 'Responsables:') }}
+                        {!! Form::select('responsible_id[]', [], null, [
+                            'id' => 'progress_responsibles',
+                            'style' => 'width:100%',
+                            'multiple',
+                        ]) !!}
                     </div>
 
                     <div class="progress_report_type mb-2">
@@ -626,8 +651,8 @@
                                     null,
                                     [
                                         'class' => 'form-control',
-                                        'placeholder'=> '',
-                                        'style'=> 'width:100%',
+                                        'placeholder' => '',
+                                        'style' => 'width:100%',
                                         'id' => 'color',
                                     ],
                                 ) }}
@@ -669,7 +694,8 @@
 
                     <div class="col-sm-offset-2 col-sm-10">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-success" id="saveBtnMonitoringType" value="create">Guardar
+                        <button type="submit" class="btn btn-success" id="saveBtnMonitoringType"
+                            value="create">Guardar
                             cambios
                         </button>
                     </div>

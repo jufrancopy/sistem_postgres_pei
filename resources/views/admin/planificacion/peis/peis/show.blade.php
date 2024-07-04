@@ -718,7 +718,6 @@
                     });
 
                     var url = '/admin/globales/get-dependencies/' + data.profile.dependency_id;
-                    console.log("🚀 ~ file: show.blade.php:1188 ~ $.get ~ url:", url)
                     $('#responsibles').select2({
                         allowClear: true,
                         ajax: {
@@ -997,12 +996,10 @@
                         <a href="#" class="delete-checkbox"><i class="fa fa-trash text-danger"></i></a>
                     </div>`;
 
-
-
                     // Evento click para eliminar el checkbox
                     $('body').on('click', '.delete-checkbox', function(e) {
                         e
-                    .preventDefault(); // Evitar que el enlace actúe como un enlace normal
+                            .preventDefault(); // Evitar que el enlace actúe como un enlace normal
 
                         // Obtener el contenedor del checkbox y eliminarlo
                         $(this).closest('.form-check').remove();
@@ -1023,9 +1020,40 @@
                     $.get("{{ route('pei-profiles.index') }}" + '/' + profileID +
                         '/report-progress',
                         function(data) {
+                            console.log(data)
                             $('#modalReportProgress').html(
                                 'Definición de Criterios de Evaluación');
                             $('#ajaxDefineCriteriaModal').modal('show');
+
+
+                            // Llenar los campos del formulario con los datos recibidos
+                            $('#progress_profile_id').val(data.profile.id);
+                            $('#progress_action').val(data.profile.name);
+                            $('#progress_group_id').val(data.profile.group_id);
+                            $('#progress_mision').val(data.profile.mision);
+                            $('#progress_indicator').val(data.profile.indicator);
+                            $('#progress_vision').val(data.profile.vision);
+                            $('#progress_type').val(data.profile.progress_type);
+                            $('#progress_level').val(data.profile.level);
+                            $('#progress_period').val(data.profile.period);
+                            $('#progress_denominator').val(data.profile.denominator);
+                            $('#progress_numerator').val(data.profile.numerator);
+                            $('#progress_goal').val(data.profile.goal);
+                            $('#progress_baseline').val(data.profile.baseline);
+                            $('#progress_target').val(data.profile.target);
+                            $('#progress_dependency').val(data.profile.dependency_id);
+                            $('#progress_parent_id').val(data.profile.parent_id);
+                            $('#progress_order_item').val(data.profile.order_item);
+
+                            // Mostrar responsables en el contenedor
+                            var responsablesContainer = $('#responsiblesContainer');
+                            responsablesContainer.empty();
+                            data.responsiblesChecked.forEach(function(item) {
+                                var badge = $('<span></span>')
+                                    .addClass('badge badge-primary')
+                                    .text(item.text);
+                                responsablesContainer.append(badge);
+                            });
 
                             // Llenar los campos del formulario con los datos recibidos
                             $('#progress_profile_id').val(data.profile.id);
@@ -1037,12 +1065,58 @@
                                 placeholder: 'Seleccione el Tipo de Reporte'
                             });
 
+                            $('.progress_responsibles').hide()
+
                             $('#color').select2({
                                 placeholder: 'Seleccione el Color'
                             });
 
-                            $('.qualitative').hide();
-                            $('.quantitative').hide();
+                            if (data.profile) {
+                                var reportType = data.profile.report_type;
+                                $('#progress_report_type').val(reportType).trigger('change');
+                                // Mostrar el div correspondiente basado en el tipo de reporte
+                                if (reportType === 'quantitative') {
+                                    $('.quantitative').show();
+                                    $('.qualitative').hide();
+                                } else if (reportType === 'qualitative') {
+                                    $('.quantitative').hide();
+                                    $('.qualitative').show();
+                                }
+
+                                // Procesar el valor de parameters
+                                var parameters = JSON.parse(data.profile.parameters);
+                                parameters.forEach(function(param) {
+                                    var parts = param.split(' ');
+                                    var value = parts.slice(0, -1).join(
+                                        ' '); // Extraer el valor
+                                    var color = parts.slice(-1)[0]; // Extraer el color
+
+                                    var checkboxHTML = `
+                    <div class="form-check">
+                        <input type="checkbox" id="checkbox${Date.now()}" name="parameters[]" value="${value} (${value}%) ${color}" checked/> 
+                        <label class="form-check-label ${color}" for="checkbox${Date.now()}">
+                            <b class="text-white">${value} (${value}%)</b>
+                        </label>
+                        <a href="#" class="delete-checkbox"><i class="fa fa-trash text-danger"></i></a>
+                    </div>`;
+
+                                    // Evento click para eliminar el checkbox
+                                    $('body').on('click', '.delete-checkbox', function(
+                                        e) {
+                                        e
+                                    .preventDefault(); // Evitar que el enlace actúe como un enlace normal
+
+                                        // Obtener el contenedor del checkbox y eliminarlo
+                                        $(this).closest('.form-check').remove();
+                                    });
+
+                                    // Agregar el checkbox al contenedor
+                                    $('#checkboxContainer').append(checkboxHTML);
+
+
+                                });
+
+                            }
 
                             $('#progress_report_type').change(function() {
                                 var selectedOption = $(this).val();
@@ -1078,6 +1152,55 @@
                             $('#progress_baseline').val(data.profile.baseline);
                             $('#progress_target').val(data.profile.target);
                             $('#progress_dependency').val(data.profile.dependency_id);
+                            $('#progress_parent_id').val(data.profile.parent_id);
+                            $('#progress_order_item').val(data.profile.order_item);
+
+                            var responsiblesContainer = $('#responsiblesContainer')
+                            responsiblesContainer.empty();
+                            data.responsiblesChecked.forEach(function(item) {
+                                var badge = $('<span></span>')
+                                    .addClass(
+                                        'badge badge-primary'
+                                    ) // Clase Bootstrap para badge
+                                    .text(item.text); // Texto del badge
+                                responsiblesContainer.append(badge);
+                            });
+
+                            var selectResponsibles = $('#progress_responsibles').select2({});
+                            selectResponsibles.empty();
+                            data.responsiblesChecked.forEach(function(d) {
+                                var option = new Option(d.text, d.id, true, true);
+                                selectResponsibles.append(option).trigger('change');
+                                selectResponsibles.trigger({
+                                    type: 'select2:select',
+                                    params: {
+                                        data: data
+                                    }
+                                });
+                            });
+
+                            var url = '/admin/globales/get-dependencies/' + data.profile
+                                .dependency_id;
+
+                            $('#progress_responsibles').select2({
+                                allowClear: true,
+                                ajax: {
+                                    url: url,
+                                    dataType: 'json',
+                                    delay: 250,
+                                    processResults: function(data) {
+                                        return {
+                                            results: $.map(data, function(item) {
+                                                return {
+                                                    text: item.dependency,
+                                                    id: item.id
+                                                }
+                                            })
+                                        };
+                                    },
+                                    cache: true
+                                }
+                            });
 
                         }).fail(function() {
                         alert('Error al cargar los datos del perfil.');
@@ -1492,8 +1615,6 @@
                 $(this).html('Enviando..');
 
                 var saveBtnValue = $(this).val();
-                console.log("🚀 ~ file: show.blade.php:1524 ~ $ ~ saveBtnValue:", saveBtnValue)
-
                 var data = new FormData();
                 var form_data = $('#actionsForm').serializeArray();
 
@@ -1624,13 +1745,10 @@
 
                 var data = new FormData();
                 var form_data = $('#monitoringType').serializeArray();
-                console.log("🚀 ~ $ ~ form_data:", form_data)
-
                 $.each(form_data, function(key, input) {
                     data.append(input.name, input.value);
                 });
 
-                
                 $.ajax({
                     data: data,
                     url: "{{ route('pei-profiles.store') }}",
@@ -1720,8 +1838,6 @@
                                 </td>                            
                         `;
                             $(`#actionsBlock_${actionsId} table tbody tr`).html(updatedHtml);
-
-
                         }
 
                         $('#actionsForm').trigger("reset");
