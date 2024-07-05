@@ -975,6 +975,8 @@
             });
 
             $(document).ready(function() {
+                $('.quantitative, .qualitative').hide();
+
                 // Controlador de evento para el botón #reportProgress
                 $('#insertCheckbox').click(function() {
                     var description = $('#description').val().trim();
@@ -986,14 +988,15 @@
                         alert('Por favor ingresa una descripción y un valor.');
                         return;
                     }
-
                     var checkboxHTML = `
                     <div class="form-check">
-                        <input type="checkbox" id="checkbox${Date.now()}" name="parameters[]" value="${description} (${value}%) ${color}" checked/> 
-                        <label class="form-check-label ${color}" for="checkbox${Date.now()}">
-                            <b class="text-white">${description} (${value}%)</b>
-                        </label>
-                        <a href="#" class="delete-checkbox"><i class="fa fa-trash text-danger"></i></a>
+                        <div class="input-group">
+                            <input type="hidden" id="checkbox${Date.now()}" name="parameters[]" value="${description} (${value}%) ${color}" readonly class="form-control text-white ${color}" /> 
+                            <label class="badge ${color}">${description} (${value}%)</label>
+                            <div class="input-group-append">
+                                <a href="#" class="delete-checkbox input-group-text"><i class="fa fa-trash text-danger"></i></a>
+                            </div>
+                        </div>
                     </div>`;
 
                     // Evento click para eliminar el checkbox
@@ -1020,11 +1023,13 @@
                     $.get("{{ route('pei-profiles.index') }}" + '/' + profileID +
                         '/report-progress',
                         function(data) {
-                            console.log(data)
                             $('#modalReportProgress').html(
                                 'Definición de Criterios de Evaluación');
                             $('#ajaxDefineCriteriaModal').modal('show');
 
+                            function formatNumber(num) {
+                                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                            }
 
                             // Llenar los campos del formulario con los datos recibidos
                             $('#progress_profile_id').val(data.profile.id);
@@ -1036,7 +1041,8 @@
                             $('#progress_type').val(data.profile.progress_type);
                             $('#progress_level').val(data.profile.level);
                             $('#progress_period').val(data.profile.period);
-                            $('#progress_denominator').val(data.profile.denominator);
+                            $('#progress_denominator').val(formatNumber(Math.round(data.profile
+                                .denominator)));
                             $('#progress_numerator').val(data.profile.numerator);
                             $('#progress_goal').val(data.profile.goal);
                             $('#progress_baseline').val(data.profile.baseline);
@@ -1065,96 +1071,6 @@
                                 placeholder: 'Seleccione el Tipo de Reporte'
                             });
 
-                            $('.progress_responsibles').hide()
-
-                            $('#color').select2({
-                                placeholder: 'Seleccione el Color'
-                            });
-
-                            if (data.profile) {
-                                var reportType = data.profile.report_type;
-                                $('#progress_report_type').val(reportType).trigger('change');
-                                // Mostrar el div correspondiente basado en el tipo de reporte
-                                if (reportType === 'quantitative') {
-                                    $('.quantitative').show();
-                                    $('.qualitative').hide();
-                                } else if (reportType === 'qualitative') {
-                                    $('.quantitative').hide();
-                                    $('.qualitative').show();
-                                }
-
-                                // Procesar el valor de parameters
-                                var parameters = JSON.parse(data.profile.parameters);
-                                parameters.forEach(function(param) {
-                                    var parts = param.split(' ');
-                                    var value = parts.slice(0, -1).join(
-                                        ' '); // Extraer el valor
-                                    var color = parts.slice(-1)[0]; // Extraer el color
-
-                                    var checkboxHTML = `
-                    <div class="form-check">
-                        <input type="checkbox" id="checkbox${Date.now()}" name="parameters[]" value="${value} (${value}%) ${color}" checked/> 
-                        <label class="form-check-label ${color}" for="checkbox${Date.now()}">
-                            <b class="text-white">${value} (${value}%)</b>
-                        </label>
-                        <a href="#" class="delete-checkbox"><i class="fa fa-trash text-danger"></i></a>
-                    </div>`;
-
-                                    // Evento click para eliminar el checkbox
-                                    $('body').on('click', '.delete-checkbox', function(
-                                        e) {
-                                        e
-                                    .preventDefault(); // Evitar que el enlace actúe como un enlace normal
-
-                                        // Obtener el contenedor del checkbox y eliminarlo
-                                        $(this).closest('.form-check').remove();
-                                    });
-
-                                    // Agregar el checkbox al contenedor
-                                    $('#checkboxContainer').append(checkboxHTML);
-
-
-                                });
-
-                            }
-
-                            $('#progress_report_type').change(function() {
-                                var selectedOption = $(this).val();
-
-                                // Ocultar todos los divs
-                                $('.quantitative, .qualitative').hide();
-
-                                // Mostrar el div correspondiente al tipo seleccionado
-                                if (selectedOption === 'quantitative') {
-                                    $('.quantitative').show();
-                                } else if (selectedOption === 'qualitative') {
-                                    $('.qualitative').show();
-                                }
-                            });
-
-                            // Extraer el texto del contenido HTML
-                            var tempDiv = document.createElement("div");
-                            tempDiv.innerHTML = data.profile.name;
-                            var plainText = tempDiv.textContent || tempDiv.innerText || "";
-
-                            // Mostrar el texto limpio en el campo de texto
-                            $('#progress_action').val(plainText);
-                            $('#progress_group_id').val(data.profile.group_id);
-                            $('#progress_mision').val(data.profile.mision);
-                            $('#progress_indicator').val(data.profile.indicator);
-                            $('#progress_vision').val(data.profile.vision);
-                            $('#progress_type').val(data.profile.progress_type);
-                            $('#progress_level').val(data.profile.level);
-                            $('#progress_period').val(data.profile.period);
-                            $('#progress_denominator').val(data.profile.denominator);
-                            $('#progress_numerator').val(data.profile.numerator);
-                            $('#progress_goal').val(data.profile.goal);
-                            $('#progress_baseline').val(data.profile.baseline);
-                            $('#progress_target').val(data.profile.target);
-                            $('#progress_dependency').val(data.profile.dependency_id);
-                            $('#progress_parent_id').val(data.profile.parent_id);
-                            $('#progress_order_item').val(data.profile.order_item);
-
                             var responsiblesContainer = $('#responsiblesContainer')
                             responsiblesContainer.empty();
                             data.responsiblesChecked.forEach(function(item) {
@@ -1166,7 +1082,7 @@
                                 responsiblesContainer.append(badge);
                             });
 
-                            var selectResponsibles = $('#progress_responsibles').select2({});
+                            var selectResponsibles = $('#progress_responsibles').select2();
                             selectResponsibles.empty();
                             data.responsiblesChecked.forEach(function(d) {
                                 var option = new Option(d.text, d.id, true, true);
@@ -1202,14 +1118,93 @@
                                 }
                             });
 
+                            $('.progress_responsibles').hide()
+
+                            $('#color').select2({
+                                placeholder: 'Seleccione el Color'
+                            });
+
+                            if (data.profile) {
+                                var reportType = data.profile.report_type;
+                                $('#progress_report_type').val(reportType).trigger('change');
+                                // Mostrar el div correspondiente basado en el tipo de reporte
+                                if (reportType === 'quantitative') {
+                                    $('.quantitative').show();
+                                    $('.qualitative').hide();
+                                } else if (reportType === 'qualitative') {
+                                    $('.quantitative').hide();
+                                    $('.qualitative').show();
+                                }
+
+                                // Procesar el valor de parameters
+                                var parameters = JSON.parse(data.profile.parameters);
+                                parameters.forEach(function(param) {
+                                    var parts = param.split(' ');
+                                    var value = parts.slice(0, -1).join(
+                                        ' '); // Extraer el valor
+                                    console.log("🚀 ~ parameters.forEach ~ value:",
+                                        value)
+                                    var color = parts.slice(-1)[0]; // Extraer el color
+
+                                    var checkboxHTML = `
+                                    <div class="form-check">
+                                        <div class="input-group">
+                                        <input type="hidden" id="checkbox${Date.now()}" name="parameters[]" value="${value} (${value}%) ${color}" checked/> 
+                                        <label class="badge ${color} mr-2">${value}</label>
+                                        <a href="#" class="delete-checkbox"><i class="fa fa-trash text-danger"></i></a>
+                                        </div>
+                                    </div>`;
+
+                                    // Evento click para eliminar el checkbox
+                                    $('body').on('click', '.delete-checkbox', function(
+                                        e) {
+                                        e
+                                            .preventDefault(); // Evitar que el enlace actúe como un enlace normal
+
+                                        // Obtener el contenedor del checkbox y eliminarlo
+                                        $(this).closest('.form-check').remove();
+                                    });
+
+                                    // Agregar el checkbox al contenedor
+                                    $('#checkboxContainer').append(checkboxHTML);
+
+                                });
+
+                            }
+
+                            // Extraer el texto del contenido HTML
+                            var tempDiv = document.createElement("div");
+                            tempDiv.innerHTML = data.profile.name;
+                            var plainText = tempDiv.textContent || tempDiv.innerText || "";
+
+                            // Mostrar el texto limpio en el campo de texto
+                            $('#progress_action').val(plainText);
+                            $('#progress_group_id').val(data.profile.group_id);
+                            $('#progress_mision').val(data.profile.mision);
+                            $('#progress_indicator').val(data.profile.indicator);
+                            $('#progress_vision').val(data.profile.vision);
+                            $('#progress_type').val(data.profile.progress_type);
+                            $('#progress_level').val(data.profile.level);
+                            $('#progress_period').val(data.profile.period);
+                            $('#progress_denominator').val(data.profile.denominator);
+                            $('#progress_numerator').val(data.profile.numerator);
+                            $('#progress_goal').val(data.profile.goal);
+                            $('#progress_baseline').val(data.profile.baseline);
+                            $('#progress_target').val(data.profile.target);
+                            $('#progress_dependency').val(data.profile.dependency_id);
+                            $('#progress_parent_id').val(data.profile.parent_id);
+                            $('#progress_order_item').val(data.profile.order_item);
+                            console.log('Denominador: ', data.profile.denominator)
+
                         }).fail(function() {
                         alert('Error al cargar los datos del perfil.');
                     });
-                });
 
+
+
+                });
                 // Controlador de evento para la calculadora
                 $('.calculator').on('click', 'button', function() {
-                    // Obtener los valores actuales de los campos de entrada
                     var num1 = parseFloat($('#progress_numerator').val());
                     var num2 = parseFloat($('#progress_denominator').val());
 
@@ -1243,15 +1238,29 @@
                                 porcentaje = Math.round(
                                     porcentaje); // Redondea el resultado a entero
                             }
-                            result = porcentaje + '%'; // Agrega '%' al final
+                            result = porcentaje; // Agrega '%' al final
                             break;
                         default:
                             result = 0;
                             break;
                     }
 
+
                     // Mostrar el resultado en el campo de texto de resultado
                     $('#progress_progress').val(result);
+                });
+
+                $('#progress_report_type').change(function() {
+                    var selectedOption = $(this).val();
+                    // Ocultar todos los divs
+                    $('.quantitative, .qualitative').hide();
+
+                    // Mostrar el div correspondiente al tipo seleccionado
+                    if (selectedOption === 'quantitative') {
+                        $('.quantitative').show();
+                    } else if (selectedOption === 'qualitative') {
+                        $('.qualitative').show();
+                    }
                 });
             });
 
