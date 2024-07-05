@@ -558,11 +558,11 @@
                     {{ Form::hidden('type', 'institucional', ['id' => 'progress_type']) }}
                     {{ Form::hidden('level', 'action', ['id' => 'progress_level']) }}
                     {{ Form::hidden('period', null, ['class' => 'form-control', 'id' => 'progress_period']) }}
-                    {{ Form::hidden('numerator', null, ['class' => 'form-control', 'id' => 'progress_numerator']) }}
-                    {{ Form::hidden('operator', null, ['class' => 'form-control', 'id' => 'progress_numerator']) }}
-                    {{ Form::hidden('denominator', null, ['class' => 'form-control', 'id' => 'progress_denominator']) }}
+                    {{-- {{ Form::hidden('numerator', null, ['class' => 'form-control', 'id' => 'progress_numerator']) }}
+                    {{ Form::hidden('operator', null, ['class' => 'form-control', 'id' => 'progress_numerator']) }} --}}
+                    {{-- {{ Form::hidden('denominator', null, ['class' => 'form-control', 'id' => 'progress_denominator']) }} --}}
                     {{ Form::hidden('goal', null, ['class' => 'form-control', 'id' => 'progress_goal']) }}
-                    {{ Form::hidden('progress', null, ['class' => 'form-control', 'id' => 'progress_progress']) }}
+                    {{-- {{ Form::hidden('progress', null, ['class' => 'form-control', 'id' => 'progress_progress']) }} --}}
                     {{ Form::hidden('dependency_id', null, ['class' => 'form-control', 'id' => 'progress_dependency']) }}
                     {{ Form::hidden('order_item', null, ['class' => 'form-control', 'id' => 'progress_order_item']) }}
 
@@ -604,7 +604,7 @@
 
                     {{ Form::label('responsiblesDetail', 'Responsables', ['class' => 'control-label']) }}
                     <div id="responsiblesContainer" class="mb-2"></div>
-                    
+
                     <div class="form-group progress_responsibles">
                         {{ Form::label('progress_responsibles', 'Responsables:') }}
                         {!! Form::select('responsible_id[]', [], null, [
@@ -639,14 +639,14 @@
                                 {{ Form::select(
                                     'color',
                                     [
-                                        'bg-danger' => 'Rojo',
-                                        'bg-warning' => 'Amarillo',
-                                        'bg-success' => 'Verde',
-                                        'bg-info' => 'Azul',
-                                        'bg-primary' => 'Primario',
-                                        'bg-secondary' => 'Secundario',
-                                        'bg-dark' => 'Oscuro',
-                                        'bg-light' => 'Claro',
+                                        'badge-danger' => 'Rojo',
+                                        'badge-warning' => 'Amarillo',
+                                        'badge-success' => 'Verde',
+                                        'badge-info' => 'Azul',
+                                        'badge-primary' => 'Primario',
+                                        'badge-secondary' => 'Secundario',
+                                        'badge-dark' => 'Oscuro',
+                                        'badge-light' => 'Claro',
                                     ],
                                     null,
                                     [
@@ -670,7 +670,7 @@
                     <div class="quantitative">
                         <div class="calculator">
                             {{-- <h3>Calculadora</h3> --}}
-                            <input type="number" id="progress_denominator" class="form-control"
+                            <input type="number" id="progress_denominator" class="form-control" name="denominator"
                                 placeholder="META NUMÉRICA">
                             <input type="number" id="progress_numerator" class="form-control"
                                 placeholder="Logrado">
@@ -679,7 +679,7 @@
                             <button type="button" class="btn btn-primary operation-btn" data-operation="multiply">Multiplicar (x)</button>
                             <button type="button" class="btn btn-primary operation-btn" data-operation="divide">Dividir (/)</button> --}}
                             <button type="button" class="btn btn-primary operation-btn"
-                                data-operation="percentage">Porcentaje (%)</button>
+                                data-operation="percentage">Generar Avance (%)</button>
                         </div>
 
                         <div class="progress_progress mb-2">

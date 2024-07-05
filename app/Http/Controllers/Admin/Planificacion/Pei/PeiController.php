@@ -132,11 +132,12 @@ class PeiController extends Controller
 
     public function store(Request $request)
     {
+        $denominator = $request->denominator;
         $reportType = $request->report_type;
         if ($reportType == 'qualitative') {
             $parameters = $request->input('parameters', []); // Obtener los parámetros del request
             $parametersJson = json_encode($parameters); // Convertir a JSON
-        }else{
+        } else {
             $parametersJson = null; // Convertir a JSON
         }
 
@@ -175,7 +176,7 @@ class PeiController extends Controller
                     'period' => $request->period,
                     'numerator' => $request->numerator,
                     'operator' => $request->operator,
-                    'denominator' => $request->denominator,
+                    'denominator' => $denominator,
                     'goal' => $request->goal,
                     'progress' => $request->progress,
                     'group_id' => $request->group_id,
@@ -205,7 +206,7 @@ class PeiController extends Controller
                     'period' => $request->period,
                     'numerator' => $request->numerator,
                     'operator' => $request->operator,
-                    'denominator' => $request->denominator,
+                    'denominator' => $denominator,
                     'goal' => $request->goal,
                     'progress' => $request->progress,
                     'group_id' => $request->group_id,
@@ -341,7 +342,7 @@ class PeiController extends Controller
             $responsiblesChecked[] = ['id' => $responsible->id, 'text' => $responsible->dependency];
         }
 
-        return response()->json(['profile' => $profile, 'goals' => $goals, 'responsiblesChecked'=>$responsiblesChecked]);
+        return response()->json(['profile' => $profile, 'goals' => $goals, 'responsiblesChecked' => $responsiblesChecked]);
     }
 
     public function destroy(Request $request, $id)
