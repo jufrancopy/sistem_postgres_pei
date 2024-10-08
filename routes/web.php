@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\Admin\Planificacion\Quiz\QuizController;
+
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+
 
 
 Route::get('/', function () {
@@ -148,6 +151,20 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-group/{idSelection}', 'Admin\Globales\GroupController@dataGroup')->name('get-group');
         Route::get('get-users', 'Admin\UserController@getUsers')->name('get-users');
         Route::get('get-users/{idGroup}', 'Admin\UserController@getUsersForGroup')->name('get-users-group');
+    });
+
+    Route::prefix('quiz')->group(function() {
+        // Mostrar la página inicial del Quiz
+        Route::get('/', [QuizController::class, 'index'])->name('quiz.index');
+    
+        // Mostrar una pregunta específica
+        Route::get('/question/{id}', [QuizController::class, 'show'])->name('quiz.show');
+    
+        // Enviar una respuesta para la pregunta
+        Route::post('/answer/{id}', [QuizController::class, 'answer'])->name('quiz.answer');
+    
+        // Mostrar los resultados al finalizar el Quiz
+        Route::get('/result', [QuizController::class, 'result'])->name('quiz.result');
     });
 
     //Rutas del Modulo FODA
