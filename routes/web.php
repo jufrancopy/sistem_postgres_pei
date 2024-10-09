@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\Planificacion\Quiz\QuizController;
+use App\Http\Controllers\Admin\Survey\SurveyController;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +12,8 @@ Route::get('/', function () {
 });
 
 Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home')->middleware('auth');
 
 Route::group(['middleware' => ['auth']], function () {
     Route::resource('products', 'Admin\ProductController');
@@ -153,18 +155,18 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-users/{idGroup}', 'Admin\UserController@getUsersForGroup')->name('get-users-group');
     });
 
-    Route::prefix('quiz')->group(function() {
+    Route::prefix('surveys')->group(function () {
         // Mostrar la página inicial del Quiz
-        Route::get('/', [QuizController::class, 'index'])->name('quiz.index');
-    
+        Route::get('/', [SurveyController::class, 'index'])->name('surveys.index');
+
         // Mostrar una pregunta específica
-        Route::get('/question/{id}', [QuizController::class, 'show'])->name('quiz.show');
-    
+        Route::get('/question/{id}', [SurveyController::class, 'show'])->name('surveys.show');
+
         // Enviar una respuesta para la pregunta
-        Route::post('/answer/{id}', [QuizController::class, 'answer'])->name('quiz.answer');
-    
+        Route::post('/answer/{id}', [SurveyController::class, 'answer'])->name('surveys.answer');
+
         // Mostrar los resultados al finalizar el Quiz
-        Route::get('/result', [QuizController::class, 'result'])->name('quiz.result');
+        Route::get('/result', [SurveyController::class, 'result'])->name('surveys.result');
     });
 
     //Rutas del Modulo FODA
@@ -232,8 +234,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('tasks-list-tree/', 'Admin\Planificacion\Task\TaskController@getTasksForGroup')->name('tasks-list-tree');
     Route::get('tree-group', 'Admin\Planificacion\Task\TaskController@dataTreeGroup')->name('tree-group');
 });
-
-Route::get('/home', 'HomeController@index')->name('home')->middleware('auth');
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('table-list', function () {
