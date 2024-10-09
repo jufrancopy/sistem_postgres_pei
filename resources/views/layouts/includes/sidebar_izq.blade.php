@@ -60,6 +60,13 @@
                     <p>Acitividades</p>
                 </a>
             </li>
+
+            <li class="nav-item ">
+                <a class="nav-link" href="{{ route('surveys.index') }}">
+                    <i class="material-icons">poll </i>
+                    <p>Encuesta</p>
+                </a>
+            </li>
         </ul>
     @else
         <li class="nav-item ">
