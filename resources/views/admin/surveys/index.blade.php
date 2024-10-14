@@ -34,6 +34,7 @@
                                         <th>Tipo</th>
                                         <th>Detalle</th>
                                         <th>Analista</th>
+                                        <th>Participantes</th>
                                         <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>
@@ -63,16 +64,11 @@
 
                                         <div class="form-group type">
                                             {{ Form::label('type', 'Tipo:') }}
-                                            {!! Form::select(
-                                                'type',
-                                                ['Individual' => 'Individual', 'group' => 'Grupal', 'corporative' => 'Corporativo'],
-                                                null,
-                                                [
-                                                    'id' => 'type',
-                                                    'style' => 'width:100%',
-                                                    'placeholder' => '',
-                                                ],
-                                            ) !!}
+                                            {!! Form::select('type', ['examen' => 'Examen', 'group' => 'Grupal', 'corporative' => 'Corporativo'], null, [
+                                                'id' => 'type',
+                                                'style' => 'width:100%',
+                                                'placeholder' => '',
+                                            ]) !!}
                                         </div>
 
                                         <div class="mb-2">
@@ -87,6 +83,15 @@
                                             {{ Form::label('analyst', 'Analista:') }}
                                             {!! Form::select('analyst_id[]', [], null, [
                                                 'id' => 'analysts',
+                                                'style' => 'width:100%',
+                                                'multiple',
+                                            ]) !!}
+                                        </div>
+
+                                        <div class="form-group participants"">
+                                            {{ Form::label('participants', 'Participantes:') }}
+                                            {!! Form::select('participant_id[]', [], null, [
+                                                'id' => 'participants',
                                                 'style' => 'width:100%',
                                                 'multiple',
                                             ]) !!}
@@ -175,48 +180,65 @@
                 },
                 ajax: "{{ route('surveys.index') }}",
                 columns: [{
-                    data: 'DT_RowIndex',
-                    name: 'DT_RowIndex'
-                }, {
-                    data: 'name',
-                    name: 'name'
-                }, {
-                    data: 'type',
-                    name: 'type'
-                }, {
-                    data: 'description',
-                    name: 'description',
-                    render: function(data, type, full, meta) {
-                        if (type === 'display') {
-                            // Crear un elemento temporal para obtener solo el texto
-                            var tempDiv = document.createElement("div");
-                            tempDiv.innerHTML = data; // Asignar el HTML a un div
-                            return tempDiv.textContent || tempDiv.innerText ||
-                                ""; // Devolver solo el texto
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex'
+                    }, {
+                        data: 'name',
+                        name: 'name'
+                    }, {
+                        data: 'type',
+                        name: 'type'
+                    }, {
+                        data: 'description',
+                        name: 'description',
+                        render: function(data, type, full, meta) {
+                            if (type === 'display') {
+                                // Crear un elemento temporal para obtener solo el texto
+                                var tempDiv = document.createElement("div");
+                                tempDiv.innerHTML = data; // Asignar el HTML a un div
+                                return tempDiv.textContent || tempDiv.innerText ||
+                                    ""; // Devolver solo el texto
+                            }
+                            return data; // Devuelve el dato original en otros tipos
                         }
-                        return data; // Devuelve el dato original en otros tipos
-                    }
-                }, {
-                    data: 'analysts',
-                    name: 'analysts',
-                    render: function(data, type, full, meta) {
-                        var analystsArray = data.split(', ');
+                    }, {
+                        data: 'analysts',
+                        name: 'analysts',
+                        render: function(data, type, full, meta) {
+                            var analystsArray = data.split(', ');
 
-                        var analystsHtml = '';
+                            var analystsHtml = '';
 
-                        analystsArray.forEach(function(analyst) {
-                            analystsHtml += '<span class="badge badge-secondary">' +
-                                analyst + '</span> ';
-                        });
+                            analystsArray.forEach(function(analyst) {
+                                analystsHtml += '<span class="badge badge-secondary">' +
+                                    analyst + '</span> ';
+                            });
 
-                        return analystsHtml;
-                    }
-                }, {
-                    data: 'action',
-                    name: 'action',
-                    orderable: false,
-                    searchable: false
-                }, ]
+                            return analystsHtml;
+                        }
+                    }, {
+                        data: 'participants',
+                        name: 'participants',
+                        render: function(data, type, full, meta) {
+                            var participantsArray = data.split(', ');
+
+                            var participantsHtml = '';
+
+                            participantsArray.forEach(function(participant) {
+                                participantsHtml += '<span class="badge badge-secondary">' +
+                                    participant + '</span> ';
+                            });
+
+                            return participantsHtml;
+                        }
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
+                    },
+                ]
             });
 
             // Funtion for initilization Select2
@@ -272,6 +294,31 @@
                 $('#analysts').empty()
                 $("#analysts").trigger("change");
                 $('#analysts').select2({
+                    allowClear: true,
+                    ajax: {
+                        url: url,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function(data) {
+                            console.log(data)
+                            return {
+                                results: $.map(data, function(item) {
+                                    return {
+                                        text: item.name,
+                                        id: item.id
+                                    }
+                                })
+                            };
+                        },
+                        cache: true
+                    }
+                });
+
+                //Participants
+                var url = '{{ route('globales.get-users') }}';
+                $('#participants').empty()
+                $("#participants").trigger("change");
+                $('#participants').select2({
                     allowClear: true,
                     ajax: {
                         url: url,
