@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Globales\Survey;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin\Globales\Survey;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 
@@ -27,9 +28,14 @@ class SurveyController extends Controller
                     return $btn;
                 })
 
-                ->addColumn('analysts', function (Survey $profile) {
-                    $analystNames = $profile->analysts->pluck('name')->implode(', ');
+                ->addColumn('analysts', function (Survey $survey) {
+                    $analystNames = $survey->analysts->pluck('name')->implode(', ');
                     return $analystNames;
+                })
+
+                ->addColumn('participants', function (Survey $survey) {
+                    $participantNames = $survey->participants->pluck('name')->implode(', ');
+                    return $participantNames;
                 })
 
                 ->rawColumns(['action'])
@@ -57,10 +63,19 @@ class SurveyController extends Controller
     public function show($id)
     {
         $survey = Survey::find($id);
-        dd($survey)->questions()->first();
+
+
         return view('admin.surveys.show', compact('survey'));
     }
 
+    public function showQuestions($id)
+    {
+        $survey = Survey::find($id); // Carga las preguntas y respuestas
+
+        return response()->json([
+            'html' => view('admin.surveys.partials.questions', compact('survey'))->render()
+        ]);
+    }
 
     public function store(Request $request)
     {
@@ -89,6 +104,7 @@ class SurveyController extends Controller
             ]
         );
         $survey->analysts()->sync($request->analyst_id);
+        $survey->participants()->sync($request->participant_id);
 
         return response()->json(['success' => 'Encuesta creada satisfactoriamente']);
     }

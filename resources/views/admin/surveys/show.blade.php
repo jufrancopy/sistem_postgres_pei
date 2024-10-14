@@ -29,34 +29,43 @@
                         <div class="accordion" id="accordionExample">
                             @foreach ($survey->questions as $key => $question)
                                 <div class="card">
-                                    <div class="card-header" id="heading{{ $key }}">
+                                    <div class="card-header d-flex justify-content-between" id="heading{{ $key }}">
                                         <h2 class="mb-0">
-                                            <button class="btn btn-link btn-block text-left" type="button"
-                                                data-toggle="collapse" data-target="#collapse{{ $key }}"
-                                                aria-expanded="true" aria-controls="collapse{{ $key }}">
+                                            <button class="btn btn-link text-left" type="button" data-toggle="collapse"
+                                                data-target="#collapse{{ $key }}" aria-expanded="true"
+                                                aria-controls="collapse{{ $key }}">
                                                 {!! $question->question !!}
                                             </button>
                                         </h2>
+                                        <button class="btn btn-danger btn-circle delete-question"
+                                            data-id="{{ $question->id }}">
+                                            <i class="fa fa-trash" aria-hidden="true"></i>
+                                        </button>
                                     </div>
+
 
                                     <div id="collapse{{ $key }}" class="collapse"
                                         aria-labelledby="heading{{ $key }}" data-parent="#accordionExample">
                                         <div class="card-body">
                                             <ul>
                                                 @php
-                                                    $answersArray = json_decode(
-                                                        $question->answers()->first()->answers,
-                                                        true,
-                                                    ); // Obtener el primer registro de respuestas
+                                                    $firstAnswerRecord = $question->answers()->first(); // Obtener el primer registro de respuestas
+                                                    $answersArray = $firstAnswerRecord
+                                                        ? json_decode($firstAnswerRecord->answers, true)
+                                                        : [];
                                                 @endphp
-                                                @foreach ($answersArray as $ans)
-                                                    <li>
-                                                        {{ $ans['answer'] }}
-                                                        @if (isset($ans['is_correct']) && $ans['is_correct'])
-                                                            (Correcta)
-                                                        @endif
-                                                    </li>
-                                                @endforeach
+                                                @if (!empty($answersArray))
+                                                    @foreach ($answersArray as $ans)
+                                                        <li @if (isset($ans['is_correct']) && $ans['is_correct']) style="color: green;" @endif>
+                                                            {{ $ans['answer'] }}
+                                                            @if (isset($ans['is_correct']) && $ans['is_correct'])
+                                                                (Correcta)
+                                                            @endif
+                                                        </li>
+                                                    @endforeach
+                                                @else
+                                                    <li>No hay respuestas disponibles para esta pregunta.</li>
+                                                @endif
                                             </ul>
                                         </div>
                                     </div>
@@ -64,8 +73,6 @@
                             @endforeach
                         </div>
                     </div>
-
-
                     {{-- Fin Lista de Preguntas --}}
 
                     {{-- Inicio Modal Preguntas --}}
@@ -122,12 +129,20 @@
                         </div>
                     </div>
                     {{-- Fin Modal Preguntas --}}
+
                 </div>
             </div>
         </div>
     </div>
 @stop
-
+@section('css')
+    <style>
+        .correct-answer {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+@endsection
 @section('scripts')
     <script type="text/javascript">
         $(function() {
@@ -316,13 +331,33 @@
                             'Excelente!',
                             'Has Agregado una Nueva Encuesta.',
                             'success'
-                        )
+                        );
 
                         $('#surveyForm').trigger("reset");
                         $('#ajaxSurveyModal').modal('hide');
-                        table.draw();
 
+                        var surveyID = data
+                            .surveyID; // Suponiendo que ya tienes data.surveyID definido
+                        var url = '{{ route('surveys.show.questions', ':id') }}'.replace(':id',
+                            surveyID);
+
+                        $.ajax({
+                            url: url, // Asumiendo que tienes una ruta que retorna las preguntas de una encuesta
+                            type: "GET",
+                            success: function(response) {
+                                // Asegúrate de que response.html contenga el HTML para el acordeón
+                                $('#accordionExample').html(response
+                                    .html
+                                ); // Actualizamos el contenido del acordeón
+                            },
+                            error: function(error) {
+                                toastr.error(
+                                    "Hubo un problema actualizando las preguntas."
+                                );
+                            }
+                        });
                     },
+
                     error: function(data) {
                         var obj = data.responseJSON.errors;
                         $.each(obj, function(key, value) {
@@ -369,6 +404,71 @@
                     }
                 })
             });
+
+            $(document).ready(function() {
+                // Captura el clic en los botones de eliminación
+                $(document).on('click', '.delete-question', function() {
+                    var questionId = $(this).data(
+                        'id');
+                    deleteQuestion(questionId); // Llama a la función con el ID
+                });
+            });
+
+            // Define la función deleteQuestion
+            function deleteQuestion(questionId) {
+                // Confirmación antes de eliminar
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "¡No podrás recuperar esta pregunta!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, eliminar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Aquí va la lógica para eliminar la pregunta
+                        $.ajax({
+                            url: '/questions/' + questionId,
+                            type: 'DELETE',
+                            dataType: 'json',
+                            success: function(response) {
+
+                                Swal.fire('¡Eliminado!', 'La pregunta ha sido eliminada.',
+                                    'success');
+
+                                // Actualizar la lista de preguntas si es necesario
+                                const surveyID = response.surveyID;
+                                var url = '{{ route('surveys.show.questions', ':id') }}'
+                                    .replace(':id', surveyID);
+                                $.ajax({
+                                    url: url,
+                                    type: 'GET',
+                                    success: function(response) {
+                                        $('#accordionExample').html(response.html);
+                                    },
+                                    error: function(error) {
+                                        toastr.error(
+                                            "Hubo un problema actualizando las preguntas."
+                                        );
+                                    }
+                                });
+                            },
+                            error: function(data) {
+                                var obj = data.responseJSON.errors;
+                                $.each(obj, function(key, value) {
+                                    toastr.options = {
+                                        closeButton: true,
+                                        progressBar: true,
+                                    };
+                                    toastr.error("Atención: " + value);
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+
         });
     </script>
 @stop

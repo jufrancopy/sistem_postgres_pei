@@ -155,6 +155,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     //Rutas del Modulo FODA
     Route::resource('surveys', 'Admin\Globales\Survey\SurveyController');
+    Route::get('/surveys/{id}/questions', 'Admin\Globales\Survey\SurveyController@showQuestions')->name('surveys.show.questions');
     Route::resource('questions', 'Admin\Globales\Survey\QuestionController');
     Route::resource('foda-models', 'Admin\Planificacion\Foda\FodaModeloController');
     Route::get('foda-models/{categoryId}/getAspects', 'Admin\Planificacion\Foda\FodaModeloController@getAspects')->name('foda-models-getAspects');

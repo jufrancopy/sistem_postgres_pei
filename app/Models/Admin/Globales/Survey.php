@@ -25,14 +25,15 @@ class Survey extends Model
         return $this->belongsToMany(User::class, 'surveys_has_analysts', 'survey_id', 'analyst_id');
     }
 
-    // public function questions()
-    // {
-    //     return $this->hasMany(Question::class, 'survey_id', 'id');
-    // }
-
+    public function participants()
+    {
+        return $this->belongsToMany(User::class, 'participants_has_surveys', 'survey_id', 'participant_id');
+    }
 
     public function questions()
     {
-        return $this->belongsToMany(Question::class, 'answers_has_questions', 'answers', 'question_id');
+        return $this->hasMany(Question::class);
     }
+
+    
 }

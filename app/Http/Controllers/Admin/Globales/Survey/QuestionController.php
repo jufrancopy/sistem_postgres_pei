@@ -18,8 +18,9 @@ class QuestionController extends Controller
         ]);
 
         // Guardar la pregunta primero
+        $surveyID = $request->survey_id;
         $question = Question::create([
-            'survey_id' => $request->survey_id,
+            'survey_id' => $surveyID,
             'question' => $request->question
         ]);
 
@@ -38,6 +39,15 @@ class QuestionController extends Controller
             'answers' => json_encode($answers),  // Guardar el JSON de respuestas
         ]);
 
-        return response()->json(['success' => 'Pregunta y respuestas guardadas correctamente']);
+        return response()->json(['success' => 'Pregunta y respuestas guardadas correctamente', 'surveyID'=>$surveyID ]);
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $question = Question::find($id);
+        $surveyID = $question->survey_id;
+        $question->delete();
+
+        return response()->json(['question'=>$question, 'surveyID'=>$surveyID]);
     }
 }
