@@ -4,13 +4,13 @@
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Módulo Encuestas y Preguntas</h4>
+            <h4 class="card-title ">Preguntas de {{ $survey->name }}</h4>
         </div>
 
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('globales.dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Módulo Encuestas y Preguntas</li>
+                <li class="breadcrumb-item"><a href="{{ route('surveys.index') }}">Encuestas</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Preguntas de {{ $survey->name }}</li>
             </ol>
         </nav>
 
@@ -20,31 +20,56 @@
                     <div class="card-header">
                         <div class="success"></div>
                         <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)"
-                            id="createNewProfile">
-                            Nueva Encuesta</a>
+                            id="createNewQuestion">
+                            Nueva Pregunta</a>
                     </div>
 
+                    {{-- Inicio Lista de Preguntas --}}
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered data-table display nowrap" id="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nombre</th>
-                                        <th>Tipo</th>
-                                        <th>Detalle</th>
-                                        <th>Analista</th>
-                                        <th width="280px">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
+                        <div class="accordion" id="accordionExample">
+                            @foreach ($survey->questions as $key => $question)
+                                <div class="card">
+                                    <div class="card-header" id="heading{{ $key }}">
+                                        <h2 class="mb-0">
+                                            <button class="btn btn-link btn-block text-left" type="button"
+                                                data-toggle="collapse" data-target="#collapse{{ $key }}"
+                                                aria-expanded="true" aria-controls="collapse{{ $key }}">
+                                                {!! $question->question !!}
+                                            </button>
+                                        </h2>
+                                    </div>
+
+                                    <div id="collapse{{ $key }}" class="collapse"
+                                        aria-labelledby="heading{{ $key }}" data-parent="#accordionExample">
+                                        <div class="card-body">
+                                            <ul>
+                                                @php
+                                                    $answersArray = json_decode(
+                                                        $question->answers()->first()->answers,
+                                                        true,
+                                                    ); // Obtener el primer registro de respuestas
+                                                @endphp
+                                                @foreach ($answersArray as $ans)
+                                                    <li>
+                                                        {{ $ans['answer'] }}
+                                                        @if (isset($ans['is_correct']) && $ans['is_correct'])
+                                                            (Correcta)
+                                                        @endif
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
 
-                    {{-- Inicio Modal --}}
-                    <div class="modal fade" id="ajaxSurveyModal" aria-hidden="true">
+
+                    {{-- Fin Lista de Preguntas --}}
+
+                    {{-- Inicio Modal Preguntas --}}
+                    <div class="modal fade" id="questionModal" aria-hidden="true">
                         <div class="modal-dialog">
 
                             <div class="modal-content">
@@ -52,50 +77,40 @@
                                     <h4 class="modal-title" id="modalHeading"></h4>
                                 </div>
                                 <div class="modal-body">
-                                    <form id="surveyForm" name="surveyForm" class="form-horizontal">
+                                    <form id="questionForm" name="questionForm" class="form-horizontal">
 
-                                        {{ Form::hidden('profile_id', null, ['id' => 'profile_id']) }}
-
-                                        <div class="form-group">
-                                            {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
-                                            {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
-                                        </div>
-
-                                        <div class="form-group type">
-                                            {{ Form::label('type', 'Tipo:') }}
-                                            {!! Form::select(
-                                                'type',
-                                                ['Individual' => 'Individual', 'group' => 'Grupal', 'corporative' => 'Corporativo'],
-                                                null,
-                                                [
-                                                    'id' => 'type',
-                                                    'style' => 'width:100%',
-                                                    'placeholder' => '',
-                                                ],
-                                            ) !!}
-                                        </div>
+                                        {{ Form::hidden('survey_id', $survey->id, ['id' => 'survey_id']) }}
 
                                         <div class="mb-2">
-                                            {{ Form::label('description', 'Descripción:', ['class' => 'control-label']) }}
-                                            {{ Form::textarea('description', null, [
+                                            {{ Form::label('question', 'Pregunta:', ['class' => 'control-label']) }}
+                                            {{ Form::textarea('question', null, [
                                                 'class' => 'form-control editor',
-                                                'id' => 'description',
+                                                'id' => 'question',
                                             ]) }}
                                         </div>
 
-                                        <div class="form-group analysts"">
-                                            {{ Form::label('analyst', 'Analista:') }}
-                                            {!! Form::select('analyst_id[]', [], null, [
-                                                'id' => 'analysts',
-                                                'style' => 'width:100%',
-                                                'multiple',
-                                            ]) !!}
+                                        <!-- Contenedor para las respuestas dinámicas -->
+                                        <div id="answersContainer" class="mt-4">
+                                            <div class="form-group">
+                                                {{ Form::label('answer_id[]', 'Respuesta 1:', ['class' => 'control-label']) }}
+                                                {{ Form::text('answer_id[]', null, ['class' => 'form-control', 'placeholder' => 'Ingrese una respuesta']) }}
+                                                <div>
+                                                    <label for="is_correct_1">¿Es correcta?</label>
+                                                    {{ Form::checkbox('is_correct[]', 1, false, ['id' => 'is_correct_1']) }}
+                                                </div>
+                                            </div>
                                         </div>
+
+                                        <!-- Botón para añadir más respuestas -->
+                                        <button type="button" class="btn btn-success btn-circle mb-2" id="addAnswer"><i
+                                                class="fa fa-plus-circle" aria-hidden="true"></i>
+                                        </button>
+
 
                                         <div class="col-sm-offset-2 col-sm-10">
                                             <button type="button" class="btn btn-secondary"
                                                 data-dismiss="modal">Cerrar</button>
-                                            <button type="submit" class="btn btn-success" id="saveBtn"
+                                            <button type="submit" class="btn btn-success" id="saveBtn"s
                                                 value="create">Guardar
                                                 cambios
                                             </button>
@@ -106,7 +121,7 @@
                             </div>
                         </div>
                     </div>
-                    {{-- Fin Modal --}}
+                    {{-- Fin Modal Preguntas --}}
                 </div>
             </div>
         </div>
@@ -122,150 +137,67 @@
                 }
             });
 
-            // Datatables values
-            var table = $('.data-table').DataTable({
-                processing: true,
-                serverSide: true,
-                dom: 'Bfrtip',
-                buttons: [{
-                        extend: 'copy',
-                        text: '<i class="fa fa-copy"></i>',
-                        titleAttr: 'Copy'
-                    },
-                    {
-                        extend: 'excel',
-                        text: '<i class="fa fa-file-excel"></i>',
-                        titleAttr: 'Excel'
-                    },
-                    {
-                        extend: 'csv',
-                        text: '<i class="fas fa-file-csv"></i>',
-                        titleAttr: 'CSV'
-                    },
-                    {
-                        extend: 'pdf',
-                        text: '<i class="fa fa-file-pdf"></i>',
-                        titleAttr: 'PDF'
-                    },
-                    {
-                        extend: 'print',
-                        text: '<i class="fa fa-print"></i>',
-                        titleAttr: 'Imprimir'
-                    }
-                ],
-                language: {
-                    "decimal": "",
-                    "emptyTable": "No hay información",
-                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
-                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
-                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
-                    "infoPostFix": "",
-                    "thousands": ",",
-                    "lengthMenu": "Mostrar _MENU_ Entradas",
-                    "loadingRecords": "Cargando...",
-                    "processing": "Procesando...",
-                    "search": "Buscar:",
-                    "zeroRecords": "Sin resultados encontrados",
-                    "paginate": {
-                        "first": "Primero",
-                        "last": "Ultimo",
-                        "next": "Siguiente",
-                        "previous": "Anterior"
-                    }
-                },
-                ajax: "{{ route('surveys.index') }}",
-                columns: [{
-                    data: 'DT_RowIndex',
-                    name: 'DT_RowIndex'
-                }, {
-                    data: 'name',
-                    name: 'name'
-                }, {
-                    data: 'type',
-                    name: 'type'
-                }, {
-                    data: 'description',
-                    name: 'description',
-                    render: function(data, type, full, meta) {
-                        if (type === 'display') {
-                            // Crear un elemento temporal para obtener solo el texto
-                            var tempDiv = document.createElement("div");
-                            tempDiv.innerHTML = data; // Asignar el HTML a un div
-                            return tempDiv.textContent || tempDiv.innerText ||
-                                ""; // Devolver solo el texto
-                        }
-                        return data; // Devuelve el dato original en otros tipos
-                    }
-                }, {
-                    data: 'analysts',
-                    name: 'analysts',
-                    render: function(data, type, full, meta) {
-                        var analystsArray = data.split(', ');
-
-                        var analystsHtml = '';
-
-                        analystsArray.forEach(function(analyst) {
-                            analystsHtml += '<span class="badge badge-secondary">' +
-                                analyst + '</span> ';
-                        });
-
-                        return analystsHtml;
-                    }
-                }, {
-                    data: 'action',
-                    name: 'action',
-                    orderable: false,
-                    searchable: false
-                }, ]
-            });
-
-            // Funtion for initilization Select2
-            function initializeSelect2(selector, placeholder, url) {
-                selector.val("").select2({
-                    placeholder: placeholder,
-                    ajax: {
-                        url: url,
-                        dataType: 'json',
-                        delay: 250,
-                        processResults: function(data) {
-                            return {
-                                results: $.map(data, function(item) {
-                                    return {
-                                        text: item.name || item
-                                            .dependency, // Use 'name' or 'dependency' depending on the selector
-                                        id: item.id
-                                    }
-                                })
-                            };
-                        },
-                        cache: true
-                    }
-                });
-            }
-
             // Inicialization CKEditor
-            var surveyEditor;
+            var questionEditor;
             ClassicEditor
-                .create(document.querySelector('#description'))
+                .create(document.querySelector('#question'))
                 .then(editor => {
-                    surveyEditor = editor;
+                    questionEditor = editor;
                 })
                 .catch(err => {
                     console.error(err.stack);
                 });
+            var answerCount = 2; // Comenzamos con 2 porque ya hay una respuesta por defecto.
 
+            // Función para agregar nuevas respuestas
+            $('#addAnswer').on('click', function() {
+                var newAnswer = `
+        <div class="form-group answer-group">
+            <label for="answer[]">Respuesta ${answerCount}:</label>
+            <input type="text" name="answer_id[]" class="form-control" placeholder="Ingrese una respuesta" />
+            <div>
+                <label for="is_correct_${answerCount}">¿Es correcta?</label>
+                <input type="checkbox" name="is_correct[]" value="${answerCount}" id="is_correct_${answerCount}" />
+            </div>
+            <button type="button" class="btn btn-danger btn-circle removeAnswer mt-1">
+                <i class="fa fa-trash" aria-hidden="true"></i>
+            </button>
+        </div>
+    `;
 
-            $('body').on('click', '#createNewProfile', function() {
-                var profileID = $(this).data('id');
+                $('#answersContainer').append(newAnswer);
+                answerCount++; // Incrementar el contador después de añadir
+            });
 
-                $('#saveBtnSurvey');
-                $('#ajaxSurveyModal').modal('show');
-                $('#profile_id').val('');
-                $('#surveyForm').trigger("reset");
-                $('#modalHeading').text('Nueva Encuesta')
-                $('#type').select2({
-                    placeholder: 'Tipo de Encuesta'
+            // Función para eliminar una respuesta dinámica
+            $('body').on('click', '.removeAnswer', function() {
+                $(this).closest('.answer-group').remove();
+                updateAnswerLabels(); // Actualiza los números de las respuestas después de eliminar
+            });
+
+            // Función para actualizar los números de las respuestas
+            function updateAnswerLabels() {
+                answerCount = 1; // Reiniciar el contador
+                $('#answersContainer .answer-group').each(function() {
+                    $(this).find('label').text('Respuesta ' + answerCount + ':');
+                    answerCount++;
                 });
+            }
+
+            // Función para eliminar una respuesta dinámica
+            $('body').on('click', '.removeAnswer', function() {
+                $(this).closest('.form-group').remove();
+            });
+
+
+            $('body').on('click', '#createNewQuestion', function() {
+                var questionID = $(this).data('id');
+
+                $('#saveBtnQuestion');
+                $('#questionModal').modal('show');
+                $('#profile_id').val('');
+                $('#questionForm').trigger("reset");
+                $('#modalHeading').text('Nueva Pregunta')
 
                 //Analysts
                 var url = '{{ route('globales.get-users') }}';
@@ -364,17 +296,17 @@
                 $(this).html('Guardando..');
 
                 var data = new FormData();
-                var form_data = $('#surveyForm').serializeArray();
+                var form_data = $('#questionForm').serializeArray();
 
                 $.each(form_data, function(key, input) {
                     data.append(input.name, input.value);
                 });
 
-                data.append('description', surveyEditor.getData());
+                data.append('question', questionEditor.getData());
 
                 $.ajax({
                     data: data,
-                    url: "{{ route('surveys.store') }}",
+                    url: "{{ route('questions.store') }}",
                     type: "POST",
                     dataType: 'json',
                     processData: false,

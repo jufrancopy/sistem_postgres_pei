@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\Admin\Survey\SurveyController;
-
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -155,21 +153,9 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-users/{idGroup}', 'Admin\UserController@getUsersForGroup')->name('get-users-group');
     });
 
-    Route::prefix('surveys')->group(function () {
-        // Mostrar la página inicial del Quiz
-        Route::get('/', [SurveyController::class, 'index'])->name('surveys.index');
-
-        // Mostrar una pregunta específica
-        Route::get('/question/{id}', [SurveyController::class, 'show'])->name('surveys.show');
-
-        // Enviar una respuesta para la pregunta
-        Route::post('/answer/{id}', [SurveyController::class, 'answer'])->name('surveys.answer');
-
-        // Mostrar los resultados al finalizar el Quiz
-        Route::get('/result', [SurveyController::class, 'result'])->name('surveys.result');
-    });
-
     //Rutas del Modulo FODA
+    Route::resource('surveys', 'Admin\Globales\Survey\SurveyController');
+    Route::resource('questions', 'Admin\Globales\Survey\QuestionController');
     Route::resource('foda-models', 'Admin\Planificacion\Foda\FodaModeloController');
     Route::get('foda-models/{categoryId}/getAspects', 'Admin\Planificacion\Foda\FodaModeloController@getAspects')->name('foda-models-getAspects');
     Route::get('foda-models/{categoryId}/showAspects', 'Admin\Planificacion\Foda\FodaModeloController@showAspects');
