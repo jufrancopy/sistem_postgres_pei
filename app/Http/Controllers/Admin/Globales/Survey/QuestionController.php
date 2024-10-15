@@ -11,6 +11,7 @@ class QuestionController extends Controller
 {
     public function store(Request $request)
     {
+
         // Validar entrada
         $request->validate([
             'survey_id' => 'required',
@@ -24,12 +25,19 @@ class QuestionController extends Controller
             'question' => $request->question
         ]);
 
+        // Asegurarse de que $request->is_correct esté siempre definido como array
+        $is_correct_answers = $request->is_correct ?? [];
+
         // Formatear las respuestas y asociarlas en la tabla pivot
         $answers = [];
+
         foreach ($request->answer_id as $index => $answer) {
+            // Verifica si el valor está en el array de respuestas correctas
+            $isCorrect = in_array($index + 1, $is_correct_answers) ? 1 : 0;
+
             $answers[] = [
                 'answer' => $answer,
-                'is_correct' => in_array($index, $request->is_correct),  // Verificar si es correcta
+                'is_correct' => $isCorrect,  // Marca si la respuesta es correcta
             ];
         }
 
@@ -39,7 +47,7 @@ class QuestionController extends Controller
             'answers' => json_encode($answers),  // Guardar el JSON de respuestas
         ]);
 
-        return response()->json(['success' => 'Pregunta y respuestas guardadas correctamente', 'surveyID'=>$surveyID ]);
+        return response()->json(['success' => 'Pregunta y respuestas guardadas correctamente', 'surveyID' => $surveyID]);
     }
 
     public function destroy(Request $request, $id)
@@ -48,6 +56,6 @@ class QuestionController extends Controller
         $surveyID = $question->survey_id;
         $question->delete();
 
-        return response()->json(['question'=>$question, 'surveyID'=>$surveyID]);
+        return response()->json(['question' => $question, 'surveyID' => $surveyID]);
     }
 }
