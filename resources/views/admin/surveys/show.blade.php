@@ -103,7 +103,9 @@
                                                 {{ Form::text('answer_id[]', null, ['class' => 'form-control', 'placeholder' => 'Ingrese una respuesta']) }}
                                                 <div>
                                                     <label for="is_correct_1">¿Es correcta?</label>
-                                                    {{ Form::checkbox('is_correct[]', 1, false, ['id' => 'is_correct_1']) }}
+
+                                                    {{ Form::checkbox('is_correct[]', 1, false, ['id' => 'is_correct_1', 'value' => 1]) }}
+
                                                 </div>
                                             </div>
                                         </div>
@@ -204,20 +206,27 @@
                 $(this).closest('.form-group').remove();
             });
 
-
             $('body').on('click', '#createNewQuestion', function() {
                 var questionID = $(this).data('id');
 
                 $('#saveBtnQuestion');
+
                 $('#questionModal').modal('show');
-                $('#profile_id').val('');
+
                 $('#questionForm').trigger("reset");
-                $('#modalHeading').text('Nueva Pregunta')
+
+                $('#modalHeading').text('Nueva Pregunta');
+
+                // Limpiamos el CKEditor
+                if (questionEditor) {
+                    questionEditor.setData('');
+                }
 
                 //Analysts
                 var url = '{{ route('globales.get-users') }}';
                 $('#analysts').empty()
                 $("#analysts").trigger("change");
+
                 $('#analysts').select2({
                     allowClear: true,
                     ajax: {

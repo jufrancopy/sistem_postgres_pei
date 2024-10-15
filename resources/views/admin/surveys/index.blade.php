@@ -288,6 +288,9 @@
                 $('#type').select2({
                     placeholder: 'Tipo de Encuesta'
                 });
+                if (surveyEditor) {
+                    surveyEditor.setData('')
+                }
 
                 //Analysts
                 var url = '{{ route('globales.get-users') }}';
