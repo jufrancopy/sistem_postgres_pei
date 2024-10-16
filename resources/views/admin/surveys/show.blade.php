@@ -13,9 +13,51 @@
                 <li class="breadcrumb-item active" aria-current="page">Preguntas de {{ $survey->name }}</li>
             </ol>
         </nav>
+        <div class="card-header">
+            <div class="accordion" id="accordionParticipants">
+                <div class="card">
+                    <div class="card-header" id="headingParticipants">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse"
+                                data-target="#collapseParticipants" aria-expanded="false"
+                                aria-controls="collapseParticipants">
+                                Lista de Participantes
+                                <i class="fa fa-chevron-down ml-2"></i>
+                            </button>
+                        </h5>
+                    </div>
 
+                    <div id="collapseParticipants" class="collapse" aria-labelledby="headingParticipants"
+                        data-parent="#accordionParticipants">
+                        <div class="card-body">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($survey->participants as $index => $participant)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $participant->name }}</td>
+                                            <td>{{ $participant->email }}</td>
+                                            <td></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-12">
+
                 <div class="card">
                     <div class="card-header">
                         <div class="success"></div>
@@ -29,7 +71,7 @@
                         <div class="accordion" id="accordionExample">
                             @foreach ($survey->questions as $key => $question)
                                 <div class="card">
-                                    <div class="card-header d-flex justify-content-between" id="heading{{ $key }}">
+                                    <div class="card-header d-flex justify-content-between align-items-center" id="heading{{ $key }}">
                                         <h2 class="mb-0">
                                             <button class="btn btn-link text-left" type="button" data-toggle="collapse"
                                                 data-target="#collapse{{ $key }}" aria-expanded="true"
@@ -37,11 +79,18 @@
                                                 {!! $question->question !!}
                                             </button>
                                         </h2>
-                                        <button class="btn btn-danger btn-circle delete-question"
-                                            data-id="{{ $question->id }}">
-                                            <i class="fa fa-trash" aria-hidden="true"></i>
-                                        </button>
+                                    
+                                        <div class="button-group d-flex">
+                                            <button class="btn btn-info btn-circle edit-question mr-2" data-id="{{ $question->id }}">
+                                                <i class="fa fa-edit" aria-hidden="true"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-circle delete-question" data-id="{{ $question->id }}">
+                                                <i class="fa fa-trash" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+
                                     </div>
+                                    
 
 
                                     <div id="collapse{{ $key }}" class="collapse"
@@ -76,60 +125,7 @@
                     {{-- Fin Lista de Preguntas --}}
 
                     {{-- Inicio Modal Preguntas --}}
-                    <div class="modal fade" id="questionModal" aria-hidden="true">
-                        <div class="modal-dialog">
-
-                            <div class="modal-content">
-                                <div class="modal-header card-header-info">
-                                    <h4 class="modal-title" id="modalHeading"></h4>
-                                </div>
-                                <div class="modal-body">
-                                    <form id="questionForm" name="questionForm" class="form-horizontal">
-
-                                        {{ Form::hidden('survey_id', $survey->id, ['id' => 'survey_id']) }}
-
-                                        <div class="mb-2">
-                                            {{ Form::label('question', 'Pregunta:', ['class' => 'control-label']) }}
-                                            {{ Form::textarea('question', null, [
-                                                'class' => 'form-control editor',
-                                                'id' => 'question',
-                                            ]) }}
-                                        </div>
-
-                                        <!-- Contenedor para las respuestas dinámicas -->
-                                        <div id="answersContainer" class="mt-4">
-                                            <div class="form-group">
-                                                {{ Form::label('answer_id[]', 'Respuesta 1:', ['class' => 'control-label']) }}
-                                                {{ Form::text('answer_id[]', null, ['class' => 'form-control', 'placeholder' => 'Ingrese una respuesta']) }}
-                                                <div>
-                                                    <label for="is_correct_1">¿Es correcta?</label>
-
-                                                    {{ Form::checkbox('is_correct[]', 1, false, ['id' => 'is_correct_1', 'value' => 1]) }}
-
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Botón para añadir más respuestas -->
-                                        <button type="button" class="btn btn-success btn-circle mb-2" id="addAnswer"><i
-                                                class="fa fa-plus-circle" aria-hidden="true"></i>
-                                        </button>
-
-
-                                        <div class="col-sm-offset-2 col-sm-10">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-dismiss="modal">Cerrar</button>
-                                            <button type="submit" class="btn btn-success" id="saveBtn"s
-                                                value="create">Guardar
-                                                cambios
-                                            </button>
-                                        </div>
-
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    @include('admin.surveys.partials.modals.create')
                     {{-- Fin Modal Preguntas --}}
 
                 </div>
@@ -208,6 +204,7 @@
 
             $('body').on('click', '#createNewQuestion', function() {
                 var questionID = $(this).data('id');
+                
 
                 $('#saveBtnQuestion');
 
@@ -249,17 +246,20 @@
                 });
             });
 
-            $('body').on('click', '.editSurvey', function() {
-                var profileID = $(this).data('id');
-                $.get("{{ route('surveys.index') }}" + '/' + profileID + '/edit', function(data) {
-                    $('#modalHeading').html("Editar Perfil " + data.survey.name);
+            $('body').on('click', '.edit-question', function() {
+                var questionID = $(this).data('id');
+                
+                $.get("{{ route('questions.index') }}" + '/' + questionID + '/edit', function(data) {
+                    
+                    $('#modalHeading').html("Editar Preguntas " + data.survey.name);
                     // Mostrar modal
-                    $('#ajaxSurveyModal').modal('show');
+                    $('#questionModal').modal('show');
+
 
                     // Limpiar el formulario
-                    $('#surveyForm')[0].reset();
-                    $('#profile_id').val(data.survey.id);
-                    $('#name').val(data.survey.name)
+                    $('#questionForm')[0].reset();
+                    $('#question_id').val(data.question.id);
+                    $('#name').val(data.question.name)
                     // Inicializar Select2 y establecer el valor del tipo
                     $('#type').select2();
                     $('#type').val(data.survey.type).trigger(
@@ -343,7 +343,7 @@
                         );
 
                         $('#surveyForm').trigger("reset");
-                        $('#ajaxSurveyModal').modal('hide');
+                        $('#questionModal').modal('hide');
 
                         var surveyID = data
                             .surveyID; // Suponiendo que ya tienes data.surveyID definido
