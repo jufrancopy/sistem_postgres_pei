@@ -87,12 +87,14 @@
                                             <button class="btn btn-danger btn-circle delete-question" data-id="{{ $question->id }}">
                                                 <i class="fa fa-trash" aria-hidden="true"></i>
                                             </button>
+                                            <a href="{{ route('questions.show', $question->survey_id) }}" class="btn btn-primary btn-circle view-questions">
+                                                <i class="fa fa-eye" aria-hidden="true"></i>
+                                            </a>
+                                            
                                         </div>
 
                                     </div>
                                     
-
-
                                     <div id="collapse{{ $key }}" class="collapse"
                                         aria-labelledby="heading{{ $key }}" data-parent="#accordionExample">
                                         <div class="card-body">
@@ -314,6 +316,8 @@
 
                 });
             });
+          
+            
 
             $('#saveBtn').click(function(e) {
                 e.preventDefault();
