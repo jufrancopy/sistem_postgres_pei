@@ -50,6 +50,13 @@ class QuestionController extends Controller
         return response()->json(['success' => 'Pregunta y respuestas guardadas correctamente', 'surveyID' => $surveyID]);
     }
 
+    public function show(Request $request, $surveyID)
+    {
+        $questions = Question::where('survey_id', $surveyID)->get();
+
+        return view('admin.surveys.questions.index', compact('questions'));
+    }
+
     public function destroy(Request $request, $id)
     {
         $question = Question::find($id);

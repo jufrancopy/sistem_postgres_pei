@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('surveys_has_analysts', function (Blueprint $table) {
             $table->id();
 
-            $table->unsignedInteger('survey_id');
+            $table->uuid('survey_id');
             $table->foreign('survey_id')->references('id')->on('surveys')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');

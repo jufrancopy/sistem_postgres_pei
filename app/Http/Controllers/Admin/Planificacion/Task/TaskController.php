@@ -16,7 +16,7 @@ use App\Admin\Planificacion\Pei\PeiProfile;
 use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Contracts\Role;
 use App\Admin\Globales\Group;
-
+use App\Models\Admin\Globales\Survey;
 use Illuminate\Support\Facades\Cookie;
 
 class TaskController extends Controller
@@ -79,6 +79,8 @@ class TaskController extends Controller
                             $modifiedTaskNames[] = "PEI";
                         } elseif ($taskName == 'App\Admin\Planificacion\Foda\FodaPerfil') {
                             $modifiedTaskNames[] = "FODA";
+                        } elseif ($taskName == 'App\Models\Admin\Globales\Survey') {
+                            $modifiedTaskNames[] = "Encuesta";
                         } else {
                             // Si no coincide con ninguna condición, mantener el nombre original
                             $modifiedTaskNames[] = $taskName;
@@ -186,7 +188,13 @@ class TaskController extends Controller
                 ->where('name', 'LIKE', "%$search%")
                 ->get();
 
-            $data = $fodaData->concat($peiData);
+            // Buscar en Survey (encuestas)
+            $surveyData = Survey::select("id", "name", DB::raw("'" . Survey::class . "' as model"))
+                ->where('name', 'LIKE', "%$search%")
+                ->get();
+
+            // Concatenar los resultados
+            $data = $fodaData->concat($peiData)->concat($surveyData);
         }
 
         return response()->json($data);
@@ -323,7 +331,7 @@ class TaskController extends Controller
                     $data[] = [
                         'task' => $typeTask->typetaskable->name . " (FODA)", // Accede al nombre del tipo de tarea relacionado
                         'status' => $typeTask->status, // Accede al estado del tipo de tarea
-                        'action' => '<a href="' . route('foda.show.details', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-id-task = "'.$idTask.'"><i class="fas fa-tasks"></i></a>',
+                        'action' => '<a href="' . route('foda.show.details', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-tasks"></i></a>',
                     ];
                 }
             }

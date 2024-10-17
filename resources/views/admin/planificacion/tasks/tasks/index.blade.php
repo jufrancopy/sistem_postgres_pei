@@ -296,7 +296,11 @@
                                     } else if (item.model ===
                                         'App\\Admin\\Planificacion\\Pei\\PeiProfile') {
                                         abbreviation = 'PEI';
-                                    } else {
+                                    } else if (item.model ===
+                                        'App\\Models\\Admin\\Globales\\Survey') {
+                                        abbreviation = 'Encuesta';
+                                    } 
+                                    else {
                                         // Si hay otros modelos, se pueden agregar más condiciones aquí
                                         abbreviation = item.model;
                                     }

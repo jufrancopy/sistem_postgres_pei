@@ -13,15 +13,27 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('questions', function (Blueprint $table) {
+        Schema::create('answers', function (Blueprint $table) {
             $table->id();
+
+            $table->unsignedInteger('participant_id');
+            $table->foreign('participant_id')->references('id')->on('users')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
 
             $table->uuid('survey_id');
             $table->foreign('survey_id')->references('id')->on('surveys')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->string('question'); // El texto de la pregunta
+            $table->unsignedInteger('question_id');
+            $table->foreign('question_id')->references('id')->on('questions')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            $table->jsonb('answer');
+            $table->boolean('is_correct')->nullable();
+
             $table->timestamps();
         });
     }
@@ -33,6 +45,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('questions');
+        Schema::dropIfExists('answers');
     }
 };
