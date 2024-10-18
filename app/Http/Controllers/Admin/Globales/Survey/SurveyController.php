@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin\Globales\Survey;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin\Globales\Question;
 use App\Models\Admin\Globales\Survey;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\DataTables;
 
 
@@ -64,18 +66,82 @@ class SurveyController extends Controller
     {
         $survey = Survey::find($id);
 
-
         return view('admin.surveys.show', compact('survey'));
     }
 
-    public function showQuestions($id)
+    public function showDetails($id)
     {
-        $survey = Survey::find($id); // Carga las preguntas y respuestas
+        $survey = Survey::find($id);
 
         return response()->json([
             'html' => view('admin.surveys.partials.questions', compact('survey'))->render()
         ]);
     }
+
+    public function showQuestions($surveyID)
+    {
+        $survey = Survey::with('questions')->findOrFail($surveyID);
+
+        // Obtener todas las preguntas y sus respuestas
+        $questions = $survey->questions->map(function ($question) {
+            // Obtener las respuestas en formato JSON de la tabla pivot
+            $answersJson = DB::table('answers_has_questions')
+                ->where('question_id', $question->id)
+                ->value('answers');  // Obtén el campo 'answers' que contiene el JSON
+
+            // Decodificar el JSON a un array
+            $answersArray = json_decode($answersJson, true);
+
+            // Devolver la pregunta junto con las respuestas
+            return [
+                'id' => $question->id,
+                'survey_id' => $question->survey_id,
+                'question' => $question->question,
+                'created_at' => $question->created_at,
+                'updated_at' => $question->updated_at,
+                'answers' => $answersArray,  // Añadir respuestas decodificadas
+            ];
+        });
+
+
+        return $questions;
+
+        return response()->json($questions);
+    }
+
+    public function showQuestionsTemplate(Request $request, $surveyID)
+    {
+        $survey = Survey::with('questions')->findOrFail($surveyID);
+
+        return view('admin.surveys.answers.index', compact('survey'));
+    }
+
+    public function checkAnswer(Request $request, $surveyId)
+    {
+        $request->validate([
+            'answer' => 'required|string',
+            'question_id' => 'required|integer',
+        ]);
+
+        // Encuentra la pregunta y obtén las respuestas
+        $question = Question::with('answers')->findOrFail($request->question_id);
+
+        // Decodifica las respuestas almacenadas en formato JSON
+        $answers = json_decode($question->answers->answers, true);
+
+        // Verifica si la respuesta seleccionada es correcta
+        $isCorrect = false;
+        foreach ($answers as $answer) {
+            if ($answer['answer'] === $request->answer && $answer['is_correct'] == 1) {
+                $isCorrect = true;
+                break;
+            }
+        }
+
+        // Retorna si la respuesta fue correcta
+        return response()->json(['isCorrect' => $isCorrect]);
+    }
+
 
     public function store(Request $request)
     {

@@ -14,11 +14,10 @@ class Question extends Model
 
     protected $fillable = ['survey_id', 'question', 'answer'];
 
-    // Método para obtener las respuestas desde la tabla pivot
     public function answers()
     {
         return DB::table('answers_has_questions')
             ->where('question_id', $this->id)
-            ->get(); // Obtiene todas las respuestas para esta pregunta
+            ->get();
     }
 }

@@ -71,7 +71,8 @@
                         <div class="accordion" id="accordionExample">
                             @foreach ($survey->questions as $key => $question)
                                 <div class="card">
-                                    <div class="card-header d-flex justify-content-between align-items-center" id="heading{{ $key }}">
+                                    <div class="card-header d-flex justify-content-between align-items-center"
+                                        id="heading{{ $key }}">
                                         <h2 class="mb-0">
                                             <button class="btn btn-link text-left" type="button" data-toggle="collapse"
                                                 data-target="#collapse{{ $key }}" aria-expanded="true"
@@ -79,22 +80,25 @@
                                                 {!! $question->question !!}
                                             </button>
                                         </h2>
-                                    
+
                                         <div class="button-group d-flex">
-                                            <button class="btn btn-info btn-circle edit-question mr-2" data-id="{{ $question->id }}">
+                                            <button class="btn btn-info btn-circle edit-question mr-2"
+                                                data-id="{{ $question->id }}">
                                                 <i class="fa fa-edit" aria-hidden="true"></i>
                                             </button>
-                                            <button class="btn btn-danger btn-circle delete-question" data-id="{{ $question->id }}">
+                                            <button class="btn btn-danger btn-circle delete-question"
+                                                data-id="{{ $question->id }}">
                                                 <i class="fa fa-trash" aria-hidden="true"></i>
                                             </button>
-                                            <a href="{{ route('questions.show', $question->survey_id) }}" class="btn btn-primary btn-circle view-questions">
+                                            <a href="{{ route('questions.show', $question->survey_id) }}"
+                                                class="btn btn-primary btn-circle view-questions">
                                                 <i class="fa fa-eye" aria-hidden="true"></i>
                                             </a>
-                                            
+
                                         </div>
 
                                     </div>
-                                    
+
                                     <div id="collapse{{ $key }}" class="collapse"
                                         aria-labelledby="heading{{ $key }}" data-parent="#accordionExample">
                                         <div class="card-body">
@@ -206,7 +210,7 @@
 
             $('body').on('click', '#createNewQuestion', function() {
                 var questionID = $(this).data('id');
-                
+
 
                 $('#saveBtnQuestion');
 
@@ -250,9 +254,9 @@
 
             $('body').on('click', '.edit-question', function() {
                 var questionID = $(this).data('id');
-                
+
                 $.get("{{ route('questions.index') }}" + '/' + questionID + '/edit', function(data) {
-                    
+
                     $('#modalHeading').html("Editar Preguntas " + data.survey.name);
                     // Mostrar modal
                     $('#questionModal').modal('show');
@@ -316,8 +320,6 @@
 
                 });
             });
-          
-            
 
             $('#saveBtn').click(function(e) {
                 e.preventDefault();
@@ -351,7 +353,7 @@
 
                         var surveyID = data
                             .surveyID; // Suponiendo que ya tienes data.surveyID definido
-                        var url = '{{ route('surveys.show.questions', ':id') }}'.replace(':id',
+                        var url = '{{ route('surveys.show.details', ':id') }}'.replace(':id',
                             surveyID);
 
                         $.ajax({
@@ -452,7 +454,7 @@
 
                                 // Actualizar la lista de preguntas si es necesario
                                 const surveyID = response.surveyID;
-                                var url = '{{ route('surveys.show.questions', ':id') }}'
+                                var url = '{{ route('surveys.show.details', ':id') }}'
                                     .replace(':id', surveyID);
                                 $.ajax({
                                     url: url,

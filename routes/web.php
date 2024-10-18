@@ -153,10 +153,16 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-users/{idGroup}', 'Admin\UserController@getUsersForGroup')->name('get-users-group');
     });
 
-    //Rutas del Modulo FODA
+    //Rutas del Modulo Surveys
     Route::resource('surveys', 'Admin\Globales\Survey\SurveyController');
+    Route::get('/surveys/{id}/details', 'Admin\Globales\Survey\SurveyController@showDetails')->name('surveys.show.details');
     Route::get('/surveys/{id}/questions', 'Admin\Globales\Survey\SurveyController@showQuestions')->name('surveys.show.questions');
+    Route::get('/surveys/{id}/answers', 'Admin\Globales\Survey\SurveyController@showQuestionsTemplate')->name('surveys.answers');
+    Route::post('/surveys/{surveyId}/check-answer', 'Admin\Globales\Survey\SurveyController@checkAnswer');
+
     Route::resource('questions', 'Admin\Globales\Survey\QuestionController');
+
+    //Rutas del Modulo FODA
     Route::resource('foda-models', 'Admin\Planificacion\Foda\FodaModeloController');
     Route::get('foda-models/{categoryId}/getAspects', 'Admin\Planificacion\Foda\FodaModeloController@getAspects')->name('foda-models-getAspects');
     Route::get('foda-models/{categoryId}/showAspects', 'Admin\Planificacion\Foda\FodaModeloController@showAspects');
