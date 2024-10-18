@@ -327,11 +327,17 @@ class TaskController extends Controller
                         'action' => '<a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
                         'action' => '<a href="' . route('pei-profiles.details', $typeTask->typetaskable_id) . '" class="btn btn-info btn-circle"><i class="fa fa-cubes"></i></a>',
                     ];
-                } else if ($typeTask->typetaskable_type == "App\Admin\Planificacion\Foda\FodaPerfil") {
+                } else if ($typeTask->typetaskable_type == "App\Models\Admin\Planificacion\Foda\FodaPerfil") {
                     $data[] = [
                         'task' => $typeTask->typetaskable->name . " (FODA)", // Accede al nombre del tipo de tarea relacionado
                         'status' => $typeTask->status, // Accede al estado del tipo de tarea
                         'action' => '<a href="' . route('foda.show.details', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-tasks"></i></a>',
+                    ];
+                }else if ($typeTask->typetaskable_type == "App\Models\Admin\Globales\Survey") {
+                    $data[] = [
+                        'task' => $typeTask->typetaskable->name . " (ENCUESTA)", // Accede al nombre del tipo de tarea relacionado
+                        'status' => $typeTask->status, // Accede al estado del tipo de tarea
+                        'action' => '<a href="' . route('surveys.answers', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-tasks"></i></a>',                 
                     ];
                 }
             }
