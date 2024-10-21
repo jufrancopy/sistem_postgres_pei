@@ -90,7 +90,7 @@
                                                 data-id="{{ $question->id }}">
                                                 <i class="fa fa-trash" aria-hidden="true"></i>
                                             </button>
-                                            <a href="{{ route('questions.show', $question->survey_id) }}"
+                                            <a href="{{ route('surveys.answers', $question->survey_id) }}"
                                                 class="btn btn-primary btn-circle view-questions">
                                                 <i class="fa fa-eye" aria-hidden="true"></i>
                                             </a>

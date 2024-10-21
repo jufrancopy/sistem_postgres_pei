@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
 
-
 Route::get('/', function () {
     return view('welcome');
 });
@@ -110,7 +109,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/locality/{city}/localities', 'Admin\Globales\LocalityController@getLocalities');
 
         //Roles and permissions
-        Route::resource('users', 'Admin\UserController');
+        // Route::resource('users', 'Admin\UserController');
         Route::resource('permisos', 'Admin\PermissionController');
         Route::resource('roles', 'Admin\RoleController');
         Route::get('get-roles', 'Admin\RoleController@getRoles')->name('get-roles');
@@ -259,7 +258,7 @@ Route::group(['middleware' => 'auth'], function () {
 });
 
 Route::group(['middleware' => 'auth'], function () {
-    Route::resource('user', 'UserController', ['except' => ['show']]);
+    // Route::resource('user', 'UserController', ['except' => ['show']]);
     Route::get('profile', ['as' => 'profile.edit', 'uses' => 'ProfileController@edit']);
     Route::put('profile', ['as' => 'profile.update', 'uses' => 'ProfileController@update']);
     Route::put('profile/password', ['as' => 'profile.password', 'uses' => 'ProfileController@password']);

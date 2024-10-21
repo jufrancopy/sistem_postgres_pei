@@ -124,10 +124,10 @@ class SurveyController extends Controller
         ]);
 
         // Encuentra la pregunta y obtén las respuestas
-        $question = Question::with('answers')->findOrFail($request->question_id);
-
+        $question = Question::with('getAnswers')->find($request->question_id);
+        return $question->getAnswers;
         // Decodifica las respuestas almacenadas en formato JSON
-        $answers = json_decode($question->answers->answers, true);
+        $answers = json_decode($question->getAnswers->answers, true);
 
         // Verifica si la respuesta seleccionada es correcta
         $isCorrect = false;
@@ -141,7 +141,6 @@ class SurveyController extends Controller
         // Retorna si la respuesta fue correcta
         return response()->json(['isCorrect' => $isCorrect]);
     }
-
 
     public function store(Request $request)
     {

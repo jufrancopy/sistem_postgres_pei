@@ -20,4 +20,8 @@ class Question extends Model
             ->where('question_id', $this->id)
             ->get();
     }
+    public function getAnswers()
+    {
+        return $this->hasMany(AnswersHasQuestions::class, 'question_id'); // Define la relación aquí
+    }
 }
