@@ -32,6 +32,11 @@
                                 Siguiente
                             </button>
                         </div>
+                        <!-- Agrega estos botones en tu HTML -->
+                        <div id="social-share" style="display:none;">
+                            <a id="share-whatsapp" href="#" target="_blank"><i class="fa fa-whatsapp"
+                                    aria-hidden="true"></i></a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -119,120 +124,149 @@
 @section('scripts')
 
     <script>
+        // Obtiene los elementos del DOM necesarios para mostrar las preguntas, respuestas y el botón "Siguiente"
         const questionElement = document.getElementById("question");
         const answerButtons = document.getElementById("answer-buttons");
         const nextButton = document.getElementById("next-btn");
 
-        let currentQuestionIndex = 0;
-        let score = 0;
+        // Variables para manejar el estado actual de la encuesta
+        let currentQuestionIndex = 0; // Índice de la pregunta actual
+        let score = 0; // Puntaje acumulado
 
-        // Obtiene el ID de la encuesta desde tu variable en Blade
+        // Obtiene el ID de la encuesta desde Blade
         let surveyId = '{{ $survey->id }}';
-        let questions = []; // Almacena las preguntas y respuestas
+        let questions = []; // Almacena todas las preguntas y respuestas de la encuesta
+        let answered = false; // Control para evitar seleccionar múltiples respuestas en una misma pregunta
 
+        // Función para iniciar el cuestionario
         function startQuiz() {
-            currentQuestionIndex = 0;
-            score = 0;
-            nextButton.innerHTML = "Siguiente";
-            fetchQuestions();
+            currentQuestionIndex = 0; // Reinicia el índice de las preguntas
+            score = 0; // Reinicia el puntaje
+            nextButton.innerHTML = "Siguiente"; // Restablece el texto del botón "Siguiente"
+            fetchQuestions(); // Llama a la función para obtener las preguntas
         }
 
+        // Función que obtiene las preguntas desde el servidor
         function fetchQuestions() {
-            // Realiza una petición AJAX al servidor para obtener todas las preguntas y respuestas
+            // Realiza una solicitud para obtener las preguntas de la encuesta
             fetch(`/surveys/${surveyId}/questions`)
-                .then(response => response.json())
+                .then(response => response.json()) // Convierte la respuesta a formato JSON
                 .then(data => {
-                    questions = data; // Almacena las preguntas recibidas
-                    fetchQuestion();
+                    questions = data; // Almacena las preguntas en la variable
+                    fetchQuestion(); // Carga la primera pregunta
                 });
         }
 
+        // Función que carga la pregunta actual basada en el índice
         function fetchQuestion() {
-            // Verifica que el índice actual esté dentro del rango
+            // Verifica si hay más preguntas disponibles
             if (currentQuestionIndex < questions.length) {
-                resetState();
-                showQuestion(questions[currentQuestionIndex]);
+                resetState(); // Limpia el estado anterior
+                showQuestion(questions[currentQuestionIndex]); // Muestra la pregunta actual
             } else {
-                showScore(); // Muestra el puntaje al final
+                showScore(); // Si no hay más preguntas, muestra el puntaje final
             }
         }
 
+        // Función que muestra la pregunta y sus respuestas
         function showQuestion(question) {
-            questionElement.innerHTML = (currentQuestionIndex + 1) + ". " + question.question;
+            questionElement.innerHTML = (currentQuestionIndex + 1) + ". " + question
+                .question; // Muestra el texto de la pregunta
 
+            // Itera sobre las posibles respuestas de la pregunta
             question.answers.forEach(answer => {
-                const button = document.createElement("button");
-                button.innerHTML = answer.answer; // Cambia 'text' a 'answer'
-                button.classList.add("btn");
-                answerButtons.appendChild(button);
-                button.dataset.correct = answer.is_correct;
+                const button = document.createElement("button"); // Crea un botón para cada respuesta
+                button.innerHTML = answer.answer; // Establece el texto de la respuesta en el botón
+                button.classList.add("btn"); // Añade la clase 'btn' al botón
+                answerButtons.appendChild(button); // Añade el botón al contenedor de respuestas
+                button.dataset.correct = answer.is_correct; // Almacena si la respuesta es correcta o no
 
+                // Agrega el evento de clic al botón de respuesta
                 button.addEventListener("click", () => {
-                    submitAnswer(answer.answer, answer.is_correct, question
-                    .id); // Envía la respuesta y el ID de la pregunta
+                    if (!answered) { // Solo permite una respuesta por pregunta
+                        answered = true; // Marca la pregunta como respondida
+                        selectAnswer(button,
+                            question); // Llama a la función para manejar la selección de la respuesta
+                    }
                 });
             });
         }
 
-        function submitAnswer(answerText, questionId) {
-            fetch(`/surveys/${surveyId}/check-answer`, {
-                    method: 'POST', // Asegúrate de que sea POST
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Asegúrate de que esto esté en tu vista Blade
-                    },
-                    body: JSON.stringify({
-                        answer: answerText, // La respuesta seleccionada
-                        question_id: questionId // ID de la pregunta
-                    })
-                })
-                .then(response => {
-                    // Verifica si la respuesta es correcta
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok ' + response.statusText);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    handleNextButton(data.isCorrect); // Maneja el siguiente paso
-                })
-                .catch(error => {
-                    console.error('There was a problem with the fetch operation:', error);
-                });
+        // Función que maneja lo que sucede cuando se selecciona una respuesta
+        function selectAnswer(selectedButton, question) {
+            // Encuentra la respuesta correcta dentro del arreglo de respuestas
+            const correctAnswer = question.answers.find(answer => answer.is_correct);
+            const buttons = answerButtons.querySelectorAll("button"); // Obtiene todos los botones de respuestas
+
+            // Recorre cada botón para colorear las respuestas correctas e incorrectas
+            buttons.forEach(button => {
+                const isCorrect = button.dataset.correct ===
+                    "1"; // Verifica si el botón tiene la respuesta correcta
+                if (isCorrect) {
+                    button.classList.add("correct"); // Pinta la respuesta correcta en verde
+                } else if (button === selectedButton && !isCorrect) {
+                    button.classList.add("incorrect"); // Pinta la respuesta seleccionada incorrecta en rojo
+                }
+                button.disabled =
+                    true; // Desactiva todos los botones para que no se pueda seleccionar otra respuesta
+            });
+
+            // Si la respuesta seleccionada es correcta, incrementa el puntaje
+            if (selectedButton.dataset.correct === "1") {
+                score++;
+            }
+
+            nextButton.style.display = "block"; // Muestra el botón "Siguiente" una vez que se ha seleccionado una respuesta
         }
 
-
+        // Función que reinicia el estado para la siguiente pregunta
         function resetState() {
-            nextButton.style.display = "none";
+            nextButton.style.display = "none"; // Oculta el botón "Siguiente"
+            answered = false; // Marca la pregunta como no respondida para la siguiente ronda
+            // Elimina todos los botones de respuesta de la pregunta anterior
             while (answerButtons.firstChild) {
                 answerButtons.removeChild(answerButtons.firstChild);
             }
         }
 
-        function handleNextButton(isCorrect) {
-            if (isCorrect) {
-                score++; // Incrementa el puntaje si la respuesta es correcta
-            }
-            currentQuestionIndex++;
-            fetchQuestion(); // Llama a fetchQuestion para avanzar a la siguiente pregunta
+        // Función que maneja el clic en el botón "Siguiente"
+        function handleNextButton() {
+            currentQuestionIndex++; // Incrementa el índice de la pregunta actual
+            fetchQuestion(); // Carga la siguiente pregunta
         }
 
+        // Función que muestra el puntaje final cuando se terminan todas las preguntas
         function showScore() {
             resetState();
             questionElement.innerHTML = `Tu puntaje es ${score} de ${questions.length}!`;
-            nextButton.innerHTML = "Jugar de nuevo";
-            nextButton.style.display = "block";
+
+            // Crea URLs para compartir en redes sociales
+
+            const whatsappShareUrl =
+                `https://api.whatsapp.com/send?text=${encodeURIComponent(`¡Obtuve un puntaje de ${score} en el quiz! ${window.location.href}`)}`;
+
+
+            // Asigna las URLs a los botones de compartir
+            document.getElementById('share-whatsapp').href = whatsappShareUrl;
+
+            // Muestra los botones de compartir
+            document.getElementById('social-share').style.display = 'block';
         }
 
+
+        // Agrega el evento de clic al botón "Siguiente"
         nextButton.addEventListener("click", () => {
+            // Si ya se respondieron todas las preguntas, reinicia la encuesta
             if (currentQuestionIndex >= questions.length) {
                 startQuiz(); // Reinicia la encuesta
+            } else {
+                handleNextButton(); // Pasa a la siguiente pregunta
             }
         });
 
+        // Inicia el cuestionario cuando se carga la página
         startQuiz();
     </script>
-
 
 
 @stop
