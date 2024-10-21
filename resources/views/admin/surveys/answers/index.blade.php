@@ -23,12 +23,12 @@
                     <div class="card-body">
                         <div class="quiz text-center">
                             <h4 id="question" class="mb-4">
-                                Aquí las preguntas
+
                             </h4>
                             <div id="answer-buttons" class="d-grid gap-2 mb-4">
 
                             </div>
-                            <button id="next-btn" class="btn btn-success btn-lg px-5">
+                            <button id="next-btn" class="btn btn-success btn-lg px-5" style="display: none">
                                 Siguiente
                             </button>
                         </div>
@@ -192,32 +192,51 @@
             });
         }
 
-        // Función que maneja lo que sucede cuando se selecciona una respuesta
         function selectAnswer(selectedButton, question) {
-            // Encuentra la respuesta correcta dentro del arreglo de respuestas
             const correctAnswer = question.answers.find(answer => answer.is_correct);
-            const buttons = answerButtons.querySelectorAll("button"); // Obtiene todos los botones de respuestas
+            const buttons = answerButtons.querySelectorAll("button");
 
-            // Recorre cada botón para colorear las respuestas correctas e incorrectas
             buttons.forEach(button => {
-                const isCorrect = button.dataset.correct ===
-                    "1"; // Verifica si el botón tiene la respuesta correcta
+                const isCorrect = button.dataset.correct === "1";
                 if (isCorrect) {
-                    button.classList.add("correct"); // Pinta la respuesta correcta en verde
+                    button.classList.add("correct");
                 } else if (button === selectedButton && !isCorrect) {
-                    button.classList.add("incorrect"); // Pinta la respuesta seleccionada incorrecta en rojo
+                    button.classList.add("incorrect");
                 }
-                button.disabled =
-                    true; // Desactiva todos los botones para que no se pueda seleccionar otra respuesta
+                button.disabled = true;
             });
 
-            // Si la respuesta seleccionada es correcta, incrementa el puntaje
-            if (selectedButton.dataset.correct === "1") {
+            const isCorrect = selectedButton.dataset.correct === "1";
+            if (isCorrect) {
                 score++;
             }
 
-            nextButton.style.display = "block"; // Muestra el botón "Siguiente" una vez que se ha seleccionado una respuesta
+            nextButton.style.display = "block";
+
+            // Enviar la respuesta al backend para guardarla en la base de datos
+            const answerData = {
+                participant_id: '{{ auth()->user()->id }}', // Asegúrate de que el participante esté autenticado
+                survey_id: surveyId,
+                question_id: question.id,
+                answer: selectedButton.innerHTML, // El texto de la respuesta seleccionada
+                is_correct: isCorrect
+            };
+
+            fetch('/save-answer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Incluir el token CSRF para seguridad
+                    },
+                    body: JSON.stringify(answerData)
+                }).then(response => response.json())
+                .then(data => {
+                    console.log('Respuesta guardada:', data);
+                }).catch(error => {
+                    console.error('Error al guardar la respuesta:', error);
+                });
         }
+
 
         // Función que reinicia el estado para la siguiente pregunta
         function resetState() {
@@ -267,6 +286,5 @@
         // Inicia el cuestionario cuando se carga la página
         startQuiz();
     </script>
-
 
 @stop
