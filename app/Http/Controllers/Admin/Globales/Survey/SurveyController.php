@@ -164,7 +164,6 @@ class SurveyController extends Controller
             [
                 'type' => $request->type,
                 'name' => $request->name,
-                'owner' => $request->owner,
                 'description' => $request->description,
             ]
         );
