@@ -158,6 +158,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/surveys/{id}/questions', 'Admin\Globales\Survey\SurveyController@showQuestions')->name('surveys.show.questions');
     Route::get('/surveys/{id}/answers', 'Admin\Globales\Survey\SurveyController@showQuestionsTemplate')->name('surveys.answers');
     Route::post('/surveys/{surveyId}/check-answer', 'Admin\Globales\Survey\SurveyController@checkAnswer');
+    Route::post('/save-answer', 'Admin\Globales\Survey\AnswerController@saveAnswer');
 
     Route::resource('questions', 'Admin\Globales\Survey\QuestionController');
 

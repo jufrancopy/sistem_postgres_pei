@@ -45,7 +45,7 @@
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $participant->name }}</td>
                                             <td>{{ $participant->email }}</td>
-                                            <td></td>
+                                            <td>{{ $participant->status }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
