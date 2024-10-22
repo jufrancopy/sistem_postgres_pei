@@ -25,6 +25,9 @@ return new class extends Migration
             $table->foreign('participant_id')->references('id')->on('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
+
+            $table->boolean('completed')->default(false); // El estado de "completado"
+
         });
     }
 

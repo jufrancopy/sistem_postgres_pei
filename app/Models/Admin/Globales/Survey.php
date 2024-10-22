@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 
-
 class Survey extends Model
 {
     use HasFactory, SoftDeletes, HasUuids;
@@ -35,5 +34,12 @@ class Survey extends Model
     public function questions()
     {
         return $this->hasMany(Question::class);
+    }
+
+    public function markAsCompleted(User $participant)
+    {
+        // Encuentra la relación en la tabla pivot
+        $this->participants()
+            ->updateExistingPivot($participant->id, ['completed' => true]);
     }
 }

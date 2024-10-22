@@ -7,6 +7,7 @@ use App\Models\Admin\Globales\Question;
 use App\Models\Admin\Globales\Survey;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\DataTables;
 
@@ -56,9 +57,18 @@ class SurveyController extends Controller
             $analystsChecked[] = ['id' => $analyst->id, 'text' => $analyst->name];
         }
 
+
+        $participantsChecked = [];
+
+        foreach ($survey->participants as $participant) {
+            $participantsChecked[] = ['id' => $participant->id, 'text' => $participant->name];
+        }
+
+
         return response()->json([
             'survey' => $survey,
-            'analystsChecked' => $analystsChecked
+            'analystsChecked' => $analystsChecked,
+            'participantsChecked' => $participantsChecked,
         ]);
     }
 

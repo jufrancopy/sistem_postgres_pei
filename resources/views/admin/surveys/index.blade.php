@@ -354,6 +354,7 @@
                     $('#surveyForm')[0].reset();
                     $('#profile_id').val(data.survey.id);
                     $('#name').val(data.survey.name)
+
                     // Inicializar Select2 y establecer el valor del tipo
                     $('#type').select2();
                     $('#type').val(data.survey.type).trigger(
@@ -405,6 +406,29 @@
                     selectAnalysts.val(data.analystsChecked.map(function(d) {
                         return d.id;
                     })).trigger('change');
+
+
+                    //Obtenermos los usuarios que están asociados al grupo
+
+                    var selectParticipants = $('#participants');
+                    console.log(data)
+                    var groupId = data.group.parent_id 
+                    var urlParticipants = '/admin/globales/get-users/' + groupId;
+                    initializeSelect2(selectParticipants, 'Seleccione Participantes', urlParticipants);
+
+
+                    //Llamamos los datos precargados desde el controlador
+                    data.participantsChecked.forEach(function(d) {
+                        var option = new Option(d.text, d.id, true, true);
+                        membersSelect.append(option).trigger('change');
+                        membersSelect.trigger({
+                            type: 'select2:select',
+                            params: {
+                                data: data
+                            }
+                        });
+                    });
+
 
                 });
             });
