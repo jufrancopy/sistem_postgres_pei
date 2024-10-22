@@ -19,7 +19,7 @@ class Survey extends Model
     protected $fillable = [
         'name',
         'description',
-        'type',
+        'type'
     ];
 
     public function analysts()
@@ -36,6 +36,4 @@ class Survey extends Model
     {
         return $this->hasMany(Question::class);
     }
-
-    
 }
