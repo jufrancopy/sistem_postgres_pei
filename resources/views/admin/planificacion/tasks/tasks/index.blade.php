@@ -113,6 +113,47 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="modal fade" id="modalDetailAnalyst" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="card-header card-header-info">
+                                    <h4 class="modal-title" id="modalAnalystHeading"></h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="analystDetails">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                Información
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="list-group list-group-flush">
+                                                    <li class="list-group-item">
+                                                        <label><strong>Nombre:</strong></label>
+                                                        <span id="analystName"></span>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        <label><strong>Email:</strong></label>
+                                                        <span id="analystEmail"></span>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        <label><strong>Grupo:</strong></label>
+                                                        <span id="analystGroup"></span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div class="modal-footer text-center">
+                                                <button type="button" class="btn btn-danger mx-auto"
+                                                    data-dismiss="modal">Cerrar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
                 </div>
             </div>
         </div>
@@ -207,13 +248,17 @@
                         data: 'analysts',
                         name: 'analysts',
                         render: function(data, type, full, meta) {
-                            var analystsArray = data.split(', ');
+                            // Asegúrate de que data no sea null
+                            if (!data || !Array.isArray(data)) {
+                                console.error('No analysts data available:', data);
+                                return ''; // Maneja el caso donde no hay datos
+                            }
 
                             var analystsHtml = '';
-
-                            analystsArray.forEach(function(analyst) {
-                                analystsHtml += '<span class="badge badge-secondary">' +
-                                    analyst + '</span> ';
+                            data.forEach(function(analyst) {
+                                analystsHtml +=
+                                    '<a href="javascript:void(0);" class="badge badge-secondary showDetailAnalyst" data-id="' +
+                                    analyst.id + '">' + analyst.name + '</a> ';
                             });
 
                             return analystsHtml;
@@ -263,6 +308,18 @@
                 .catch(err => {
                     console.error(err.stack);
                 });
+            $('body').on('click', '.showDetailAnalyst', function() {
+                var analystID = $(this).data('id')
+
+                $.get("{{ route('globales.users.index') }}" + '/' + analystID, function(data) {
+
+                    $('#modalAnalystHeading').html("Detalles sobre " + data.name);
+                    $('#analystName').text(data.name);
+                    $('#analystEmail').text(data.email);
+                    $('#analystGroup').text(data.group.name);
+                    $('#modalDetailAnalyst').modal('show');
+                })
+            })
 
             $('#createNewTasks').click(function() {
                 $('#saveBtn').val("create-user");
@@ -299,8 +356,7 @@
                                     } else if (item.model ===
                                         'App\\Models\\Admin\\Globales\\Survey') {
                                         abbreviation = 'Encuesta';
-                                    } 
-                                    else {
+                                    } else {
                                         // Si hay otros modelos, se pueden agregar más condiciones aquí
                                         abbreviation = item.model;
                                     }

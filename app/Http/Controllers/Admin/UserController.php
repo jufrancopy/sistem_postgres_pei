@@ -160,6 +160,11 @@ class UserController extends Controller
         }
     }
 
+    public function show(Request $request, $id){
+        $user = User::with('group')->findOrFail($id);
+
+        return response()->json($user);
+    }
 
     public function edit($id)
     {
@@ -181,7 +186,6 @@ class UserController extends Controller
 
         return response()->json($data);
     }
-
 
     public function destroy(Request $request, $id)
     {

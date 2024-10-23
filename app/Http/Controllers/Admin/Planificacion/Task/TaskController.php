@@ -64,9 +64,17 @@ class TaskController extends Controller
                 })
 
                 ->addColumn('analysts', function (Task $task) {
-                    $analystNames = $task->analysts->pluck('name')->implode(', ');
-                    return $analystNames;
+                    $analystsArray = $task->analysts->map(function ($analyst) {
+                        return [
+                            'id' => $analyst->id,
+                            'name' => $analyst->name,
+                        ];
+                    })->toArray();  // Convierte a array
+
+                    // En lugar de devolver JSON, simplemente retorna el array
+                    return $analystsArray;
                 })
+
 
                 ->addColumn('tasks', function (Task $task) {
                     $taskNames = $task->typeTasks->pluck('typetaskable_type');
@@ -312,33 +320,38 @@ class TaskController extends Controller
     public function show(Request $request, $id)
     {
         $idTask = $id;
-        if ($request->ajax()) {
-            $tasks = Task::with(['typeTasks'])->where('id', $id)->latest()->get();
 
+        if ($request->ajax()) {
             $task = Task::with(['typeTasks' => function ($query) {
                 $query->with('typetaskable'); // Carga los detalles de los tipos de tarea relacionados
             }])->findOrFail($id);
 
+            $data = []; // Inicializa la variable de datos
+
             foreach ($task->typeTasks as $typeTask) {
-                if ($typeTask->typetaskable_type == "App\Admin\Planificacion\Pei\PeiProfile") {
-                    $data[] = [
-                        'task' => $typeTask->typetaskable->name . " (PEI)", // Accede al nombre del tipo de tarea relacionado
-                        'status' => $typeTask->status, // Accede al estado del tipo de tarea
-                        'action' => '<a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>',
-                        'action' => '<a href="' . route('pei-profiles.details', $typeTask->typetaskable_id) . '" class="btn btn-info btn-circle"><i class="fa fa-cubes"></i></a>',
-                    ];
-                } else if ($typeTask->typetaskable_type == "App\Models\Admin\Planificacion\Foda\FodaPerfil") {
-                    $data[] = [
-                        'task' => $typeTask->typetaskable->name . " (FODA)", // Accede al nombre del tipo de tarea relacionado
-                        'status' => $typeTask->status, // Accede al estado del tipo de tarea
-                        'action' => '<a href="' . route('foda.show.details', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-tasks"></i></a>',
-                    ];
-                }else if ($typeTask->typetaskable_type == "App\Models\Admin\Globales\Survey") {
-                    $data[] = [
-                        'task' => $typeTask->typetaskable->name . " (ENCUESTA)", // Accede al nombre del tipo de tarea relacionado
-                        'status' => $typeTask->status, // Accede al estado del tipo de tarea
-                        'action' => '<a href="' . route('surveys.answers', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-tasks"></i></a>',                 
-                    ];
+                if ($typeTask->typetaskable_type == "App\Models\Admin\Globales\Survey") {
+                    // Verifica el estado de la encuesta
+                    $surveyStatus = DB::table('participants_has_surveys')
+                        ->where('survey_id', $typeTask->typetaskable_id)
+                        ->where('participant_id', $task->analysts()->first()->id) // Asegúrate de obtener el participante correcto
+                        ->value('completed'); // 1 si está completada, 0 si está pendiente
+
+                    // Prepara los datos para la encuesta
+                    if ($surveyStatus == 1) {
+                        // Si la encuesta está completada, muestra un botón para ver los detalles
+                        $data[] = [
+                            'task' => $typeTask->typetaskable->name . " (ENCUESTA)", // Nombre de la encuesta
+                            'status' => $surveyStatus, // Estado de la encuesta
+                            'action' => '<a href="' . route('surveys.answers.details', $typeTask->typetaskable_id) . '" class="btn btn-info btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-eye"></i></a>',
+                        ];
+                    } else {
+                        // Si la encuesta está pendiente, muestra el botón original
+                        $data[] = [
+                            'task' => $typeTask->typetaskable->name . " (ENCUESTA)", // Nombre de la encuesta
+                            'status' => $surveyStatus, // Estado de la encuesta
+                            'action' => '<a href="' . route('surveys.answers', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-tasks"></i></a>',
+                        ];
+                    }
                 }
             }
 
@@ -347,25 +360,26 @@ class TaskController extends Controller
                 ->make(true);
         }
 
-        $task = Task::with('typeTasks')->where('id', $id)->latest()->first();
-
-        $analysts = [];
+        // Cargar la tarea y sus relaciones
+        $task = Task::with('typeTasks', 'analysts')->where('id', $id)->latest()->first();
 
         $analystsNames = [];
-
         foreach ($task->analysts as $analyst) {
             $analystsNames[] = $analyst->name;
         }
 
         if ($task) {
-            $group = $task->group; // Obtén el grupo asociado a la tarea.
-            $members = $group->members; // Obtén los miembros del grupo.
+            $group = $task->group;
+            $members = $group->members;
         }
+
         $taskShowUrl = route('tasks.show', $id);
         Cookie::queue('tasks', $taskShowUrl, 60);
 
         return view('admin.planificacion.tasks.tasks.show', get_defined_vars());
     }
+
+
 
     public function destroy(Request $request, $id)
     {
