@@ -149,6 +149,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-group-parent/{idSelection}', 'Admin\Globales\GroupController@dataGroupParent')->name('get-group-parent');
         Route::get('get-group/{idSelection}', 'Admin\Globales\GroupController@dataGroup')->name('get-group');
         Route::get('get-users', 'Admin\UserController@getUsers')->name('get-users');
+        Route::get('get-user/{id}', 'Admin\UserController@getUser')->name('get-user');
         Route::get('get-users/{idGroup}', 'Admin\UserController@getUsersForGroup')->name('get-users-group');
     });
 
@@ -158,6 +159,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/surveys/{id}/questions', 'Admin\Globales\Survey\SurveyController@showQuestions')->name('surveys.show.questions');
     Route::get('/surveys/{id}/answers', 'Admin\Globales\Survey\SurveyController@showQuestionsTemplate')->name('surveys.answers');
     Route::post('/surveys/{surveyId}/check-answer', 'Admin\Globales\Survey\SurveyController@checkAnswer');
+    Route::get('/surveys/{surveyId}/details-answers', 'Admin\Globales\Survey\SurveyController@detailAnswer')->name('surveys.answers.details');
     Route::post('/save-answer', 'Admin\Globales\Survey\AnswerController@saveAnswer');
 
     Route::resource('questions', 'Admin\Globales\Survey\QuestionController');

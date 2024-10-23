@@ -72,6 +72,43 @@ class SurveyController extends Controller
         ]);
     }
 
+    public function detailAnswer(Request $request, $surveyID)
+    {
+        // Obtén todas las preguntas de la encuesta
+        $questions = Question::where('survey_id', $surveyID)->get();
+
+        // Inicializa un arreglo para almacenar la información
+        $answersData = [];
+
+        // Recorre cada pregunta y busca las respuestas y opciones asociadas
+        foreach ($questions as $question) {
+            // Obtener la respuesta seleccionada por el usuario
+            $selectedAnswer = DB::table('answers')
+                ->where('question_id', $question->id)
+                ->where('participant_id', auth()->user()->id) // Asegúrate de obtener el participante correcto
+                ->first();
+
+            // Obtener las posibles respuestas de la tabla pivot
+            $answersDataRow = DB::table('answers_has_questions')
+                ->where('question_id', $question->id)
+                ->first();
+
+            // Decodifica el JSON que contiene las respuestas
+            $possibleAnswers = $answersDataRow ? json_decode($answersDataRow->answers, true) : [];
+
+            // Agrega la pregunta y sus opciones al arreglo
+            $answersData[] = [
+                'question' => $question->question, // Aquí se guarda el texto de la pregunta
+                'selected_answer' => $selectedAnswer ? $selectedAnswer->answer : null, // Respuesta seleccionada por el usuario
+                'options' => $possibleAnswers,
+            ];
+        }
+
+        return view('admin.surveys.answers.details', compact('answersData'));
+    }
+
+
+
     public function show($id)
     {
         $survey = Survey::find($id);
