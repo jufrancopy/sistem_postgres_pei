@@ -228,10 +228,12 @@
                             data: 'status',
                             name: 'status',
                             render: function(data, type, row) {
-                                if (row.status === 0) {
+                                if (row.status === 0 || row.status === false) {
                                     return '<span class="badge badge-danger">PENDIENTE</span>';
-                                } else if (row.status == 1) {
+                                } else if (row.status == 1 || row.status === true) {
                                     return '<span class="badge badge-success">COMPLETADA</span>';
+                                } else {
+                                    return '<span class="badge badge-secondary">DESCONOCIDO</span>'; // Para manejar cualquier valor inesperado
                                 }
                             }
                         },

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Globales\Survey;
 
+use App\Admin\Globales\Group;
 use App\Http\Controllers\Controller;
 use App\Models\Admin\Globales\Question;
 use App\Models\Admin\Globales\Survey;
@@ -102,8 +103,6 @@ class SurveyController extends Controller
 
         return view('admin.surveys.answers.details', compact('answersData'));
     }
-
-
 
     public function show($id)
     {
@@ -212,8 +211,18 @@ class SurveyController extends Controller
                 'description' => $request->description,
             ]
         );
+
+        // Encuentra el grupo con sus miembros
+        $group = Group::with('members')->findOrFail($survey->group_id);
+
+        // Obtén los IDs de los miembros del grupo
+        $participantIds = $group->members->pluck('id')->toArray();
+
+        // Sincroniza los analistas con la encuesta
         $survey->analysts()->sync($request->analyst_id);
-        // $survey->participants()->sync($request->participant_id);
+
+        // Sincroniza los participantes con la encuesta
+        $survey->participants()->sync($participantIds);
 
         return response()->json(['success' => 'Encuesta creada satisfactoriamente']);
     }

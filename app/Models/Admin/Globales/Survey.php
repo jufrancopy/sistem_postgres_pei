@@ -45,6 +45,13 @@ class Survey extends Model
         return $this->hasMany(Question::class);
     }
 
+    public function participants()
+    {
+        return $this->belongsToMany(User::class, 'participants_has_surveys', 'survey_id', 'participant_id')
+            ->withPivot('completed');
+    }
+
+
     public function markAsCompleted(User $participant)
     {
         // Encuentra la relación en la tabla pivot
