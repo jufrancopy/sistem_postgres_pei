@@ -36,10 +36,10 @@ class SurveyController extends Controller
                     return $analystNames;
                 })
 
-                ->addColumn('participants', function (Survey $survey) {
-                    $participantNames = $survey->participants->pluck('name')->implode(', ');
-                    return $participantNames;
+                ->addColumn('group', function (Survey $survey) {
+                    return $survey->group ? $survey->group->name : '';
                 })
+
 
                 ->rawColumns(['action'])
                 ->make(true);
@@ -49,7 +49,10 @@ class SurveyController extends Controller
 
     public function edit($id)
     {
-        $survey = Survey::with(['analysts'])->find($id);
+        $survey = Survey::with(['analysts', 'group', 'group.parent', 'dependency'])->find($id);
+
+        $parentID = $survey->group->parent->id;
+        $parentName = $survey->group->parent->name;
 
         $analystsChecked = [];
 
@@ -57,18 +60,11 @@ class SurveyController extends Controller
             $analystsChecked[] = ['id' => $analyst->id, 'text' => $analyst->name];
         }
 
-
-        $participantsChecked = [];
-
-        foreach ($survey->participants as $participant) {
-            $participantsChecked[] = ['id' => $participant->id, 'text' => $participant->name];
-        }
-
-
         return response()->json([
             'survey' => $survey,
             'analystsChecked' => $analystsChecked,
-            'participantsChecked' => $participantsChecked,
+            'parentID' => $parentID,
+            'parentName' => $parentName,
         ]);
     }
 
@@ -195,12 +191,12 @@ class SurveyController extends Controller
             $request->validate(
                 [
                     'name'   => 'required',
-                    'type'      => 'required',
+                    'type_survey'      => 'required',
                     'description'         => 'required',
                 ],
                 [
                     'name.required'     => 'El nombre es requerido',
-                    'type.required'     => 'El tipo es requerido',
+                    'type_survey.required'     => 'El tipo es requerido',
                     'description.required'     => 'Indique el Tipo',
                 ]
             );
@@ -209,13 +205,15 @@ class SurveyController extends Controller
         $survey = Survey::updateOrCreate(
             ['id' => $request->profile_id],
             [
-                'type' => $request->type,
+                'type' => $request->type_survey,
                 'name' => $request->name,
+                'group_id' => $request->group_id,
+                'dependency_id' => $request->dependency_id,
                 'description' => $request->description,
             ]
         );
         $survey->analysts()->sync($request->analyst_id);
-        $survey->participants()->sync($request->participant_id);
+        // $survey->participants()->sync($request->participant_id);
 
         return response()->json(['success' => 'Encuesta creada satisfactoriamente']);
     }

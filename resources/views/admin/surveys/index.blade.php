@@ -34,7 +34,7 @@
                                         <th>Tipo</th>
                                         <th>Detalle</th>
                                         <th>Analista</th>
-                                        <th>Participantes</th>
+                                        <th>Grupo</th>
                                         <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>
@@ -62,12 +62,38 @@
                                             {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
                                         </div>
 
-                                        <div class="form-group type">
-                                            {{ Form::label('type', 'Tipo:') }}
-                                            {!! Form::select('type', ['examen' => 'Examen', 'group' => 'Grupal', 'corporative' => 'Corporativo'], null, [
-                                                'id' => 'type',
+                                        <div class="form-group type_survey">
+                                            {{ Form::label('type_survey', 'Tipo:') }}
+                                            {!! Form::select('type_survey', ['group' => 'Grupal', 'corporative' => 'Corporativo'], null, [
+                                                'id' => 'type_survey',
                                                 'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
+
+                                        <div class="form-group dependencies" style="display: none;">
+                                            {{ Form::label('dependency_id', 'Elija Corporación:') }}
+                                            {!! Form::select('dependency_id', [], null, [
                                                 'placeholder' => '',
+                                                'id' => 'dependencies',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
+
+                                        <div class="form-group group_roots">
+                                            {{ Form::label('group_root_id', 'Evento:') }}
+                                            {!! Form::select('group_root_id', [], null, [
+                                                'placeholder' => '',
+                                                'id' => 'group_roots',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
+
+                                        <div class="form-group groups">
+                                            {{ Form::label('groups', 'Asignar Grupo de Trabajo:') }}
+                                            {!! Form::select('group_id', [], null, [
+                                                'id' => 'groups',
+                                                'placeholder' => '',
+                                                'style' => 'width:100%',
                                             ]) !!}
                                         </div>
 
@@ -83,15 +109,6 @@
                                             {{ Form::label('analyst', 'Analista:') }}
                                             {!! Form::select('analyst_id[]', [], null, [
                                                 'id' => 'analysts',
-                                                'style' => 'width:100%',
-                                                'multiple',
-                                            ]) !!}
-                                        </div>
-
-                                        <div class="form-group participants"">
-                                            {{ Form::label('participants', 'Participantes:') }}
-                                            {!! Form::select('participant_id[]', [], null, [
-                                                'id' => 'participants',
                                                 'style' => 'width:100%',
                                                 'multiple',
                                             ]) !!}
@@ -217,20 +234,9 @@
                             return analystsHtml;
                         }
                     }, {
-                        data: 'participants',
-                        name: 'participants',
-                        render: function(data, type, full, meta) {
-                            var participantsArray = data.split(', ');
-
-                            var participantsHtml = '';
-
-                            participantsArray.forEach(function(participant) {
-                                participantsHtml += '<span class="badge badge-secondary">' +
-                                    participant + '</span> ';
-                            });
-
-                            return participantsHtml;
-                        }
+                        data: 'group', // Esto debe coincidir con el nombre de la columna que retornas en tu backend
+                        name: 'group',
+                        defaultContent: '-', // En caso de que el valor de 'group' sea null
                     },
                     {
                         data: 'action',
@@ -265,6 +271,16 @@
                 });
             }
 
+            //Función para precargar selectores relacionados...
+            function initSelect2WithRelationship(control, key, value) {
+                var data = {
+                    id: key,
+                    text: value
+                };
+                var initOption = new Option(data.text, data.id, true, true);
+                control.empty().append(initOption).trigger('change');
+            }
+
             // Inicialization CKEditor
             var surveyEditor;
             ClassicEditor
@@ -284,13 +300,41 @@
                 $('#ajaxSurveyModal').modal('show');
                 $('#profile_id').val('');
                 $('#surveyForm').trigger("reset");
-                $('#modalHeading').text('Nueva Encuesta')
-                $('#type').select2({
-                    placeholder: 'Tipo de Encuesta'
+                $('#modalHeading').text('Nueva Encuesta');
+                $('.form-group.dependencies').hide();
+                $('#type_survey').select2();
+                $('#type_survey').change(function() {
+                    if ($(this).val() === 'corporative') {
+                        $('.form-group.dependencies').show();
+                        $('.form-group.groups').hide();
+                        $('#type').val('corporative');
+                    } else if ($(this).val() === 'group') {
+                        $('.form-group.dependencies').hide();
+                        $('.form-group.groups').show();
+                        $('#type').val('group');
+                    }
                 });
+
                 if (surveyEditor) {
                     surveyEditor.setData('')
                 }
+
+                // Inicializar el selector de dependencia
+                initializeSelect2($("#dependencies"), 'Seleccione la dependencia',
+                    '{{ route('globales.get-dependencies') }}');
+
+                // Inicializar el selector de grupo raíz
+                initializeSelect2($("#group_roots"), 'Seleccione Grupo Raíz de trabajo',
+                    '{{ route('globales.get-root-groups') }}');
+
+                // Cuando se cambia el grupo raíz
+                $('#group_roots').on('change', function() {
+                    var groupRootID = $(this).val();
+                    var url = 'admin/globales/get-groups/' + groupRootID;
+
+                    // Reinicializar el selector de grupos
+                    initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
+                });
 
                 //Analysts
                 var url = '{{ route('globales.get-users') }}';
@@ -353,12 +397,77 @@
                     // Limpiar el formulario
                     $('#surveyForm')[0].reset();
                     $('#profile_id').val(data.survey.id);
-                    $('#name').val(data.survey.name)
+                    $('#name').val(data.survey.name);
+                    $('#groups').select2();
 
-                    // Inicializar Select2 y establecer el valor del tipo
-                    $('#type').select2();
-                    $('#type').val(data.survey.type).trigger(
-                        'change'); // Asignar el valor del servidor y actualizar
+                    // Inicializamos los selectores de dependencia y grupo raíz
+                    initializeSelect2($("#group_roots"), 'Seleccione Grupo Raíz de trabajo',
+                        '{{ route('globales.get-root-groups') }}');
+
+                    // Cuando se cambia el grupo raíz
+                    $('#group_roots').on('change', function() {
+                        var groupRootID = $(this).val();
+                        //Buscamos los grupos asociados al Grupo Raíz o Evento
+                        var url = 'admin/globales/get-groups/' + groupRootID;
+
+                        // Reinicializar el selector de grupos
+                        initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
+                    });
+
+                    var surveyType = data.survey.type;
+
+                    var selectTypeSurvey = $('#type_survey').select2()
+                    selectTypeSurvey.val(surveyType).trigger('change');;
+                    selectTypeSurvey.change(function() {
+                        if ($(this).val() === 'corporative') {
+                            $('.form-group.dependencies').show();
+                            $('.form-group.groups').hide();
+                            $('#type').val('corporative');
+                        } else if ($(this).val() === 'group') {
+                            $('.form-group.dependencies').hide();
+                            $('.form-group.groups').show();
+                            $('#type').val('group');
+                        }
+                    });
+
+                    // Coondicionamos la visibilidad según el valor de 'surveyType'.
+                    if (surveyType === 'corporative') {
+                        $('.form-group.dependencies').show();
+                        $('.form-group.groups').hide();
+                    } else if (surveyType === 'group') {
+                        $('.form-group.dependencies').hide();
+                        $('.form-group.groups').show();
+                    }
+
+
+                    //Selector que busca dependencias si se requiere asociar
+                    $('#dependencies').select2({
+                        placeholder: 'Seleccione la dependencia',
+                        ajax: {
+                            url: '{{ route('globales.get-dependencies') }}',
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(data) {
+                                return {
+                                    results: $.map(data, function(item) {
+                                        return {
+                                            text: item.dependency,
+                                            id: item.id
+                                        }
+                                    })
+                                };
+                            },
+                            cache: true
+                        }
+                    });
+
+                    initSelect2WithRelationship($('#group_roots'), data.parentID, data
+                        .parentName);
+
+                    initSelect2WithRelationship($('#groups'), data.survey.group_id, data
+                        .survey
+                        .group.name);
+
 
                     // Verificar que CKEditor esté completamente inicializado antes de establecer datos
                     if (surveyEditor) {
@@ -406,28 +515,6 @@
                     selectAnalysts.val(data.analystsChecked.map(function(d) {
                         return d.id;
                     })).trigger('change');
-
-
-                    //Obtenermos los usuarios que están asociados al grupo
-
-                    var selectParticipants = $('#participants');
-                    console.log(data)
-                    var groupId = data.group.parent_id 
-                    var urlParticipants = '/admin/globales/get-users/' + groupId;
-                    initializeSelect2(selectParticipants, 'Seleccione Participantes', urlParticipants);
-
-
-                    //Llamamos los datos precargados desde el controlador
-                    data.participantsChecked.forEach(function(d) {
-                        var option = new Option(d.text, d.id, true, true);
-                        membersSelect.append(option).trigger('change');
-                        membersSelect.trigger({
-                            type: 'select2:select',
-                            params: {
-                                data: data
-                            }
-                        });
-                    });
 
 
                 });
