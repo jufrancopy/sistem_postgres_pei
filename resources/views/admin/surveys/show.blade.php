@@ -40,7 +40,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($survey->participants as $index => $participant)
+                                    @foreach ($survey->group->members as $index => $participant)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $participant->name }}</td>

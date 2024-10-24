@@ -379,8 +379,6 @@ class TaskController extends Controller
         return view('admin.planificacion.tasks.tasks.show', get_defined_vars());
     }
 
-
-
     public function destroy(Request $request, $id)
     {
         $task = Task::find($id)->delete();
