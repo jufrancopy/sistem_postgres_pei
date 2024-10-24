@@ -60,7 +60,6 @@ class CreatePeiProfilesTable extends Migration
 
             $table->softDeletes();
             $table->timestamps();
-            
         });
     }
 

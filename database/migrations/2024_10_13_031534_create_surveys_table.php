@@ -17,6 +17,17 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('type');
+
+            $table->unsignedInteger('group_id')->nullable();
+            $table->foreign('group_id')->references('id')->on('groups')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            $table->unsignedInteger('dependency_id')->nullable();
+            $table->foreign('dependency_id')->references('id')->on('organigramas')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
             $table->string('description');
             $table->timestamps();
             $table->softDeletes(); // Agrega la columna deleted_at para el soft delete

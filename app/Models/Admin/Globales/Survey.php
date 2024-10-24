@@ -2,6 +2,8 @@
 
 namespace App\Models\Admin\Globales;
 
+use App\Admin\Globales\Group;
+use App\Admin\Globales\Organigrama;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,7 +20,9 @@ class Survey extends Model
     protected $fillable = [
         'name',
         'description',
-        'type'
+        'type',
+        'group_id',
+        'dependency_id'
     ];
 
     public function analysts()
@@ -26,9 +30,14 @@ class Survey extends Model
         return $this->belongsToMany(User::class, 'surveys_has_analysts', 'survey_id', 'analyst_id');
     }
 
-    public function participants()
+    public function group()
     {
-        return $this->belongsToMany(User::class, 'participants_has_surveys', 'survey_id', 'participant_id');
+        return $this->belongsTo(Group::class);
+    }
+
+    public function dependency()
+    {
+        return $this->belongsTo(Organigrama::class);
     }
 
     public function questions()
