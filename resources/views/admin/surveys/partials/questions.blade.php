@@ -2,7 +2,7 @@
 <div class="accordion" id="accordionExample">
     @foreach ($survey->questions as $key => $question)
         <div class="card">
-            <div class="card-header d-flex justify-content-between" id="heading{{ $key }}">
+            <div class="card-header d-flex justify-content-between align-items-center" id="heading{{ $key }}">
                 <h2 class="mb-0">
                     <button class="btn btn-link text-left" type="button" data-toggle="collapse"
                         data-target="#collapse{{ $key }}" aria-expanded="true"
@@ -10,11 +10,19 @@
                         {!! $question->question !!}
                     </button>
                 </h2>
-                <button class="btn btn-danger btn-circle delete-question" data-id="{{ $question->id }}">
-                    <i class="fa fa-trash" aria-hidden="true"></i>
-                </button>
-            </div>
 
+                <div class="button-group d-flex">
+                    {{-- Mostrar el conteo de respuestas para depurar --}}
+                    @php
+                        $answerCount = $question->answers()->count();
+                    @endphp
+                    <span>Conteo de respuestas: {{ $answerCount }}</span> {{-- Muestra el conteo para verificarlo --}}
+                    
+                    <button class="btn btn-circle {{ $answerCount > 0 ? 'btn-success' : 'btn-danger' }} ml-2">
+                        <i class="fa {{ $answerCount > 0 ? 'fa-check' : 'fa-times-circle-o' }}" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
 
             <div id="collapse{{ $key }}" class="collapse" aria-labelledby="heading{{ $key }}"
                 data-parent="#accordionExample">
