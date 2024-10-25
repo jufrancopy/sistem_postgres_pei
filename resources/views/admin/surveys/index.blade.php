@@ -65,6 +65,7 @@
                                         <div class="form-group type_survey">
                                             {{ Form::label('type_survey', 'Tipo:') }}
                                             {!! Form::select('type_survey', ['group' => 'Grupal', 'corporative' => 'Corporativo'], null, [
+                                                'placeholder'=>'',
                                                 'id' => 'type_survey',
                                                 'style' => 'width:100%',
                                             ]) !!}
@@ -302,7 +303,9 @@
                 $('#surveyForm').trigger("reset");
                 $('#modalHeading').text('Nueva Encuesta');
                 $('.form-group.dependencies').hide();
-                $('#type_survey').select2();
+                $('#type_survey').select2({
+                    placeholder:'Elija el Tipo de Encuesta'
+                });
                 $('#type_survey').change(function() {
                     if ($(this).val() === 'corporative') {
                         $('.form-group.dependencies').show();

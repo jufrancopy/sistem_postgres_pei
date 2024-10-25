@@ -24,6 +24,7 @@ class Survey extends Model
         'group_id',
         'dependency_id'
     ];
+    
 
     public function analysts()
     {
@@ -51,11 +52,15 @@ class Survey extends Model
             ->withPivot('completed');
     }
 
-
     public function markAsCompleted(User $participant)
     {
         // Encuentra la relación en la tabla pivot
         $this->participants()
             ->updateExistingPivot($participant->id, ['completed' => true]);
+    }
+
+    public function getTotalQuestionsAttribute()
+    {
+        return $this->questions()->count();
     }
 }
