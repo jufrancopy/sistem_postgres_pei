@@ -40,10 +40,8 @@
 
 
                     <div class="col-sm-offset-2 col-sm-10">
-                        <button type="button" class="btn btn-secondary"
-                            data-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-success" id="saveBtn"s
-                            value="create">Guardar
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-success" id="saveBtnQuestion" value="create">Guardar
                             cambios
                         </button>
                     </div>

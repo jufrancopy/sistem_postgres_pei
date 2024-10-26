@@ -192,11 +192,13 @@ class SurveyController extends Controller
                     'name'   => 'required',
                     'type_survey'      => 'required',
                     'description'         => 'required',
+                    'group_id'         => 'required',
                 ],
                 [
                     'name.required'     => 'El nombre es requerido',
                     'type_survey.required'     => 'El tipo es requerido',
                     'description.required'     => 'Indique el Tipo',
+                    'group_id.required'     => 'Debe Seleccionar un Grupo de Trabajo',
                 ]
             );
         };
