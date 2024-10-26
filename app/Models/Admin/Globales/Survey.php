@@ -24,7 +24,7 @@ class Survey extends Model
         'group_id',
         'dependency_id'
     ];
-
+    
 
     public function analysts()
     {

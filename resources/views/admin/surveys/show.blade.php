@@ -312,24 +312,6 @@
                     }
                 });
             });
-
-
-            $('body').on('click', '#saveBtnQuestion', function(e) {
-                e.preventDefault();
-                $.ajax({
-                    type: "POST",
-                    url: "{{ route('questions.store') }}", // Asegúrate de que esta ruta esté configurada
-                    data: $('#questionForm').serialize(), // Serializa los datos del formulario
-                    success: function(data) {
-                        $('#questionModal').modal('hide'); // Cierra el modal al éxito
-                        location.reload(); // Recarga la página para ver la nueva pregunta
-                    },
-                    error: function(data) {
-                        alert('Error al guardar la pregunta'); // Notifica en caso de error
-                    }
-                });
-            });
-
         });
     </script>
 @endsection
