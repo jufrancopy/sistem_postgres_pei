@@ -11,6 +11,7 @@ class QuestionController extends Controller
 {
     public function store(Request $request)
     {
+
         // Validar entrada
         $request->validate([
             'survey_id' => 'required',
