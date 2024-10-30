@@ -65,7 +65,7 @@
                                         <div class="form-group type_survey">
                                             {{ Form::label('type_survey', 'Tipo:') }}
                                             {!! Form::select('type_survey', ['group' => 'Grupal', 'corporative' => 'Corporativo'], null, [
-                                                'placeholder'=>'',
+                                                'placeholder' => '',
                                                 'id' => 'type_survey',
                                                 'style' => 'width:100%',
                                             ]) !!}
@@ -304,8 +304,12 @@
                 $('#modalHeading').text('Nueva Encuesta');
                 $('.form-group.dependencies').hide();
                 $('#type_survey').select2({
-                    placeholder:'Elija el Tipo de Encuesta'
+                    placeholder: 'Elija el Tipo de Encuesta'
                 });
+                $('#groups').select2({
+                    placeholder: 'Seleccione un Grupo'
+                }).empty();
+
                 $('#type_survey').change(function() {
                     if ($(this).val() === 'corporative') {
                         $('.form-group.dependencies').show();
@@ -344,31 +348,6 @@
                 $('#analysts').empty()
                 $("#analysts").trigger("change");
                 $('#analysts').select2({
-                    allowClear: true,
-                    ajax: {
-                        url: url,
-                        dataType: 'json',
-                        delay: 250,
-                        processResults: function(data) {
-                            console.log(data)
-                            return {
-                                results: $.map(data, function(item) {
-                                    return {
-                                        text: item.name,
-                                        id: item.id
-                                    }
-                                })
-                            };
-                        },
-                        cache: true
-                    }
-                });
-
-                //Participants
-                var url = '{{ route('globales.get-users') }}';
-                $('#participants').empty()
-                $("#participants").trigger("change");
-                $('#participants').select2({
                     allowClear: true,
                     ajax: {
                         url: url,
