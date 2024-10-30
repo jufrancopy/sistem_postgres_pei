@@ -329,35 +329,49 @@ class TaskController extends Controller
             $data = []; // Inicializa la variable de datos
 
             foreach ($task->typeTasks as $typeTask) {
+                // Caso para tareas tipo Survey
                 if ($typeTask->typetaskable_type == "App\Models\Admin\Globales\Survey") {
                     // Verifica el estado de la encuesta
                     $surveyStatus = DB::table('participants_has_surveys')
                         ->where('survey_id', $typeTask->typetaskable_id)
-                        ->where('participant_id', $task->analysts()->first()->id) // Asegúrate de obtener el participante correcto
-                        ->value('completed'); // 1 si está completada, 0 si está pendiente
+                        ->where('participant_id', $task->analysts()->first()->id)
+                        ->value('completed');
 
                     if (is_null($surveyStatus)) {
-                        $surveyStatus = -1; // O cualquier valor que consideres que representa un estado desconocido
+                        $surveyStatus = -1;
                     }
 
                     // Prepara los datos para la encuesta
-                    if ($surveyStatus == 1) {
-                        // Si la encuesta está completada, muestra un botón para ver los detalles
-                        $data[] = [
-                            'task' => $typeTask->typetaskable->name . " (ENCUESTA)", // Nombre de la encuesta
-                            'status' => $surveyStatus, // Estado de la encuesta
-                            'action' => '<a href="' . route('surveys.answers.details', $typeTask->typetaskable_id) . '" class="btn btn-info btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-eye"></i></a>',
-                        ];
-                    } else {
-                        // Si la encuesta está pendiente, muestra el botón original
-                        $data[] = [
-                            'task' => $typeTask->typetaskable->name . " (ENCUESTA)", // Nombre de la encuesta
-                            'status' => $surveyStatus, // Estado de la encuesta
-                            'action' => '<a href="' . route('surveys.answers', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-tasks"></i></a>',
-                        ];
-                    }
+                    $data[] = [
+                        'task' => $typeTask->typetaskable->name . " (ENCUESTA)",
+                        'status' => $surveyStatus,
+                        'action' => $surveyStatus == 1
+                            ? '<a href="' . route('surveys.answers.details', $typeTask->typetaskable_id) . '" class="btn btn-info btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-eye"></i></a>'
+                            : '<a href="' . route('surveys.answers', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-tasks"></i></a>',
+                    ];
+                }
+
+                // Caso para tareas tipo PEI
+                if ($typeTask->typetaskable_type == "App\Admin\Planificacion\Pei\PeiProfile") {
+                    // Puedes agregar cualquier lógica específica para PEI aquí, como verificar el estado u otros detalles
+                    $data[] = [
+                        'task' => $typeTask->typetaskable->name . " (PEI)",
+                        'status' => 'Pendiente', // Cambia esto según el estado real de PEI
+                        'action' => '<a href="' . route('pei-profiles.show', $typeTask->typetaskable_id) . '" class="btn btn-primary btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-info-circle"></i></a>',
+                    ];
+                }
+
+                // Caso para tareas tipo FODA
+                if ($typeTask->typetaskable_type == "App\Admin\Planificacion\Foda\FodaPerfil") {
+                    // Puedes agregar cualquier lógica específica para FODA aquí, como verificar el estado u otros detalles
+                    $data[] = [
+                        'task' => $typeTask->typetaskable->name . " (FODA)",
+                        'status' => 'Pendiente', // Cambia esto según el estado real de FODA
+                        'action' => '<a href="' . route('foda.show.details', $typeTask->typetaskable_id) . '" class="btn btn-warning btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-chart-bar"></i></a>',
+                    ];
                 }
             }
+
 
             return DataTables::of($data)
                 ->addIndexColumn()
