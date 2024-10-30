@@ -22,17 +22,25 @@ class Question extends Model
     //         ->get();
     // }
 
+    // Método para obtener respuestas como array
     public function getAnswersArray()
     {
         return $this->answers()->get()->map(function ($answer) {
-            return json_decode($answer->answers, true); // Decodifica el JSON a un array
+            // Verifica si $answer->answers es un string antes de decodificar
+            return is_string($answer->answers) ? json_decode($answer->answers, true) : $answer->answers;
         });
     }
 
-    //Relación para obtener respuestas
+    // En el modelo Question
+    public function answersHasQuestions()
+    {
+        return $this->hasMany(AnswersHasQuestions::class); // Asegúrate de usar el modelo correcto
+    }
+
+
     public function answers()
     {
-        return $this->hasMany(AnswersHasQuestions::class, 'question_id', 'id'); // Asegúrate de usar la clave foránea correcta
+        return $this->hasMany(AnswersHasQuestions::class, 'question_id', 'id');
     }
 
     // Relación para obtener respuestas

@@ -226,7 +226,9 @@ class SurveyController extends Controller
         // Sincroniza los participantes con la encuesta
         $survey->participants()->sync($participantIds);
 
-        return response()->json(['success' => 'Encuesta creada satisfactoriamente']);
+        return response()->json([
+            'success' => 'Encuesta creada satisfactoriamente'
+        ]);
     }
 
     public function destroy(Request $request, $id)

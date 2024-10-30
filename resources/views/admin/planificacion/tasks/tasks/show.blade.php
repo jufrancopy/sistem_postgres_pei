@@ -228,6 +228,7 @@
                             data: 'status',
                             name: 'status',
                             render: function(data, type, row) {
+                                console.log(row)
                                 if (row.status === 0 || row.status === false) {
                                     return '<span class="badge badge-danger">PENDIENTE</span>';
                                 } else if (row.status == 1 || row.status === true) {
