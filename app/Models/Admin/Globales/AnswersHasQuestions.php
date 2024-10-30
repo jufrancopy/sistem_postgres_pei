@@ -18,4 +18,10 @@ class AnswersHasQuestions extends Model
     protected $casts = [
         'answers' => 'array', // Esto convierte el JSON automáticamente a un array
     ];
+
+    // Relación inversa con Question
+    public function question()
+    {
+        return $this->belongsTo(Question::class, 'question_id', 'id');
+    }
 }

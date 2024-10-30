@@ -101,7 +101,7 @@
                                                     <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
                                                         href="javascript:void(0)" data-id="{{ $profile->id }}"
                                                         id="showAxisList">
-                                                        {{ $profile->where('level', 'axi')->count() }}
+                                                        {{ $profile->descendants()->where('level', 'axi')->count() }}
                                                     </a>
                                                 </div>
 
@@ -111,7 +111,7 @@
                                                     <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
                                                         href="javascript:void(0)" data-id="{{ $profile->id }}"
                                                         id="showGoalsList">
-                                                        {{ $profile->where('level', 'goal')->count() }}
+                                                        {{ $profile->descendants()->where('level', 'goal')->count() }}
                                                     </a>
                                                 </div>
 
@@ -121,7 +121,7 @@
                                                     <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
                                                         href="javascript:void(0)" data-id="{{ $profile->id }}"
                                                         id="showActionsList">
-                                                        {{ $profile->where('level', 'action')->count() }}
+                                                        {{ $profile->descendants()->where('level', 'action')->count() }}
                                                     </a>
                                                 </div>
 

@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Admin\Globales\Survey;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Admin\Globales\Question;
+use App\Models\Admin\Globales\Survey;
 use Illuminate\Support\Facades\DB;
 
 class QuestionController extends Controller
 {
     public function store(Request $request)
     {
-
         // Validar entrada
         $request->validate([
             'survey_id' => 'required',
@@ -47,7 +47,9 @@ class QuestionController extends Controller
             'answers' => json_encode($answers),  // Guardar el JSON de respuestas
         ]);
 
-        return response()->json(['success' => 'Pregunta y respuestas guardadas correctamente', 'surveyID' => $surveyID]);
+        $totalQuestions = Survey::find($surveyID)->questions->count();
+
+        return response()->json(['success' => 'Pregunta y respuestas guardadas correctamente', 'surveyID' => $surveyID, 'totalQuestions' => $totalQuestions]);
     }
 
     public function show(Request $request, $surveyID)
@@ -63,6 +65,8 @@ class QuestionController extends Controller
         $surveyID = $question->survey_id;
         $question->delete();
 
-        return response()->json(['question' => $question, 'surveyID' => $surveyID]);
+        $totalQuestions = Survey::find($surveyID)->questions->count();
+
+        return response()->json(['question' => $question, 'surveyID' => $surveyID, 'totalQuestions' => $totalQuestions]);
     }
 }
