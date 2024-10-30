@@ -287,7 +287,6 @@ class PeiController extends Controller
     {
         $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])
             ->findOrFail($id);
-
         $type = $profile->type;
 
         if ($request->ajax()) {

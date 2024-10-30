@@ -336,6 +336,10 @@ class TaskController extends Controller
                         ->where('participant_id', $task->analysts()->first()->id) // Asegúrate de obtener el participante correcto
                         ->value('completed'); // 1 si está completada, 0 si está pendiente
 
+                    if (is_null($surveyStatus)) {
+                        $surveyStatus = -1; // O cualquier valor que consideres que representa un estado desconocido
+                    }
+
                     // Prepara los datos para la encuesta
                     if ($surveyStatus == 1) {
                         // Si la encuesta está completada, muestra un botón para ver los detalles
