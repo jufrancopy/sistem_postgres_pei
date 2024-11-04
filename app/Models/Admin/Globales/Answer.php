@@ -17,4 +17,8 @@ class Answer extends Model
         'answer',
         'is_correct'
     ];
+
+    protected $casts = [
+        'answers' => 'array', // Asegúrate de que la columna 'answers' se caste como array
+    ];
 }
