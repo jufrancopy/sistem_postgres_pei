@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\Globales\OpenAIController;
+use App\Http\Controllers\Admin\Globales\Survey\QuestionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -160,11 +162,16 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/surveys/{id}/answers', 'Admin\Globales\Survey\SurveyController@showQuestionsTemplate')->name('surveys.answers');
     Route::post('/surveys/{surveyId}/check-answer', 'Admin\Globales\Survey\SurveyController@checkAnswer');
     Route::get('/surveys/{surveyId}/details-answers', 'Admin\Globales\Survey\SurveyController@detailAnswer')->name('surveys.answers.details');
+    Route::get('/surveys/{surveyId}/scores', 'Admin\Globales\Survey\SurveyController@getTopScores')->name('surveys.scores');
     Route::post('/save-answer', 'Admin\Globales\Survey\AnswerController@saveAnswer');
+    Route::post('/save-score', 'Admin\Globales\Survey\AnswerController@saveScore');
+    Route::get('/surveys/{surveyId}/has-responded', 'Admin\Globales\Survey\AnswerController@hasUserResponded');
 
     Route::resource('questions', 'Admin\Globales\Survey\QuestionController');
 
     Route::resource('anwers', 'Admin\Globales\Survey\AnswerController');
+    // Route::get('/generar-encuesta/{tema}/{numPreguntas?}', [OpenAIController::class, 'generarEncuesta']);
+    Route::get('/questions/{questionId}', [QuestionController::class, 'generarEncuesta']);
 
     //Rutas del Modulo FODA
     Route::resource('foda-models', 'Admin\Planificacion\Foda\FodaModeloController');
@@ -263,7 +270,7 @@ Route::group(['middleware' => 'auth'], function () {
 });
 
 Route::group(['middleware' => 'auth'], function () {
-    // Route::resource('user', 'UserController', ['except' => ['show']]);
+    Route::resource('user', 'UserController', ['except' => ['show']]);
     Route::get('profile', ['as' => 'profile.edit', 'uses' => 'ProfileController@edit']);
     Route::put('profile', ['as' => 'profile.update', 'uses' => 'ProfileController@update']);
     Route::put('profile/password', ['as' => 'profile.password', 'uses' => 'ProfileController@password']);

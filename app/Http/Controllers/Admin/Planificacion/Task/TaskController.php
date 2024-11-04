@@ -75,7 +75,6 @@ class TaskController extends Controller
                     return $analystsArray;
                 })
 
-
                 ->addColumn('tasks', function (Task $task) {
                     $taskNames = $task->typeTasks->pluck('typetaskable_type');
 
@@ -100,7 +99,6 @@ class TaskController extends Controller
 
                     return $formattedTaskNames;
                 })
-
 
                 ->rawColumns(['action'])
                 ->make(true);
@@ -346,8 +344,8 @@ class TaskController extends Controller
                         'task' => $typeTask->typetaskable->name . " (ENCUESTA)",
                         'status' => $surveyStatus,
                         'action' => $surveyStatus == 1
-                            ? '<a href="' . route('surveys.answers.details', $typeTask->typetaskable_id) . '" class="btn btn-info btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-eye"></i></a>'
-                            : '<a href="' . route('surveys.answers', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-id-task = "' . $idTask . '"><i class="fas fa-tasks"></i></a>',
+                            ? '<a href="' . route('surveys.answers.details', $typeTask->typetaskable_id) . '" class="btn btn-info btn-circle detailsAnswers" data-id-task = "' . $idTask . '" id="detailsAnswers"><i class="fas fa-eye"></i></a>'
+                            : '<a href="' . route('surveys.answers', $typeTask->typetaskable_id) . '" class="btn btn-success btn-circle" data-id-task="' . $idTask . '"><i class="fas fa-tasks"></i></a>',
                     ];
                 }
 
@@ -371,7 +369,6 @@ class TaskController extends Controller
                     ];
                 }
             }
-
 
             return DataTables::of($data)
                 ->addIndexColumn()

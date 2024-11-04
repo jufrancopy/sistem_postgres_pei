@@ -51,3 +51,57 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="questionModalIA" aria-hidden="true">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header card-header-info">
+                <h4 class="modal-title" id="modalHeadingIA"></h4>
+            </div>
+
+            <div class="modal-body">
+                <form id="questionFormIA" name="questionFormIA" class="form-horizontal">
+
+                    {{ Form::hidden('survey_id', $survey->id, ['id' => 'ia_survey_id']) }}
+                    {{ Form::hidden('question_id', null, ['id' => 'ia_question_id']) }}
+                    {{ Form::hidden('type', 'generate_ia') }}
+
+                    <div class="mb-2">
+                        {{ Form::label('ia_subject', 'Asunto:', ['class' => 'control-label']) }}
+                        {{ Form::text('ia_subject', null, [
+                            'class' => 'form-control editor',
+                            'id' => 'ia_subject',
+                        ]) }}
+                    </div>
+
+                    <div class="mb-2">
+                        {{ Form::label('number', 'Cantidad de Preguntas:', ['class' => 'control-label']) }}
+                        {{ Form::number('ia_number_question', null, [
+                            'class' => 'form-control editor',
+                            'id' => 'ia_number_question',
+                        ]) }}
+                    </div>
+
+                    <div class="mb-2">
+                        {{ Form::label('number', 'Cantidad de Respuestas por preguntas:', ['class' => 'control-label']) }}
+                        {{ Form::number('ia_number_anwers_for_question', null, [
+                            'class' => 'form-control editor',
+                            'id' => 'ia_number_anwers_for_question',
+                        ]) }}
+                    </div>
+
+
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-success" id="saveBtnGenerateQuestionIA"
+                            value="create">Guardar
+                            cambios
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
