@@ -27,13 +27,13 @@ class QuestionController extends Controller
             $questionsData = $response->candidates[0]->content->parts[0]->text;
 
             // Log para ver el contenido generado
-            \Log::info('Contenido generado:', ['questionsData' => $questionsData]);
+            // \Log::info('Contenido generado:', ['questionsData' => $questionsData]);
 
             // Dividir las preguntas por el patrón **Pregunta X:**  
             $questionsArray = preg_split('/\*\*Pregunta \d+\:\*\*/', $questionsData);
 
             // Log para verificar cómo se dividen las preguntas
-            \Log::info('Preguntas divididas:', ['questionsArray' => $questionsArray]);
+            // \Log::info('Preguntas divididas:', ['questionsArray' => $questionsArray]);
 
             foreach ($questionsArray as $questionBlock) {
                 // Limpiar espacios en blanco antes y después
