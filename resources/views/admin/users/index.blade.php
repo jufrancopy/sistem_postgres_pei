@@ -201,14 +201,22 @@
                             data: 'group',
                             name: 'group',
                             render: function(data, type, row) {
-                                if (type === 'display' && data) {
-                                    return '<div style="white-space: normal;" title="' + data + '">' +
-                                        data + '</div>';
+                                if (type === 'display') {
+                                    if (data && data !== '-') {
+                                        return '<div style="white-space: normal;" title="' + data +
+                                            '">' + data + '</div>';
+                                    } else {
+                                        return '<span class="badge badge-warning">Pendiente</span>';
+                                        
+                                    }
                                 } else {
                                     return data;
                                 }
                             }
                         },
+
+
+
                         {
                             data: 'action',
                             name: 'action',

@@ -215,8 +215,7 @@
                     membersSelect.empty();
 
                     //Obtenermos los usuarios que están asociados al grupo
-                    var groupId = '{{ $group->id }}'
-                    var url = '/admin/globales/get-users/' + groupId;
+                    var url = '/admin/globales/get-users/'
 
                     initializeSelect2(membersSelect, 'Seleccione Miembros', url);
                 });
@@ -238,7 +237,7 @@
 
                         //Obtenermos los usuarios que están asociados al grupo
                         var groupId = data.group.parent_id
-                        var url = '/admin/globales/get-users/' + groupId;
+                        var url = '/admin/globales/get-users/';
                         initializeSelect2(membersSelect, 'Seleccione Miembros', url);
 
                         //Llamamos los datos precargados desde el controlador
