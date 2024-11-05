@@ -206,17 +206,15 @@
                                         return '<div style="white-space: normal;" title="' + data +
                                             '">' + data + '</div>';
                                     } else {
-                                        return '<span class="badge badge-warning">Pendiente</span>';
-                                        
+                                        return '<div style="white-space: normal;" title="PENDIENTE">' +
+                                            '<span style="background-color: orange; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.85em;">PENDIENTE</span>' +
+                                            '</div>';
                                     }
                                 } else {
                                     return data;
                                 }
                             }
                         },
-
-
-
                         {
                             data: 'action',
                             name: 'action',
