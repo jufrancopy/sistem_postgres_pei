@@ -12,7 +12,7 @@
                 <li class="breadcrumb-item active" aria-current="page"> Patrimonios</li>
             </ol>
         </nav>
-        
+
 
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
@@ -139,7 +139,6 @@
 @section('scripts')
     {{-- My custom scripts --}}
     <script type="text/javascript">
-    
         $(function() {
             $.ajaxSetup({
                 headers: {
@@ -261,7 +260,7 @@
 
                 .create(document.querySelector('#description'))
                 .then(editor => {
-                    patrimonyEditor  = editor;
+                    patrimonyEditor = editor;
                 })
                 .catch(err => {
                     console.error(err.stack);
@@ -395,8 +394,10 @@
 
             // Initialize all Select2 elements
             function setupSelect2() {
-                $('#type, #state, #city, #locality, #infrastructureType, #estateStatus, #rentAmountPeriod, #statusDocumentation').select2();
-                $('#state, #city, #locality, #infrastructureType, #estateStatus, #rentAmountPeriod, #statusDocumentation').val([]).trigger('change.select2');
+                $('#type, #state, #city, #locality, #infrastructureType, #estateStatus, #rentAmountPeriod, #statusDocumentation')
+                    .select2();
+                $('#state, #city, #locality, #infrastructureType, #estateStatus, #rentAmountPeriod, #statusDocumentation')
+                    .val([]).trigger('change.select2');
                 // $('#state, #city, #locality').empty().trigger('change.select2');
             }
 
@@ -642,9 +643,9 @@
 
                 var data = new FormData();
                 var form_data = $('#patrimonyForm').serializeArray();
-                
+
                 $.each(form_data, function(key, input) {
-                    data.append(input.name, input.value);  
+                    data.append(input.name, input.value);
                 });
 
                 //evidenceFile data
