@@ -116,9 +116,6 @@ class PatrimonyController extends Controller
                         'rent_amount' => $request->rentAmount,
                         'rent_amount_period' => $request->rentAmountPeriod,
                         'contract_resolution' => $request->contractResolution,
-                        
-                        
-                        
                         'contract_number' => $request->startDateContract,
                         'contract_number' => $request->endDateContract,
                         'contract_number' => $request->contractNumber,
