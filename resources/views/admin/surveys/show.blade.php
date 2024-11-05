@@ -63,6 +63,10 @@
                             id="createNewQuestion">
                             Nueva Pregunta
                         </a>
+                        <a class="btn btn-info mb-2" data-group-id="null" href="javascript:void(0)"
+                            id="createNewQuestionWithIA">
+                            Generar con IA
+                        </a>
                         <div class="d-flex align-items-center">
                             <span class="btn btn-primary" id="totalQuestions">
                                 Total de Preguntas <i class="fa fa-question-circle mr-2" aria-hidden="true"></i>:
@@ -187,7 +191,8 @@
                 .catch(err => {
                     console.error(err.stack);
                 });
-            var answerCount = 2; // Comenzamos con 2 porque ya hay una respuesta por defecto.
+
+            var answerCount = 2;
 
             // Función para agregar nuevas respuestas
             $('#addAnswer').on('click', function() {
@@ -272,6 +277,16 @@
                 });
             });
 
+            $('body').on('click', '#createNewQuestionWithIA', function() {
+                var questionID = $(this).data('id');
+
+                $('#questionModalIA').modal('show');
+
+                $('#questionFormIA').trigger("reset");
+
+                $('#modalHeadingIA').text('Generación de Preguntas con IA');
+            });
+
             $('#saveBtn').click(function(e) {
                 e.preventDefault();
                 $(this).html('Guardando..');
@@ -284,6 +299,74 @@
                 });
 
                 data.append('question', questionEditor.getData());
+
+                $.ajax({
+                    data: data,
+                    url: "{{ route('questions.store') }}",
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $('#totalQuestions').text('Total de Preguntas: ' +
+                            data.totalQuestions);
+                        Swal.fire(
+                            'Excelente!',
+                            'Has Agregado una Nueva Encuesta.',
+                            'success'
+                        );
+
+                        $('#surveyForm').trigger("reset");
+                        $('#questionModal').modal('hide');
+
+                        var surveyID = data
+                            .surveyID; // Suponiendo que ya tienes data.surveyID definido
+                        var url = '{{ route('surveys.show.details', ':id') }}'.replace(':id',
+                            surveyID);
+
+                        $.ajax({
+                            url: url, // Asumiendo que tienes una ruta que retorna las preguntas de una encuesta
+                            type: "GET",
+                            success: function(response) {
+                                // Asegúrate de que response.html contenga el HTML para el acordeón
+                                $('#accordionExample').html(response
+                                    .html
+                                ); // Actualizamos el contenido del acordeón
+                            },
+                            error: function(error) {
+                                toastr.error(
+                                    "Hubo un problema actualizando las preguntas."
+                                );
+                            }
+                        });
+                    },
+
+                    error: function(data) {
+                        var obj = data.responseJSON.errors;
+                        $.each(obj, function(key, value) {
+                            // Alert Toastr
+                            toastr.options = {
+                                closeButton: true,
+                                progressBar: true,
+                            };
+                            toastr.error("Atención: " + value);
+                        });
+
+                        $('#saveBtn').html('Guardar Cambios');
+                    }
+                });
+            });
+
+            $('#saveBtnGenerateQuestionIA').click(function(e) {
+                e.preventDefault();
+                $(this).html('Generando..');
+
+                var data = new FormData();
+                var form_data = $('#questionFormIA').serializeArray();
+
+                $.each(form_data, function(key, input) {
+                    data.append(input.name, input.value);
+                });
 
                 $.ajax({
                     data: data,

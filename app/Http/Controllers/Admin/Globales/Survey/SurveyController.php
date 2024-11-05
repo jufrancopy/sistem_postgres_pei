@@ -76,13 +76,14 @@ class SurveyController extends Controller
 
         // Inicializa un arreglo para almacenar la información
         $answersData = [];
+        $chartData = [];
 
         // Recorre cada pregunta y busca las respuestas y opciones asociadas
         foreach ($questions as $question) {
             // Obtener la respuesta seleccionada por el usuario
             $selectedAnswer = DB::table('answers')
                 ->where('question_id', $question->id)
-                ->where('participant_id', auth()->user()->id) // Asegúrate de obtener el participante correcto
+                ->where('participant_id', auth()->user()->id)
                 ->first();
 
             // Obtener las posibles respuestas de la tabla pivot
@@ -95,13 +96,42 @@ class SurveyController extends Controller
 
             // Agrega la pregunta y sus opciones al arreglo
             $answersData[] = [
-                'question' => $question->question, // Aquí se guarda el texto de la pregunta
-                'selected_answer' => $selectedAnswer ? $selectedAnswer->answer : null, // Respuesta seleccionada por el usuario
+                'question' => $question->question,
+                'selected_answer' => $selectedAnswer ? $selectedAnswer->answer : null,
                 'options' => $possibleAnswers,
+            ];
+
+            // Prepara datos para el gráfico
+            $chartData[] = [
+                'question' => $question->question,
+                'answers' => $possibleAnswers,
             ];
         }
 
-        return view('admin.surveys.answers.details', compact('answersData'));
+        return view('admin.surveys.answers.details', compact('answersData', 'chartData'));
+    }
+
+    public function showSurveyResults($surveyId)
+    {
+        // Obtener todas las preguntas de la encuesta
+        $questions = Question::where('survey_id', $surveyId)->with('answers')->get();
+
+        $correctAnswers = 0;
+        $incorrectAnswers = 0;
+
+        foreach ($questions as $question) {
+            foreach ($question->answers as $answer) {
+                foreach ($answer->answers as $a) {
+                    if ($a['is_correct'] == 1) {
+                        $correctAnswers++;
+                    } else {
+                        $incorrectAnswers++;
+                    }
+                }
+            }
+        }
+
+        return view('survey.results', compact('correctAnswers', 'incorrectAnswers'));
     }
 
     public function show($id)
@@ -182,6 +212,18 @@ class SurveyController extends Controller
 
         // Retorna si la respuesta fue correcta
         return response()->json(['isCorrect' => $isCorrect]);
+    }
+
+    public function getTopScores($surveyId, $limit = 10)
+    {
+        // Realiza la consulta en la tabla survey_scores
+        return DB::table('survey_scores')
+            ->join('users', 'survey_scores.participant_id', '=', 'users.id') // Une con la tabla users para obtener el nombre del participante
+            ->select('users.name', 'survey_scores.score') // Selecciona el nombre y el puntaje
+            ->where('survey_scores.survey_id', $surveyId) // Filtra por el ID de la encuesta
+            ->orderByDesc('survey_scores.score') // Ordena por puntaje descendente
+            ->take($limit) // Limita el número de resultados
+            ->get();
     }
 
     public function store(Request $request)
