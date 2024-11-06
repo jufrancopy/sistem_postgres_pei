@@ -201,9 +201,15 @@
                             data: 'group',
                             name: 'group',
                             render: function(data, type, row) {
-                                if (type === 'display' && data) {
-                                    return '<div style="white-space: normal;" title="' + data + '">' +
-                                        data + '</div>';
+                                if (type === 'display') {
+                                    if (data && data !== '-') {
+                                        return '<div style="white-space: normal;" title="' + data +
+                                            '">' + data + '</div>';
+                                    } else {
+                                        return '<div style="white-space: normal;" title="PENDIENTE">' +
+                                            '<span style="background-color: orange; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.85em;">PENDIENTE</span>' +
+                                            '</div>';
+                                    }
                                 } else {
                                     return data;
                                 }
