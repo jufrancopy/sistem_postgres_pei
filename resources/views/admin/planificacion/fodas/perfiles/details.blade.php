@@ -360,7 +360,10 @@
                                     {{ Form::hidden('perfil_id', null, ['class' => 'form-control', 'id' => 'perfil_id']) }}
                                     {{ Form::hidden('aspecto_id', null, ['class' => 'form-control', 'id' => 'aspecto_id']) }}
                                     {{ Form::label('tipo', 'Tipo:', ['class' => 'form-control', 'id' => 'tipo']) }}
+                                    {{ Form::label('tipo', 'Tipo:', ['class' => 'form-control', 'id' => 'tipo']) }}
+                                    Necesito un titulo para este form
 
+                                    <span></span>
                                     <div class="form-group">
                                         {{ Form::label('ocurrencia', 'Nivel de Ocurrencia') }}
                                         {{ Form::select(
