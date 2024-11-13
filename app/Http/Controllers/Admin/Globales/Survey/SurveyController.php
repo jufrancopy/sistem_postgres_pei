@@ -214,7 +214,7 @@ class SurveyController extends Controller
         return response()->json(['isCorrect' => $isCorrect]);
     }
 
-    public function getTopScores($surveyId, $limit = 10)
+    public function getTopScores($surveyId, $limit = 20)
     {
         // Realiza la consulta en la tabla survey_scores
         return DB::table('survey_scores')

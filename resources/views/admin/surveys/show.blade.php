@@ -74,31 +74,29 @@
                             </span>
                         </div>
                     </div>
-
-
-
                     {{-- Inicio Lista de Preguntas --}}
                     <div class="card-body">
                         <div class="accordion" id="accordionExample">
 
                             @foreach ($survey->questions as $key => $question)
                                 <div class="card">
-                                    <div class="card-header d-flex justify-content-between">
-                                        <h2 class="mb-0">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h2 class="mb-0" style="flex-grow: 1;">
                                             <button class="btn btn-link text-left" type="button" data-toggle="collapse"
                                                 data-target="#collapse{{ $key }}" aria-expanded="true"
-                                                aria-controls="collapse{{ $key }}">
+                                                aria-controls="collapse{{ $key }}"
+                                                style="white-space: normal; overflow-wrap: break-word;">
                                                 {!! $question->question !!}
                                             </button>
                                         </h2>
 
-                                        <div class="ml-auto">
+                                        <div class="ml-2 d-flex align-items-center">
                                             @if ($question->countAnswers() > 0)
-                                                <button class="btn btn-success btn-circle">
+                                                <button class="btn btn-success btn-circle mr-2">
                                                     <i class="fa fa-check" aria-hidden="true"></i>
                                                 </button>
                                             @else
-                                                <button class="btn btn-warning btn-circle">
+                                                <button class="btn btn-warning btn-circle mr-2">
                                                     <i class="fa fa-times" aria-hidden="true"></i>
                                                 </button>
                                             @endif
@@ -115,13 +113,12 @@
                                         <div class="card-body">
                                             <ul>
                                                 @php
-                                                    $answersArray = $question->answersHasQuestions; // Obtener la relación
+                                                    $answersArray = $question->answersHasQuestions;
                                                 @endphp
 
                                                 @if ($answersArray->isNotEmpty())
                                                     @foreach ($answersArray as $ans)
                                                         @php
-                                                            // Verifica si el campo 'answers' es una cadena JSON o un array
                                                             $decodedAnswers = is_array($ans->answers)
                                                                 ? $ans->answers
                                                                 : json_decode($ans->answers, true);
@@ -154,6 +151,7 @@
                         </div>
                     </div>
                     {{-- Fin Lista de Preguntas --}}
+
 
                     {{-- Inicio Modal Preguntas --}}
                     @include('admin.surveys.partials.modals.create')
