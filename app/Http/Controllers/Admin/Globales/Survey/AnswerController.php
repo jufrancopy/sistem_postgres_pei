@@ -53,12 +53,24 @@ class AnswerController extends Controller
 
     public function saveScore(Request $request)
     {
+        // Validar los datos de entrada
         $validated = $request->validate([
             'participant_id' => 'required',
             'survey_id' => 'required', // Cambiar a 'string'
             'score' => 'required',
         ]);
-        // Guarda el puntaje en la base de datos
+
+        // Verificar si ya existe un puntaje para este participante y encuesta
+        $existingScore = SurveyScore::where('participant_id', $validated['participant_id'])
+            ->where('survey_id', $validated['survey_id'])
+            ->first();
+
+        if ($existingScore) {
+            // Si ya existe, devolver una respuesta indicando que el puntaje ya fue guardado
+            return response()->json(['message' => 'Puntaje ya registrado'], 400);
+        }
+
+        // Si no existe, guardar el nuevo puntaje
         $score = new SurveyScore($validated);
         $score->save();
 

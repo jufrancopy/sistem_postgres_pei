@@ -21,7 +21,8 @@
                         <h3>Encuesta {{ $survey->name }}</h3>
                     </div>
 
-                    <canvas id="scoreChart" width="900" height="500"></canvas>
+                    <canvas id="scoreChart" width="900" height="500" style="display: none;"></canvas>
+
 
                     <div class="card-body">
                         <div class="quiz text-center">
@@ -142,6 +143,7 @@
         let questions = [];
         let answered = false;
 
+
         // Función para iniciar la encuesta
         function startQuiz() {
             currentQuestionIndex = 0;
@@ -160,27 +162,27 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    data.hasResponded
                     if (data.hasResponded) {
-                        Swal.fire({
-                            title: 'Encuesta completada',
-                            text: "Veamos los puntajes!",
-                            icon: 'info',
-                            buttons: true,
-                            dangerMode: false,
-                        }).then((willScores) => {
-                            if (willScores) {
-                                showScores(); // Llama a la función para mostrar los puntajes
-                            }
-                        })
+                        if (!answered) { // Evitar mostrar los puntajes si el usuario ya respondió
+                            Swal.fire({
+                                title: 'Encuesta completada',
+                                text: "Veamos los puntajes!",
+                                icon: 'info',
+                                buttons: true,
+                                dangerMode: false,
+                            }).then((willScores) => {
+                                if (willScores) {
+                                    showScores(); // Mostrar los puntajes
+                                    answered =
+                                        true; // Establecer 'answered' en true para evitar futuras acciones
+                                }
+                            });
+                        }
                     } else {
-                        // Si no ha respondido, continúa con la carga de preguntas
                         fetchQuestions();
                     }
                 })
-                .catch(error => {
-                    console.error('Error al verificar respuesta:', error);
-                });
+                .catch(error => console.error('Error al verificar respuesta:', error));
         }
 
         //Funcion para Graficos
@@ -208,46 +210,53 @@
             });
         }
 
-        // Muestra el puntaje final y una tabla con puntajes de todos los participantes
+        // Función para mostrar un mensaje de fin de encuesta y luego mostrar los puntajes
+        function showEndOfSurveyNotification() {
+            Swal.fire({
+                title: 'Encuesta Completada',
+                text: '¡Gracias por participar! A continuación se mostrarán los puntajes.',
+                icon: 'success',
+                confirmButtonText: 'Ver Puntajes',
+            }).then(() => {
+                showScores();
+            });
+        }
+
+        // Modificación en la función que se encarga de manejar el puntaje final
         function showScores() {
             resetState();
             fetch(`/surveys/${surveyId}/scores`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data)
                     const currentUserId = '{{ auth()->user()->id }}';
-
-                    let scoreTable = `<h3>Puntajes de los Participantes</h3>`;
-                    scoreTable += `
-                        <table class="table table-striped table-bordered mt-3">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th scope="col">Puesto</th>
-                                    <th scope="col">Nombre</th>
-                                    <th scope="col">Total de Puntos</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
-
+                    let scoreTable =
+                        `<h3>Puntajes de los Participantes</h3><table class="table table-striped table-bordered mt-3"><thead class="thead-light"><tr><th>Puesto</th><th>Nombre</th><th>Total de Puntos</th></tr></thead><tbody>`;
                     scoreData = data.map((participantScore, index) => {
                         let medalIcon = index === 0 ? '🏅' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
                         const isCurrentUser = participantScore.id === currentUserId;
-                        scoreTable += `
-                            <tr class="${isCurrentUser ? 'table-success user-highlight' : ''}">
+                        scoreTable += `<tr class="${isCurrentUser ? 'table-success user-highlight' : ''}">
                                 <td>${medalIcon}${index + 1}</td>
                                 <td>${participantScore.name}</td>
-                                <td>${participantScore.score}</td>
-                            </tr>
-                        `;
-                        return participantScore.score; // Guarda los puntajes para el gráfico
+                                <td>${participantScore.score}</td></tr>`;
+                        return participantScore.score;
                     });
 
                     scoreTable += `</tbody></table>`;
                     questionElement.innerHTML += scoreTable;
 
-                    renderChart(scoreData);
+
+                    showChart(scoreData);
                 })
                 .catch(error => console.error('Error al obtener los puntajes:', error));
+        }
+
+        function showChart(data) {
+            // Mostrar el canvas
+            document.getElementById('scoreChart').style.display = 'block';
+
+            // Renderizar el gráfico
+            renderChart(data);
         }
 
         function renderChart(data) {
@@ -283,13 +292,13 @@
                 });
         }
 
-        // Muestra la pregunta actual
+        // Cuando el usuario haya terminado la encuesta, mostrar la notificación y los puntajes
         function fetchQuestion() {
             if (currentQuestionIndex < questions.length) {
                 resetState();
                 showQuestion(questions[currentQuestionIndex]);
             } else {
-                showScores();
+                showEndOfSurveyNotification(); // Notificar que la encuesta ha terminado
             }
         }
 
@@ -316,13 +325,23 @@
         // Selecciona la respuesta y guarda si es correcta
         function selectAnswer(selectedButton, question) {
             const buttons = answerButtons.querySelectorAll("button");
+            const correctButton = Array.from(buttons).find(button => button.dataset.correct === "1");
 
+            // Primero, deshabilitamos todas las respuestas para evitar más clics
             buttons.forEach(button => {
-                const isCorrect = button.dataset.correct === "1";
-                button.classList.add(isCorrect ? "correct" : "incorrect");
                 button.disabled = true;
             });
 
+            // Si el usuario selecciona la respuesta correcta
+            if (selectedButton.dataset.correct === "1") {
+                selectedButton.classList.add("correct"); // Marcar en verde
+            } else {
+                // Si el usuario selecciona una respuesta incorrecta
+                selectedButton.classList.add("incorrect"); // Marcar la incorrecta en rojo
+                correctButton.classList.add("correct"); // Marcar la respuesta correcta en verde
+            }
+
+            // Si la respuesta seleccionada es correcta, aumentamos el puntaje
             if (selectedButton.dataset.correct === "1") {
                 score++;
             }
@@ -369,14 +388,21 @@
             };
 
             fetch('/save-score', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(scoreData)
-            });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(scoreData)
+                })
+                .then(response => response.json()) // Asegurarse de recibir la respuesta del servidor
+                .then(data => {
+                    console.log('Puntaje guardado:', data);
+                    showScores(); // Llamar a showScores después de guardar
+                })
+                .catch(error => console.error('Error al guardar el puntaje:', error));
         }
+
 
         // Evento de clic para el botón "Siguiente"
         nextButton.addEventListener("click", () => {
