@@ -91,6 +91,18 @@
                         ]) }}
                     </div>
 
+                    <div class="mb-2">
+                        {{ Form::label('language', 'Seleccionar Idioma:', ['class' => 'control-label']) }}
+                        <div>
+                            <label>
+                                {{ Form::radio('language', 'language_es', true, ['id' => 'language_es']) }} Español
+                            </label>
+                            <label>
+                                {{ Form::radio('language', 'language_en', false, ['id' => 'language_en']) }} Inglés
+                            </label>
+                        </div>
+                    </div>
+
 
                     <div class="col-sm-offset-2 col-sm-10">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
