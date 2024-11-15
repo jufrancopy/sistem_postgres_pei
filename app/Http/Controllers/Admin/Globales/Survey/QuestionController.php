@@ -8,11 +8,15 @@ use App\Models\Admin\Globales\Question;
 use App\Models\Admin\Globales\Survey;
 use Gemini\Laravel\Facades\Gemini;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
 
 class QuestionController extends Controller
 {
     public function store(Request $request)
     {
+        dd();
+        // \Log::info('Datos del formulario:', $request->all());
         $surveyID = $request->survey_id;
 
         if ($request->type == 'generate_ia') {
@@ -20,10 +24,18 @@ class QuestionController extends Controller
             $iaNumberQuestion = $request->ia_number_question;
             $iaNumberAnswersForQuestion = $request->ia_number_anwers_for_question;
 
-            // Obtén el contenido de la respuesta de Gemini    
+            // Obtener respuesta respuesta de Gemini AI
+            // Obtén el contenido de la respuesta de Gemini
+            // if ($request->language == 'language_es') {
+            //     $response = Gemini::geminiPro()->generateContent("Generar $iaNumberQuestion preguntas de selección múltiple sobre $iaSubject. Cada pregunta debe tener $iaNumberAnswersForQuestion respuestas. Asegúrate de que las preguntas sean presentadas sin corchetes y que sigan el formato: Pregunta: [\"Pregunta aquí\"], Respuestas en JSON: [{\"answer\":\"Respuesta 1\",\"is_correct\":1},{\"answer\":\"Respuesta 2\",\"is_correct\":0}].");
+            // } else if ($request->language == 'language_en') {
+            //     $response = Gemini::geminiPro()->generateContent("Generate $iaNumberQuestion multiple choice questions about $iaSubject. Each question should have $iaNumberAnswersForQuestion answers. Ensure that the questions are presented without brackets and follow the format: Question: [\"Question here\"], Answers in JSON: [{\"answer\":\"Answer 1\",\"is_correct\":1},{\"answer\":\"Answer 2\",\"is_correct\":0}].");
+            // }
+
             $response = Gemini::geminiPro()->generateContent("Generar $iaNumberQuestion preguntas de selección múltiple sobre $iaSubject. Cada pregunta debe tener $iaNumberAnswersForQuestion respuestas. Asegúrate de que las preguntas sean presentadas sin corchetes y que sigan el formato: Pregunta: [\"Pregunta aquí\"], Respuestas en JSON: [{\"answer\":\"Respuesta 1\",\"is_correct\":1},{\"answer\":\"Respuesta 2\",\"is_correct\":0}].");
 
-            // Accede al contenido generado
+
+            // Acceder al contenido generado
             $questionsData = $response->candidates[0]->content->parts[0]->text;
 
             // Log para ver el contenido generado
