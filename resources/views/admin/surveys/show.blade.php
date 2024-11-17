@@ -191,11 +191,11 @@
                 });
 
             //ia_subject
-            var iaSubject;
+            var iaSubjectEditor;
             ClassicEditor
                 .create(document.querySelector('#ia_subject'))
                 .then(editor => {
-                    iaSubject = editor;
+                    iaSubjectEditor = editor;
                 })
                 .catch(err => {
                     console.error(err.stack);
@@ -259,12 +259,6 @@
                     questionEditor.setData('');
                 }
 
-                if (iaSubject) {
-                    iaSubject.setData('');
-                }
-
-
-
                 //Analysts
                 var url = '{{ route('globales.get-users') }}';
                 $('#analysts').empty()
@@ -300,6 +294,11 @@
                 $('#questionFormIA').trigger("reset");
 
                 $('#modalHeadingIA').text('Generación de Preguntas con IA');
+
+                //Limpiamos el Editor
+                if (iaSubjectEditor) {
+                    iaSubjectEditor.setData('');
+                }
             });
 
             $('#saveBtn').click(function(e) {
@@ -316,6 +315,7 @@
                 });
 
                 data.append('question', questionEditor.getData());
+                data.append('ia_subject', iaSubjectEditor.getData());
 
                 $.ajax({
                     data: data,
