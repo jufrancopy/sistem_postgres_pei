@@ -32,53 +32,56 @@ class TaskController extends Controller
             // Obtener el usuario autenticado
             $user = auth()->user();
 
-            // Comprobar si el usuario es un administrador
             if ($user->hasRole('Administrador')) {
+                // Si el usuario es Administrador, mostrar todas las tareas
                 $data = Task::latest()->get();
             } else {
-                // Filtrar tareas asignadas al usuario analista actual
-                $data = Task::whereHas('analysts', function ($query) use ($user) {
-                    $query->where('analyst_id', $user->id);
-                })->latest()->get();
+                // Filtrar tareas asignadas al usuario actual como analista o participante
+                $data = Task::where(function ($query) use ($user) {
+                    $query->whereHas('analysts', function ($analystsQuery) use ($user) {
+                        $analystsQuery->where('analyst_id', $user->id);
+                    })
+                        ->orWhereHas('participants', function ($participantsQuery) use ($user) {
+                            $participantsQuery->where('participant_id', $user->id);
+                        });
+                })
+                    ->whereHas('typeTasks', function ($typeTasksQuery) {
+                        // Filtrar solo las tareas de tipo Survey
+                        $typeTasksQuery->where('typetaskable_type', Survey::class);
+                    })
+                    ->latest()->get();
             }
+
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
                     $user = auth()->user();
                     $buttons = '';
 
-                    // Verifica si el usuario es Administrador
                     if ($user->hasRole('Administrador')) {
-                        // Si es Administrador, muestra los botones de edición y eliminación
                         $buttons .= '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editTask"><i class="far fa-edit"></i></a>';
                         $buttons .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteTask"><i class="fa fa-trash" aria-hidden="true"></i></a>';
                     }
 
-                    // Siempre muestra el botón 'View' sin importar el rol
                     $buttons .= ' <a href="' . route('tasks.show', $row->id) . '" class="btn btn-success btn-circle"><i class="fas fa-tasks"></i></a>';
 
                     return $buttons;
                 })
                 ->addColumn('group', function (Task $task) {
-                    return $task->group->name;
+                    return $task->group->name ?? '';
                 })
-
                 ->addColumn('analysts', function (Task $task) {
                     $analystsArray = $task->analysts->map(function ($analyst) {
                         return [
                             'id' => $analyst->id,
                             'name' => $analyst->name,
                         ];
-                    })->toArray();  // Convierte a array
+                    })->toArray();
 
-                    // En lugar de devolver JSON, simplemente retorna el array
                     return $analystsArray;
                 })
-
                 ->addColumn('tasks', function (Task $task) {
                     $taskNames = $task->typeTasks->pluck('typetaskable_type');
-
-                    // Array para almacenar los nombres modificados de los tipos de tarea
                     $modifiedTaskNames = [];
 
                     foreach ($taskNames as $taskName) {
@@ -89,17 +92,12 @@ class TaskController extends Controller
                         } elseif ($taskName == 'App\Models\Admin\Globales\Survey') {
                             $modifiedTaskNames[] = "Encuesta";
                         } else {
-                            // Si no coincide con ninguna condición, mantener el nombre original
                             $modifiedTaskNames[] = $taskName;
                         }
                     }
 
-                    // Convertir el array de nombres modificados a una cadena separada por comas
-                    $formattedTaskNames = implode(', ', $modifiedTaskNames);
-
-                    return $formattedTaskNames;
+                    return implode(', ', $modifiedTaskNames);
                 })
-
                 ->rawColumns(['action'])
                 ->make(true);
         }
@@ -107,6 +105,7 @@ class TaskController extends Controller
         return view('admin.planificacion.tasks.tasks.index', get_defined_vars())
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
+
 
     public function store(Request $request)
     {
@@ -135,7 +134,6 @@ class TaskController extends Controller
         // Asociar los analistas
         $analysts = $request->analyst_id;
         $task->analysts()->sync($analysts);
-
 
         // Asociar los tipos de tareas
         $typetaskData = [];
@@ -169,8 +167,6 @@ class TaskController extends Controller
             }
         }
 
-
-
         // Retornar una respuesta apropiada
         if ($task->wasRecentlyCreated) {
             return response()->json(['success' => 'Tarea creada con éxito']);
@@ -192,6 +188,7 @@ class TaskController extends Controller
 
             $peiData = PeiProfile::select("id", "name", DB::raw("'" . PeiProfile::class . "' as model"))
                 ->where('name', 'LIKE', "%$search%")
+                ->whereIsRoot()
                 ->get();
 
             // Buscar en Survey (encuestas)
