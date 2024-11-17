@@ -21,6 +21,11 @@ class Task extends Model
         return $this->belongsToMany(User::class, 'planificacion.tasks_has_analysts', 'task_id', 'analyst_id');
     }
 
+    public function participants()
+    {
+        return $this->belongsToMany(User::class, 'planificacion.tasks_has_participants', 'task_id', 'participant_id');
+    }
+
     public function analyst()
     {
         return $this->belongsTo(User::class);

@@ -219,6 +219,8 @@
                 confirmButtonText: 'Ver Puntajes',
             }).then(() => {
                 showScores();
+                saveScore('{{ auth()->user()->id }}', '{{ $survey->id }}',
+                    score); // Llamar aquí después de mostrar los puntajes
             });
         }
 
@@ -228,7 +230,6 @@
             fetch(`/surveys/${surveyId}/scores`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data)
                     const currentUserId = '{{ auth()->user()->id }}';
                     let scoreTable =
                         `<h3>Puntajes de los Participantes</h3><table class="table table-striped table-bordered mt-3"><thead class="thead-light"><tr><th>Puesto</th><th>Nombre</th><th>Total de Puntos</th></tr></thead><tbody>`;
@@ -398,10 +399,10 @@
                 .then(response => response.json()) // Asegurarse de recibir la respuesta del servidor
                 .then(data => {
                     console.log('Puntaje guardado:', data);
-                    showScores(); // Llamar a showScores después de guardar
                 })
                 .catch(error => console.error('Error al guardar el puntaje:', error));
         }
+
 
 
         // Evento de clic para el botón "Siguiente"

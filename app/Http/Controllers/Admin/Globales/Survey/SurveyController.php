@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin\Globales\Survey;
 
 use App\Admin\Globales\Group;
+use App\Admin\Planificacion\Task\Task;
+use App\Admin\Planificacion\Task\TypeTask;
 use App\Http\Controllers\Controller;
 use App\Models\Admin\Globales\Question;
 use App\Models\Admin\Globales\Survey;
@@ -231,20 +233,21 @@ class SurveyController extends Controller
         if ($request->ajax()) {
             $request->validate(
                 [
-                    'name'   => 'required',
-                    'type_survey'      => 'required',
-                    'description'         => 'required',
-                    'group_id'         => 'required',
+                    'name' => 'required',
+                    'type_survey' => 'required',
+                    'description' => 'required',
+                    'group_id' => 'required',
                 ],
                 [
-                    'name.required'     => 'El nombre es requerido',
-                    'type_survey.required'     => 'El tipo es requerido',
-                    'description.required'     => 'Indique el Tipo',
-                    'group_id.required'     => 'Debe Seleccionar un Grupo de Trabajo',
+                    'name.required' => 'El nombre es requerido',
+                    'type_survey.required' => 'El tipo es requerido',
+                    'description.required' => 'Indique el Tipo',
+                    'group_id.required' => 'Debe Seleccionar un Grupo de Trabajo',
                 ]
             );
-        };
+        }
 
+        // Crear o actualizar la encuesta
         $survey = Survey::updateOrCreate(
             ['id' => $request->profile_id],
             [
@@ -256,20 +259,35 @@ class SurveyController extends Controller
             ]
         );
 
-        // Encuentra el grupo con sus miembros
-        $group = Group::with('members')->findOrFail($survey->group_id);
+        // Crear la tarea
+        $taskData = [
+            'group_id' => $survey->group_id,
+            'details' => $request->description,
+            'status' => 0, // Status por defecto
+        ];
+        $surveyTask = Task::create($taskData);
 
-        // Obtén los IDs de los miembros del grupo
+        // Asociar la relación polimórfica a la tarea
+        $surveyTask->typeTasks()->create([
+            'typetaskable_id' => $survey->id,
+            'typetaskable_type' => Survey::class,
+            'status' => 0, // Status inicial de la relación polimórfica
+        ]);
+
+        // Obtener los miembros del grupo
+        $group = Group::with('members')->findOrFail($survey->group_id);
         $participantIds = $group->members->pluck('id')->toArray();
 
-        // Sincroniza los analistas con la encuesta
-        $survey->analysts()->sync($request->analyst_id);
+        // Sincronizar los participantes de la tarea
+        $surveyTask->analysts()->sync($request->analyst_id);
+        $surveyTask->participants()->sync($participantIds);
 
-        // Sincroniza los participantes con la encuesta
+        // Sincronizar analistas y participantes de la encuesta
+        $survey->analysts()->sync($request->analyst_id);
         $survey->participants()->sync($participantIds);
 
         return response()->json([
-            'success' => 'Encuesta creada satisfactoriamente'
+            'success' => 'Encuesta creada satisfactoriamente',
         ]);
     }
 

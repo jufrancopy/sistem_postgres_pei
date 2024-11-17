@@ -143,7 +143,6 @@ class TypeTaskController extends Controller
             );
         };
 
-
         $typeTask = TypeTask::updateOrCreate(
             ['id' => $request->typeTask_id],
             [

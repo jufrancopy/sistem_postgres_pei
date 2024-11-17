@@ -292,7 +292,7 @@
                 var data = new FormData();
                 var form_data = $('#questionForm').serializeArray();
                 console.log("🚀 ~ $ ~ form_data:", form_data)
-                
+
 
                 $.each(form_data, function(key, input) {
                     data.append(input.name, input.value);
@@ -344,7 +344,7 @@
                     error: function(data) {
                         var obj = data.responseJSON.errors;
                         $.each(obj, function(key, value) {
-                        console.log(obj)
+                            console.log(obj)
                             // Alert Toastr
                             toastr.options = {
                                 closeButton: true,
