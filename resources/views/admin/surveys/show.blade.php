@@ -190,6 +190,17 @@
                     console.error(err.stack);
                 });
 
+            //ia_subject
+            var iaSubject;
+            ClassicEditor
+                .create(document.querySelector('#ia_subject'))
+                .then(editor => {
+                    iaSubject = editor;
+                })
+                .catch(err => {
+                    console.error(err.stack);
+                });
+
             var answerCount = 2;
 
             // Función para agregar nuevas respuestas
@@ -247,6 +258,12 @@
                 if (questionEditor) {
                     questionEditor.setData('');
                 }
+
+                if (iaSubject) {
+                    iaSubject.setData('');
+                }
+
+
 
                 //Analysts
                 var url = '{{ route('globales.get-users') }}';
