@@ -307,15 +307,12 @@
 
                 var data = new FormData();
                 var form_data = $('#questionForm').serializeArray();
-                console.log("🚀 ~ $ ~ form_data:", form_data)
-
 
                 $.each(form_data, function(key, input) {
                     data.append(input.name, input.value);
                 });
 
                 data.append('question', questionEditor.getData());
-                data.append('ia_subject', iaSubjectEditor.getData());
 
                 $.ajax({
                     data: data,
@@ -385,6 +382,8 @@
                 $.each(form_data, function(key, input) {
                     data.append(input.name, input.value);
                 });
+
+                data.append('ia_subject', iaSubjectEditor.getData());
 
                 $.ajax({
                     data: data,
