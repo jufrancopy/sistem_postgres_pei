@@ -265,6 +265,7 @@ class SurveyController extends Controller
             'details' => $request->description,
             'status' => 0, // Status por defecto
         ];
+
         $surveyTask = Task::create($taskData);
 
         // Asociar la relación polimórfica a la tarea
