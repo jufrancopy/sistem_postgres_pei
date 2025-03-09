@@ -26,21 +26,16 @@
 
                     <div class="card-body">
                         <div class="quiz text-center">
-                            <h4 id="question" class="mb-4">
-
-                            </h4>
-                            <div id="answer-buttons" class="d-grid gap-2 mb-4">
-
-                            </div>
+                            <h4 id="question" class="mb-4"></h4>
+                            <div id="answer-buttons" class="d-grid gap-2 mb-4"></div>
                             <button id="next-btn" class="btn btn-success btn-lg px-5" style="display: none">
                                 Siguiente
                             </button>
                         </div>
-                        <!-- Agrega estos botones en tu HTML -->
-                        <div id="social-share" style="display:none;">
-                            <a id="share-whatsapp" href="#" target="_blank"><i class="fa fa-whatsapp"
-                                    aria-hidden="true"></i></a>
-                        </div>
+                        <!-- Canvas para el gráfico -->
+                        <canvas id="scoreChart" width="900" height="500" style="display: none;"></canvas>
+                        <!-- Contenedor para los puntajes -->
+                        <div id="scores-container"></div>
                     </div>
                 </div>
             </div>
@@ -143,12 +138,13 @@
         let questions = [];
         let answered = false;
 
-
         // Función para iniciar la encuesta
         function startQuiz() {
             currentQuestionIndex = 0;
             score = 0;
             nextButton.innerHTML = "Siguiente";
+
+            // Verificar si el usuario ya completó la encuesta
             checkIfUserHasResponded();
         }
 
@@ -157,57 +153,27 @@
             fetch(`/surveys/${surveyId}/has-responded`, {
                     method: 'GET',
                     headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Asegúrate de incluir CSRF si es necesario
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     }
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.hasResponded) {
-                        if (!answered) { // Evitar mostrar los puntajes si el usuario ya respondió
-                            Swal.fire({
-                                title: 'Encuesta completada',
-                                text: "Veamos los puntajes!",
-                                icon: 'info',
-                                buttons: true,
-                                dangerMode: false,
-                            }).then((willScores) => {
-                                if (willScores) {
-                                    showScores(); // Mostrar los puntajes
-                                    answered =
-                                        true; // Establecer 'answered' en true para evitar futuras acciones
-                                }
-                            });
-                        }
+                        // Si el usuario ya completó la encuesta, ocultar las preguntas y mostrar los resultados
+                        hideQuizElements();
+                        showScores();
                     } else {
+                        // Si no ha completado la encuesta, cargar las preguntas
                         fetchQuestions();
                     }
                 })
                 .catch(error => console.error('Error al verificar respuesta:', error));
         }
 
-        //Funcion para Graficos
-        function renderChart(data) {
-            console.log(data)
-            const chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.map((_, index) => `Participante ${index + 1}`),
-                    datasets: [{
-                        label: 'Puntajes',
-                        data: data,
-                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
+        function hideQuizElements() {
+            document.getElementById("question").style.display = "none";
+            document.getElementById("answer-buttons").style.display = "none";
+            document.getElementById("next-btn").style.display = "none";
         }
 
         // Función para mostrar un mensaje de fin de encuesta y luego mostrar los puntajes
@@ -218,36 +184,55 @@
                 icon: 'success',
                 confirmButtonText: 'Ver Puntajes',
             }).then(() => {
+                // Ocultar elementos de preguntas y respuestas
+                hideQuizElements();
+
+                // Guardar el puntaje acumulado
+                saveScore('{{ auth()->user()->id }}', surveyId, score);
+
+                // Mostrar los resultados
                 showScores();
-                saveScore('{{ auth()->user()->id }}', '{{ $survey->id }}',
-                    score); // Llamar aquí después de mostrar los puntajes
             });
         }
 
         // Modificación en la función que se encarga de manejar el puntaje final
         function showScores() {
-            resetState();
+            // Ocultar elementos de preguntas y respuestas
+            hideQuizElements();
+
+            // Mostrar el contenedor de resultados
+            const scoresContainer = document.getElementById("scores-container");
+            if (scoresContainer) {
+                scoresContainer.style.display = "block"; // Asegurarse de que esté visible
+            }
+
+            // Obtener los puntajes desde el servidor
             fetch(`/surveys/${surveyId}/scores`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log("Datos recibidos:", data); // Depuración
+
                     const currentUserId = '{{ auth()->user()->id }}';
                     let scoreTable =
                         `<h3>Puntajes de los Participantes</h3><table class="table table-striped table-bordered mt-3"><thead class="thead-light"><tr><th>Puesto</th><th>Nombre</th><th>Total de Puntos</th></tr></thead><tbody>`;
-                    scoreData = data.map((participantScore, index) => {
+                    data.forEach((participantScore, index) => {
                         let medalIcon = index === 0 ? '🏅' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
-                        const isCurrentUser = participantScore.id === currentUserId;
+                        const isCurrentUser = participantScore.participant_id === currentUserId;
                         scoreTable += `<tr class="${isCurrentUser ? 'table-success user-highlight' : ''}">
-                                <td>${medalIcon}${index + 1}</td>
-                                <td>${participantScore.name}</td>
-                                <td>${participantScore.score}</td></tr>`;
-                        return participantScore.score;
+                        <td>${medalIcon}${index + 1}</td>
+                        <td>${participantScore.name}</td>
+                        <td>${participantScore.score}</td></tr>`;
                     });
 
                     scoreTable += `</tbody></table>`;
-                    questionElement.innerHTML += scoreTable;
 
+                    // Mostrar la tabla de puntajes
+                    if (scoresContainer) {
+                        scoresContainer.innerHTML = scoreTable;
+                    }
 
-                    showChart(scoreData);
+                    // Mostrar el gráfico
+                    showChart(data.map(participant => participant.score));
                 })
                 .catch(error => console.error('Error al obtener los puntajes:', error));
         }
@@ -288,9 +273,17 @@
             fetch(`/surveys/${surveyId}/questions`)
                 .then(response => response.json())
                 .then(data => {
-                    questions = data;
+                    questions = shuffleArray(data); // Mezclar las preguntas
                     fetchQuestion();
                 });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Intercambiar elementos
+            }
+            return array;
         }
 
         // Cuando el usuario haya terminado la encuesta, mostrar la notificación y los puntajes
@@ -299,7 +292,8 @@
                 resetState();
                 showQuestion(questions[currentQuestionIndex]);
             } else {
-                showEndOfSurveyNotification(); // Notificar que la encuesta ha terminado
+                // Si el usuario ha respondido todas las preguntas, mostrar la notificación y los puntajes
+                showEndOfSurveyNotification();
             }
         }
 
@@ -307,12 +301,16 @@
         function showQuestion(question) {
             questionElement.innerHTML = (currentQuestionIndex + 1) + ". " + question.question;
 
-            question.answers.forEach(answer => {
+            // Mezclar las respuestas antes de mostrarlas
+            const shuffledAnswers = shuffleArray(question.answers);
+
+            shuffledAnswers.forEach(answer => {
                 const button = document.createElement("button");
                 button.innerHTML = answer.answer;
                 button.classList.add("btn");
                 answerButtons.appendChild(button);
-                button.dataset.correct = answer.is_correct;
+                button.dataset.correct = answer.is_correct ? "1" :
+                    "0"; // Asegúrate de que esto esté correctamente configurado
 
                 button.addEventListener("click", () => {
                     if (!answered) {
@@ -328,7 +326,7 @@
             const buttons = answerButtons.querySelectorAll("button");
             const correctButton = Array.from(buttons).find(button => button.dataset.correct === "1");
 
-            // Primero, deshabilitamos todas las respuestas para evitar más clics
+            // Deshabilitar todas las respuestas para evitar más clics
             buttons.forEach(button => {
                 button.disabled = true;
             });
@@ -336,35 +334,16 @@
             // Si el usuario selecciona la respuesta correcta
             if (selectedButton.dataset.correct === "1") {
                 selectedButton.classList.add("correct"); // Marcar en verde
+                score++; // Incrementar el puntaje
+                console.log("Respuesta correcta. Puntaje actual:", score); // Depuración
             } else {
                 // Si el usuario selecciona una respuesta incorrecta
                 selectedButton.classList.add("incorrect"); // Marcar la incorrecta en rojo
                 correctButton.classList.add("correct"); // Marcar la respuesta correcta en verde
-            }
-
-            // Si la respuesta seleccionada es correcta, aumentamos el puntaje
-            if (selectedButton.dataset.correct === "1") {
-                score++;
+                console.log("Respuesta incorrecta. Puntaje actual:", score); // Depuración
             }
 
             nextButton.style.display = "block";
-
-            const answerData = {
-                participant_id: '{{ auth()->user()->id }}',
-                survey_id: surveyId,
-                question_id: question.id,
-                answer: selectedButton.innerHTML,
-                is_correct: selectedButton.dataset.correct === "1"
-            };
-
-            fetch('/save-answer', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(answerData)
-            });
         }
 
         // Reinicia el estado para la siguiente pregunta
@@ -388,6 +367,8 @@
                 score: score
             };
 
+            console.log("Enviando datos al servidor:", scoreData); // Depuración
+
             fetch('/save-score', {
                     method: 'POST',
                     headers: {
@@ -396,14 +377,12 @@
                     },
                     body: JSON.stringify(scoreData)
                 })
-                .then(response => response.json()) // Asegurarse de recibir la respuesta del servidor
+                .then(response => response.json())
                 .then(data => {
-                    console.log('Puntaje guardado:', data);
+                    console.log('Respuesta del servidor:', data); // Depuración
                 })
                 .catch(error => console.error('Error al guardar el puntaje:', error));
         }
-
-
 
         // Evento de clic para el botón "Siguiente"
         nextButton.addEventListener("click", () => {

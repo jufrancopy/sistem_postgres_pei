@@ -55,9 +55,9 @@ class AnswerController extends Controller
     {
         // Validar los datos de entrada
         $validated = $request->validate([
-            'participant_id' => 'required',
-            'survey_id' => 'required', // Cambiar a 'string'
-            'score' => 'required',
+            'participant_id' => 'required|integer',
+            'survey_id' => 'required|uuid',
+            'score' => 'required|integer',
         ]);
 
         // Verificar si ya existe un puntaje para este participante y encuesta
@@ -73,6 +73,12 @@ class AnswerController extends Controller
         // Si no existe, guardar el nuevo puntaje
         $score = new SurveyScore($validated);
         $score->save();
+
+        // Actualizar el estado "completed" en la tabla participants_has_surveys
+        DB::table('participants_has_surveys')
+            ->where('survey_id', $validated['survey_id'])
+            ->where('participant_id', $validated['participant_id'])
+            ->update(['completed' => true]);
 
         return response()->json(['message' => 'Puntaje guardado exitosamente']);
     }
