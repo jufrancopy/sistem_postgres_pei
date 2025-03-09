@@ -85,9 +85,9 @@
 
                     <div class="mb-2">
                         {{ Form::label('number', 'Cantidad de Respuestas por preguntas:', ['class' => 'control-label']) }}
-                        {{ Form::number('ia_number_anwers_for_question', null, [
+                        {{ Form::number('ia_number_answers_for_question', null, [
                             'class' => 'form-control editor',
-                            'id' => 'ia_number_anwers_for_question',
+                            'id' => 'ia_number_answers_for_question',
                         ]) }}
                     </div>
 
