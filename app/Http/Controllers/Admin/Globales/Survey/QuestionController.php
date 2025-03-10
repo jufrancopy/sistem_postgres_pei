@@ -141,7 +141,6 @@ class QuestionController extends Controller
         }
     }
 
-
     public function show(Request $request, $surveyID)
     {
         $questions = Question::where('survey_id', $surveyID)->get();
