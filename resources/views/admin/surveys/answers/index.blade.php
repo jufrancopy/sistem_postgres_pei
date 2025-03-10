@@ -176,7 +176,6 @@
             document.getElementById("next-btn").style.display = "none";
         }
 
-        // Función para mostrar un mensaje de fin de encuesta y luego mostrar los puntajes
         function showEndOfSurveyNotification() {
             Swal.fire({
                 title: 'Encuesta Completada',
@@ -188,14 +187,38 @@
                 hideQuizElements();
 
                 // Guardar el puntaje acumulado
-                saveScore('{{ auth()->user()->id }}', surveyId, score);
-
-                // Mostrar los resultados
-                showScores();
+                saveScore('{{ auth()->user()->id }}', surveyId, score).then(() => {
+                    // Mostrar los resultados después de guardar el puntaje
+                    showScores();
+                });
             });
         }
 
-        // Modificación en la función que se encarga de manejar el puntaje final
+        function saveScore(participantId, surveyId, score) {
+            const scoreData = {
+                participant_id: participantId,
+                survey_id: surveyId,
+                score: score
+            };
+
+            console.log("Enviando datos al servidor:", scoreData); // Depuración
+
+            return fetch('/save-score', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(scoreData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Respuesta del servidor:', data); // Depuración
+                    return data; // Devolver los datos para que se puedan usar en la siguiente promesa
+                })
+                .catch(error => console.error('Error al guardar el puntaje:', error));
+        }
+
         function showScores() {
             // Ocultar elementos de preguntas y respuestas
             hideQuizElements();
@@ -214,14 +237,25 @@
 
                     const currentUserId = '{{ auth()->user()->id }}';
                     let scoreTable =
-                        `<h3>Puntajes de los Participantes</h3><table class="table table-striped table-bordered mt-3"><thead class="thead-light"><tr><th>Puesto</th><th>Nombre</th><th>Total de Puntos</th></tr></thead><tbody>`;
+                        `<h3>Puntajes de los Participantes</h3>
+                <table class="table table-striped table-bordered mt-3">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Puesto</th>
+                            <th>Nombre</th>
+                            <th>Total de Puntos</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
                     data.forEach((participantScore, index) => {
                         let medalIcon = index === 0 ? '🏅' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
                         const isCurrentUser = participantScore.participant_id === currentUserId;
                         scoreTable += `<tr class="${isCurrentUser ? 'table-success user-highlight' : ''}">
-                        <td>${medalIcon}${index + 1}</td>
-                        <td>${participantScore.name}</td>
-                        <td>${participantScore.score}</td></tr>`;
+                    <td>${medalIcon}${index + 1}</td>
+                    <td>${participantScore.name}</td>
+                    <td>${participantScore.score}</td>
+                </tr>`;
                     });
 
                     scoreTable += `</tbody></table>`;
@@ -357,31 +391,6 @@
         function handleNextButton() {
             currentQuestionIndex++;
             fetchQuestion();
-        }
-
-        // Envía el puntaje al servidor
-        function saveScore(participantId, surveyId, score) {
-            const scoreData = {
-                participant_id: participantId,
-                survey_id: surveyId,
-                score: score
-            };
-
-            console.log("Enviando datos al servidor:", scoreData); // Depuración
-
-            fetch('/save-score', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify(scoreData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Respuesta del servidor:', data); // Depuración
-                })
-                .catch(error => console.error('Error al guardar el puntaje:', error));
         }
 
         // Evento de clic para el botón "Siguiente"
