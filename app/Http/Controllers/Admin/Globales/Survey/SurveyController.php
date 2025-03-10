@@ -221,7 +221,7 @@ class SurveyController extends Controller
         // Realiza la consulta en la tabla survey_scores
         return DB::table('survey_scores')
             ->join('users', 'survey_scores.participant_id', '=', 'users.id') // Une con la tabla users para obtener el nombre del participante
-            ->select('users.name', 'survey_scores.score') // Selecciona el nombre y el puntaje
+            ->select('users.name', 'survey_scores.score', 'survey_scores.participant_id')
             ->where('survey_scores.survey_id', $surveyId) // Filtra por el ID de la encuesta
             ->orderByDesc('survey_scores.score') // Ordena por puntaje descendente
             ->take($limit) // Limita el número de resultados

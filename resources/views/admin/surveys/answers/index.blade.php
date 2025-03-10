@@ -36,6 +36,7 @@
                         <canvas id="scoreChart" width="900" height="500" style="display: none;"></canvas>
                         <!-- Contenedor para los puntajes -->
                         <div id="scores-container"></div>
+
                     </div>
                 </div>
             </div>
@@ -201,8 +202,6 @@
                 score: score
             };
 
-            console.log("Enviando datos al servidor:", scoreData); // Depuración
-
             return fetch('/save-score', {
                     method: 'POST',
                     headers: {
@@ -220,24 +219,45 @@
         }
 
         function showScores() {
-            // Ocultar elementos de preguntas y respuestas
             hideQuizElements();
 
-            // Mostrar el contenedor de resultados
             const scoresContainer = document.getElementById("scores-container");
             if (scoresContainer) {
-                scoresContainer.style.display = "block"; // Asegurarse de que esté visible
+                scoresContainer.style.display = "block";
             }
 
-            // Obtener los puntajes desde el servidor
             fetch(`/surveys/${surveyId}/scores`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log("Datos recibidos:", data); // Depuración
+                    console.log("🔍 Datos recibidos del servidor:", data);
 
-                    const currentUserId = '{{ auth()->user()->id }}';
-                    let scoreTable =
-                        `<h3>Puntajes de los Participantes</h3>
+                    // Como el backend no envía participant_id, asumimos que el primer/único registro 
+                    // es el del usuario actual si solo hay un resultado
+                    let userPuntaje = 0;
+
+                    if (data.length === 1) {
+                        // Si solo hay un registro, asumimos que es el del usuario actual
+                        userPuntaje = data[0].score;
+                        console.log("✅ Solo hay un registro, asumimos que es el usuario actual con puntaje:",
+                            userPuntaje);
+                    } else {
+                        // Si hay múltiples registros, necesitamos otra forma de identificar al usuario
+                        console.warn("⚠️ Hay múltiples registros pero no podemos identificar al usuario actual");
+                        userPuntaje = 0;
+                    }
+
+                    // Actualizar la variable global con el puntaje detectado
+                    userScore = userPuntaje;
+                    console.log("🎯 Puntaje final asignado:", userScore);
+
+                    // Obtener el puntaje máximo posible de la encuesta (puedes ajustar esto según tu lógica)
+                    // Supongamos que el puntaje máximo está disponible en alguna variable o es un valor fijo
+                    // Por ejemplo, si cada pregunta vale 1 punto y hay 10 preguntas:
+                    const maxPuntaje = 10; // Ajustar este valor según corresponda
+
+                    // Construir la tabla de puntajes
+                    let scoreTable = `
+                <h3>Puntajes de los Participantes</h3>
                 <table class="table table-striped table-bordered mt-3">
                     <thead class="thead-light">
                         <tr>
@@ -249,10 +269,8 @@
                     <tbody>`;
 
                     data.forEach((participantScore, index) => {
-                        let medalIcon = index === 0 ? '🏅' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
-                        const isCurrentUser = participantScore.participant_id === currentUserId;
-                        scoreTable += `<tr class="${isCurrentUser ? 'table-success user-highlight' : ''}">
-                    <td>${medalIcon}${index + 1}</td>
+                        scoreTable += `<tr>
+                    <td>${index + 1}</td>
                     <td>${participantScore.name}</td>
                     <td>${participantScore.score}</td>
                 </tr>`;
@@ -260,16 +278,199 @@
 
                     scoreTable += `</tbody></table>`;
 
-                    // Mostrar la tabla de puntajes
                     if (scoresContainer) {
-                        scoresContainer.innerHTML = scoreTable;
+                        scoresContainer.innerHTML = scoreTable + `
+                    <div class="alert alert-info">Tu puntaje: ${userPuntaje} de ${maxPuntaje} puntos posibles</div>
+                    <div class="btn-group mt-3">
+                        <button id="share-whatsapp-text" class="btn btn-success">
+                            <i class="fab fa-whatsapp"></i> Compartir Texto
+                        </button>
+                        <button id="share-whatsapp-image" class="btn btn-primary">
+                            <i class="fab fa-whatsapp"></i> Compartir Imagen
+                        </button>
+                    </div>
+                    <div id="canvas-container" class="mt-3" style="display:none;"></div>
+                `;
+
+                        // Agregar el canvas al DOM (oculto)
+                        const canvasContainer = document.getElementById("canvas-container");
+                        const canvas = document.createElement("canvas");
+                        canvas.id = "score-canvas";
+                        canvas.width = 600;
+                        canvas.height = 400;
+                        canvasContainer.appendChild(canvas);
+
+                        // Eventos para los botones
+                        document.getElementById("share-whatsapp-text").addEventListener("click", function() {
+                            shareWithTextScore(userPuntaje, maxPuntaje);
+                        });
+
+                        document.getElementById("share-whatsapp-image").addEventListener("click", function() {
+                            createAndShareScoreImage(userPuntaje, maxPuntaje, data[0].name);
+                        });
                     }
 
-                    // Mostrar el gráfico
                     showChart(data.map(participant => participant.score));
                 })
-                .catch(error => console.error('Error al obtener los puntajes:', error));
+                .catch(error => {
+                    console.error('❌ Error al obtener los puntajes:', error);
+                });
         }
+
+        // Función para compartir mensaje de texto
+        function shareWithTextScore(puntajeLogrado, puntajeMaximo) {
+            const message =
+                `¡Hola! Acabo de completar la encuesta y obtuve ${puntajeLogrado} de ${puntajeMaximo} puntos posibles. 🏆 ¿Puedes superarlo? 🚀`;
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Función para crear y compartir una imagen con el puntaje
+        function createAndShareScoreImage(puntajeLogrado, puntajeMaximo, nombreUsuario) {
+            const canvas = document.getElementById("score-canvas");
+            const ctx = canvas.getContext("2d");
+
+            // Limpiar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Fondo
+            ctx.fillStyle = "#f5f5f5";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Borde
+            ctx.strokeStyle = "#3498db";
+            ctx.lineWidth = 10;
+            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+            // Título
+            ctx.fillStyle = "#2c3e50";
+            ctx.font = "bold 32px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("Resultado de la Encuesta", canvas.width / 2, 60);
+
+            // Nombre del usuario
+            ctx.font = "22px Arial";
+            ctx.fillText(nombreUsuario, canvas.width / 2, 100);
+
+            // Dibujar círculo de puntaje
+            const centerX = canvas.width / 2;
+            const centerY = 200;
+            const radius = 80;
+
+            // Círculo de fondo
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fillStyle = "#ecf0f1";
+            ctx.fill();
+            ctx.strokeStyle = "#95a5a6";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Dibujar arco de progreso
+            const porcentaje = puntajeLogrado / puntajeMaximo;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * porcentaje));
+            ctx.lineTo(centerX, centerY);
+            ctx.fillStyle = porcentaje >= 0.7 ? "#27ae60" : (porcentaje >= 0.4 ? "#f39c12" : "#e74c3c");
+            ctx.fill();
+
+            // Texto de puntaje
+            ctx.fillStyle = "#2c3e50";
+            ctx.font = "bold 36px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(`${puntajeLogrado}/${puntajeMaximo}`, centerX, centerY + 10);
+
+            // Mensaje inferior
+            ctx.font = "18px Arial";
+            ctx.fillText("¡Gracias por participar!", centerX, 300);
+            ctx.font = "16px Arial";
+            ctx.fillText("Comparte tu resultado y desafía a tus amigos", centerX, 330);
+
+            // Fecha
+            const fecha = new Date().toLocaleDateString();
+            ctx.font = "14px Arial";
+            ctx.fillStyle = "#7f8c8d";
+            ctx.fillText(fecha, centerX, 370);
+
+            // Convertir el canvas a una imagen
+            canvas.toBlob(function(blob) {
+                // Crear una URL para el blob
+                const imageUrl = URL.createObjectURL(blob);
+
+                // Mostrar la imagen en la página (opcional)
+                const canvasContainer = document.getElementById("canvas-container");
+                canvasContainer.style.display = "block";
+                canvasContainer.innerHTML = `
+            <div class="card mb-3">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Tu tarjeta de resultados</h5>
+                    <img src="${imageUrl}" alt="Resultado" class="img-fluid" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px;">
+                    <div class="mt-3">
+                        <a href="${imageUrl}" download="mi-resultado.png" class="btn btn-sm btn-info">
+                            <i class="fas fa-download"></i> Descargar
+                        </a>
+                        <button id="share-image" class="btn btn-sm btn-success">
+                            <i class="fab fa-whatsapp"></i> Compartir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+                // Evento para compartir la imagen
+                document.getElementById("share-image").addEventListener("click", function() {
+                    // En dispositivos móviles modernos, podemos usar la Web Share API si está disponible
+                    if (navigator.share && blob) {
+                        const file = new File([blob], 'mi-resultado.png', {
+                            type: 'image/png'
+                        });
+
+                        navigator.share({
+                            title: 'Mi resultado de la encuesta',
+                            text: `¡Obtuve ${puntajeLogrado} de ${puntajeMaximo} puntos! ¿Puedes superarlo?`,
+                            files: [file]
+                        }).catch(error => {
+                            console.error('Error al compartir:', error);
+                            // Si falla, usamos el método alternativo
+                            shareImageViaWhatsApp(imageUrl, puntajeLogrado, puntajeMaximo);
+                        });
+                    } else {
+                        // Si Web Share API no está disponible, usamos el método alternativo
+                        shareImageViaWhatsApp(imageUrl, puntajeLogrado, puntajeMaximo);
+                    }
+                });
+            }, 'image/png');
+        }
+
+        // Función alternativa para compartir la imagen (solo texto con enlace)
+        function shareImageViaWhatsApp(imageUrl, puntajeLogrado, puntajeMaximo) {
+            // Nota: No es posible compartir una imagen directamente a WhatsApp desde JavaScript
+            // sin que el usuario la descargue primero, a menos que tengas un backend que aloje la imagen
+            // Esta es una alternativa con solo texto
+            const message =
+                `¡Hola! Acabo de completar la encuesta y obtuve ${puntajeLogrado} de ${puntajeMaximo} puntos posibles. 🏆 ¿Puedes superarlo? 🚀\n\nPuedes ver mi resultado descargando la imagen.`;
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+
+            // Sugerir al usuario que descargue la imagen
+            alert(
+                'WhatsApp no permite adjuntar imágenes automáticamente desde el navegador. Por favor, descarga la imagen y adjúntala manualmente a tu mensaje de WhatsApp.');
+        }
+
+        // Función para compartir en WhatsApp
+        function shareOnWhatsApp(score) {
+            // Usar el score pasado como parámetro en lugar de la variable global
+            if (!score) {
+                alert("⚠️ Tu puntaje aún no se ha cargado. Intenta nuevamente.");
+                return;
+            }
+
+            const message =
+                `¡Hola! Acabo de completar la encuesta y obtuve un puntaje de ${score} puntos. 🏆 ¿Puedes superarlo? 🚀`;
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
 
         function showChart(data) {
             // Mostrar el canvas
