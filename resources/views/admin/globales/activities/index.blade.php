@@ -59,12 +59,32 @@
                                         </div>
 
                                         <div class="form-group">
+                                            {{ Form::label('description', 'Descripción:') }}
+                                            {{ Form::textarea('description', null, ['class' => 'form-control', 'id' => 'description', 'rows' => 2]) }}
+                                        </div>
+
+                                        <div class="form-group">
                                             {{ Form::label('type', 'Tipo:') }}
-                                            {!! Form::select('type', ['scrum' => 'Scrum', 'kanba' => 'Kanba'], null, [
+                                            {!! Form::select('type', ['scrum' => 'Scrum', 'kanba' => 'Kanban'], null, [
                                                 'id' => 'type',
                                                 'placeholder' => '',
                                                 'style' => 'width:100%',
                                             ]) !!}
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    {{ Form::label('date_start', 'Fecha Inicio:') }}
+                                                    {{ Form::date('date_start', null, ['class' => 'form-control', 'id' => 'date_start']) }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    {{ Form::label('date_end', 'Fecha Fin:') }}
+                                                    {{ Form::date('date_end', null, ['class' => 'form-control', 'id' => 'date_end']) }}
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div class="form-group">
@@ -230,16 +250,25 @@
                     });
                 });
 
-                $('body').on('click', '.editGroup', function() {
-                    var groupID = $(this).data('id');
-                    $.get("{{ route('globales.groups.index') }}" + '/' + groupID + '/edit', function(data) {
-                        $('#modalHeading').html("Editar Evento " + data.group.name);
-                        $('#saveBtn').val("edit-user");
+                $('body').on('click', '.editActivity', function() {
+                    var activityID = $(this).data('id');
+                    $.get("{{ route('globales.activities.index') }}" + '/' + activityID + '/edit', function(data) {
+                        $('#activityHeading').html("Editar Actividad: " + data.activity.name);
+                        $('#saveBtn').val("edit-activity");
                         $('#activityModal').modal('show');
                         $('#activityForm').trigger("reset");
-                        $('.errors').removeClass("alert alert-danger")
-                        $('#activity_id').val(data.group.id);
-                        $('#name').val(data.group.name);
+                        $('.errors').removeClass("alert alert-danger");
+                        $('#activity_id').val(data.activity.id);
+                        $('#name').val(data.activity.name);
+                        $('#description').val(data.activity.description);
+                        $('#date_start').val(data.activity.date_start);
+                        $('#date_end').val(data.activity.date_end);
+                        $('#type').val(data.activity.type).trigger('change');
+
+                        $('#responsibles').empty().select2();
+                        data.responsiblesChecked.forEach(function(r) {
+                            $('#responsibles').append(new Option(r.text, r.id, true, true)).trigger('change');
+                        });
                     });
                 });
 
@@ -248,7 +277,7 @@
                     $(this).html('Enviando..');
                     $.ajax({
                         data: $('#activityForm').serialize(),
-                        url: "{{ route('globales.groups.store') }}",
+                        url: "{{ route('globales.activities.store') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function(data) {
@@ -280,7 +309,7 @@
                     });
                 });
 
-                $('body').on('click', '.deleteGroup', function() {
+                $('body').on('click', '.deleteActivity', function() {
                     Swal.fire({
                         title: 'Estás seguro de eliminarlo?',
                         text: "Si lo haces, no podras revertirlo!",
@@ -296,11 +325,10 @@
                                 'El registro ha sido eliminado correctamente.',
                                 'success'
                             )
-                            var cicle_id = $(this).data("id");
+                            var activityId = $(this).data("id");
                             $.ajax({
                                 type: "DELETE",
-                                url: "{{ route('globales.groups.store') }}" + '/' +
-                                    cicle_id,
+                                url: "{{ route('globales.activities.store') }}" + '/' + activityId,
                                 success: function(data) {
                                     table.draw();
                                 },

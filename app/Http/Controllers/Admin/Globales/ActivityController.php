@@ -4,10 +4,213 @@ namespace App\Http\Controllers\Admin\Globales;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Yajra\DataTables\DataTables;
+use App\Admin\Globales\Activity;
+use App\Admin\Globales\ActivityTask;
+use App\Admin\Globales\ActivityTaskEvidence;
 
 class ActivityController extends Controller
 {
-    public function index(){
+    // ── Actividades ──────────────────────────────────────────────
+
+    public function index(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = Activity::with('responsibles')->latest()->get();
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('responsibles', fn(Activity $a) => $a->responsibles->pluck('name')->implode(', '))
+                ->addColumn('action', function ($row) {
+                    $btn  = '<a href="' . route('globales.activities.show', $row->id) . '" class="btn btn-info btn-circle" title="Ver Tablero"><i class="fas fa-columns"></i></a>';
+                    $btn .= ' <a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-primary btn-circle editActivity"><i class="far fa-edit"></i></a>';
+                    $btn .= ' <a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-danger btn-circle deleteActivity"><i class="fa fa-trash"></i></a>';
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
         return view('admin.globales.activities.index');
+    }
+
+    public function show($id)
+    {
+        $activity = Activity::with(['responsibles', 'tasks.assignedTo', 'tasks.evidences'])->findOrFail($id);
+        return view('admin.globales.activities.show', compact('activity'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate(['name' => 'required'], ['name.required' => 'El nombre es requerido']);
+
+        $activity = Activity::updateOrCreate(
+            ['id' => $request->activity_id],
+            [
+                'name'        => $request->name,
+                'type'        => $request->type,
+                'description' => $request->description,
+                'date_start'  => $request->date_start,
+                'date_end'    => $request->date_end,
+            ]
+        );
+
+        $activity->responsibles()->sync($request->responsible_id ?? []);
+
+        return response()->json([
+            'success'  => $activity->wasRecentlyCreated ? 'Actividad creada' : 'Actividad actualizada',
+            'activity' => $activity,
+        ]);
+    }
+
+    public function edit($id)
+    {
+        $activity = Activity::with('responsibles')->findOrFail($id);
+        $responsiblesChecked = $activity->responsibles->map(fn($r) => ['id' => $r->id, 'text' => $r->name]);
+        return response()->json(['activity' => $activity, 'responsiblesChecked' => $responsiblesChecked]);
+    }
+
+    public function destroy($id)
+    {
+        Activity::findOrFail($id)->delete();
+        return response()->json(['success' => 'Eliminado correctamente']);
+    }
+
+    // ── Tareas del tablero ────────────────────────────────────────
+
+    public function storeTarea(Request $request, $activityId)
+    {
+        $request->validate(['title' => 'required'], ['title.required' => 'El título es requerido']);
+
+        $task = ActivityTask::updateOrCreate(
+            ['id' => $request->task_id ?: null],
+            [
+                'activity_id' => $activityId,
+                'title'       => $request->title,
+                'details'     => $request->details,
+                'assigned_to' => $request->assigned_to,
+                'status'      => $request->status ?? 0,
+            ]
+        );
+
+        return response()->json(['success' => 'Tarea guardada', 'task' => $task->load('assignedTo')]);
+    }
+
+    public function updateStatus(Request $request, $taskId)
+    {
+        $task      = ActivityTask::findOrFail($taskId);
+        $newStatus = (int) $request->status;
+
+        // Al completar: requiere nota de cierre
+        if ($newStatus === 2) {
+            $request->validate(
+                ['completion_note' => 'required'],
+                ['completion_note.required' => 'Debe ingresar un comentario de cierre']
+            );
+            $task->update([
+                'status'          => 2,
+                'completed_at'    => now(),
+                'completed_by'    => Auth::id(),
+                'completion_note' => $request->completion_note,
+            ]);
+        } else {
+            // Si retrocede desde completado, limpia los campos
+            $task->update([
+                'status'          => $newStatus,
+                'completed_at'    => null,
+                'completed_by'    => null,
+                'completion_note' => null,
+            ]);
+        }
+
+        return response()->json(['success' => 'Estado actualizado']);
+    }
+
+    public function destroyTarea($taskId)
+    {
+        $task = ActivityTask::with('evidences')->findOrFail($taskId);
+
+        // Eliminar archivos físicos de evidencias
+        foreach ($task->evidences as $evidence) {
+            if ($evidence->type !== 'url' && Storage::exists($evidence->value)) {
+                Storage::delete($evidence->value);
+            }
+        }
+
+        $task->evidences()->delete();
+        $task->delete();
+
+        return response()->json(['success' => 'Tarea eliminada']);
+    }
+
+    // ── Evidencias ────────────────────────────────────────────────
+
+    public function storeEvidencia(Request $request, $taskId)
+    {
+        $task = ActivityTask::findOrFail($taskId);
+
+        if ($request->type === 'url') {
+            $request->validate([
+                'label' => 'required',
+                'value' => 'required|url',
+            ], [
+                'label.required' => 'Ingrese una descripción del enlace',
+                'value.required' => 'Ingrese la URL',
+                'value.url'      => 'La URL no es válida',
+            ]);
+
+            $evidence = ActivityTaskEvidence::create([
+                'activity_task_id' => $task->id,
+                'type'             => 'url',
+                'label'            => $request->label,
+                'value'            => $request->value,
+                'user_id'          => Auth::id(),
+            ]);
+
+        } else {
+            // Archivo (imagen o documento)
+            $isImage   = $request->type === 'image';
+            $maxMB     = $isImage ? 2 : 5;
+            $maxKB     = $maxMB * 1024;
+            $mimes     = $isImage ? 'jpeg,jpg,png,gif,webp' : 'pdf,doc,docx,xls,xlsx';
+
+            $request->validate([
+                'file' => "required|file|mimes:{$mimes}|max:{$maxKB}",
+            ], [
+                'file.required' => 'Seleccione un archivo',
+                'file.mimes'    => $isImage ? 'Solo se permiten imágenes (jpg, png, gif, webp)' : 'Solo se permiten PDF, Word o Excel',
+                'file.max'      => "El archivo supera los {$maxMB}MB. Suba el documento a su carpeta compartida y registre el enlace.",
+            ]);
+
+            $file = $request->file('file');
+            $path = $file->store("evidencias/{$task->activity_id}/{$task->id}");
+
+            $evidence = ActivityTaskEvidence::create([
+                'activity_task_id' => $task->id,
+                'type'             => $isImage ? 'image' : 'document',
+                'label'            => $file->getClientOriginalName(),
+                'value'            => $path,
+                'user_id'          => Auth::id(),
+            ]);
+        }
+
+        return response()->json([
+            'success'  => 'Evidencia registrada',
+            'evidence' => $evidence->load('user'),
+        ]);
+    }
+
+    public function destroyEvidencia($evidenceId)
+    {
+        $evidence = ActivityTaskEvidence::findOrFail($evidenceId);
+
+        if ($evidence->type !== 'url' && Storage::exists($evidence->value)) {
+            Storage::delete($evidence->value);
+        }
+
+        $evidence->delete();
+
+        return response()->json(['success' => 'Evidencia eliminada']);
     }
 }

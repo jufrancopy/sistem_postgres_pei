@@ -15,7 +15,16 @@ return new class extends Migration
     {
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('type')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('activities_has_responsibles', function (Blueprint $table) {
+            $table->unsignedBigInteger('activity_id');
+            $table->unsignedBigInteger('responsible_id');
+            $table->primary(['activity_id', 'responsible_id']);
         });
     }
 
@@ -26,6 +35,7 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('activities_has_responsibles');
         Schema::dropIfExists('activities');
     }
 };

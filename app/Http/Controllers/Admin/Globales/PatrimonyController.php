@@ -19,32 +19,7 @@ class PatrimonyController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->ajax()) {
-            $data = Patrimony::get();
-            return DataTables::of($data)
-                ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editPatrimony"><i class="far fa-edit"></i></a>';
-
-                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Show" class="btn btn-info btn-circle showDetailPatrimony"><i class="fa fa-eye" aria-hidden="true"></i></a>';
-
-                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deletePatrimony"><i class="fa fa-trash" aria-hidden="true"></i></a>';
-
-                    return $btn;
-                })
-
-
-                ->rawColumns(['action'])
-                ->make(true);
-        }
-
-        $departments = DB::table('localities')
-            ->select(DB::raw('count(*) as states, desc_dpto'))
-            ->groupBy('desc_dpto')
-            ->pluck('desc_dpto', 'desc_dpto');
-
-        return view('admin.globales.patrimonies.index', get_defined_vars());
+        return view('admin.globales.patrimonies.profiles', get_defined_vars());
     }
 
     public function store(Request $request)
@@ -64,7 +39,7 @@ class PatrimonyController extends Controller
             'evidenceFile.mimes'    => 'El archivo de evidencia debe ser de tipo PDF',
             'evidenceFile.max'      => 'El archivo de evidencia no debe ser mayor de 2MB',
         ]);
-    
+
         // Procesamiento del archivo de imagen (mainPhotoFile) si está presente
         $mainPhotoName = null;
         $mainPhotoPath = null;
@@ -73,13 +48,13 @@ class PatrimonyController extends Controller
             $evidenceUploadPath = Config::get('filesystems.disks.patrimonies.root');
             $name = Str::slug(pathinfo($request->file('mainPhotoFile')->getClientOriginalName(), PATHINFO_FILENAME));
             $mainPhotoFileName = rand(1, 999) . '-' . $name . '.' . $mainPhotoExt;
-            
+
             // Define ruta y guarda el archivo
             $mainPhotoPath = date('d-m-Y');
             $request->file('mainPhotoFile')->storeAs("patrimonies/{$mainPhotoPath}", $mainPhotoFileName);
             $mainPhotoName = $evidenceUploadPath . '/' . $mainPhotoPath . '/' . $mainPhotoFileName;
         }
-    
+
         // Procesamiento del archivo PDF (evidenceFile) si está presente
         $pdfFileName = null;
         $pdfFilePath = null;
@@ -87,11 +62,11 @@ class PatrimonyController extends Controller
             $pdfFile = $request->file('evidenceFile');
             $pdfFileName = time() . '_' . $pdfFile->getClientOriginalName();
             $pdfFilePath = date('d-m-Y');
-            
+
             // Guarda el archivo PDF en la carpeta 'pdfs/patrimonies'
             $pdfFile->storeAs("pdfs/patrimonies/{$pdfFilePath}", $pdfFileName);
         }
-    
+
         // Inserción o actualización en la base de datos
         $patrimony = Patrimony::updateOrCreate(
             ['id' => $request->patrimony_id],
@@ -137,11 +112,11 @@ class PatrimonyController extends Controller
                 'evidence_file_path' => $pdfFilePath,
             ]
         );
-    
+
         // Devolver respuesta (puedes ajustar según sea necesario)
         return response()->json(['success' => 'Registro de Patrimonio guardado exitosamente', 'patrimony' => $patrimony]);
     }
-    
+
     public function mapPais()
     {
         $patrimonies = Patrimony::all();

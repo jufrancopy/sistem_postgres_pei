@@ -231,7 +231,7 @@
                 .then(data => {
                     console.log("🔍 Datos recibidos del servidor:", data);
 
-                    // Como el backend no envía participant_id, asumimos que el primer/único registro 
+                    // Como el backend no envía participant_id, asumimos que el primer/único registro
                     // es el del usuario actual si solo hay un resultado
                     let userPuntaje = 0;
 
@@ -454,7 +454,8 @@
 
             // Sugerir al usuario que descargue la imagen
             alert(
-                'WhatsApp no permite adjuntar imágenes automáticamente desde el navegador. Por favor, descarga la imagen y adjúntala manualmente a tu mensaje de WhatsApp.');
+                'WhatsApp no permite adjuntar imágenes automáticamente desde el navegador. Por favor, descarga la imagen y adjúntala manualmente a tu mensaje de WhatsApp.'
+                );
         }
 
         // Función para compartir en WhatsApp

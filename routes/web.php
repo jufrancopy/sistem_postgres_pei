@@ -24,6 +24,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idPerfil}/detail', 'Admin\Planificacion\Pei\PeiController@showDetailForGroup');
     Route::get('pei-profiles-compareHistorical', 'Admin\Planificacion\Pei\PeiController@compareHistorical')->name('pei-profiles-compareHistorical');
     Route::get('pei-profiles-details/{idProfile}', 'Admin\Planificacion\Pei\PeiController@showDetailsTree')->name('pei-profiles.details');
+    Route::get('pei-profiles-details/{idProfile}/pdf', 'Admin\Planificacion\Pei\PeiController@exportPdf')->name('pei-profiles.details.pdf');
     Route::get('pei-profiles/{idProfile}/axis-list', 'Admin\Planificacion\Pei\PeiController@showAxisList')->name('pei-profiles-axis-list');
     Route::get('pei-profiles/{idProfile}/goals-list', 'Admin\Planificacion\Pei\PeiController@showGoalsList')->name('pei-profiles-goals-list');
     Route::get('pei-profiles/{idProfile}/actions-list', 'Admin\Planificacion\Pei\PeiController@showActionsList')->name('pei-profiles-actions-list');
@@ -101,10 +102,17 @@ Route::group(['middleware' => ['auth']], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
         Route::resource('activities', 'Admin\Globales\ActivityController');
+        Route::post('activities/{activityId}/tareas', 'Admin\Globales\ActivityController@storeTarea')->name('activities.tareas.store');
+        Route::patch('activities/tareas/{taskId}/status', 'Admin\Globales\ActivityController@updateStatus')->name('activities.tareas.status');
+        Route::delete('activities/tareas/{taskId}', 'Admin\Globales\ActivityController@destroyTarea')->name('activities.tareas.destroy');
+        Route::post('activities/tareas/{taskId}/evidencias', 'Admin\Globales\ActivityController@storeEvidencia')->name('activities.tareas.evidencias.store');
+        Route::delete('activities/tareas/evidencias/{evidenceId}', 'Admin\Globales\ActivityController@destroyEvidencia')->name('activities.tareas.evidencias.destroy');
 
         //Localities
         Route::resource('localities', 'Admin\Globales\LocalityController');
         Route::resource('patrimonies', 'Admin\Globales\PatrimonyController');
+        Route::resource('patrimony-profiles', 'Admin\Globales\PatrimonyProfileController');
+        Route::get('patrimony-profiles/{idPatrimonyProfile}/detail', 'Admin\Globales\PatrimonyProfileController@detailPatrimonyProfile')->name('patrimonies.detail-profile');
 
         // Get data from Select2
         Route::get('/locality/{state}/cities', 'Admin\Globales\LocalityController@getCities');

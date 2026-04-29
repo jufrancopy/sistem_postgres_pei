@@ -365,7 +365,6 @@
                     $('#profileForm').trigger("reset");
                     $('.errors').removeClass("alert alert-danger")
                     $('#profile_id').val(data.profile.id);
-                    $('#group_id').val(data.profile.group_id);
                     $('#name').val(data.profile.name);
                     $('#year_start').val(data.profile.year_start);
                     $('#year_end').val(data.profile.year_end);
@@ -417,9 +416,9 @@
                     }
 
                     //Inizialización de selector con función de datos relacionales
-                    initSelect2WithRelationship($('#dependencies'), data.profile.dependency_id, data
-                        .profile
-                        .dependency.dependency);
+                    if (data.profile.dependency) {
+                        initSelect2WithRelationship($('#dependencies'), data.profile.dependency_id, data.profile.dependency.dependency);
+                    }
 
                     //Selector que busca dependencias si se requiere asociar
                     $('#dependencies').select2({
@@ -444,9 +443,10 @@
 
                     //Inizialización de selector con función de datos relacionales
 
-                    initSelect2WithRelationship($('#group_roots'), data.profile.group_id, data
-                        .profile
-                        .group.name);
+                    initSelect2WithRelationship($('#group_roots'), data.profile.group_id, data.profile.group.name);
+
+                    // Precargar también el selector de grupo
+                    initSelect2WithRelationship($('#groups'), data.profile.group_id, data.profile.group.name);
 
                     // Cuando se cambia el grupo raíz
                     $('#group_roots').on('change', function() {
