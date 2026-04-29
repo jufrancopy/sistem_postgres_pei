@@ -19,6 +19,6 @@ class Answer extends Model
     ];
 
     protected $casts = [
-        'answers' => 'array', // Asegúrate de que la columna 'answers' se caste como array
+        'answers' => 'array',
     ];
 }

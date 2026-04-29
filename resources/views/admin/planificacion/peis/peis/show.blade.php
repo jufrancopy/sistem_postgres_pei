@@ -53,7 +53,7 @@
                                                         Trabajo:
                                                     </label><br>
                                                     @php
-                                                        $totalMembers = 0; // Inicializa el contador de miembros
+                                                        $totalMembers = 0;
                                                     @endphp
 
                                                     @foreach ($profile->group->descendants as $group)

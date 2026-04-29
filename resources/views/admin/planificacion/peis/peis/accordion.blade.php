@@ -139,7 +139,8 @@
                                                                                             <a class="btn btn-warning btn-circle reportProgress"
                                                                                                 data-id="{{ $action->id }}"
                                                                                                 href="javascript:void(0)"
-                                                                                                id="reportProgress"><i class="fas fa-chart-line"></i>
+                                                                                                id="reportProgress"><i
+                                                                                                    class="fas fa-chart-line"></i>
                                                                                             </a>
                                                                                         </td>
                                                                                     </tr>

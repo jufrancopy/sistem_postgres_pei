@@ -14,7 +14,7 @@ class Task extends Model
     use HasFactory;
 
     protected $table = 'planificacion.tasks';
-    protected $fillable = ['group_id', 'details', 'status'];
+    protected $fillable = ['group_id', 'details', 'status', 'activity_id', 'title', 'assigned_to'];
 
     public function analysts()
     {
@@ -29,6 +29,11 @@ class Task extends Model
     public function analyst()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function assignedTo()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 
     public function group()

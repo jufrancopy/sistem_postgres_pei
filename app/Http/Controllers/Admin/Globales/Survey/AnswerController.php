@@ -57,42 +57,61 @@ class AnswerController extends Controller
         $validated = $request->validate([
             'participant_id' => 'required|integer',
             'survey_id' => 'required|uuid',
-            'score' => 'required|integer',
+            'score' => 'required|integer|min:0',
+        ], [
+            'participant_id.required' => 'El ID del participante es obligatorio.',
+            'survey_id.required' => 'El ID de la encuesta es obligatorio.',
+            'survey_id.uuid' => 'El ID de la encuesta debe ser un UUID válido.',
+            'score.required' => 'El puntaje es obligatorio.',
+            'score.integer' => 'El puntaje debe ser un número entero.',
+            'score.min' => 'El puntaje no puede ser negativo.',
         ]);
 
-        // Verificar si ya existe un puntaje para este participante y encuesta
-        $existingScore = SurveyScore::where('participant_id', $validated['participant_id'])
-            ->where('survey_id', $validated['survey_id'])
-            ->first();
+        DB::beginTransaction();
 
-        if ($existingScore) {
-            // Si ya existe, devolver una respuesta indicando que el puntaje ya fue guardado
-            return response()->json(['message' => 'Puntaje ya registrado'], 400);
+        try {
+            // Verificar si ya existe un puntaje para este participante y encuesta
+            if (SurveyScore::where($validated)->exists()) {
+                return response()->json(['message' => 'Puntaje ya registrado'], 400);
+            }
+
+            // Guardar el nuevo puntaje
+            SurveyScore::create($validated);
+
+            // Actualizar o insertar en participants_has_surveys
+            DB::table('participants_has_surveys')->updateOrInsert(
+                ['survey_id' => $validated['survey_id'], 'participant_id' => $validated['participant_id']],
+                ['completed' => true]
+            );
+
+            DB::commit();
+            return response()->json(['message' => 'Puntaje guardado exitosamente']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error al guardar el puntaje: ' . $e->getMessage()], 500);
         }
-
-        // Si no existe, guardar el nuevo puntaje
-        $score = new SurveyScore($validated);
-        $score->save();
-
-        // Actualizar el estado "completed" en la tabla participants_has_surveys
-        DB::table('participants_has_surveys')
-            ->where('survey_id', $validated['survey_id'])
-            ->where('participant_id', $validated['participant_id'])
-            ->update(['completed' => true]);
-
-        return response()->json(['message' => 'Puntaje guardado exitosamente']);
     }
 
     public function hasUserResponded($surveyId)
     {
-        $userId = auth()->id(); // Obtener el ID del usuario autenticado
-
+        $userId = auth()->id();
         $hasResponded = DB::table('participants_has_surveys')
             ->where('survey_id', $surveyId)
             ->where('participant_id', $userId)
-            ->where('completed', true) // Asegúrate de que este campo exista y se utilice correctamente
+            ->where('completed', true)
             ->exists();
 
         return response()->json(['hasResponded' => $hasResponded]);
+    }
+
+    public function getScores($surveyId)
+    {
+        $scores = SurveyScore::where('survey_id', $surveyId)
+            ->join('users', 'survey_scores.participant_id', '=', 'users.id')
+            ->select('survey_scores.score', 'users.name', 'survey_scores.participant_id')
+            ->orderBy('survey_scores.score', 'desc')
+            ->get();
+
+        return response()->json($scores);
     }
 }

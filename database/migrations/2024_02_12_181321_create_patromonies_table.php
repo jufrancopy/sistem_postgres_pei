@@ -56,6 +56,13 @@ return new class extends Migration
             $table->string('evidence_file', 128)->nullable();
             $table->string('evidence_file_path', 128)->nullable();
 
+
+            //Dependencia propietaria del Patrimonio
+            $table->unsignedInteger('dependency_id')->nullable();
+            $table->foreign('dependency_id')->references('id')->on('organigramas')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
             $table->timestamps();
         });
     }

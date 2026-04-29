@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Planificacion\Pei;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -342,6 +343,18 @@ class PeiController extends Controller
         }
 
         return response()->json(['profile' => $profile, 'goals' => $goals, 'responsiblesChecked' => $responsiblesChecked]);
+    }
+
+    public function exportPdf($idProfile)
+    {
+        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])
+            ->descendantsAndSelf($idProfile)->toTree();
+
+        $pdf = Pdf::loadView('admin.planificacion.peis.peis.pdf', compact('profile'))
+            ->setPaper('a4', 'landscape')
+            ->setOption(['isPhpEnabled' => true, 'isHtml5ParserEnabled' => true]);
+
+        return $pdf->download('consolidado-pei-' . $profile->first()->name . '.pdf');
     }
 
     public function destroy(Request $request, $id)

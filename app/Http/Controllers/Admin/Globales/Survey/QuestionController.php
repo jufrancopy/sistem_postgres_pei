@@ -16,7 +16,7 @@ class QuestionController extends Controller
     public function store(Request $request)
     {
         $surveyID = $request->survey_id;
-        $language = $request->language; // Verificamos el idioma seleccionado
+        $language = $request->language;
 
         if ($request->type == 'generate_ia') {
             $iaSubject = $request->ia_subject;
