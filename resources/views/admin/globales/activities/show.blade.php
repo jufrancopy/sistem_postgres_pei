@@ -116,8 +116,8 @@
                                                                     class="text-truncate"
                                                                     style="max-width:160px;">{{ $ev->label }}</a>
                                                             @elseif($ev->type === 'image')
-                                                                <a href="{{ Storage::url($ev->value) }}" target="_blank">
-                                                                    <img src="{{ Storage::url($ev->value) }}"
+                                                                <a href="{{ asset('storage/' . $ev->value) }}" target="_blank">
+                                                                    <img src="{{ asset('storage/' . $ev->value) }}"
                                                                         style="height:32px; width:32px; object-fit:cover; border-radius:3px;"
                                                                         class="mr-1">
                                                                 </a>
@@ -125,7 +125,7 @@
                                                                     style="max-width:130px;">{{ $ev->label }}</span>
                                                             @else
                                                                 <i class="fas fa-file-alt text-warning mr-1"></i>
-                                                                <a href="{{ Storage::url($ev->value) }}" target="_blank"
+                                                                <a href="{{ asset('storage/' . $ev->value) }}" target="_blank"
                                                                     class="text-truncate"
                                                                     style="max-width:160px;">{{ $ev->label }}</a>
                                                             @endif
@@ -258,16 +258,19 @@
 
                     <div class="form-group">
                         <label>Tipo de evidencia</label><br>
-                        <div class="btn-group btn-group-sm w-100" role="group">
-                            <button type="button" class="btn btn-outline-primary ev-type-btn active" data-type="url"
+                        <div class="d-flex flex-wrap w-100" style="gap:0.4rem;">
+                            <button type="button" class="btn btn-outline-primary btn-sm ev-type-btn active flex-fill" data-type="url"
+                                style="min-width:140px;flex:1 1 150px;"
                                 onclick="toggleEvidenceSection('url')">
                                 &#128279; Enlace / URL
                             </button>
-                            <button type="button" class="btn btn-outline-primary ev-type-btn" data-type="image"
+                            <button type="button" class="btn btn-outline-primary btn-sm ev-type-btn flex-fill" data-type="image"
+                                style="min-width:140px;flex:1 1 150px;"
                                 onclick="toggleEvidenceSection('image')">
                                 &#128444; Imagen (m&aacute;x. 2MB)
                             </button>
-                            <button type="button" class="btn btn-outline-primary ev-type-btn" data-type="document"
+                            <button type="button" class="btn btn-outline-primary btn-sm ev-type-btn flex-fill" data-type="document"
+                                style="min-width:140px;flex:1 1 150px;"
                                 onclick="toggleEvidenceSection('document')">
                                 &#128196; Documento (m&aacute;x. 5MB)
                             </button>
