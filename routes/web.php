@@ -30,6 +30,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/actions-list', 'Admin\Planificacion\Pei\PeiController@showActionsList')->name('pei-profiles-actions-list');
     Route::get('pei-profiles/{idProfile}/members-list', 'Admin\Planificacion\Pei\PeiController@showMembersList')->name('pei-profiles-members-list');
     Route::get('pei-profiles/{idProfile}/report-progress', 'Admin\Planificacion\Pei\PeiController@getDetails')->name('pei-profiles-reports');
+    Route::get('pei-profiles/{idProfile}/semaforo', 'Admin\Planificacion\Pei\PeiController@getSemaforo')->name('pei-profiles.semaforo');
+    Route::post('pei-profiles/{idProfile}/raci', 'Admin\Planificacion\Pei\PeiController@syncRaci')->name('pei-profiles.raci.sync');
+    Route::get('pei-profiles/{idProfile}/alertas-presupuestarias', 'Admin\Planificacion\Pei\PeiController@getAlertasPresupuestarias')->name('pei-profiles.alertas-presupuestarias');
+    Route::get('pei-profiles/{idProfile}/dashboard', 'Admin\Planificacion\Pei\PeiController@dashboard')->name('pei-profiles.dashboard');
 
     // Relevamientos
     Route::get('proyectos-epc-relevamientos/{estandarId}', 'Admin\Proyectos\EPC\RelevamientoController@getFormulario')->name('proyectos-epc-relevamientos-form-dependencia');
@@ -235,6 +239,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-matriz-crossing/{idProfile}/da', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@daGroup')->name('foda-matriz-crossing-da');
     Route::post('foda-profile/{idRootGroup}/', 'Admin\Planificacion\Foda\FodaPerfilController@createGroupRootProfile')->name('foda-profile-create');
     Route::get('get-crossings', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@getCrossings')->name('get-crossings');
+    Route::post('foda-analisis/{id}/calcular-iea', 'Admin\Planificacion\Foda\FodaAnalisisController@calcularIEA')->name('foda-analisis.calcular-iea');
 
 
     //Rutas de Elaboración del PEI

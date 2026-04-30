@@ -528,4 +528,22 @@ class FodaAnalisisController extends Controller
         FodaAnalisis::find($id)->delete();
         return back()->with('success', 'Aspecto eliminado correctamente.');
     }
+
+    public function calcularIEA(Request $request, $id)
+    {
+        $request->validate([
+            'promedio_desempeno_6m'   => 'required|numeric|min:0',
+            'inversion_historica_6m'  => 'required|numeric|min:0.0001',
+        ]);
+
+        $analisis = FodaAnalisis::findOrFail($id);
+        $analisis->promedio_desempeno_6m  = $request->promedio_desempeno_6m;
+        $analisis->inversion_historica_6m = $request->inversion_historica_6m;
+        $analisis->calcularIEA();
+
+        return response()->json([
+            'iea_valor'         => $analisis->iea_valor,
+            'iea_clasificacion' => $analisis->iea_clasificacion,
+        ]);
+    }
 }
