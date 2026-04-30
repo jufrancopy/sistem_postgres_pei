@@ -184,7 +184,7 @@ class ActivityController extends Controller
             ]);
 
             $file = $request->file('file');
-            $path = $file->store("evidencias/{$task->activity_id}/{$task->id}");
+            $path = $file->store("evidencias/{$task->activity_id}/{$task->id}", 'public');
 
             $evidence = ActivityTaskEvidence::create([
                 'activity_task_id' => $task->id,
@@ -205,8 +205,8 @@ class ActivityController extends Controller
     {
         $evidence = ActivityTaskEvidence::findOrFail($evidenceId);
 
-        if ($evidence->type !== 'url' && Storage::exists($evidence->value)) {
-            Storage::delete($evidence->value);
+        if ($evidence->type !== 'url' && Storage::disk('public')->exists($evidence->value)) {
+            Storage::disk('public')->delete($evidence->value);
         }
 
         $evidence->delete();
