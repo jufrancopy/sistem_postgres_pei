@@ -13,7 +13,30 @@ class FodaAnalisis extends Model
 
     // protected $dateFormat = 'Y-m-d H:i:s';
 
-    protected $fillable = ['user_id', 'perfil_id', 'aspecto_id', 'tipo', 'ocurrencia', 'impacto'];
+    protected $fillable = [
+        'user_id', 'perfil_id', 'aspecto_id', 'tipo', 'ocurrencia', 'impacto',
+        'promedio_desempeno_6m', 'inversion_historica_6m', 'iea_valor', 'iea_clasificacion',
+    ];
+
+    public function calcularIEA(): void
+    {
+        if (!$this->promedio_desempeno_6m || !$this->inversion_historica_6m || $this->inversion_historica_6m == 0) {
+            return;
+        }
+
+        $iea = $this->promedio_desempeno_6m / $this->inversion_historica_6m;
+        $this->iea_valor = round($iea, 4);
+
+        if ($iea < 0.4) {
+            $this->iea_clasificacion = 'debilidad';
+        } elseif ($iea > 0.8) {
+            $this->iea_clasificacion = 'fortaleza';
+        } else {
+            $this->iea_clasificacion = 'neutro';
+        }
+
+        $this->save();
+    }
 
     public function categoria()
     {

@@ -16,6 +16,12 @@
             </ol>
         </nav>
 
+        <div class="px-3 pb-2">
+            <a href="{{ route('pei-profiles.dashboard', $profile->id) }}" class="btn btn-sm btn-dark">
+                <i class="fa fa-chart-bar mr-1"></i> Tablero de Monitoreo
+            </a>
+        </div>
+
         <!-- HTML del segundo nav (inicialmente oculto) -->
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4" id="dynamic-nav" style="display: none;">
             <ol class="breadcrumb mb-0">

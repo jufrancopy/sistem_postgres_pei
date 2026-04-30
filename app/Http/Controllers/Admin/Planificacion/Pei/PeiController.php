@@ -13,6 +13,8 @@ use Spatie\Permission\Models\Role;
 use Yajra\DataTables\DataTables;
 use App\Admin\Planificacion\Pei\PeiProfile;
 use App\Admin\Globales\Organigrama;
+use App\Admin\Planificacion\Foda\FodaAnalisis;
+use App\Admin\Planificacion\Foda\FodaPerfil;
 
 use App\Charts\ActionForDependencies;
 
@@ -357,10 +359,118 @@ class PeiController extends Controller
         return $pdf->download('consolidado-pei-' . $profile->first()->name . '.pdf');
     }
 
+    public function dashboard($idProfile)
+    {
+        $profile = PeiProfile::with(['group', 'analysts', 'dependency'])->findOrFail($idProfile);
+
+        // Análisis FODA con IEA del grupo vinculado al PEI
+        $analisisFoda = \App\Admin\Planificacion\Foda\FodaAnalisis::with('aspecto')
+            ->whereNotNull('iea_valor')
+            ->whereHas('perfil', fn($q) => $q->where('group_id', $profile->group_id))
+            ->get(['id', 'aspecto_id', 'tipo', 'iea_valor', 'iea_clasificacion']);
+
+        $perfilFodaId = \App\Admin\Planificacion\Foda\FodaPerfil::where('group_id', $profile->group_id)
+            ->value('id');
+
+        return view('admin.planificacion.peis.peis.dashboard', compact('profile', 'analisisFoda', 'perfilFodaId'));
+    }
+
     public function destroy(Request $request, $id)
     {
         $profile = PeiProfile::find($id)->delete();
 
         return response()->json([$profile]);
+    }
+
+    public function getSemaforo(Request $request, $idProfile)
+    {
+        $master = PeiProfile::findOrFail($idProfile);
+
+        $actions = PeiProfile::whereIn('id', $master->descendants()->pluck('id'))
+            ->where('level', 'action')
+            ->whereNotNull('tipo_indicador')
+            ->get(['id', 'name', 'tipo_indicador', 'progress', 'target', 'semaforo']);
+
+        $resultado = $actions->map(function ($action) {
+            $action->calcularSemaforo();
+            return [
+                'id'             => $action->id,
+                'name'           => strip_tags($action->name),
+                'tipo_indicador' => $action->tipo_indicador,
+                'semaforo'       => $action->semaforo,
+                'avance_pct'     => $action->target > 0
+                    ? round(($action->progress / $action->target) * 100, 1)
+                    : null,
+            ];
+        });
+
+        $resumen = [
+            'verde'    => $resultado->where('semaforo', 'verde')->count(),
+            'amarillo' => $resultado->where('semaforo', 'amarillo')->count(),
+            'rojo'     => $resultado->where('semaforo', 'rojo')->count(),
+        ];
+
+        return response()->json([
+            'acciones' => $resultado->values(),
+            'resumen'  => $resumen,
+        ]);
+    }
+
+    public function syncRaci(Request $request, $idProfile)
+    {
+        $request->validate([
+            'responsibles'         => 'required|array|min:1',
+            'responsibles.*.id'    => 'required|integer|exists:organigramas,id',
+            'responsibles.*.rol'   => 'required|in:R,A,C,I',
+        ]);
+
+        $accountables = collect($request->responsibles)->where('rol', 'A');
+
+        if ($accountables->count() !== 1) {
+            return response()->json([
+                'error' => 'Debe existir exactamente un Accountable (A) por estrategia.',
+            ], 422);
+        }
+
+        $profile = PeiProfile::findOrFail($idProfile);
+
+        $syncData = collect($request->responsibles)
+            ->keyBy('id')
+            ->map(fn($r) => ['rol' => $r['rol']])
+            ->toArray();
+
+        $profile->responsibles()->sync($syncData);
+
+        return response()->json([
+            'success'      => 'RACI sincronizado correctamente.',
+            'responsibles' => $profile->responsibles()->withPivot('rol')->get(['organigramas.id', 'organigramas.dependency']),
+        ]);
+    }
+
+    public function getAlertasPresupuestarias(Request $request, $idProfile)
+    {
+        $master = PeiProfile::findOrFail($idProfile);
+
+        $acciones = PeiProfile::whereIn('id', $master->descendants()->pluck('id'))
+            ->where('level', 'action')
+            ->whereNotNull('presupuesto_asignado')
+            ->whereNotNull('presupuesto_ejecutado')
+            ->get(['id', 'name', 'progress', 'target', 'presupuesto_asignado', 'presupuesto_ejecutado']);
+
+        $alertas = $acciones->filter(fn($a) => $a->alertaPresupuestaria() === 'subejecucion')
+            ->map(fn($a) => [
+                'id'              => $a->id,
+                'name'            => strip_tags($a->name),
+                'pct_meta'        => $a->target > 0 ? round(($a->progress / $a->target) * 100, 1) : 0,
+                'pct_presupuesto' => $a->presupuesto_asignado > 0
+                    ? round(($a->presupuesto_ejecutado / $a->presupuesto_asignado) * 100, 1)
+                    : 0,
+                'alerta' => 'subejecucion',
+            ])->values();
+
+        return response()->json([
+            'total_alertas' => $alertas->count(),
+            'acciones'      => $alertas,
+        ]);
     }
 }

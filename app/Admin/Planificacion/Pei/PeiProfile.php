@@ -48,8 +48,60 @@ class PeiProfile extends Model
         'order_item',
         'report_type',
         'parameters',
-        'number_target'
+        'number_target',
+        'tipo_indicador',
+        'semaforo',
+        'presupuesto_asignado',
+        'presupuesto_ejecutado',
     ];
+
+    public function alertaPresupuestaria(): ?string
+    {
+        if (!$this->presupuesto_asignado || !$this->target || $this->presupuesto_asignado == 0) {
+            return null;
+        }
+
+        $pctMeta       = $this->target > 0 ? ($this->progress / $this->target) * 100 : 0;
+        $pctPresupuesto = ($this->presupuesto_ejecutado / $this->presupuesto_asignado) * 100;
+
+        if ($pctMeta < 20 && $pctPresupuesto > 80) {
+            return 'subejecucion';
+        }
+
+        return null;
+    }
+
+    public function calcularSemaforo(): void
+    {
+        if (!$this->progress || !$this->target || $this->target == 0) {
+            return;
+        }
+
+        $avance = ($this->progress / $this->target) * 100;
+
+        if ($this->tipo_indicador === 'lead') {
+            // Lead al 100% pero Lag estancado → cuello de botella (amarillo)
+            // Se evalúa solo el esfuerzo
+            if ($avance >= 100) {
+                $this->semaforo = 'verde';
+            } elseif ($avance >= 50) {
+                $this->semaforo = 'amarillo';
+            } else {
+                $this->semaforo = 'rojo';
+            }
+        } else {
+            // Lag: resultado histórico
+            if ($avance >= 85) {
+                $this->semaforo = 'verde';
+            } elseif ($avance >= 50) {
+                $this->semaforo = 'amarillo';
+            } else {
+                $this->semaforo = 'rojo';
+            }
+        }
+
+        $this->save();
+    }
 
     public function task()
     {
@@ -78,7 +130,19 @@ class PeiProfile extends Model
 
     public function responsibles()
     {
-        return $this->belongsToMany(Organigrama::class, 'planificacion.peis_profiles_has_responsibles', 'profile_id', 'responsible_id');
+        return $this->belongsToMany(Organigrama::class, 'planificacion.peis_profiles_has_responsibles', 'profile_id', 'responsible_id')
+            ->withPivot('rol')
+            ->withTimestamps();
+    }
+
+    public function hasAccountable(): bool
+    {
+        return $this->responsibles()->wherePivot('rol', 'A')->exists();
+    }
+
+    public function accountableCount(): int
+    {
+        return $this->responsibles()->wherePivot('rol', 'A')->count();
     }
 
     public function dependency()

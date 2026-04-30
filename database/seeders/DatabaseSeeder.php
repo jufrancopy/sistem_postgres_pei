@@ -21,5 +21,6 @@ class DatabaseSeeder extends Seeder
         // $this->call([OrganigramasTableSeeder::class]);
         // $this->call([GroupsTableSeeder::class]);
         $this->call([PatrimonySeeder::class]);
+        // $this->call([MonitoreoSeeder::class]);
     }
 }
