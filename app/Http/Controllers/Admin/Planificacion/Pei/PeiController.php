@@ -36,7 +36,7 @@ class PeiController extends Controller
                     // if (auth()->user()->hasRole('Administrador')) {
                     $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-type="' . $row->type . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editProfile"><i class="far fa-edit"></i></a>';
 
-                    $btn .= ' <a href="' . route('pei-profiles.show', $row->id) . '" data-type="' . $row->type . '" class="btn btn-success btn-circle showType"><i class="fas fa-tasks"></i></a>';
+                    $btn .= ' <a href="' . route('pei-profiles.proceso', $row->id) . '" class="btn btn-success btn-circle" title="Proceso"><i class="fa fa-tasks"></i></a>';
 
                     $btn .= ' <a href="' . route('pei-profiles.details', $row->id) . '" class="btn btn-info btn-circle showTree"><i class="fa fa-tree" aria-hidden="true"></i></a>';
 
@@ -48,10 +48,13 @@ class PeiController extends Controller
                     return $btn;
                 })
                 ->addColumn('group', function (PeiProfile $profile) {
-                    return $profile->group->name;
+                    return $profile->group ? $profile->group->name : '—';
                 })
 
                 ->addColumn('period', function (PeiProfile $profile) {
+                    if (!$profile->year_start || !$profile->year_end) {
+                        return '—';
+                    }
                     $year_start = Carbon::parse($profile->year_start)->format('Y');
                     $year_end = Carbon::parse($profile->year_end)->format('Y');
                     return $year_start . ' - ' . $year_end;
@@ -72,30 +75,38 @@ class PeiController extends Controller
 
     public function showAxisList($idProfile)
     {
-
         $profile = PeiProfile::findOrFail($idProfile);
 
-        $axis = $profile->where('level', 'axi')->get();
+        // Scoped al PEI actual — solo descendientes directos con level=axi
+        $axis = PeiProfile::whereIn('id', $profile->descendants()->pluck('id'))
+            ->where('level', 'axi')
+            ->with(['strategies'])
+            ->get();
 
         return response()->json(['axis' => $axis]);
     }
 
     public function showGoalsList($idProfile)
     {
-
         $profile = PeiProfile::findOrFail($idProfile);
 
-        $goals = $profile->where('level', 'goal')->with(['strategies'])->get();
+        // Scoped al PEI actual
+        $goals = PeiProfile::whereIn('id', $profile->descendants()->pluck('id'))
+            ->where('level', 'goal')
+            ->get();
 
         return response()->json(['goals' => $goals]);
     }
 
     public function showActionsList($idProfile)
     {
-
         $profile = PeiProfile::findOrFail($idProfile);
 
-        $actions = $profile->where('level', 'action')->with(['responsibles'])->get();
+        // Scoped al PEI actual
+        $actions = PeiProfile::whereIn('id', $profile->descendants()->pluck('id'))
+            ->where('level', 'action')
+            ->with(['responsibles'])
+            ->get();
 
         return response()->json(['actions' => $actions]);
     }
@@ -127,8 +138,22 @@ class PeiController extends Controller
 
     public function compareHistorical(Request $request)
     {
-
-        $profile = PeiProfile::with('group')->whereIsRoot()->where('level', 'master')->where('type', 'group')->get();
+        // Si se pasa un pei_id, filtrar solo perfiles del mismo grupo raíz
+        if ($request->pei_id) {
+            $pei = PeiProfile::find($request->pei_id);
+            $profile = PeiProfile::with('group')
+                ->whereIsRoot()
+                ->where('level', 'master')
+                ->where('type', 'group')
+                ->where('group_id', $pei ? $pei->group_id : null)
+                ->get();
+        } else {
+            $profile = PeiProfile::with('group')
+                ->whereIsRoot()
+                ->where('level', 'master')
+                ->where('type', 'group')
+                ->get();
+        }
 
         return response()->json($profile);
     }
@@ -192,6 +217,7 @@ class PeiController extends Controller
                     'order_item' => $request->order_item,
                     'report_type' => $request->report_type,
                     'parameters' => $parametersJson,
+                    'nivel_label' => $request->nivel_label ?: null,
                 ]
             );
         } else {
@@ -222,6 +248,7 @@ class PeiController extends Controller
                     'order_item' => $request->order_item,
                     'report_type' => $request->report_type,
                     'parameters' => $parametersJson,
+                    'nivel_label' => $request->nivel_label ?: null,
                 ]
             );
         }
@@ -260,29 +287,33 @@ class PeiController extends Controller
     {
         $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles'])->find($id);
 
-        $strategiesChecked = [];
+        // Cargar el grupo padre (Evento) si existe
+        $groupParent = null;
+        if ($profile->group && $profile->group->parent_id) {
+            $groupParent = \App\Admin\Globales\Group::find($profile->group->parent_id);
+        }
 
+        $strategiesChecked = [];
         foreach ($profile->strategies as $strategy) {
             $strategiesChecked[] = ['id' => $strategy->id, 'text' => $strategy->estrategia];
         }
 
         $responsiblesChecked = [];
-
         foreach ($profile->responsibles as $responsible) {
             $responsiblesChecked[] = ['id' => $responsible->id, 'text' => $responsible->dependency];
         }
 
         $analystsChecked = [];
-
         foreach ($profile->analysts as $analyst) {
             $analystsChecked[] = ['id' => $analyst->id, 'text' => $analyst->name];
         }
 
         return response()->json([
-            'profile' => $profile,
-            'analystsChecked' => $analystsChecked,
+            'profile'           => $profile,
+            'groupParent'       => $groupParent,
+            'analystsChecked'   => $analystsChecked,
             'strategiesChecked' => $strategiesChecked,
-            'responsiblesChecked' => $responsiblesChecked
+            'responsiblesChecked' => $responsiblesChecked,
         ]);
     }
 
@@ -292,11 +323,18 @@ class PeiController extends Controller
             ->findOrFail($id);
         $type = $profile->type;
 
+        // Resolver etiquetas dinámicas del modelo de niveles
+        $nivelesDefault = ['master' => 'PEI', 'axi' => 'Nivel 1', 'goal' => 'Nivel 2', 'action' => 'Acción'];
+        $niveles = $nivelesDefault;
+        if ($profile->nivel_label) {
+            $decoded = json_decode($profile->nivel_label, true);
+            if (is_array($decoded)) {
+                $niveles = array_merge($nivelesDefault, $decoded);
+            }
+        }
+
         if ($request->ajax()) {
-            $responseData = [
-                'profile' => $profile
-            ];
-            return response()->json($responseData);
+            return response()->json(['profile' => $profile]);
         } else {
             return view('admin.planificacion.peis.peis.show', get_defined_vars())
                 ->with('i', ($request->input('page', 1) - 1) * 5);
@@ -305,21 +343,18 @@ class PeiController extends Controller
 
     public function showDetailsTree($idProfile)
     {
-        $idProfile = $idProfile;
         $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->descendantsAndSelf($idProfile)->toTree();
         $responsiblesActionsCount = [];
 
-        foreach ($profile->first()->children as $axi) {
-            foreach ($axi->children as $goal) {
-                foreach ($goal->children as $action) {
-                    $responsibles = $action->responsibles;
+        $allDescendants = PeiProfile::with('responsibles')
+            ->whereIn('id', PeiProfile::findOrFail($idProfile)->descendants()->pluck('id'))
+            ->where('level', 'action')
+            ->get();
 
-                    foreach ($responsibles as $responsible) {
-                        $responsiblesId = $responsible->id;
-                        // Si tenemos valor, sumamos 1, si no tenemos valor, valor es 0
-                        $responsiblesActionsCount[$responsiblesId] = ($responsiblesActionsCount[$responsiblesId] ?? 0) + 1;
-                    }
-                }
+        foreach ($allDescendants as $action) {
+            foreach ($action->responsibles as $responsible) {
+                $responsiblesId = $responsible->id;
+                $responsiblesActionsCount[$responsiblesId] = ($responsiblesActionsCount[$responsiblesId] ?? 0) + 1;
             }
         }
 
@@ -328,6 +363,16 @@ class PeiController extends Controller
             ['dependency' => $responsible->dependency, 'actionsCount' => $actionsCount];
         }
 
+        // Etiquetas dinámicas
+        $root = PeiProfile::findOrFail($idProfile);
+        $nivelesDefault = ['master' => 'PEI', 'axi' => 'Nivel 1', 'goal' => 'Nivel 2', 'action' => 'Acción'];
+        $niveles = $nivelesDefault;
+        if ($root->nivel_label) {
+            $decoded = json_decode($root->nivel_label, true);
+            if (is_array($decoded)) {
+                $niveles = array_merge($nivelesDefault, $decoded);
+            }
+        }
 
         return view('admin.planificacion.peis.peis.details', get_defined_vars());
     }
@@ -357,6 +402,24 @@ class PeiController extends Controller
             ->setOption(['isPhpEnabled' => true, 'isHtml5ParserEnabled' => true]);
 
         return $pdf->download('consolidado-pei-' . $profile->first()->name . '.pdf');
+    }
+
+    public function proceso($idProfile)
+    {
+        $profile = PeiProfile::with(['group', 'analysts', 'dependency', 'strategies'])
+            ->findOrFail($idProfile);
+
+        // Etiquetas dinámicas
+        $nivelesDefault = ['master' => 'PEI', 'axi' => 'Nivel 1', 'goal' => 'Nivel 2', 'action' => 'Acción'];
+        $niveles = $nivelesDefault;
+        if ($profile->nivel_label) {
+            $decoded = json_decode($profile->nivel_label, true);
+            if (is_array($decoded)) {
+                $niveles = array_merge($nivelesDefault, $decoded);
+            }
+        }
+
+        return view('admin.planificacion.peis.peis.proceso', compact('profile', 'niveles'));
     }
 
     public function dashboard($idProfile)

@@ -53,7 +53,38 @@ class PeiProfile extends Model
         'semaforo',
         'presupuesto_asignado',
         'presupuesto_ejecutado',
+        'nivel_label',
     ];
+
+    // Modelos de niveles predefinidos
+    public static function modelosDeNiveles(): array
+    {
+        return [
+            'A'     => ['master' => 'Plan',                   'axi' => 'Eje',                  'goal' => 'Objetivo',  'action' => 'Acción'],
+            'B'     => ['master' => 'Plan',                   'axi' => 'Programa',             'goal' => 'Proyecto',  'action' => 'Actividad'],
+            'C'     => ['master' => 'Estrategia',             'axi' => 'Eje',                  'goal' => 'Meta',      'action' => 'Tarea'],
+            'D'     => ['master' => 'Objetivo Institucional', 'axi' => 'Estrategia',           'goal' => 'Plan',      'action' => 'Acción'],
+            'MECIP' => ['master' => 'PEI',                    'axi' => 'Objetivo Estratégico', 'goal' => 'Meta',      'action' => 'Acción'],
+        ];
+    }
+
+    /**
+     * Retorna las etiquetas del modelo MECIP 2015 como array asociativo.
+     */
+    public static function etiquetasMecip(): array
+    {
+        return self::modelosDeNiveles()['MECIP'];
+    }
+
+    public function getLabelNivel(): string
+    {
+        if ($this->nivel_label) {
+            $labels = json_decode($this->nivel_label, true);
+            return $labels[$this->level] ?? ucfirst($this->level);
+        }
+        // Default modelo A
+        return self::modelosDeNiveles()['A'][$this->level] ?? ucfirst($this->level);
+    }
 
     public function alertaPresupuestaria(): ?string
     {

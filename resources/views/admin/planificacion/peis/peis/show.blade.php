@@ -50,6 +50,21 @@
                                                 {{ Carbon\Carbon::parse($profile->year_start)->format('Y') }} -
                                                 {{ Carbon\Carbon::parse($profile->year_end)->format('Y') }}
                                             </div>
+                                            <div class="col mt-2">
+                                                <label><i class="fa fa-layer-group" aria-hidden="true"></i> Modelo de Niveles:</label>
+                                                @if($profile->nivel_label)
+                                                    <span class="badge badge-info ml-1">{{ $niveles['axi'] ?? '—' }}</span>
+                                                    <i class="fa fa-arrow-right text-muted mx-1" style="font-size:.75rem"></i>
+                                                    <span class="badge badge-primary">{{ $niveles['goal'] ?? '—' }}</span>
+                                                    <i class="fa fa-arrow-right text-muted mx-1" style="font-size:.75rem"></i>
+                                                    <span class="badge badge-success">{{ $niveles['action'] ?? '—' }}</span>
+                                                @else
+                                                    <span class="badge badge-warning ml-1">
+                                                        <i class="fa fa-exclamation-triangle mr-1"></i> Sin modelo definido
+                                                    </span>
+                                                    <small class="text-muted ml-1">— Editá el perfil para asignar uno</small>
+                                                @endif
+                                            </div>
                                         </div>
 
                                         <div class="card-body">
@@ -62,78 +77,89 @@
                                                         $totalMembers = 0;
                                                     @endphp
 
-                                                    @foreach ($profile->group->descendants as $group)
-                                                        <span data-toggle="collapse" href="#group_{{ $group->id }}"
-                                                            role="button" aria-expanded="false"
-                                                            aria-controls="group_{{ $group->id }}"
-                                                            class="badge badge-secondary">{{ $group->name }}
-                                                        </span>
-                                                        <div class="collapse" id="group_{{ $group->id }}">
-                                                            <div class="card card-body">
-                                                                <div class="table-responsive">
-                                                                    <table class="table table-bordered">
-                                                                        <thead>
-                                                                            <tr class="table-success">
-                                                                                <th>Nro</th>
-                                                                                <th>Participantes</th>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody>
-                                                                            @foreach ($group->members as $index => $member)
-                                                                                @php
-                                                                                    $totalMembers++; // Incrementa el contador de miembros
-                                                                                @endphp
-                                                                                <tr>
-                                                                                    <td>{{ $index + 1 }}</td>
-                                                                                    <td>
-                                                                                        <span
-                                                                                            class="badge badge-secondary">{{ $member->name }}</span>
-                                                                                    </td>
+                                                    @if($profile->group)
+                                                        @foreach ($profile->group->descendants as $group)
+                                                            <span data-toggle="collapse" href="#group_{{ $group->id }}"
+                                                                role="button" aria-expanded="false"
+                                                                aria-controls="group_{{ $group->id }}"
+                                                                class="badge badge-secondary">{{ $group->name }}
+                                                            </span>
+                                                            <div class="collapse" id="group_{{ $group->id }}">
+                                                                <div class="card card-body">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-bordered">
+                                                                            <thead>
+                                                                                <tr class="table-success">
+                                                                                    <th>Nro</th>
+                                                                                    <th>Participantes</th>
                                                                                 </tr>
-                                                                            @endforeach
-                                                                        </tbody>
-                                                                    </table>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                @foreach ($group->members as $index => $member)
+                                                                                    @php
+                                                                                        $totalMembers++;
+                                                                                    @endphp
+                                                                                    <tr>
+                                                                                        <td>{{ $index + 1 }}</td>
+                                                                                        <td>
+                                                                                            <span class="badge badge-secondary">{{ $member->name }}</span>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                @endforeach
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    @endforeach
+                                                        @endforeach
+                                                    @elseif($profile->dependency)
+                                                        <span class="badge badge-info">
+                                                            <i class="fa fa-building mr-1"></i>
+                                                            {{ $profile->dependency->dependency }}
+                                                        </span>
+                                                        <small class="text-muted ml-1">(PEI Corporativo)</small>
+                                                    @else
+                                                        <span class="text-muted"><em>Sin grupo asignado</em></span>
+                                                    @endif
                                                 </li>
                                             </ul>
 
                                             <div class="row border">
 
                                                 <div class="col">
-                                                    <label><i class="fa fa-arrows-h" aria-hidden="true"></i> Ejes: </label>
-                                                    <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
+                                                    <label><i class="fa fa-bullseye" aria-hidden="true"></i> {{ $niveles['axi'] ?? 'Nivel 1' }}: </label>
+                                                    <a class="btn btn-danger btn-circle text-white ml-auto"
                                                         href="javascript:void(0)" data-id="{{ $profile->id }}"
-                                                        id="showAxisList">
+                                                        id="showAxisList"
+                                                        title="Ver lista de {{ $niveles['axi'] ?? 'Nivel 1' }}s">
                                                         {{ $profile->descendants()->where('level', 'axi')->count() }}
                                                     </a>
                                                 </div>
 
                                                 <div class="col">
-                                                    <label><i class="fa fa-arrows-h" aria-hidden="true"></i> Objetivos:
+                                                    <label><i class="fa fa-flag-checkered" aria-hidden="true"></i> {{ $niveles['goal'] ?? 'Nivel 2' }}:
                                                     </label>
-                                                    <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
+                                                    <a class="btn btn-danger btn-circle text-white ml-auto"
                                                         href="javascript:void(0)" data-id="{{ $profile->id }}"
-                                                        id="showGoalsList">
+                                                        id="showGoalsList"
+                                                        title="Ver lista de {{ $niveles['goal'] ?? 'Nivel 2' }}s">
                                                         {{ $profile->descendants()->where('level', 'goal')->count() }}
                                                     </a>
                                                 </div>
 
                                                 <div class="col">
-                                                    <label><i class="fa fa-arrows-h" aria-hidden="true"></i> Acciones:
+                                                    <label><i class="fa fa-rocket" aria-hidden="true"></i> {{ $niveles['action'] ?? 'Acciones' }}:
                                                     </label>
-                                                    <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
+                                                    <a class="btn btn-danger btn-circle text-white ml-auto"
                                                         href="javascript:void(0)" data-id="{{ $profile->id }}"
-                                                        id="showActionsList">
+                                                        id="showActionsList"
+                                                        title="Ver lista de {{ $niveles['action'] ?? 'Acciones' }}">
                                                         {{ $profile->descendants()->where('level', 'action')->count() }}
                                                     </a>
                                                 </div>
 
                                                 <div class="col">
-                                                    <label><i class="fa fa-user" aria-hidden="true"></i>
-                                                        Participantes:
+                                                    <label><i class="fa fa-user" aria-hidden="true"></i> Participantes:
                                                     </label>
                                                     <div class="btn btn-danger btn-circle">{{ $totalMembers }}</div>
                                                 </div>
@@ -213,7 +239,7 @@
                                 <div class="col-12">
                                     <a class="btn btn-success mb-2 text-white" data-id="{{ $profile->id }}"
                                         data-type="create" href="javascript:void(0)" id="createAxis">
-                                        Agregar Ejes
+                                        <i class="fa fa-bullseye mr-1"></i> Agregar {{ $niveles['axi'] ?? 'Nivel 1' }}
                                     </a>
                                 </div>
                             </div>
@@ -586,7 +612,7 @@
                 var typeBtn = $(this).data('type');
 
                 $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                    $('#modalHeadingAxis').html(typeBtn === 'create' ? "Crear Eje" : "Editar Eje");
+                    $('#modalHeadingAxis').html(typeBtn === 'create' ? "Crear {{ $niveles['axi'] ?? 'Nivel 1' }}" : "Editar {{ $niveles['axi'] ?? 'Nivel 1' }}");
                     $('#saveBtnAxis').val(typeBtn === 'create' ? "create" : "edit");
                     $('#ajaxAxisModal').modal('show');
                     $('#axisForm').trigger("reset");
@@ -599,7 +625,7 @@
                     } else if (typeBtn === 'edit') {
                         $('#axis_profile_id').val(data.profile.id);
                         $('#axis_parent_id').val(data.profile.parent_id);
-                        axisEditor.setData(data.profile.name)
+                        axisEditor.setData(data.profile.name);
                         $('#axis_order_item').val(data.profile.order_item);
                     }
 
@@ -607,7 +633,43 @@
                     $('#axis_group_id').val(data.profile.group_id);
                     $('#axis_dependency').val(data.profile.dependency_id);
 
+                    // ── Cargar estrategias FODA en el select del modal Estrategia ──
+                    // Construir URL con pei_id embebido para filtrar por FODA del grupo
+                    var urlCrossings = '{{ route('get-crossings') }}?pei_id={{ $profile->id }}';
+                    var selectAxisStrategies = $('#axis_strategies').select2();
+                    selectAxisStrategies.empty();
 
+                    // Pre-seleccionar estrategias ya vinculadas (solo en edición)
+                    if (typeBtn === 'edit' && data.strategiesChecked && data.strategiesChecked.length > 0) {
+                        data.strategiesChecked.forEach(function(d) {
+                            var option = new Option(d.text, d.id, true, true);
+                            selectAxisStrategies.append(option).trigger('change');
+                        });
+                    }
+
+                    $('#axis_strategies').select2({
+                        allowClear: true,
+                        placeholder: 'Seleccioná las estrategias FODA...',
+                        ajax: {
+                            url: urlCrossings,
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(data) {
+                                if (!data || data.length === 0) {
+                                    return { results: [{ id: '', text: '— Sin estrategias FODA disponibles para este PEI —', disabled: true }] };
+                                }
+                                return {
+                                    results: $.map(data, function(item) {
+                                        var label = item.tipo
+                                            ? '[' + item.tipo + '] ' + item.estrategia
+                                            : item.estrategia;
+                                        return { text: label, id: item.id };
+                                    })
+                                };
+                            },
+                            cache: false
+                        }
+                    });
                 });
             });
 
@@ -616,8 +678,7 @@
                 var typeBtn = $(this).data('type');
 
                 $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                    $('#modalHeadingGoals').html(typeBtn === 'create' ? "Crear Objetivo" :
-                        "Editar Objetivo");
+                    $('#modalHeadingGoals').html(typeBtn === 'create' ? "Crear {{ $niveles['goal'] ?? 'Nivel 2' }}" : "Editar {{ $niveles['goal'] ?? 'Nivel 2' }}");
                     $('#saveBtnGoals').val(typeBtn === 'create' ? "create" : "edit");
                     $('#ajaxGoalsModal').modal('show');
                     $('#goalsForm').trigger("reset");
@@ -630,51 +691,13 @@
                     } else if (typeBtn === 'edit') {
                         $('#goals_profile_id').val(data.profile.id);
                         $('#goals_parent_id').val(data.profile.parent_id);
-                        goalsEditor.setData(data.profile.name)
+                        goalsEditor.setData(data.profile.name);
                         $('#goals_order_item').val(data.profile.order_item);
                     }
 
                     $('#goals_type').val(data.profile.type);
                     $('#goals_group_id').val(data.profile.group_id);
                     $('#goals_dependency').val(data.profile.dependency_id);
-
-
-                    //Straetegis from crossing
-                    var url = '{{ route('get-crossings') }}';
-
-                    var selectStrategies = $('#strategies').select2();
-                    selectStrategies.empty();
-                    data.strategiesChecked.forEach(function(d) {
-                        var option = new Option(d.text, d.id, true, true);
-                        selectStrategies.append(option).trigger('change');
-                        selectStrategies.trigger({
-                            type: 'select2:select',
-                            params: {
-                                data: data
-                            }
-                        });
-                    });
-
-                    $('#strategies').select2({
-                        allowClear: true,
-                        ajax: {
-                            url: url,
-                            dataType: 'json',
-                            delay: 250,
-                            processResults: function(data) {
-                                console.log(data)
-                                return {
-                                    results: $.map(data, function(item) {
-                                        return {
-                                            text: item.estrategia,
-                                            id: item.id
-                                        }
-                                    })
-                                };
-                            },
-                            cache: true
-                        }
-                    });
                 });
             });
 
@@ -683,8 +706,8 @@
                 var typeBtn = $(this).data('type');
 
                 $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                    $('#modalHeadingActions').html(typeBtn === 'create' ? "Crear Acción" :
-                        "Editar Acción");
+                    $('#modalHeadingActions').html(typeBtn === 'create' ? "Crear {{ $niveles['action'] ?? 'Acción' }}" :
+                        "Editar {{ $niveles['action'] ?? 'Acción' }}");
                     $('#saveBtnGoals').val(typeBtn === 'create' ? "create" : "edit");
                     $('#ajaxActionsModal').modal('show');
                     $('#actionsForm').trigger("reset");
@@ -796,7 +819,7 @@
             $('body').on('click', '#compareHistorical', function() {
                 var typeBtn = $(this).data('type');
 
-                url = '{{ route('pei-profiles-compareHistorical') }}'
+                url = '{{ route('pei-profiles-compareHistorical') }}' + '?pei_id={{ $profile->id }}'
                 $.get(url, function(data) {
                     console.log(data)
                     $('#modalHeadingHistorical').html(
@@ -839,25 +862,32 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/axis-list',
                     function(data) {
-                        $('#modalHeadingAxisList').html(
-                            'Lista de Ejes');
+                        $('#modalHeadingAxisList').html('Lista de {{ $niveles['axi'] ?? 'Nivel 1' }}s');
                         $('#ajaxAxisListlModal').modal('show');
-                        compareList
 
                         var tableBody = $('#axisList .table tbody');
-                        tableBody.empty(); // Limpiar el contenido de la tabla
+                        tableBody.empty();
 
-                        // Itera sobre los datos y agrega filas a la tabla
                         data.axis.forEach(function(row, index) {
                             var newRow = $('<tr>');
                             newRow.append($('<td>').text(index + 1));
                             newRow.append($('<td>').html(row.name));
 
-
+                            // Mostrar estrategias FODA vinculadas
+                            var fodaCell = $('<td>');
+                            if (row.strategies && row.strategies.length > 0) {
+                                row.strategies.forEach(function(strategy) {
+                                    fodaCell.append(
+                                        $('<span class="badge badge-warning mr-1 mb-1">')
+                                            .text('[' + strategy.tipo + '] ' + strategy.estrategia)
+                                    );
+                                });
+                            } else {
+                                fodaCell.append('<span class="text-muted"><em>Sin estrategias FODA vinculadas</em></span>');
+                            }
+                            newRow.append(fodaCell);
                             tableBody.append(newRow);
                         });
-
-
                     });
             });
 
@@ -867,34 +897,18 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/goals-list',
                     function(data) {
-                        $('#modalHeadingGoalsList').html(
-                            'Lista de Objetivos');
+                        $('#modalHeadingGoalsList').html('Lista de {{ $niveles['goal'] ?? 'Nivel 2' }}s');
                         $('#ajaxGoalsListModal').modal('show');
-                        compareList
 
                         var tableBody = $('#goalsList .table tbody');
-                        tableBody.empty(); // Limpiar el contenido de la tabla
+                        tableBody.empty();
 
-                        // Itera sobre los datos y agrega filas a la tabla
                         data.goals.forEach(function(row, index) {
                             var newRow = $('<tr>');
                             newRow.append($('<td>').text(index + 1));
                             newRow.append($('<td>').html(row.name));
-
-                            // Crear una celda para mostrar todas las estrategias
-                            var strategiesCell = $('<td>');
-
-                            row.strategies.forEach(function(strategy) {
-                                // Agregar cada estrategia a la celda
-                                strategiesCell.append(strategy.estrategia + '<br>');
-                            });
-
-                            newRow.append(strategiesCell);
                             tableBody.append(newRow);
                         });
-
-
-
                     });
             });
 
@@ -904,9 +918,7 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/actions-list',
                     function(data) {
-                        console.log(data)
-                        $('#modalHeadingActionsList').html(
-                            'Lista de Acciones');
+                        $('#modalHeadingActionsList').html('Lista de {{ $niveles['action'] ?? 'Acciones' }}');
                         $('#ajaxActionsListModal').modal('show');
 
                         var tableBody = $('#actionsList .table tbody');
@@ -945,9 +957,7 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/actions-list',
                     function(data) {
-                        console.log(data)
-                        $('#modalHeadingActionsList').html(
-                            'Lista de Acciones');
+                        $('#modalHeadingActionsList').html('Lista de {{ $niveles['action'] ?? 'Acciones' }}');
                         $('#ajaxActionsListModal').modal('show');
 
                         var tableBody = $('#actionsList .table tbody');

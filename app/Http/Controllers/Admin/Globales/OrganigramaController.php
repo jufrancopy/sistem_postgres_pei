@@ -66,18 +66,19 @@ class OrganigramaController extends Controller
     
     public function getDependenciesFromRoot(Request $request, $idRoot)
     {
-        $data = [];
+        $rootNode = Organigrama::find($idRoot);
 
-        if ($request->has('q')) {
-            $search = $request->q;
-            $rootNode = Organigrama::find($idRoot);
-            
-            if ($rootNode) {
-                // Utiliza descendants para obtener todos los hijos del nodo raíz
-                $children = $rootNode->descendants()->where('dependency', 'LIKE', "%$search%")->get(['id', 'dependency']);
-                $data = $children->toArray();
-            }
+        if (!$rootNode) {
+            return response()->json([]);
         }
+
+        $query = $rootNode->descendants();
+
+        if ($request->has('q') && trim($request->q) !== '') {
+            $query->where('dependency', 'LIKE', '%' . $request->q . '%');
+        }
+
+        $data = $query->get(['id', 'dependency']);
 
         return response()->json($data);
     }
@@ -87,6 +88,21 @@ class OrganigramaController extends Controller
         $data = Organigrama::findOrFail($idSelection);
 
         return response()->json($data);
+    }
+
+    public function getRootOfDependency($idSelection)
+    {
+        $dependencia = Organigrama::findOrFail($idSelection);
+
+        // Si ya es raíz, devolver ella misma
+        if ($dependencia->isRoot()) {
+            return response()->json($dependencia);
+        }
+
+        // Buscar el ancestro raíz
+        $raiz = Organigrama::whereAncestorOf($dependencia)->whereIsRoot()->first();
+
+        return response()->json($raiz ?? $dependencia);
     }
 
     public function create(Request $request)

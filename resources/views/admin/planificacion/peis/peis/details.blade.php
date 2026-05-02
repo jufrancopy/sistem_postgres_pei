@@ -55,43 +55,52 @@
                                             Trabajo:
                                         </label><br>
                                         @php
-                                            $totalMembers = 0; // Inicializa el contador de miembros
+                                            $totalMembers = 0;
                                         @endphp
 
-                                        @foreach ($profile->first()->group->descendants as $group)
-                                            <span data-toggle="collapse" href="#group_{{ $group->id }}" role="button"
-                                                aria-expanded="false" aria-controls="group_{{ $group->id }}"
-                                                class="badge badge-secondary">{{ $group->name }}
-                                            </span>
-                                            <div class="collapse" id="group_{{ $group->id }}">
-                                                <div class="card card-body">
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered">
-                                                            <thead>
-                                                                <tr class="table-success">
-                                                                    <th>Nro</th>
-                                                                    <th>Participantes</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                @foreach ($group->members as $index => $member)
-                                                                    @php
-                                                                        $totalMembers++; // Incrementa el contador de miembros
-                                                                    @endphp
-                                                                    <tr>
-                                                                        <td>{{ $index + 1 }}</td>
-                                                                        <td>
-                                                                            <span
-                                                                                class="badge badge-secondary">{{ $member->name }}</span>
-                                                                        </td>
+                                        @if($profile->first()->group)
+                                            @foreach ($profile->first()->group->descendants as $group)
+                                                <span data-toggle="collapse" href="#group_{{ $group->id }}" role="button"
+                                                    aria-expanded="false" aria-controls="group_{{ $group->id }}"
+                                                    class="badge badge-secondary">{{ $group->name }}
+                                                </span>
+                                                <div class="collapse" id="group_{{ $group->id }}">
+                                                    <div class="card card-body">
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered">
+                                                                <thead>
+                                                                    <tr class="table-success">
+                                                                        <th>Nro</th>
+                                                                        <th>Participantes</th>
                                                                     </tr>
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @foreach ($group->members as $index => $member)
+                                                                        @php
+                                                                            $totalMembers++;
+                                                                        @endphp
+                                                                        <tr>
+                                                                            <td>{{ $index + 1 }}</td>
+                                                                            <td>
+                                                                                <span class="badge badge-secondary">{{ $member->name }}</span>
+                                                                            </td>
+                                                                        </tr>
+                                                                    @endforeach
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        @endforeach
+                                            @endforeach
+                                        @elseif($profile->first()->dependency)
+                                            <span class="badge badge-info">
+                                                <i class="fa fa-building mr-1"></i>
+                                                {{ $profile->first()->dependency->dependency }}
+                                            </span>
+                                            <small class="text-muted ml-1">(PEI Corporativo)</small>
+                                        @else
+                                            <span class="text-muted"><em>Sin grupo asignado</em></span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -117,7 +126,7 @@
                             <div class="row border">
                                 <div class="col-md-3 border-right border-info">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <label><i class="fa fa-arrows-h" aria-hidden="true"></i> Ejes: </label>
+                                        <label><i class="fa fa-bullseye" aria-hidden="true"></i> {{ $niveles['axi'] ?? 'Nivel 1' }}: </label>
                                         <div class="float-right">
                                             <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
                                                 href="javascript:void(0)" data-id="{{ $profile->first()->id }}"
@@ -129,7 +138,7 @@
                                 </div>
                                 <div class="col-md-3 border-right border-info">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <label><i class="fa fa-bullseye" aria-hidden="true"></i> Objetivos: </label>
+                                        <label><i class="fa fa-flag-checkered" aria-hidden="true"></i> {{ $niveles['goal'] ?? 'Nivel 2' }}: </label>
                                         <div class="float-right">
                                             <a class="btn btn-danger btn-circle text-white btn-circle ml-auto"
                                                 href="javascript:void(0)" data-id="{{ $profile->first()->id }}"
@@ -375,11 +384,11 @@
                         children: [
                             @foreach ($matriz->children->sortBy('order_item') as $axi)
                                 {
-                                    name: '<p class="badge badge-success">EJE</p> {!! $axi->name !!}',
+                                    name: '<p class="badge badge-secondary">{{ strtoupper($niveles['axi'] ?? 'NIVEL 1') }}</p> {!! $axi->name !!}',
                                     children: [
                                         @foreach ($axi->children->sortBy('order_item') as $goal)
                                             {
-                                                name: '<sup class="badge badge-primary">Objetivo</sup> {!! $goal->name !!}',
+                                                name: '<sup class="badge badge-primary">{{ $niveles['goal'] ?? 'Nivel 2' }}</sup> {!! $goal->name !!}',
                                                 children: [
 
                                                     {
@@ -456,8 +465,7 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/axis-list',
                     function(data) {
-                        $('#modalHeadingAxisList').html(
-                            'Lista de Ejes');
+                        $('#modalHeadingAxisList').html('Lista de {{ $niveles['axi'] ?? 'Nivel 1' }}s');
                         $('#ajaxAxisListlModal').modal('show');
 
                         var tableBody = $('#axisList .table tbody');
@@ -483,8 +491,7 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/goals-list',
                     function(data) {
-                        $('#modalHeadingGoalsList').html(
-                            'Lista de Objetivos');
+                        $('#modalHeadingGoalsList').html('Lista de {{ $niveles['goal'] ?? 'Nivel 2' }}s');
                         $('#ajaxGoalsListModal').modal('show');
 
                         var tableBody = $('#goalsList .table tbody');

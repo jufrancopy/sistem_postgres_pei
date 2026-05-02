@@ -33,13 +33,60 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/semaforo', 'Admin\Planificacion\Pei\PeiController@getSemaforo')->name('pei-profiles.semaforo');
     Route::post('pei-profiles/{idProfile}/raci', 'Admin\Planificacion\Pei\PeiController@syncRaci')->name('pei-profiles.raci.sync');
     Route::get('pei-profiles/{idProfile}/alertas-presupuestarias', 'Admin\Planificacion\Pei\PeiController@getAlertasPresupuestarias')->name('pei-profiles.alertas-presupuestarias');
+    Route::get('pei-profiles/{idProfile}/proceso', 'Admin\Planificacion\Pei\PeiController@proceso')->name('pei-profiles.proceso');
     Route::get('pei-profiles/{idProfile}/dashboard', 'Admin\Planificacion\Pei\PeiController@dashboard')->name('pei-profiles.dashboard');
 
     // Relevamientos
     Route::get('proyectos-epc-relevamientos/{estandarId}', 'Admin\Proyectos\EPC\RelevamientoController@getFormulario')->name('proyectos-epc-relevamientos-form-dependencia');
 
-    // Rutas de Estadisticas
-    Route::view('estadisticas-dashboard', 'admin.estadisticas.dashboard')->name('estadisticas-dashboard');
+    // Rutas de Estadisticas — redirige al nuevo SIESS
+    Route::get('estadisticas-dashboard', function() {
+        return redirect()->route('siess.dashboard');
+    })->name('estadisticas-dashboard');
+
+    // ── SIESS — Sistema de Estadísticas e Información (Res. 266/2022) ──────────
+    Route::prefix('siess')->name('siess.')->group(function () {
+        Route::get('/',                    'Admin\Estadistica\SiessController@dashboard')->name('dashboard');
+        Route::get('/extractos',           'Admin\Estadistica\SiessController@index')->name('extractos.index');
+        Route::post('/extractos',          'Admin\Estadistica\SiessController@store')->name('extractos.store');
+        Route::get('/extractos/{id}/edit', 'Admin\Estadistica\SiessController@edit')->name('extractos.edit');
+        Route::delete('/extractos/{id}',   'Admin\Estadistica\SiessController@destroy')->name('extractos.destroy');
+
+        // Flujo de validación (Art. 8)
+        Route::post('/extractos/{id}/enviar-validacion', 'Admin\Estadistica\SiessController@enviarValidacion')->name('extractos.enviar');
+        Route::post('/extractos/{id}/aprobar',           'Admin\Estadistica\SiessController@aprobar')->name('extractos.aprobar');
+        Route::post('/extractos/{id}/objetar',           'Admin\Estadistica\SiessController@objetar')->name('extractos.objetar');
+        Route::post('/extractos/{id}/fuente-unica',      'Admin\Estadistica\SiessController@marcarFuenteUnica')->name('extractos.fuente-unica');
+
+        // API para selects dinámicos
+        Route::get('/modulos/{moduloId}/indicadores', 'Admin\Estadistica\SiessController@getIndicadoresPorModulo')->name('indicadores');
+        Route::get('/periodos',                        'Admin\Estadistica\SiessController@getPeriodos')->name('periodos');
+
+        // Notificaciones
+        Route::get('/notificaciones',                  'Admin\Estadistica\SiessController@notificaciones')->name('notificaciones');
+        Route::post('/notificaciones/{id}/leer',       'Admin\Estadistica\SiessController@marcarNotificacionLeida')->name('notificaciones.leer');
+        Route::post('/notificaciones/leer-todas',      'Admin\Estadistica\SiessController@marcarTodasLeidas')->name('notificaciones.leer-todas');
+
+        // Home para usuarios Participantes
+        Route::get('/home', 'Admin\Estadistica\SiessController@home')->name('home');
+
+        // ── Vistas por módulo ──────────────────────────────────────────────────
+        Route::get('/modulos/aop', 'Admin\Estadistica\SiessModuloController@aop')->name('modulos.aop');
+        Route::get('/modulos/ju',  'Admin\Estadistica\SiessModuloController@ju')->name('modulos.ju');
+        Route::get('/modulos/dt',  'Admin\Estadistica\SiessModuloController@dt')->name('modulos.dt');
+        Route::get('/modulos/rl',  'Admin\Estadistica\SiessModuloController@rl')->name('modulos.rl');
+        Route::get('/modulos/di',  'Admin\Estadistica\SiessModuloController@di')->name('modulos.di');
+        Route::get('/modulos/rh',  'Admin\Estadistica\SiessModuloController@rh')->name('modulos.rh');
+        Route::get('/modulos/cau', 'Admin\Estadistica\SiessModuloController@cau')->name('modulos.cau');
+
+        // Carga masiva de datos estructurados
+        Route::post('/modulos/{modulo}/datos', 'Admin\Estadistica\SiessModuloController@storeDatos')->name('modulos.datos.store');
+
+        // ── Reportes Gerenciales ───────────────────────────────────────────────
+        Route::get('/reportes',      'Admin\Estadistica\SiessReporteController@index')->name('reportes.index');
+        Route::get('/reportes/pdf',  'Admin\Estadistica\SiessReporteController@pdfGerencial')->name('reportes.pdf');
+        Route::get('/reportes/csv',  'Admin\Estadistica\SiessReporteController@exportarCsv')->name('reportes.csv');
+    });
 
     // Rutas de Proyectos 
     Route::view('proyectos-dashboard', 'admin.proyectos.dashboard')->name('proyectos-dashboard');
@@ -142,6 +189,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-dependencies', 'Admin\Globales\OrganigramaController@getDependencies')->name('get-dependencies');
         Route::get('get-dependencies/{idRoot}', 'Admin\Globales\OrganigramaController@getDependenciesFromRoot')->name('has-dependencies');
         Route::get('get-dependency/{idSelection}', 'Admin\Globales\OrganigramaController@getDependency')->name('get-dependency');
+        Route::get('get-root-of-dependency/{idSelection}', 'Admin\Globales\OrganigramaController@getRootOfDependency')->name('get-root-of-dependency');
         Route::get('get-dependencies-root', 'Admin\Globales\OrganigramaController@getDependenciesRoot')->name('get-dependencies-root');
 
         //Variables de Encuesta

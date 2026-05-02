@@ -171,11 +171,14 @@
 </div>
 
 <div class="modal fade" id="ajaxAxisModal" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
 
             <div class="card-header card-header-info">
                 <h4 class="modal-title" id="modalHeadingAxis"></h4>
+                <small class="text-white opacity-75">
+                    <i class="fa fa-bullseye mr-1"></i> Objetivo Estratégico — fundamentado en las estrategias del cruce FODA
+                </small>
             </div>
 
             <div class="modal-body">
@@ -196,16 +199,15 @@
                     {{ Form::hidden('progress', null, ['class' => 'form-control', 'id' => 'axis_progress']) }}
                     {{ Form::hidden('dependency_id', null, ['class' => 'form-control', 'id' => 'axis_dependency']) }}
 
-
-                    <div class="axis mb-2">
-                        {{ Form::label('name', 'Eje:', ['class' => 'control-label']) }}
+                    <div class="axis mb-3">
+                        {{ Form::label('name', 'Descripción del Objetivo Estratégico:', ['class' => 'control-label font-weight-bold']) }}
                         {{ Form::textarea('name', null, [
                             'class' => 'form-control editor',
                             'id' => 'axis',
                         ]) }}
                     </div>
 
-                    <div class="order mb-2">
+                    <div class="order mb-3">
                         {{ Form::label('order_item', 'Orden:', ['class' => 'control-label']) }}
                         {{ Form::number('order_item', null, [
                             'class' => 'form-control',
@@ -213,10 +215,23 @@
                         ]) }}
                     </div>
 
-                    <div class="col-sm-offset-2 col-sm-10">
+                    {{-- ── Estrategias del Cruce de Ambientes (FODA) ── --}}
+                    <div class="form-group mb-3">
+                        {{ Form::label('axis_strategies', 'Estrategias del Cruce de Ambientes (FODA):', ['class' => 'control-label font-weight-bold']) }}
+                        <small class="form-text text-muted mb-1">
+                            Seleccioná las estrategias FO/FA/DO/DA que fundamentan esta estrategia institucional.
+                        </small>
+                        {!! Form::select('strategy_id[]', [], null, [
+                            'id' => 'axis_strategies',
+                            'style' => 'width:100%',
+                            'multiple',
+                        ]) !!}
+                    </div>
+
+                    <div class="col-sm-offset-2 col-sm-10 mt-3">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-success" id="saveBtnAxis" value="create">Guardar
-                            cambios
+                        <button type="submit" class="btn btn-success" id="saveBtnAxis" value="create">
+                            <i class="fa fa-save mr-1"></i> Guardar cambios
                         </button>
                     </div>
 
@@ -232,6 +247,9 @@
 
             <div class="card-header card-header-info">
                 <h4 class="modal-title" id="modalHeadingGoals"></h4>
+                <small class="text-white opacity-75">
+                    <i class="fa fa-flag-checkered mr-1"></i> Meta — resultado cuantitativo/cualitativo del Objetivo Estratégico
+                </small>
             </div>
 
             <div class="modal-body">
@@ -251,15 +269,15 @@
                     {{ Form::hidden('progress', null, ['class' => 'form-control', 'id' => 'goals_progress']) }}
                     {{ Form::hidden('dependency_id', null, ['class' => 'form-control', 'id' => 'goals_dependency']) }}
 
-                    <div class="goal mb-2">
-                        {{ Form::label('name', 'Objetivo:', ['class' => 'control-label']) }}
+                    <div class="goal mb-3">
+                        {{ Form::label('name', 'Descripción de la Meta:', ['class' => 'control-label font-weight-bold']) }}
                         {{ Form::textarea('name', null, [
                             'class' => 'form-control editor',
                             'id' => 'goals',
                         ]) }}
                     </div>
 
-                    <div class="goals_order_item mb-2">
+                    <div class="goals_order_item mb-3">
                         {{ Form::label('goals_order_item', 'Orden:', ['class' => 'control-label']) }}
                         {{ Form::number('order_item', null, [
                             'class' => 'form-control',
@@ -267,19 +285,10 @@
                         ]) }}
                     </div>
 
-                    <div class="form-group">
-                        {{ Form::label('strategies', 'Estrategias del Cruce de Ambientes (Análsis FODA):') }}
-                        {!! Form::select('strategy_id[]', [], null, [
-                            'id' => 'strategies',
-                            'style' => 'width:100%',
-                            'multiple',
-                        ]) !!}
-                    </div>
-
-                    <div class="col-sm-offset-2 col-sm-10">
+                    <div class="col-sm-offset-2 col-sm-10 mt-3">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-success" id="saveBtnGoals" value="create">Guardar
-                            cambios
+                        <button type="submit" class="btn btn-success" id="saveBtnGoals" value="create">
+                            <i class="fa fa-save mr-1"></i> Guardar cambios
                         </button>
                     </div>
 
@@ -330,6 +339,9 @@
 
             <div class="card-header card-header-info">
                 <h4 class="modal-title" id="modalHeadingActions"></h4>
+                <small class="text-white opacity-75">
+                    <i class="fa fa-rocket mr-1"></i> {{ $niveles['action'] ?? 'Acción' }} — con indicador, responsable y meta
+                </small>
             </div>
 
             <div class="modal-body">
@@ -350,8 +362,8 @@
                     {{ Form::hidden('progress', null, ['class' => 'form-control', 'id' => 'actions_progress']) }}
                     {{ Form::hidden('dependency_id', null, ['class' => 'form-control', 'id' => 'actions_dependency']) }}
 
-                    <div class="actions mb-2">
-                        {{ Form::label('name', 'Describa la acción Acción:', ['class' => 'control-label']) }}
+                    <div class="actions mb-3">
+                        {{ Form::label('name', 'Descripción de la ' . ($niveles['action'] ?? 'Acción') . ':', ['class' => 'control-label font-weight-bold']) }}
                         {{ Form::textarea('name', null, [
                             'class' => 'form-control editor',
                             'id' => 'actions',
@@ -366,12 +378,12 @@
                         ]) }}
                     </div>
                     <div class="form-group indicator">
-                        {{ Form::label('indicator', 'Indicador:', ['class' => 'control-label']) }}
+                        {{ Form::label('indicator', 'Indicador de Gestión:', ['class' => 'control-label']) }}
                         {{ Form::text('indicator', null, ['class' => 'form-control', 'id' => 'actions_indicator']) }}
                     </div>
 
                     <div class="form-group baseline">
-                        {{ Form::label('baseline', 'Linea de Base:', ['class' => 'control-label']) }}
+                        {{ Form::label('baseline', 'Línea de Base:', ['class' => 'control-label']) }}
                         {{ Form::text('baseline', null, ['class' => 'form-control', 'id' => 'actions_baseline']) }}
                     </div>
 
@@ -389,10 +401,10 @@
                         ]) !!}
                     </div>
 
-                    <div class="col-sm-offset-2 col-sm-10">
+                    <div class="col-sm-offset-2 col-sm-10 mt-3">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-success" id="saveBtnActions" value="create">Guardar
-                            cambios
+                        <button type="submit" class="btn btn-success" id="saveBtnActions" value="create">
+                            <i class="fa fa-save mr-1"></i> Guardar cambios
                         </button>
                     </div>
 
@@ -446,7 +458,8 @@
                         <thead>
                             <tr>
                                 <th>Nro.</th>
-                                <th>Nombre</th>
+                                <th>Objetivo Estratégico</th>
+                                <th>Estrategias FODA vinculadas</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -481,8 +494,7 @@
                         <thead>
                             <tr>
                                 <th>Nro.</th>
-                                <th>Nombre</th>
-                                <th>Estrategias del Cruce de Ambientes</th>
+                                <th>Meta</th>
                             </tr>
                         </thead>
                         <tbody>

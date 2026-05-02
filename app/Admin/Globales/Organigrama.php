@@ -13,6 +13,16 @@ class Organigrama extends Model
     protected $table = 'organigramas';
     
     protected $fillable = ['dependency', 'user_id', 'email', 'manager', 'phone'];
+
+    public function parent()
+    {
+        return $this->belongsTo(Organigrama::class, 'parent_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
     
     public function scopeNombre($query, $nombre)
     {

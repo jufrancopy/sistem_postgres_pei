@@ -138,6 +138,48 @@
                                             ]) !!}
                                         </div>
 
+                                        {{-- ── Modelo de Niveles ── --}}
+                                        <div class="form-group">
+                                            {{ Form::label('modelo_niveles', 'Modelo de Niveles del Plan:') }}
+                                            {!! Form::select('modelo_niveles', [
+                                                'MECIP' => 'MECIP 2015 — Objetivo Estratégico / Meta / Acción',
+                                                'IPS'   => 'IPS 2023-2028 — Eje Estratégico / Objetivo / Acción',
+                                                'A'     => 'Clásico — Eje / Objetivo / Acción',
+                                                'B'     => 'Proyectos — Programa / Proyecto / Actividad',
+                                                'custom'=> 'Personalizado...',
+                                            ], null, [
+                                                'id'    => 'modelo_niveles',
+                                                'style' => 'width:100%',
+                                                'class' => 'form-control',
+                                            ]) !!}
+                                        </div>
+
+                                        {{-- Campos personalizados (solo visibles si elige "Personalizado") --}}
+                                        <div id="custom_niveles" style="display:none;">
+                                            <div class="card card-body bg-light mb-2">
+                                                <small class="text-muted mb-2">
+                                                    Definí cómo se llamará cada nivel en este plan:
+                                                </small>
+                                                <div class="form-row">
+                                                    <div class="form-group col-md-4">
+                                                        {{ Form::label('label_axi', 'Nivel 1 (ej: Eje)') }}
+                                                        {{ Form::text('label_axi', null, ['class' => 'form-control', 'id' => 'label_axi', 'placeholder' => 'Eje Estratégico']) }}
+                                                    </div>
+                                                    <div class="form-group col-md-4">
+                                                        {{ Form::label('label_goal', 'Nivel 2 (ej: Objetivo)') }}
+                                                        {{ Form::text('label_goal', null, ['class' => 'form-control', 'id' => 'label_goal', 'placeholder' => 'Objetivo']) }}
+                                                    </div>
+                                                    <div class="form-group col-md-4">
+                                                        {{ Form::label('label_action', 'Nivel 3 (ej: Acción)') }}
+                                                        {{ Form::text('label_action', null, ['class' => 'form-control', 'id' => 'label_action', 'placeholder' => 'Acción']) }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Campo oculto que guarda el JSON final --}}
+                                        {{ Form::hidden('nivel_label', null, ['id' => 'nivel_label']) }}
+
                                         <div class="col-sm-offset-2 col-sm-10">
                                             <button type="button" class="btn btn-secondary"
                                                 data-dismiss="modal">Cerrar</button>
@@ -295,10 +337,18 @@
                 $('#saveBtn').val("create-user");
                 $('#profile_id').val('');
                 $('#profileForm').trigger("reset");
+                // Limpiar explícitamente campos que no deben heredarse de una edición anterior
+                $('#mision').val('');
+                $('#vision').val('');
+                $('#values').val('');
+                $('#nivel_label').val('');
                 $('#modalHeading').html("Nuevo Perfil de Planificación Estratégica");
                 $('#ajaxModal').modal('show');
 
                 $('.form-group.dependencies').hide();
+                $('#custom_niveles').hide();
+
+                // Selector de tipo de perfil
                 $('#type_profile').select2();
                 $('#type_profile').change(function() {
                     if ($(this).val() === 'corporative') {
@@ -309,6 +359,15 @@
                         $('.form-group.dependencies').hide();
                         $('.form-group.groups').show();
                         $('#type').val('group');
+                    }
+                });
+
+                // Selector de modelo de niveles
+                $('#modelo_niveles').select2().off('change.niveles').on('change.niveles', function() {
+                    if ($(this).val() === 'custom') {
+                        $('#custom_niveles').show();
+                    } else {
+                        $('#custom_niveles').hide();
                     }
                 });
 
@@ -324,8 +383,6 @@
                 $('#group_roots').on('change', function() {
                     var groupRootID = $(this).val();
                     var url = 'admin/globales/get-groups/' + groupRootID;
-
-                    // Reinicializar el selector de grupos
                     initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
                 });
 
@@ -341,13 +398,9 @@
                         dataType: 'json',
                         delay: 250,
                         processResults: function(data) {
-                            console.log(data)
                             return {
                                 results: $.map(data, function(item) {
-                                    return {
-                                        text: item.name,
-                                        id: item.id
-                                    }
+                                    return { text: item.name, id: item.id }
                                 })
                             };
                         },
@@ -430,10 +483,7 @@
                             processResults: function(data) {
                                 return {
                                     results: $.map(data, function(item) {
-                                        return {
-                                            text: item.dependency,
-                                            id: item.id
-                                        }
+                                        return { text: item.dependency, id: item.id }
                                     })
                                 };
                             },
@@ -441,53 +491,39 @@
                         }
                     });
 
-                    //Inizialización de selector con función de datos relacionales
-
-                    initSelect2WithRelationship($('#group_roots'), data.profile.group_id, data.profile.group.name);
-
-                    // Precargar también el selector de grupo
-                    initSelect2WithRelationship($('#groups'), data.profile.group_id, data.profile.group.name);
+                    // Precargar grupo raíz (Evento) y grupo — para cualquier tipo que tenga grupo asignado
+                    if (data.profile.group) {
+                        // El Evento es el padre del grupo
+                        if (data.groupParent) {
+                            initSelect2WithRelationship($('#group_roots'), data.groupParent.id, data.groupParent.name);
+                        } else {
+                            // Si el grupo no tiene padre, él mismo es el evento raíz
+                            initSelect2WithRelationship($('#group_roots'), data.profile.group_id, data.profile.group.name);
+                        }
+                        initSelect2WithRelationship($('#groups'), data.profile.group_id, data.profile.group.name);
+                    }
 
                     // Cuando se cambia el grupo raíz
-                    $('#group_roots').on('change', function() {
+                    $('#group_roots').off('change').on('change', function() {
                         var groupRootID = $(this).val();
-                        //Buscamos los grupos asociados al Grupo Raíz o Evento
                         var url = 'admin/globales/get-groups/' + groupRootID;
-
-                        // Reinicializar el selector de grupos
                         initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
                     });
 
-                    //Clearing selections
-                    $('#analysts').empty()
-                    $('#analysts').select2()
-                    var selectAnalysts = $('#analysts');
-                    data.analystsChecked.forEach(function(d) {
-                        var option = new Option(d.text, d.id, true, true);
-                        selectAnalysts.append(option).trigger('change');
-                        selectAnalysts.trigger({
-                            type: 'select2:select',
-                            params: {
-                                data: data
-                            }
-                        });
-                    });
-
-                    //Analysts
-                    var url = '{{ route('globales.get-users') }}';
-                    var analysts = $('#analysts').select2({
+                    // ── Analistas: primero inicializar select2 con ajax, luego precargar valores ──
+                    var urlAnalysts = '{{ route('globales.get-users') }}';
+                    $('#analysts').empty();
+                    $('#analysts').select2({
                         placeholder: 'Seleccione Analistas',
+                        allowClear: true,
                         ajax: {
-                            url: url,
+                            url: urlAnalysts,
                             dataType: 'json',
                             delay: 250,
-                            processResults: function(data) {
+                            processResults: function(res) {
                                 return {
-                                    results: $.map(data, function(item) {
-                                        return {
-                                            text: item.name,
-                                            id: item.id
-                                        }
+                                    results: $.map(res, function(item) {
+                                        return { text: item.name, id: item.id };
                                     })
                                 };
                             },
@@ -495,15 +531,86 @@
                         }
                     });
 
-                    selectAnalysts.val(data.analystsChecked.map(function(d) {
-                        return d.id;
-                    })).trigger('change');
+                    // Precargar analistas ya asignados
+                    data.analystsChecked.forEach(function(d) {
+                        var option = new Option(d.text, d.id, true, true);
+                        $('#analysts').append(option);
+                    });
+                    $('#analysts').trigger('change');
 
-                });
-            });
+                    // ── Precargar modelo de niveles ──
+                    $('#custom_niveles').hide();
+
+                    // Reinicializar select2 del modelo de niveles
+                    $('#modelo_niveles').select2({
+                        width: '100%',
+                        minimumResultsForSearch: Infinity
+                    });
+
+                    if (data.profile.nivel_label) {
+                        try {
+                            var savedLabels = JSON.parse(data.profile.nivel_label);
+                            // Detectar si coincide con algún modelo predefinido
+                            var modelos = {
+                                'MECIP': { axi: 'Objetivo Estratégico', goal: 'Meta',     action: 'Acción' },
+                                'IPS':   { axi: 'Eje Estratégico',      goal: 'Objetivo', action: 'Acción' },
+                                'A':     { axi: 'Eje',                  goal: 'Objetivo', action: 'Acción' },
+                                'B':     { axi: 'Programa',             goal: 'Proyecto', action: 'Actividad' },
+                            };
+                            var matchedKey = null;
+                            $.each(modelos, function(key, m) {
+                                if (m.axi === savedLabels.axi && m.goal === savedLabels.goal && m.action === savedLabels.action) {
+                                    matchedKey = key;
+                                    return false;
+                                }
+                            });
+                            if (matchedKey) {
+                                $('#modelo_niveles').val(matchedKey).trigger('change');
+                            } else {
+                                $('#modelo_niveles').val('custom').trigger('change');
+                                $('#label_axi').val(savedLabels.axi || '');
+                                $('#label_goal').val(savedLabels.goal || '');
+                                $('#label_action').val(savedLabels.action || '');
+                                $('#custom_niveles').show();
+                            }
+                            $('#nivel_label').val(data.profile.nivel_label);
+                        } catch(e) {}
+                    }
+
+                    // Listener para mostrar/ocultar campos personalizados en edición
+                    $('#modelo_niveles').off('change.niveles').on('change.niveles', function() {
+                        $('#custom_niveles').toggle($(this).val() === 'custom');
+                    });
+
+                }); // cierre del $.get
+            }); // cierre del $('body').on('.editProfile')
 
             $('#saveBtn').click(function(e) {
                 e.preventDefault();
+
+                // ── Armar nivel_label JSON antes de enviar ──
+                var modelos = {
+                    'MECIP': { axi: 'Objetivo Estratégico', goal: 'Meta',      action: 'Acción' },
+                    'IPS':   { axi: 'Eje Estratégico',      goal: 'Objetivo',  action: 'Acción' },
+                    'A':     { axi: 'Eje',                  goal: 'Objetivo',  action: 'Acción' },
+                    'B':     { axi: 'Programa',             goal: 'Proyecto',  action: 'Actividad' },
+                };
+                var modeloSel = $('#modelo_niveles').val();
+                var labels;
+                if (modeloSel === 'custom') {
+                    labels = {
+                        master: 'PEI',
+                        axi:    $('#label_axi').val()    || 'Nivel 1',
+                        goal:   $('#label_goal').val()   || 'Nivel 2',
+                        action: $('#label_action').val() || 'Acción',
+                    };
+                } else if (modelos[modeloSel]) {
+                    labels = Object.assign({ master: 'PEI' }, modelos[modeloSel]);
+                }
+                if (labels) {
+                    $('#nivel_label').val(JSON.stringify(labels));
+                }
+
                 $(this).html('Enviando..');
                 $.ajax({
                     data: $('#profileForm').serialize(),
@@ -521,20 +628,14 @@
                         $('#ajaxModal').modal('hide');
                         table.draw();
                     },
-
                     error: function(data) {
                         var obj = data.responseJSON.errors;
                         $.each(obj, function(key, value) {
-                            // Alert Toastr
-                            toastr.options = {
-                                closeButton: true,
-                                progressBar: true,
-                            };
+                            toastr.options = { closeButton: true, progressBar: true };
                             toastr.error("Atención: " + value);
                         });
                         $('#saveBtn').html('Guardar Cambios');
                     }
-
                 });
             });
 

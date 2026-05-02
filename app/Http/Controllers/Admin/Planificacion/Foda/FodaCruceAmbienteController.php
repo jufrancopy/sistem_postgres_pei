@@ -73,9 +73,31 @@ class FodaCruceAmbienteController extends Controller
 
         if ($request->has('q')) {
             $search = $request->q;
-            $data = FodaCruceAmbiente::select("id", "estrategia")
-                ->where('estrategia', 'LIKE', "%$search%")
-                ->get();
+
+            $query = FodaCruceAmbiente::select("id", "estrategia", "tipo");
+
+            // Si se pasa pei_id, filtrar solo los cruces del perfil FODA
+            // consolidado del grupo asociado a ese PEI
+            if ($request->pei_id) {
+                $pei = \App\Admin\Planificacion\Pei\PeiProfile::find($request->pei_id);
+                if ($pei) {
+                    // Obtener todos los group_ids del grupo del PEI y sus descendientes
+                    $groupIds = collect([$pei->group_id]);
+                    if ($pei->group) {
+                        $groupIds = $groupIds->merge($pei->group->descendants()->pluck('id'));
+                    }
+                    // Buscar el perfil FODA consolidado de esos grupos
+                    $perfilFodaId = FodaPerfil::whereIn('group_id', $groupIds)
+                        ->where('type', 'consolidado')
+                        ->value('id');
+
+                    if ($perfilFodaId) {
+                        $query->where('perfil_id', $perfilFodaId);
+                    }
+                }
+            }
+
+            $data = $query->where('estrategia', 'LIKE', "%$search%")->get();
         }
 
         return response()->json($data);
