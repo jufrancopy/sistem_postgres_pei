@@ -60,26 +60,28 @@ class GroupController extends Controller
             );
         };
 
-        $group = Group::updateOrCreate(
-            ['id' => $request->group_id],
-            [
-                'name' => $request->name,
-            ]
-        );
+        try {
+            if (!$request->group_id && $request->parent_id) {
+                $parent = Group::findOrFail($request->parent_id);
+                $group = new Group(['name' => $request->name]);
+                $parent->appendNode($group);
+            } else {
+                $group = Group::updateOrCreate(
+                    ['id' => $request->group_id],
+                    ['name' => $request->name]
+                );
+            }
 
-        if ($request->parent_id) {
-            $node = Group::find($request->parent_id);
-            $node->appendNode($group);
-        }
+            $members = $request->user_id ?? [];
+            $group->members()->sync($members);
 
-        $members = $request->user_id;
-
-        $group->members()->sync($members);
-
-        if ($group->parent_id == null) {
-            return response()->json(['success' => 'Evento creado con éxito']);
-        } else {
-            return response()->json(['success' => 'Grupo creado agregado al Evento correctamente', 'parent_id' => $request->parent_id]);
+            if ($group->parent_id == null) {
+                return response()->json(['success' => 'Evento creado con éxito']);
+            } else {
+                return response()->json(['success' => 'Grupo agregado al Evento correctamente', 'parent_id' => $request->parent_id]);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 

@@ -15,6 +15,7 @@ use Barryvdh\DomPDF\Facade as PDF;
 use App\Admin\Planificacion\Foda\FodaAspecto;
 use App\Admin\Planificacion\Foda\FodaCategoria;
 use App\Admin\Planificacion\Foda\FodaPerfil;
+use App\Admin\Planificacion\Pei\PeiProfile;
 use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaModelo;
 use App\Admin\Globales\Group;
@@ -158,32 +159,57 @@ class FodaAnalisisController extends Controller
 
     public function getListGroup(Request $request)
     {
-
         if ($request->ajax()) {
-            $data = Group::where('parent_id', null)->latest()->get();
-            
+            // Si viene pei_id, filtramos por el grupo raíz del PEI
+            $query = \App\Admin\Globales\Group::whereNull('parent_id');
+
+            if ($request->filled('pei_id')) {
+                $pei = PeiProfile::find($request->pei_id);
+                if ($pei && $pei->group_id) {
+                    $group = \App\Admin\Globales\Group::find($pei->group_id);
+                    // Si el grupo del PEI es un subgrupo, usamos su padre como raíz
+                    $rootId = $group->parent_id ?? $group->id;
+                    $query->where('id', $rootId);
+                }
+            }
+
+            $data = $query->latest()->get();
+
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-                    $showCrossingButton = FodaPerfil::where('group_id', $row->id)
+                    $consolidado = FodaPerfil::where('group_id', $row->id)
                         ->where('type', 'consolidado')
-                        ->exists();
-        
-                    // Mostrar el botón solo si se cumple la condición
-                    if ($showCrossingButton) {
-                        $btn = ' <a href="' . route('foda-matriz-groups', $row->id) . '" class="btn btn-info btn-circle"><i class="fa fa-eye" aria-hidden="true"></i></a>';
-                        $btn = ' <a href="' . route('foda-matriz-groups', $row->id) . '/crossing" class="btn btn-warning btn-circle"><i class="fa-solid fa-xmark"></i></a>';
-                    } else {
-                        $btn = ' <a href="' . route('foda-matriz-groups', $row->id) . '" class="btn btn-info btn-circle"><i class="fa fa-eye" aria-hidden="true"></i></a>';
+                        ->first();
+
+                    // Verificar si algún subgrupo tiene perfiles FODA
+                    $subgroupIds = \App\Admin\Globales\Group::where('parent_id', $row->id)->pluck('id');
+                    $tieneFoda = FodaPerfil::whereIn('group_id', $subgroupIds)->exists()
+                        || FodaPerfil::where('group_id', $row->id)->exists();
+
+                    $btn = '<a href="' . route('foda-matriz-groups', $row->id) . '" class="btn btn-info btn-circle" title="Ver Matriz"><i class="fa fa-eye"></i></a>';
+
+                    if ($consolidado) {
+                        $btn .= ' <a href="' . route('foda-matriz-groups-crossing', $row->id) . '" class="btn btn-success btn-sm" title="Cruce de Ambientes"><i class="fa fa-random mr-1"></i>Cruce de Ambientes</a>';
+                    } elseif ($tieneFoda) {
+                        $btn .= ' <span class="badge badge-warning ml-1">Sin consolidado</span>';
                     }
-        
+
                     return $btn;
                 })
-                ->rawColumns(['action'])
+                ->addColumn('estado', function ($row) {
+                    $consolidado = FodaPerfil::where('group_id', $row->id)
+                        ->where('type', 'consolidado')->exists();
+                    return $consolidado
+                        ? '<span class="badge badge-success"><i class="fa fa-check mr-1"></i>Consolidado</span>'
+                        : '<span class="badge badge-secondary">Sin consolidar</span>';
+                })
+                ->rawColumns(['action', 'estado'])
                 ->make(true);
         }
-        
-        return view('admin.planificacion.fodas.groups.list_tasks');
+
+        $peiId = request('pei_id');
+        return view('admin.planificacion.fodas.groups.list_tasks', compact('peiId'));
     }
 
     public function getMatrizForGroup(Request $request, $idGroup)

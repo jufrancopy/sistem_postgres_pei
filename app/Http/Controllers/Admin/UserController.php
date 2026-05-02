@@ -145,8 +145,19 @@ class UserController extends Controller
             $userData
         );
 
-        // Asignar los roles al usuario
-        $user->syncRoles($request->input('roles'));
+        // Asignar los roles al usuario — syncRoles acepta nombres o IDs
+        // El formulario puede enviar IDs numéricos, los convertimos a nombres
+        $rolesInput = $request->input('roles', []);
+        $roles = collect($rolesInput)->map(function ($roleIdOrName) {
+            // Si es numérico, buscar el nombre por ID
+            if (is_numeric($roleIdOrName)) {
+                $role = \Spatie\Permission\Models\Role::find($roleIdOrName);
+                return $role ? $role->name : null;
+            }
+            return $roleIdOrName;
+        })->filter()->values()->toArray();
+
+        $user->syncRoles($roles);
 
         // Devolver una respuesta JSON con el mensaje de éxito o error. 
         if ($user) {

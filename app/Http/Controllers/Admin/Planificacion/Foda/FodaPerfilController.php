@@ -29,51 +29,47 @@ class FodaPerfilController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = FodaPerfil::where('type', '!=', 'consolidado')->latest()->get();
-            // Determinar si hay elementos tipo grupo
-            $groupType = FodaPerfil::where('type', 'grupal')->exists();
+            $query = FodaPerfil::where('type', '!=', 'consolidado');
+
+            if ($request->filled('type')) {
+                $query->where('type', $request->type);
+            }
+
+            $data = $query->latest()->get();
+
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('dependency', function (FodaPerfil $profile) {
-                    // Comprobar si el campo "dependency" es nulo o contiene 'null'
-                    if ($profile->dependency === null || $profile->dependency->dependency === 'null') {
-                        return 'Análisis Grupal';
-                    } else {
-                        return $profile->dependency->dependency;
+                    if ($profile->type === 'grupal') {
+                        return $profile->group
+                            ? '<span class="badge badge-info"><i class="fa fa-users mr-1"></i>' . $profile->group->name . '</span>'
+                            : '<span class="badge badge-secondary">Sin grupo</span>';
                     }
+                    return $profile->dependency
+                        ? $profile->dependency->dependency
+                        : '<span class="badge badge-secondary">—</span>';
                 })
-
                 ->addColumn('model', function (FodaPerfil $profile) {
                     return $profile->model->name;
                 })
-
-                ->addColumn('action', function ($row) use ($groupType) {
-
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editProfile"><i class="far fa-edit"></i></a>';
-
-                    $btn = $btn . ' <a href="/foda-profiles/' . $row->id . "/details" . '" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-info btn-circle"><i class="fa fa-search" aria-hidden="true"></i></a>';
-                    
-                    // Agregar el botón "Crear Grupo" solo si existe tipo grupo
-                    // if ($row->type === 'grupal') {
-                    //     $btn .= ' <a href="' . route('foda.add.group', $row->id) . '" class="btn btn-success btn-circle"><i class="fa fa-users" aria-hidden="true"></i></a>';
-                    // }
+                ->addColumn('action', function ($row) {
+                    $btn = '<a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-primary btn-circle editProfile" title="Editar"><i class="far fa-edit"></i></a>';
+                    $btn .= ' <a href="/foda-profiles/' . $row->id . '/details" class="btn btn-info btn-circle" title="Ver detalle"><i class="fa fa-search"></i></a>';
 
                     if ($row->type === 'individual') {
-                        $btn .= ' <a href="' . route('foda-analisis-matriz', $row->id) . '" class="btn btn-warning btn-circle"><i class="fa-solid fa-xmark" aria-hidden="true"></i></a>';
+                        $btn .= ' <a href="' . route('foda-analisis-matriz', $row->id) . '" class="btn btn-warning btn-circle" title="Matriz"><i class="fa-solid fa-xmark"></i></a>';
+                    } else {
+                        $btn .= ' <a href="' . route('foda-list-groups') . '" class="btn btn-warning btn-circle" title="Matriz Grupal"><i class="fa fa-layer-group"></i></a>';
                     }
 
-                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteProfile"><i class="fa fa-trash" aria-hidden="true"></i></a>';
-                    
-                    
-
+                    $btn .= ' <a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-danger btn-circle deleteProfile" title="Eliminar"><i class="fa fa-trash"></i></a>';
                     return $btn;
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['action', 'dependency'])
                 ->make(true);
         }
 
         $dependencies = Organigrama::whereIsRoot()->pluck('dependency', 'id')->toArray();
-
         $categoriasChecked = [];
 
         return view('admin.planificacion.fodas.perfiles.index', get_defined_vars())
@@ -431,18 +427,27 @@ class FodaPerfilController extends Controller
     {
         $profile = FodaPerfil::with(['dependency', 'model', 'categories', 'group'])->find($id);
 
-        $rootGroup = $profile->group ? $profile->group->parent : null;
+        $rootGroup = null;
+        if ($profile->group) {
+            $rootGroup = $profile->group->parent ?? $profile->group;
+        }
 
-        $rootDependency = $profile->dependency ? $profile->dependency->parent : null;
-
+        $rootDependency = null;
+        if ($profile->dependency) {
+            $rootDependency = $profile->dependency->parent ?? $profile->dependency;
+        }
 
         $categoriesChecked = [];
-
         foreach ($profile->categories as $category) {
             $categoriesChecked[] = ['id' => $category->id, 'text' => $category->name];
         }
 
-        return response()->json(['profile' => $profile, 'categoriesChecked' => $categoriesChecked, 'rootGroup' => $rootGroup, 'rootDependency'=>$rootDependency]);
+        return response()->json([
+            'profile'          => $profile,
+            'categoriesChecked'=> $categoriesChecked,
+            'rootGroup'        => $rootGroup,
+            'rootDependency'   => $rootDependency,
+        ]);
     }
 
     public function destroy(Request $request, $id)
