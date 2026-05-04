@@ -33,6 +33,18 @@
                 </a>
             </li>
 
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('proyectos-institucionales.index') }}">
+                    <i class="material-icons">account_tree</i>
+                    <p>Proyectos
+                        @php $sinPei = \App\Models\Proyectos\ProyectoInstitucional::whereNull('pei_profile_id')->activos()->count(); @endphp
+                        @if($sinPei > 0)
+                            <span class="badge badge-warning ml-1" style="font-size:.65rem">{{ $sinPei }}</span>
+                        @endif
+                    </p>
+                </a>
+            </li>
+
             <li class="nav-item ">
                 <a class="nav-link" href="{{ route('estadisticas-dashboard') }}">
                     <i class="material-icons">bar_chart</i>

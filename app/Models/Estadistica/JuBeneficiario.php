@@ -5,12 +5,17 @@ namespace App\Models\Estadistica;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Models\Estadistica\SiessTerritorialTrait;
+
 class JuBeneficiario extends Model
 {
+    use SiessTerritorialTrait;
+
     protected $table = 'estadistica.ju_beneficiarios';
 
     protected $fillable = [
-        'extracto_id', 'periodo_id', 'cedula', 'sexo', 'edad',
+        'extracto_id', 'periodo_id', 'organigrama_id', 'locality_id',
+        'cedula', 'sexo', 'edad',
         'barrio', 'ciudad', 'departamento_codigo', 'departamento_nombre',
         'monto_bruto', 'concepto', 'fecha_concesion',
     ];

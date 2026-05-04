@@ -105,6 +105,33 @@ class OrganigramaController extends Controller
         return response()->json($raiz ?? $dependencia);
     }
 
+    /**
+     * Mover un nodo a un nuevo padre (drag & drop — Opción B)
+     * POST /admin/globales/organigramas/{id}/mover
+     */
+    public function mover(\Illuminate\Http\Request $request, $id)
+    {
+        $request->validate([
+            'parent_id' => 'required|integer|different:' . $id,
+        ]);
+
+        $nodo       = Organigrama::findOrFail($id);
+        $nuevoPadre = Organigrama::findOrFail($request->parent_id);
+
+        // Evitar que un nodo se mueva a uno de sus propios descendientes
+        if ($nuevoPadre->isDescendantOf($nodo)) {
+            return response()->json([
+                'error' => 'No se puede mover un nodo dentro de uno de sus propios descendientes.'
+            ], 422);
+        }
+
+        $nodo->appendToNode($nuevoPadre)->save();
+
+        return response()->json([
+            'success' => "'{$nodo->dependency}' movido correctamente a '{$nuevoPadre->dependency}'.",
+        ]);
+    }
+
     public function create(Request $request)
     {
         $parents = Organigrama::pluck('dependency', 'id');
@@ -115,10 +142,15 @@ class OrganigramaController extends Controller
     public function store(Request $request)
     {
         $dependencia = Organigrama::create([
-            'dependency' => $request->dependency,
-            'manager' => $request->manager,
-            'phone' => $request->phone,
-            'email' => $request->email,
+            'dependency'           => $request->dependency,
+            'manager'              => $request->manager,
+            'phone'                => $request->phone,
+            'email'                => $request->email,
+            'tipo_establecimiento' => $request->tipo_establecimiento ?: null,
+            'nivel_complejidad'    => $request->nivel_complejidad ?: null,
+            'tenencia'             => $request->tenencia ?: null,
+            'tiene_aop'            => $request->has('tiene_aop'),
+            'region'               => $request->region ?: null,
         ]);
 
         if ($request->parent_id) {
@@ -126,12 +158,11 @@ class OrganigramaController extends Controller
             $node->appendNode($dependencia);
         }
 
-
-
         if ($dependencia->parent_id == null) {
             return redirect()->route('globales.organigrama-gestionar', $dependencia->id);
-        } else
+        } else {
             return redirect()->route('globales.organigrama-gestionar', $dependencia->parent_id);
+        }
     }
 
     public function show($id)
@@ -153,16 +184,22 @@ class OrganigramaController extends Controller
     {
         $dependencia = Organigrama::find($id);
 
-        $ancestro = $dependencia->ancestorsAndSelf($id)->where('parent_id', null)->first();
-        $parentRootId = $ancestro->id;
-        $parentId = $request->parent_id;
-        $dependencia->fill($request->all())->save();
+        $dependencia->fill([
+            'dependency'           => $request->dependency,
+            'manager'              => $request->manager,
+            'phone'                => $request->phone,
+            'email'                => $request->email,
+            'tipo_establecimiento' => $request->tipo_establecimiento ?: null,
+            'nivel_complejidad'    => $request->nivel_complejidad ?: null,
+            'tenencia'             => $request->tenencia ?: null,
+            'tiene_aop'            => $request->has('tiene_aop'),
+            'region'               => $request->region ?: null,
+        ])->save();
 
-        if ($dependencia->id) {
-            return redirect()->route('globales.organigrama-gestionar', $parentRootId);
-        } else {
-            return back()->with('success', 'Creado correctamente.');
-        }
+        $ancestro     = $dependencia->ancestorsAndSelf($id)->where('parent_id', null)->first();
+        $parentRootId = $ancestro->id;
+
+        return redirect()->route('globales.organigrama-gestionar', $parentRootId);
     }
 
     public function destroy($id)
