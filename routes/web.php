@@ -61,6 +61,7 @@ Route::group(['middleware' => ['auth']], function () {
         // API para selects dinámicos
         Route::get('/modulos/{moduloId}/indicadores', 'Admin\Estadistica\SiessController@getIndicadoresPorModulo')->name('indicadores');
         Route::get('/periodos',                        'Admin\Estadistica\SiessController@getPeriodos')->name('periodos');
+        Route::get('/establecimientos',                'Admin\Estadistica\SiessController@getEstablecimientos')->name('establecimientos');
 
         // Notificaciones
         Route::get('/notificaciones',                  'Admin\Estadistica\SiessController@notificaciones')->name('notificaciones');
@@ -149,6 +150,12 @@ Route::group(['middleware' => ['auth']], function () {
     // Riesgos 
     Route::resource('risks', 'Admin\Planificacion\Riesgo\RiskController');
 
+    // ── Proyectos Institucionales (SCPI) ──────────────────────────────────────
+    Route::resource('proyectos-institucionales', 'Admin\Proyectos\ProyectoInstitucionalController');
+    Route::post('proyectos-institucionales/{id}/estado',    'Admin\Proyectos\ProyectoInstitucionalController@cambiarEstado')->name('proyectos-institucionales.estado');
+    Route::post('proyectos-institucionales/{id}/checklist', 'Admin\Proyectos\ProyectoInstitucionalController@updateChecklist')->name('proyectos-institucionales.checklist');
+    Route::get('proyectos-institucionales-pei-acciones',    'Admin\Proyectos\ProyectoInstitucionalController@getPeiAcciones')->name('proyectos-institucionales.pei-acciones');
+
     Route::group(['prefix' => 'admin/globales', 'as' => 'globales.'], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
@@ -190,6 +197,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-dependencies/{idRoot}', 'Admin\Globales\OrganigramaController@getDependenciesFromRoot')->name('has-dependencies');
         Route::get('get-dependency/{idSelection}', 'Admin\Globales\OrganigramaController@getDependency')->name('get-dependency');
         Route::get('get-root-of-dependency/{idSelection}', 'Admin\Globales\OrganigramaController@getRootOfDependency')->name('get-root-of-dependency');
+        Route::post('organigramas/{id}/mover', 'Admin\Globales\OrganigramaController@mover')->name('organigramas.mover');
         Route::get('get-dependencies-root', 'Admin\Globales\OrganigramaController@getDependenciesRoot')->name('get-dependencies-root');
 
         //Variables de Encuesta

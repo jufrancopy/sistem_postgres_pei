@@ -5,12 +5,17 @@ namespace App\Models\Estadistica;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Models\Estadistica\SiessTerritorialTrait;
+
 class DcpPresupuesto extends Model
 {
+    use SiessTerritorialTrait;
+
     protected $table = 'estadistica.dcp_presupuesto';
 
     protected $fillable = [
-        'extracto_id', 'periodo_id', 'tipo', 'concepto',
+        'extracto_id', 'periodo_id', 'organigrama_id', 'locality_id',
+        'tipo', 'concepto',
         'objeto_gasto', 'presupuestado', 'ejecutado',
     ];
 

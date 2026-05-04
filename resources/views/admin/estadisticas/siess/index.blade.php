@@ -131,6 +131,20 @@
                                 </select>
                                 <small class="text-muted">Primero elegí el organigrama raíz, luego la dependencia responsable.</small>
                             </div>
+
+                            {{-- Establecimiento territorial (aparece según el módulo) --}}
+                            <div class="form-group" id="campoEstablecimiento" style="display:none">
+                                <label class="font-weight-bold text-info">
+                                    <i class="fa fa-hospital mr-1"></i>
+                                    Establecimiento / Punto de atención
+                                </label>
+                                <small class="d-block text-muted mb-1" id="textoEstablecimiento">
+                                    Seleccioná el establecimiento al que corresponden estos datos.
+                                </small>
+                                <select name="organigrama_id" id="organigrama_id" class="form-control" style="width:100%">
+                                    <option value="">Sin establecimiento específico</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -228,6 +242,7 @@ $(function() {
     // ── Carga dinámica de indicadores por módulo ──────────────────────────────
     $('#modulo_id').on('change', function() {
         var moduloId = $(this).val();
+        var moduloCodigo = $(this).find('option:selected').text().split(' — ')[0].trim();
         $('#indicador_id').html('<option value="">Cargando...</option>');
         if (!moduloId) { $('#indicador_id').html('<option value="">Primero seleccione un módulo</option>'); return; }
 
@@ -238,6 +253,43 @@ $(function() {
             });
             $('#indicador_id').html(opts);
         });
+
+        // Mostrar selector de establecimiento según el módulo
+        var modulosConEstablecimiento = {
+            'AOP': { texto: 'Establecimiento con AOP (Aporte Obrero Patronal)', soloAop: true },
+            'RL':  { texto: 'Hospital/Centro que emitió el certificado médico', soloAop: false },
+            'RH':  { texto: 'Establecimiento donde trabaja el funcionario', soloAop: false },
+            'GA':  { texto: 'Establecimiento al que corresponde el gasto', soloAop: false },
+            'CAU': { texto: 'Centro de atención al usuario', soloAop: false },
+        };
+
+        if (modulosConEstablecimiento[moduloCodigo]) {
+            var config = modulosConEstablecimiento[moduloCodigo];
+            $('#textoEstablecimiento').text(config.texto);
+            $('#campoEstablecimiento').show();
+
+            // Inicializar select2 con filtro según módulo
+            $('#organigrama_id').select2({
+                dropdownParent: $('#modalExtracto'),
+                placeholder: 'Buscar establecimiento...',
+                allowClear: true,
+                ajax: {
+                    url: '{{ route('siess.establecimientos') }}',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return { q: params.term, solo_aop: config.soloAop ? 1 : 0 };
+                    },
+                    processResults: function(data) {
+                        return { results: data };
+                    },
+                    cache: true
+                }
+            });
+        } else {
+            $('#campoEstablecimiento').hide();
+            $('#organigrama_id').val(null).trigger('change');
+        }
     });
 
     // ── Selector de dirección responsable (2 pasos) ──────────────────────────

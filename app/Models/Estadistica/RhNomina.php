@@ -5,12 +5,17 @@ namespace App\Models\Estadistica;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Models\Estadistica\SiessTerritorialTrait;
+
 class RhNomina extends Model
 {
+    use SiessTerritorialTrait;
+
     protected $table = 'estadistica.rh_nomina';
 
     protected $fillable = [
-        'extracto_id', 'periodo_id', 'cedula', 'cargo', 'grupo_ocupacional',
+        'extracto_id', 'periodo_id', 'organigrama_id', 'locality_id',
+        'cedula', 'cargo', 'grupo_ocupacional',
         'dependencia', 'carga_horaria', 'remuneracion_presupuestada',
         'remuneracion_devengada', 'tiene_discapacidad', 'sexo',
     ];

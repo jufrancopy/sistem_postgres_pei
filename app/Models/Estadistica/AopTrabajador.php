@@ -5,12 +5,17 @@ namespace App\Models\Estadistica;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Models\Estadistica\SiessTerritorialTrait;
+
 class AopTrabajador extends Model
 {
+    use SiessTerritorialTrait;
+
     protected $table = 'estadistica.aop_trabajadores';
 
     protected $fillable = [
-        'extracto_id', 'periodo_id', 'cedula', 'edad', 'sexo', 'salario',
+        'extracto_id', 'periodo_id', 'organigrama_id', 'locality_id',
+        'cedula', 'edad', 'sexo', 'salario',
         'tipo_empleado', 'tipo_seguro_codigo', 'tipo_seguro_descripcion',
         'es_excombatiente', 'regimen_codigo', 'regimen_descripcion',
         'departamento_codigo', 'departamento_nombre', 'zona',

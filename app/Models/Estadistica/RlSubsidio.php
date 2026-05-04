@@ -5,12 +5,17 @@ namespace App\Models\Estadistica;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Models\Estadistica\SiessTerritorialTrait;
+
 class RlSubsidio extends Model
 {
+    use SiessTerritorialTrait;
+
     protected $table = 'estadistica.rl_subsidios';
 
     protected $fillable = [
-        'extracto_id', 'periodo_id', 'nro_certificado',
+        'extracto_id', 'periodo_id', 'organigrama_id', 'locality_id',
+        'nro_certificado',
         'fecha_registro', 'fecha_verificacion', 'fecha_liquidacion', 'fecha_pago',
         'diagnostico', 'dias_reposo', 'tipo_reposo', 'es_covid',
         'medio_pago', 'monto', 'empleador_ruc', 'empleador_descripcion', 'actividad',

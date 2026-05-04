@@ -146,6 +146,8 @@ class SiessController extends Controller
             'resumen'      => $request->resumen,
             'datos'        => $datosJson,
             'cargado_por'  => Auth::id(),
+            // Territorialización
+            'organigrama_id' => $request->organigrama_id ?: null,
         ];
 
         if ($request->filled('extracto_id')) {
@@ -282,6 +284,31 @@ class SiessController extends Controller
             ->map(fn($p) => ['id' => $p->id, 'text' => $p->nombre]);
 
         return response()->json($periodos);
+    }
+
+    // ── API: establecimientos para territorialización ─────────────────────────
+    public function getEstablecimientos(Request $request)
+    {
+        $query = \App\Admin\Globales\Organigrama::whereNotNull('tipo_establecimiento');
+
+        // Filtrar solo los que tienen AOP si se requiere
+        if ($request->solo_aop) {
+            $query->where('tiene_aop', true);
+        }
+
+        // Búsqueda por nombre
+        if ($request->q) {
+            $query->where('dependency', 'like', '%' . $request->q . '%');
+        }
+
+        $data = $query->limit(30)->get()->map(fn($o) => [
+            'id'   => $o->id,
+            'text' => '[' . $o->tipo_establecimiento . '] ' . $o->dependency .
+                      ($o->nivel_complejidad ? ' (' . $o->nivel_complejidad . ')' : '') .
+                      ($o->tiene_aop ? ' 🟠AOP' : ''),
+        ]);
+
+        return response()->json($data);
     }
 
     // ── Notificaciones ────────────────────────────────────────────────────────
