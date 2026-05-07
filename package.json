@@ -12,7 +12,7 @@
     "devDependencies": {
         "@popperjs/core": "^2.11.6",
         "@vitejs/plugin-vue": "^4.5.0",
-        "axios": "^0.18",
+        "axios": "^0.31",
         "bootstrap": "^5.2.3",
         "cross-env": "^5.1",
         "jquery": "^3.6.1",
