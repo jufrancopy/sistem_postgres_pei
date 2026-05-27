@@ -278,7 +278,6 @@
                     <p>Encuesta</p>
                 </a>
             </li>
-        </ul>
         @endrole
 
         {{-- Mostrar RIISS tanto a Administrador como a Analista - RIISS --}}
@@ -377,5 +376,5 @@
                 <p>Mi Perfil</p>
             </a>
         </li>
-
+    </ul>
 </div>
