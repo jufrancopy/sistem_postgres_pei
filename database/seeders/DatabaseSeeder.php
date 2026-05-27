@@ -22,5 +22,12 @@ class DatabaseSeeder extends Seeder
         // $this->call([GroupsTableSeeder::class]);
         $this->call([PatrimonySeeder::class]);
         // $this->call([MonitoreoSeeder::class]);
+
+        // RIISS - Red Integrada e Integral de Servicios de Salud
+        // Ejecutar en orden: establecimientos → cartera → formulario → reglas
+        // $this->call([RiissEstablecimientoSeeder::class]);
+        // $this->call([RiissCarteraServicioSeeder::class]);
+        // $this->call([RiissFormularioSeeder::class]);
+        // $this->call([RiissReglaSeccionSeeder::class]);
     }
 }

@@ -4,7 +4,7 @@
 @section('content')
     <div class="card">
         <div class="card-header card-header-info">
-            <h4 class="card-title ">Árbol Detalles PEI {{ $profile->first()->name }}</h4>
+            <h4 class="card-title ">Árbol Detalles PEI {{ strip_tags($profile->first()->name) }}</h4>
             <a href="{{ route('pei-profiles.details.pdf', $profile->first()->id) }}" class="btn btn-sm btn-light float-right" target="_blank">
                 <i class="fas fa-file-pdf"></i> Descargar PDF
             </a>

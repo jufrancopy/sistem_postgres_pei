@@ -1,0 +1,183 @@
+<?php
+
+namespace App\Models\Riiss;
+
+use App\Enums\ComplejidadEnum;
+use App\Enums\TipoEstablecimientoEnum;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Establecimiento extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $table      = 'establecimientos';
+    protected $primaryKey = 'id_establecimiento';
+    public    $incrementing = false;
+    protected $keyType    = 'string';
+
+    protected $fillable = [
+        'id_establecimiento', 'nombre_oficial', 'codigo', 'tipo_est',
+        'complejidad', 'departamento', 'microred', 'prestador',
+        'nro_departamento', 'tipologia_clasificacion', 'latitude', 'longitude',
+        'nm_empresa_costos', 'access_nm_empresa', 'area_gestion',
+        'situacion_inmueble', 'observacion', 'sistema_hospitalario',
+        'activo', 'codigo_ine',
+        'nivel_atencion', 'grado_complejidad', 'es_hospitalario',
+        'tiene_internacion', 'tiene_quirofano_req', 'tiene_uti_req', 'tiene_urgencias_req',
+    ];
+
+    protected $casts = [
+        'latitude'           => 'decimal:8',
+        'longitude'          => 'decimal:8',
+        'activo'             => 'boolean',
+        'es_hospitalario'    => 'boolean',
+        'tiene_internacion'  => 'boolean',
+        'tiene_quirofano_req'=> 'boolean',
+        'tiene_uti_req'      => 'boolean',
+        'tiene_urgencias_req'=> 'boolean',
+    ];
+
+    protected $appends = [
+        'tipo_est_label', 'complejidad_label', 'complejidad_color',
+        'coordenadas', 'es_asistencial',
+    ];
+
+    // ─── RELATIONSHIPS ───────────────────────────────────────────
+
+    public function evaluaciones(): HasMany
+    {
+        return $this->hasMany(Evaluacion::class, 'id_establecimiento');
+    }
+
+    public function homologaciones(): HasMany
+    {
+        return $this->hasMany(Homologacion::class, 'id_establecimiento_destino');
+    }
+
+    public function ultimaEvaluacion(): HasOne
+    {
+        return $this->hasOne(Evaluacion::class, 'id_establecimiento')->latestOfMany();
+    }
+
+    // ─── ACCESSORS ───────────────────────────────────────────────
+
+    public function getTipoEstLabelAttribute(): string
+    {
+        return TipoEstablecimientoEnum::tryFrom($this->tipo_est)?->label() ?? $this->tipo_est;
+    }
+
+    public function getComplejidadLabelAttribute(): string
+    {
+        return ComplejidadEnum::fromString($this->complejidad)?->label() ?? $this->complejidad;
+    }
+
+    public function getComplejidadColorAttribute(): string
+    {
+        return ComplejidadEnum::fromString($this->complejidad)?->color() ?? '#6b7280';
+    }
+
+    public function getCoordenadasAttribute(): ?array
+    {
+        if ($this->latitude && $this->longitude) {
+            return ['lat' => (float) $this->latitude, 'lng' => (float) $this->longitude];
+        }
+        return null;
+    }
+
+    public function getEsAsistencialAttribute(): bool
+    {
+        return TipoEstablecimientoEnum::tryFrom($this->tipo_est)?->esAsistencial() ?? false;
+    }
+
+    // ─── SCOPES ──────────────────────────────────────────────────
+
+    public function scopeActivos($query)
+    {
+        return $query->where('activo', true);
+    }
+
+    public function scopeAsistenciales($query)
+    {
+        return $query->whereIn('tipo_est', ['PS', 'HR', 'US', 'CE', 'CP', 'HO', 'HC', 'H']);
+    }
+
+    public function scopePorDepartamento($query, string $depto)
+    {
+        return $query->where('departamento', $depto);
+    }
+
+    public function scopePorMicrored($query, string $microred)
+    {
+        return $query->where('microred', $microred);
+    }
+
+    public function scopePorComplejidad($query, string $complejidad)
+    {
+        return $query->where('complejidad', $complejidad);
+    }
+
+    public function scopePorTipo($query, string $tipo)
+    {
+        return $query->where('tipo_est', $tipo);
+    }
+
+    public function scopeHospitalarios($query)
+    {
+        return $query->where('es_hospitalario', true);
+    }
+
+    public function scopeConInternacion($query)
+    {
+        return $query->where('tiene_internacion', true);
+    }
+
+    public function scopePorNivel($query, int $nivel)
+    {
+        return $query->where('nivel_atencion', $nivel);
+    }
+
+    // ─── METHODS ─────────────────────────────────────────────────
+
+    /**
+     * Recalcula los campos derivados de la complejidad.
+     */
+    public function recalcularCamposDerivados(): void
+    {
+        $enum = ComplejidadEnum::fromString($this->complejidad);
+        if ($enum) {
+            $this->nivel_atencion     = $enum->nivelAtencion();
+            $this->grado_complejidad  = $enum->gradoComplejidad();
+            $this->es_hospitalario    = $enum->esHospitalario();
+            $this->tiene_internacion  = $enum->requiereInternacion();
+            $this->tiene_quirofano_req= $enum->requiereQuirofano();
+            $this->tiene_uti_req      = $enum->requiereUTI();
+            $this->tiene_urgencias_req= $enum->requiereUrgencias();
+        }
+        $this->saveQuietly();
+    }
+
+    public function toResumenArray(): array
+    {
+        return [
+            'id'                      => $this->id_establecimiento,
+            'nombre'                  => $this->nombre_oficial,
+            'tipo'                    => $this->tipo_est,
+            'tipo_label'              => $this->tipo_est_label,
+            'tipologia'               => $this->tipologia_clasificacion,
+            'complejidad'             => $this->complejidad,
+            'complejidad_label'       => $this->complejidad_label,
+            'complejidad_color'       => $this->complejidad_color,
+            'nivel'                   => $this->nivel_atencion,
+            'grado'                   => $this->grado_complejidad,
+            'departamento'            => $this->departamento,
+            'microred'                => $this->microred,
+            'prestador'               => $this->prestador,
+            'coordenadas'             => $this->coordenadas,
+            'tiene_ultima_evaluacion' => $this->ultimaEvaluacion()->exists(),
+        ];
+    }
+}

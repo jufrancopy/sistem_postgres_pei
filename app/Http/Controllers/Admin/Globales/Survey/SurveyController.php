@@ -20,34 +20,37 @@ class SurveyController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Survey::latest()->get();
+            $data = Survey::with(['analysts', 'group', 'questions'])->latest()->get();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editSurvey" ><i class="far fa-edit"></i></a>';
-
-                    $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteSurvey"><i class="fa fa-trash" aria-hidden="true"></i></a>';
-
-                    $btn .= ' <a href="' . route('surveys.show', $row->id) . '" data-toggle="tooltip" data-original-title="Show" class="btn btn-warning btn-circle addQuestion"><i class="fa fa-list-ol" aria-hidden="true"></i></a>';
-
+                    $btn = '<a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-primary btn-circle editSurvey" title="Editar"><i class="far fa-edit"></i></a>';
+                    $btn .= ' <a href="' . route('surveys.show', $row->id) . '" class="btn btn-warning btn-circle" title="Gestionar preguntas"><i class="fa fa-list-ol"></i></a>';
+                    $btn .= ' <a href="' . route('surveys.show.details', $row->id) . '" class="btn btn-info btn-circle" title="Ver detalles"><i class="fa fa-chart-bar"></i></a>';
+                    $btn .= ' <a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-danger btn-circle deleteSurvey" title="Eliminar"><i class="fa fa-trash"></i></a>';
                     return $btn;
                 })
-
-                ->addColumn('analysts', function (Survey $survey) {
-                    $analystNames = $survey->analysts->pluck('name')->implode(', ');
-                    return $analystNames;
-                })
-
-                ->addColumn('group', function (Survey $survey) {
-                    return $survey->group ? $survey->group->name : '';
-                })
-
-
+                ->addColumn('analysts', fn(Survey $s) => $s->analysts->pluck('name')->implode(', '))
+                ->addColumn('group',    fn(Survey $s) => $s->group?->name ?? '—')
+                ->addColumn('preguntas', fn(Survey $s) => $s->questions->count())
+                ->addColumn('participantes', fn(Survey $s) => $s->participants()->count())
+                ->addColumn('completados', fn(Survey $s) => $s->participants()->wherePivot('completed', true)->count())
                 ->rawColumns(['action'])
                 ->make(true);
         }
-        return view('admin.surveys.index');
+
+        // KPIs para el dashboard
+        $totalEncuestas    = Survey::count();
+        $totalPreguntas    = \App\Models\Admin\Globales\Question::count();
+        $totalParticipantes = DB::table('participants_has_surveys')->distinct('participant_id')->count();
+        $totalCompletadas  = DB::table('participants_has_surveys')->where('completed', true)->count();
+        $encuestasRecientes = Survey::with(['questions', 'analysts', 'group'])
+            ->latest()->limit(5)->get();
+
+        return view('admin.surveys.index', compact(
+            'totalEncuestas', 'totalPreguntas', 'totalParticipantes',
+            'totalCompletadas', 'encuestasRecientes'
+        ));
     }
 
     public function edit($id)
@@ -73,44 +76,79 @@ class SurveyController extends Controller
 
     public function detailAnswer(Request $request, $surveyID)
     {
-        // Obtén todas las preguntas de la encuesta
-        $questions = Question::where('survey_id', $surveyID)->get();
+        $survey    = Survey::with(['questions.answersHasQuestions', 'group', 'analysts'])->findOrFail($surveyID);
+        $questions = $survey->questions;
 
-        // Inicializa un arreglo para almacenar la información
-        $answersData = [];
-        $chartData = [];
+        // Total participantes y completados
+        $totalParticipantes = $survey->participants()->count();
+        $totalCompletados   = $survey->participants()->wherePivot('completed', true)->count();
+        $pctCompletado      = $totalParticipantes > 0
+            ? round($totalCompletados / $totalParticipantes * 100) : 0;
 
-        // Recorre cada pregunta y busca las respuestas y opciones asociadas
+        // Para cada pregunta: cuántas veces fue seleccionada cada opción
+        $resultados = [];
         foreach ($questions as $question) {
-            // Obtener la respuesta seleccionada por el usuario
-            $selectedAnswer = DB::table('answers')
-                ->where('question_id', $question->id)
-                ->where('participant_id', auth()->user()->id)
-                ->first();
+            $answersRow = DB::table('answers_has_questions')
+                ->where('question_id', $question->id)->first();
+            $opciones = $answersRow ? json_decode($answersRow->answers, true) : [];
 
-            // Obtener las posibles respuestas de la tabla pivot
-            $answersDataRow = DB::table('answers_has_questions')
-                ->where('question_id', $question->id)
-                ->first();
+            // Contar respuestas por opción
+            $conteos = [];
+            $totalRespuestas = 0;
+            foreach ($opciones as $opcion) {
+                $texto = is_array($opcion['answer']) ? json_encode($opcion['answer']) : $opcion['answer'];
+                // PostgreSQL: la columna answer es JSON, comparar con cast o usando ::text
+                $count = DB::table('answers')
+                    ->where('question_id', $question->id)
+                    ->whereRaw('answer::text = ?', [json_encode($texto)])
+                    ->count();
+                $conteos[] = [
+                    'answer'     => $texto,
+                    'is_correct' => $opcion['is_correct'] ?? false,
+                    'count'      => $count,
+                ];
+                $totalRespuestas += $count;
+            }
 
-            // Decodifica el JSON que contiene las respuestas
-            $possibleAnswers = $answersDataRow ? json_decode($answersDataRow->answers, true) : [];
-
-            // Agrega la pregunta y sus opciones al arreglo
-            $answersData[] = [
-                'question' => $question->question,
-                'selected_answer' => $selectedAnswer ? $selectedAnswer->answer : null,
-                'options' => $possibleAnswers,
-            ];
-
-            // Prepara datos para el gráfico
-            $chartData[] = [
-                'question' => $question->question,
-                'answers' => $possibleAnswers,
+            $resultados[] = [
+                'question'        => $question->question,
+                'opciones'        => $conteos,
+                'total_respuestas'=> $totalRespuestas,
             ];
         }
 
-        return view('admin.surveys.answers.details', compact('answersData', 'chartData'));
+        // Mi respuesta (si el usuario logueado respondió)
+        $miRespuesta = [];
+        foreach ($questions as $question) {
+            $ans = DB::table('answers')
+                ->where('question_id', $question->id)
+                ->where('participant_id', auth()->id())
+                ->value(DB::raw('answer::text'));
+            $miRespuesta[$question->id] = $ans ? json_decode($ans, true) : null;
+        }
+
+        // Datos para el gráfico de participación
+        $chartData = $resultados;
+
+        // Mantener compatibilidad con la variable $answersData que usa la vista original
+        $answersData = collect($resultados)->map(function($r) use ($miRespuesta, $questions) {
+            $q = $questions->firstWhere('question', $r['question']);
+            return [
+                'question'        => $r['question'],
+                'selected_answer' => $q ? ($miRespuesta[$q->id] ?? null) : null,
+                'options'         => collect($r['opciones'])->map(fn($o) => [
+                    'answer'     => $o['answer'],
+                    'is_correct' => $o['is_correct'],
+                    'count'      => $o['count'],
+                ])->toArray(),
+                'total_respuestas'=> $r['total_respuestas'],
+            ];
+        })->toArray();
+
+        return view('admin.surveys.answers.details', compact(
+            'survey', 'answersData', 'chartData',
+            'totalParticipantes', 'totalCompletados', 'pctCompletado', 'miRespuesta'
+        ));
     }
 
     public function showSurveyResults($surveyId)

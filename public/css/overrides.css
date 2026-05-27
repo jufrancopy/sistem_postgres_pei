@@ -1,0 +1,17 @@
+/* Overrides to fix gray background on forms */
+body {
+  background-color: #ffffff !important;
+}
+.main-panel, .content, .container-fluid {
+  background-color: #ffffff !important;
+}
+.card, .card-body {
+  background-color: #ffffff !important;
+}
+.card-header {
+  background-color: #ffffff !important;
+}
+/* Keep card header color variants (danger, info) visible */
+.card-header.card-header-danger, .card-header.card-header-info, .card-header.card-header-warning {
+  background-color: inherit !important;
+}

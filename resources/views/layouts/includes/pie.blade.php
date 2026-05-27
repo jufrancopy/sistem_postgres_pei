@@ -75,6 +75,7 @@
 
 <!-- Scripts personalizados-->
 @yield('scripts')
+@stack('scripts')
 <script>
     $(document).ready(function() {
         $('.js-example-responsive').select2();

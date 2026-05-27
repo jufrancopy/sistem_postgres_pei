@@ -233,6 +233,100 @@
                         ) }}
                     </div>
 
+                    {{-- ── MECIP 2015: Gestión de Riesgo (solo Debilidad/Amenaza) ── --}}
+                    <div id="mecipFields" style="display:none">
+
+                        {{-- Separador con título ── --}}
+                        <div class="d-flex align-items-center my-3">
+                            <div style="flex:1;height:1px;background:#dee2e6"></div>
+                            <span class="mx-2 px-2 py-1 rounded"
+                                  style="background:#fff3cd;border:1px solid #ffc107;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#856404;white-space:nowrap">
+                                <i class="fa fa-shield-alt mr-1"></i> MECIP 2015 — Gestión de Riesgo
+                            </span>
+                            <div style="flex:1;height:1px;background:#dee2e6"></div>
+                        </div>
+
+                        {{-- Alerta contextual ── --}}
+                        <div class="alert py-2 px-3 mb-3"
+                             style="background:#fffbeb;border:1px solid #fde68a;border-left:4px solid #f59e0b;border-radius:6px">
+                            <p class="mb-0" style="font-size:.78rem;color:#92400e;line-height:1.5">
+                                <i class="fa fa-info-circle mr-1"></i>
+                                Bajo MECIP 2015, esta debilidad/amenaza debe transformarse en un
+                                <strong>riesgo institucional accionable</strong>.
+                                Completá los campos para cerrar el ciclo:
+                                <em>Identificación → Valoración → Respuesta → Seguimiento</em>.
+                            </p>
+                        </div>
+
+                        {{-- Paso 1: Causa Raíz ── --}}
+                        <div class="card mb-2 shadow-sm" style="border-radius:8px;border:1px solid #e9ecef">
+                            <div class="card-body py-2 px-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="rounded-circle d-flex align-items-center justify-content-center mr-2"
+                                          style="width:22px;height:22px;background:#dc3545;color:#fff;font-size:.7rem;font-weight:700;flex-shrink:0">1</span>
+                                    <span style="font-size:.82rem;font-weight:700;color:#343a40">Causa Raíz</span>
+                                    <small class="text-muted ml-2">¿Por qué ocurre este problema?</small>
+                                </div>
+                                {{ Form::select('causa_raiz',
+                                    \App\Admin\Planificacion\Foda\FodaAnalisis::CAUSAS_RAIZ,
+                                    null,
+                                    ['class'=>'form-control form-control-sm','placeholder'=>'Seleccionar tipo de causa...','id'=>'causa_raiz','style'=>'width:100%']
+                                ) }}
+                            </div>
+                        </div>
+
+                        {{-- Paso 2: Acción de Mejora ── --}}
+                        <div class="card mb-2 shadow-sm" style="border-radius:8px;border:1px solid #e9ecef">
+                            <div class="card-body py-2 px-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="rounded-circle d-flex align-items-center justify-content-center mr-2"
+                                          style="width:22px;height:22px;background:#fd7e14;color:#fff;font-size:.7rem;font-weight:700;flex-shrink:0">2</span>
+                                    <span style="font-size:.82rem;font-weight:700;color:#343a40">Acción de Mejora</span>
+                                    <span class="badge badge-warning ml-2" style="font-size:.62rem">Estrategia DO / DA</span>
+                                </div>
+                                <textarea name="accion_mejora" id="accion_mejora"
+                                    class="form-control form-control-sm" rows="2"
+                                    placeholder="Ej: Implementar tablero de control para automatizar el análisis de datos y reducir la carga manual..."></textarea>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <small class="text-muted" style="font-size:.72rem">
+                                        <i class="fa fa-arrow-right mr-1"></i>
+                                        Respuesta concreta que cierra el ciclo de control interno
+                                    </small>
+                                    <button type="button" class="btn btn-outline-info btn-sm btnIaMecip py-0 px-2"
+                                            data-campo="accion_mejora" style="font-size:.72rem" title="Generar con IA">
+                                        <i class="fa fa-magic mr-1"></i> IA
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Paso 3: Control Preventivo ── --}}
+                        <div class="card mb-3 shadow-sm" style="border-radius:8px;border:1px solid #e9ecef">
+                            <div class="card-body py-2 px-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="rounded-circle d-flex align-items-center justify-content-center mr-2"
+                                          style="width:22px;height:22px;background:#28a745;color:#fff;font-size:.7rem;font-weight:700;flex-shrink:0">3</span>
+                                    <span style="font-size:.82rem;font-weight:700;color:#343a40">Control Preventivo</span>
+                                    <small class="text-muted ml-2">Medida para evitar que el riesgo se materialice</small>
+                                </div>
+                                <textarea name="control_preventivo" id="control_preventivo"
+                                    class="form-control form-control-sm" rows="2"
+                                    placeholder="Ej: Revisión trimestral vinculada al POA con calendario de análisis definido en semanas críticas..."></textarea>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <small class="text-muted" style="font-size:.72rem">
+                                        <i class="fa fa-shield-alt mr-1"></i>
+                                        Componente de Evaluación de Control — MECIP
+                                    </small>
+                                    <button type="button" class="btn btn-outline-info btn-sm btnIaMecip py-0 px-2"
+                                            data-campo="control_preventivo" style="font-size:.72rem" title="Generar con IA">
+                                        <i class="fa fa-magic mr-1"></i> IA
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
                     <div class="mt-3">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                         <button type="submit" class="btn btn-success" id="saveAnalysisBtn">Guardar</button>
@@ -253,6 +347,10 @@
     .iea-fortaleza { background:#28a745; color:#fff; }
     .iea-debilidad { background:#dc3545; color:#fff; }
     .iea-neutro    { background:#6c757d; color:#fff; }
+
+    /* Fix Select2 dentro de modal Bootstrap */
+    .select2-container--open { z-index: 9999 !important; }
+    .select2-dropdown        { z-index: 9999 !important; }
 </style>
 
 <script>
@@ -338,10 +436,111 @@ $(function () {
                     )
                 );
             });
+
+            // Mostrar campos MECIP si es Debilidad o Amenaza
+            var esMecip = data.tipo === 'Debilidad' || data.tipo === 'Amenaza';
+            $('#mecipFields').toggle(esMecip);
+
+            // Cargar valores MECIP — el trigger('change') se hace en shown.bs.modal
+            $('#causa_raiz').data('pendingVal', data.causa_raiz || '');
+            $('#accion_mejora').val(data.accion_mejora || '');
+            $('#control_preventivo').val(data.control_preventivo || '');
         });
     });
 
-    // ── Guardar análisis ─────────────────────────────────────
+    // ── Mostrar campos MECIP según tipo seleccionado ─────────────────────────
+    $(document).on('change', 'input[name="tipo"]', function() {
+        var tipo = $(this).val();
+        var esMecip = tipo === 'Debilidad' || tipo === 'Amenaza';
+        $('#mecipFields').toggle(esMecip);
+        if (!esMecip) {
+            $('#causa_raiz').val('').trigger('change');
+            $('#accion_mejora').val('');
+            $('#control_preventivo').val('');
+        }
+    });
+
+    // ── Generar MECIP con IA ──────────────────────────────────────────────────
+    $(document).on('click', '.btnIaMecip', function() {
+        var campo      = $(this).data('campo');
+        var tipo       = $('input[name="tipo"]:checked').val();
+        var causaRaiz  = $('#causa_raiz').val();
+        var ocurrencia = $('select[name="ocurrencia"]').val() || $('#ocurrencia').val();
+        var impacto    = $('select[name="impacto"]').val()    || $('#impacto').val();
+        var aspectoNombre = $('#headingAnalysis').text().replace('Analizar: ', '').trim();
+
+        if (!tipo || (tipo !== 'Debilidad' && tipo !== 'Amenaza')) {
+            toastr.warning('Seleccioná primero el tipo (Debilidad o Amenaza).');
+            return;
+        }
+        if (!causaRaiz) {
+            toastr.warning('Seleccioná primero la Causa Raíz.');
+            return;
+        }
+        if (!ocurrencia || !impacto) {
+            toastr.warning('Seleccioná primero Ocurrencia e Impacto.');
+            return;
+        }
+
+        var btn = $(this);
+        btn.html('<i class="fa fa-spinner fa-spin"></i>').prop('disabled', true);
+
+        $.ajax({
+            url: '{{ route('foda-analisis.mecip-ia') }}',
+            type: 'POST',
+            data: {
+                aspecto_nombre: aspectoNombre,
+                tipo:           tipo,
+                causa_raiz:     causaRaiz,
+                ocurrencia:     ocurrencia,
+                impacto:        impacto,
+                perfil_id:      $('#perfil_id').val(),
+            },
+            success: function(resp) {
+                if (campo === 'accion_mejora' && resp.accion_mejora) {
+                    $('#accion_mejora').val(resp.accion_mejora);
+                    toastr.success('Acción de mejora generada.');
+                } else if (campo === 'control_preventivo' && resp.control_preventivo) {
+                    $('#control_preventivo').val(resp.control_preventivo);
+                    toastr.success('Control preventivo generado.');
+                } else if (resp.error) {
+                    toastr.error(resp.error);
+                }
+            },
+            error: function(xhr) {
+                toastr.error(xhr.responseJSON?.error || 'Error al conectar con la IA.');
+            },
+            complete: function() {
+                btn.html('<i class="fa fa-magic mr-1"></i> IA').prop('disabled', false);
+            }
+        });
+    });
+    $('#modalAnalysis').on('shown.bs.modal', function() {
+        if (!$('#causa_raiz').data('select2')) {
+            $('#causa_raiz').select2({
+                dropdownParent: $('#modalAnalysis'),
+                placeholder: 'Seleccionar tipo de causa...',
+                allowClear: true,
+                width: '100%',
+            });
+        }
+        // Aplicar valor pendiente si existe
+        var pendingVal = $('#causa_raiz').data('pendingVal');
+        if (pendingVal !== undefined) {
+            $('#causa_raiz').val(pendingVal).trigger('change');
+            $('#causa_raiz').removeData('pendingVal');
+        }
+    });
+
+    // Evitar que el click en el dropdown de Select2 cierre el modal
+    $(document).on('select2:open', function() {
+        document.querySelector('.select2-search__field')?.focus();
+    });
+
+    // Prevenir que el modal se cierre al hacer click en el dropdown de Select2
+    $('#modalAnalysis').on('mousedown', '.select2-container--open', function(e) {
+        e.stopPropagation();
+    });
     $('#saveAnalysisBtn').click(function(e) {
         e.preventDefault();
         var $btn = $(this);

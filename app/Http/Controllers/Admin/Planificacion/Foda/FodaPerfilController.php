@@ -54,12 +54,28 @@ class FodaPerfilController extends Controller
                 })
                 ->addColumn('action', function ($row) {
                     $btn = '<a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-primary btn-circle editProfile" title="Editar"><i class="far fa-edit"></i></a>';
-                    $btn .= ' <a href="/foda-profiles/' . $row->id . '/details" class="btn btn-info btn-circle" title="Ver detalle"><i class="fa fa-search"></i></a>';
 
                     if ($row->type === 'individual') {
-                        $btn .= ' <a href="' . route('foda-analisis-matriz', $row->id) . '" class="btn btn-warning btn-circle" title="Matriz"><i class="fa-solid fa-xmark"></i></a>';
+                        // Lupa → ver todos los perfiles del mismo grupo raíz
+                        $groupRootId = null;
+                        if ($row->group_id) {
+                            $group = \App\Admin\Globales\Group::find($row->group_id);
+                            $groupRootId = $group?->parent_id ?? $group?->id;
+                        }
+
+                        if ($groupRootId) {
+                            $btn .= ' <a href="' . route('foda-matriz-groups', $groupRootId) . '" class="btn btn-info btn-circle" title="Ver todos los perfiles del grupo"><i class="fa fa-users"></i></a>';
+                        } else {
+                            $btn .= ' <a href="/foda-profiles/' . $row->id . '/details" class="btn btn-info btn-circle" title="Ver detalle"><i class="fa fa-search"></i></a>';
+                        }
+
+                        $btn .= ' <a href="' . route('foda-analisis-matriz', $row->id) . '" class="btn btn-warning btn-circle" title="Mi Matriz FODA"><i class="fa fa-th"></i></a>';
+
                     } else {
-                        $btn .= ' <a href="' . route('foda-list-groups') . '" class="btn btn-warning btn-circle" title="Matriz Grupal"><i class="fa fa-layer-group"></i></a>';
+                        // Grupal → ver la matriz consolidada del grupo
+                        $groupRootId = $row->group_id;
+                        $btn .= ' <a href="' . route('foda-matriz-groups', $groupRootId) . '" class="btn btn-info btn-circle" title="Ver Matriz Consolidada"><i class="fa fa-layer-group"></i></a>';
+                        $btn .= ' <a href="/foda-profiles/' . $row->id . '/details" class="btn btn-warning btn-circle" title="Ver detalle"><i class="fa fa-search"></i></a>';
                     }
 
                     $btn .= ' <a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-danger btn-circle deleteProfile" title="Eliminar"><i class="fa fa-trash"></i></a>';
@@ -362,6 +378,56 @@ class FodaPerfilController extends Controller
                     '</td>' .
                     '</tr>' .
                     '</table>';
+
+                // ── Bloque MECIP (solo Debilidad/Amenaza con datos cargados) ──
+                $mecipHTML = '';
+                if (in_array($analysis->tipo, ['Debilidad', 'Amenaza'])) {
+                    $causasLabel = [
+                        'operativa'   => 'Operativa',
+                        'estructural' => 'Estructural',
+                        'tecnologica' => 'Tecnológica',
+                        'normativa'   => 'Normativa',
+                        'otra'        => 'Otra',
+                    ];
+                    $causaLabel = $causasLabel[$analysis->causa_raiz] ?? null;
+
+                    $mecipHTML = '<div style="margin-top:6px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-left:4px solid #f59e0b;border-radius:6px;font-size:.8rem">'
+                        . '<div style="font-weight:700;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:#92400e;margin-bottom:6px">'
+                        . '<i class="fa fa-shield-alt" style="margin-right:4px"></i> MECIP 2015 — Gestión de Riesgo'
+                        . '</div>';
+
+                    if ($causaLabel) {
+                        $mecipHTML .= '<div style="margin-bottom:4px">'
+                            . '<span style="color:#6b7280;font-size:.72rem">Causa raíz:</span> '
+                            . '<span class="badge badge-warning" style="font-size:.7rem">' . $causaLabel . '</span>'
+                            . '</div>';
+                    }
+
+                    if ($analysis->accion_mejora) {
+                        $mecipHTML .= '<div style="margin-bottom:4px">'
+                            . '<span style="color:#6b7280;font-size:.72rem"><i class="fa fa-arrow-right" style="margin-right:2px"></i> Acción de mejora:</span> '
+                            . '<span style="color:#374151">' . e($analysis->accion_mejora) . '</span>'
+                            . '</div>';
+                    }
+
+                    if ($analysis->control_preventivo) {
+                        $mecipHTML .= '<div>'
+                            . '<span style="color:#6b7280;font-size:.72rem"><i class="fa fa-shield-alt" style="margin-right:2px"></i> Control preventivo:</span> '
+                            . '<span style="color:#374151">' . e($analysis->control_preventivo) . '</span>'
+                            . '</div>';
+                    }
+
+                    if (!$causaLabel && !$analysis->accion_mejora && !$analysis->control_preventivo) {
+                        $mecipHTML .= '<span style="color:#9ca3af;font-style:italic;font-size:.75rem">'
+                            . '<i class="fa fa-exclamation-circle" style="margin-right:4px"></i>'
+                            . 'Sin análisis de riesgo completado — editá el aspecto para agregar causa raíz y acción de mejora.'
+                            . '</span>';
+                    }
+
+                    $mecipHTML .= '</div>';
+                }
+
+                $tableHTML .= $mecipHTML;
 
                 return [
                     'name' => '<sup class="badge badge-secondary">Aspecto</sup> ' . $aspect->name,

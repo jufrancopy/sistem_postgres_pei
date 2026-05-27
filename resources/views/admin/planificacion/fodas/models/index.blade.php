@@ -1,298 +1,255 @@
 @extends('layouts.master')
-@section('title', 'Perfiles')
+@section('title', 'Modelos FODA')
 
 @section('content')
-    <div class="card">
-        <div class="card-header card-header-info">
-            <h4 class="card-title ">FODA - Modelos</h4>
+<div class="card">
+    <div class="card-header card-header-info">
+        <h4 class="card-title"><i class="fa fa-cubes mr-2"></i>Modelos FODA</h4>
+        <p class="card-category">Plantillas de análisis reutilizables — Categorías y Aspectos por modelo</p>
+    </div>
+
+    <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-0">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación</a></li>
+            <li class="breadcrumb-item active">Modelos FODA</li>
+        </ol>
+    </nav>
+
+    <div class="card-body">
+
+        {{-- ── Barra de acciones ── --}}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="text-muted small">
+                    <i class="fa fa-info-circle mr-1"></i>
+                    Cada modelo define las <strong>categorías</strong> y <strong>aspectos</strong> que se analizan en el FODA.
+                </span>
+            </div>
+            <button class="btn btn-success" id="btnNuevoModelo">
+                <i class="fa fa-plus mr-1"></i> Nuevo Modelo
+            </button>
         </div>
 
-        <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">FODA - Modelos</li>
-            </ol>
-        </nav>
+        {{-- ── Grid de modelos (cargado vía AJAX) ── --}}
+        <div id="modelosGrid" class="row">
+            <div class="col-12 text-center py-5 text-muted" id="loadingModelos">
+                <i class="fa fa-spinner fa-spin fa-2x mb-2"></i><br>
+                Cargando modelos...
+            </div>
+        </div>
 
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="success"></div>
-                        <a class="btn btn-success" href="javascript:void(0)" id="createNewModel"> <i
-                                class="material-icons ">add_box</i> Nuevo Modelo</a>
-                    </div>
+    </div>
+</div>
 
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered data-table display nowrap" id="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Nombre</th>
-                                        <th>Propietario</th>
-                                        <th>Descripión</th>
-                                        <th width="280px">Accion</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
+{{-- ══ MODAL Crear / Editar Modelo ══ --}}
+<div class="modal fade" id="modalModelo" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="card-header card-header-info mb-0">
+                <h5 class="modal-title mb-0" id="modalModeloTitulo">Nuevo Modelo FODA</h5>
+            </div>
+            <div class="modal-body pt-3">
+                <form id="formModelo">
+                    <input type="hidden" id="modelo_id" name="model_id">
+                    <input type="hidden" name="type" value="root">
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Nombre del Modelo <span class="text-danger">*</span></label>
+                                <input type="text" name="name" id="modelo_name" class="form-control"
+                                    placeholder="Ej: Modelo Estratégico IPS 2024">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Propietario <span class="text-danger">*</span></label>
+                                <input type="text" name="owner" id="modelo_owner" class="form-control"
+                                    placeholder="Ej: Dirección de Planificación">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="modal fade" id="modalModel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="card-header card-header-info">
-                                    <h4 class="modal-title" id="modalModelHeading"></h4>
+                    <div class="form-group">
+                        <label class="font-weight-bold">Descripción técnica</label>
+                        <textarea name="description" id="modelo_description" class="form-control" rows="3"
+                            placeholder="Contexto y propósito del modelo..."></textarea>
+                        <small class="text-muted">Describe el alcance y uso previsto de este modelo.</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnGuardarModelo">
+                    <i class="fa fa-save mr-1"></i> Guardar Modelo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@stop
+
+@section('scripts')
+<script>
+$(function() {
+    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
+
+    // ── CKEditor para descripción del modelo ──────────────────────────────────
+    var modeloDescEditor;
+    ClassicEditor
+        .create(document.querySelector('#modelo_description'))
+        .then(editor => { modeloDescEditor = editor; })
+        .catch(err => { console.error(err); });
+
+    // ── Cargar grid de modelos ────────────────────────────────────────────────
+    function cargarModelos() {
+        $.get('{{ route('foda-models.index') }}', function(resp) {
+            var modelos = resp.data || [];
+            var grid = $('#modelosGrid');
+            grid.empty();
+
+            if (modelos.length === 0) {
+                grid.html(`
+                    <div class="col-12">
+                        <div class="alert alert-info text-center py-4">
+                            <i class="fa fa-cubes fa-2x mb-2 d-block"></i>
+                            <strong>Sin modelos creados</strong><br>
+                            <small>Creá el primer modelo FODA para comenzar el análisis.</small>
+                        </div>
+                    </div>
+                `);
+                return;
+            }
+
+            modelos.forEach(function(m) {
+                var desc = m.description
+                    ? '<p class="text-muted small mb-0" style="line-height:1.4">' + $('<div>').text(m.description).html().substring(0, 120) + (m.description.length > 120 ? '…' : '') + '</p>'
+                    : '<p class="text-muted small mb-0 font-italic">Sin descripción</p>';
+
+                grid.append(`
+                    <div class="col-xl-4 col-md-6 mb-4">
+                        <div class="card shadow h-100 border-left-info" style="border-left:4px solid #17a2b8!important">
+                            <div class="card-body pb-2">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="font-weight-bold mb-1" style="font-size:.95rem">${m.name}</h6>
+                                        <small class="text-muted"><i class="fa fa-user mr-1"></i>${m.owner || '—'}</small>
+                                    </div>
+                                    <span class="badge badge-info" style="font-size:.7rem">Modelo</span>
                                 </div>
-                                <div class="modal-body">
-                                    <form id="modelForm" name="modelForm" class="form-horizontal">
-                                        <div class="alert alert-danger errors" role="alert"></div>
-
-                                        {{ Form::hidden('profile_id', null, ['id' => 'profile_id']) }}
-                                        {{ Form::hidden('type', 'root', ['class' => 'form-control', 'id' => 'type']) }}
-                                        {{ Form::hidden('environment', null, ['class' => 'form-control', 'id' => 'environment']) }}
-
-                                        <div class="form-group">
-                                            {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
-                                            {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
-                                        </div>
-
-                                        <div class="form-group">
-                                            {{ Form::label('owner', 'Propietario:') }}
-                                            {{ Form::text('owner', null, ['class' => 'form-control', 'id' => 'owner']) }}
-                                        </div>
-
-                                        <div class="description mb-2">
-                                            {{ Form::label('description', 'Descripción técnica:', ['class' => 'control-label']) }}
-                                            {{ Form::textarea('description', null, [
-                                                'class' => 'form-control editor',
-                                                'id' => 'description',
-                                            ]) }}
-                                        </div>
-
-                                        <div class="col-sm-offset-2 col-sm-10">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-dismiss="modal">Cerrar</button>
-                                            <button type="submit" class="btn btn-success" id="saveBtn"
-                                                value="create">Guardar
-                                                cambios
-                                            </button>
-                                        </div>
-
-                                    </form>
+                                ${desc}
+                            </div>
+                            <div class="card-footer bg-transparent pt-2 pb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="{{ url('foda-models') }}/${m.id}"
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="fa fa-sitemap mr-1"></i> Ver Categorías
+                                    </a>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary btnEditarModelo mr-1"
+                                                data-id="${m.id}" title="Editar">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger btnEliminarModelo"
+                                                data-id="${m.id}" data-nombre="${m.name}" title="Eliminar">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-@stop
-
-@section('scripts')
-    {{-- My custom scripts --}}
-    <script type="text/javascript">
-        $(function() {
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                }
+                `);
             });
-
-            var table = $('.data-table').DataTable({
-                processing: true,
-                serverSide: true,
-                dom: 'Bfrtip',
-                buttons: [{
-                        extend: 'copy',
-                        text: '<i class="fa fa-copy"></i>',
-                        titleAttr: 'Copy'
-                    },
-                    {
-                        extend: 'excel',
-                        text: '<i class="fa fa-file-excel"></i>',
-                        titleAttr: 'Excel'
-                    },
-                    {
-                        extend: 'csv',
-                        text: '<i class="fas fa-file-csv"></i>',
-                        titleAttr: 'CSV'
-                    },
-                    {
-                        extend: 'pdf',
-                        text: '<i class="fa fa-file-pdf"></i>',
-                        titleAttr: 'PDF'
-                    },
-                    {
-                        extend: 'print',
-                        text: '<i class="fa fa-print"></i>',
-                        titleAttr: 'Imprimir'
-                    }
-                ],
-                language: {
-                    "decimal": "",
-                    "emptyTable": "No hay información",
-                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
-                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
-                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
-                    "infoPostFix": "",
-                    "thousands": ",",
-                    "lengthMenu": "Mostrar _MENU_ Entradas",
-                    "loadingRecords": "Cargando...",
-                    "processing": "Procesando...",
-                    "search": "Buscar:",
-                    "zeroRecords": "Sin resultados encontrados",
-                    "paginate": {
-                        "first": "Primero",
-                        "last": "Ultimo",
-                        "next": "Siguiente",
-                        "previous": "Anterior"
-                    }
-                },
-                ajax: "{{ route('foda-models.index') }}",
-                columns: [{
-                    data: 'DT_RowIndex',
-                    name: 'DT_RowIndex'
-                }, {
-                    data: 'name',
-                    name: 'name'
-                }, {
-                    data: 'owner',
-                    name: 'owner'
-                }, {
-                    data: 'description',
-                    name: 'description',
-                    render: function(data, type, full, meta) {
-                        if (type === 'display' || type === 'filter') {
-                            // Deshacer la escapada de HTML utilizando jQuery
-                            return $('<div/>').html(data).text();
-                        }
-                        return data;
-                    }
-                }, {
-                    data: 'action',
-                    name: 'action',
-                    orderable: false,
-                    searchable: false
-                }, ]
-            });
-
-            var descriptionEditor;
-
-            ClassicEditor
-                .create(document.querySelector('#description'))
-                .then(editor => {
-                    descriptionEditor = editor;
-                })
-                .catch(err => {
-                    console.error(err.stack);
-                });
-
-            $('#createNewModel').click(function() {
-                $('#saveBtn').val("create-model");
-                $('#profile_id').val('');
-                $('#modelForm').trigger("reset");
-                $('#modalModelHeading').html("Nuevo Modelo");
-                $('#modalModel').modal('show');
-                $('.errors').removeClass("alert alert-danger");
-
-                descriptionEditor.setData('');
-
-
-            });
-
-            $('body').on('click', '.editModel', function() {
-                var modelID = $(this).data('id');
-                $.get("{{ route('foda-models.index') }}" + '/' + modelID + '/edit', function(data) {
-                    $('#modalModelHeading').html("Editar Modelo");
-                    $('#saveBtn').val("edit-profile");
-                    $('#modalModel').modal('show');
-                    $('#modelForm').trigger("reset");
-                    $('.errors').removeClass("alert alert-danger")
-                    $('#model_id').val(data.model_id);
-                    $('#type').val(data.type);
-                    $('#name').val(data.name);
-                    $('#owner').val(data.owner);
-                    descriptionEditor.setData(data.description);
-                });
-            });
-
-            $('#saveBtn').click(function(e) {
-                e.preventDefault();
-                $(this).html('Enviando..');
-
-                var data = new FormData();
-                var form_data = $('#modelForm').serializeArray();
-
-                $.each(form_data, function(key, input) {
-                    data.append(input.name, input.value);
-                });
-
-                data.append('description', descriptionEditor.getData());
-
-                $.ajax({
-                    data: data,
-                    url: "{{ route('foda-models.store') }}",
-                    type: "POST",
-                    dataType: 'json',
-                    processData: false,
-                    contentType: false,
-                    success: function(data) {
-                        $('#modelForm').trigger("reset");
-                        $('#modalModel').modal('hide');
-                        table.draw();
-                    },
-
-                    error: function(data) {
-                        var obj = data.responseJSON.errors;
-                        $.each(obj, function(key, value) {
-                            // Alert Toastr
-                            toastr.options = {
-                                closeButton: true,
-                                progressBar: true,
-                            };
-                            toastr.error("Atención: " + value);
-                        });
-                        $("#saveBtn").html("Guardar Cambios");
-                    },
-
-                });
-            });
-
-            $('body').on('click', '.deleteModel', function() {
-                Swal.fire({
-                    title: 'Estás seguro de eliminarlo?',
-                    text: "Si lo haces, no podras revertirlo!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Estoy seguro!'
-                }).then((isConfirm) => {
-                    if (isConfirm.value) {
-                        Swal.fire(
-                            'Borrado!',
-                            'El registro ha sido eliminado correctamente.',
-                            'success'
-                        )
-                        var cicle_id = $(this).data("id");
-                        $.ajax({
-                            type: "DELETE",
-                            url: "{{ route('foda-models.store') }}" + '/' + cicle_id,
-                            success: function(data) {
-                                table.draw();
-                            },
-                            error: function(data) {
-                                console.log('Error:', data);
-                            }
-                        });
-                    }
-                })
-            });
+        }).fail(function() {
+            $('#modelosGrid').html('<div class="col-12"><div class="alert alert-danger">Error al cargar los modelos.</div></div>');
+        }).always(function() {
+            $('#loadingModelos').remove();
         });
-    </script>
+    }
+
+    cargarModelos();
+
+    // ── Nuevo modelo ─────────────────────────────────────────────────────────
+    $('#btnNuevoModelo').on('click', function() {
+        $('#modalModeloTitulo').text('Nuevo Modelo FODA');
+        $('#formModelo')[0].reset();
+        $('#modelo_id').val('');
+        if (modeloDescEditor) modeloDescEditor.setData('');
+        $('#modalModelo').modal('show');
+    });
+
+    // ── Editar modelo ─────────────────────────────────────────────────────────
+    $(document).on('click', '.btnEditarModelo', function() {
+        var id = $(this).data('id');
+        $.get('{{ url('foda-models') }}/' + id + '/edit', function(data) {
+            $('#modalModeloTitulo').text('Editar Modelo FODA');
+            $('#modelo_id').val(data.id);
+            $('#modelo_name').val(data.name);
+            $('#modelo_owner').val(data.owner);
+            if (modeloDescEditor) modeloDescEditor.setData(data.description || '');
+            $('#modalModelo').modal('show');
+        });
+    });
+
+    // ── Guardar (crear o editar) ──────────────────────────────────────────────
+    $('#btnGuardarModelo').on('click', function() {
+        var btn = $(this);
+        btn.html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...').prop('disabled', true);
+
+        var data = new FormData($('#formModelo')[0]);
+        // Inyectar contenido del editor rico
+        if (modeloDescEditor) data.set('description', modeloDescEditor.getData());
+
+        $.ajax({
+            url: '{{ route('foda-models.store') }}',
+            type: 'POST',
+            data: data,
+            processData: false,
+            contentType: false,
+            success: function() {
+                $('#modalModelo').modal('hide');
+                toastr.success('Modelo guardado correctamente.');
+                cargarModelos();
+            },
+            error: function(xhr) {
+                var errors = xhr.responseJSON?.errors || {};
+                $.each(errors, function(k, v) { toastr.error(v); });
+            },
+            complete: function() {
+                btn.html('<i class="fa fa-save mr-1"></i> Guardar Modelo').prop('disabled', false);
+            }
+        });
+    });
+
+    // ── Eliminar modelo ───────────────────────────────────────────────────────
+    $(document).on('click', '.btnEliminarModelo', function() {
+        var id     = $(this).data('id');
+        var nombre = $(this).data('nombre');
+
+        Swal.fire({
+            title: '¿Eliminar "' + nombre + '"?',
+            text: 'Se eliminarán también todas sus categorías y aspectos.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonText: 'Cancelar',
+            confirmButtonText: 'Sí, eliminar'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '{{ url('foda-models') }}/' + id,
+                    type: 'DELETE',
+                    success: function() {
+                        toastr.success('Modelo eliminado.');
+                        cargarModelos();
+                    },
+                    error: function() { toastr.error('Error al eliminar.'); }
+                });
+            }
+        });
+    });
+});
+</script>
 @stop

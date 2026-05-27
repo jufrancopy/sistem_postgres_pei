@@ -1,295 +1,252 @@
 @extends('layouts.master')
-@section('title', 'Aspectos')
+@section('title', 'Aspectos — ' . $category->name)
 
 @section('content')
-    <div class="card">
-        <div class="card-header card-header-info">
-            <h4 class="card-title ">Lista de Aspectos de la categoría {{ $category->name }} ({{ $category->environment }})
-            </h4>
-        </div>
+<div class="card">
+    <div class="card-header card-header-info">
+        <h4 class="card-title">
+            <i class="fa fa-tags mr-2"></i>{{ $category->name }}
+        </h4>
+        <p class="card-category">
+            Aspectos de la categoría ·
+            <span class="badge badge-{{ $category->environment === 'Interno' ? 'primary' : 'success' }} ml-1">
+                {{ $category->environment }}
+            </span>
+        </p>
+    </div>
 
-        <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('foda-models.index') }}">Modelos</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('foda-models.show', $category->parent_id) }}">Categorías</a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">{{ $category->name }}:Agregar Aspectos</li>
-            </ol>
-        </nav>
+    <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-0">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('foda-models.index') }}">Modelos FODA</a></li>
+            <li class="breadcrumb-item">
+                <a href="{{ route('foda-models.show', $category->parent_id) }}">Categorías</a>
+            </li>
+            <li class="breadcrumb-item active">{{ $category->name }}</li>
+        </ol>
+    </nav>
 
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="success"></div>
-                        <a class="btn btn-success" href="javascript:void(0)" id="createNewAspect"> <i
-                                class="material-icons ">add_box</i> Nuevo Aspecto</a>
-                    </div>
+    <div class="card-body">
 
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered data-table display nowrap" id="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Nombre</th>
-                                        <th>Descripión</th>
-                                        <th width="280px">Accion</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
+        {{-- ── Contexto de la categoría ── --}}
+        <div class="row mb-4">
+            <div class="col-md-8">
+                @if($category->description)
+                <div class="alert alert-light border-left-{{ $category->environment === 'Interno' ? 'primary' : 'success' }}"
+                     style="border-left:4px solid {{ $category->environment === 'Interno' ? '#007bff' : '#28a745' }}">
+                    <small class="text-muted font-weight-bold text-uppercase" style="font-size:.7rem;letter-spacing:.05em">
+                        Descripción de la categoría
+                    </small>
+                    <p class="mb-0 mt-1 small">{{ strip_tags($category->description) }}</p>
+                </div>
+                @endif
+            </div>
+            <div class="col-md-4">
+                <div class="card border shadow-sm">
+                    <div class="card-body py-2 px-3">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">Ambiente</small>
+                            <span class="badge badge-{{ $category->environment === 'Interno' ? 'primary' : 'success' }}">
+                                {{ $category->environment }}
+                            </span>
                         </div>
-                    </div>
-
-                    <div class="modal fade" id="modalCategory" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="card-header card-header-info">
-                                    <h4 class="modal-title" id="modalModelHeading"></h4>
-                                </div>
-                                <div class="modal-body">
-                                    <form id="categoryForm" name="categoryForm" class="form-horizontal">
-
-                                        {{ Form::hidden('model_id', null, ['id' => 'model_id']) }}
-                                        {{ Form::hidden('type', 'aspect', ['id' => 'type']) }}
-                                        {{ Form::hidden('parent_id', $category->id, ['id' => 'parent_id']) }}
-                                        {{ Form::hidden('owner', $category->owner, ['id' => 'owner']) }}
-                                        {{ Form::hidden('environment', $category->environment, ['class' => 'form-control', 'id' => 'environment']) }}
-
-                                        <div class="form-group">
-                                            {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
-                                            {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
-                                        </div>
-
-                                        <div class="description mb-2">
-                                            {{ Form::label('description', 'Descripción técnica:', ['class' => 'control-label']) }}
-                                            {{ Form::textarea('description', null, [
-                                                'class' => 'form-control editor',
-                                                'id' => 'description',
-                                            ]) }}
-                                        </div>
-
-                                        <div class="col-sm-offset-2 col-sm-10">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-dismiss="modal">Cerrar</button>
-                                            <button type="submit" class="btn btn-success" id="saveBtn"
-                                                value="create">Guardar
-                                                cambios
-                                            </button>
-                                        </div>
-
-                                    </form>
-                                </div>
-                            </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="text-muted">Propietario</small>
+                            <small class="font-weight-bold">{{ $category->owner ?? '—' }}</small>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        {{-- ── Barra de acciones ── --}}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted small">
+                <i class="fa fa-info-circle mr-1"></i>
+                Los aspectos son los ítems concretos que se evalúan en el análisis FODA
+                (Ej: "Infraestructura tecnológica", "Competencia del mercado").
+            </span>
+            <button class="btn btn-success" id="btnNuevoAspecto">
+                <i class="fa fa-plus mr-1"></i> Nuevo Aspecto
+            </button>
+        </div>
+
+        {{-- ── Tabla de aspectos ── --}}
+        <div class="table-responsive">
+            <table class="table table-hover" id="tablaAspectos">
+                <thead class="thead-light">
+                    <tr>
+                        <th width="40">#</th>
+                        <th>Nombre del Aspecto</th>
+                        <th>Descripción / Referencia</th>
+                        <th class="text-center" width="120">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
     </div>
+</div>
+
+{{-- ══ MODAL Crear / Editar Aspecto ══ --}}
+<div class="modal fade" id="modalAspecto" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="card-header card-header-info mb-0">
+                <h5 class="modal-title mb-0" id="modalAspectoTitulo">Nuevo Aspecto</h5>
+            </div>
+            <div class="modal-body pt-3">
+                <form id="formAspecto">
+                    <input type="hidden" id="asp_model_id" name="model_id">
+                    <input type="hidden" name="type"        value="aspect">
+                    <input type="hidden" name="parent_id"   value="{{ $category->id }}">
+                    <input type="hidden" name="owner"       value="{{ $category->owner }}">
+                    <input type="hidden" name="environment" value="{{ $category->environment }}">
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">
+                            Nombre del Aspecto <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" name="name" id="asp_name" class="form-control"
+                            placeholder="Ej: Infraestructura tecnológica actualizada">
+                        <small class="text-muted">
+                            Debe ser concreto y medible. Evitá términos vagos como "buena gestión".
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Descripción / Referencia</label>
+                        <textarea name="description" id="asp_description" class="form-control" rows="3"
+                            placeholder="Contexto, fuente de datos o referencia del aspecto..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnGuardarAspecto">
+                    <i class="fa fa-save mr-1"></i> Guardar Aspecto
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @stop
 
 @section('scripts')
-    {{-- My custom scripts --}}
-    <script type="text/javascript">
-        $(function() {
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+<script>
+$(function() {
+    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
+
+    // ── CKEditor para descripción del aspecto ─────────────────────────────────
+    var aspDescEditor;
+    ClassicEditor
+        .create(document.querySelector('#asp_description'))
+        .then(editor => { aspDescEditor = editor; })
+        .catch(err => { console.error(err); });
+
+    // ── DataTable de aspectos ─────────────────────────────────────────────────
+    var table = $('#tablaAspectos').DataTable({
+        processing: true,
+        serverSide: true,
+        language: {
+            emptyTable: 'Sin aspectos — agregá el primero con el botón verde',
+            search: 'Buscar:', zeroRecords: 'Sin resultados',
+            info: 'Mostrando _START_ a _END_ de _TOTAL_',
+            paginate: { next: 'Siguiente', previous: 'Anterior' }
+        },
+        ajax: '{{ route('foda-models-getAspects', $category->id) }}',
+        columns: [
+            { data: 'DT_RowIndex', orderable: false, searchable: false },
+            { data: 'name' },
+            {
+                data: 'description',
+                render: function(d) {
+                    if (!d) return '<span class="text-muted">—</span>';
+                    var txt = $('<div>').html(d).text();
+                    return '<span title="' + txt + '">' +
+                        (txt.length > 100 ? txt.substring(0, 100) + '…' : txt) +
+                        '</span>';
                 }
-            });
-            var table = $('.data-table').DataTable({
-                processing: true,
-                serverSide: true,
-                dom: 'Bfrtip',
-                buttons: [{
-                        extend: 'copy',
-                        text: '<i class="fa fa-copy"></i>',
-                        titleAttr: 'Copy'
-                    },
-                    {
-                        extend: 'excel',
-                        text: '<i class="fa fa-file-excel"></i>',
-                        titleAttr: 'Excel'
-                    },
-                    {
-                        extend: 'csv',
-                        text: '<i class="fas fa-file-csv"></i>',
-                        titleAttr: 'CSV'
-                    },
-                    {
-                        extend: 'pdf',
-                        text: '<i class="fa fa-file-pdf"></i>',
-                        titleAttr: 'PDF'
-                    },
-                    {
-                        extend: 'print',
-                        text: '<i class="fa fa-print"></i>',
-                        titleAttr: 'Imprimir'
-                    }
-                ],
-                language: {
-                    "decimal": "",
-                    "emptyTable": "No hay información",
-                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
-                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
-                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
-                    "infoPostFix": "",
-                    "thousands": ",",
-                    "lengthMenu": "Mostrar _MENU_ Entradas",
-                    "loadingRecords": "Cargando...",
-                    "processing": "Procesando...",
-                    "search": "Buscar:",
-                    "zeroRecords": "Sin resultados encontrados",
-                    "paginate": {
-                        "first": "Primero",
-                        "last": "Ultimo",
-                        "next": "Siguiente",
-                        "previous": "Anterior"
-                    }
-                },
-                ajax: "{{ route('foda-models-getAspects', $category->id) }}",
-                columns: [{
-                    data: 'DT_RowIndex',
-                    name: 'DT_RowIndex'
-                }, {
-                    data: 'name',
-                    name: 'name'
-                }, {
-                    data: 'description',
-                    name: 'description',
+            },
+            { data: 'action', orderable: false, searchable: false, className: 'text-center' }
+        ]
+    });
 
-                    render: function(data, type, full, meta) {
-                        if (type === 'display' || type === 'filter') {
-                            // Deshacer la escapada de HTML utilizando jQuery
-                            return $('<div/>').html(data).text();
-                        }
-                        return data;
-                    }
-                }, {
-                    data: 'action',
-                    name: 'action',
-                    orderable: false,
-                    searchable: false
-                }, ]
-            });
+    // ── Nuevo aspecto ─────────────────────────────────────────────────────────
+    $('#btnNuevoAspecto').on('click', function() {
+        $('#modalAspectoTitulo').text('Nuevo Aspecto');
+        $('#formAspecto')[0].reset();
+        $('#asp_model_id').val('');
+        if (aspDescEditor) aspDescEditor.setData('');
+        $('#modalAspecto').modal('show');
+        setTimeout(function() { $('#asp_name').focus(); }, 400);
+    });
 
-            var descriptionEditor;
-
-            ClassicEditor
-                .create(document.querySelector('#description'))
-                .then(editor => {
-                    descriptionEditor = editor;
-                })
-                .catch(err => {
-                    console.error(err.stack);
-                });
-
-            $('#createNewAspect').click(function() {
-                $('#saveBtn').val("create-model");
-                $('#model_id').val('');
-                $('#categoryForm').trigger("reset");
-                $('#modalModelHeading').html("Nuevo Aspecto");
-                $('#modalCategory').modal('show');
-
-                descriptionEditor.setData('');
-
-            });
-
-            $('body').on('click', '.editAspect', function() {
-                var categoryID = $(this).data('id');
-
-                $.get("{{ route('foda-models.index') }}" + '/' + categoryID + '/edit', function(data) {
-
-                    $('#modalModelHeading').html("Editar Perfil");
-                    $('#saveBtn').val("edit-profile");
-                    $('#modalCategory').modal('show');
-                    $('#categoryForm').trigger("reset");
-                    $('#model_id').val(data.id);
-                    $('#name').val(data.name);
-                    $('#owner').val(data.owner);
-                    descriptionEditor.setData(data.description);
-                });
-            });
-
-            $('#saveBtn').click(function(e) {
-                e.preventDefault();
-                $(this).html('Enviando..');
-
-                var data = new FormData();
-                var form_data = $('#categoryForm').serializeArray();
-
-                $.each(form_data, function(key, input) {
-                    console.log(input)
-                    data.append(input.name, input.value);
-                });
-
-                (descriptionEditor.getData())
-                data.append('description', descriptionEditor.getData());
-
-                $.ajax({
-                    data: data,
-                    url: "{{ route('foda-models.store') }}",
-                    type: "POST",
-                    dataType: 'json',
-                    processData: false,
-                    contentType: false,
-                    success: function(data) {
-                        $('#categoryForm').trigger("reset");
-                        $('#modalCategory').modal('hide');
-                        $(".success").removeAttr("style");
-                        table.draw();
-                    },
-
-                    error: function(data) {
-                        var obj = data.responseJSON.errors;
-                        $.each(obj, function(key, value) {
-                            // Alert Toastr
-                            toastr.options = {
-                                closeButton: true,
-                                progressBar: true,
-                            };
-                            toastr.error("Atención: " + value);
-                        });
-                        $("#saveBtn").html("Guardar Cambios");
-                    },
-
-                });
-            });
-
-            $('body').on('click', '.deleteAspect', function() {
-                Swal.fire({
-                    title: 'Estás seguro de eliminarlo?',
-                    text: "Si lo haces, no podras revertirlo!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Estoy seguro!'
-                }).then((isConfirm) => {
-                    if (isConfirm.value) {
-                        Swal.fire(
-                            'Borrado!',
-                            'El registro ha sido eliminado correctamente.',
-                            'success'
-                        )
-                        var cicle_id = $(this).data("id");
-                        $.ajax({
-                            type: "DELETE",
-                            url: "{{ route('foda-models.store') }}" + '/' + cicle_id,
-                            success: function(data) {
-                                table.draw();
-                            },
-                            error: function(data) {
-                                console.log('Error:', data);
-                            }
-                        });
-                    }
-                })
-            });
+    // ── Editar aspecto ────────────────────────────────────────────────────────
+    $(document).on('click', '.editAspect', function() {
+        var id = $(this).data('id');
+        $.get('{{ url('foda-models') }}/' + id + '/edit', function(data) {
+            $('#modalAspectoTitulo').text('Editar: ' + data.name);
+            $('#asp_model_id').val(data.id);
+            $('#asp_name').val(data.name);
+            if (aspDescEditor) aspDescEditor.setData(data.description || '');
+            $('#modalAspecto').modal('show');
         });
-    </script>
+    });
+
+    // ── Guardar aspecto ───────────────────────────────────────────────────────
+    $('#btnGuardarAspecto').on('click', function() {
+        var btn = $(this);
+        btn.html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...').prop('disabled', true);
+
+        var formData = new FormData($('#formAspecto')[0]);
+        if (aspDescEditor) formData.set('description', aspDescEditor.getData());
+
+        $.ajax({
+            url: '{{ route('foda-models.store') }}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function() {
+                $('#modalAspecto').modal('hide');
+                toastr.success('Aspecto guardado correctamente.');
+                table.draw();
+            },
+            error: function(xhr) {
+                var errors = xhr.responseJSON?.errors || {};
+                $.each(errors, function(k, v) { toastr.error(v); });
+            },
+            complete: function() {
+                btn.html('<i class="fa fa-save mr-1"></i> Guardar Aspecto').prop('disabled', false);
+            }
+        });
+    });
+
+    // ── Eliminar aspecto ──────────────────────────────────────────────────────
+    $(document).on('click', '.deleteAspect', function() {
+        var id = $(this).data('id');
+        Swal.fire({
+            title: '¿Eliminar aspecto?',
+            text: 'Esta acción no se puede revertir.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonText: 'Cancelar',
+            confirmButtonText: 'Sí, eliminar'
+        }).then(function(r) {
+            if (r.isConfirmed) {
+                $.ajax({
+                    url: '{{ url('foda-models') }}/' + id,
+                    type: 'DELETE',
+                    success: function() { toastr.success('Aspecto eliminado.'); table.draw(); },
+                    error: function() { toastr.error('Error al eliminar.'); }
+                });
+            }
+        });
+    });
+});
+</script>
 @stop

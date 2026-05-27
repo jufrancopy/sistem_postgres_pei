@@ -105,7 +105,7 @@ class FodaAnalisisController extends Controller
             }
         }
 
-        $matriz =    0.17;
+        $matriz = config('foda.umbral_matriz');
 
         // Ambiente Interno - Debilidad
         $debilidades = FodaAnalisis::with('aspecto')
@@ -208,8 +208,13 @@ class FodaAnalisisController extends Controller
                 ->make(true);
         }
 
-        $peiId = request('pei_id');
-        return view('admin.planificacion.fodas.groups.list_tasks', compact('peiId'));
+        $peiId     = request('pei_id');
+        $peiNombre = null;
+        if ($peiId) {
+            $pei = PeiProfile::find($peiId);
+            $peiNombre = $pei ? strip_tags($pei->name) : null;
+        }
+        return view('admin.planificacion.fodas.groups.list_tasks', compact('peiId', 'peiNombre'));
     }
 
     public function getMatrizForGroup(Request $request, $idGroup)
@@ -227,10 +232,17 @@ class FodaAnalisisController extends Controller
             ->whereIn('group_id', $groupId)
             ->get();
 
-        $modelId = $profiles->first()->model_id;
+        // Si no hay perfiles en los subgrupos, intentar con el grupo raíz
+        if ($profiles->isEmpty()) {
+            $profiles = FodaPerfil::with(['group', 'model'])
+                ->where('group_id', $idGroup)
+                ->get();
+        }
+
+        $modelId = $profiles->first()?->model_id;
 
         $perfilIds = $profiles->pluck('id');
-        $matriz = 0.17;
+        $matriz = config('foda.umbral_matriz');
 
         $fodaAnalisis = FodaAnalisis::with('aspecto')
             ->whereIn('perfil_id', $perfilIds)
@@ -294,7 +306,7 @@ class FodaAnalisisController extends Controller
             ->get();
 
         $perfilIds = $profiles->pluck('id');
-        $matriz = 0.17;
+        $matriz = config('foda.umbral_matriz');
 
         $fodaAnalisis = FodaAnalisis::with('aspecto')
             ->whereIn('perfil_id', $perfilIds)
@@ -324,10 +336,29 @@ class FodaAnalisisController extends Controller
         //     $userName = $member->name;
         //     $userEmail = $member->email;
         // }
-        $FOs = FodaCruceAmbiente::where('tipo', '=', 'FO')->where('perfil_id', '=', $idPerfil)->get();
-        $DOs = FodaCruceAmbiente::where('tipo', '=', 'DO')->where('perfil_id', '=', $idPerfil)->get();
-        $FAs = FodaCruceAmbiente::where('tipo', '=', 'FA')->where('perfil_id', '=', $idPerfil)->get();
-        $DAs = FodaCruceAmbiente::where('tipo', '=', 'DA')->where('perfil_id', '=', $idPerfil)->get();
+        $FOs = FodaCruceAmbiente::with(['fortalezas','oportunidades'])->where('tipo', '=', 'FO')->where('perfil_id', '=', $idPerfil)->get();
+        $DOs = FodaCruceAmbiente::with(['debilidades','oportunidades'])->where('tipo', '=', 'DO')->where('perfil_id', '=', $idPerfil)->get();
+        $FAs = FodaCruceAmbiente::with(['fortalezas','amenazas'])->where('tipo', '=', 'FA')->where('perfil_id', '=', $idPerfil)->get();
+        $DAs = FodaCruceAmbiente::with(['debilidades','amenazas'])->where('tipo', '=', 'DA')->where('perfil_id', '=', $idPerfil)->get();
+
+        // Mapa aspecto_id => [cuadrantes donde ya aparece]
+        $fortalezasCubiertas = [];
+        foreach ($FOs as $c) foreach ($c->fortalezas as $b) $fortalezasCubiertas[$b->id][] = 'FO';
+        foreach ($FAs as $c) foreach ($c->fortalezas as $b) $fortalezasCubiertas[$b->id][] = 'FA';
+        $debilidadesCubiertas = [];
+        foreach ($DOs as $c) foreach ($c->debilidades as $b) $debilidadesCubiertas[$b->id][] = 'DO';
+        foreach ($DAs as $c) foreach ($c->debilidades as $b) $debilidadesCubiertas[$b->id][] = 'DA';
+        $oportunidadesCubiertas = [];
+        foreach ($FOs as $c) foreach ($c->oportunidades as $b) $oportunidadesCubiertas[$b->id][] = 'FO';
+        foreach ($DOs as $c) foreach ($c->oportunidades as $b) $oportunidadesCubiertas[$b->id][] = 'DO';
+        $amenazasCubiertas = [];
+        foreach ($FAs as $c) foreach ($c->amenazas as $b) $amenazasCubiertas[$b->id][] = 'FA';
+        foreach ($DAs as $c) foreach ($c->amenazas as $b) $amenazasCubiertas[$b->id][] = 'DA';
+        $fortalezasCubiertas    = array_map('array_unique', $fortalezasCubiertas);
+        $debilidadesCubiertas   = array_map('array_unique', $debilidadesCubiertas);
+        $oportunidadesCubiertas = array_map('array_unique', $oportunidadesCubiertas);
+        $amenazasCubiertas      = array_map('array_unique', $amenazasCubiertas);
+
         // Comprueba si es una solicitud AJAX
         if ($request->ajax()) {
             // Si es una solicitud AJAX, puedes devolver una respuesta JSON
@@ -466,12 +497,21 @@ class FodaAnalisisController extends Controller
         $analysis = FodaAnalisis::updateOrCreate(
             ['id' => $request->analysis_id],
             [
-                'user_id' => Auth::id(),
-                'perfil_id' => $request->perfil_id,
-                'ocurrencia' => $request->ocurrencia,
-                'impacto' => $request->impacto,
-                'tipo' => $request->tipo,
-
+                'user_id'            => Auth::id(),
+                'perfil_id'          => $request->perfil_id,
+                'ocurrencia'         => $request->ocurrencia,
+                'impacto'            => $request->impacto,
+                'tipo'               => $request->tipo,
+                // MECIP 2015 — solo aplica a Debilidad/Amenaza
+                'causa_raiz'         => in_array($request->tipo, ['Debilidad', 'Amenaza'])
+                                            ? $request->causa_raiz
+                                            : null,
+                'accion_mejora'      => in_array($request->tipo, ['Debilidad', 'Amenaza'])
+                                            ? $request->accion_mejora
+                                            : null,
+                'control_preventivo' => in_array($request->tipo, ['Debilidad', 'Amenaza'])
+                                            ? $request->control_preventivo
+                                            : null,
             ]
         );
 
@@ -571,5 +611,44 @@ class FodaAnalisisController extends Controller
             'iea_valor'         => $analisis->iea_valor,
             'iea_clasificacion' => $analisis->iea_clasificacion,
         ]);
+    }
+
+    /**
+     * Genera Acción de Mejora y Control Preventivo MECIP usando Groq / Llama 3.
+     */
+    public function generarMecipIA(Request $request)
+    {
+        $request->validate([
+            'aspecto_nombre' => 'required|string',
+            'tipo'           => 'required|in:Debilidad,Amenaza',
+            'causa_raiz'     => 'required|string',
+            'ocurrencia'     => 'required|numeric',
+            'impacto'        => 'required|numeric',
+        ]);
+
+        try {
+            $groq = new \App\Services\GroqService();
+
+            // Contexto del perfil si viene
+            $contexto = 'IPS Paraguay';
+            if ($request->perfil_id) {
+                $perfil   = FodaPerfil::find($request->perfil_id);
+                $contexto = $perfil ? strip_tags($perfil->name) . ' — IPS Paraguay' : $contexto;
+            }
+
+            $resultado = $groq->generarMecip(
+                $request->aspecto_nombre,
+                $request->tipo,
+                $request->causa_raiz,
+                (float) $request->ocurrencia,
+                (float) $request->impacto,
+                $contexto
+            );
+
+            return response()->json($resultado);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

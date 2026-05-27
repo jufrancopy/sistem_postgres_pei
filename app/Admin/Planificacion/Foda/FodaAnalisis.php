@@ -16,6 +16,17 @@ class FodaAnalisis extends Model
     protected $fillable = [
         'user_id', 'perfil_id', 'aspecto_id', 'tipo', 'ocurrencia', 'impacto',
         'promedio_desempeno_6m', 'inversion_historica_6m', 'iea_valor', 'iea_clasificacion',
+        // MECIP 2015 — Ciclo de control interno
+        'causa_raiz', 'accion_mejora', 'control_preventivo',
+    ];
+
+    // Etiquetas para causa raíz
+    const CAUSAS_RAIZ = [
+        'operativa'    => 'Operativa — Exceso de carga administrativa / procesos manuales',
+        'estructural'  => 'Estructural — Falta de perfiles técnicos o recursos humanos',
+        'tecnologica'  => 'Tecnológica — Ausencia de herramientas o sistemas de información',
+        'normativa'    => 'Normativa — Vacío o incumplimiento regulatorio',
+        'otra'         => 'Otra causa',
     ];
 
     public function calcularIEA(): void

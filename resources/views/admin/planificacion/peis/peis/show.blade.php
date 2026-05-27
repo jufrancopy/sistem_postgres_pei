@@ -42,7 +42,7 @@
                                     <div class="card">
                                         <div class="card-header">
                                             <h2>
-                                                {{ $profile->name }}
+                                                {{ strip_tags($profile->name) }}
                                             </h2>
                                             <div class="col">
                                                 <label><i class="fa fa-calendar" aria-hidden="true"></i> Periodo:

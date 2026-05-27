@@ -19,6 +19,14 @@ Route::group(['middleware' => ['auth']], function () {
     //Rutas del Dpto. Planificacion
     Route::get('planificacion-dashboard', 'Admin\Planificacion\PlanificacionController@dashboard')->name('planificacion-dashboard');
 
+    // ── Plan Maestro ─────────────────────────────────────────────────────────
+    Route::get('plan-maestro', 'Admin\PlanMaestro\PlanMaestroController@index')->name('plan-maestro.index');
+    Route::get('plan-maestro/{plan}', 'Admin\PlanMaestro\PlanMaestroController@show')->name('plan-maestro.show');
+    Route::get('plan-maestro/{plan}/buscar', 'Admin\PlanMaestro\PlanMaestroController@buscar')->name('plan-maestro.buscar');
+    Route::patch('plan-maestro/acciones/{accion}/estado', 'Admin\PlanMaestro\PlanMaestroController@actualizarEstado')->name('plan-maestro.accion.estado');
+    Route::post('plan-maestro/{plan}/acciones', 'Admin\PlanMaestro\PlanMaestroController@storeAccion')->name('plan-maestro.accion.store');
+    Route::delete('plan-maestro/acciones/{accion}', 'Admin\PlanMaestro\PlanMaestroController@destroyAccion')->name('plan-maestro.accion.destroy');
+
     //Rutas de PEI
     Route::resource('pei-profiles', 'Admin\Planificacion\Pei\PeiController');
     Route::get('pei-profiles/{idPerfil}/detail', 'Admin\Planificacion\Pei\PeiController@showDetailForGroup');
@@ -68,8 +76,30 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('/notificaciones/{id}/leer',       'Admin\Estadistica\SiessController@marcarNotificacionLeida')->name('notificaciones.leer');
         Route::post('/notificaciones/leer-todas',      'Admin\Estadistica\SiessController@marcarTodasLeidas')->name('notificaciones.leer-todas');
 
-        // Home para usuarios Participantes
-        Route::get('/home', 'Admin\Estadistica\SiessController@home')->name('home');
+        // ── EPH — Contexto Nacional (INE Paraguay) ────────────────────────────
+        Route::get('/eph',           'Admin\Estadistica\EphController@index')->name('eph.index');
+        Route::get('/eph/nuevo',     'Admin\Estadistica\EphController@create')->name('eph.create');
+        Route::post('/eph',          'Admin\Estadistica\EphController@store')->name('eph.store');
+        Route::get('/eph/{id}',      'Admin\Estadistica\EphController@show')->name('eph.show');
+        Route::post('/eph/{id}',     'Admin\Estadistica\EphController@show')->name('eph.show.data');
+        Route::delete('/eph/{id}',   'Admin\Estadistica\EphController@destroy')->name('eph.destroy');
+
+        // ── DGEEC — Interpretación EPHC + KPIs cruzados con IPS ──────────────
+        Route::get('/dgeec',                          'Admin\Estadistica\DgeecController@index')->name('dgeec.index');        Route::get('/dgeec/brecha',                   'Admin\Estadistica\DgeecController@brecha')->name('dgeec.brecha');
+        Route::get('/dgeec/mapear/{datasetId}',       'Admin\Estadistica\DgeecController@mapear')->name('dgeec.mapear');
+        Route::post('/dgeec/procesar/{datasetId}',    'Admin\Estadistica\DgeecController@procesar')->name('dgeec.procesar');
+        Route::get('/dgeec/chart/penetracion',        'Admin\Estadistica\DgeecController@chartPenetracion')->name('dgeec.chart.penetracion');
+        Route::get('/dgeec/chart/informalidad',       'Admin\Estadistica\DgeecController@chartInformalidad')->name('dgeec.chart.informalidad');
+
+        // ── Contexto Nacional — MPI + Vivienda + Demografía ──────────────────
+        Route::get('/contexto',                            'Admin\Estadistica\ContextoNacionalController@index')->name('contexto.index');
+        Route::get('/contexto/mpi',                        'Admin\Estadistica\ContextoNacionalController@mpi')->name('contexto.mpi');
+        Route::get('/contexto/vivienda',                   'Admin\Estadistica\ContextoNacionalController@vivienda')->name('contexto.vivienda');
+        Route::post('/contexto/mpi/{datasetId}',           'Admin\Estadistica\ContextoNacionalController@procesarMpi')->name('contexto.mpi.procesar');
+        Route::post('/contexto/vivienda/{datasetId}',      'Admin\Estadistica\ContextoNacionalController@procesarVivienda')->name('contexto.vivienda.procesar');
+        Route::get('/contexto/chart/mpi',                  'Admin\Estadistica\ContextoNacionalController@chartMpi')->name('contexto.chart.mpi');
+        Route::get('/contexto/chart/vivienda',             'Admin\Estadistica\ContextoNacionalController@chartVivienda')->name('contexto.chart.vivienda');
+        Route::get('/contexto/chart/riesgo',               'Admin\Estadistica\ContextoNacionalController@chartRiesgo')->name('contexto.chart.riesgo');
 
         // ── Vistas por módulo ──────────────────────────────────────────────────
         Route::get('/modulos/aop', 'Admin\Estadistica\SiessModuloController@aop')->name('modulos.aop');
@@ -90,7 +120,7 @@ Route::group(['middleware' => ['auth']], function () {
     });
 
     // Rutas de Proyectos 
-    Route::view('proyectos-dashboard', 'admin.proyectos.dashboard')->name('proyectos-dashboard');
+    Route::get('proyectos-dashboard', 'Admin\Proyectos\ProyectosDashboardController@index')->name('proyectos-dashboard');
 
     //Estandar por Complejidad
     Route::view('proyectos-epc-dashboard', 'admin.proyectos.epc.dashboard')->name('proyectos-epc-dashboard');
@@ -225,7 +255,8 @@ Route::group(['middleware' => ['auth']], function () {
 
     //Rutas del Modulo Surveys
     Route::resource('surveys', 'Admin\Globales\Survey\SurveyController');
-    Route::get('/surveys/{id}/details', 'Admin\Globales\Survey\SurveyController@showDetails')->name('surveys.show.details');
+    Route::get('/surveys/{id}/details', 'Admin\Globales\Survey\SurveyController@detailAnswer')->name('surveys.show.details');
+    Route::get('/surveys/{id}/details-json', 'Admin\Globales\Survey\SurveyController@showDetails')->name('surveys.show.details-json');
     Route::get('/surveys/{id}/questions', 'Admin\Globales\Survey\SurveyController@showQuestions')->name('surveys.show.questions');
     Route::get('/surveys/{id}/answers', 'Admin\Globales\Survey\SurveyController@showQuestionsTemplate')->name('surveys.answers');
     Route::post('/surveys/{surveyId}/check-answer', 'Admin\Globales\Survey\SurveyController@checkAnswer');
@@ -281,6 +312,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-cruce-ambientes-fa/{idPerfil}', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@FA')->name('foda-cruce-ambientes-fa');
     Route::get('foda-cruce-ambientes-da/{idPerfil}', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@DA')->name('foda-cruce-ambientes-da');
     Route::resource('foda-cruce-ambientes', 'Admin\Planificacion\Foda\FodaCruceAmbienteController');
+    Route::post('foda-cruce-ambientes-ia', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@generarConIA')->name('foda-cruce-ambientes.ia');
+    Route::post('foda-analisis-mecip-ia', 'Admin\Planificacion\Foda\FodaAnalisisController@generarMecipIA')->name('foda-analisis.mecip-ia');
     Route::get('foda-aspectos-elegir-modelo', 'Admin\Planificacion\Foda\FodaAspectoController@elegirModelo')->name('foda-aspectos-elegir-modelo');
     Route::get('/foda-perfiles-modelo/{id}/categorias', 'Admin\Planificacion\Foda\FodaPerfilController@getCategorias');
     Route::get('foda-perfiles/{idPerfil}/add-group', 'Admin\Planificacion\Foda\FodaPerfilController@addGroup')->name('foda.add.group');
@@ -343,4 +376,62 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('profile', ['as' => 'profile.edit', 'uses' => 'ProfileController@edit']);
     Route::put('profile', ['as' => 'profile.update', 'uses' => 'ProfileController@update']);
     Route::put('profile/password', ['as' => 'profile.password', 'uses' => 'ProfileController@password']);
+
+    // ── RIISS - Red Integrada e Integral de Servicios de Salud ───────────────
+    Route::prefix('riiss')->name('riiss.')->middleware(['role:Administrador|Analista RIISS'])->group(function () {
+
+        // Establecimientos
+        Route::get('establecimientos', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'index'])
+            ->name('establecimientos.index');
+        Route::get('establecimientos/filtros/opciones', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'filtros'])
+            ->name('establecimientos.filtros');
+        Route::get('establecimientos/estadisticas', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'estadisticas'])
+            ->name('establecimientos.estadisticas');
+        Route::get('establecimientos/resolver-alias', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'resolverAlias'])
+            ->name('establecimientos.resolver-alias');
+        Route::post('establecimientos/recalcular-derivados', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'recalcular'])
+            ->name('establecimientos.recalcular');
+        Route::get('establecimientos/buscar', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'buscar'])
+            ->name('establecimientos.buscar');
+
+        // Evaluaciones — helpers
+        Route::get('evaluaciones/usuarios', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'buscarUsuarios'])
+            ->name('evaluaciones.usuarios');
+
+        // Localidades — selectores encadenados
+        Route::get('localidades/departamentos', [\App\Http\Controllers\Admin\Riiss\LocalidadController::class, 'departamentos'])
+            ->name('localidades.departamentos');
+        Route::get('localidades/distritos', [\App\Http\Controllers\Admin\Riiss\LocalidadController::class, 'distritos'])
+            ->name('localidades.distritos');
+        Route::get('localidades/barrios', [\App\Http\Controllers\Admin\Riiss\LocalidadController::class, 'barrios'])
+            ->name('localidades.barrios');
+        Route::get('establecimientos/{id}', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'show'])
+            ->name('establecimientos.show');
+
+        // Evaluaciones
+        Route::get('evaluaciones', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'index'])
+            ->name('evaluaciones.index');
+        Route::get('evaluaciones/formulario/{id_establecimiento}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'formulario'])
+            ->name('evaluaciones.formulario');
+        Route::get('evaluaciones/requisitos/{id_establecimiento}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'requisitos'])
+            ->name('evaluaciones.requisitos');
+        Route::get('evaluaciones/nueva/{id_establecimiento}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'nueva'])
+            ->name('evaluaciones.nueva');
+        Route::post('evaluaciones', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'crear'])
+            ->name('evaluaciones.crear');
+        Route::put('evaluaciones/{evaluacion}/respuestas', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'guardarRespuestas'])
+            ->name('evaluaciones.respuestas');
+        Route::patch('evaluaciones/{evaluacion}/datos-visita', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'actualizarDatosVisita'])
+            ->name('evaluaciones.datos-visita');
+        Route::post('evaluaciones/{evaluacion}/ejecutar-gap', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'ejecutarGap'])
+            ->name('evaluaciones.gap.ejecutar');
+        Route::get('evaluaciones/{evaluacion}/gap', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'obtenerGap'])
+            ->name('evaluaciones.gap');
+        Route::get('evaluaciones/{evaluacion}/resumen-clasificacion', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'resumenClasificacion'])
+            ->name('evaluaciones.clasificacion');
+        Route::get('evaluaciones/{evaluacion}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'show'])
+            ->name('evaluaciones.show');
+        Route::delete('evaluaciones/{evaluacion}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'destroy'])
+            ->name('evaluaciones.destroy');
+    });
 });

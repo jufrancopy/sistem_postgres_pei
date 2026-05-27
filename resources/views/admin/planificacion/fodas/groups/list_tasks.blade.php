@@ -5,12 +5,20 @@
 <div class="card">
     <div class="card-header card-header-info">
         <h4 class="card-title">Análisis FODA Grupal</h4>
-        <p class="card-category">Eventos con matrices grupales y consolidados</p>
+        <p class="card-category">
+            @if(isset($peiId) && $peiId && isset($peiNombre))
+                Vinculado al plan: <strong>{{ $peiNombre }}</strong>
+            @else
+                Eventos con matrices grupales y consolidados
+            @endif
+        </p>
     </div>
 
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-2">
         <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación</a></li>
+            <li class="breadcrumb-item">
+                <a href="{{ route('planificacion-dashboard') }}{{ $peiId ? '?pei_id='.$peiId : '' }}">Planificación</a>
+            </li>
             <li class="breadcrumb-item active">Análisis FODA Grupal</li>
         </ol>
     </nav>

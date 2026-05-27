@@ -20,21 +20,17 @@ class RolesTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('roles')->insert([
+        $adminRole = Role::firstOrCreate([
             'name' => 'Administrador',
             'guard_name' => 'web',
-            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        // Obtener todos los permisos
-        $permissions = DB::table('permissions')->pluck('id');
+        $analistaRole = Role::firstOrCreate([
+            'name' => 'Analista RIISS',
+            'guard_name' => 'web',
+        ]);
 
-        // Asociar todos los permisos al rol "Administrador"
-        foreach ($permissions as $permissionId) {
-            DB::table('role_has_permissions')->insert([
-                'role_id' => 1, // ID del rol "Administrador"
-                'permission_id' => $permissionId,
-            ]);
-        }
+        $permissions = Permission::all();
+        $adminRole->syncPermissions($permissions);
     }
 }

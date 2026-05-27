@@ -15,7 +15,12 @@
     <title>@yield('title')</title>
     <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no'
         name='viewport' />
+    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('master/assets/css/fontawesome.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('master/assets/css/material-dashboard.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('master/assets/demo/demo.css') }}" rel="stylesheet">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/overrides.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.15.7/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="{{ asset('assets/jstree/themes/default/style.min.css') }}">
@@ -26,4 +31,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     @yield('css')
+    @stack('styles')
 </head>

@@ -1,127 +1,164 @@
 @extends('layouts.master')
-@section('title', 'Respuestas')
+@section('title', 'Resultados — ' . $survey->name)
 
 @section('content')
-    <div class="card">
-        <div class="card-header card-header-info">
-            <h4 class="card-title">Respuestas</h4>
-        </div>
+<div class="card">
+    <div class="card-header card-header-info">
+        <h4 class="card-title"><i class="fa fa-chart-bar mr-2"></i>Resultados de la Encuesta</h4>
+        <p class="card-category">{{ $survey->name }}</p>
+    </div>
 
-        <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('globales.dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item" id="url-list-tasks"><a href="">Lista de Tareas</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Módulo Encuestas y Preguntas</li>
-            </ol>
-        </nav>
+    <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-2">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ route('surveys.index') }}">Encuestas</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('surveys.show', $survey->id) }}">{{ $survey->name }}</a></li>
+            <li class="breadcrumb-item active">Resultados</li>
+        </ol>
+    </nav>
 
-        <div class="row justify-content-center mt-5">
-            <div class="col-md-8">
-                <div class="card shadow-lg">
-                    <div class="card-header text-center bg-primary text-white">
-                        <h3>Encuesta</h3>
+    <div class="card-body">
+
+        {{-- ── KPIs de participación ── --}}
+        <div class="row mb-4">
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body py-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Preguntas</div>
+                        <div class="h3 mb-0 font-weight-bold">{{ count($answersData) }}</div>
                     </div>
-                    <div class="card-body">
-                        @if (empty($answersData))
-                            <p>No se encontraron preguntas o respuestas para esta encuesta.</p>
-                        @else
-                            @foreach ($answersData as $data)
-                                <div class="card mb-4">
-                                    <div class="card-header">
-                                        {!! $data['question'] !!}
-                                    </div>
-                                    <div class="card-body">
-                                        @if (empty($data['options']))
-                                            <p>No hay opciones para esta pregunta.</p>
-                                        @else
-                                            <div class="row">
-                                                @foreach ($data['options'] as $option)
-                                                    <div class="col-md-6 mb-2">
-                                                        <div
-                                                            class="card border @if ($option['is_correct']) border-success @else border-danger @endif">
-                                                            <div class="card-body">
-                                                                <h5 class="card-title">{{ $option['answer'] }}</h5>
-                                                                <div>
-                                                                    @if ($option['is_correct'])
-                                                                        <span class="badge bg-success">Correcta</span>
-                                                                    @else
-                                                                        <span class="badge bg-danger">Incorrecta</span>
-                                                                    @endif
-                                                                    @if (trim($option['answer']) === trim($data['selected_answer'], '"'))
-                                                                        <span class="text-primary ms-2">
-                                                                            <i class="fas fa-check-circle"></i> Seleccionada
-                                                                        </span>
-                                                                    @endif
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endforeach
-                        @endif
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body py-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Participantes</div>
+                        <div class="h3 mb-0 font-weight-bold">{{ $totalParticipantes }}</div>
                     </div>
-
-                    <!-- Agregar el gráfico aquí -->
-                    <div class="card-body">
-                        <h4>Gráfico de Respuestas</h4>
-                        <div id="chart_div" style="width: 100%; height: 400px;"></div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body py-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Completaron</div>
+                        <div class="h3 mb-0 font-weight-bold">{{ $totalCompletados }}</div>
                     </div>
-
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card border-left-{{ $pctCompletado >= 80 ? 'success' : ($pctCompletado >= 50 ? 'warning' : 'danger') }} shadow h-100 py-2">
+                    <div class="card-body py-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">% Completitud</div>
+                        <div class="h3 mb-0 font-weight-bold">{{ $pctCompletado }}%</div>
+                        <div class="progress mt-1" style="height:4px">
+                            <div class="progress-bar bg-{{ $pctCompletado >= 80 ? 'success' : ($pctCompletado >= 50 ? 'warning' : 'danger') }}"
+                                 style="width:{{ $pctCompletado }}%"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        {{-- ── Resultados por pregunta ── --}}
+        @if(empty($answersData))
+        <div class="alert alert-info">
+            <i class="fa fa-info-circle mr-2"></i>
+            No hay respuestas registradas para esta encuesta todavía.
+        </div>
+        @else
+
+        @foreach($answersData as $i => $data)
+        <div class="card shadow mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 font-weight-bold">
+                    <span class="badge badge-secondary mr-2">{{ $i + 1 }}</span>
+                    {!! $data['question'] !!}
+                </h6>
+                <small class="text-muted">{{ $data['total_respuestas'] }} respuesta(s)</small>
+            </div>
+            <div class="card-body">
+                @if(empty($data['options']))
+                <p class="text-muted mb-0"><em>Sin opciones configuradas.</em></p>
+                @else
+                <div class="row">
+                    {{-- Barras de resultados --}}
+                    <div class="col-md-7">
+                        @foreach($data['options'] as $opcion)
+                        @php
+                            $pct = $data['total_respuestas'] > 0
+                                ? round($opcion['count'] / $data['total_respuestas'] * 100) : 0;
+                            $colorBar = $opcion['is_correct'] ? 'success' : 'secondary';
+                        @endphp
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span style="font-size:.85rem">
+                                    @if($opcion['is_correct'])
+                                    <i class="fa fa-check-circle text-success mr-1"></i>
+                                    @endif
+                                    {{ $opcion['answer'] }}
+                                </span>
+                                <span class="text-muted" style="font-size:.8rem">
+                                    {{ $opcion['count'] }} ({{ $pct }}%)
+                                </span>
+                            </div>
+                            <div class="progress" style="height:10px;border-radius:5px">
+                                <div class="progress-bar bg-{{ $colorBar }}"
+                                     style="width:{{ $pct }}%;transition:width .6s ease"
+                                     title="{{ $pct }}%"></div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    {{-- Mini gráfico de torta --}}
+                    <div class="col-md-5 text-center">
+                        <canvas id="chart_q{{ $i }}" height="140"></canvas>
+                    </div>
+                </div>
+                @endif
+            </div>
+        </div>
+        @endforeach
+
+        @endif
+
     </div>
-@stop
-
-@section('css')
-
+</div>
 @stop
 
 @section('scripts')
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-        // Obtener el taskID del localStorage
-        var taskID = localStorage.getItem('taskID');
-
-        // Verifica si se obtuvo el taskID
-        if (taskID) {
-            console.log('Task ID desde localStorage:', taskID);
-
-            // Construir la URL usando el taskID
-            var url = `{{ route('tasks.show', '') }}/${taskID}`; // Utiliza route helper de Laravel
-            console.log('URL construida:', url);
-
-            // Actualizar el href del enlace en el breadcrumb
-            $('#url-list-tasks a').attr('href', url);
-        } else {
-            console.log('No se encontró el taskID en localStorage.');
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+$(function() {
+    @foreach($answersData as $i => $data)
+    @if(!empty($data['options']) && $data['total_respuestas'] > 0)
+    new Chart(document.getElementById('chart_q{{ $i }}'), {
+        type: 'doughnut',
+        data: {
+            labels: @json(collect($data['options'])->pluck('answer')),
+            datasets: [{
+                data: @json(collect($data['options'])->pluck('count')),
+                backgroundColor: [
+                    '#28a745','#dc3545','#ffc107','#17a2b8','#6c757d','#007bff'
+                ],
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 10 } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            var total = ctx.dataset.data.reduce(function(a,b){return a+b;},0);
+                            var pct = total > 0 ? Math.round(ctx.parsed/total*100) : 0;
+                            return ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+                        }
+                    }
+                }
+            }
         }
-
-        google.charts.load('current', {
-            'packages': ['corechart']
-        });
-        google.charts.setOnLoadCallback(drawChart);
-
-        function drawChart() {
-            const data = google.visualization.arrayToDataTable([
-                ['Pregunta', 'Respuestas'],
-                @foreach ($chartData as $data)
-                    ['{!! addslashes(strip_tags($data['question'])) !!}', {{ count($data['answers']) }}],
-                @endforeach
-            ]);
-
-            const options = {
-                title: 'Resultados de la Encuesta',
-                pieHole: 0.4,
-            };
-
-            const chart = new google.visualization.PieChart(document.getElementById('chart_div'));
-            chart.draw(data, options);
-        }
-    </script>
-
+    });
+    @endif
+    @endforeach
+});
+</script>
 @stop
