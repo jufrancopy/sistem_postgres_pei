@@ -39,8 +39,10 @@ class LoginController extends Controller
 
     public function authenticated($request, $user)
     {
-        if ($user->role == 'Administrador') {
+        if ($user->hasRole('Administrador')) {
             return redirect()->route('admin');
+        } elseif ($user->hasRole('Analista - RIISS')) {
+            return redirect()->route('riiss.establecimientos.index');
         } else {
             return redirect()->route('tasks.index');
         }
