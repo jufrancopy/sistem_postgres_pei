@@ -23,7 +23,7 @@ return new class extends Migration
             $table->decimal('longitude', 11, 8)->nullable();
             $table->string('nm_empresa_costos', 80)->nullable();
             $table->string('access_nm_empresa', 80)->nullable();
-            $table->string('area_gestion', 30)->nullable();
+            $table->string('area_gestion', 80)->nullable();
             $table->string('situacion_inmueble', 60)->nullable();
             $table->string('observacion', 100)->nullable();
             $table->string('sistema_hospitalario', 20)->nullable();
