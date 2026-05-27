@@ -12,6 +12,17 @@
 .pct-bar  { height:6px; border-radius:3px; background:#e5e7eb; overflow:hidden; }
 .pct-fill { height:100%; border-radius:3px; transition:width .4s; }
 .hover-bg:hover { background:#fef2f2; }
+/* Asegurar botones circulares en esta vista (override local) */
+.btn-circle {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 34px !important;
+    height: 34px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+}
+.btn-circle.btn-sm { width: 30px !important; height: 30px !important; }
 </style>
 @endpush
 
@@ -45,7 +56,7 @@
         <div class="text-center py-5 text-muted">
             <i class="fa fa-clipboard fa-3x mb-3 d-block" style="opacity:.3"></i>
             <p>No hay evaluaciones registradas aún.</p>
-            <button class="btn btn-danger" data-toggle="modal" data-target="#modalBuscarEst">
+            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalBuscarEst">
                 <i class="fa fa-plus mr-1"></i>Crear primera evaluación
             </button>
         </div>
@@ -58,7 +69,6 @@
                         <th>Establecimiento</th>
                         <th>Fecha</th>
                         <th>Evaluador</th>
-                        <th>Analista</th>
                         <th>Estado</th>
                         <th>Cumplimiento</th>
                         <th>Clasificación</th>
@@ -86,7 +96,6 @@
                         </td>
                         <td><small>{{ $ev->fecha_evaluacion?->format('d/m/Y') }}</small></td>
                         <td><small>{{ $ev->evaluador_nombre ?? '—' }}</small></td>
-                        <td><small>{{ $ev->analista?->name ?? '—' }}</small></td>
                         <td>
                             <span class="estado-badge estado-{{ $ev->estado }}">
                                 {{ ucfirst(str_replace('_', ' ', $ev->estado)) }}
@@ -110,15 +119,15 @@
                             @endif
                         </td>
                         <td class="text-center">
-                            <a href="{{ route('riiss.evaluaciones.show', $ev) }}" class="circle-btn circle-btn-info btn-sm mr-1">
+                            <a href="{{ route('riiss.evaluaciones.show', $ev) }}" class="btn btn-info btn-circle btn-sm mr-1">
                                 <i class="fa fa-eye"></i>
                             </a>
                             @if(in_array($ev->estado, ['borrador','en_progreso']))
-                            <a href="{{ route('riiss.evaluaciones.nueva', $ev->id_establecimiento) }}?evaluacion={{ $ev->id }}" class="circle-btn circle-btn-warning btn-sm mr-1" title="Editar evaluación">
+                            <a href="{{ route('riiss.evaluaciones.nueva', $ev->id_establecimiento) }}?evaluacion={{ $ev->id }}" class="btn btn-warning btn-circle btn-sm mr-1" title="Editar evaluación">
                                 <i class="fa fa-edit"></i>
                             </a>
                             @endif
-                            <button class="circle-btn circle-btn-danger btn-sm" title="Eliminar evaluación" onclick="eliminarEvaluacion({{ $ev->id }}, this)">
+                            <button class="btn btn-danger btn-circle btn-sm" title="Eliminar evaluación" onclick="eliminarEvaluacion({{ $ev->id }}, this)">
                                 <i class="fa fa-trash"></i>
                             </button>
                         </td>
@@ -278,7 +287,7 @@ function buscarEstablecimientos(q) {
                     + '<span style="background:' + color + ';color:#fff;font-size:.65rem;padding:2px 8px;border-radius:20px;font-weight:600">' + label + '</span>'
                     + '<small class="text-muted"><i class="fa fa-map-marker-alt mr-1"></i>' + e.departamento + '</small>'
                     + '</div></div>'
-                    + '<span class="btn btn-danger btn-sm ml-3" style="flex-shrink:0"><i class="fa fa-clipboard-check mr-1"></i>Evaluar</span>'
+                    + '<span class="btn btn-danger btn-circle btn-sm ml-3" style="flex-shrink:0"><i class="fa fa-clipboard-check mr-1"></i>Evaluar</span>'
                     + '</div>';
             });
 

@@ -164,7 +164,100 @@ let formulario   = null;
 let respuestas   = {};
 let checklistState = {};
 
+// ── Localidad Select2 encadenado ──────────────────────────────────────────────
+function initLocalidadSelect(P) {
+    var URL_DEPTOS  = '{{ route("riiss.localidades.departamentos") }}';
+    var URL_DISTS   = '{{ route("riiss.localidades.distritos") }}';
+    var URL_BARRIOS = '{{ route("riiss.localidades.barrios") }}';
+
+    var S2 = {
+        width: '100%', 
+        allowClear: true, 
+        dropdownParent: $('body'),
+        language: {
+            noResults:  function() { return 'Sin resultados'; },
+            searching:  function() { return 'Buscando...'; },
+        },
+    };
+
+    // 1. Inicializar los 3 campos inmediatamente
+    $('#' + P + '-depto').select2($.extend({}, S2, {
+        placeholder: 'Seleccioná departamento',
+        ajax: {
+            url: URL_DEPTOS, dataType: 'json', delay: 150,
+            data: function(p) { return { q: p.term || '' }; },
+            processResults: function(d) { return { results: d.results }; },
+            cache: true,
+        },
+    }));
+
+    $('#' + P + '-dist').select2($.extend({}, S2, {
+        placeholder: 'Seleccioná ciudad/distrito',
+        ajax: {
+            url: URL_DISTS, dataType: 'json', delay: 150,
+            data: function(p) { 
+                return { q: p.term || '', cod_dpto: $('#' + P + '-depto').val() }; 
+            },
+            processResults: function(d) { return { results: d.results }; },
+            cache: true,
+        },
+    }));
+
+    $('#' + P + '-barrio').select2($.extend({}, S2, {
+        placeholder: 'Seleccioná barrio/localidad',
+        ajax: {
+            url: URL_BARRIOS, dataType: 'json', delay: 150,
+            data: function(p) { 
+                return { q: p.term || '', cod_dpto: $('#' + P + '-depto').val(), cod_dist: $('#' + P + '-dist').val() }; 
+            },
+            processResults: function(d) { return { results: d.results }; },
+            cache: true,
+        },
+    }));
+
+    // Precargar departamentos para facilitar selección inicial
+    $.get(URL_DEPTOS, { q: '' }, function(r) {
+        if (!r.results) return;
+        r.results.forEach(function(item) {
+            if ($('#' + P + '-depto').find("option[value='" + item.id + "']").length === 0) {
+                $('#' + P + '-depto').append(new Option(item.text, item.id, false, false));
+            }
+        });
+        $('#' + P + '-depto').trigger('change.select2');
+    });
+
+    // 2. Manejar cascada (limpiar hijos cuando el padre cambia)
+    $('#' + P + '-depto').on('change', function() {
+        $('#' + P + '-dist').val(null).trigger('change');
+        $('#' + P + '-barrio').val(null).trigger('change');
+    });
+
+    $('#' + P + '-dist').on('change', function() {
+        $('#' + P + '-barrio').val(null).trigger('change');
+    });
+
+    // API pública para obtener valores
+    window[P + 'GetLocalidad'] = function() {
+        return {
+            departamento: { 
+                cod: $('#' + P + '-depto').val(), 
+                text: $('#' + P + '-depto option:selected').text().trim() 
+            },
+            distrito: { 
+                cod: $('#' + P + '-dist').val(),  
+                text: $('#' + P + '-dist option:selected').text().trim() 
+            },
+            barrio: { 
+                id:  $('#' + P + '-barrio').val(), 
+                text: $('#' + P + '-barrio option:selected').text().trim() 
+            },
+        };
+    };
+}
+
 $(document).ready(function() {
+    // Inicializar localidad
+    initLocalidadSelect('eval');
 
     // ── Select2 evaluadores ───────────────────────────────────────────────
     $('#evalEvaluadores').select2({

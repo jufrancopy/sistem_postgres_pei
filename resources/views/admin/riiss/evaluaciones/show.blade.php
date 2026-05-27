@@ -76,7 +76,6 @@
                         <table class="table table-sm table-borderless mb-0">
                             <tr><th class="text-muted small py-1">Nombre</th><td class="small">{{ $est->nombre_oficial }}</td></tr>
                             <tr><th class="text-muted small py-1">Tipología</th><td class="small">{{ $est->tipologia_clasificacion }}</td></tr>
-                            <tr><th class="text-muted small py-1">Analista</th><td class="small">{{ $evaluacion->analista?->name ?? '—' }}</td></tr>
                             <tr><th class="text-muted small py-1">Complejidad</th><td>
                                 <span class="badge" style="background:{{ $est->complejidad_color }};color:#fff;font-size:.7rem">
                                     {{ $est->complejidad }}

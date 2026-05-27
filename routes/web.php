@@ -378,7 +378,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::put('profile/password', ['as' => 'profile.password', 'uses' => 'ProfileController@password']);
 
     // ── RIISS - Red Integrada e Integral de Servicios de Salud ───────────────
-    Route::prefix('riiss')->name('riiss.')->middleware(['role:Administrador|Analista RIISS'])->group(function () {
+    Route::prefix('riiss')->name('riiss.')->middleware(['role:Administrador|Analista - RIISS'])->group(function () {
 
         // Establecimientos
         Route::get('establecimientos', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'index'])

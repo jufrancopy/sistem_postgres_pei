@@ -52,11 +52,7 @@ class EvaluacionController extends Controller
      */
     public function index()
     {
-        $query = Evaluacion::with(['establecimiento', 'analista'])->orderByDesc('created_at');
-
-        if (!auth()->user()->hasRole('Administrador')) {
-            $query->where('analista_id', auth()->id());
-        }
+        $query = Evaluacion::with('establecimiento')->orderByDesc('created_at');
 
         $evaluaciones = $query->paginate(20);
 
@@ -114,13 +110,8 @@ class EvaluacionController extends Controller
             'evaluadores.*.text'              => 'required|string',
             'evaluador_telefono'              => 'nullable|string|max:50',
             'evaluador_usuario_institucional' => 'nullable|string|max:100',
-            'analista_id'                     => 'nullable|integer|exists:users,id',
             'metadata'                        => 'nullable|array',
         ]);
-
-        if (auth()->user()->hasRole('Analista RIISS') && !auth()->user()->hasRole('Administrador')) {
-            $validated['analista_id'] = auth()->id();
-        }
 
         // Construir nombre legible desde los evaluadores seleccionados
         if (!empty($validated['evaluadores'])) {
@@ -175,16 +166,7 @@ class EvaluacionController extends Controller
             'respuestas.*.estado_cumplimiento'        => 'nullable|in:cumple,no_cumple,no_aplica,no_verificable,pendiente',
             'respuestas.*.observacion'                => 'nullable|string|max:1000',
             'respuestas.*.evidencia_adjuntos'         => 'nullable|array',
-            'analista_id'                             => 'nullable|integer|exists:users,id',
         ]);
-
-        if (auth()->user()->hasRole('Analista RIISS') && !auth()->user()->hasRole('Administrador')) {
-            $validated['analista_id'] = auth()->id();
-        }
-
-        if (array_key_exists('analista_id', $validated)) {
-            $evaluacion->update(['analista_id' => $validated['analista_id']]);
-        }
 
         foreach ($validated['respuestas'] as $item) {
             $evaluacion->respuestas()->updateOrCreate(
@@ -261,7 +243,7 @@ class EvaluacionController extends Controller
     public function show(Evaluacion $evaluacion)
     {
         $this->authorizeEvaluacion($evaluacion);
-        $evaluacion->load(['establecimiento', 'respuestas.pregunta.seccion', 'gapAnalysis', 'analista']);
+        $evaluacion->load(['establecimiento', 'respuestas.pregunta.seccion', 'gapAnalysis']);
 
         if (request()->expectsJson()) {
             return response()->json(['ok' => true, 'data' => $evaluacion]);
@@ -330,7 +312,7 @@ class EvaluacionController extends Controller
 
     private function authorizeEvaluacion(Evaluacion $evaluacion): void
     {
-        if (!auth()->user()->hasRole('Administrador') && auth()->id() !== $evaluacion->analista_id) {
+        if (!auth()->user()->hasAnyRole(['Administrador', 'Analista - RIISS'])) {
             abort(403, 'No estás autorizado para acceder a esta evaluación.');
         }
     }

@@ -25,9 +25,8 @@
 <div class="sidebar-wrapper">
 
     <ul class="nav">
-        {{-- Si tenemos una coleccion de roles pasarmos ('RoleA|RoleB') --}}
-        @hasanyrole('Administrador|Analista RIISS')
-            @role('Administrador')
+        {{-- Menu para Administrador (todo) --}}
+        @role('Administrador')
             <li class="nav-item active  ">
                 <a class="nav-link" href="{{ url('home') }}">
                     <i class="material-icons">dashboard</i>
@@ -257,7 +256,33 @@
 
 
 
-            {{-- ── RIISS ── --}}
+            {{-- RIISS: lo mostramos a Administrador y Analista - RIISS abajo --}}
+
+            <li class="nav-item ">
+                <a class="nav-link" href="{{ route('globales.patrimony-profiles.index') }}">
+                    <i class="material-icons">account_balance</i>
+                    <p>Patrimonios</p>
+                </a>
+            </li>
+
+            <li class="nav-item ">
+                <a class="nav-link" href="{{ route('globales.activities.index') }}">
+                    <i class="material-icons">rocket_launch</i>
+                    <p>Acitividades</p>
+                </a>
+            </li>
+
+            <li class="nav-item ">
+                <a class="nav-link" href="{{ route('surveys.index') }}">
+                    <i class="material-icons">poll </i>
+                    <p>Encuesta</p>
+                </a>
+            </li>
+        </ul>
+        @endrole
+
+        {{-- Mostrar RIISS tanto a Administrador como a Analista - RIISS --}}
+        @hasanyrole('Administrador|Analista - RIISS')
             @php $enRiiss = str_contains($path, 'riiss'); @endphp
             <li class="nav-item">
                 <a class="nav-link" data-toggle="collapse" href="#riissMenu" aria-expanded="{{ $enRiiss ? 'true' : 'false' }}">
@@ -281,95 +306,76 @@
                     </ul>
                 </div>
             </li>
+        @endhasanyrole
 
-            <li class="nav-item ">
-                <a class="nav-link" href="{{ route('globales.patrimony-profiles.index') }}">
-                    <i class="material-icons">account_balance</i>
-                    <p>Patrimonios</p>
+        {{-- Las siguientes secciones NO deben verse para Analista - RIISS --}}
+        @unlessrole('Analista - RIISS')
+            @php
+                $orgParticipante = \App\Admin\Globales\Organigrama::where('user_id', Auth::id())->first();
+                $pendientesParticipante = $orgParticipante
+                    ? \App\Models\Estadistica\SiessExtracto::pendientes()->where('direccion_id', $orgParticipante->id)->count()
+                    : 0;
+            @endphp
+
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('siess.dashboard') }}">
+                    <i class="material-icons">home</i>
+                    <p>Inicio</p>
                 </a>
             </li>
 
-            <li class="nav-item ">
-                <a class="nav-link" href="{{ route('globales.activities.index') }}">
-                    <i class="material-icons">rocket_launch</i>
-                    <p>Acitividades</p>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('siess.dashboard') }}">
+                    <i class="material-icons">notifications</i>
+                    <p>Mis Notificaciones
+                        @if($pendientesParticipante > 0)
+                            <span class="badge badge-warning ml-1" style="font-size:.65rem">{{ $pendientesParticipante }}</span>
+                        @endif
+                    </p>
                 </a>
             </li>
 
-            <li class="nav-item ">
-                <a class="nav-link" href="{{ route('surveys.index') }}">
-                    <i class="material-icons">poll </i>
-                    <p>Encuesta</p>
+            @if($orgParticipante)
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="collapse" href="#validacionMenu" aria-expanded="{{ $pendientesParticipante > 0 ? 'true' : 'false' }}">
+                    <i class="material-icons">fact_check</i>
+                    <p>Validación SIESS
+                        @if($pendientesParticipante > 0)
+                            <span class="badge badge-danger ml-1" style="font-size:.65rem">{{ $pendientesParticipante }}</span>
+                        @endif
+                        <b class="caret"></b>
+                    </p>
                 </a>
+                <div class="collapse {{ $pendientesParticipante > 0 ? 'show' : '' }}" id="validacionMenu">
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('siess.dashboard') }}">
+                                <span class="sidebar-mini"><i class="fa fa-clock" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Pendientes
+                                    @if($pendientesParticipante > 0)
+                                        <span class="badge badge-danger" style="font-size:.6rem">{{ $pendientesParticipante }}</span>
+                                    @endif
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('siess.extractos.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-list" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Todos los extractos</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
-        </ul>
-    @else
-        {{-- ── Sidebar para Participantes / Validadores SIESS ── --}}
-        @php
-            $orgParticipante = \App\Admin\Globales\Organigrama::where('user_id', Auth::id())->first();
-            $pendientesParticipante = $orgParticipante
-                ? \App\Models\Estadistica\SiessExtracto::pendientes()->where('direccion_id', $orgParticipante->id)->count()
-                : 0;
-        @endphp
+            @endif
+        @endunlessrole
 
-        <li class="nav-item">
-            <a class="nav-link" href="{{ route('siess.home') }}">
-                <i class="material-icons">home</i>
-                <p>Inicio</p>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="{{ route('siess.home') }}">
-                <i class="material-icons">notifications</i>
-                <p>Mis Notificaciones
-                    @if($pendientesParticipante > 0)
-                        <span class="badge badge-warning ml-1" style="font-size:.65rem">{{ $pendientesParticipante }}</span>
-                    @endif
-                </p>
-            </a>
-        </li>
-
-        @if($orgParticipante)
-        <li class="nav-item">
-            <a class="nav-link" data-toggle="collapse" href="#validacionMenu" aria-expanded="{{ $pendientesParticipante > 0 ? 'true' : 'false' }}">
-                <i class="material-icons">fact_check</i>
-                <p>Validación SIESS
-                    @if($pendientesParticipante > 0)
-                        <span class="badge badge-danger ml-1" style="font-size:.65rem">{{ $pendientesParticipante }}</span>
-                    @endif
-                    <b class="caret"></b>
-                </p>
-            </a>
-            <div class="collapse {{ $pendientesParticipante > 0 ? 'show' : '' }}" id="validacionMenu">
-                <ul class="nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('siess.home') }}">
-                            <span class="sidebar-mini"><i class="fa fa-clock" style="font-size:.8rem"></i></span>
-                            <span class="sidebar-normal">Pendientes
-                                @if($pendientesParticipante > 0)
-                                    <span class="badge badge-danger" style="font-size:.6rem">{{ $pendientesParticipante }}</span>
-                                @endif
-                            </span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('siess.extractos.index') }}">
-                            <span class="sidebar-mini"><i class="fa fa-list" style="font-size:.8rem"></i></span>
-                            <span class="sidebar-normal">Todos los extractos</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </li>
-        @endif
-
+        {{-- Mi Perfil (visible para todos) --}}
         <li class="nav-item">
             <a class="nav-link" href="{{ route('profile.edit') }}">
                 <i class="material-icons">person</i>
                 <p>Mi Perfil</p>
             </a>
         </li>
-    @endhasanyrole
 
 </div>

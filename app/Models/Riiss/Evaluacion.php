@@ -18,7 +18,7 @@ class Evaluacion extends Model
     protected $fillable = [
         'id_establecimiento', 'fecha_evaluacion', 'evaluador_nombre',
         'evaluadores', 'evaluador_telefono', 'evaluador_usuario_institucional',
-        'analista_id', 'estado', 'porcentaje_cumplimiento', 'clasificacion_resultado',
+        'estado', 'porcentaje_cumplimiento', 'clasificacion_resultado',
         'observaciones_generales', 'metadata',
     ];
 
@@ -27,7 +27,6 @@ class Evaluacion extends Model
         'porcentaje_cumplimiento' => 'decimal:2',
         'metadata'                => 'array',
         'evaluadores'             => 'array',
-        'analista_id'             => 'integer',
     ];
 
     public function establecimiento(): BelongsTo
@@ -43,11 +42,6 @@ class Evaluacion extends Model
     public function gapAnalysis(): HasMany
     {
         return $this->hasMany(GapAnalysisItem::class);
-    }
-
-    public function analista(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'analista_id');
     }
 
     public function scopePorEstado($query, string $estado)

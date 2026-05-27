@@ -28,6 +28,17 @@
 
 /* ── Filtros ── */
 .filtro-activo { background:#fce4ec !important; border-color:#e91e63 !important; color:#c62828 !important; }
+/* Forzar botones circulares en esta vista */
+.btn-circle {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 34px !important;
+    height: 34px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+}
+.btn-circle.btn-sm { width: 30px !important; height: 30px !important; }
 </style>
 @endpush
 
@@ -49,52 +60,58 @@
     </div>
 </div>
 
-{{-- ── Pasos del flujo ── --}}
-<div class="card mb-4 shadow-sm">
-    <div class="card-body py-3">
-        <p class="small font-weight-bold text-uppercase text-muted mb-2">¿Cómo funciona?</p>
-        <div class="d-flex align-items-center flex-wrap gap-2">
-            <div class="flujo-paso">
-                <div class="paso-num bg-danger text-white">1</div>
-                <div>
-                    <div class="font-weight-bold small">Buscá el establecimiento</div>
-                    <div class="text-muted" style="font-size:.75rem">Filtrá por nombre, departamento o tipo</div>
+                <div class="card shadow-sm">
+        <div class="card-header card-header-danger">
+            <h4 class="card-title mb-0"><i class="fa fa-hospital mr-2"></i>Listado de establecimientos</h4>
+            <p class="card-category mb-0 small">Explorar y evaluar establecimientos</p>
+        </div>
+
+        <nav class="bg-light rounded px-3 py-2 mb-0">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('riiss.establecimientos.index') }}">RIISS</a></li>
+                <li class="breadcrumb-item active">Establecimientos</li>
+            </ol>
+        </nav>
+        <div class="card-body">
+
+        {{-- ¿Cómo funciona? (diseño embebido) --}}
+        <div class="mb-4">
+            <p class="small font-weight-bold text-uppercase text-muted mb-2">¿Cómo funciona?</p>
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <div class="flujo-paso">
+                    <div class="paso-num bg-danger text-white">1</div>
+                    <div>
+                        <div class="font-weight-bold small">Buscá el establecimiento</div>
+                        <div class="text-muted" style="font-size:.75rem">Filtrá por nombre, departamento o tipo</div>
+                    </div>
                 </div>
-            </div>
-            <div class="flujo-arrow d-none d-md-block">›</div>
-            <div class="flujo-paso">
-                <div class="paso-num bg-warning text-white">2</div>
-                <div>
-                    <div class="font-weight-bold small">Hacé clic en <i class="fa fa-clipboard-check text-danger"></i></div>
-                    <div class="text-muted" style="font-size:.75rem">Abre el formulario de evaluación</div>
+                <div class="flujo-arrow d-none d-md-block">›</div>
+                <div class="flujo-paso">
+                    <div class="paso-num bg-warning text-white">2</div>
+                    <div>
+                        <div class="font-weight-bold small">Hacé clic en <i class="fa fa-clipboard-check text-danger"></i></div>
+                        <div class="text-muted" style="font-size:.75rem">Abre el formulario de evaluación</div>
+                    </div>
                 </div>
-            </div>
-            <div class="flujo-arrow d-none d-md-block">›</div>
-            <div class="flujo-paso">
-                <div class="paso-num bg-info text-white">3</div>
-                <div>
-                    <div class="font-weight-bold small">Respondé el formulario</div>
-                    <div class="text-muted" style="font-size:.75rem">Sí / No / No Aplica por sección</div>
+                <div class="flujo-arrow d-none d-md-block">›</div>
+                <div class="flujo-paso">
+                    <div class="paso-num bg-info text-white">3</div>
+                    <div>
+                        <div class="font-weight-bold small">Respondé el formulario</div>
+                        <div class="text-muted" style="font-size:.75rem">Sí / No / No Aplica por sección</div>
+                    </div>
                 </div>
-            </div>
-            <div class="flujo-arrow d-none d-md-block">›</div>
-            <div class="flujo-paso">
-                <div class="paso-num bg-success text-white">4</div>
-                <div>
-                    <div class="font-weight-bold small">Obtené el resultado</div>
-                    <div class="text-muted" style="font-size:.75rem">CUMPLE / PARCIAL / NO CUMPLE + brechas</div>
+                <div class="flujo-arrow d-none d-md-block">›</div>
+                <div class="flujo-paso">
+                    <div class="paso-num bg-success text-white">4</div>
+                    <div>
+                        <div class="font-weight-bold small">Obtené el resultado</div>
+                        <div class="text-muted" style="font-size:.75rem">CUMPLE / PARCIAL / NO CUMPLE + brechas</div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
-<div class="card shadow-sm">
-    <div class="card-header card-header-danger">
-        <h4 class="card-title mb-0"><i class="fa fa-hospital mr-2"></i>Listado de establecimientos</h4>
-        <p class="card-category mb-0 small">Explorar y evaluar establecimientos</p>
-    </div>
-    <div class="card-body">
 
         {{-- KPIs --}}
         <div class="row mb-4">
@@ -197,6 +214,8 @@
 
     </div>
 </div>
+
+    
 
 {{-- ── Modal detalle ── --}}
 <div class="modal fade" id="modalEst" tabindex="-1">
@@ -325,7 +344,7 @@ function renderTarjetas(items) {
                 </div>
                 <div class="est-footer">
                     <div class="flex-grow-1">${evalBadge}</div>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="verDetalle('${e.id}','${e.nombre.replace(/'/g,"\\'")}')">
+                    <button class="btn btn-info btn-circle btn-sm mr-1" onclick="verDetalle('${e.id}','${e.nombre.replace(/'/g,"\\'")}')" title="Ver detalle">
                         <i class="fa fa-eye"></i>
                     </button>
                     <a href="/riiss/evaluaciones/nueva/${e.id}" class="btn btn-sm btn-danger" title="Iniciar evaluación">
@@ -357,11 +376,11 @@ function renderTabla(items) {
             <td><span class="badge-complejidad" style="background:${color}">${e.complejidad_label ?? e.complejidad}</span></td>
             <td><small>${e.departamento}</small></td>
             <td>${evalBadge}</td>
-            <td class="text-center">
-                <button class="circle-btn circle-btn-info btn-sm mr-1" onclick="verDetalle('${e.id}','${e.nombre.replace(/'/g,"\\'")}')">
+                <td class="text-center">
+                <button class="btn btn-info btn-circle btn-sm mr-1" onclick="verDetalle('${e.id}','${e.nombre.replace(/'/g,"\\'")}')" title="Ver detalle">
                     <i class="fa fa-eye"></i>
                 </button>
-                <a href="/riiss/evaluaciones/nueva/${e.id}" class="circle-btn circle-btn-danger btn-sm" title="Evaluar">
+                <a href="/riiss/evaluaciones/nueva/${e.id}" class="btn btn-danger btn-circle btn-sm" title="Evaluar">
                     <i class="fa fa-clipboard-check"></i>
                 </a>
             </td>
