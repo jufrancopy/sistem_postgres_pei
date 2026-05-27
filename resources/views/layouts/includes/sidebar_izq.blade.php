@@ -26,7 +26,8 @@
 
     <ul class="nav">
         {{-- Si tenemos una coleccion de roles pasarmos ('RoleA|RoleB') --}}
-        @hasanyrole('Administrador')
+        @hasanyrole('Administrador|Analista RIISS')
+            @role('Administrador')
             <li class="nav-item active  ">
                 <a class="nav-link" href="{{ url('home') }}">
                     <i class="material-icons">dashboard</i>
@@ -370,4 +371,5 @@
             </a>
         </li>
     @endhasanyrole
+
 </div>

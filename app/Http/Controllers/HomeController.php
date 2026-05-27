@@ -20,6 +20,11 @@ class HomeController extends Controller
             return redirect()->route('planificacion-dashboard');
         }
 
+        // Analista RIISS → módulo de establecimientos
+        if ($user->hasRole('Analista - RIISS')) {
+            return redirect()->route('riiss.establecimientos.index');
+        }
+
         // Participantes → sus notificaciones SIESS + perfil
         return redirect()->route('siess.home');
     }
