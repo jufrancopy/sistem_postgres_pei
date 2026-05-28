@@ -79,5 +79,22 @@
 <script>
     $(document).ready(function() {
         $('.js-example-responsive').select2();
+
+        // ── Fix global Select2 + Material Dashboard en móvil ──────────────────
+        // Marca el body cuando un Select2 está abierto para activar el CSS fix
+        $(document).on('select2:open', function() {
+            $('body').addClass('select2-open');
+            // Forzar foco en el input de búsqueda (fix móvil)
+            setTimeout(function() {
+                var $input = $('.select2-container--open .select2-search__field');
+                if ($input.length) {
+                    $input.css('pointer-events', 'auto');
+                    $input[0].focus();
+                }
+            }, 50);
+        });
+        $(document).on('select2:close', function() {
+            $('body').removeClass('select2-open');
+        });
     });
 </script>

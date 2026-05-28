@@ -14,9 +14,52 @@
 .select2-container--default .select2-selection--single { border:1px solid #ced4da; border-radius:6px; height:42px; padding:6px 8px; }
 .select2-container--default .select2-selection--single .select2-selection__arrow { height:42px; }
 
+/* Fix for Select2 search on mobile and modals */
+.select2-container--open { z-index: 99999 !important; }
+.select2-dropdown { z-index: 99999 !important; border-radius:8px; border:1px solid #e5e7eb; box-shadow:0 4px 16px rgba(0,0,0,.1); }
+
+/* Responsive Fixes for Select2 */
+.select2-container { width: 100% !important; display: block; }
+.select2-selection { width: 100% !important; }
+
+/* Force search field width in multi-select */
+.select2-container .select2-search--inline { width: 100%; }
+.select2-container .select2-search--inline .select2-search__field { 
+    width: 100% !important; 
+    min-width: 100px !important; 
+    margin-left: 0 !important;
+}
+
+/* Material Design Fixes */
+.bmd-form-group { padding-top: 0 !important; margin-bottom: 0 !important; }
+.form-group { margin-bottom: 0 !important; }
+
+/* Reset Material Design backgrounds on Select2 inputs */
+.select2-search__field {
+    background-image: none !important;
+    background-color: #fff !important;
+    border: 1px solid #ced4da !important;
+    padding: 6px 10px !important;
+    margin-top: 5px !important;
+    box-shadow: none !important;
+    outline: none !important;
+    width: 100% !important;
+}
+
+@media (max-width: 768px) {
+    .select2-container { margin-bottom: 10px; }
+    /* Ensure the search field is reachable and focusable on mobile */
+    .select2-search__field { font-size: 16px !important; } /* Prevents iOS zoom on focus */
+}
+
 #evalWrapper { display:flex; gap:16px; align-items:flex-start; }
 #sidebarSecciones { width:260px; flex-shrink:0; position:sticky; top:80px; max-height:calc(100vh - 100px); overflow-y:auto; }
 #contenidoFormulario { flex:1; min-width:0; }
+
+/* Ensure the card and rows don't clip the Select2 dropdown */
+.card, .card-body, .row, .col-md-3, .col-md-4, .col-md-6 { 
+    overflow: visible !important; 
+}
 
 .sec-item { display:flex; align-items:center; gap:8px; padding:7px 12px; border-radius:8px; cursor:pointer; font-size:.82rem; transition:background .15s; border:none; background:none; width:100%; text-align:left; }
 .sec-item:hover { background:#f8f8f8; }
@@ -173,7 +216,6 @@ function initLocalidadSelect(P) {
     var S2 = {
         width: '100%', 
         allowClear: true, 
-        dropdownParent: $('body'),
         language: {
             noResults:  function() { return 'Sin resultados'; },
             searching:  function() { return 'Buscando...'; },
@@ -262,7 +304,7 @@ $(document).ready(function() {
     // ── Select2 evaluadores ───────────────────────────────────────────────
     $('#evalEvaluadores').select2({
         placeholder: 'Buscar evaluador...', allowClear: true, multiple: true,
-        minimumInputLength: 0, width: '100%', dropdownParent: $('body'),
+        minimumInputLength: 0, width: '100%',
         language: { noResults: function() { return 'Sin resultados'; }, searching: function() { return 'Buscando...'; } },
         ajax: {
             url: '{{ route("riiss.evaluaciones.usuarios") }}', dataType: 'json', delay: 250,
@@ -275,17 +317,38 @@ $(document).ready(function() {
         },
         templateSelection: function(u) { return u.text || u.id; },
     });
+// Preseleccionar usuario actual
+@if(auth()->check())
+$('#evalEvaluadores').append(new Option('{{ addslashes(auth()->user()->name) }}', {{ auth()->id() }}, true, true)).trigger('change');
+@endif
 
-    // Preseleccionar usuario actual
-    @if(auth()->check())
-    $('#evalEvaluadores').append(new Option('{{ addslashes(auth()->user()->name) }}', {{ auth()->id() }}, true, true)).trigger('change');
-    @endif
+// ── Cargar o Crear evaluación ─────────────────────────────────────────────
+const urlParams = new URLSearchParams(window.location.search);
+evaluacionId = urlParams.get('evaluacion');
 
-    // ── Crear evaluación automáticamente y cargar formulario ──────────────
+if (evaluacionId) {
+    recuperarEvaluacionExistente(evaluacionId);
+} else {
     crearEvaluacionYCargar();
+}
 
-    // Guardar datos de visita al cambiar (debounce)
+// Guardar datos de visita al cambiar (debounce)
     var saveTimer;
+
+    // Fix for Select2 search focus on mobile and Material Design
+    $(document).on('select2:open', function(e) {
+        setTimeout(() => {
+            const dropdown = $('.select2-container--open');
+            if (dropdown.length) {
+                const searchField = dropdown.find('.select2-search__field');
+                if (searchField.length) {
+                    searchField[0].focus();
+                    searchField[0].click(); // Force interaction for some touch devices
+                }
+            }
+        }, 150);
+    });
+
     $('#evalFecha, #evalTelefono').on('change input', function() {
         clearTimeout(saveTimer);
         saveTimer = setTimeout(actualizarDatosVisita, 800);
@@ -295,6 +358,75 @@ $(document).ready(function() {
         saveTimer = setTimeout(actualizarDatosVisita, 800);
     });
 });
+
+// ── Recuperar evaluación por ID ──────────────────────────────────────────────
+function recuperarEvaluacionExistente(id) {
+    $('#evalEstado').html('<span class="badge badge-info">Cargando evaluación #' + id + '...</span>');
+    $.get('/riiss/evaluaciones/' + id, function(r) {
+        if (!r.ok) {
+            mostrarToast('No se pudo cargar la evaluación', 'error');
+            return;
+        }
+        const ev = r.data;
+        $('#evalFecha').val(ev.fecha_evaluacion.split('T')[0]);
+        $('#evalTelefono').val(ev.evaluador_telefono);
+        
+        // Cargar evaluadores
+        if (ev.evaluadores && ev.evaluadores.length) {
+            $('#evalEvaluadores').empty();
+            ev.evaluadores.forEach(function(u) {
+                if ($('#evalEvaluadores').find("option[value='" + u.id + "']").length === 0) {
+                    $('#evalEvaluadores').append(new Option(u.text, u.id, true, true));
+                } else {
+                    $('#evalEvaluadores').val(u.id).trigger('change.select2');
+                }
+            });
+            $('#evalEvaluadores').trigger('change');
+        }
+
+        // Cargar ubicación si existe en metadata
+        if (ev.metadata && ev.metadata.ubicacion) {
+            const u = ev.metadata.ubicacion;
+            if (u.departamento && u.departamento.cod) {
+                if ($('#eval-depto').find("option[value='" + u.departamento.cod + "']").length === 0) {
+                    $('#eval-depto').append(new Option(u.departamento.text, u.departamento.cod, true, true)).trigger('change');
+                } else {
+                    $('#eval-depto').val(u.departamento.cod).trigger('change');
+                }
+                
+                setTimeout(function() {
+                    if (u.distrito && u.distrito.cod) {
+                        if ($('#eval-dist').find("option[value='" + u.distrito.cod + "']").length === 0) {
+                            $('#eval-dist').append(new Option(u.distrito.text, u.distrito.cod, true, true)).trigger('change');
+                        } else {
+                            $('#eval-dist').val(u.distrito.cod).trigger('change');
+                        }
+                        
+                        setTimeout(function() {
+                            if (u.barrio && u.barrio.id) {
+                                if ($('#eval-barrio').find("option[value='" + u.barrio.id + "']").length === 0) {
+                                    $('#eval-barrio').append(new Option(u.barrio.text, u.barrio.id, true, true)).trigger('change');
+                                } else {
+                                    $('#eval-barrio').val(u.barrio.id).trigger('change');
+                                }
+                            }
+                        }, 600);
+                    }
+                }, 600);
+            }
+        }
+
+        // Cargar respuestas ya guardadas
+        if (ev.respuestas && ev.respuestas.length) {
+            ev.respuestas.forEach(function(res) {
+                respuestas[res.formulario_pregunta_id] = res.respuesta;
+            });
+        }
+
+        $('#evalEstado').html('<span class="badge badge-success">Evaluación #' + id + ' activa</span>');
+        cargarFormulario();
+    });
+}
 
 // ── Crear evaluación al cargar la página ─────────────────────────────────────
 function crearEvaluacionYCargar() {
@@ -564,6 +696,10 @@ function mostrarResultado(data) {
     var iconos = { CUMPLE: '✅', CUMPLE_PARCIALMENTE: '⚠️', NO_CUMPLE: '❌' };
     var labels = { CUMPLE: 'CUMPLE', CUMPLE_PARCIALMENTE: 'CUMPLE PARCIALMENTE', NO_CUMPLE: 'NO CUMPLE' };
 
+    const ahora = new Date();
+    const fechaStr = ahora.toLocaleDateString('es-PY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const horaStr  = ahora.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' });
+
     var acciones = '';
     if (data.acciones_criticas && data.acciones_criticas.length) {
         acciones = '<div class="mt-4 text-left"><h6 class="font-weight-bold"><i class="fa fa-exclamation-triangle text-danger mr-2"></i>Acciones críticas</h6><ul class="list-unstyled">'
@@ -573,6 +709,7 @@ function mostrarResultado(data) {
     }
 
     var html = '<div class="resultado-card resultado-' + clasif + '">'
+        + '<div class="mb-2"><span class="badge badge-dark">Finalizado: ' + fechaStr + ' a las ' + horaStr + '</span></div>'
         + '<div style="font-size:3rem">' + (iconos[clasif] || '❓') + '</div>'
         + '<h3 class="font-weight-bold mt-2">' + (labels[clasif] || clasif) + '</h3>'
         + '<div style="font-size:2.5rem;font-weight:800">' + pct + '%</div>'
