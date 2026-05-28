@@ -154,9 +154,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="small font-weight-bold">Evaluadores <span class="text-danger">*</span></label>
-                        <select id="evalEvaluadores" class="form-control" multiple style="width:100%"
-                                data-bmd-no-ripple="true"
-                                data-provide="select2"></select>
+                        <select id="evalEvaluadores" class="form-control" multiple style="width:100%"></select>
                         <small class="text-muted">Uno o más evaluadores</small>
                     </div>
                     <div class="col-md-3 mb-3">
@@ -305,22 +303,13 @@ $(document).ready(function() {
 
     // ── Select2 evaluadores ───────────────────────────────────────────────
     $('#evalEvaluadores').select2({
-        placeholder: 'Buscar evaluador...',
-        allowClear: true,
-        multiple: true,
-        minimumInputLength: 0,
-        width: '100%',
-        language: {
-            noResults:  function() { return 'Sin resultados'; },
-            searching:  function() { return 'Buscando...'; },
-        },
+        placeholder: 'Buscar evaluador...', allowClear: true, multiple: true,
+        minimumInputLength: 0, width: '100%', dropdownParent: $('body'),
+        language: { noResults: function() { return 'Sin resultados'; }, searching: function() { return 'Buscando...'; } },
         ajax: {
-            url: '{{ route("riiss.evaluaciones.usuarios") }}',
-            dataType: 'json',
-            delay: 250,
-            data:     function(p) { return { q: p.term || '' }; },
-            processResults: function(d) { return { results: d.results }; },
-            cache: true,
+            url: '{{ route("riiss.evaluaciones.usuarios") }}', dataType: 'json', delay: 250,
+            data: function(p) { return { q: p.term || '' }; },
+            processResults: function(d) { return { results: d.results }; }, cache: true,
         },
     });
 
