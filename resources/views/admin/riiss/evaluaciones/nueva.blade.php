@@ -303,19 +303,23 @@ $(document).ready(function() {
 
     // ── Select2 evaluadores ───────────────────────────────────────────────
     $('#evalEvaluadores').select2({
-        placeholder: 'Buscar evaluador...', allowClear: true, multiple: true,
-        minimumInputLength: 0, width: '100%',
-        language: { noResults: function() { return 'Sin resultados'; }, searching: function() { return 'Buscando...'; } },
+        placeholder: 'Buscar evaluador...',
+        allowClear: true,
+        multiple: true,
+        minimumInputLength: 0,
+        width: '100%',
+        language: {
+            noResults:  function() { return 'Sin resultados'; },
+            searching:  function() { return 'Buscando...'; },
+        },
         ajax: {
-            url: '{{ route("riiss.evaluaciones.usuarios") }}', dataType: 'json', delay: 250,
-            data: function(p) { return { q: p.term || '' }; },
-            processResults: function(d) { return { results: d.results }; }, cache: true,
+            url: '{{ route("riiss.evaluaciones.usuarios") }}',
+            dataType: 'json',
+            delay: 250,
+            data:     function(p) { return { q: p.term || '' }; },
+            processResults: function(d) { return { results: d.results }; },
+            cache: true,
         },
-        templateResult: function(u) {
-            if (u.loading) return u.text;
-            return $('<div><strong>' + u.text + '</strong><br><small class="text-muted">' + (u.email || '') + '</small></div>');
-        },
-        templateSelection: function(u) { return u.text || u.id; },
     });
 // Preseleccionar usuario actual
 @if(auth()->check())

@@ -98,7 +98,7 @@ class EvaluacionController extends Controller
 
     /**
      * POST /riiss/evaluaciones
-     * Crear una nueva evaluación (borrador).
+     * Crear una nueva evaluación (borrador) o recuperar la activa.
      */
     public function crear(Request $request): JsonResponse
     {
@@ -113,7 +113,23 @@ class EvaluacionController extends Controller
             'metadata'                        => 'nullable|array',
         ]);
 
-        // Construir nombre legible desde los evaluadores seleccionados
+        // 1. Buscar si ya existe una evaluación activa (borrador o en progreso) para este establecimiento
+        // que haya sido creada hoy por el mismo usuario (o equipo)
+        $evaluacion = Evaluacion::where('id_establecimiento', $validated['id_establecimiento'])
+            ->whereIn('estado', ['borrador', 'en_progreso'])
+            ->whereDate('fecha_evaluacion', $validated['fecha_evaluacion'])
+            ->latest()
+            ->first();
+
+        if ($evaluacion) {
+            return response()->json([
+                'ok'      => true,
+                'data'    => $evaluacion,
+                'message' => 'Continuando con la evaluación existente',
+            ]);
+        }
+
+        // 2. Si no hay una activa, crearla
         if (!empty($validated['evaluadores'])) {
             $validated['evaluador_nombre'] = collect($validated['evaluadores'])
                 ->pluck('text')->implode(', ');
