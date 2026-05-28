@@ -154,7 +154,9 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="small font-weight-bold">Evaluadores <span class="text-danger">*</span></label>
-                        <select id="evalEvaluadores" class="form-control" multiple style="width:100%"></select>
+                        <select id="evalEvaluadores" class="form-control" multiple style="width:100%"
+                                data-bmd-no-ripple="true"
+                                data-provide="select2"></select>
                         <small class="text-muted">Uno o más evaluadores</small>
                     </div>
                     <div class="col-md-3 mb-3">
@@ -320,6 +322,14 @@ $(document).ready(function() {
             processResults: function(d) { return { results: d.results }; },
             cache: true,
         },
+    });
+
+    // Evitar que BMD robe el foco del input de búsqueda inline
+    $(document).on('focusin', '.select2-selection--multiple', function(e) {
+        e.stopImmediatePropagation();
+    });
+    $(document).on('mousedown', '.select2-selection--multiple', function(e) {
+        e.stopImmediatePropagation();
     });
 // Preseleccionar usuario actual
 @if(auth()->check())
