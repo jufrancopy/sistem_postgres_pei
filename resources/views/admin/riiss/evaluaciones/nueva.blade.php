@@ -4,15 +4,60 @@
 @push('styles')
 <link href="{{ asset('css/select2.css') }}" rel="stylesheet"/>
 <style>
-.select2-container--default .select2-selection--multiple { border:1px solid #ced4da; border-radius:6px; min-height:42px; padding:4px 8px; }
-.select2-container--default .select2-selection--multiple .select2-selection__choice { background:#e91e63; border:none; color:#fff; border-radius:20px; padding:2px 10px; font-size:.78rem; }
-.select2-container--default .select2-selection--multiple .select2-selection__choice__remove { color:rgba(255,255,255,.8); margin-right:4px; }
-.select2-container--default .select2-results__option--highlighted { background:#e91e63 !important; }
-.select2-dropdown { border-radius:8px; border:1px solid #e5e7eb; box-shadow:0 4px 16px rgba(0,0,0,.1); }
-.select2-search--dropdown .select2-search__field { border-radius:6px; border:1px solid #e5e7eb; padding:6px 10px; }
-.select2-results__option { padding:8px 12px; }
-.select2-container--default .select2-selection--single { border:1px solid #ced4da; border-radius:6px; height:42px; padding:6px 8px; }
-.select2-container--default .select2-selection--single .select2-selection__arrow { height:42px; }
+.select2-container--default .select2-selection--multiple { 
+    border:1px solid #ced4da; 
+    border-radius:6px; 
+    min-height:42px !important; 
+    height: 42px !important; /* Force height for single row */
+    padding: 0 8px !important; 
+    display: flex !important; 
+    align-items: center !important; 
+    overflow: hidden !important;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple,
+.select2-container--default.select2-container--open .select2-selection--multiple {
+    height: auto !important; /* Allow growth only when active/focused if many choices */
+    min-height: 42px !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__rendered { 
+    display: flex !important; 
+    flex-wrap: nowrap !important; /* Keep single line by default */
+    gap: 4px; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    list-style: none; 
+    align-items: center; 
+    width: 100%;
+}
+
+.select2-container--default.select2-container--focus .select2-selection__rendered,
+.select2-container--default.select2-container--open .select2-selection__rendered {
+    flex-wrap: wrap !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice { 
+    background:#e91e63; 
+    border:none; 
+    color:#fff; 
+    border-radius:20px; 
+    padding:1px 10px; 
+    font-size:.78rem; 
+    margin: 0 !important; 
+    line-height: 1.5;
+}
+
+/* Search field idle state */
+.select2-search--inline { margin: 0 !important; padding: 0 !important; height: 100% !important; display: flex !important; align-items: center !important; }
+.select2-search__field { margin: 0 !important; height: 30px !important; line-height: 30px !important; }
+
+.select2-container--default .select2-selection--single { border:1px solid #ced4da; border-radius:6px; height:42px !important; padding:6px 8px; display: flex; align-items: center; }
+.select2-container--default .select2-selection--single .select2-selection__rendered { line-height: normal !important; padding-left: 0 !important; }
+.select2-container--default .select2-selection--single .select2-selection__arrow { height:40px !important; }
+
+/* Standard inputs height sync */
+#evalTelefono, #evalFecha { height: 42px !important; border: 1px solid #ced4da !important; border-radius: 6px !important; padding: 6px 8px !important; }
 
 /* Fix for Select2 search on mobile and modals */
 .select2-container--open { z-index: 99999 !important; }
@@ -22,12 +67,29 @@
 .select2-container { width: 100% !important; display: block; }
 .select2-selection { width: 100% !important; }
 
-/* Force search field width in multi-select */
-.select2-container .select2-search--inline { width: 100%; }
+/* Force search field to be reachable but not intrusive */
+.select2-container .select2-search--inline { 
+    display: inline-block !important; 
+    vertical-align: middle !important;
+}
 .select2-container .select2-search--inline .select2-search__field { 
-    width: 100% !important; 
-    min-width: 100px !important; 
-    margin-left: 0 !important;
+    width: auto !important;
+    min-width: 30px !important; /* Minimal touch area */
+    max-width: 100% !important;
+    margin-top: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Grow and highlight ONLY when focused or searching */
+.select2-container--focus .select2-search__field,
+.select2-container--open .select2-search__field {
+    min-width: 150px !important;
+    background-color: #fff !important;
+    border: 1px solid #e91e63 !important; /* Highlight color */
+    border-radius: 4px !important;
+    padding: 2px 8px !important;
 }
 
 /* Material Design Fixes */
@@ -44,12 +106,47 @@
     box-shadow: none !important;
     outline: none !important;
     width: 100% !important;
+    pointer-events: auto !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
+/* Ensure the dropdown is above everything and interactive */
+.select2-container--open { z-index: 999999 !important; pointer-events: auto !important; }
+.select2-dropdown { 
+    z-index: 999999 !important; 
+    pointer-events: auto !important;
+    border-radius: 8px; 
+    border: 1px solid #e5e7eb; 
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15); 
+}
+
+/* Force interactivity on all Select2 parts */
+.select2-selection, .select2-results, .select2-results__option {
+    pointer-events: auto !important;
+}
+
+/* Responsive Fixes for Select2 */
+.select2-container { width: 100% !important; display: block; }
+.select2-selection { width: 100% !important; min-height: 42px !important; }
+
+/* Force search field width in multi-select */
+.select2-container .select2-search--inline { width: 100% !important; display: block !important; }
+.select2-container .select2-search--inline .select2-search__field { 
+    width: 100% !important; 
+    min-width: 100px !important; 
+    margin-left: 0 !important;
+}
+
+/* Neutralize Material Design focus/transition effects */
+.bmd-form-group .select2-container { position: relative; }
+.bmd-form-group .select2-container::before, 
+.bmd-form-group .select2-container::after { display: none !important; }
+
 @media (max-width: 768px) {
-    .select2-container { margin-bottom: 10px; }
-    /* Ensure the search field is reachable and focusable on mobile */
-    .select2-search__field { font-size: 16px !important; } /* Prevents iOS zoom on focus */
+    .select2-container { margin-bottom: 15px; }
+    .select2-search__field { font-size: 16px !important; height: 40px !important; }
 }
 
 #evalWrapper { display:flex; gap:16px; align-items:flex-start; }
@@ -57,8 +154,17 @@
 #contenidoFormulario { flex:1; min-width:0; }
 
 /* Ensure the card and rows don't clip the Select2 dropdown */
-.card, .card-body, .row, .col-md-3, .col-md-4, .col-md-6 { 
+.card, .card-body, .row { overflow: visible !important; }
+
+/* Critical: stable coordinate system for Select2 at 767px stacking */
+.col-md-3, .col-md-4, .col-md-6, .col-12 { 
+    position: relative !important; 
     overflow: visible !important; 
+}
+
+/* Prevent jumping to top on mobile */
+.select2-container--open .select2-dropdown {
+    margin-top: -1px; /* Align perfectly with input */
 }
 
 .sec-item { display:flex; align-items:center; gap:8px; padding:7px 12px; border-radius:8px; cursor:pointer; font-size:.82rem; transition:background .15s; border:none; background:none; width:100%; text-align:left; }
@@ -216,6 +322,7 @@ function initLocalidadSelect(P) {
     var S2 = {
         width: '100%', 
         allowClear: true, 
+        dropdownParent: $('#contenidoFormulario'),
         language: {
             noResults:  function() { return 'Sin resultados'; },
             searching:  function() { return 'Buscando...'; },
@@ -304,7 +411,8 @@ $(document).ready(function() {
     // ── Select2 evaluadores ───────────────────────────────────────────────
     $('#evalEvaluadores').select2({
         placeholder: 'Buscar evaluador...', allowClear: true, multiple: true,
-        minimumInputLength: 0, width: '100%', dropdownParent: $('body'),
+        minimumInputLength: 0, width: '100%',
+        dropdownParent: $('#contenidoFormulario'),
         language: { noResults: function() { return 'Sin resultados'; }, searching: function() { return 'Buscando...'; } },
         ajax: {
             url: '{{ route("riiss.evaluaciones.usuarios") }}', dataType: 'json', delay: 250,
@@ -338,18 +446,27 @@ if (evaluacionId) {
 // Guardar datos de visita al cambiar (debounce)
     var saveTimer;
 
-    // Fix for Select2 search focus on mobile and Material Design
+    // Aggressive Fix for Select2 search focus and interaction
+    $(document).on('select2:opening', function(e) {
+        // Stop theme scripts from capturing this opening event
+        e.stopPropagation();
+    });
+
     $(document).on('select2:open', function(e) {
-        setTimeout(() => {
-            const dropdown = $('.select2-container--open');
-            if (dropdown.length) {
-                const searchField = dropdown.find('.select2-search__field');
-                if (searchField.length) {
+        const dropdown = $('.select2-container--open');
+        if (dropdown.length) {
+            const searchField = dropdown.find('.select2-search__field');
+            if (searchField.length) {
+                // Remove any focus-stealing attributes
+                searchField.attr('readonly', false);
+                searchField.css('pointer-events', 'auto');
+                
+                setTimeout(() => {
                     searchField[0].focus();
-                    searchField[0].click(); // Force interaction for some touch devices
-                }
+                    searchField[0].setSelectionRange(0, 999); // Force selection on some mobile browsers
+                }, 200);
             }
-        }, 150);
+        }
     });
 
     $('#evalFecha, #evalTelefono').on('change input', function() {
@@ -448,7 +565,12 @@ function crearEvaluacionYCargar() {
         success: function(r) {
             if (!r.ok) return;
             evaluacionId = r.data.id;
-            $('#evalEstado').html('<span class="badge badge-success">Evaluación #' + evaluacionId + ' creada</span>');
+            
+            // Actualizar URL sin recargar para persistencia
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?evaluacion=' + evaluacionId;
+            window.history.replaceState({path:newUrl}, '', newUrl);
+
+            $('#evalEstado').html('<span class="badge badge-success">Evaluación #' + evaluacionId + ' activa</span>');
             cargarFormulario();
         },
         error: function(xhr) {
