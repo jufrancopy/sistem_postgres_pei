@@ -694,12 +694,37 @@ function renderPregunta(p) {
 }
 
 // ── Respuestas ────────────────────────────────────────────────────────────────
+var autosaveTimers = {};
+
+function autosaveRespuesta(id, valor) {
+    if (!evaluacionId) return;
+    clearTimeout(autosaveTimers[id]);
+    autosaveTimers[id] = setTimeout(function() {
+        $.ajax({
+            url: '/riiss/evaluaciones/' + evaluacionId + '/respuestas',
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                _token: '{{ csrf_token() }}',
+                respuestas: [{ formulario_pregunta_id: parseInt(id), respuesta: valor }]
+            }),
+            success: function() {
+                // Indicador visual sutil
+                $('#preg-' + id).find('.autosave-indicator').remove();
+                $('#preg-' + id).append('<span class="autosave-indicator text-success" style="font-size:.7rem;margin-left:8px"><i class="fa fa-check"></i></span>');
+                setTimeout(function() { $('#preg-' + id).find('.autosave-indicator').fadeOut(500, function(){ $(this).remove(); }); }, 2000);
+            }
+        });
+    }, 500);
+}
+
 function setResp(id, valor, btn, tipo) {
     respuestas[id] = valor;
     $(btn).closest('.resp-group').find('.resp-btn').removeClass('selected-si selected-no selected-na');
     $(btn).addClass('selected-' + tipo);
     actualizarProgreso();
     actualizarSidebarSeccion(id);
+    autosaveRespuesta(id, valor);
 }
 
 function setRespTexto(id, valor) {
@@ -707,6 +732,7 @@ function setRespTexto(id, valor) {
         respuestas[id] = valor.toString().trim();
         actualizarProgreso();
         actualizarSidebarSeccion(id);
+        autosaveRespuesta(id, valor);
     }
 }
 
@@ -717,6 +743,7 @@ function toggleChecklist(id, opcion, btn) {
     else          { checklistState[id].push(opcion);   $(btn).addClass('selected-si'); }
     respuestas[id] = checklistState[id].join(', ');
     actualizarProgreso();
+    autosaveRespuesta(id, respuestas[id]);
 }
 
 // ── Progreso ──────────────────────────────────────────────────────────────────

@@ -380,6 +380,12 @@ Route::group(['middleware' => 'auth'], function () {
     // ── RIISS - Red Integrada e Integral de Servicios de Salud ───────────────
     Route::prefix('riiss')->name('riiss.')->middleware(['role:Administrador|Analista - RIISS'])->group(function () {
 
+        // Dashboard de monitoreo
+        Route::get('dashboard', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'dashboard'])
+            ->name('dashboard');
+        Route::get('dashboard/datos', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'dashboardDatos'])
+            ->name('dashboard.datos');
+
         // Establecimientos
         Route::get('establecimientos', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'index'])
             ->name('establecimientos.index');

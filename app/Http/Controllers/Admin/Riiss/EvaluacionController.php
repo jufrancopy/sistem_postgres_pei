@@ -47,6 +47,66 @@ class EvaluacionController extends Controller
     }
 
     /**
+     * GET /riiss/dashboard
+     */
+    public function dashboard()
+    {
+        return view('admin.riiss.dashboard');
+    }
+
+    /**
+     * GET /riiss/dashboard/datos
+     */
+    public function dashboardDatos(): JsonResponse
+    {
+        $evaluaciones = Evaluacion::with('establecimiento')
+            ->whereIn('estado', ['borrador', 'en_progreso', 'completada'])
+            ->orderByDesc('updated_at')
+            ->get()
+            ->map(function ($ev) {
+                $respondidas = $ev->respuestas()->count();
+                $totalPreguntas = 0;
+                try {
+                    $totalPreguntas = (new \App\Services\FormularioDinamicoService())
+                        ->seccionesAplicables($ev->establecimiento)
+                        ->sum(fn($s) => $s->preguntas->where('activa', true)->count());
+                } catch (\Exception $e) {}
+
+                $pct = $totalPreguntas > 0 ? round(($respondidas / $totalPreguntas) * 100, 1) : 0;
+
+                return [
+                    'id'                      => $ev->id,
+                    'establecimiento'         => $ev->establecimiento->nombre_oficial ?? '—',
+                    'tipologia'               => $ev->establecimiento->tipologia_clasificacion ?? '—',
+                    'complejidad'             => $ev->establecimiento->complejidad ?? '—',
+                    'complejidad_color'       => $ev->establecimiento->complejidad_color ?? '#6b7280',
+                    'evaluador'               => $ev->evaluador_nombre ?? '—',
+                    'fecha'                   => $ev->fecha_evaluacion?->format('d/m/Y'),
+                    'estado'                  => $ev->estado,
+                    'respondidas'             => $respondidas,
+                    'total_preguntas'         => $totalPreguntas,
+                    'progreso'                => $pct,
+                    'clasificacion'           => $ev->clasificacion_resultado,
+                    'porcentaje_cumplimiento' => $ev->porcentaje_cumplimiento,
+                    'updated_at'              => $ev->updated_at?->diffForHumans(),
+                ];
+            });
+
+        return response()->json([
+            'ok'          => true,
+            'resumen'     => [
+                'total'       => $evaluaciones->count(),
+                'en_progreso' => $evaluaciones->where('estado', 'en_progreso')->count(),
+                'completadas' => $evaluaciones->where('estado', 'completada')->count(),
+                'borradores'  => $evaluaciones->where('estado', 'borrador')->count(),
+                'promedio_pct'=> $evaluaciones->count() ? round($evaluaciones->avg('progreso'), 1) : 0,
+            ],
+            'evaluaciones'=> $evaluaciones->values(),
+            'timestamp'   => now()->format('H:i:s'),
+        ]);
+    }
+
+    /**
      * GET /riiss/evaluaciones
      * Vista principal de evaluaciones.
      */

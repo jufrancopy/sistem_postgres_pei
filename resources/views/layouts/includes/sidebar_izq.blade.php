@@ -302,6 +302,12 @@
                                 <span class="sidebar-normal">Evaluaciones</span>
                             </a>
                         </li>
+                        <li class="nav-item {{ $isActive('riiss/dashboard') }}">
+                            <a class="nav-link" href="{{ route('riiss.dashboard') }}">
+                                <span class="sidebar-mini"><i class="fa fa-chart-line" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Monitoreo</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
