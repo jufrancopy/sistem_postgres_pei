@@ -256,7 +256,42 @@
 
 
 
-            {{-- RIISS: lo mostramos a Administrador y Analista - RIISS abajo --}}
+            {{-- ── RIISS (dentro del menú Administrador) ── --}}
+            @php $enRiiss = str_contains($path, 'riiss'); @endphp
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="collapse" href="#riissMenu" aria-expanded="{{ $enRiiss ? 'true' : 'false' }}">
+                    <i class="material-icons">local_hospital</i>
+                    <p>RIISS <b class="caret"></b></p>
+                </a>
+                <div class="collapse {{ $enRiiss ? 'show' : '' }}" id="riissMenu">
+                    <ul class="nav">
+                        <li class="nav-item {{ $isActive('riiss/establecimientos') }}">
+                            <a class="nav-link" href="{{ route('riiss.establecimientos.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-hospital" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Establecimientos</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('riiss/evaluaciones') }}">
+                            <a class="nav-link" href="{{ route('riiss.evaluaciones.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-clipboard-check" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Evaluaciones</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('riiss/asignaciones') }}">
+                            <a class="nav-link" href="{{ route('riiss.asignaciones.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-user-check" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Asignaciones</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('riiss/dashboard') }}">
+                            <a class="nav-link" href="{{ route('riiss.dashboard') }}">
+                                <span class="sidebar-mini"><i class="fa fa-chart-line" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Monitoreo</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
 
             <li class="nav-item ">
                 <a class="nav-link" href="{{ route('globales.patrimony-profiles.index') }}">
@@ -280,41 +315,47 @@
             </li>
         @endrole
 
-        {{-- Mostrar RIISS tanto a Administrador como a Analista - RIISS --}}
-        @hasanyrole('Administrador|Analista - RIISS')
+        {{-- Sidebar exclusivo para Analista - RIISS --}}
+        @role('Analista - RIISS')
             @php $enRiiss = str_contains($path, 'riiss'); @endphp
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ route('riiss.establecimientos.index') }}">
+                    <i class="material-icons">dashboard</i>
+                    <p>Inicio RIISS</p>
+                </a>
+            </li>
             <li class="nav-item">
-                <a class="nav-link" data-toggle="collapse" href="#riissMenu" aria-expanded="{{ $enRiiss ? 'true' : 'false' }}">
+                <a class="nav-link" data-toggle="collapse" href="#riissMenuAnalista" aria-expanded="{{ $enRiiss ? 'true' : 'false' }}">
                     <i class="material-icons">local_hospital</i>
                     <p>RIISS <b class="caret"></b></p>
                 </a>
-                <div class="collapse {{ $enRiiss ? 'show' : '' }}" id="riissMenu">
+                <div class="collapse {{ $enRiiss ? 'show' : '' }}" id="riissMenuAnalista">
                     <ul class="nav">
-                        <li class="nav-item {{ $isActive('riiss/establecimientos') }}">
+                        <li class="nav-item {{ $isActive('riiss/establecimientos*') }}">
                             <a class="nav-link" href="{{ route('riiss.establecimientos.index') }}">
                                 <span class="sidebar-mini"><i class="fa fa-hospital" style="font-size:.8rem"></i></span>
                                 <span class="sidebar-normal">Establecimientos</span>
                             </a>
                         </li>
-                        <li class="nav-item {{ $isActive('riiss/evaluaciones') }}">
+                        <li class="nav-item {{ $isActive('riiss/mis-asignaciones') }}">
+                            <a class="nav-link" href="{{ route('riiss.mis-asignaciones') }}">
+                                <span class="sidebar-mini"><i class="fa fa-tasks" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Mis Asignaciones</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('riiss/evaluaciones*') }}">
                             <a class="nav-link" href="{{ route('riiss.evaluaciones.index') }}">
                                 <span class="sidebar-mini"><i class="fa fa-clipboard-check" style="font-size:.8rem"></i></span>
                                 <span class="sidebar-normal">Evaluaciones</span>
                             </a>
                         </li>
-                        <li class="nav-item {{ $isActive('riiss/dashboard') }}">
-                            <a class="nav-link" href="{{ route('riiss.dashboard') }}">
-                                <span class="sidebar-mini"><i class="fa fa-chart-line" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Monitoreo</span>
-                            </a>
-                        </li>
                     </ul>
                 </div>
             </li>
-        @endhasanyrole
+        @endrole
 
-        {{-- Las siguientes secciones NO deben verse para Analista - RIISS --}}
-        @unlessrole('Analista - RIISS')
+        {{-- Las siguientes secciones NO deben verse para Analista - RIISS ni Administrador --}}
+        @hasanyrole('Alta Gerencia|Participante SIESS')
             @php
                 $orgParticipante = \App\Admin\Globales\Organigrama::where('user_id', Auth::id())->first();
                 $pendientesParticipante = $orgParticipante
@@ -373,7 +414,7 @@
                 </div>
             </li>
             @endif
-        @endunlessrole
+        @endhasanyrole
 
         {{-- Mi Perfil (visible para todos) --}}
         <li class="nav-item">

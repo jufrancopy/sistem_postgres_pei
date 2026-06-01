@@ -386,6 +386,24 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('dashboard/datos', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'dashboardDatos'])
             ->name('dashboard.datos');
 
+        // Asignaciones (admin)
+        Route::get('asignaciones', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'index'])
+            ->name('asignaciones.index');
+        Route::get('asignaciones/datos', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'datos'])
+            ->name('asignaciones.datos');
+        Route::post('asignaciones', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'store'])
+            ->name('asignaciones.store');
+        Route::patch('asignaciones/{asignacion}/estado', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'actualizarEstado'])
+            ->name('asignaciones.estado');
+        Route::post('asignaciones/{asignacion}/renotificar', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'renotificar'])
+            ->name('asignaciones.renotificar');
+        Route::delete('asignaciones/{asignacion}', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'destroy'])
+            ->name('asignaciones.destroy');
+
+        // Mis asignaciones (evaluador)
+        Route::get('mis-asignaciones', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'misAsignaciones'])
+            ->name('mis-asignaciones');
+
         // Establecimientos
         Route::get('establecimientos', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'index'])
             ->name('establecimientos.index');
