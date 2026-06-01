@@ -45,70 +45,45 @@
 @section('content')
 <div id="loadingOverlay"><div class="spinner-border text-danger"></div></div>
 
-{{-- ── Banner de flujo ── --}}
-<div class="card mb-3 border-0 shadow-sm" style="background:linear-gradient(135deg,#c62828,#e91e63)">
-    <div class="card-body py-3 text-white">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div>
-                <h5 class="mb-1 font-weight-bold"><i class="material-icons mr-2" style="vertical-align:middle;font-size:1.2rem">local_hospital</i>Evaluación de Cartera de Servicios</h5>
-                <p class="mb-0 small" style="opacity:.85">Verificá si cada establecimiento cumple con los servicios que debe ofrecer según su nivel de complejidad</p>
-            </div>
-            <a href="{{ route('riiss.evaluaciones.index') }}" class="btn btn-light btn-sm">
-                <i class="fa fa-history mr-1"></i>Ver evaluaciones anteriores
-            </a>
-        </div>
+<div class="card">
+    <div class="card-header card-header-danger">
+        <h4 class="card-title">
+            <i class="material-icons mr-2" style="vertical-align:middle">local_hospital</i>Establecimientos RIISS
+        </h4>
+        <p class="card-category">Red Integrada e Integral de Servicios de Salud — IPS</p>
     </div>
-</div>
 
-                <div class="card shadow-sm">
-        <div class="card-header card-header-danger">
-            <h4 class="card-title mb-0"><i class="fa fa-hospital mr-2"></i>Listado de establecimientos</h4>
-            <p class="card-category mb-0 small">Explorar y evaluar establecimientos</p>
-        </div>
+    <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-0">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Inicio</a></li>
+            <li class="breadcrumb-item active">RIISS / Establecimientos</li>
+        </ol>
+    </nav>
 
-        <nav class="bg-light rounded px-3 py-2 mb-0">
-            <ol class="breadcrumb mb-0 small">
-                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Inicio</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('riiss.establecimientos.index') }}">RIISS</a></li>
-                <li class="breadcrumb-item active">Establecimientos</li>
-            </ol>
-        </nav>
-        <div class="card-body">
+    <div class="card-body">
 
-        {{-- ¿Cómo funciona? (diseño embebido) --}}
+        {{-- ¿Cómo funciona? --}}
         <div class="mb-4">
             <p class="small font-weight-bold text-uppercase text-muted mb-2">¿Cómo funciona?</p>
-            <div class="d-flex align-items-center flex-wrap gap-2">
+            <div class="d-flex align-items-center flex-wrap" style="gap:8px">
                 <div class="flujo-paso">
                     <div class="paso-num bg-danger text-white">1</div>
-                    <div>
-                        <div class="font-weight-bold small">Buscá el establecimiento</div>
-                        <div class="text-muted" style="font-size:.75rem">Filtrá por nombre, departamento o tipo</div>
-                    </div>
+                    <div><div class="font-weight-bold small">Buscá el establecimiento</div><div class="text-muted" style="font-size:.75rem">Filtrá por nombre, departamento o tipo</div></div>
                 </div>
                 <div class="flujo-arrow d-none d-md-block">›</div>
                 <div class="flujo-paso">
                     <div class="paso-num bg-warning text-white">2</div>
-                    <div>
-                        <div class="font-weight-bold small">Hacé clic en <i class="fa fa-clipboard-check text-danger"></i></div>
-                        <div class="text-muted" style="font-size:.75rem">Abre el formulario de evaluación</div>
-                    </div>
+                    <div><div class="font-weight-bold small">Hacé clic en <i class="fa fa-clipboard-check text-danger"></i></div><div class="text-muted" style="font-size:.75rem">Abre el formulario de evaluación</div></div>
                 </div>
                 <div class="flujo-arrow d-none d-md-block">›</div>
                 <div class="flujo-paso">
                     <div class="paso-num bg-info text-white">3</div>
-                    <div>
-                        <div class="font-weight-bold small">Respondé el formulario</div>
-                        <div class="text-muted" style="font-size:.75rem">Sí / No / No Aplica por sección</div>
-                    </div>
+                    <div><div class="font-weight-bold small">Respondé el formulario</div><div class="text-muted" style="font-size:.75rem">Sí / No / No Aplica por sección</div></div>
                 </div>
                 <div class="flujo-arrow d-none d-md-block">›</div>
                 <div class="flujo-paso">
                     <div class="paso-num bg-success text-white">4</div>
-                    <div>
-                        <div class="font-weight-bold small">Obtené el resultado</div>
-                        <div class="text-muted" style="font-size:.75rem">CUMPLE / PARCIAL / NO CUMPLE + brechas</div>
-                    </div>
+                    <div><div class="font-weight-bold small">Obtené el resultado</div><div class="text-muted" style="font-size:.75rem">CUMPLE / PARCIAL / NO CUMPLE + brechas</div></div>
                 </div>
             </div>
         </div>
@@ -214,8 +189,6 @@
 
     </div>
 </div>
-
-    
 
 {{-- ── Modal detalle ── --}}
 <div class="modal fade" id="modalEst" tabindex="-1">
