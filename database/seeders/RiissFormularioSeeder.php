@@ -62,6 +62,13 @@ class RiissFormularioSeeder extends Seeder
 
         $this->insertarPreguntas($seccionesMap);
 
+        // Desactivar preguntas duplicadas (cubiertas por otros campos del sistema)
+        FormularioPregunta::whereIn('pregunta', [
+            'Fecha de evaluación',
+            'Departamento',
+            'Ciudad o localidad, barrio',
+        ])->update(['activa' => false]);
+
         $this->command->info('Secciones: ' . count($seccionesData));
     }
 
@@ -70,13 +77,13 @@ class RiissFormularioSeeder extends Seeder
         // [seccion, sub_seccion, pregunta, tipo, opciones, grupo_cartera, orden]
         $preguntas = [
             ['Introducción','','Dirección de correo electrónico','texto',null,null,1],
-            ['Introducción','','Fecha de evaluación','date',null,null,2],
+            ['Introducción','','Fecha de evaluación','date',null,null,2],  // inactiva — se usa la del header
             ['Introducción','','Nombre o Razón Social','texto',null,null,3],
             ['Datos de Identificación','','Nombre del establecimiento sanitario:','texto',null,null,1],
             ['Datos de Identificación','','Dirección del establecimiento Sanitario','texto',null,null,2],
             ['Datos de Identificación','','Teléfono del establecimiento','texto',null,null,3],
-            ['Datos de Identificación','','Departamento','texto',null,null,4],
-            ['Datos de Identificación','','Ciudad o localidad, barrio','texto',null,null,5],
+            ['Datos de Identificación','','Departamento','texto',null,null,4],              // inactiva — cubierta por Ubicación
+            ['Datos de Identificación','','Ciudad o localidad, barrio','texto',null,null,5], // inactiva — cubierta por Ubicación
             ['Datos del encargado de llenado del formulario','','Nombre y apellido del encargado:','texto',null,null,1],
             ['Datos del encargado de llenado del formulario','','Teléfono del encargado','texto',null,null,2],
             ['Datos del encargado de llenado del formulario','','Usuario institucional','texto',null,null,3],

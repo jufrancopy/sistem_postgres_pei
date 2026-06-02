@@ -637,6 +637,7 @@ function cargarFormulario(callback) {
         renderSecciones(formulario.secciones);
         $('#botonesAccion').show();
         actualizarProgreso();
+
         // Ejecutar callback después de renderizar (para aplicar respuestas guardadas)
         if (typeof callback === 'function') {
             setTimeout(callback, 150);
@@ -751,12 +752,6 @@ function renderPregunta(p) {
             + '</div>';
     } else if (p.tipo_respuesta === 'numero') {
         input = '<input type="number" class="form-control form-control-sm" style="max-width:120px" onchange="setRespTexto(' + p.id + ',this.value)" placeholder="0">';
-    } else if (p.tipo_respuesta === 'date') {
-        var preDate = p.valor_prellenado || $('#evalFecha').val() || '';
-        input = '<input type="date" class="form-control form-control-sm" style="max-width:200px" value="' + preDate + '" onchange="setRespTexto(' + p.id + ',this.value)">';
-        if (preDate) {
-            setTimeout(function() { setRespTexto(p.id, preDate); }, 100);
-        }
     } else {
         var pre = p.valor_prellenado ? 'value="' + p.valor_prellenado + '"' : '';
         input = '<input type="text" class="form-control form-control-sm" ' + pre
