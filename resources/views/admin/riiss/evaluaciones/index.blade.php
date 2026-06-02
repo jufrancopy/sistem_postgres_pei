@@ -47,18 +47,22 @@
             <h5 class="mb-0 font-weight-bold">
                 <i class="fa fa-list mr-2 text-danger"></i>Todas las evaluaciones
             </h5>
+            @role('Administrador')
             <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalBuscarEst">
                 <i class="fa fa-plus mr-1"></i>Nueva Evaluación
             </button>
+            @endrole
         </div>
 
         @if($evaluaciones->isEmpty())
         <div class="text-center py-5 text-muted">
             <i class="fa fa-clipboard fa-3x mb-3 d-block" style="opacity:.3"></i>
             <p>No hay evaluaciones registradas aún.</p>
+            @role('Administrador')
             <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalBuscarEst">
                 <i class="fa fa-plus mr-1"></i>Crear primera evaluación
             </button>
+            @endrole
         </div>
         @else
         <div class="table-responsive">

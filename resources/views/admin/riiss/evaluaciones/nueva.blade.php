@@ -565,13 +565,16 @@ function crearEvaluacionYCargar() {
         success: function(r) {
             if (!r.ok) return;
             evaluacionId = r.data.id;
-            
+
             // Actualizar URL sin recargar para persistencia
             const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?evaluacion=' + evaluacionId;
             window.history.replaceState({path:newUrl}, '', newUrl);
 
             $('#evalEstado').html('<span class="badge badge-success">Evaluación #' + evaluacionId + ' activa</span>');
             cargarFormulario();
+
+            // Enviar respuestas que se marcaron antes de que se creara la evaluación
+            setTimeout(enviarColaRespuestas, 1000);
         },
         error: function(xhr) {
             $('#evalEstado').html('<span class="badge badge-danger">Error al crear</span>');
@@ -695,9 +698,14 @@ function renderPregunta(p) {
 
 // ── Respuestas ────────────────────────────────────────────────────────────────
 var autosaveTimers = {};
+var colaRespuestas = {}; // respuestas pendientes mientras evaluacionId es null
 
 function autosaveRespuesta(id, valor) {
-    if (!evaluacionId) return;
+    // Si aún no hay evaluación, encolar
+    if (!evaluacionId) {
+        colaRespuestas[id] = valor;
+        return;
+    }
     clearTimeout(autosaveTimers[id]);
     autosaveTimers[id] = setTimeout(function() {
         $.ajax({
@@ -709,13 +717,30 @@ function autosaveRespuesta(id, valor) {
                 respuestas: [{ formulario_pregunta_id: parseInt(id), respuesta: valor }]
             }),
             success: function() {
-                // Indicador visual sutil
                 $('#preg-' + id).find('.autosave-indicator').remove();
                 $('#preg-' + id).append('<span class="autosave-indicator text-success" style="font-size:.7rem;margin-left:8px"><i class="fa fa-check"></i></span>');
                 setTimeout(function() { $('#preg-' + id).find('.autosave-indicator').fadeOut(500, function(){ $(this).remove(); }); }, 2000);
             }
         });
     }, 500);
+}
+
+// Enviar respuestas encoladas cuando se crea la evaluación
+function enviarColaRespuestas() {
+    var ids = Object.keys(colaRespuestas);
+    if (!ids.length || !evaluacionId) return;
+    var payload = ids.map(function(id) {
+        return { formulario_pregunta_id: parseInt(id), respuesta: colaRespuestas[id] };
+    });
+    $.ajax({
+        url: '/riiss/evaluaciones/' + evaluacionId + '/respuestas',
+        method: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({ _token: '{{ csrf_token() }}', respuestas: payload }),
+        success: function() {
+            colaRespuestas = {};
+        }
+    });
 }
 
 function setResp(id, valor, btn, tipo) {
