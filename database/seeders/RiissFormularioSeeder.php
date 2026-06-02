@@ -70,7 +70,7 @@ class RiissFormularioSeeder extends Seeder
         // [seccion, sub_seccion, pregunta, tipo, opciones, grupo_cartera, orden]
         $preguntas = [
             ['Introducción','','Dirección de correo electrónico','texto',null,null,1],
-            ['Introducción','','Fecha de evaluación','texto',null,null,2],
+            ['Introducción','','Fecha de evaluación','date',null,null,2],
             ['Introducción','','Nombre o Razón Social','texto',null,null,3],
             ['Datos de Identificación','','Nombre del establecimiento sanitario:','texto',null,null,1],
             ['Datos de Identificación','','Dirección del establecimiento Sanitario','texto',null,null,2],
