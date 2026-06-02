@@ -555,7 +555,11 @@ function recuperarEvaluacionExistente(id) {
         }
 
         $('#evalEstado').html('<span class="badge badge-success">Evaluación #' + id + ' activa</span>');
-        cargarFormulario();
+
+        // Cargar formulario y DESPUÉS aplicar las respuestas visualmente
+        cargarFormulario(function() {
+            aplicarRespuestasVisuales(ev.respuestas || []);
+        });
     });
 }
 
@@ -622,7 +626,7 @@ function actualizarDatosVisita() {
 @push('scripts')
 <script>
 // ── Cargar formulario ─────────────────────────────────────────────────────────
-function cargarFormulario() {
+function cargarFormulario(callback) {
     $('#listaSecciones').html('<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-danger"></div></div>');
     $('#seccionesFormulario').html('<div class="text-center py-5"><div class="spinner-border text-danger"></div><p class="text-muted mt-2">Cargando formulario...</p></div>');
 
@@ -633,7 +637,61 @@ function cargarFormulario() {
         renderSecciones(formulario.secciones);
         $('#botonesAccion').show();
         actualizarProgreso();
+        // Ejecutar callback después de renderizar (para aplicar respuestas guardadas)
+        if (typeof callback === 'function') {
+            setTimeout(callback, 150);
+        }
     });
+}
+
+// ── Aplicar respuestas guardadas visualmente ─────────────────────────────────
+function aplicarRespuestasVisuales(listaRespuestas) {
+    if (!listaRespuestas || !listaRespuestas.length) return;
+
+    listaRespuestas.forEach(function(res) {
+        var pid  = res.formulario_pregunta_id;
+        var val  = (res.respuesta || '').toString().toLowerCase().trim();
+        var $preg = $('#preg-' + pid);
+        if (!$preg.length) return;
+
+        var $btns = $preg.find('.resp-btn');
+        if ($btns.length) {
+            // Botones Sí/No/NA
+            $btns.each(function() {
+                var txt = $(this).text().toLowerCase();
+                if (val === 'si' || val === 'sí') {
+                    if (txt.indexOf('sí') >= 0 || txt.indexOf('si') >= 0) {
+                        $(this).addClass('selected-si');
+                    }
+                } else if (val === 'no aplica') {
+                    if (txt.indexOf('no aplica') >= 0) {
+                        $(this).addClass('selected-na');
+                    }
+                } else if (val === 'no') {
+                    if (txt.indexOf('no') >= 0 && txt.indexOf('aplica') < 0) {
+                        $(this).addClass('selected-no');
+                    }
+                } else {
+                    // Checklist
+                    if (txt.indexOf(val) >= 0) {
+                        $(this).addClass('selected-si');
+                    }
+                }
+            });
+        } else {
+            // Input de texto/número
+            var $input = $preg.find('input[type="text"], input[type="number"], textarea');
+            if ($input.length) {
+                $input.val(res.respuesta);
+            }
+        }
+
+        // Actualizar objeto respuestas y sidebar
+        respuestas[pid] = res.respuesta;
+        actualizarSidebarSeccion(pid);
+    });
+
+    actualizarProgreso();
 }
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
