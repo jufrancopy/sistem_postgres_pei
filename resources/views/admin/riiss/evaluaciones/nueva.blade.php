@@ -408,6 +408,12 @@ $(document).ready(function() {
     // Inicializar localidad
     initLocalidadSelect('eval');
 
+    // Autosave cuando cambia la ubicación
+    $('#eval-depto, #eval-dist, #eval-barrio').on('change', function() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(actualizarDatosVisita, 800);
+    });
+
     // ── Select2 evaluadores ───────────────────────────────────────────────
     $('#evalEvaluadores').select2({
         placeholder: 'Buscar evaluador...', allowClear: true, multiple: true,
@@ -436,6 +442,11 @@ $('#evalEvaluadores').append(new Option('{{ addslashes(auth()->user()->name) }}'
 // ── Cargar o Crear evaluación ─────────────────────────────────────────────
 const urlParams = new URLSearchParams(window.location.search);
 evaluacionId = urlParams.get('evaluacion');
+
+// Si no hay en URL, buscar en localStorage para este establecimiento
+if (!evaluacionId) {
+    evaluacionId = localStorage.getItem('riiss_eval_' + EST_ID);
+}
 
 if (evaluacionId) {
     recuperarEvaluacionExistente(evaluacionId);
@@ -566,9 +577,10 @@ function crearEvaluacionYCargar() {
             if (!r.ok) return;
             evaluacionId = r.data.id;
 
-            // Actualizar URL sin recargar para persistencia
+            // Persistir en URL y localStorage para sobrevivir refresh
             const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?evaluacion=' + evaluacionId;
             window.history.replaceState({path:newUrl}, '', newUrl);
+            localStorage.setItem('riiss_eval_' + EST_ID, evaluacionId);
 
             $('#evalEstado').html('<span class="badge badge-success">Evaluación #' + evaluacionId + ' activa</span>');
             cargarFormulario();
@@ -867,6 +879,8 @@ function ejecutarAnalisis() {
 }
 
 function mostrarResultado(data) {
+    // Limpiar localStorage — evaluación completada
+    localStorage.removeItem('riiss_eval_' + EST_ID);
     var res    = data.resumen;
     var clasif = res.clasificacion;
     var pct    = res.porcentaje_cumplimiento;
