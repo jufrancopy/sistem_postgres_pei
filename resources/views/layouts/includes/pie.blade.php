@@ -79,5 +79,19 @@
 <script>
     $(document).ready(function() {
         $('.js-example-responsive').select2();
+
+        // ── Fix global Select2: dropdown siempre hacia abajo (Firefox) ────────
+        $(document).on('select2:open', function() {
+            setTimeout(function() {
+                // Si el dropdown se abrió hacia arriba, forzarlo hacia abajo
+                var $above = $('.select2-dropdown--above');
+                if ($above.length) {
+                    $above.removeClass('select2-dropdown--above').addClass('select2-dropdown--below');
+                }
+                // Foco en el buscador
+                var $field = $('.select2-container--open .select2-search__field');
+                if ($field.length) $field.first().focus();
+            }, 10);
+        });
     });
 </script>
