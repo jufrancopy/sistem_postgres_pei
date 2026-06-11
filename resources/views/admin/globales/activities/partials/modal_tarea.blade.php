@@ -27,7 +27,9 @@
                                     <i class="fa fa-tag mr-1"></i>Etiqueta
                                 </label>
                                 <input type="text" name="etiqueta" id="task_etiqueta" class="form-control"
-                                       placeholder="Ej: Frontend, Marketing, RRHH...">
+                                       placeholder="Ej: Frontend, Marketing, RRHH..." autocomplete="off">
+                                {{-- Etiquetas existentes en esta actividad --}}
+                                <div id="etiquetasSugeridas" class="d-flex flex-wrap mt-1" style="gap:4px"></div>
                             </div>
                         </div>
                         <div class="col-md-5">

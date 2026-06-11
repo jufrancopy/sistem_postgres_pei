@@ -276,6 +276,36 @@ $('#btnVistaEtiqueta').click(function() {
     $('#btnVistaEstado').removeClass('btn-primary active').addClass('btn-outline-secondary');
 });
 
+// ── Etiquetas existentes (reutilizables) ─────────────────────────────────────
+var etiquetasActividad = @json(
+    $activity->tasks
+        ->whereNotNull('etiqueta')
+        ->groupBy('etiqueta')
+        ->map(fn($group) => ['etiqueta' => $group->first()->etiqueta, 'color' => $group->first()->color])
+        ->values()
+);
+
+function cargarEtiquetasExistentes() {
+    var $cont = $('#etiquetasSugeridas').empty();
+    if (!etiquetasActividad.length) {
+        $cont.append('<small class="text-muted">Sin etiquetas previas</small>');
+        return;
+    }
+    etiquetasActividad.forEach(function(e) {
+        $cont.append(
+            $('<span>')
+                .text(e.etiqueta)
+                .css({ background: e.color, color: '#fff', fontSize: '.68rem', fontWeight: '600',
+                       padding: '2px 9px', borderRadius: '20px', cursor: 'pointer', display: 'inline-block' })
+                .on('click', function() {
+                    $('#task_etiqueta').val(e.etiqueta);
+                    colorSeleccionado = e.color;
+                    renderPaleta();
+                })
+        );
+    });
+}
+
 // ── Paleta de colores ─────────────────────────────────────────────────────────
 var COLORES = ['#ef4444','#f97316','#f59e0b','#22c55e','#10b981','#14b8a6',
                '#3b82f6','#6366f1','#8b5cf6','#ec4899','#64748b','#1e293b'];
@@ -323,6 +353,7 @@ $('#btnNuevaTarea').click(function() {
     colorSeleccionado = '#6b7280';
     renderPaleta();
     initResponsableSelect(null, null);
+    cargarEtiquetasExistentes();
     $('#tareaModal').modal('show');
 });
 
@@ -403,7 +434,9 @@ $('body').on('click', '.btn-notificar-tarea', function() {
     var taskId = $(this).data('id');
     var $btn = $(this).prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>');
     $.ajax({
-        url: '/admin/globales/activities/tareas/' + taskId + '/notificar', type: 'POST',
+        url: '/admin/globales/activities/tareas/' + taskId + '/notificar',
+        type: 'POST',
+        data: { _token: $('meta[name="csrf-token"]').attr('content') },
         success: function(r) { toastr.success(r.success); },
         error:   function(xhr) { toastr.error(xhr.responseJSON?.error || 'Error al notificar'); },
         complete: function() { $btn.prop('disabled', false).html('<i class="fa fa-envelope"></i>'); }
