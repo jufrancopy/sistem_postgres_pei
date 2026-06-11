@@ -10,6 +10,7 @@ use Yajra\DataTables\DataTables;
 use App\Admin\Globales\Activity;
 use App\Admin\Globales\ActivityTask;
 use App\Admin\Globales\ActivityTaskEvidence;
+use App\Notifications\ActividadTareaNotification;
 
 class ActivityController extends Controller
 {
@@ -89,6 +90,8 @@ class ActivityController extends Controller
                 'activity_id' => $activityId,
                 'title'       => $request->title,
                 'details'     => $request->details,
+                'etiqueta'    => $request->etiqueta,
+                'color'       => $request->color ?? '#6b7280',
                 'assigned_to' => $request->assigned_to,
                 'status'      => $request->status ?? 0,
             ]
@@ -212,5 +215,82 @@ class ActivityController extends Controller
         $evidence->delete();
 
         return response()->json(['success' => 'Evidencia eliminada']);
+    }
+
+    // ── Notificaciones ────────────────────────────────────────────
+
+    /**
+     * POST /admin/globales/activities/{id}/notificar-todos
+     * Envía email a todos los responsables con sus tareas asignadas.
+     */
+    public function notificarTodos($activityId)
+    {
+        $activity = Activity::with(['tasks.assignedTo'])->findOrFail($activityId);
+
+        // Agrupar tareas por responsable
+        $porResponsable = $activity->tasks
+            ->whereNotNull('assigned_to')
+            ->groupBy('assigned_to');
+
+        $enviados = 0;
+        foreach ($porResponsable as $userId => $tareas) {
+            $user = $tareas->first()->assignedTo;
+            if (!$user || !$user->email) continue;
+            try {
+                $user->notify(new ActividadTareaNotification($activity, $tareas, 'recordatorio'));
+                $enviados++;
+            } catch (\Exception $e) {
+                \Log::warning("No se pudo notificar a {$user->email}: " . $e->getMessage());
+            }
+        }
+
+        return response()->json([
+            'success' => "Notificación enviada a {$enviados} responsable(s).",
+            'enviados' => $enviados,
+        ]);
+    }
+
+    /**
+     * POST /admin/globales/activities/tareas/{taskId}/notificar
+     * Envía email al responsable de una tarea específica.
+     */
+    public function notificarTarea($taskId)
+    {
+        $task = ActivityTask::with(['assignedTo', 'activity'])->findOrFail($taskId);
+
+        if (!$task->assignedTo || !$task->assignedTo->email) {
+            return response()->json(['error' => 'La tarea no tiene responsable asignado o no tiene email.'], 422);
+        }
+
+        try {
+            $task->assignedTo->notify(
+                new ActividadTareaNotification(
+                    $task->activity,
+                    collect([$task]),
+                    'tarea_individual'
+                )
+            );
+            return response()->json(['success' => 'Notificación enviada a ' . $task->assignedTo->name]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al enviar: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * GET /mis-tareas/{activityId}
+     * Vista del colaborador — ve todo el tablero, solo puede mover sus tareas.
+     */
+    public function misTareas($activityId)
+    {
+        $activity = Activity::with([
+            'responsibles',
+            'tasks.assignedTo',
+            'tasks.completedBy',
+            'tasks.evidences',
+        ])->findOrFail($activityId);
+
+        $userId = Auth::id();
+
+        return view('admin.globales.activities.mis_tareas', compact('activity', 'userId'));
     }
 }
