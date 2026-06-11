@@ -128,10 +128,11 @@ class RiissEstablecimientoFaltantesSeeder extends Seeder
             ]);
             $insertados++;
         }
-        // Recalcular campos derivados solo en los nuevos
-        Establecimiento::whereNull('nivel_atencion')->chunk(50, function($items) {
-            foreach ($items as $est) { $est->recalcularCamposDerivados(); }
-        });
+        // Recalcular campos derivados en los nuevos
+        Establecimiento::whereNull('nivel_atencion')
+            ->orWhere('nivel_atencion', 0)
+            ->get()
+            ->each(fn($est) => $est->recalcularCamposDerivados());
         $this->command->info("Insertados: $insertados | Ya existian: $omitidos");
     }
 }
