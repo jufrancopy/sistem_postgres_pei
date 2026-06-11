@@ -250,12 +250,50 @@
     {{-- Formulario --}}
     <div id="contenidoFormulario">
 
-        {{-- Datos de la visita --}}
+        {{-- Card unificado: Datos del establecimiento + Visita --}}
         <div class="card shadow-sm mb-4">
             <div class="card-body">
                 <h6 class="font-weight-bold mb-3">
-                    <i class="fa fa-user-edit mr-2 text-danger"></i>Datos de la visita
+                    <i class="fa fa-hospital mr-2 text-danger"></i>Datos del establecimiento
                     <small class="text-muted font-weight-normal ml-2" id="evalEstado"></small>
+                </h6>
+
+                <div class="row">
+                    {{-- Nombre (prellenado, solo lectura) --}}
+                    <div class="col-md-6 mb-3">
+                        <label class="small font-weight-bold text-uppercase text-muted">Nombre del establecimiento</label>
+                        <input type="text" class="form-control" value="{{ $est->nombre_oficial }}" readonly
+                               style="background:#f9fafb;color:#374151;font-weight:600">
+                    </div>
+                    {{-- Razón Social --}}
+                    <div class="col-md-6 mb-3">
+                        <label class="small font-weight-bold text-uppercase text-muted">Nombre o Razón Social</label>
+                        <input type="text" id="estRazonSocial" class="form-control"
+                               placeholder="Nombre oficial o razón social..."
+                               value="{{ $est->nm_empresa_costos ?? '' }}">
+                    </div>
+                    {{-- Dirección --}}
+                    <div class="col-md-6 mb-3">
+                        <label class="small font-weight-bold text-uppercase text-muted">Dirección del establecimiento</label>
+                        <input type="text" id="estDireccion" class="form-control" placeholder="Dirección completa...">
+                    </div>
+                    {{-- Teléfono --}}
+                    <div class="col-md-3 mb-3">
+                        <label class="small font-weight-bold text-uppercase text-muted">Teléfono</label>
+                        <input type="text" id="evalTelefono" class="form-control" placeholder="0981...">
+                    </div>
+                    {{-- Email --}}
+                    <div class="col-md-3 mb-3">
+                        <label class="small font-weight-bold text-uppercase text-muted">Correo electrónico</label>
+                        <input type="email" id="estEmail" class="form-control" placeholder="correo@ejemplo.com">
+                    </div>
+                </div>
+
+                <hr class="my-3">
+
+                {{-- Evaluadores y fecha --}}
+                <h6 class="font-weight-bold mb-3 text-muted small text-uppercase">
+                    <i class="fa fa-user-check mr-1"></i>Datos de la visita
                 </h6>
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -264,15 +302,18 @@
                         <small class="text-muted">Uno o más evaluadores</small>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="small font-weight-bold">Teléfono</label>
-                        <input type="text" id="evalTelefono" class="form-control" placeholder="0981...">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="small font-weight-bold">Fecha <span class="text-danger">*</span></label>
+                        <label class="small font-weight-bold">Fecha de evaluación <span class="text-danger">*</span></label>
                         <input type="date" id="evalFecha" class="form-control" value="{{ date('Y-m-d') }}">
                     </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="small font-weight-bold">Enlace de ubicación</label>
+                        <input type="text" id="estMapLink" class="form-control" placeholder="https://maps.google.com/...">
+                    </div>
                 </div>
+
                 <hr class="my-3">
+
+                {{-- Ubicación --}}
                 <h6 class="font-weight-bold mb-2 text-muted small text-uppercase">
                     <i class="fa fa-map-marker-alt mr-1"></i>Ubicación del establecimiento
                 </h6>
@@ -480,11 +521,15 @@ if (evaluacionId) {
         }
     });
 
-    $('#evalFecha, #evalTelefono').on('change input', function() {
+    $('#evalFecha, #evalTelefono, #estEmail, #estDireccion, #estRazonSocial, #estMapLink').on('change input', function() {
         clearTimeout(saveTimer);
         saveTimer = setTimeout(actualizarDatosVisita, 800);
     });
     $('#evalEvaluadores').on('change', function() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(actualizarDatosVisita, 800);
+    });
+    $('#eval-depto, #eval-dist, #eval-barrio').on('change', function() {
         clearTimeout(saveTimer);
         saveTimer = setTimeout(actualizarDatosVisita, 800);
     });
@@ -501,7 +546,14 @@ function recuperarEvaluacionExistente(id) {
         const ev = r.data;
         $('#evalFecha').val(ev.fecha_evaluacion.split('T')[0]);
         $('#evalTelefono').val(ev.evaluador_telefono);
-        
+
+        // Restaurar campos adicionales desde metadata
+        if (ev.metadata) {
+            if (ev.metadata.email)        $('#estEmail').val(ev.metadata.email);
+            if (ev.metadata.direccion)    $('#estDireccion').val(ev.metadata.direccion);
+            if (ev.metadata.razon_social) $('#estRazonSocial').val(ev.metadata.razon_social);
+            if (ev.metadata.map_link)     $('#estMapLink').val(ev.metadata.map_link);
+        }
         // Cargar evaluadores
         if (ev.evaluadores && ev.evaluadores.length) {
             $('#evalEvaluadores').empty();
@@ -615,7 +667,13 @@ function actualizarDatosVisita() {
             fecha_evaluacion:   $('#evalFecha').val(),
             evaluadores:        evaluadores,
             evaluador_telefono: $('#evalTelefono').val(),
-            metadata:           { ubicacion: ubicacion },
+            metadata: {
+                ubicacion:    ubicacion,
+                email:        $('#estEmail').val(),
+                direccion:    $('#estDireccion').val(),
+                razon_social: $('#estRazonSocial').val(),
+                map_link:     $('#estMapLink').val(),
+            },
         }),
         success: function() { mostrarToast('Datos guardados', 'success'); },
     });
