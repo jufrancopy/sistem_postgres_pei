@@ -24,6 +24,11 @@ class ActivityTask extends Model
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
+    public function activity()
+    {
+        return $this->belongsTo(Activity::class, 'activity_id');
+    }
+
     public function completedBy()
     {
         return $this->belongsTo(User::class, 'completed_by');
