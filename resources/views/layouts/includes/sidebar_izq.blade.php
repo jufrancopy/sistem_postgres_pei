@@ -315,6 +315,28 @@
             </li>
         @endrole
 
+        {{-- Sidebar exclusivo para Analista de Planificación --}}
+        @role('Analista de Planificación')
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ route('globales.activities.mis-actividades') }}">
+                    <i class="material-icons">dashboard</i>
+                    <p>Mis Actividades</p>
+                </a>
+            </li>
+            <li class="nav-item {{ request()->is('mis-actividades') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('globales.activities.mis-actividades') }}">
+                    <i class="material-icons">task_alt</i>
+                    <p>Tablero de Tareas</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('profile.edit') }}">
+                    <i class="material-icons">person</i>
+                    <p>Mi Perfil</p>
+                </a>
+            </li>
+        @endrole
+
         {{-- Sidebar exclusivo para Analista - RIISS --}}
         @role('Analista - RIISS')
             @php $enRiiss = str_contains($path, 'riiss'); @endphp

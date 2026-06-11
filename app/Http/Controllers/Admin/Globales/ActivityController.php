@@ -277,6 +277,20 @@ class ActivityController extends Controller
     }
 
     /**
+     * GET /mis-actividades
+     * Lista de actividades donde el analista es responsable.
+     */
+    public function misActividades()
+    {
+        $userId = Auth::id();
+        $actividades = Activity::with(['responsibles', 'tasks'])
+            ->whereHas('responsibles', fn($q) => $q->where('users.id', $userId))
+            ->latest()->get();
+
+        return view('admin.globales.activities.mis_actividades', compact('actividades', 'userId'));
+    }
+
+    /**
      * GET /mis-tareas/{activityId}
      * Vista del colaborador — ve todo el tablero, solo puede mover sus tareas.
      */

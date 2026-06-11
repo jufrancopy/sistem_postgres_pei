@@ -19,6 +19,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     // ── Mis Tareas (colaboradores) ────────────────────────────────────────────
     Route::get('mis-tareas/{activityId}', 'Admin\Globales\ActivityController@misTareas')->name('globales.mis-tareas');
+    Route::get('mis-actividades', 'Admin\Globales\ActivityController@misActividades')->name('globales.activities.mis-actividades');
 
     //Rutas del Dpto. Planificacion
     Route::get('planificacion-dashboard', 'Admin\Planificacion\PlanificacionController@dashboard')->name('planificacion-dashboard');

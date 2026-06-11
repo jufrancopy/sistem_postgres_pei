@@ -25,6 +25,11 @@ class HomeController extends Controller
             return redirect()->route('riiss.establecimientos.index');
         }
 
+        // Analista de Planificación → sus actividades
+        if ($user->hasRole('Analista de Planificación')) {
+            return redirect()->route('globales.activities.mis-actividades');
+        }
+
         // Participantes → sus notificaciones SIESS + perfil
         return redirect()->route('siess.home');
     }
