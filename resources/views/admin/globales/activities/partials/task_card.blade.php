@@ -76,15 +76,22 @@
                 @endif
             </div>
             <div class="task-actions">
-                {{-- Mover izquierda --}}
-                @if($status > 0)
+                @php
+                    // Secuencia de estados según tipo de actividad
+                    $secuencia = $isScrumActivity ?? false
+                        ? [0, 1, 3, 2]
+                        : [0, 4, 1, 3, 2];
+                    $posActual  = array_search($status, $secuencia);
+                    $esUltimo   = $posActual === count($secuencia) - 1;
+                    $esPrimero  = $posActual === 0;
+                @endphp
+                @if(!$esPrimero)
                 <button class="btn btn-xs btn-outline-secondary btn-move-left"
                         data-id="{{ $task->id }}" data-status="{{ $status }}" title="Retroceder">
                     <i class="fa fa-arrow-left"></i>
                 </button>
                 @endif
-                {{-- Mover derecha --}}
-                @if($status < 2)
+                @if(!$esUltimo)
                 <button class="btn btn-xs btn-outline-primary btn-move-right"
                         data-id="{{ $task->id }}" data-status="{{ $status }}" title="Avanzar">
                     <i class="fa fa-arrow-right"></i>

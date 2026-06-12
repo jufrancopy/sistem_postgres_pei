@@ -209,7 +209,11 @@
             </div>
             <div class="col-body">
                 @forelse($colTareas->sortByDesc('created_at') as $task)
-                    @include('admin.globales.activities.partials.task_card', ['task' => $task, 'status' => $status])
+                    @include('admin.globales.activities.partials.task_card', [
+                        'task'            => $task,
+                        'status'          => $status,
+                        'isScrumActivity' => $isScrumActivity,
+                    ])
                 @empty
                 <div class="col-empty"><i class="fa fa-inbox fa-lg d-block mb-1"></i>Sin tareas</div>
                 @endforelse
