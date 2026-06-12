@@ -59,6 +59,6 @@ class ActividadTareaNotification extends Notification
         return $mail
             ->action('Ver mis tareas', $url)
             ->line('Podés actualizar el estado de tus tareas desde el sistema.')
-            ->salutation('SIPLAN — Sistema de Planificación IPS');
+            ->salutation('Saludos, SIPLAN — Sistema de Planificación IPS');
     }
 }
