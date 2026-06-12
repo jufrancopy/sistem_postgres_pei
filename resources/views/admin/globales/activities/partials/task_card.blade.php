@@ -16,6 +16,11 @@
     }
 
     $comentariosCount = isset($task->comments) ? $task->comments->count() : 0;
+
+    $secuencia = ($isScrumActivity ?? false) ? [0,1,3,2] : [0,4,1,3,2];
+    $posActual = array_search($status, $secuencia);
+    $esUltimo  = $posActual === count($secuencia) - 1;
+    $esPrimero = $posActual === 0;
 @endphp
 
 <div class="task-card {{ $isDone ? 'completed-card' : '' }} {{ $vencColor === '#ef4444' ? 'task-vencida' : '' }}"
@@ -26,8 +31,8 @@
     <span class="mine-badge">Mi tarea</span>
     @endif
 
-    {{-- Cuerpo principal — drag handle --}}
-    <div class="card-inner">
+    {{-- Cuerpo — drag-handle permite arrastrar toda la card --}}
+    <div class="card-inner drag-handle">
 
         @if($task->etiqueta)
         <div><span class="task-etiqueta" style="background:{{ $cardColor }}">{{ $task->etiqueta }}</span></div>
@@ -60,19 +65,19 @@
         @endif
 
         @if($task->evidences->count())
-        <div class="mt-1 d-flex flex-wrap" style="gap:4px" onclick="event.stopPropagation()">
+        <div class="mt-1 d-flex flex-wrap" style="gap:4px">
             @foreach($task->evidences as $ev)
             <span class="badge badge-light border small">
                 @if($ev->type === 'url')
                     <i class="fa fa-link text-primary mr-1"></i>
-                    <a href="{{ $ev->value }}" target="_blank" style="max-width:100px" class="text-truncate d-inline-block">{{ $ev->label }}</a>
+                    <a href="{{ $ev->value }}" target="_blank" style="max-width:100px" class="text-truncate d-inline-block" onclick="event.stopPropagation()">{{ $ev->label }}</a>
                 @elseif($ev->type === 'image')
-                    <a href="{{ asset('storage/'.$ev->value) }}" target="_blank">
+                    <a href="{{ asset('storage/'.$ev->value) }}" target="_blank" onclick="event.stopPropagation()">
                         <img src="{{ asset('storage/'.$ev->value) }}" style="height:20px;width:20px;object-fit:cover;border-radius:3px">
                     </a>
                 @else
                     <i class="fa fa-file-alt text-warning mr-1"></i>
-                    <a href="{{ asset('storage/'.$ev->value) }}" target="_blank">{{ $ev->label }}</a>
+                    <a href="{{ asset('storage/'.$ev->value) }}" target="_blank" onclick="event.stopPropagation()">{{ $ev->label }}</a>
                 @endif
                 <a href="javascript:void(0)" class="text-danger btn-delete-evidence ml-1" data-id="{{ $ev->id }}" onclick="event.stopPropagation()">×</a>
             </span>
@@ -80,8 +85,8 @@
         </div>
         @endif
 
-        {{-- Footer --}}
-        <div class="task-footer mt-2" onclick="event.stopPropagation()">
+        {{-- Footer acciones --}}
+        <div class="task-footer mt-2">
             <div class="d-flex align-items-center" style="gap:6px">
                 @if($task->assignedTo)
                 <div class="task-avatar" style="background:{{ $cardColor }}20;color:{{ $cardColor }}">{{ $initials }}</div>
@@ -89,68 +94,63 @@
                 @else
                 <small class="text-muted" style="font-size:.72rem">Sin asignar</small>
                 @endif
-
-                {{-- Contador comentarios — clic para expandir --}}
-                @if($comentariosCount > 0)
-                <button class="btn btn-xs btn-outline-warning btn-toggle-comments"
-                        data-task-id="{{ $task->id }}"
-                        style="border-radius:20px;font-size:.68rem"
-                        title="Ver comentarios">
-                    <i class="fa fa-comment-alt mr-1"></i>{{ $comentariosCount }}
-                </button>
-                @else
-                <button class="btn btn-xs btn-outline-secondary btn-toggle-comments"
-                        data-task-id="{{ $task->id }}"
-                        style="border-radius:20px;font-size:.68rem"
-                        title="Comentar">
-                    <i class="fa fa-comment-alt mr-1"></i>
-                </button>
-                @endif
             </div>
             <div class="task-actions">
+                {{-- Flechas (móvil) --}}
                 @if(!$modoColaborador || $esMia)
-                @php
-                    $secuencia = $isScrumActivity ?? false ? [0,1,3,2] : [0,4,1,3,2];
-                    $posActual = array_search($status, $secuencia);
-                    $esUltimo  = $posActual === count($secuencia) - 1;
-                    $esPrimero = $posActual === 0;
-                @endphp
                 @if(!$esPrimero)
-                <button class="btn btn-xs btn-outline-secondary btn-move-left" data-id="{{ $task->id }}" data-status="{{ $status }}" title="Retroceder">
+                <button class="btn btn-xs btn-outline-secondary btn-move-left"
+                        data-id="{{ $task->id }}" data-status="{{ $status }}" title="Retroceder">
                     <i class="fa fa-arrow-left"></i>
                 </button>
                 @endif
                 @if(!$esUltimo)
-                <button class="btn btn-xs btn-outline-primary btn-move-right" data-id="{{ $task->id }}" data-status="{{ $status }}" title="Avanzar">
+                <button class="btn btn-xs btn-outline-primary btn-move-right"
+                        data-id="{{ $task->id }}" data-status="{{ $status }}" title="Avanzar">
                     <i class="fa fa-arrow-right"></i>
                 </button>
                 @endif
                 @endif
 
                 @if(!$modoColaborador)
-                <button class="btn btn-xs btn-outline-secondary btn-add-evidence" data-id="{{ $task->id }}" title="Evidencia">
+                <button class="btn btn-xs btn-outline-secondary btn-add-evidence"
+                        data-id="{{ $task->id }}" title="Evidencia">
                     <i class="fa fa-paperclip"></i>
                 </button>
                 @if($task->assignedTo)
-                <button class="btn btn-xs btn-outline-info btn-notificar-tarea" data-id="{{ $task->id }}" title="Notificar">
+                <button class="btn btn-xs btn-outline-info btn-notificar-tarea"
+                        data-id="{{ $task->id }}" title="Notificar">
                     <i class="fa fa-envelope"></i>
                 </button>
                 @endif
-                <button class="btn btn-xs btn-outline-danger btn-delete-task" data-id="{{ $task->id }}" title="Eliminar">
+                <button class="btn btn-xs btn-outline-danger btn-delete-task"
+                        data-id="{{ $task->id }}" title="Eliminar">
                     <i class="fa fa-trash"></i>
                 </button>
                 @endif
+
+                {{-- Comentarios --}}
+                <button class="btn btn-xs {{ $comentariosCount > 0 ? 'btn-warning' : 'btn-outline-secondary' }} btn-toggle-comments"
+                        data-task-id="{{ $task->id }}"
+                        title="Comentarios{{ $comentariosCount > 0 ? ' (' . $comentariosCount . ')' : '' }}">
+                    <i class="fa fa-comment-alt"></i>
+                    @if($comentariosCount > 0)
+                    <span style="font-size:.65rem">{{ $comentariosCount }}</span>
+                    @endif
+                </button>
             </div>
         </div>
     </div>
 
     {{-- Sección expandible de comentarios --}}
-    <div class="task-comments-section" id="comments-{{ $task->id }}" style="display:none;border-top:1px solid #f1f5f9">
-        <div style="padding:10px 12px">
-            {{-- Lista de comentarios existentes --}}
-            <div class="comments-lista" id="comments-lista-{{ $task->id }}">
+    <div class="task-comments-section" id="comments-{{ $task->id }}"
+         style="display:none;border-top:1px solid #f1f5f9">
+        <div style="padding:10px 12px" onclick="event.stopPropagation()">
+
+            <div class="comments-lista" id="comments-lista-{{ $task->id }}"
+                 style="max-height:180px;overflow-y:auto">
                 @forelse(isset($task->comments) ? $task->comments : [] as $c)
-                <div class="d-flex gap-2 mb-2" style="gap:8px" data-comment-id="{{ $c->id }}">
+                <div class="d-flex mb-2" style="gap:8px" data-comment-id="{{ $c->id }}">
                     <div style="width:24px;height:24px;border-radius:50%;background:#dbeafe;color:#1e40af;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">
                         {{ strtoupper(substr($c->user->name ?? '?', 0, 2)) }}
                     </div>
@@ -161,22 +161,24 @@
                         <div style="font-size:.65rem;color:#94a3b8;margin-top:2px;display:flex;justify-content:space-between">
                             <span>{{ $c->user->name ?? '' }} · {{ $c->created_at->format('d/m H:i') }}</span>
                             @if($c->user_id === auth()->id())
-                            <a href="javascript:void(0)" class="text-danger btn-delete-comment" data-id="{{ $c->id }}" style="font-size:.65rem">×</a>
+                            <a href="javascript:void(0)" class="text-danger btn-delete-comment"
+                               data-id="{{ $c->id }}" style="font-size:.65rem">×</a>
                             @endif
                         </div>
                     </div>
                 </div>
                 @empty
-                <div class="text-center text-muted small py-1" id="no-comments-{{ $task->id }}">Sin comentarios aún</div>
+                <div class="text-center text-muted small py-1" id="no-comments-{{ $task->id }}">
+                    Sin comentarios aún
+                </div>
                 @endforelse
             </div>
 
-            {{-- Input nuevo comentario --}}
-            <div class="d-flex mt-2" style="gap:6px" onclick="event.stopPropagation()">
+            <div class="d-flex mt-2" style="gap:6px">
                 <input type="text" class="form-control form-control-sm comment-input"
                        id="comment-input-{{ $task->id }}"
-                       placeholder="Escribí un comentario..."
                        data-task-id="{{ $task->id }}"
+                       placeholder="Escribí un comentario... (Enter para enviar)"
                        style="border-radius:20px;font-size:.78rem">
                 <button class="btn btn-primary btn-sm comment-send"
                         data-task-id="{{ $task->id }}"

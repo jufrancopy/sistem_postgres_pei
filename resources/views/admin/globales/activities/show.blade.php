@@ -95,8 +95,8 @@
 .sortable-ghost  { opacity: .4; transform: rotate(2deg); }
 .sortable-chosen { box-shadow: 0 8px 24px rgba(0,0,0,.2) !important; transform: scale(1.02); cursor: grabbing; }
 .task-card { cursor: default; }
-.task-title { cursor: grab; }
-.task-title:active { cursor: grabbing; }
+.drag-handle { cursor: grab; }
+.drag-handle:active { cursor: grabbing; }
 
 /* ── Vencida pulsante ── */
 @keyframes pulse-red { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)} 50%{box-shadow:0 0 0 4px rgba(239,68,68,.0)} }
@@ -573,6 +573,14 @@ $(document).on('click', '.btn-toggle-comments', function(e) {
     e.stopPropagation();
     var taskId = $(this).data('task-id');
     $('#comments-' + taskId).slideToggle(200);
+    // Scroll al fondo al abrir
+    $('#comments-' + taskId).promise().done(function() {
+        if ($(this).is(':visible')) {
+            var $l = $('#comments-lista-' + taskId);
+            $l.scrollTop($l[0].scrollHeight);
+            $('#comment-input-' + taskId).focus();
+        }
+    });
 });
 
 $(document).on('keydown', '.comment-input', function(e) {
@@ -652,8 +660,8 @@ function initDragDrop() {
             ghostClass:  'sortable-ghost',
             chosenClass: 'sortable-chosen',
             dragClass:   'sortable-drag',
-            handle:      '.task-title',
-            filter:      '.task-actions, .task-actions *, button, a, .task-comments-section, input',
+            handle:      '.drag-handle',
+            filter:      '.task-actions, button, a, input, .task-comments-section',
             preventOnFilter: true,
             onEnd: function(evt) {
                 var taskId    = $(evt.item).data('id');
