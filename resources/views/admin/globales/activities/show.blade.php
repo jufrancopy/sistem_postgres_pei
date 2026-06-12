@@ -94,8 +94,9 @@
 .col-body.sortable-over { background: #e0f2fe !important; }
 .sortable-ghost  { opacity: .4; transform: rotate(2deg); }
 .sortable-chosen { box-shadow: 0 8px 24px rgba(0,0,0,.2) !important; transform: scale(1.02); cursor: grabbing; }
-.task-card { cursor: grab; }
-.task-card:active { cursor: grabbing; }
+.task-card { cursor: default; }
+.task-title { cursor: grab; }
+.task-title:active { cursor: grabbing; }
 
 /* ── Vencida pulsante ── */
 @keyframes pulse-red { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)} 50%{box-shadow:0 0 0 4px rgba(239,68,68,.0)} }
@@ -276,7 +277,11 @@
             <div class="row">
                 @foreach($tareas as $task)
                 <div class="col-md-4 mb-2">
-                    @include('admin.globales.activities.partials.task_card', ['task' => $task, 'status' => $task->status])
+                    @include('admin.globales.activities.partials.task_card', [
+                        'task'            => $task,
+                        'status'          => $task->status,
+                        'isScrumActivity' => $isScrumActivity,
+                    ])
                 </div>
                 @endforeach
             </div>
@@ -291,6 +296,7 @@
 @include('admin.globales.activities.partials.modal_tarea', ['activity' => $activity])
 @include('admin.globales.activities.partials.modal_completion')
 @include('admin.globales.activities.partials.modal_evidencia')
+@include('admin.globales.activities.partials.modal_comentarios')
 @include('admin.globales.activities.partials.modal_ayuda', ['isScrumActivity' => $isScrumActivity])
 
 @endsection
@@ -557,6 +563,71 @@ $('body').on('click', '.btn-delete-evidence', function() {
     });
 });
 
+@include('admin.globales.activities.partials.scripts_comentarios')
+
+// ── Comentarios inline ───────────────────────────────────────────────────────
+var comentariosBase = "{{ url('admin/globales/activities/tareas') }}";
+
+// Abrir/cerrar sección de comentarios desde el botón en el footer
+$(document).on('click', '.btn-toggle-comments', function(e) {
+    e.stopPropagation();
+    var taskId = $(this).data('task-id');
+    $('#comments-' + taskId).slideToggle(200);
+});
+
+$(document).on('keydown', '.comment-input', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); enviarComentario($(this).data('task-id')); }
+});
+$(document).on('click', '.comment-send', function() {
+    enviarComentario($(this).data('task-id'));
+});
+
+function enviarComentario(taskId) {
+    var $input = $('#comment-input-' + taskId);
+    var texto  = $input.val().trim();
+    if (!texto) return;
+    $.ajax({
+        url: comentariosBase + '/' + taskId + '/comentarios', type: 'POST',
+        data: { _token: $('meta[name="csrf-token"]').attr('content'), comentario: texto },
+        success: function(r) {
+            $input.val('');
+            var c = r.item;
+            var $lista = $('#comments-lista-' + taskId);
+            $lista.find('#no-comments-' + taskId).remove();
+            $lista.append(
+                '<div class="d-flex mb-2" style="gap:8px" data-comment-id="' + c.id + '">'
+                + '<div style="width:24px;height:24px;border-radius:50%;background:#dcfce7;color:#166534;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">' + c.initials + '</div>'
+                + '<div style="flex:1;min-width:0">'
+                + '<div style="background:#dbeafe;border-radius:0 8px 8px 8px;padding:6px 10px;font-size:.78rem">' + $('<div>').text(c.comentario).html() + '</div>'
+                + '<div style="font-size:.65rem;color:#94a3b8;margin-top:2px;display:flex;justify-content:space-between">'
+                + '<span>' + c.autor + ' · ' + c.fecha + '</span>'
+                + '<a href="javascript:void(0)" class="btn-delete-comment text-danger" data-id="' + c.id + '" style="font-size:.65rem">×</a>'
+                + '</div></div></div>'
+            );
+            // Actualizar contador
+            var $card = $('[data-id="' + taskId + '"]').first();
+            var $cont = $card.find('.fa-comment-alt').closest('span');
+            if ($cont.length) {
+                var cur = parseInt($cont.text().trim()) || 0;
+                $cont.html('<i class="fa fa-comment-alt mr-1"></i>' + (cur + 1));
+            }
+        },
+        error: function() { toastr.error('Error al guardar'); }
+    });
+}
+
+$(document).on('click', '.btn-delete-comment', function(e) {
+    e.stopPropagation();
+    var cId = $(this).data('id');
+    var $row = $(this).closest('[data-comment-id]');
+    $.ajax({
+        url: comentariosBase + '/comentarios/' + cId, type: 'DELETE',
+        data: { _token: $('meta[name="csrf-token"]').attr('content') },
+        success: function() { $row.fadeOut(200, function(){ $(this).remove(); }); },
+        error: function() { toastr.error('Error'); }
+    });
+});
+
 // Init paleta
 renderPaleta();
 </script>
@@ -576,12 +647,14 @@ $(document).ready(function() {
 function initDragDrop() {
     document.querySelectorAll('.col-body').forEach(function(col) {
         Sortable.create(col, {
-            group:       'tablero',          // permite mover entre columnas
+            group:       'tablero',
             animation:   150,
             ghostClass:  'sortable-ghost',
             chosenClass: 'sortable-chosen',
             dragClass:   'sortable-drag',
-            handle:      '.card-inner',      // drag desde el cuerpo de la card
+            handle:      '.task-title',
+            filter:      '.task-actions, .task-actions *, button, a, .task-comments-section, input',
+            preventOnFilter: true,
             onEnd: function(evt) {
                 var taskId    = $(evt.item).data('id');
                 var newColBody = evt.to;

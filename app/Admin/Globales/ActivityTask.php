@@ -46,4 +46,9 @@ class ActivityTask extends Model
     {
         return $this->hasMany(ActivityTaskEvidence::class, 'activity_task_id');
     }
+
+    public function comments()
+    {
+        return $this->hasMany(ActivityTaskComment::class, 'activity_task_id')->with('user')->orderBy('created_at', 'asc');
+    }
 }

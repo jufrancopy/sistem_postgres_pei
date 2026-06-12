@@ -10,7 +10,9 @@ use Yajra\DataTables\DataTables;
 use App\Admin\Globales\Activity;
 use App\Admin\Globales\ActivityTask;
 use App\Admin\Globales\ActivityTaskEvidence;
+use App\Admin\Globales\ActivityTaskComment;
 use App\Notifications\ActividadTareaNotification;
+use App\Notifications\ActividadComentarioNotification;
 
 class ActivityController extends Controller
 {
@@ -38,7 +40,13 @@ class ActivityController extends Controller
 
     public function show($id)
     {
-        $activity = Activity::with(['responsibles', 'tasks.assignedTo', 'tasks.evidences'])->findOrFail($id);
+        $activity = Activity::with([
+            'responsibles',
+            'tasks.assignedTo',
+            'tasks.completedBy',
+            'tasks.evidences',
+            'tasks.comments',
+        ])->findOrFail($id);
         return view('admin.globales.activities.show', compact('activity'));
     }
 
@@ -142,10 +150,110 @@ class ActivityController extends Controller
             }
         }
 
+        $task->comments()->delete();
         $task->evidences()->delete();
         $task->delete();
 
         return response()->json(['success' => 'Tarea eliminada']);
+    }
+
+    // ── Comentarios ───────────────────────────────────────────────
+
+    public function getComentarios($taskId)
+    {
+        $task = ActivityTask::with('comments.user')->findOrFail($taskId);
+        return response()->json([
+            'ok'         => true,
+            'task_title' => $task->title,
+            'comentarios'=> $task->comments->map(fn($c) => [
+                'id'          => $c->id,
+                'comentario'  => $c->comentario,
+                'autor'       => $c->user->name,
+                'initials'    => strtoupper(substr($c->user->name, 0, 2)),
+                'fecha'       => $c->created_at->format('d/m H:i'),
+                'es_mio'      => $c->user_id === Auth::id(),
+            ]),
+        ]);
+    }
+
+    public function storeComentario(Request $request, $taskId)
+    {
+        $request->validate(['comentario' => 'required|string|max:1000']);
+
+        $task = ActivityTask::with([
+            'activity.responsibles',
+            'assignedTo',
+            'comments.user',
+        ])->findOrFail($taskId);
+
+        $comment = ActivityTaskComment::create([
+            'activity_task_id' => $taskId,
+            'user_id'          => Auth::id(),
+            'comentario'       => $request->comentario,
+        ]);
+        $comment->load('user');
+
+        $this->notificarComentario($task, $comment);
+
+        return response()->json([
+            'ok'      => true,
+            'success' => 'Comentario agregado',
+            'item'    => [
+                'id'        => $comment->id,
+                'comentario'=> $comment->comentario,
+                'autor'     => $comment->user->name,
+                'initials'  => strtoupper(substr($comment->user->name, 0, 2)),
+                'fecha'     => $comment->created_at->format('d/m H:i'),
+                'es_mio'    => true,
+            ],
+        ]);
+    }
+
+    public function destroyComentario($commentId)
+    {
+        $comment = ActivityTaskComment::findOrFail($commentId);
+        if ($comment->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Sin permiso'], 403);
+        }
+        $comment->delete();
+        return response()->json(['ok' => true]);
+    }
+
+    private function notificarComentario(ActivityTask $task, ActivityTaskComment $comment): void
+    {
+        $autorId = Auth::id();
+        $destinatarios = collect();
+
+        if ($task->assigned_to && $task->assigned_to !== $autorId && $task->assignedTo?->email) {
+            $destinatarios->put($task->assigned_to, $task->assignedTo);
+        }
+
+        foreach ($task->activity->responsibles as $responsable) {
+            if ($responsable->id !== $autorId && $responsable->email) {
+                $destinatarios->put($responsable->id, $responsable);
+            }
+        }
+
+        foreach ($task->comments as $previo) {
+            if ($previo->id !== $comment->id
+                && $previo->user_id !== $autorId
+                && $previo->user?->email) {
+                $destinatarios->put($previo->user_id, $previo->user);
+            }
+        }
+
+        foreach ($destinatarios as $user) {
+            try {
+                $user->notify(new ActividadComentarioNotification(
+                    $task->activity,
+                    $task,
+                    $comment,
+                    $comment->user->name
+                ));
+            } catch (\Exception $e) {
+                \Log::warning("No se pudo notificar comentario a {$user->email}: " . $e->getMessage());
+            }
+        }
     }
 
     // ── Evidencias ────────────────────────────────────────────────
@@ -302,6 +410,7 @@ class ActivityController extends Controller
             'tasks.assignedTo',
             'tasks.completedBy',
             'tasks.evidences',
+            'tasks.comments',
         ])->findOrFail($activityId);
 
         $userId = Auth::id();

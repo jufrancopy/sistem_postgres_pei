@@ -127,6 +127,10 @@
                             <i class="fa fa-paperclip mr-2"></i>
                             <strong>Evidencia</strong> — adjuntá un enlace, imagen o documento como respaldo
                         </div>
+                        <div class="tip-card">
+                            <i class="fa fa-comment-alt mr-2" style="color:#f59e0b"></i>
+                            <strong>Comentarios</strong> — dejá mensajes en la tarea para coordinar con el equipo
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <div class="tip-card">
@@ -153,6 +157,10 @@
                     <strong>Notificar a todos</strong> — usá el botón del encabezado cuando quieras enviar
                     un resumen de tareas a <em>todos</em> los responsables al mismo tiempo. Ideal para el inicio de semana o
                     cuando hubo cambios importantes.
+                </div>
+                <div class="tip-card" style="border-left-color:#f59e0b">
+                    <i class="fa fa-comment-alt mr-2" style="color:#f59e0b"></i>
+                    <strong>Comentarios por email</strong> — al dejar un comentario, el responsable y el equipo reciben una notificación
                 </div>
                 <div class="tip-card" style="border-left-color:#f59e0b">
                     <i class="fa fa-envelope mr-2" style="color:#f59e0b"></i>
