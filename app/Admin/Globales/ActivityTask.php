@@ -13,11 +13,23 @@ class ActivityTask extends Model
     protected $table = 'activity_tasks';
 
     protected $fillable = [
-        'activity_id', 'title', 'details', 'etiqueta', 'color', 'assigned_to', 'status',
+        'activity_id', 'title', 'details', 'etiqueta', 'color', 'fecha_vencimiento', 'assigned_to', 'status',
         'completed_at', 'completed_by', 'completion_note'
     ];
 
-    protected $dates = ['completed_at'];
+    protected $dates = ['completed_at', 'fecha_vencimiento'];
+
+    /**
+     * Estado de vencimiento: 'ok', 'pronto', 'vencida', null
+     */
+    public function getEstadoVencimientoAttribute(): ?string
+    {
+        if (!$this->fecha_vencimiento || $this->status === 2) return null;
+        $dias = now()->startOfDay()->diffInDays($this->fecha_vencimiento->startOfDay(), false);
+        if ($dias < 0)  return 'vencida';
+        if ($dias <= 3) return 'pronto';
+        return 'ok';
+    }
 
     public function assignedTo()
     {

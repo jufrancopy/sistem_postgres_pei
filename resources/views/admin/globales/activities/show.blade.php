@@ -89,9 +89,17 @@
 .task-actions { display: flex; gap: 3px; }
 .task-actions .btn { padding: 2px 6px; font-size: .7rem; border-radius: 6px; }
 
-/* ── Done check animation ── */
-@keyframes popIn { 0%{transform:scale(0)} 70%{transform:scale(1.2)} 100%{transform:scale(1)} }
-.done-check { animation: popIn .3s ease; }
+/* ── Drag & Drop ── */
+.col-body { transition: background .15s; }
+.col-body.sortable-over { background: #e0f2fe !important; }
+.sortable-ghost  { opacity: .4; transform: rotate(2deg); }
+.sortable-chosen { box-shadow: 0 8px 24px rgba(0,0,0,.2) !important; transform: scale(1.02); cursor: grabbing; }
+.task-card { cursor: grab; }
+.task-card:active { cursor: grabbing; }
+
+/* ── Vencida pulsante ── */
+@keyframes pulse-red { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)} 50%{box-shadow:0 0 0 4px rgba(239,68,68,.0)} }
+.task-vencida { animation: pulse-red 2s infinite; }
 
 /* ── Empty col ── */
 .col-empty { text-align: center; padding: 24px 12px; color: #cbd5e1; font-size: .8rem; }
@@ -174,6 +182,10 @@
                     id="btnNotificarTodos" data-id="{{ $activity->id }}">
                 <i class="fa fa-paper-plane mr-1"></i>Notificar a todos
             </button>
+            <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)"
+                    data-toggle="modal" data-target="#modalAyuda" title="Cómo usar el tablero">
+                <i class="fa fa-question-circle mr-1"></i>Ayuda
+            </button>
         </div>
     </div>
 </div>
@@ -197,12 +209,36 @@
     </div>
 </div>
 
+{{-- Alerta tareas vencidas/por vencer --}}
+@php
+    $vencidas  = $activity->tasks->filter(fn($t) => $t->status !== 2 && $t->fecha_vencimiento && \Carbon\Carbon::parse($t->fecha_vencimiento)->isPast());
+    $porVencer = $activity->tasks->filter(fn($t) => $t->status !== 2 && $t->fecha_vencimiento && !$t->fecha_vencimiento->isPast() && $t->fecha_vencimiento->diffInDays(now()) <= 3);
+@endphp
+@if($vencidas->count() > 0)
+<div class="alert alert-danger d-flex align-items-center mb-3 py-2" style="border-radius:10px">
+    <i class="fa fa-exclamation-circle fa-lg mr-3"></i>
+    <div>
+        <strong>{{ $vencidas->count() }} tarea(s) vencida(s)</strong>
+        — {{ $vencidas->pluck('title')->implode(', ') }}
+    </div>
+</div>
+@endif
+@if($porVencer->count() > 0)
+<div class="alert alert-warning d-flex align-items-center mb-3 py-2" style="border-radius:10px">
+    <i class="fa fa-clock fa-lg mr-3"></i>
+    <div>
+        <strong>{{ $porVencer->count() }} tarea(s) próximas a vencer</strong>
+        — {{ $porVencer->pluck('title')->implode(', ') }}
+    </div>
+</div>
+@endif
+
 {{-- ── TABLERO POR ESTADO ── --}}
 <div id="vistaEstado">
     <div class="row board-row">
         @foreach($columnas as $status => $col)
         @php $colTareas = $activity->tasks->where('status', $status); @endphp
-        <div class="col-md board-col mb-4">
+        <div class="col-md board-col mb-4" data-status="{{ $status }}">
             <div class="col-header" style="background:{{ $col['color'] }}">
                 <span><i class="fa {{ $col['icon'] }} mr-2"></i>{{ $col['label'] }}</span>
                 <span class="badge badge-light text-dark">{{ $colTareas->count() }}</span>
@@ -255,6 +291,7 @@
 @include('admin.globales.activities.partials.modal_tarea', ['activity' => $activity])
 @include('admin.globales.activities.partials.modal_completion')
 @include('admin.globales.activities.partials.modal_evidencia')
+@include('admin.globales.activities.partials.modal_ayuda', ['isScrumActivity' => $isScrumActivity])
 
 @endsection
 
@@ -522,5 +559,71 @@ $('body').on('click', '.btn-delete-evidence', function() {
 
 // Init paleta
 renderPaleta();
+</script>
+
+{{-- SortableJS --}}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+// ── Drag & Drop entre columnas ────────────────────────────────────────────────
+var statuses    = @json(array_keys($columnas));
+var statusDone  = {{ $isScrumActivity ? 2 : 2 }}; // siempre 2 = hecho/finalizado
+var pendingDrag = null; // {taskId, newStatus} — esperando nota de cierre
+
+$(document).ready(function() {
+    initDragDrop();
+});
+
+function initDragDrop() {
+    document.querySelectorAll('.col-body').forEach(function(col) {
+        Sortable.create(col, {
+            group:       'tablero',          // permite mover entre columnas
+            animation:   150,
+            ghostClass:  'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass:   'sortable-drag',
+            handle:      '.card-inner',      // drag desde el cuerpo de la card
+            onEnd: function(evt) {
+                var taskId    = $(evt.item).data('id');
+                var newColBody = evt.to;
+                var newStatus  = parseInt($(newColBody).closest('[data-status]').data('status'));
+
+                // Si no cambió de columna, no hacer nada
+                if (evt.from === evt.to) return;
+
+                if (newStatus === statusDone) {
+                    // Pedir nota de cierre antes de confirmar
+                    pendingDrag = { taskId: taskId, newStatus: newStatus, fromCol: evt.from, toCol: evt.to, item: evt.item };
+                    $('#completion_task_id').val(taskId);
+                    $('#completion_new_status').val(newStatus);
+                    $('#completion_note').val('');
+                    $('#completionModal').modal('show');
+
+                    // Revertir visualmente hasta confirmar
+                    evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex] || null);
+                } else {
+                    doMoveTask(taskId, newStatus, null);
+                }
+            }
+        });
+    });
+}
+
+// Al confirmar nota de cierre desde drag
+$('#btnConfirmComplete').off('click').on('click', function() {
+    var note = $('#completion_note').val().trim();
+    if (!note) { toastr.error('El comentario de cierre es obligatorio'); return; }
+
+    var taskId    = $('#completion_task_id').val();
+    var newStatus = $('#completion_new_status').val();
+
+    doMoveTask(taskId, newStatus, note);
+    $('#completionModal').modal('hide');
+    pendingDrag = null;
+});
+
+// Cancelar drag que pedía nota de cierre
+$('#completionModal').on('hidden.bs.modal', function() {
+    pendingDrag = null;
+});
 </script>
 @endsection

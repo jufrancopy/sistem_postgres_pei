@@ -2,10 +2,22 @@
     $isDone    = $task->status === 2;
     $cardColor = $task->color ?? '#6b7280';
     $initials  = $task->assignedTo ? strtoupper(substr($task->assignedTo->name, 0, 2)) : '?';
+
+    // Vencimiento
+    $venc = null; $vencColor = null; $vencLabel = null;
+    if ($task->fecha_vencimiento && !$isDone) {
+        $dias = now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($task->fecha_vencimiento)->startOfDay(), false);
+        if ($dias < 0)      { $vencColor = '#ef4444'; $vencLabel = 'Vencida hace ' . abs($dias) . 'd'; }
+        elseif ($dias === 0){ $vencColor = '#ef4444'; $vencLabel = '¡Vence hoy!'; }
+        elseif ($dias <= 3) { $vencColor = '#f97316'; $vencLabel = 'Vence en ' . $dias . 'd'; }
+        else                { $vencColor = '#22c55e'; $vencLabel = \Carbon\Carbon::parse($task->fecha_vencimiento)->format('d/m/Y'); }
+        $venc = $vencLabel;
+    }
 @endphp
 
-<div class="task-card {{ $isDone ? 'completed-card' : '' }}"
-     style="border-left-color: {{ $cardColor }}">
+<div class="task-card {{ $isDone ? 'completed-card' : '' }} {{ ($vencColor === '#ef4444') ? 'task-vencida' : '' }}"
+     data-id="{{ $task->id }}"
+     style="border-left-color: {{ $cardColor }};{{ ($vencColor === '#ef4444' && !$isDone) ? 'box-shadow:0 0 0 1px #ef444440;' : '' }}">
     <div class="card-inner">
 
         {{-- Etiqueta --}}
@@ -28,6 +40,15 @@
         {{-- Descripción --}}
         @if($task->details)
         <div class="task-desc">{{ Str::limit($task->details, 80) }}</div>
+        @endif
+
+        {{-- Fecha de vencimiento --}}
+        @if($venc)
+        <div class="mb-1">
+            <span style="font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:20px;background:{{ $vencColor }}15;color:{{ $vencColor }};border:1px solid {{ $vencColor }}40">
+                <i class="fa fa-clock mr-1"></i>{{ $venc }}
+            </span>
+        </div>
         @endif
 
         {{-- Nota de cierre --}}

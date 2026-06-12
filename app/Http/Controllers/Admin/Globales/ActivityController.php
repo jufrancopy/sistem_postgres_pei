@@ -87,13 +87,14 @@ class ActivityController extends Controller
         $task = ActivityTask::updateOrCreate(
             ['id' => $request->task_id ?: null],
             [
-                'activity_id' => $activityId,
-                'title'       => $request->title,
-                'details'     => $request->details,
-                'etiqueta'    => $request->etiqueta,
-                'color'       => $request->color ?? '#6b7280',
-                'assigned_to' => $request->assigned_to,
-                'status'      => $request->status ?? 0,
+                'activity_id'       => $activityId,
+                'title'             => $request->title,
+                'details'           => $request->details,
+                'etiqueta'          => $request->etiqueta,
+                'color'             => $request->color ?? '#6b7280',
+                'fecha_vencimiento' => $request->fecha_vencimiento ?: null,
+                'assigned_to'       => $request->assigned_to,
+                'status'            => $request->status ?? 0,
             ]
         );
 

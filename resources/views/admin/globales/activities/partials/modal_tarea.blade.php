@@ -44,9 +44,22 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="small font-weight-bold">Responsable</label>
-                        <select name="assigned_to" id="task_assigned_to" style="width:100%"></select>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Responsable</label>
+                                <select name="assigned_to" id="task_assigned_to" style="width:100%"></select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">
+                                    <i class="fa fa-clock mr-1 text-warning"></i>Fecha de vencimiento
+                                </label>
+                                <input type="date" name="fecha_vencimiento" id="task_fecha_vencimiento" class="form-control">
+                                <small class="text-muted">Opcional — genera alertas visuales al acercarse</small>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
