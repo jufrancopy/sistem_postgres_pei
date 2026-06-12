@@ -7,7 +7,61 @@ use Illuminate\Support\Facades\Auth;
 
 
 Route::get('/', function () {
-    return view('welcome');
+    // Actividades y tareas
+    $activities = \App\Admin\Globales\Activity::with(['tasks', 'responsibles'])->latest()->take(6)->get();
+    $totalTareas    = \App\Admin\Globales\ActivityTask::count();
+    $tareasEnCurso  = \App\Admin\Globales\ActivityTask::where('status', 1)->count();
+    $tareasHechas   = \App\Admin\Globales\ActivityTask::where('status', 2)->count();
+    $tareasVencidas = \App\Admin\Globales\ActivityTask::where('status', '!=', 2)
+        ->whereNotNull('fecha_vencimiento')
+        ->where('fecha_vencimiento', '<', now())
+        ->count();
+
+    // Evaluaciones RIISS
+    $evaluaciones    = \App\Models\Riiss\Evaluacion::with('establecimiento')->latest('fecha_evaluacion')->take(8)->get();
+    $evalTotal       = \App\Models\Riiss\Evaluacion::count();
+    $evalCompletadas = \App\Models\Riiss\Evaluacion::where('estado', 'completada')->count();
+    $evalEnCurso     = \App\Models\Riiss\Evaluacion::where('estado', 'en_curso')->count();
+
+    // SIESS
+    $siessModulos    = \App\Models\Estadistica\SiessModulo::where('activo', true)->orderBy('orden')->get();
+    $siessAprobados  = \App\Models\Estadistica\SiessExtracto::aprobados()->count();
+    $siessPendientes = \App\Models\Estadistica\SiessExtracto::pendientes()->count();
+    $siessObjetados  = \App\Models\Estadistica\SiessExtracto::where('estado', 'objetado')->count();
+
+    // FODA
+    $fodaPerfiles    = \App\Admin\Planificacion\Foda\FodaPerfil::count();
+    $fodaAnalisis    = \App\Admin\Planificacion\Foda\FodaAnalisis::count();
+    $fodaFortalezas  = \App\Admin\Planificacion\Foda\FodaAnalisis::where('tipo', 'fortaleza')->count();
+    $fodaDebilidades = \App\Admin\Planificacion\Foda\FodaAnalisis::where('tipo', 'debilidad')->count();
+    $fodaOportunidades = \App\Admin\Planificacion\Foda\FodaAnalisis::where('tipo', 'oportunidad')->count();
+    $fodaAmenazas    = \App\Admin\Planificacion\Foda\FodaAnalisis::where('tipo', 'amenaza')->count();
+    $fodaEstrategias = \App\Admin\Planificacion\Foda\FodaCruceAmbiente::count();
+    $fodaIeaResumen  = \App\Admin\Planificacion\Foda\FodaAnalisis::whereNotNull('iea_clasificacion')
+        ->selectRaw('iea_clasificacion, count(*) as total')
+        ->groupBy('iea_clasificacion')
+        ->pluck('total', 'iea_clasificacion');
+
+    // PEI — solo raíces master (parent_id null)
+    $peiPlanes       = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')->where('level', 'master')->count();
+    $peiAcciones     = \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->count();
+    $peiSemaforo     = \App\Admin\Planificacion\Pei\PeiProfile::whereNotNull('semaforo')
+        ->selectRaw('semaforo, count(*) as total')
+        ->groupBy('semaforo')
+        ->pluck('total', 'semaforo');
+    $peiRecientes    = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')
+        ->where('level', 'master')
+        ->latest()->take(5)
+        ->get(['id', 'name', 'year_start', 'year_end', 'semaforo', 'type']);
+
+    return view('welcome', compact(
+        'activities', 'totalTareas', 'tareasEnCurso', 'tareasHechas', 'tareasVencidas',
+        'evaluaciones', 'evalTotal', 'evalCompletadas', 'evalEnCurso',
+        'siessModulos', 'siessAprobados', 'siessPendientes', 'siessObjetados',
+        'fodaPerfiles', 'fodaAnalisis', 'fodaFortalezas', 'fodaDebilidades',
+        'fodaOportunidades', 'fodaAmenazas', 'fodaEstrategias', 'fodaIeaResumen',
+        'peiPlanes', 'peiAcciones', 'peiSemaforo', 'peiRecientes'
+    ));
 });
 
 Auth::routes();
