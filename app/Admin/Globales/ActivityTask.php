@@ -18,10 +18,6 @@ class ActivityTask extends Model
     ];
 
     protected $dates = ['completed_at', 'fecha_vencimiento'];
-
-    /**
-     * Estado de vencimiento: 'ok', 'pronto', 'vencida', null
-     */
     public function getEstadoVencimientoAttribute(): ?string
     {
         if (!$this->fecha_vencimiento || $this->status === 2) return null;

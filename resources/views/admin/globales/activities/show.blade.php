@@ -212,7 +212,7 @@
 {{-- Alerta tareas vencidas/por vencer --}}
 @php
     $vencidas  = $activity->tasks->filter(fn($t) => $t->status !== 2 && $t->fecha_vencimiento && \Carbon\Carbon::parse($t->fecha_vencimiento)->isPast());
-    $porVencer = $activity->tasks->filter(fn($t) => $t->status !== 2 && $t->fecha_vencimiento && !$t->fecha_vencimiento->isPast() && $t->fecha_vencimiento->diffInDays(now()) <= 3);
+    $porVencer = $activity->tasks->filter(fn($t) => $t->status !== 2 && $t->fecha_vencimiento && !\Carbon\Carbon::parse($t->fecha_vencimiento)->isPast() && \Carbon\Carbon::parse($t->fecha_vencimiento)->diffInDays(now()) <= 3);
 @endphp
 @if($vencidas->count() > 0)
 <div class="alert alert-danger d-flex align-items-center mb-3 py-2" style="border-radius:10px">
