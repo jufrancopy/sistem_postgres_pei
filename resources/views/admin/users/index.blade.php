@@ -290,7 +290,7 @@
                     var userID = $(this).data('id');
                     $.get("{{ route('globales.users.index') }}" + '/' + userID + '/edit', function(data) {
                         console.log(data)
-                        $('#modalHeading').html("Editar Usuario " + data.name);
+                        $('#modalHeading').html("Editar Usuario " + data.user.name);
                         $('#saveBtn').val("edit-type_task");
                         $('#userModal').modal('show');
                         $('#userForm').trigger("reset");
@@ -347,6 +347,13 @@
                 $('#saveBtn').click(function(e) {
                     e.preventDefault();
                     $(this).html('Enviando..');
+
+                    // Si el campo sigue con el valor genérico, lo vaciamos
+                    // para que el controlador no lo interprete como cambio de contraseña
+                    if ($('#password').val() === '********') {
+                        $('#password').val('');
+                        $('#confirm-password').val('');
+                    }
 
                     var data = $('#userForm').serialize();
                     var url = "{{ route('globales.users.store') }}"
