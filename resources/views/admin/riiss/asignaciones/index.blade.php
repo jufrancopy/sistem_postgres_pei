@@ -246,6 +246,9 @@ function renderTabla(items) {
             + '<td>' + pctHtml + '</td>'
             + '<td>' + notifHtml + '</td>'
             + '<td class="text-center">'
+            + (a.evaluacion_id
+                ? '<a href="/riiss/evaluaciones/' + a.evaluacion_id + '" class="circle-btn circle-btn-success btn-sm mr-1" title="Ver evaluación"><i class="fa fa-eye"></i></a>'
+                : '')
             + '<button class="circle-btn circle-btn-info btn-sm mr-1" onclick="renotificar(' + a.id + ')" title="Reenviar email"><i class="fa fa-envelope"></i></button>'
             + (a.estado !== 'cancelada' && a.estado !== 'completada'
                 ? '<button class="circle-btn circle-btn-danger btn-sm" onclick="cancelar(' + a.id + ')" title="Cancelar"><i class="fa fa-times"></i></button>'

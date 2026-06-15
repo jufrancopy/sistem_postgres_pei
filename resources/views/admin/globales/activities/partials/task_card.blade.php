@@ -4,6 +4,9 @@
     $initials        = $task->assignedTo ? strtoupper(substr($task->assignedTo->name, 0, 2)) : '?';
     $modoColaborador = $modoColaborador ?? false;
     $esMia           = $modoColaborador ? ($task->assigned_to === ($userId ?? null)) : true;
+    $esGestor        = auth()->user()->hasRole(['Administrador', 'Gestor de Actividades']);
+    $puedeGestionar  = $esGestor;
+    $puedeMover      = $esGestor || $esMia;
 
     // Vencimiento
     $venc = null; $vencColor = null;
@@ -96,8 +99,8 @@
                 @endif
             </div>
             <div class="task-actions">
-                {{-- Flechas (móvil) --}}
-                @if(!$modoColaborador || $esMia)
+                {{-- Flechas --}}
+                @if($puedeMover)
                 @if(!$esPrimero)
                 <button class="btn btn-xs btn-outline-secondary btn-move-left"
                         data-id="{{ $task->id }}" data-status="{{ $status }}" title="Retroceder">
@@ -112,7 +115,7 @@
                 @endif
                 @endif
 
-                @if(!$modoColaborador)
+                @if($puedeGestionar)
                 <button class="btn btn-xs btn-outline-secondary btn-add-evidence"
                         data-id="{{ $task->id }}" title="Evidencia">
                     <i class="fa fa-paperclip"></i>

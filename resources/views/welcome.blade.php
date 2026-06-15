@@ -6,19 +6,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SIPLAN — Sistema de Planificación Estratégica Institucional</title>
 <link rel="icon" type="image/png" href="{{ asset('material/img/favicon.png') }}">
-<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --bg:        #f0f4f8;
+    --bg:        #f1f5f9;
     --surface:   #ffffff;
     --surface2:  #f8fafc;
     --border:    #e2e8f0;
     --blue:      #2563eb;
     --blue-lt:   #eff6ff;
-    --blue-mid:  #bfdbfe;
     --green:     #059669;
     --green-lt:  #ecfdf5;
     --amber:     #d97706;
@@ -29,219 +28,349 @@
     --violet-lt: #f5f3ff;
     --text:      #0f172a;
     --muted:     #64748b;
-    --radius:    12px;
-    --shadow:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-    --shadow-md: 0 4px 16px rgba(0,0,0,.08);
-    --shadow-lg: 0 12px 40px rgba(0,0,0,.12);
+    --r:         14px;
+    --sh:        0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --sh-md:     0 4px 20px rgba(0,0,0,.08);
 }
 
-body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+}
 
-/* ── NAV ── */
+/* ── NAV ─────────────────────────────── */
 .nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(255,255,255,.85);
-    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,.9);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    height: 58px;
+    padding: 0 clamp(16px, 4vw, 40px);
+    height: 60px;
     display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
 }
-.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .nav-logo {
-    width: 32px; height: 32px; border-radius: 8px;
-    background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%);
     display: flex; align-items: center; justify-content: center;
-    color: #fff; font-weight: 800; font-size: 14px; letter-spacing: -1px;
+    color: #fff; font-weight: 900; font-size: 13px; letter-spacing: -1px;
+    box-shadow: 0 4px 12px rgba(37,99,235,.35);
 }
-.nav-name { font-weight: 700; font-size: 15px; color: var(--text); }
-.nav-tagline { font-size: 11px; color: var(--muted); }
+.nav-name { font-weight: 800; font-size: 15px; color: var(--text); letter-spacing: -.3px; }
+.nav-tagline { font-size: 10px; color: var(--muted); line-height: 1; }
 .nav-right { display: flex; align-items: center; gap: 10px; }
-.nav-pill {
-    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+.live-pill {
+    font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
     background: var(--green-lt); color: var(--green); border: 1px solid #a7f3d0;
-    display: flex; align-items: center; gap: 5px;
+    display: flex; align-items: center; gap: 6px;
 }
-.nav-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse-dot 2s infinite; }
-@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
-.btn-login {
+.live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+    animation: blink 1.8s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.btn-enter {
     display: inline-flex; align-items: center; gap: 7px;
-    padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
-    background: var(--blue); color: #fff; border: none; cursor: pointer;
-    text-decoration: none; transition: background .15s, box-shadow .15s;
-    box-shadow: 0 2px 8px rgba(37,99,235,.3);
+    padding: 9px 20px; border-radius: 10px; font-size: 13px; font-weight: 700;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #fff; border: none; cursor: pointer; text-decoration: none;
+    box-shadow: 0 4px 14px rgba(37,99,235,.35);
+    transition: opacity .15s, transform .1s;
+    white-space: nowrap;
 }
-.btn-login:hover { background: #1d4ed8; color: #fff; text-decoration: none; box-shadow: 0 4px 16px rgba(37,99,235,.4); }
+.btn-enter:hover { opacity: .92; transform: translateY(-1px); color: #fff; text-decoration: none; }
 
-/* ── HERO ── */
+/* ── HERO ────────────────────────────── */
 .hero {
-    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1d4ed8 100%);
-    padding: 64px 32px 56px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #1e40af 100%);
+    padding: clamp(40px,6vw,72px) clamp(16px,4vw,40px) clamp(36px,5vw,64px);
     position: relative; overflow: hidden;
 }
-.hero::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 70% 50%, rgba(124,58,237,.25) 0%, transparent 60%);
-    pointer-events: none;
+.hero-glow {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+        radial-gradient(ellipse 60% 80% at 80% 40%, rgba(124,58,237,.3) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 20% 80%, rgba(37,99,235,.2) 0%, transparent 50%);
 }
-.hero-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+.hero-grid {
+    position: absolute; inset: 0; pointer-events: none; opacity: .04;
+    background-image: linear-gradient(rgba(255,255,255,.8) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,.8) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+.hero-inner {
+    max-width: 1100px; margin: 0 auto; position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: end;
+}
 .hero-eyebrow {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
-    color: #93c5fd; background: rgba(147,197,253,.1); border: 1px solid rgba(147,197,253,.25);
-    padding: 4px 12px; border-radius: 20px; margin-bottom: 20px;
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    color: #93c5fd; background: rgba(147,197,253,.1); border: 1px solid rgba(147,197,253,.2);
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 18px;
 }
-.hero h1 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; color: #fff; line-height: 1.15; letter-spacing: -.5px; margin-bottom: 16px; }
-.hero h1 span { color: #93c5fd; }
-.hero-sub { font-size: 15px; color: rgba(255,255,255,.65); max-width: 520px; margin-bottom: 36px; }
-.hero-stats { display: flex; flex-wrap: wrap; gap: 24px; }
-.hero-stat { display: flex; flex-direction: column; }
-.hero-stat-num { font-size: 2rem; font-weight: 800; color: #fff; line-height: 1; }
-.hero-stat-label { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 3px; text-transform: uppercase; letter-spacing: .5px; }
-.hero-divider { width: 1px; background: rgba(255,255,255,.15); align-self: stretch; }
-
-/* ── WRAPPER ── */
-.wrapper { max-width: 1100px; margin: 0 auto; padding: 36px 32px 80px; }
-
-/* ── SECTION TITLE ── */
-.section-label {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 16px;
+.hero h1 {
+    font-size: clamp(1.75rem, 4.5vw, 3.2rem);
+    font-weight: 900; color: #fff; line-height: 1.1;
+    letter-spacing: -.5px; margin-bottom: 14px;
 }
-.section-label-icon {
-    width: 30px; height: 30px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; flex-shrink: 0;
+.hero h1 em { color: #93c5fd; font-style: normal; }
+.hero-desc { font-size: 14px; color: rgba(255,255,255,.6); max-width: 480px; margin-bottom: 32px; }
+.hero-kpis { display: flex; flex-wrap: wrap; gap: 0; }
+.hero-kpi {
+    display: flex; flex-direction: column; padding: 0 24px 0 0;
+    border-right: 1px solid rgba(255,255,255,.15);
+    margin-right: 0; margin-bottom: 8px;
 }
-.section-label h2 { font-size: 15px; font-weight: 700; color: var(--text); }
-.section-label span { font-size: 12px; color: var(--muted); margin-left: 4px; }
+.hero-kpi:first-child { padding-left: 0; }
+.hero-kpi:last-child { border-right: none; }
+.hero-kpi-num { font-size: clamp(1.6rem,3vw,2.2rem); font-weight: 900; color: #fff; line-height: 1; }
+.hero-kpi-lbl { font-size: 10px; color: rgba(255,255,255,.45); text-transform: uppercase; letter-spacing: .8px; margin-top: 4px; }
+.hero-badge-col {
+    display: flex; flex-direction: column; gap: 10px; align-self: flex-start;
+}
+.hero-badge {
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px; padding: 14px 18px; text-align: center; min-width: 110px;
+    backdrop-filter: blur(8px);
+}
+.hero-badge-num { font-size: 1.6rem; font-weight: 900; color: #fff; line-height: 1; }
+.hero-badge-lbl { font-size: 10px; color: rgba(255,255,255,.5); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
 
-/* ── ACTIVITY GRID ── */
-.activity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-bottom: 40px; }
+/* ── WRAPPER ─────────────────────────── */
+.wrap { max-width: 1100px; margin: 0 auto; padding: clamp(20px,4vw,40px) clamp(16px,4vw,40px) 80px; }
 
-.activity-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 18px 20px; box-shadow: var(--shadow);
+/* ── SECTION HEADER ──────────────────── */
+.sec-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.sec-icon {
+    width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 13px;
+}
+.sec-title { font-size: 14px; font-weight: 800; color: var(--text); }
+.sec-sub    { font-size: 11px; color: var(--muted); margin-left: 4px; }
+
+/* ── KPI STRIP ───────────────────────── */
+.kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+}
+.kpi-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 18px 20px;
+    box-shadow: var(--sh);
+    display: flex; align-items: center; gap: 14px;
     transition: box-shadow .2s, transform .15s;
-    position: relative; overflow: hidden;
 }
-.activity-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.activity-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+.kpi-card:hover { box-shadow: var(--sh-md); transform: translateY(-2px); }
+.kpi-ic {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.kpi-ic.blue   { background: var(--blue-lt);   color: var(--blue);   }
+.kpi-ic.green  { background: var(--green-lt);  color: var(--green);  }
+.kpi-ic.amber  { background: var(--amber-lt);  color: var(--amber);  }
+.kpi-ic.red    { background: var(--red-lt);    color: var(--red);    }
+.kpi-ic.violet { background: var(--violet-lt); color: var(--violet); }
+.kpi-num { font-size: 1.7rem; font-weight: 900; color: var(--text); line-height: 1; }
+.kpi-lbl { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* ── ACTIVITIES ──────────────────────── */
+.activities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    margin-bottom: 36px;
+}
+.act-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 18px 20px;
+    box-shadow: var(--sh); position: relative; overflow: hidden;
+    transition: box-shadow .2s, transform .15s;
+}
+.act-card:hover { box-shadow: var(--sh-md); transform: translateY(-2px); }
+.act-card-accent {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
     background: linear-gradient(90deg, var(--blue), var(--violet));
 }
-.activity-type-badge {
+.act-type {
     display: inline-flex; align-items: center; gap: 4px;
     font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 20px; margin-bottom: 10px;
+    padding: 3px 9px; border-radius: 20px; margin-bottom: 10px;
 }
-.type-scrum { background: var(--violet-lt); color: var(--violet); }
-.type-kanban { background: var(--blue-lt); color: var(--blue); }
-.activity-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; line-height: 1.35; }
-.activity-meta { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-.activity-meta i { font-size: 10px; }
-.progress-bar-wrap { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
-.progress-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #2563eb, #7c3aed); transition: width .6s; }
-.activity-footer { display: flex; justify-content: space-between; align-items: center; }
-.task-pills { display: flex; gap: 5px; flex-wrap: wrap; }
-.task-pill {
+.act-type.scrum  { background: var(--violet-lt); color: var(--violet); }
+.act-type.kanban { background: var(--blue-lt);   color: var(--blue);   }
+.act-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; line-height: 1.4; }
+.act-meta { font-size: 11px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.act-progress { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+.act-progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--blue), var(--violet)); }
+.act-footer { display: flex; justify-content: space-between; align-items: center; }
+.act-pills { display: flex; gap: 5px; flex-wrap: wrap; }
+.act-pill {
     font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px;
     display: flex; align-items: center; gap: 3px;
 }
-.pill-pending  { background: var(--amber-lt); color: var(--amber); }
-.pill-progress { background: var(--blue-lt);  color: var(--blue);  }
-.pill-done     { background: var(--green-lt); color: var(--green); }
-.pill-vencida  { background: var(--red-lt);   color: var(--red);   }
-.activity-pct  { font-size: 11px; font-weight: 700; color: var(--blue); }
+.pill-p { background: var(--amber-lt); color: var(--amber); }
+.pill-r { background: var(--blue-lt);  color: var(--blue);  }
+.pill-d { background: var(--green-lt); color: var(--green); }
+.pill-v { background: var(--red-lt);   color: var(--red);   }
+.act-pct { font-size: 12px; font-weight: 800; color: var(--blue); }
 
-/* ── STATS ROW ── */
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 40px; }
-.stat-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 18px 20px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px;
+/* ── TWIN GRID ───────────────────────── */
+.twin { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 36px; }
+
+/* ── CARD ────────────────────────────── */
+.card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); box-shadow: var(--sh); overflow: hidden;
 }
-.stat-icon {
-    width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: 16px;
+.card-head {
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
 }
-.stat-icon.blue   { background: var(--blue-lt);   color: var(--blue);   }
-.stat-icon.green  { background: var(--green-lt);  color: var(--green);  }
-.stat-icon.amber  { background: var(--amber-lt);  color: var(--amber);  }
-.stat-icon.red    { background: var(--red-lt);    color: var(--red);    }
-.stat-icon.violet { background: var(--violet-lt); color: var(--violet); }
-.stat-num { font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1; }
-.stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.card-head-title {
+    font-size: 13px; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+}
+.card-count {
+    font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px;
+    background: var(--blue-lt); color: var(--blue);
+}
 
-/* ── TWO-COL ── */
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
+/* ── TABLE ───────────────────────────── */
+table.t { width: 100%; border-collapse: collapse; }
+table.t th {
+    font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase;
+    color: var(--muted); padding: 10px 16px; text-align: left;
+    border-bottom: 1px solid var(--border); background: var(--surface2);
+}
+table.t td {
+    font-size: 12px; padding: 11px 16px;
+    border-bottom: 1px solid #f1f5f9; color: var(--text); vertical-align: middle;
+}
+table.t tr:last-child td { border-bottom: none; }
+table.t tr:hover td { background: #fafcff; }
 
-/* ── TABLE CARD ── */
-.table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-.table-card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.table-card-title { font-size: 13px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
-.table-card-count { font-size: 11px; font-weight: 700; background: var(--blue-lt); color: var(--blue); padding: 2px 8px; border-radius: 20px; }
-
-table.pub { width: 100%; border-collapse: collapse; }
-table.pub th { font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface2); }
-table.pub td { font-size: 12px; padding: 11px 16px; border-bottom: 1px solid #f1f5f9; color: var(--text); vertical-align: middle; }
-table.pub tr:last-child td { border-bottom: none; }
-table.pub tr:hover td { background: #fafcff; }
-
-.badge-estado {
+/* ── BADGES ──────────────────────────── */
+.badge {
     display: inline-flex; align-items: center; gap: 4px;
     font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
 }
-.estado-completada     { background: var(--green-lt); color: var(--green); }
-.estado-en_curso       { background: var(--blue-lt);  color: var(--blue);  }
-.estado-pendiente      { background: var(--amber-lt); color: var(--amber); }
-.estado-borrador       { background: #f1f5f9; color: var(--muted); }
-.estado-aprobado       { background: var(--green-lt); color: var(--green); }
-.estado-objetado       { background: var(--red-lt);   color: var(--red);   }
-.estado-pendiente_validacion { background: var(--amber-lt); color: var(--amber); }
-.estado-aprobado_silencio    { background: var(--violet-lt); color: var(--violet); }
+.b-green  { background: var(--green-lt);  color: var(--green);  }
+.b-blue   { background: var(--blue-lt);   color: var(--blue);   }
+.b-amber  { background: var(--amber-lt);  color: var(--amber);  }
+.b-red    { background: var(--red-lt);    color: var(--red);    }
+.b-violet { background: var(--violet-lt); color: var(--violet); }
+.b-gray   { background: #f1f5f9;          color: var(--muted);  }
 
-.pct-bar { display: flex; align-items: center; gap: 8px; }
-.pct-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; min-width: 50px; }
-.pct-fill  { height: 100%; border-radius: 2px; }
-.pct-fill.high   { background: var(--green); }
-.pct-fill.medium { background: var(--amber); }
-.pct-fill.low    { background: var(--red);   }
+/* ── PROGRESS BAR ────────────────────── */
+.pct-row { display: flex; align-items: center; gap: 8px; }
+.pct-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; min-width: 40px; }
+.pct-fill { height: 100%; border-radius: 2px; }
+.pct-hi { background: var(--green); }
+.pct-md { background: var(--amber); }
+.pct-lo { background: var(--red);   }
+.pct-val { font-size: 11px; font-weight: 700; min-width: 34px; text-align: right; }
 
-/* ── SIESS MODULES ── */
-.siess-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-.siess-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
-.siess-card-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-.siess-card-codigo { font-size: 10px; color: var(--muted); font-family: monospace; margin-bottom: 12px; }
-.siess-pills { display: flex; flex-wrap: wrap; gap: 4px; }
-.siess-pill { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
-
-/* ── FOOTER ── */
-.pub-footer { text-align: center; padding: 32px 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
-.pub-footer strong { color: var(--text); }
-
-/* ── EMPTY STATE ── */
-.empty-state { text-align: center; padding: 32px 16px; color: var(--muted); font-size: 12px; }
-.empty-state i { font-size: 24px; display: block; margin-bottom: 8px; opacity: .4; }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 768px) {
-    .nav { padding: 0 16px; }
-    .hero { padding: 40px 16px 36px; }
-    .wrapper { padding: 24px 16px 60px; }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
-    .two-col { grid-template-columns: 1fr; }
-    .activity-grid { grid-template-columns: 1fr; }
+/* ── FODA QUAD ───────────────────────── */
+.foda-quad {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: var(--border);
 }
-@media (max-width: 480px) {
-    .stats-row { grid-template-columns: 1fr 1fr; }
-    .hero-stats { gap: 16px; }
+.foda-cell { padding: 18px; text-align: center; }
+.foda-num  { font-size: 2rem; font-weight: 900; line-height: 1; }
+.foda-lbl  { font-size: 10px; font-weight: 700; margin-top: 5px; text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── SEMAFORO STRIP ──────────────────── */
+.sem-strip {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 1px; background: var(--border);
+}
+.sem-cell { padding: 16px; text-align: center; }
+.sem-dot  { width: 14px; height: 14px; border-radius: 50%; margin: 0 auto 8px; }
+.sem-num  { font-size: 1.5rem; font-weight: 900; line-height: 1; }
+.sem-lbl  { font-size: 10px; font-weight: 700; margin-top: 4px; }
+
+/* ── SIESS MODULES ───────────────────── */
+.siess-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+}
+.siess-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 14px 16px; box-shadow: var(--sh);
+}
+.siess-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.siess-code { font-size: 10px; color: var(--muted); font-family: monospace; margin-bottom: 10px; }
+.siess-pills { display: flex; flex-wrap: wrap; gap: 4px; }
+.siess-pill  { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+
+/* ── EXTRAS ──────────────────────────── */
+.row-summary {
+    padding: 12px 16px; border-top: 1px solid var(--border);
+    background: var(--surface2); display: flex; gap: 20px; flex-wrap: wrap;
+}
+.row-summary span { font-size: 11px; color: var(--muted); }
+.row-summary b    { font-weight: 700; }
+.card-rows { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+.card-row  { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+.card-row .lbl { color: var(--muted); }
+.card-row .val { font-weight: 700; }
+
+/* ── EMPTY ───────────────────────────── */
+.empty { text-align: center; padding: 36px 16px; color: var(--muted); font-size: 12px; }
+.empty i { font-size: 26px; display: block; margin-bottom: 8px; opacity: .35; }
+
+/* ── FOOTER ──────────────────────────── */
+footer {
+    text-align: center; padding: 28px 16px;
+    border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 11px; line-height: 1.8;
+}
+footer strong { color: var(--text); }
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 900px) {
+    .twin { grid-template-columns: 1fr; }
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero-badge-col { flex-direction: row; flex-wrap: wrap; align-self: auto; }
+    .hero-badge { min-width: 90px; flex: 1; }
+    .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .activities-grid { grid-template-columns: 1fr; }
+    .hero-kpis { gap: 16px; }
+    .hero-kpi { padding-right: 16px; border: none; padding-bottom: 0; }
+    .live-pill { display: none; }
+    .nav-tagline { display: none; }
+    table.t th, table.t td { padding: 8px 10px; }
+    .foda-quad, .sem-strip { grid-template-columns: 1fr 1fr; }
+    .siess-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 400px) {
+    .kpi-strip { grid-template-columns: 1fr 1fr; }
+    .siess-grid { grid-template-columns: 1fr; }
+    .hero-badge-col { display: none; }
 }
 </style>
 </head>
 <body>
 
-{{-- ── NAV ── --}}
+{{-- NAV --}}
 <nav class="nav">
     <div class="nav-brand">
         <div class="nav-logo">SP</div>
@@ -251,138 +380,199 @@ table.pub tr:hover td { background: #fafcff; }
         </div>
     </div>
     <div class="nav-right">
-        <div class="nav-pill">Sistema activo</div>
+        <div class="live-pill"><span class="live-dot"></span>En línea</div>
         @auth
-        <a href="{{ route('home') }}" class="btn-login">
-            <i class="fa fa-th-large"></i> Ir al sistema
+        <a href="{{ route('home') }}" class="btn-enter">
+            <i class="fa fa-th-large"></i><span>Ir al sistema</span>
         </a>
         @else
-        <a href="{{ route('login') }}" class="btn-login">
-            <i class="fa fa-sign-in-alt"></i> Ingresar al sistema
+        <a href="{{ route('login') }}" class="btn-enter">
+            <i class="fa fa-sign-in-alt"></i><span>Ingresar</span>
         </a>
         @endauth
     </div>
 </nav>
 
-{{-- ── HERO ── --}}
+{{-- HERO --}}
 <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-grid"></div>
     <div class="hero-inner">
-        <div class="hero-eyebrow"><i class="fa fa-shield-alt"></i> Instituto de Previsión Social</div>
-        <h1>Sistema de <span>Planificación</span><br>Estratégica Institucional</h1>
-        <p class="hero-sub">Monitoreo en tiempo real de actividades, evaluaciones de la Red de Salud IPS y estadísticas institucionales.</p>
-        <div class="hero-stats">
-            <div class="hero-stat">
-                <span class="hero-stat-num">{{ $totalTareas }}</span>
-                <span class="hero-stat-label">Tareas totales</span>
+        <div>
+            <div class="hero-eyebrow"><i class="fa fa-shield-alt"></i> Instituto de Previsión Social — Paraguay</div>
+            <h1>Planificación<br><em>Estratégica</em><br>Institucional</h1>
+            <p class="hero-desc">Monitoreo en tiempo real de actividades, evaluaciones de la Red de Salud IPS y estadísticas institucionales.</p>
+            <div class="hero-kpis">
+                <div class="hero-kpi">
+                    <span class="hero-kpi-num">{{ $totalTareas }}</span>
+                    <span class="hero-kpi-lbl">Tareas</span>
+                </div>
+                <div class="hero-kpi">
+                    <span class="hero-kpi-num">{{ $tareasEnCurso }}</span>
+                    <span class="hero-kpi-lbl">En ejecución</span>
+                </div>
+                <div class="hero-kpi">
+                    <span class="hero-kpi-num">{{ $tareasHechas }}</span>
+                    <span class="hero-kpi-lbl">Completadas</span>
+                </div>
+                <div class="hero-kpi">
+                    <span class="hero-kpi-num">{{ $evalTotal }}</span>
+                    <span class="hero-kpi-lbl">Evaluaciones</span>
+                </div>
             </div>
-            <div class="hero-divider"></div>
-            <div class="hero-stat">
-                <span class="hero-stat-num">{{ $tareasEnCurso }}</span>
-                <span class="hero-stat-label">En ejecución</span>
+        </div>
+        <div class="hero-badge-col">
+            <div class="hero-badge">
+                <div class="hero-badge-num">{{ $peiPlanes }}</div>
+                <div class="hero-badge-lbl">Planes PEI</div>
             </div>
-            <div class="hero-divider"></div>
-            <div class="hero-stat">
-                <span class="hero-stat-num">{{ $tareasHechas }}</span>
-                <span class="hero-stat-label">Completadas</span>
+            <div class="hero-badge">
+                <div class="hero-badge-num">{{ $siessAprobados }}</div>
+                <div class="hero-badge-lbl">SIESS aprobados</div>
             </div>
-            <div class="hero-divider"></div>
-            <div class="hero-stat">
-                <span class="hero-stat-num">{{ $evalTotal }}</span>
-                <span class="hero-stat-label">Evaluaciones RIISS</span>
+            <div class="hero-badge">
+                <div class="hero-badge-num">{{ $fodaAnalisis }}</div>
+                <div class="hero-badge-lbl">Análisis FODA</div>
             </div>
         </div>
     </div>
 </section>
 
-<div class="wrapper">
+<div class="wrap">
 
-    {{-- ── STATS CARDS ── --}}
-    <div class="stats-row">
-        <div class="stat-card">
-            <div class="stat-icon blue"><i class="fa fa-tasks"></i></div>
+    {{-- KPI STRIP --}}
+    <div class="kpi-strip" style="margin-top: 8px;">
+        <div class="kpi-card">
+            <div class="kpi-ic blue"><i class="fa fa-spinner"></i></div>
             <div>
-                <div class="stat-num">{{ $tareasEnCurso }}</div>
-                <div class="stat-lbl">Tareas en progreso</div>
+                <div class="kpi-num">{{ $tareasEnCurso }}</div>
+                <div class="kpi-lbl">Tareas en progreso</div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon green"><i class="fa fa-check-circle"></i></div>
+        <div class="kpi-card">
+            <div class="kpi-ic green"><i class="fa fa-check-circle"></i></div>
             <div>
-                <div class="stat-num">{{ $tareasHechas }}</div>
-                <div class="stat-lbl">Tareas completadas</div>
+                <div class="kpi-num">{{ $tareasHechas }}</div>
+                <div class="kpi-lbl">Tareas completadas</div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon red"><i class="fa fa-clock"></i></div>
+        <div class="kpi-card">
+            <div class="kpi-ic red"><i class="fa fa-clock"></i></div>
             <div>
-                <div class="stat-num">{{ $tareasVencidas }}</div>
-                <div class="stat-lbl">Tareas vencidas</div>
+                <div class="kpi-num">{{ $tareasVencidas }}</div>
+                <div class="kpi-lbl">Tareas vencidas</div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon violet"><i class="fa fa-chart-bar"></i></div>
+        <div class="kpi-card">
+            <div class="kpi-ic violet"><i class="fa fa-chart-bar"></i></div>
             <div>
-                <div class="stat-num">{{ $siessAprobados }}</div>
-                <div class="stat-lbl">Extractos SIESS aprobados</div>
+                <div class="kpi-num">{{ $siessAprobados }}</div>
+                <div class="kpi-lbl">Extractos aprobados</div>
             </div>
         </div>
     </div>
 
-    {{-- ── FODA + PEI ── --}}
-    <div class="two-col" style="margin-bottom:40px">
+    {{-- ACTIVIDADES --}}
+    <div class="sec-header">
+        <div class="sec-icon" style="background:var(--blue-lt);color:var(--blue)"><i class="fa fa-columns"></i></div>
+        <div>
+            <span class="sec-title">Actividades en curso</span>
+            <span class="sec-sub">· Tablero de tareas</span>
+        </div>
+    </div>
+
+    @if($activities->count())
+    <div class="activities-grid">
+        @foreach($activities as $act)
+        @php
+            $total    = $act->tasks->count();
+            $hechas   = $act->tasks->where('status', 2)->count();
+            $enCurso  = $act->tasks->where('status', 1)->count();
+            $pend     = $act->tasks->where('status', 0)->count();
+            $pct      = $total > 0 ? round(($hechas/$total)*100) : 0;
+            $venc     = $act->tasks->filter(fn($t) =>
+                $t->status !== 2 && $t->fecha_vencimiento &&
+                \Carbon\Carbon::parse($t->fecha_vencimiento)->isPast()
+            )->count();
+        @endphp
+        <div class="act-card">
+            <div class="act-card-accent"></div>
+            <span class="act-type {{ $act->type === 'scrum' ? 'scrum' : 'kanban' }}">
+                <i class="fa {{ $act->type === 'scrum' ? 'fa-sync-alt' : 'fa-stream' }}"></i>
+                {{ ucfirst($act->type ?? 'kanban') }}
+            </span>
+            <div class="act-name">{{ $act->name }}</div>
+            <div class="act-meta">
+                @if($act->date_start)
+                <span><i class="fa fa-calendar" style="font-size:10px"></i> {{ \Carbon\Carbon::parse($act->date_start)->format('d/m/Y') }}</span>
+                @endif
+                @if($act->responsibles->count())
+                <span><i class="fa fa-user" style="font-size:10px"></i> {{ $act->responsibles->first()->name }}</span>
+                @endif
+            </div>
+            <div class="act-progress"><div class="act-progress-fill" style="width:{{ $pct }}%"></div></div>
+            <div class="act-footer">
+                <div class="act-pills">
+                    @if($pend)    <span class="act-pill pill-p"><i class="fa fa-inbox"></i>{{ $pend }}</span>@endif
+                    @if($enCurso) <span class="act-pill pill-r"><i class="fa fa-spinner"></i>{{ $enCurso }}</span>@endif
+                    @if($hechas)  <span class="act-pill pill-d"><i class="fa fa-check"></i>{{ $hechas }}</span>@endif
+                    @if($venc)    <span class="act-pill pill-v"><i class="fa fa-exclamation"></i>{{ $venc }}</span>@endif
+                    @if($total === 0)<span style="font-size:10px;color:var(--muted)">Sin tareas</span>@endif
+                </div>
+                <span class="act-pct">{{ $pct }}%</span>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @else
+    <div class="card" style="margin-bottom:32px">
+        <div class="empty"><i class="fa fa-inbox"></i>Sin actividades registradas</div>
+    </div>
+    @endif
+
+    {{-- FODA + PEI --}}
+    <div class="twin">
 
         {{-- FODA --}}
         <div>
-            <div class="section-label">
-                <div class="section-label-icon" style="background:#fffbeb;color:#d97706"><i class="fa fa-th-large"></i></div>
-                <div><h2>Análisis FODA <span>· Planificación estratégica</span></h2></div>
+            <div class="sec-header">
+                <div class="sec-icon" style="background:var(--amber-lt);color:var(--amber)"><i class="fa fa-th-large"></i></div>
+                <div>
+                    <span class="sec-title">Análisis FODA</span>
+                    <span class="sec-sub">· Planificación estratégica</span>
+                </div>
             </div>
-            <div class="table-card">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-radius:var(--radius) var(--radius) 0 0;overflow:hidden">
-                    <div style="background:#ecfdf5;padding:18px;text-align:center">
-                        <div style="font-size:1.8rem;font-weight:800;color:#059669">{{ $fodaFortalezas }}</div>
-                        <div style="font-size:11px;font-weight:700;color:#059669;margin-top:3px"><i class="fa fa-shield-alt"></i> Fortalezas</div>
+            <div class="card">
+                <div class="foda-quad">
+                    <div class="foda-cell" style="background:#ecfdf5">
+                        <div class="foda-num" style="color:var(--green)">{{ $fodaFortalezas }}</div>
+                        <div class="foda-lbl" style="color:var(--green)"><i class="fa fa-shield-alt"></i> Fortalezas</div>
                     </div>
-                    <div style="background:#eff6ff;padding:18px;text-align:center">
-                        <div style="font-size:1.8rem;font-weight:800;color:#2563eb">{{ $fodaOportunidades }}</div>
-                        <div style="font-size:11px;font-weight:700;color:#2563eb;margin-top:3px"><i class="fa fa-star"></i> Oportunidades</div>
+                    <div class="foda-cell" style="background:var(--blue-lt)">
+                        <div class="foda-num" style="color:var(--blue)">{{ $fodaOportunidades }}</div>
+                        <div class="foda-lbl" style="color:var(--blue)"><i class="fa fa-star"></i> Oportunidades</div>
                     </div>
-                    <div style="background:#fef2f2;padding:18px;text-align:center">
-                        <div style="font-size:1.8rem;font-weight:800;color:#dc2626">{{ $fodaDebilidades }}</div>
-                        <div style="font-size:11px;font-weight:700;color:#dc2626;margin-top:3px"><i class="fa fa-exclamation-triangle"></i> Debilidades</div>
+                    <div class="foda-cell" style="background:var(--red-lt)">
+                        <div class="foda-num" style="color:var(--red)">{{ $fodaDebilidades }}</div>
+                        <div class="foda-lbl" style="color:var(--red)"><i class="fa fa-exclamation-triangle"></i> Debilidades</div>
                     </div>
-                    <div style="background:#fff7ed;padding:18px;text-align:center">
-                        <div style="font-size:1.8rem;font-weight:800;color:#ea580c">{{ $fodaAmenazas }}</div>
-                        <div style="font-size:11px;font-weight:700;color:#ea580c;margin-top:3px"><i class="fa fa-bolt"></i> Amenazas</div>
+                    <div class="foda-cell" style="background:#fff7ed">
+                        <div class="foda-num" style="color:#ea580c">{{ $fodaAmenazas }}</div>
+                        <div class="foda-lbl" style="color:#ea580c"><i class="fa fa-bolt"></i> Amenazas</div>
                     </div>
                 </div>
-                <div style="padding:14px 18px;display:flex;flex-direction:column;gap:9px">
-                    <div style="display:flex;justify-content:space-between;font-size:12px">
-                        <span style="color:var(--muted)">Perfiles FODA</span>
-                        <span style="font-weight:700">{{ $fodaPerfiles }}</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;font-size:12px">
-                        <span style="color:var(--muted)">Aspectos analizados</span>
-                        <span style="font-weight:700">{{ $fodaAnalisis }}</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;font-size:12px">
-                        <span style="color:var(--muted)">Estrategias de cruce</span>
-                        <span style="font-weight:700;color:var(--violet)">{{ $fodaEstrategias }}</span>
-                    </div>
+                <div class="card-rows">
+                    <div class="card-row"><span class="lbl">Perfiles FODA</span><span class="val">{{ $fodaPerfiles }}</span></div>
+                    <div class="card-row"><span class="lbl">Aspectos analizados</span><span class="val">{{ $fodaAnalisis }}</span></div>
+                    <div class="card-row"><span class="lbl">Estrategias de cruce</span><span class="val" style="color:var(--violet)">{{ $fodaEstrategias }}</span></div>
                 </div>
                 @if($fodaIeaResumen->count())
-                <div style="padding:12px 18px;border-top:1px solid var(--border);background:var(--surface2);border-radius:0 0 var(--radius) var(--radius)">
+                <div style="padding:12px 18px;border-top:1px solid var(--border);background:var(--surface2)">
                     <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">IEA — Eficiencia de Activos</div>
                     <div style="display:flex;gap:6px;flex-wrap:wrap">
-                        @if($fodaIeaResumen->get('fortaleza'))
-                        <span class="badge-estado estado-completada"><i class="fa fa-arrow-up" style="font-size:9px"></i> {{ $fodaIeaResumen->get('fortaleza') }} fortaleza</span>
-                        @endif
-                        @if($fodaIeaResumen->get('neutro'))
-                        <span class="badge-estado estado-borrador">– {{ $fodaIeaResumen->get('neutro') }} neutro</span>
-                        @endif
-                        @if($fodaIeaResumen->get('debilidad'))
-                        <span class="badge-estado estado-objetado"><i class="fa fa-arrow-down" style="font-size:9px"></i> {{ $fodaIeaResumen->get('debilidad') }} debilidad</span>
-                        @endif
+                        @if($fodaIeaResumen->get('fortaleza'))<span class="badge b-green"><i class="fa fa-arrow-up" style="font-size:9px"></i> {{ $fodaIeaResumen->get('fortaleza') }} fortaleza</span>@endif
+                        @if($fodaIeaResumen->get('neutro'))<span class="badge b-gray">– {{ $fodaIeaResumen->get('neutro') }} neutro</span>@endif
+                        @if($fodaIeaResumen->get('debilidad'))<span class="badge b-red"><i class="fa fa-arrow-down" style="font-size:9px"></i> {{ $fodaIeaResumen->get('debilidad') }} debilidad</span>@endif
                     </div>
                 </div>
                 @endif
@@ -391,37 +581,34 @@ table.pub tr:hover td { background: #fafcff; }
 
         {{-- PEI --}}
         <div>
-            <div class="section-label">
-                <div class="section-label-icon" style="background:#f5f3ff;color:#7c3aed"><i class="fa fa-bullseye"></i></div>
-                <div><h2>Plan Estratégico <span>· PEI</span></h2></div>
+            <div class="sec-header">
+                <div class="sec-icon" style="background:var(--violet-lt);color:var(--violet)"><i class="fa fa-bullseye"></i></div>
+                <div>
+                    <span class="sec-title">Plan Estratégico</span>
+                    <span class="sec-sub">· PEI</span>
+                </div>
             </div>
-            <div class="table-card">
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:var(--radius) var(--radius) 0 0;overflow:hidden">
-                    <div style="background:#ecfdf5;padding:16px;text-align:center">
-                        <div style="width:14px;height:14px;border-radius:50%;background:#059669;box-shadow:0 0 8px rgba(5,150,105,.5);margin:0 auto 8px"></div>
-                        <div style="font-size:1.5rem;font-weight:800;color:#059669">{{ $peiSemaforo->get('verde', 0) }}</div>
-                        <div style="font-size:10px;font-weight:700;color:#059669">Verde</div>
+            <div class="card">
+                <div class="sem-strip">
+                    <div class="sem-cell" style="background:#ecfdf5">
+                        <div class="sem-dot" style="background:#059669;box-shadow:0 0 8px rgba(5,150,105,.5)"></div>
+                        <div class="sem-num" style="color:var(--green)">{{ $peiSemaforo->get('verde', 0) }}</div>
+                        <div class="sem-lbl" style="color:var(--green)">Verde</div>
                     </div>
-                    <div style="background:#fffbeb;padding:16px;text-align:center">
-                        <div style="width:14px;height:14px;border-radius:50%;background:#d97706;box-shadow:0 0 8px rgba(217,119,6,.5);margin:0 auto 8px"></div>
-                        <div style="font-size:1.5rem;font-weight:800;color:#d97706">{{ $peiSemaforo->get('amarillo', 0) }}</div>
-                        <div style="font-size:10px;font-weight:700;color:#d97706">Amarillo</div>
+                    <div class="sem-cell" style="background:var(--amber-lt)">
+                        <div class="sem-dot" style="background:#d97706;box-shadow:0 0 8px rgba(217,119,6,.5)"></div>
+                        <div class="sem-num" style="color:var(--amber)">{{ $peiSemaforo->get('amarillo', 0) }}</div>
+                        <div class="sem-lbl" style="color:var(--amber)">Amarillo</div>
                     </div>
-                    <div style="background:#fef2f2;padding:16px;text-align:center">
-                        <div style="width:14px;height:14px;border-radius:50%;background:#dc2626;box-shadow:0 0 8px rgba(220,38,38,.5);margin:0 auto 8px"></div>
-                        <div style="font-size:1.5rem;font-weight:800;color:#dc2626">{{ $peiSemaforo->get('rojo', 0) }}</div>
-                        <div style="font-size:10px;font-weight:700;color:#dc2626">Rojo</div>
+                    <div class="sem-cell" style="background:var(--red-lt)">
+                        <div class="sem-dot" style="background:#dc2626;box-shadow:0 0 8px rgba(220,38,38,.5)"></div>
+                        <div class="sem-num" style="color:var(--red)">{{ $peiSemaforo->get('rojo', 0) }}</div>
+                        <div class="sem-lbl" style="color:var(--red)">Rojo</div>
                     </div>
                 </div>
-                <div style="padding:14px 18px;display:flex;flex-direction:column;gap:9px">
-                    <div style="display:flex;justify-content:space-between;font-size:12px">
-                        <span style="color:var(--muted)">Planes estratégicos</span>
-                        <span style="font-weight:700">{{ $peiPlanes }}</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;font-size:12px">
-                        <span style="color:var(--muted)">Acciones / indicadores</span>
-                        <span style="font-weight:700">{{ $peiAcciones }}</span>
-                    </div>
+                <div class="card-rows">
+                    <div class="card-row"><span class="lbl">Planes estratégicos</span><span class="val">{{ $peiPlanes }}</span></div>
+                    <div class="card-row"><span class="lbl">Acciones / indicadores</span><span class="val">{{ $peiAcciones }}</span></div>
                 </div>
                 @if($peiRecientes->count())
                 <div style="border-top:1px solid var(--border)">
@@ -429,15 +616,11 @@ table.pub tr:hover td { background: #fafcff; }
                     @foreach($peiRecientes as $pei)
                     <div style="padding:10px 18px;border-bottom:1px solid #f8fafc;display:flex;align-items:center;justify-content:space-between;gap:8px">
                         <div style="min-width:0">
-                            <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                                {{ Str::limit(strip_tags($pei->name), 38) }}
-                            </div>
-                            @if($pei->year_start)
-                            <div style="font-size:10px;color:var(--muted)">{{ $pei->year_start }}{{ $pei->year_end ? ' — '.$pei->year_end : '' }}</div>
-                            @endif
+                            <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ Str::limit(strip_tags($pei->name), 40) }}</div>
+                            @if($pei->year_start)<div style="font-size:10px;color:var(--muted)">{{ $pei->year_start }}{{ $pei->year_end ? ' — '.$pei->year_end : '' }}</div>@endif
                         </div>
                         @if($pei->semaforo)
-                        <span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block;background:{{ $pei->semaforo === 'verde' ? '#059669' : ($pei->semaforo === 'amarillo' ? '#d97706' : '#dc2626') }}"></span>
+                        <span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block;background:{{ $pei->semaforo==='verde'?'#059669':($pei->semaforo==='amarillo'?'#d97706':'#dc2626') }}"></span>
                         @endif
                     </div>
                     @endforeach
@@ -447,82 +630,27 @@ table.pub tr:hover td { background: #fafcff; }
         </div>
 
     </div>
-    {{-- ── ACTIVIDADES ── --}}
-    <div class="section-label">
-        <div class="section-label-icon" style="background:#eff6ff;color:#2563eb"><i class="fa fa-columns"></i></div>
+
+    {{-- EVALUACIONES + SIESS --}}
+    <div class="twin">
+
+        {{-- EVALUACIONES --}}
         <div>
-            <h2>Actividades en curso <span>· Tablero de tareas</span></h2>
-        </div>
-    </div>
-
-    @if($activities->count())
-    <div class="activity-grid">
-        @foreach($activities as $act)
-        @php
-            $total  = $act->tasks->count();
-            $hechas = $act->tasks->where('status', 2)->count();
-            $pct    = $total > 0 ? round(($hechas / $total) * 100) : 0;
-            $enCurso   = $act->tasks->where('status', 1)->count();
-            $pendientes = $act->tasks->where('status', 0)->count();
-            $vencidas  = $act->tasks->filter(fn($t) =>
-                $t->status !== 2 && $t->fecha_vencimiento &&
-                \Carbon\Carbon::parse($t->fecha_vencimiento)->isPast()
-            )->count();
-        @endphp
-        <div class="activity-card">
-            <span class="activity-type-badge {{ $act->type === 'scrum' ? 'type-scrum' : 'type-kanban' }}">
-                <i class="fa {{ $act->type === 'scrum' ? 'fa-sync-alt' : 'fa-stream' }}"></i>
-                {{ ucfirst($act->type ?? 'kanban') }}
-            </span>
-            <div class="activity-name">{{ $act->name }}</div>
-            <div class="activity-meta">
-                @if($act->date_start)
-                <span><i class="fa fa-calendar"></i> {{ \Carbon\Carbon::parse($act->date_start)->format('d/m/Y') }}</span>
-                @endif
-                @if($act->responsibles->count())
-                <span><i class="fa fa-user"></i> {{ $act->responsibles->first()->name }}</span>
-                @endif
-            </div>
-            <div class="progress-bar-wrap">
-                <div class="progress-bar-fill" style="width:{{ $pct }}%"></div>
-            </div>
-            <div class="activity-footer">
-                <div class="task-pills">
-                    @if($pendientes) <span class="task-pill pill-pending"><i class="fa fa-inbox"></i>{{ $pendientes }}</span> @endif
-                    @if($enCurso)    <span class="task-pill pill-progress"><i class="fa fa-spinner"></i>{{ $enCurso }}</span> @endif
-                    @if($hechas)     <span class="task-pill pill-done"><i class="fa fa-check"></i>{{ $hechas }}</span> @endif
-                    @if($vencidas)   <span class="task-pill pill-vencida"><i class="fa fa-exclamation"></i>{{ $vencidas }}</span> @endif
-                    @if($total === 0)<span style="font-size:11px;color:var(--muted)">Sin tareas</span> @endif
-                </div>
-                <span class="activity-pct">{{ $pct }}%</span>
-            </div>
-        </div>
-        @endforeach
-    </div>
-    @else
-    <div class="table-card" style="margin-bottom:40px">
-        <div class="empty-state"><i class="fa fa-inbox"></i>Sin actividades registradas</div>
-    </div>
-    @endif
-
-    {{-- ── EVALUACIONES + SIESS ── --}}
-    <div class="two-col">
-
-        {{-- EVALUACIONES RIISS --}}
-        <div>
-            <div class="section-label">
-                <div class="section-label-icon" style="background:#ecfdf5;color:#059669"><i class="fa fa-hospital"></i></div>
+            <div class="sec-header">
+                <div class="sec-icon" style="background:var(--green-lt);color:var(--green)"><i class="fa fa-hospital"></i></div>
                 <div>
-                    <h2>Evaluaciones RIISS <span>· Red de Salud IPS</span></h2>
+                    <span class="sec-title">Evaluaciones RIISS</span>
+                    <span class="sec-sub">· Red de Salud IPS</span>
                 </div>
             </div>
-            <div class="table-card">
-                <div class="table-card-header">
-                    <span class="table-card-title"><i class="fa fa-list-check" style="color:#059669"></i> Últimas evaluaciones</span>
-                    <span class="table-card-count">{{ $evalTotal }} total</span>
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-head-title"><i class="fa fa-clipboard-list" style="color:var(--green)"></i> Últimas evaluaciones</span>
+                    <span class="card-count">{{ $evalTotal }} total</span>
                 </div>
                 @if($evaluaciones->count())
-                <table class="pub">
+                <div style="overflow-x:auto">
+                <table class="t">
                     <thead>
                         <tr>
                             <th>Establecimiento</th>
@@ -534,74 +662,68 @@ table.pub tr:hover td { background: #fafcff; }
                     <tbody>
                         @foreach($evaluaciones as $ev)
                         @php
-                            $pctEv = (float)($ev->porcentaje_cumplimiento ?? 0);
-                            $pctClass = $pctEv >= 70 ? 'high' : ($pctEv >= 40 ? 'medium' : 'low');
+                            $p = (float)($ev->porcentaje_cumplimiento ?? 0);
+                            $pc = $p >= 70 ? 'pct-hi' : ($p >= 40 ? 'pct-md' : 'pct-lo');
+                            $estado = $ev->estado ?? 'pendiente';
+                            $bClass = match($estado) {
+                                'completada' => 'b-green',
+                                'en_curso'   => 'b-blue',
+                                default      => 'b-amber',
+                            };
                         @endphp
                         <tr>
-                            <td style="font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                            <td style="font-weight:600;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
                                 {{ $ev->establecimiento?->nombre_oficial ?? '—' }}
                             </td>
-                            <td style="white-space:nowrap;color:var(--muted)">
-                                {{ $ev->fecha_evaluacion?->format('d/m/Y') ?? '—' }}
-                            </td>
+                            <td style="white-space:nowrap;color:var(--muted)">{{ $ev->fecha_evaluacion?->format('d/m/Y') ?? '—' }}</td>
                             <td>
                                 @if($ev->porcentaje_cumplimiento !== null)
-                                <div class="pct-bar">
-                                    <div class="pct-track">
-                                        <div class="pct-fill {{ $pctClass }}" style="width:{{ min(100,$pctEv) }}%"></div>
-                                    </div>
-                                    <span style="font-size:11px;font-weight:700;color:var(--text);min-width:32px">{{ number_format($pctEv,1) }}%</span>
+                                <div class="pct-row">
+                                    <div class="pct-track"><div class="pct-fill {{ $pc }}" style="width:{{ min(100,$p) }}%"></div></div>
+                                    <span class="pct-val" style="color:var(--text)">{{ number_format($p,1) }}%</span>
                                 </div>
-                                @else
-                                <span style="color:var(--muted);font-size:11px">—</span>
-                                @endif
+                                @else<span style="color:var(--muted)">—</span>@endif
                             </td>
-                            <td>
-                                <span class="badge-estado estado-{{ $ev->estado }}">
-                                    {{ ucfirst(str_replace('_',' ',$ev->estado ?? 'pendiente')) }}
-                                </span>
-                            </td>
+                            <td><span class="badge {{ $bClass }}">{{ ucfirst(str_replace('_',' ',$estado)) }}</span></td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
+                </div>
                 @else
-                <div class="empty-state"><i class="fa fa-hospital"></i>Sin evaluaciones registradas</div>
+                <div class="empty"><i class="fa fa-hospital"></i>Sin evaluaciones</div>
                 @endif
-
-                {{-- Resumen --}}
-                <div style="padding:12px 16px;border-top:1px solid var(--border);background:var(--surface2);display:flex;gap:16px;flex-wrap:wrap">
-                    <span style="font-size:11px;color:var(--muted)"><span style="font-weight:700;color:var(--green)">{{ $evalCompletadas }}</span> completadas</span>
-                    <span style="font-size:11px;color:var(--muted)"><span style="font-weight:700;color:var(--blue)">{{ $evalEnCurso }}</span> en curso</span>
-                    <span style="font-size:11px;color:var(--muted)"><span style="font-weight:700;color:var(--text)">{{ $evalTotal }}</span> total</span>
+                <div class="row-summary">
+                    <span><b style="color:var(--green)">{{ $evalCompletadas }}</b> completadas</span>
+                    <span><b style="color:var(--blue)">{{ $evalEnCurso }}</b> en curso</span>
+                    <span><b>{{ $evalTotal }}</b> total</span>
                 </div>
             </div>
         </div>
 
         {{-- SIESS --}}
         <div>
-            <div class="section-label">
-                <div class="section-label-icon" style="background:#f5f3ff;color:#7c3aed"><i class="fa fa-chart-line"></i></div>
+            <div class="sec-header">
+                <div class="sec-icon" style="background:var(--violet-lt);color:var(--violet)"><i class="fa fa-chart-line"></i></div>
                 <div>
-                    <h2>Módulos SIESS <span>· Estadísticas institucionales</span></h2>
+                    <span class="sec-title">Módulos SIESS</span>
+                    <span class="sec-sub">· Estadísticas institucionales</span>
                 </div>
             </div>
-            <div class="table-card" style="margin-bottom:12px">
-                <div class="table-card-header">
-                    <span class="table-card-title"><i class="fa fa-database" style="color:#7c3aed"></i> Estado de extractos</span>
-                </div>
-                <div style="padding:16px 18px;display:flex;gap:12px;flex-wrap:wrap">
-                    <div style="flex:1;min-width:100px;background:var(--green-lt);border:1px solid #a7f3d0;border-radius:8px;padding:12px 14px;text-align:center">
-                        <div style="font-size:1.5rem;font-weight:800;color:var(--green)">{{ $siessAprobados }}</div>
-                        <div style="font-size:10px;color:var(--green);font-weight:600;margin-top:2px">Aprobados</div>
+
+            <div class="card" style="margin-bottom:12px">
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)">
+                    <div style="background:var(--green-lt);padding:16px;text-align:center">
+                        <div style="font-size:1.6rem;font-weight:900;color:var(--green)">{{ $siessAprobados }}</div>
+                        <div style="font-size:10px;color:var(--green);font-weight:700;margin-top:4px">Aprobados</div>
                     </div>
-                    <div style="flex:1;min-width:100px;background:var(--amber-lt);border:1px solid #fde68a;border-radius:8px;padding:12px 14px;text-align:center">
-                        <div style="font-size:1.5rem;font-weight:800;color:var(--amber)">{{ $siessPendientes }}</div>
-                        <div style="font-size:10px;color:var(--amber);font-weight:600;margin-top:2px">Pendientes</div>
+                    <div style="background:var(--amber-lt);padding:16px;text-align:center">
+                        <div style="font-size:1.6rem;font-weight:900;color:var(--amber)">{{ $siessPendientes }}</div>
+                        <div style="font-size:10px;color:var(--amber);font-weight:700;margin-top:4px">Pendientes</div>
                     </div>
-                    <div style="flex:1;min-width:100px;background:var(--red-lt);border:1px solid #fecaca;border-radius:8px;padding:12px 14px;text-align:center">
-                        <div style="font-size:1.5rem;font-weight:800;color:var(--red)">{{ $siessObjetados }}</div>
-                        <div style="font-size:10px;color:var(--red);font-weight:600;margin-top:2px">Objetados</div>
+                    <div style="background:var(--red-lt);padding:16px;text-align:center">
+                        <div style="font-size:1.6rem;font-weight:900;color:var(--red)">{{ $siessObjetados }}</div>
+                        <div style="font-size:10px;color:var(--red);font-weight:700;margin-top:4px">Objetados</div>
                     </div>
                 </div>
             </div>
@@ -609,39 +731,29 @@ table.pub tr:hover td { background: #fafcff; }
             @if($siessModulos->count())
             <div class="siess-grid">
                 @foreach($siessModulos as $mod)
-                @php $resumen = $mod->resumenEstados(); @endphp
+                @php $res = $mod->resumenEstados(); @endphp
                 <div class="siess-card">
-                    <div class="siess-card-name">{{ $mod->nombre }}</div>
-                    <div class="siess-card-codigo">{{ $mod->codigo }} · {{ ucfirst($mod->periodicidad ?? '') }}</div>
+                    <div class="siess-name">{{ $mod->nombre }}</div>
+                    <div class="siess-code">{{ $mod->codigo }} · {{ ucfirst($mod->periodicidad ?? '') }}</div>
                     <div class="siess-pills">
-                        @if($resumen['aprobado'] + ($resumen['aprobado_silencio'] ?? 0) > 0)
-                        <span class="siess-pill" style="background:var(--green-lt);color:var(--green)">
-                            <i class="fa fa-check" style="font-size:9px"></i> {{ $resumen['aprobado'] + ($resumen['aprobado_silencio'] ?? 0) }}
-                        </span>
+                        @if(($res['aprobado'] ?? 0) + ($res['aprobado_silencio'] ?? 0) > 0)
+                        <span class="siess-pill" style="background:var(--green-lt);color:var(--green)"><i class="fa fa-check" style="font-size:9px"></i> {{ ($res['aprobado'] ?? 0) + ($res['aprobado_silencio'] ?? 0) }}</span>
                         @endif
-                        @if($resumen['pendiente_validacion'] > 0)
-                        <span class="siess-pill" style="background:var(--amber-lt);color:var(--amber)">
-                            <i class="fa fa-clock" style="font-size:9px"></i> {{ $resumen['pendiente_validacion'] }}
-                        </span>
+                        @if(($res['pendiente_validacion'] ?? 0) > 0)
+                        <span class="siess-pill" style="background:var(--amber-lt);color:var(--amber)"><i class="fa fa-clock" style="font-size:9px"></i> {{ $res['pendiente_validacion'] }}</span>
                         @endif
-                        @if($resumen['objetado'] > 0)
-                        <span class="siess-pill" style="background:var(--red-lt);color:var(--red)">
-                            <i class="fa fa-times" style="font-size:9px"></i> {{ $resumen['objetado'] }}
-                        </span>
+                        @if(($res['objetado'] ?? 0) > 0)
+                        <span class="siess-pill" style="background:var(--red-lt);color:var(--red)"><i class="fa fa-times" style="font-size:9px"></i> {{ $res['objetado'] }}</span>
                         @endif
-                        @if($resumen['borrador'] > 0)
-                        <span class="siess-pill" style="background:#f1f5f9;color:var(--muted)">
-                            {{ $resumen['borrador'] }} borr.
-                        </span>
+                        @if(($res['borrador'] ?? 0) > 0)
+                        <span class="siess-pill" style="background:#f1f5f9;color:var(--muted)">{{ $res['borrador'] }} borr.</span>
                         @endif
                     </div>
                 </div>
                 @endforeach
             </div>
             @else
-            <div class="table-card">
-                <div class="empty-state"><i class="fa fa-chart-bar"></i>Sin módulos SIESS activos</div>
-            </div>
+            <div class="card"><div class="empty"><i class="fa fa-chart-bar"></i>Sin módulos activos</div></div>
             @endif
         </div>
 
@@ -649,10 +761,9 @@ table.pub tr:hover td { background: #fafcff; }
 
 </div>
 
-
-<footer class="pub-footer">
-    <strong>SIPLAN</strong> · Sistema de Planificación Estratégica Institucional · Instituto de Previsión Social del Paraguay<br>
-    <span style="margin-top:4px;display:inline-block">Datos actualizados en tiempo real</span>
+<footer>
+    <strong>SIPLAN</strong> · Sistema de Planificación Estratégica Institucional<br>
+    Instituto de Previsión Social del Paraguay · Datos en tiempo real
 </footer>
 
 </body>

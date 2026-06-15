@@ -114,6 +114,13 @@ class ActivityController extends Controller
         $task      = ActivityTask::findOrFail($taskId);
         $newStatus = (int) $request->status;
 
+        // Colaborador solo puede mover sus propias tareas
+        $user = Auth::user();
+        if (!$user->hasRole(['Administrador', 'Gestor de Actividades'])
+            && $task->assigned_to !== $user->id) {
+            return response()->json(['error' => 'Sin permiso para mover esta tarea'], 403);
+        }
+
         // Al completar: requiere nota de cierre
         if ($newStatus === 2) {
             $request->validate(
