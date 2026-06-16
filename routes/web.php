@@ -258,7 +258,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('activities/{activity}', 'Admin\Globales\ActivityController@show')->name('activities.show');
 
         // ── Tareas: Administrador y Gestor de Actividades ─────────────────
-        Route::middleware(['hasanyrole:Administrador|Gestor de Actividades'])->group(function () {
+        Route::middleware(['role:Administrador|Gestor de Actividades'])->group(function () {
             Route::post('activities/{activityId}/tareas', 'Admin\Globales\ActivityController@storeTarea')->name('activities.tareas.store');
             Route::delete('activities/tareas/{taskId}', 'Admin\Globales\ActivityController@destroyTarea')->name('activities.tareas.destroy');
             Route::post('activities/tareas/{taskId}/evidencias', 'Admin\Globales\ActivityController@storeEvidencia')->name('activities.tareas.evidencias.store');
