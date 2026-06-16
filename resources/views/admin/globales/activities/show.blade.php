@@ -176,7 +176,7 @@
             </small>
         </div>
         <div class="d-flex flex-column gap-2" style="flex-shrink:0">
-            @role('Administrador|Gestor de Actividades')
+            @hasanyrole('Administrador|Gestor de Actividades')
             <button class="btn btn-light btn-sm font-weight-bold" id="btnNuevaTarea">
                 <i class="fa fa-plus mr-1"></i>Nueva Tarea
             </button>
@@ -184,7 +184,7 @@
                     id="btnNotificarTodos" data-id="{{ $activity->id }}">
                 <i class="fa fa-paper-plane mr-1"></i>Notificar a todos
             </button>
-            @endrole
+            @endhasanyrole
             <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)"
                     data-toggle="modal" data-target="#modalAyuda" title="Cómo usar el tablero">
                 <i class="fa fa-question-circle mr-1"></i>Ayuda

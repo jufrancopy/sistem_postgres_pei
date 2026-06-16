@@ -316,7 +316,7 @@
         @endrole
 
         {{-- Sidebar exclusivo para Gestor de Actividades --}}
-        @role('Gestor de Actividades')
+        @hasanyrole('Gestor de Actividades')
             <li class="nav-item {{ request()->is('admin/globales/activities') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('globales.activities.index') }}">
                     <i class="material-icons">rocket_launch</i>
@@ -329,17 +329,19 @@
                     <p>Mis Actividades</p>
                 </a>
             </li>
-        @endrole
+        @endhasanyrole
 
-        {{-- Sidebar exclusivo para Colaborador de Actividades --}}
-        @role('Colaborador de Actividades')
+        {{-- Sidebar exclusivo para Colaborador de Actividades (sin Gestor) --}}
+        @hasanyrole('Colaborador de Actividades')
+        @unlessrole('Gestor de Actividades')
             <li class="nav-item {{ request()->is('mis-actividades') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('globales.activities.mis-actividades') }}">
                     <i class="material-icons">dashboard</i>
                     <p>Mis Actividades</p>
                 </a>
             </li>
-        @endrole
+        @endunlessrole
+        @endhasanyrole
 
         {{-- Sidebar exclusivo para Analista de Planificación --}}
         @role('Analista de Planificación')

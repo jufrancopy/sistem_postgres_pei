@@ -116,7 +116,7 @@ class ActivityController extends Controller
 
         // Colaborador solo puede mover sus propias tareas
         $user = Auth::user();
-        if (!$user->hasRole(['Administrador', 'Gestor de Actividades'])
+        if (!$user->hasAnyRole(['Administrador', 'Gestor de Actividades'])
             && $task->assigned_to !== $user->id) {
             return response()->json(['error' => 'Sin permiso para mover esta tarea'], 403);
         }
