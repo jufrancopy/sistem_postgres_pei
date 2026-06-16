@@ -170,6 +170,7 @@
 {{-- Modales --}}
 @include('admin.globales.activities.partials.modal_completion')
 @include('admin.globales.activities.partials.modal_comentarios')
+@include('admin.globales.activities.partials.modal_detalle_tarea')
 
 @endsection
 

@@ -300,6 +300,7 @@
 @include('admin.globales.activities.partials.modal_evidencia')
 @include('admin.globales.activities.partials.modal_comentarios')
 @include('admin.globales.activities.partials.modal_ayuda', ['isScrumActivity' => $isScrumActivity])
+@include('admin.globales.activities.partials.modal_detalle_tarea')
 
 @endsection
 
@@ -425,7 +426,27 @@ $('#tareaForm').submit(function(e) {
     });
 });
 
-// ── Mover tarea ───────────────────────────────────────────────────────────────
+// ── Editar tarea ─────────────────────────────────────────────────────────────
+$('body').on('click', '.editTaskBtn', function() {
+    var taskId = $(this).data('id');
+    $.get(storeUrl.replace('/tareas', '') + '/../tareas/' + taskId + '/edit', function(data) {
+        // fallback: rellenar desde el card
+    });
+    // Abrir modal de tarea relleno desde el DOM
+    var $card = $('[data-id="' + taskId + '"]').first();
+    $('#tareaHeading').text('Editar Tarea');
+    $('#task_id').val(taskId);
+    $('#task_title').val($card.find('.task-title').clone().find('.fa-check-circle').remove().end().text().trim());
+    $('#task_details').val($card.find('.task-desc').text().trim());
+    $('#task_etiqueta').val($card.find('.task-etiqueta').text().trim());
+    colorSeleccionado = $card.css('border-left-color') || '#6b7280';
+    renderPaleta();
+    initResponsableSelect(null, null);
+    cargarEtiquetasExistentes();
+    $('#tareaModal').modal('show');
+});
+
+// ── Editar tarea (POST con datos reales) ──────────────────────────────────────
 $('body').on('click', '.btn-move-right', function() {
     var taskId = $(this).data('id');
     var curStatus = parseInt($(this).data('status'));
