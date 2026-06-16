@@ -329,12 +329,6 @@
                     <p>Mis Actividades</p>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('profile.edit') }}">
-                    <i class="material-icons">person</i>
-                    <p>Mi Perfil</p>
-                </a>
-            </li>
         @endrole
 
         {{-- Sidebar exclusivo para Colaborador de Actividades --}}
@@ -343,12 +337,6 @@
                 <a class="nav-link" href="{{ route('globales.activities.mis-actividades') }}">
                     <i class="material-icons">dashboard</i>
                     <p>Mis Actividades</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('profile.edit') }}">
-                    <i class="material-icons">person</i>
-                    <p>Mi Perfil</p>
                 </a>
             </li>
         @endrole
