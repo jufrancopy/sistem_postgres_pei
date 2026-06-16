@@ -250,7 +250,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
 
         // ── Actividades: solo Administrador y Gestor de Actividades ──────────
-        Route::middleware(['role:Administrador|Gestor de Actividades'])->group(function () {
+        Route::middleware(['hasanyrole:Administrador|Gestor de Actividades'])->group(function () {
             Route::resource('activities', 'Admin\Globales\ActivityController');
             Route::post('activities/{activityId}/tareas', 'Admin\Globales\ActivityController@storeTarea')->name('activities.tareas.store');
             Route::delete('activities/tareas/{taskId}', 'Admin\Globales\ActivityController@destroyTarea')->name('activities.tareas.destroy');
