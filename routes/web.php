@@ -249,9 +249,16 @@ Route::group(['middleware' => ['auth']], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
 
-        // ── Actividades: solo Administrador y Gestor de Actividades ──────────
+        // ── Actividades: index/crear/editar/eliminar solo Administrador ────────
+        Route::middleware(['role:Administrador'])->group(function () {
+            Route::resource('activities', 'Admin\Globales\ActivityController', ['except' => ['show']]);
+        });
+
+        // ── Show: Administrador + Gestor + Colaborador ───────────────────────
+        Route::get('activities/{activity}', 'Admin\Globales\ActivityController@show')->name('activities.show');
+
+        // ── Tareas: Administrador y Gestor de Actividades ─────────────────
         Route::middleware(['hasanyrole:Administrador|Gestor de Actividades'])->group(function () {
-            Route::resource('activities', 'Admin\Globales\ActivityController');
             Route::post('activities/{activityId}/tareas', 'Admin\Globales\ActivityController@storeTarea')->name('activities.tareas.store');
             Route::delete('activities/tareas/{taskId}', 'Admin\Globales\ActivityController@destroyTarea')->name('activities.tareas.destroy');
             Route::post('activities/tareas/{taskId}/evidencias', 'Admin\Globales\ActivityController@storeEvidencia')->name('activities.tareas.evidencias.store');

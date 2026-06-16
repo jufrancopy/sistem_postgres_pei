@@ -317,12 +317,6 @@
 
         {{-- Sidebar exclusivo para Gestor de Actividades --}}
         @hasanyrole('Gestor de Actividades')
-            <li class="nav-item {{ request()->is('admin/globales/activities') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('globales.activities.index') }}">
-                    <i class="material-icons">rocket_launch</i>
-                    <p>Actividades</p>
-                </a>
-            </li>
             <li class="nav-item {{ request()->is('mis-actividades') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('globales.activities.mis-actividades') }}">
                     <i class="material-icons">task_alt</i>
