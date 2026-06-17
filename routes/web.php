@@ -523,6 +523,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('establecimientos.recalcular');
         Route::get('establecimientos/buscar', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'buscar'])
             ->name('establecimientos.buscar');
+        Route::patch('establecimientos/{id}', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'update'])
+            ->name('establecimientos.update');
 
         // Evaluaciones — helpers
         Route::get('evaluaciones/usuarios', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'buscarUsuarios'])

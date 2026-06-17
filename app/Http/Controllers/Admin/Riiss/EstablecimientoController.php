@@ -83,6 +83,42 @@ class EstablecimientoController extends Controller
     }
 
     /**
+     * PATCH /riiss/establecimientos/{id}
+     * Actualizar datos de un establecimiento.
+     */
+    public function update(Request $request, string $id): JsonResponse
+    {
+        $est = Establecimiento::where('id_establecimiento', $id)->firstOrFail();
+
+        $validated = $request->validate([
+            'nombre_oficial'          => 'sometimes|string|max:300',
+            'complejidad'             => 'sometimes|string|max:100',
+            'tipologia_clasificacion' => 'sometimes|string|max:100',
+            'departamento'            => 'sometimes|string|max:100',
+            'microred'                => 'nullable|string|max:100',
+            'prestador'               => 'nullable|string|max:100',
+            'tiene_internacion'       => 'nullable|boolean',
+            'tiene_quirofano_req'     => 'nullable|boolean',
+            'tiene_uti_req'           => 'nullable|boolean',
+            'tiene_urgencias_req'     => 'nullable|boolean',
+            'observacion'             => 'nullable|string|max:1000',
+        ]);
+
+        $est->update($validated);
+
+        // Si cambió la complejidad, recalcular derivados
+        if (isset($validated['complejidad'])) {
+            $est->recalcularCamposDerivados();
+        }
+
+        return response()->json([
+            'ok'      => true,
+            'message' => 'Establecimiento actualizado.',
+            'data'    => $est->fresh()->toResumenArray(),
+        ]);
+    }
+
+    /**
      * GET /riiss/establecimientos/{id}
      */
     public function show(string $id): JsonResponse

@@ -190,6 +190,92 @@
     </div>
 </div>
 
+{{-- ── Modal editar establecimiento ── --}}
+<div class="modal fade" id="modalEditEst" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background:linear-gradient(135deg,#c62828,#e91e63)">
+                <h5 class="modal-title text-white"><i class="fa fa-edit mr-2"></i>Editar establecimiento</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editEstId">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="small font-weight-bold">Nombre oficial</label>
+                        <input type="text" id="editNombre" class="form-control">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="small font-weight-bold">Complejidad</label>
+                        <select id="editComplejidad" class="form-control">
+                            <option value="No Hospitalario de Baja Complejidad">No Hospitalario de Baja Complejidad</option>
+                            <option value="No Hospitalario de Mediana Complejidad">No Hospitalario de Mediana Complejidad</option>
+                            <option value="Hospitalario 1 Baja Complejidad">Hospitalario 1 Baja Complejidad</option>
+                            <option value="Hospitalario 2 Mediana Complejidad">Hospitalario 2 Mediana Complejidad</option>
+                            <option value="Hospitalario 3 Alta Complejidad">Hospitalario 3 Alta Complejidad</option>
+                        </select>
+                        <small class="text-muted">Al cambiar esto se recalculan nivel, grado y requisitos automáticamente</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="small font-weight-bold">Tipología</label>
+                        <select id="editTipologia" class="form-control">
+                            <option>PUESTO SANITARIO</option>
+                            <option>UNIDAD SANITARIA</option>
+                            <option>CLINICA PERIFERICA</option>
+                            <option>CENTROS</option>
+                            <option>HOSPITAL REGIONAL</option>
+                            <option>HOSPITAL</option>
+                            <option>HOSPITAL ESPECIALIZADO</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="small font-weight-bold">Departamento</label>
+                        <input type="text" id="editDepartamento" class="form-control">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="small font-weight-bold">Microred</label>
+                        <input type="text" id="editMicrored" class="form-control">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="small font-weight-bold">Prestador</label>
+                        <input type="text" id="editPrestador" class="form-control">
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="small font-weight-bold">Servicios disponibles</label>
+                        <div class="d-flex flex-wrap" style="gap:12px">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="editInternacion">
+                                <label class="custom-control-label small" for="editInternacion">Internación</label>
+                            </div>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="editQuirofano">
+                                <label class="custom-control-label small" for="editQuirofano">Quirófano</label>
+                            </div>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="editUti">
+                                <label class="custom-control-label small" for="editUti">UTI</label>
+                            </div>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="editUrgencias">
+                                <label class="custom-control-label small" for="editUrgencias">Urgencias</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="small font-weight-bold">Observación</label>
+                        <textarea id="editObservacion" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div id="editEstMsg" class="mt-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button class="btn btn-danger" onclick="guardarEstablecimiento()"><i class="fa fa-save mr-1"></i>Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- ── Modal detalle ── --}}
 <div class="modal fade" id="modalEst" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -317,12 +403,9 @@ function renderTarjetas(items) {
                 </div>
                 <div class="est-footer">
                     <div class="flex-grow-1">${evalBadge}</div>
-                    <button class="btn btn-info btn-circle btn-sm mr-1" onclick="verDetalle('${e.id}','${e.nombre.replace(/'/g,"\\'")}')" title="Ver detalle">
-                        <i class="fa fa-eye"></i>
-                    </button>
-                    <a href="/riiss/evaluaciones/nueva/${e.id}" class="btn btn-sm btn-danger" title="Iniciar evaluación">
-                        <i class="fa fa-clipboard-check mr-1"></i>Evaluar
-                    </a>
+                    <button class="btn btn-info btn-circle btn-sm mr-1" onclick="verDetalle('${e.id}','${e.nombre.replace(/''''''''g,"\\\\'")}')" title="Ver detalle"><i class="fa fa-eye"></i></button>
+                    <button class="btn btn-warning btn-circle btn-sm mr-1" onclick="abrirEditar('${e.id}')" title="Editar"><i class="fa fa-edit"></i></button>
+                    <a href="/riiss/evaluaciones/nueva/${e.id}" class="btn btn-sm btn-danger" title="Iniciar evaluacion"><i class="fa fa-clipboard-check mr-1"></i>Evaluar</a>
                 </div>
             </div>
         </div>`;
@@ -350,12 +433,9 @@ function renderTabla(items) {
             <td><small>${e.departamento}</small></td>
             <td>${evalBadge}</td>
                 <td class="text-center">
-                <button class="btn btn-info btn-circle btn-sm mr-1" onclick="verDetalle('${e.id}','${e.nombre.replace(/'/g,"\\'")}')" title="Ver detalle">
-                    <i class="fa fa-eye"></i>
-                </button>
-                <a href="/riiss/evaluaciones/nueva/${e.id}" class="btn btn-danger btn-circle btn-sm" title="Evaluar">
-                    <i class="fa fa-clipboard-check"></i>
-                </a>
+                <button class="btn btn-info btn-circle btn-sm mr-1" onclick="verDetalle('${e.id}','${e.nombre.replace(/''''''''g,"\\\\'")}')" title="Ver detalle"><i class="fa fa-eye"></i></button>
+                <button class="btn btn-warning btn-circle btn-sm mr-1" onclick="abrirEditar('${e.id}')" title="Editar"><i class="fa fa-edit"></i></button>
+                <a href="/riiss/evaluaciones/nueva/${e.id}" class="btn btn-danger btn-circle btn-sm" title="Evaluar"><i class="fa fa-clipboard-check"></i></a>
             </td>
         </tr>`;
     }).join('');
@@ -386,6 +466,64 @@ function renderPaginacion(d) {
     if (d.current_page < d.last_page)
         btns += `<button class="btn btn-sm btn-outline-secondary" onclick="buscar(${d.current_page+1})">›</button>`;
     $('#paginaBtns').html(btns);
+}
+
+// ── Editar establecimiento ───────────────────────────────────────────────────
+function abrirEditar(id) {
+    $('#editEstId').val(id);
+    $('#editEstMsg').html('');
+    $('#modalEditEst').modal('show');
+    $.get('/riiss/establecimientos/' + id, function(r) {
+        if (!r.ok) return;
+        var e = r.data;
+        $('#editNombre').val(e.nombre_oficial);
+        $('#editComplejidad').val(e.complejidad);
+        $('#editTipologia').val(e.tipologia_clasificacion);
+        $('#editDepartamento').val(e.departamento);
+        $('#editMicrored').val(e.microred || '');
+        $('#editPrestador').val(e.prestador || '');
+        $('#editInternacion').prop('checked', e.tiene_internacion);
+        $('#editQuirofano').prop('checked', e.tiene_quirofano_req);
+        $('#editUti').prop('checked', e.tiene_uti_req);
+        $('#editUrgencias').prop('checked', e.tiene_urgencias_req);
+        $('#editObservacion').val(e.observacion || '');
+    });
+}
+
+function guardarEstablecimiento() {
+    var id = $('#editEstId').val();
+    $.ajax({
+        url: '/riiss/establecimientos/' + id,
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            _token:                  '{{ csrf_token() }}',
+            _method:                 'PATCH',
+            nombre_oficial:          $('#editNombre').val(),
+            complejidad:             $('#editComplejidad').val(),
+            tipologia_clasificacion: $('#editTipologia').val(),
+            departamento:            $('#editDepartamento').val(),
+            microred:                $('#editMicrored').val() || null,
+            prestador:               $('#editPrestador').val() || null,
+            tiene_internacion:       $('#editInternacion').is(':checked') ? 1 : 0,
+            tiene_quirofano_req:     $('#editQuirofano').is(':checked') ? 1 : 0,
+            tiene_uti_req:           $('#editUti').is(':checked') ? 1 : 0,
+            tiene_urgencias_req:     $('#editUrgencias').is(':checked') ? 1 : 0,
+            observacion:             $('#editObservacion').val() || null,
+        }),
+        success: function(r) {
+            if (r.ok) {
+                $('#modalEditEst').modal('hide');
+                buscar(paginaActual);
+            } else {
+                $('#editEstMsg').html('<div class="alert alert-danger py-2">' + r.message + '</div>');
+            }
+        },
+        error: function(xhr) {
+            var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Error al guardar.';
+            $('#editEstMsg').html('<div class="alert alert-danger py-2">' + msg + '</div>');
+        }
+    });
 }
 
 // ── Modal detalle ─────────────────────────────────────────────────────────────
