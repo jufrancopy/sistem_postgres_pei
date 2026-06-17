@@ -289,6 +289,12 @@
                                 <span class="sidebar-normal">Monitoreo</span>
                             </a>
                         </li>
+                        <li class="nav-item {{ $isActive('riiss/formularios*') }}">
+                            <a class="nav-link" href="{{ route('riiss.formularios.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-wpforms" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Formularios</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
