@@ -251,11 +251,12 @@ function renderTabla(items) {
     var html = '';
     items.forEach(function(a) {
         var rowClass = a.vencida ? 'vencida-row' : '';
-        var pctHtml = a.evaluacion_progreso
-            ? '<div style="height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;width:80px"><div style="height:100%;width:' + a.evaluacion_progreso + '%;background:#22c55e"></div></div><small>' + a.evaluacion_progreso + '%</small>'
-            : (a.evaluacion_estado
-                ? '<small class="text-muted"><em>' + a.evaluacion_estado.replace('_',' ') + '</em></small>'
-                : '<small class="text-muted">—</small>');
+        var pct = parseFloat(a.evaluacion_progreso) || 0;
+        var pctHtml = a.evaluacion_estado
+            ? (pct > 0
+                ? '<div style="height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;width:80px"><div style="height:100%;width:' + pct + '%;background:#22c55e"></div></div><small>' + pct + '%</small>'
+                : '<small class="text-muted"><em>' + a.evaluacion_estado.replace(/_/g,' ') + '</em></small>')
+            : '<small class="text-muted">—</small>';
         var notifHtml = a.notificado_at
             ? '<small class="text-success"><i class="fa fa-check mr-1"></i>' + a.notificado_at + '</small>'
             : '<small class="text-muted">No enviado</small>';
@@ -358,17 +359,42 @@ function verGap(evaluacionId, idEstablecimiento) {
         ? '/riiss/evaluaciones/' + evaluacionId + '/gap'
         : '/riiss/evaluaciones/requisitos/' + idEstablecimiento;
 
-    $.get(url, function(r) {
-        if (!r.ok) { $('#modalGapBody').html('<div class="alert alert-danger">Error al cargar el análisis.</div>'); return; }
-
-        if (evaluacionId) {
-            renderGapCompleto(r.data);
-        } else {
+    if (evaluacionId) {
+        $.get(url, function(r) {
+            if (!r.ok) { $('#modalGapBody').html('<div class="alert alert-danger">Error al cargar el análisis.</div>'); return; }
+            var d = r.data;
+            // Si no hay items, ejecutar el gap primero
+            if (!d.por_grupo || !d.por_grupo.length) {
+                $('#modalGapBody').html('<div class="text-center py-4"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i><p class="mt-2 text-muted">Ejecutando análisis...</p></div>');
+                $.ajax({
+                    url: '/riiss/evaluaciones/' + evaluacionId + '/ejecutar-gap',
+                    method: 'POST',
+                    data: { _token: $('meta[name="csrf-token"]').attr('content') },
+                    success: function(res) {
+                        if (res.ok) {
+                            $.get('/riiss/evaluaciones/' + evaluacionId + '/gap', function(r2) {
+                                renderGapCompleto(r2.data);
+                            });
+                        }
+                    },
+                    error: function() {
+                        $('#modalGapBody').html('<div class="alert alert-warning">No se pudo ejecutar el análisis automáticamente. Intenté desde la vista de evaluación.</div>');
+                    }
+                });
+            } else {
+                renderGapCompleto(d);
+            }
+        }).fail(function() {
+            $('#modalGapBody').html('<div class="alert alert-danger">Error al conectar con el servidor.</div>');
+        });
+    } else {
+        $.get(url, function(r) {
+            if (!r.ok) { $('#modalGapBody').html('<div class="alert alert-danger">Error al cargar.</div>'); return; }
             renderCarteraEsperada(r.data);
-        }
-    }).fail(function() {
-        $('#modalGapBody').html('<div class="alert alert-danger">Error al conectar con el servidor.</div>');
-    });
+        }).fail(function() {
+            $('#modalGapBody').html('<div class="alert alert-danger">Error al conectar con el servidor.</div>');
+        });
+    }
 }
 
 function renderGapCompleto(d) {
