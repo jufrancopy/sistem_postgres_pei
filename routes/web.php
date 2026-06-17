@@ -489,6 +489,16 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('formularios.tipologias');
         Route::patch('formularios/preguntas/{pregunta}/mapeo', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'actualizarMapeo'])
             ->name('formularios.preguntas.mapeo');
+        Route::patch('formularios/preguntas/{pregunta}', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'updatePregunta'])
+            ->name('formularios.preguntas.update');
+        Route::delete('formularios/preguntas/{pregunta}', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'destroyPregunta'])
+            ->name('formularios.preguntas.destroy');
+        Route::get('formularios/secciones/{seccion}', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'showSeccion'])
+            ->name('formularios.secciones.show');
+        Route::patch('formularios/secciones/{seccion}', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'updateSeccion'])
+            ->name('formularios.secciones.update');
+        Route::post('formularios/secciones/{seccion}/preguntas', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'storePregunta'])
+            ->name('formularios.secciones.preguntas.store');
 
         // Mis asignaciones (evaluador)
         Route::get('mis-asignaciones', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'misAsignaciones'])

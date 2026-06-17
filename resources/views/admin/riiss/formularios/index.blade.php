@@ -185,6 +185,7 @@ function renderSecciones(secciones) {
         html +=   '<div class="d-flex align-items-center" style="gap:8px">';
         html +=     '<small class="text-muted">' + s.total_preguntas + ' pregunta' + (s.total_preguntas !== 1 ? 's' : '') + '</small>';
         html +=     '<small class="text-success">' + mapeadasEnSec + ' mapeadas</small>';
+        html +=     '<a href="/riiss/formularios/secciones/' + s.id + '" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.75rem" onclick="event.stopPropagation()"><i class="fa fa-edit mr-1"></i>Editar</a>';
         html +=   '</div>';
         html += '</div>';
         html += '<div class="seccion-body">';

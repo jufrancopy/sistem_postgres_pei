@@ -12,6 +12,87 @@ use Illuminate\Http\Request;
 class FormularioController extends Controller
 {
     /**
+     * GET /riiss/formularios/secciones/{seccion}
+     * Detalle de una sección con CRUD de preguntas.
+     */
+    public function showSeccion(FormularioSeccion $seccion)
+    {
+        $seccion->load(['preguntas' => fn($q) => $q->orderBy('orden')]);
+        return view('admin.riiss.formularios.seccion', compact('seccion'));
+    }
+
+    /**
+     * PATCH /riiss/formularios/secciones/{seccion}
+     * Editar nombre de sección.
+     */
+    public function updateSeccion(Request $request, FormularioSeccion $seccion): JsonResponse
+    {
+        $validated = $request->validate([
+            'seccion'     => 'required|string|max:200',
+            'sub_seccion' => 'nullable|string|max:200',
+        ]);
+        $seccion->update($validated);
+        return response()->json(['ok' => true, 'message' => 'Sección actualizada.']);
+    }
+
+    /**
+     * POST /riiss/formularios/secciones/{seccion}/preguntas
+     * Agregar pregunta a una sección.
+     */
+    public function storePregunta(Request $request, FormularioSeccion $seccion): JsonResponse
+    {
+        $validated = $request->validate([
+            'pregunta'      => 'required|string|max:1000',
+            'tipo_respuesta'=> 'required|in:si_no,si_no_na,texto,numero,lista,checklist',
+            'opciones'      => 'nullable|array',
+            'orden'         => 'nullable|integer',
+        ]);
+
+        $orden = $validated['orden'] ?? ($seccion->preguntas()->max('orden') + 1);
+
+        $pregunta = $seccion->preguntas()->create([
+            'pregunta'       => $validated['pregunta'],
+            'tipo_respuesta' => $validated['tipo_respuesta'],
+            'opciones'       => $validated['opciones'] ?? null,
+            'orden'          => $orden,
+            'activa'         => true,
+        ]);
+
+        return response()->json(['ok' => true, 'data' => $pregunta, 'message' => 'Pregunta agregada.'], 201);
+    }
+
+    /**
+     * PATCH /riiss/formularios/preguntas/{pregunta}
+     * Editar una pregunta.
+     */
+    public function updatePregunta(Request $request, FormularioPregunta $pregunta): JsonResponse
+    {
+        $validated = $request->validate([
+            'pregunta'      => 'sometimes|string|max:1000',
+            'tipo_respuesta'=> 'sometimes|in:si_no,si_no_na,texto,numero,lista,checklist',
+            'opciones'      => 'nullable|array',
+            'orden'         => 'nullable|integer',
+            'activa'        => 'nullable|boolean',
+        ]);
+        $pregunta->update($validated);
+        return response()->json(['ok' => true, 'message' => 'Pregunta actualizada.']);
+    }
+
+    /**
+     * DELETE /riiss/formularios/preguntas/{pregunta}
+     * Desactivar (soft) o eliminar una pregunta.
+     */
+    public function destroyPregunta(Request $request, FormularioPregunta $pregunta): JsonResponse
+    {
+        if ($request->get('force')) {
+            $pregunta->delete();
+            return response()->json(['ok' => true, 'message' => 'Pregunta eliminada.']);
+        }
+        $pregunta->update(['activa' => false]);
+        return response()->json(['ok' => true, 'message' => 'Pregunta desactivada.']);
+    }
+
+    /**
      * GET /riiss/formularios
      * Vista principal del módulo de formularios por nivel.
      */
