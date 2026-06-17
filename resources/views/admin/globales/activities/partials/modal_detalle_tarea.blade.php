@@ -2,7 +2,6 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content" style="border-radius:14px;overflow:hidden;border:none">
 
-            {{-- Header dinámico --}}
             <div id="detalle-header" style="padding:20px 24px 16px;position:relative">
                 <div class="d-flex align-items-start justify-content-between">
                     <div style="flex:1;min-width:0">
@@ -15,13 +14,11 @@
             </div>
 
             <div class="modal-body" style="padding:0">
-
                 <div class="row no-gutters">
 
                     {{-- Columna principal --}}
                     <div class="col-md-8" style="padding:20px 24px;border-right:1px solid #f1f5f9">
 
-                        {{-- Descripción --}}
                         <div class="mb-4">
                             <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-bottom:8px">
                                 <i class="fa fa-align-left mr-1"></i>Descripción
@@ -31,7 +28,6 @@
                             </div>
                         </div>
 
-                        {{-- Nota de cierre --}}
                         <div id="detalle-cierre-wrap" class="mb-4" style="display:none">
                             <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-bottom:8px">
                                 <i class="fa fa-check-circle mr-1 text-success"></i>Nota de cierre
@@ -42,17 +38,13 @@
                             </div>
                         </div>
 
-                        {{-- Evidencias --}}
                         <div class="mb-4">
                             <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-bottom:8px">
                                 <i class="fa fa-paperclip mr-1"></i>Evidencias
                             </div>
-                            <div id="detalle-evidencias">
-                                <span class="text-muted small">Sin evidencias</span>
-                            </div>
+                            <div id="detalle-evidencias"><span class="text-muted small">Sin evidencias</span></div>
                         </div>
 
-                        {{-- Comentarios --}}
                         <div>
                             <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-bottom:8px">
                                 <i class="fa fa-comments mr-1"></i>Comentarios
@@ -85,7 +77,17 @@
                             <div id="detalle-responsable" style="font-size:.85rem;font-weight:600;color:#1e293b">—</div>
                         </div>
 
-                        {{-- Vencimiento --}}
+                        {{-- Reasignar --}}
+                        <div class="mb-3" id="detalle-reasignar-wrap" style="display:none">
+                            <div style="font-size:.72rem;color:#94a3b8;margin-bottom:4px"><i class="fa fa-exchange-alt mr-1"></i>Reasignar a</div>
+                            <select id="detalle-reasignar-select" class="form-control form-control-sm" style="width:100%"></select>
+                            <button class="btn btn-sm btn-block mt-1" id="detalle-reasignar-btn"
+                                    style="background:#ede9fe;color:#5b21b6;border:none;border-radius:8px;font-size:.78rem;font-weight:600">
+                                <i class="fa fa-check mr-1"></i>Confirmar reasignación
+                            </button>
+                        </div>
+
+                        {{-- Fecha límite --}}
                         <div class="mb-3">
                             <div style="font-size:.72rem;color:#94a3b8;margin-bottom:4px"><i class="fa fa-clock mr-1"></i>Fecha límite</div>
                             <div id="detalle-vencimiento" style="font-size:.85rem;font-weight:600">—</div>
@@ -111,7 +113,9 @@
 var _detalleTaskId = null;
 var _statusBase    = "{{ url('admin/globales/activities/tareas') }}";
 var _comentBase    = "{{ url('admin/globales/activities/tareas') }}";
+var _getUsersUrl   = "{{ route('globales.get-users') }}";
 var _esGestor      = {{ auth()->user()->hasAnyRole(['Administrador', 'Gestor de Actividades']) ? 'true' : 'false' }};
+var _userId        = {{ auth()->id() }};
 
 var _statusMap = {
     0: { label: 'Pendiente',   bg: '#f59e0b' },
@@ -123,73 +127,91 @@ var _statusMap = {
 
 function abrirDetalleTask(taskId) {
     _detalleTaskId = taskId;
+    $('#modalDetalleTarea').modal('show');
+}
+
+$('#modalDetalleTarea').on('show.bs.modal', function() {
+    if (_detalleTaskId) renderDetalleBasico(_detalleTaskId);
+});
+
+function renderDetalleBasico(taskId) {
     // Limpiar
     $('#detalle-title').text('Cargando...');
     $('#detalle-desc').html('<span class="text-muted small"><i class="fa fa-spinner fa-spin mr-1"></i>Cargando...</span>');
-    $('#detalle-evidencias').html('<span class="text-muted small">...</span>');
     $('#detalle-comentarios-lista').html('<div class="text-center text-muted small py-2"><i class="fa fa-spinner fa-spin"></i></div>');
     $('#detalle-acciones').html('');
-    $('#modalDetalleTarea').modal('show');
+    $('#detalle-cierre-wrap').hide();
+    $('#detalle-reasignar-wrap').hide();
 
-    // Cargar datos
-    $.get(_statusBase + '/' + taskId + '/comentarios', function(r) {
-        renderDetalleTask(r);
-    }).fail(function() {
-        // Si no hay ruta de detalle completo, usar la info del card
-        renderDetalleBasico(taskId);
-    });
-}
+    // Tomar datos del card en el DOM
+    var $card     = $('[data-id="' + taskId + '"]').first();
+    var title     = $card.find('.task-title').clone().find('.fa-check-circle').remove().end().text().trim();
+    var desc      = $card.find('.task-desc').text().trim();
+    var etiq      = $card.find('.task-etiqueta').text().trim();
+    var cardColor = $card.css('border-left-color') || '#2563eb';
+    var status    = parseInt($card.closest('[data-status]').data('status'));
+    if (isNaN(status)) status = parseInt($card.data('status-val')) || 0;
 
-function renderDetalleTask(r) {
-    // Título y etiqueta
-    var task = r; // usamos los comentarios para obtener task_title
-    $('#detalle-title').text(r.task_title || 'Tarea');
+    // Responsable — leer el texto del <small> junto al avatar
+    var $avatarWrap = $card.find('.task-avatar').parent();
+    var responsable = $avatarWrap.find('small').text().trim() || $card.find('.task-avatar').next('small').text().trim();
+    if (!responsable) responsable = $card.find('[style*="text-overflow"]').text().trim();
+    if (!responsable) responsable = 'Sin asignar';
 
-    // Comentarios
-    renderComentariosDetalle(r.comentarios || []);
-
-    // Limpiar loading de desc/evidencias
-    $('#detalle-desc').html('<span class="text-muted fst-italic small">Haz clic en Editar para ver más detalles</span>');
-    $('#detalle-evidencias').html('<span class="text-muted small">Ver en el tablero</span>');
-}
-
-function renderDetalleBasico(taskId) {
-    // Tomar datos del card DOM
-    var $card = $('[data-id="' + taskId + '"]').first();
-    var title   = $card.find('.task-title').clone().find('.fa-check-circle').remove().end().text().trim();
-    var desc    = $card.find('.task-desc').text().trim();
-    var etiq    = $card.find('.task-etiqueta').text().trim();
-    var etiqBg  = $card.find('.task-etiqueta').css('background-color');
-    var nombre  = $card.find('.task-avatar').next('small').text().trim();
-    var vencEl  = $card.find('[style*="fa-clock"]').closest('span').text().trim();
-    var status  = parseInt($card.closest('[data-status]').data('status')) || 0;
-    var cardColor = $card.css('border-left-color');
+    // Fecha vencimiento — buscar el span con fa-clock
+    var fechaEl = $card.find('.fa-clock').closest('span');
+    var fechaTxt = fechaEl.length ? fechaEl.text().trim() : '—';
 
     // Header
-    var hdrColor = 'linear-gradient(135deg, #1e3a5f, #2563eb)';
-    if (etiqBg && etiqBg !== 'rgba(0, 0, 0, 0)') hdrColor = 'linear-gradient(135deg,' + etiqBg + ', #1e3a5f)';
-    $('#detalle-header').css('background', hdrColor);
+    $('#detalle-header').css('background', 'linear-gradient(135deg,' + cardColor + ',#1e3a5f)');
 
-    // Etiqueta
     if (etiq) {
         $('#detalle-etiqueta-wrap').html('<span style="font-size:.7rem;font-weight:700;padding:2px 10px;border-radius:20px;background:rgba(255,255,255,.2);color:#fff">' + etiq + '</span>');
+    } else {
+        $('#detalle-etiqueta-wrap').html('');
     }
 
     $('#detalle-title').text(title || 'Sin título');
 
-    // Status
     var st = _statusMap[status] || _statusMap[0];
     $('#detalle-status-wrap').html('<span style="font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.2);color:#fff">' + st.label + '</span>');
     $('#detalle-estado-badge').html('<span style="font-size:.78rem;font-weight:700;padding:4px 12px;border-radius:20px;background:' + st.bg + '20;color:' + st.bg + ';border:1px solid ' + st.bg + '40">' + st.label + '</span>');
 
     // Descripción
-    $('#detalle-desc').text(desc || '').closest('div').find('.fst-italic').remove();
-    if (!desc) $('#detalle-desc').html('<span class="text-muted fst-italic small">Sin descripción</span>');
+    if (desc) {
+        $('#detalle-desc').text(desc);
+    } else {
+        $('#detalle-desc').html('<span class="text-muted fst-italic small">Sin descripción</span>');
+    }
 
     // Responsable
-    $('#detalle-responsable').text(nombre || 'Sin asignar');
+    $('#detalle-responsable').text(responsable);
 
-    // Comentarios
+    // Fecha
+    if (fechaTxt && fechaTxt !== '—') {
+        var color = fechaEl.css('color') || '#1e293b';
+        $('#detalle-vencimiento').html('<span style="color:' + color + '">' + fechaTxt + '</span>');
+    } else {
+        $('#detalle-vencimiento').text('Sin fecha');
+    }
+
+    // Mostrar opción de reasignación si es gestor o es la tarea del usuario
+    var assignedText = $card.find('[style*="text-overflow"]').text().trim();
+    var asignedToMe  = $card.find('.task-avatar').text().trim() !== '?' && responsable !== 'Sin asignar';
+
+    if (_esGestor || asignedToMe) {
+        $('#detalle-reasignar-wrap').show();
+        iniciarSelectReasignar(responsable);
+    }
+
+    // Nota de cierre
+    var cierreNota = $card.find('.fa-comment-alt.text-success').closest('div').find('em').text().trim();
+    if (cierreNota) {
+        $('#detalle-cierre-wrap').show();
+        $('#detalle-cierre-nota').text(cierreNota);
+    }
+
+    // Cargar comentarios
     $.get(_comentBase + '/' + taskId + '/comentarios', function(r) {
         renderComentariosDetalle(r.comentarios || []);
     });
@@ -204,6 +226,61 @@ function renderDetalleBasico(taskId) {
     $('#detalle-acciones').html(accionesHtml);
 }
 
+// ── Reasignación ──────────────────────────────────────────────────────────────
+function iniciarSelectReasignar(responsableActual) {
+    var $sel = $('#detalle-reasignar-select');
+    $sel.empty();
+
+    if ($.fn.select2) {
+        if ($sel.hasClass('select2-hidden-accessible')) $sel.select2('destroy');
+        $sel.select2({
+            placeholder: 'Buscar usuario...',
+            allowClear: true,
+            dropdownParent: $('#modalDetalleTarea'),
+            ajax: {
+                url: _getUsersUrl, dataType: 'json', delay: 250,
+                processResults: function(data) {
+                    return { results: $.map(data, function(u) { return { id: u.id, text: u.name }; }) };
+                }
+            }
+        });
+    }
+}
+
+$('#detalle-reasignar-btn').on('click', function() {
+    var nuevoId = $('#detalle-reasignar-select').val();
+    var nuevoNombre = $('#detalle-reasignar-select option:selected').text();
+    if (!nuevoId || !_detalleTaskId) return;
+
+    var $btn = $(this).prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i>Reasignando...');
+
+    $.ajax({
+        url: '/admin/globales/activities/' + window.activityId + '/tareas',
+        method: 'POST',
+        data: {
+            _token:      $('meta[name="csrf-token"]').attr('content'),
+            _method:     'PUT',
+            task_id:     _detalleTaskId,
+            assigned_to: nuevoId,
+        },
+        success: function(r) {
+            if (r.success) {
+                $('#detalle-responsable').text(nuevoNombre);
+                $('#detalle-reasignar-wrap').hide();
+                toastr.success('Tarea reasignada a ' + nuevoNombre);
+                // Actualizar el card en el tablero
+                var $card = $('[data-id="' + _detalleTaskId + '"]').first();
+                $card.find('[style*="text-overflow"]').text(nuevoNombre);
+                var initials = nuevoNombre.substring(0,2).toUpperCase();
+                $card.find('.task-avatar').text(initials);
+            }
+        },
+        error: function() { toastr.error('Error al reasignar'); },
+        complete: function() { $btn.prop('disabled', false).html('<i class="fa fa-check mr-1"></i>Confirmar reasignación'); }
+    });
+});
+
+// ── Comentarios ───────────────────────────────────────────────────────────────
 function renderComentariosDetalle(comentarios) {
     if (!comentarios.length) {
         $('#detalle-comentarios-lista').html('<div class="text-muted small text-center py-2" id="detalle-no-comments">Sin comentarios aún</div>');
@@ -224,7 +301,6 @@ function renderComentariosDetalle(comentarios) {
     $('#detalle-comentarios-lista').scrollTop($('#detalle-comentarios-lista')[0].scrollHeight);
 }
 
-// Enviar comentario desde modal detalle
 $('#detalle-comment-send, #detalle-comment-input').on('click keydown', function(e) {
     if (e.type === 'keydown' && e.key !== 'Enter') return;
     if (e.type === 'click' && $(this).attr('id') !== 'detalle-comment-send') return;
@@ -253,7 +329,6 @@ $('#detalle-comment-send, #detalle-comment-input').on('click keydown', function(
     });
 });
 
-// Eliminar comentario desde modal detalle
 $(document).on('click', '.detalle-del-comment', function() {
     var cId = $(this).data('id');
     var $row = $(this).closest('[data-comment-id]');
@@ -264,7 +339,6 @@ $(document).on('click', '.detalle-del-comment', function() {
     });
 });
 
-// Acciones desde modal detalle
 $(document).on('click', '.editTaskBtn-detalle', function() {
     var id = $(this).data('id');
     $('#modalDetalleTarea').modal('hide');
@@ -290,10 +364,5 @@ $(document).on('click', '.btn-delete-task-detalle', function() {
             });
         });
     }, 300);
-});
-
-// Al abrir el modal cargar los datos del card
-$('#modalDetalleTarea').on('show.bs.modal', function() {
-    if (_detalleTaskId) renderDetalleBasico(_detalleTaskId);
 });
 </script>
