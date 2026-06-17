@@ -41,7 +41,14 @@
 
         {{-- Selector de tipología --}}
         <div class="mb-4">
-            <h6 class="font-weight-bold mb-2"><i class="fa fa-filter mr-1"></i>Filtrar por tipología</h6>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="font-weight-bold mb-0"><i class="fa fa-filter mr-1"></i>Filtrar por tipología</h6>
+                <div id="btnEditarTipologia" style="display:none">
+                    <a id="linkEditarTipologia" href="#" class="btn btn-sm btn-outline-danger">
+                        <i class="fa fa-edit mr-1"></i>Editar reglas de esta tipología
+                    </a>
+                </div>
+            </div>
             <div class="d-flex flex-wrap" style="gap:8px" id="tipologiaBtns">
                 <button class="tipologia-btn active" onclick="seleccionarTipologia('')">
                     <i class="fa fa-th mr-1"></i>Todas
@@ -150,6 +157,12 @@ function seleccionarTipologia(tip) {
     tipologiaActual = tip;
     $('.tipologia-btn').removeClass('active');
     event.target.classList.add('active');
+    if (tip) {
+        $('#linkEditarTipologia').attr('href', '/riiss/formularios/tipologias/' + encodeURIComponent(tip));
+        $('#btnEditarTipologia').show();
+    } else {
+        $('#btnEditarTipologia').hide();
+    }
     cargarSecciones();
 }
 

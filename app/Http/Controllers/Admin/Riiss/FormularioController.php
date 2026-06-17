@@ -165,6 +165,52 @@ class FormularioController extends Controller
     }
 
     /**
+     * GET /riiss/formularios/tipologias/{tipologia}
+     * Vista de edición de reglas de una tipología.
+     */
+    public function showTipologia(string $tipologia)
+    {
+        $tipologia = urldecode($tipologia);
+        $secciones = FormularioSeccion::with(['reglas' => fn($q) => $q->where('tipologia_clasificacion', $tipologia)])
+            ->where('activa', true)
+            ->orderBy('orden')
+            ->get()
+            ->map(fn($s) => [
+                'id'          => $s->id,
+                'nombre'      => $s->sub_seccion ? "{$s->seccion} > {$s->sub_seccion}" : $s->seccion,
+                'seccion'     => $s->seccion,
+                'sub_seccion' => $s->sub_seccion,
+                'regla'       => $s->reglas->first(),
+            ]);
+
+        return view('admin.riiss.formularios.tipologia', compact('tipologia', 'secciones'));
+    }
+
+    /**
+     * POST /riiss/formularios/tipologias/{tipologia}/reglas
+     * Guardar todas las reglas de una tipología de una vez.
+     */
+    public function updateTipologia(Request $request, string $tipologia): JsonResponse
+    {
+        $tipologia = urldecode($tipologia);
+        $reglas = $request->input('reglas', []);
+
+        foreach ($reglas as $seccionId => $valores) {
+            ReglaSeccionFormulario::updateOrCreate(
+                ['tipologia_clasificacion' => $tipologia, 'formulario_seccion_id' => $seccionId],
+                [
+                    'aplica'    => !empty($valores['aplica']),
+                    'requerida' => !empty($valores['requerida']),
+                    'condicion' => $valores['condicion'] ?? null,
+                    'nota'      => "Regla para {$tipologia}",
+                ]
+            );
+        }
+
+        return response()->json(['ok' => true, 'message' => 'Reglas actualizadas correctamente.']);
+    }
+
+    /**
      * GET /riiss/formularios/tipologias
      * Lista de tipologías disponibles con sus complejidades.
      */
