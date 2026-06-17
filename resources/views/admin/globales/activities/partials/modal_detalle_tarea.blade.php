@@ -143,87 +143,78 @@ function renderDetalleBasico(taskId) {
     $('#detalle-cierre-wrap').hide();
     $('#detalle-reasignar-wrap').hide();
 
-    // Tomar datos del card en el DOM
-    var $card     = $('[data-id="' + taskId + '"]').first();
-    var title     = $card.find('.task-title').clone().find('.fa-check-circle').remove().end().text().trim();
-    var desc      = $card.find('.task-desc').text().trim();
-    var etiq      = $card.find('.task-etiqueta').text().trim();
-    var cardColor = $card.css('border-left-color') || '#2563eb';
-    var status    = parseInt($card.closest('[data-status]').data('status'));
-    if (isNaN(status)) status = parseInt($card.data('status-val')) || 0;
+    $.get(_statusBase + '/' + taskId + '/detalle', function(response) {
+        if (!response.ok || !response.data) {
+            $('#detalle-title').text('Error cargando tarea');
+            $('#detalle-desc').html('<span class="text-danger small">No se pudo obtener la información de la tarea.</span>');
+            return;
+        }
 
-    // Responsable — leer el texto del <small> junto al avatar
-    var $avatarWrap = $card.find('.task-avatar').parent();
-    var responsable = $avatarWrap.find('small').text().trim() || $card.find('.task-avatar').next('small').text().trim();
-    if (!responsable) responsable = $card.find('[style*="text-overflow"]').text().trim();
-    if (!responsable) responsable = 'Sin asignar';
+        var data = response.data;
+        var st = _statusMap[data.status] || _statusMap[0];
+        var cardColor = data.color || '#2563eb';
 
-    // Fecha vencimiento — buscar el span con fa-clock
-    var fechaEl = $card.find('.fa-clock').closest('span');
-    var fechaTxt = fechaEl.length ? fechaEl.text().trim() : '—';
+        $('#detalle-header').css('background', 'linear-gradient(135deg,' + cardColor + ',#1e3a5f)');
+        if (data.etiqueta) {
+            $('#detalle-etiqueta-wrap').html('<span style="font-size:.7rem;font-weight:700;padding:2px 10px;border-radius:20px;background:rgba(255,255,255,.2);color:#fff">' + $('<div>').text(data.etiqueta).html() + '</span>');
+        } else {
+            $('#detalle-etiqueta-wrap').html('');
+        }
 
-    // Header
-    $('#detalle-header').css('background', 'linear-gradient(135deg,' + cardColor + ',#1e3a5f)');
+        $('#detalle-title').text(data.title || 'Sin título');
+        $('#detalle-status-wrap').html('<span style="font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.2);color:#fff">' + st.label + '</span>');
+        $('#detalle-estado-badge').html('<span style="font-size:.78rem;font-weight:700;padding:4px 12px;border-radius:20px;background:' + st.bg + '20;color:' + st.bg + ';border:1px solid ' + st.bg + '40">' + st.label + '</span>');
 
-    if (etiq) {
-        $('#detalle-etiqueta-wrap').html('<span style="font-size:.7rem;font-weight:700;padding:2px 10px;border-radius:20px;background:rgba(255,255,255,.2);color:#fff">' + etiq + '</span>');
-    } else {
-        $('#detalle-etiqueta-wrap').html('');
-    }
+        if (data.details) {
+            $('#detalle-desc').text(data.details);
+        } else {
+            $('#detalle-desc').html('<span class="text-muted fst-italic small">Sin descripción</span>');
+        }
 
-    $('#detalle-title').text(title || 'Sin título');
+        $('#detalle-responsable').text(data.responsable || 'Sin asignar');
+        $('#detalle-vencimiento').text(data.fecha_vencimiento || 'Sin fecha');
 
-    var st = _statusMap[status] || _statusMap[0];
-    $('#detalle-status-wrap').html('<span style="font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.2);color:#fff">' + st.label + '</span>');
-    $('#detalle-estado-badge').html('<span style="font-size:.78rem;font-weight:700;padding:4px 12px;border-radius:20px;background:' + st.bg + '20;color:' + st.bg + ';border:1px solid ' + st.bg + '40">' + st.label + '</span>');
+        if (_esGestor || data.assigned_to === _userId) {
+            $('#detalle-reasignar-wrap').show();
+            iniciarSelectReasignar(data.responsable || 'Sin asignar');
+        }
 
-    // Descripción
-    if (desc) {
-        $('#detalle-desc').text(desc);
-    } else {
-        $('#detalle-desc').html('<span class="text-muted fst-italic small">Sin descripción</span>');
-    }
+        if (data.completion_note) {
+            $('#detalle-cierre-wrap').show();
+            $('#detalle-cierre-nota').text(data.completion_note);
+            $('#detalle-cierre-meta').text(data.completed_by ? 'Completada por ' + data.completed_by + ' · ' + (data.completed_at || '') : 'Completada');
+        }
 
-    // Responsable
-    $('#detalle-responsable').text(responsable);
+        if (data.evidencias && data.evidencias.length) {
+            var evidenciasHtml = '<div class="list-group list-group-flush">';
+            data.evidencias.forEach(function(evidence) {
+                evidenciasHtml += '<a href="' + evidence.url + '" target="_blank" class="d-flex justify-content-between align-items-start list-group-item list-group-item-action p-2" style="border-radius:10px;margin-bottom:6px">'
+                    + '<div><div style="font-weight:600;color:#0f172a">' + $('<div>').text(evidence.label).html() + '</div>'
+                    + '<small class="text-muted">' + $('<div>').text(evidence.type).html() + ' · ' + $('<div>').text(evidence.autor || 'Usuario').html() + '</small></div>'
+                    + '<i class="fa fa-external-link-alt" style="font-size:.72rem;color:#64748b"></i>'
+                    + '</a>';
+            });
+            evidenciasHtml += '</div>';
+            $('#detalle-evidencias').html(evidenciasHtml);
+        } else {
+            $('#detalle-evidencias').html('<span class="text-muted small">Sin evidencias</span>');
+        }
 
-    // Fecha
-    if (fechaTxt && fechaTxt !== '—') {
-        var color = fechaEl.css('color') || '#1e293b';
-        $('#detalle-vencimiento').html('<span style="color:' + color + '">' + fechaTxt + '</span>');
-    } else {
-        $('#detalle-vencimiento').text('Sin fecha');
-    }
+        renderComentariosDetalle(data.comentarios || []);
 
-    // Mostrar opción de reasignación si es gestor o es la tarea del usuario
-    var assignedText = $card.find('[style*="text-overflow"]').text().trim();
-    var asignedToMe  = $card.find('.task-avatar').text().trim() !== '?' && responsable !== 'Sin asignar';
-
-    if (_esGestor || asignedToMe) {
-        $('#detalle-reasignar-wrap').show();
-        iniciarSelectReasignar(responsable);
-    }
-
-    // Nota de cierre
-    var cierreNota = $card.find('.fa-comment-alt.text-success').closest('div').find('em').text().trim();
-    if (cierreNota) {
-        $('#detalle-cierre-wrap').show();
-        $('#detalle-cierre-nota').text(cierreNota);
-    }
-
-    // Cargar comentarios
-    $.get(_comentBase + '/' + taskId + '/comentarios', function(r) {
-        renderComentariosDetalle(r.comentarios || []);
+        var accionesHtml = '';
+        if (_esGestor) {
+            accionesHtml += '<button class="btn btn-sm btn-block editTaskBtn-detalle" data-id="' + taskId + '" style="background:#ede9fe;color:#5b21b6;border:none;border-radius:8px;font-size:.8rem;font-weight:600;padding:8px"><i class="fa fa-pen mr-2"></i>Editar tarea</button>';
+            accionesHtml += '<button class="btn btn-sm btn-block btn-add-evidence-detalle" data-id="' + taskId + '" style="background:#f0fdf4;color:#065f46;border:none;border-radius:8px;font-size:.8rem;font-weight:600;padding:8px"><i class="fa fa-paperclip mr-2"></i>Agregar evidencia</button>';
+            accionesHtml += '<button class="btn btn-sm btn-block btn-delete-task-detalle" data-id="' + taskId + '" style="background:#fee2e2;color:#991b1b;border:none;border-radius:8px;font-size:.8rem;font-weight:600;padding:8px"><i class="fa fa-trash mr-2"></i>Eliminar tarea</button>';
+        }
+        $('#detalle-acciones').html(accionesHtml);
+    }).fail(function() {
+        $('#detalle-title').text('Error cargando tarea');
+        $('#detalle-desc').html('<span class="text-danger small">No se pudo obtener la información de la tarea.</span>');
+        $('#detalle-evidencias').html('<span class="text-muted small">Sin evidencias</span>');
+        $('#detalle-comentarios-lista').html('<div class="text-center text-danger small py-2">Error al cargar comentarios</div>');
     });
-
-    // Acciones
-    var accionesHtml = '';
-    if (_esGestor) {
-        accionesHtml += '<button class="btn btn-sm btn-block editTaskBtn-detalle" data-id="' + taskId + '" style="background:#ede9fe;color:#5b21b6;border:none;border-radius:8px;font-size:.8rem;font-weight:600;padding:8px"><i class="fa fa-pen mr-2"></i>Editar tarea</button>';
-        accionesHtml += '<button class="btn btn-sm btn-block btn-add-evidence-detalle" data-id="' + taskId + '" style="background:#f0fdf4;color:#065f46;border:none;border-radius:8px;font-size:.8rem;font-weight:600;padding:8px"><i class="fa fa-paperclip mr-2"></i>Agregar evidencia</button>';
-        accionesHtml += '<button class="btn btn-sm btn-block btn-delete-task-detalle" data-id="' + taskId + '" style="background:#fee2e2;color:#991b1b;border:none;border-radius:8px;font-size:.8rem;font-weight:600;padding:8px"><i class="fa fa-trash mr-2"></i>Eliminar tarea</button>';
-    }
-    $('#detalle-acciones').html(accionesHtml);
 }
 
 // ── Reasignación ──────────────────────────────────────────────────────────────

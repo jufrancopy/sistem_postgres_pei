@@ -183,6 +183,55 @@ class ActivityController extends Controller
         ]);
     }
 
+    public function detalleTarea($taskId)
+    {
+        $task = ActivityTask::with(['assignedTo', 'completedBy', 'evidences.user', 'comments.user'])->findOrFail($taskId);
+
+        $venc = null; $vencColor = null;
+        if ($task->fecha_vencimiento && $task->status !== 2) {
+            $dias = now()->startOfDay()->diffInDays($task->fecha_vencimiento->startOfDay(), false);
+            if ($dias < 0)       { $vencColor = '#ef4444'; $venc = 'Vencida hace ' . abs($dias) . 'd'; }
+            elseif ($dias === 0) { $vencColor = '#ef4444'; $venc = '¡Vence hoy!'; }
+            elseif ($dias <= 3)  { $vencColor = '#f97316'; $venc = 'Vence en ' . $dias . 'd'; }
+            else                 { $vencColor = '#22c55e'; $venc = $task->fecha_vencimiento->format('d/m/Y'); }
+        }
+
+        return response()->json([
+            'ok'   => true,
+            'data' => [
+                'id'               => $task->id,
+                'title'            => $task->title,
+                'details'          => $task->details,
+                'etiqueta'         => $task->etiqueta,
+                'color'            => $task->color ?? '#6b7280',
+                'status'           => $task->status,
+                'assigned_to'      => $task->assigned_to,
+                'responsable'      => $task->assignedTo?->name ?? 'Sin asignar',
+                'completion_note'  => $task->completion_note,
+                'completed_by'     => $task->completedBy?->name,
+                'completed_at'     => $task->completed_at?->format('d/m/Y H:i'),
+                'fecha_vencimiento'=> $venc,
+                'fecha_color'      => $vencColor,
+                'evidencias'       => $task->evidences->map(fn($e) => [
+                    'id'    => $e->id,
+                    'type'  => $e->type,
+                    'label' => $e->label,
+                    'value' => $e->value,
+                    'url'   => $e->type === 'url' ? $e->value : asset('storage/' . $e->value),
+                    'autor' => $e->user?->name,
+                ]),
+                'comentarios' => $task->comments->map(fn($c) => [
+                    'id'         => $c->id,
+                    'comentario' => $c->comentario,
+                    'autor'      => $c->user->name,
+                    'initials'   => strtoupper(substr($c->user->name, 0, 2)),
+                    'fecha'      => $c->created_at->format('d/m H:i'),
+                    'es_mio'     => $c->user_id === Auth::id(),
+                ]),
+            ],
+        ]);
+    }
+
     public function storeComentario(Request $request, $taskId)
     {
         $request->validate(['comentario' => 'required|string|max:1000']);
