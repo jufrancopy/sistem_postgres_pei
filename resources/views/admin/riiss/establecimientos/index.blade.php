@@ -403,7 +403,7 @@ function renderTarjetas(items) {
                 </div>
                 <div class="est-footer">
                     <div class="flex-grow-1">${evalBadge}</div>
-                    <button class="btn btn-info btn-circle btn-sm mr-1" onclick="verDetalle('${e.id}','${e.nombre.replace(/''''''''g,"\\\\'")}')" title="Ver detalle"><i class="fa fa-eye"></i></button>
+                    <button class="btn btn-info btn-circle btn-sm mr-1" onclick="verDetalle('${e.id}','${e.nombre.replace(/'/g,"\\'")}')" title="Ver detalle"><i class="fa fa-eye"></i></button>
                     <button class="btn btn-warning btn-circle btn-sm mr-1" onclick="abrirEditar('${e.id}')" title="Editar"><i class="fa fa-edit"></i></button>
                     <a href="/riiss/evaluaciones/nueva/${e.id}" class="btn btn-sm btn-danger" title="Iniciar evaluacion"><i class="fa fa-clipboard-check mr-1"></i>Evaluar</a>
                 </div>
@@ -433,7 +433,7 @@ function renderTabla(items) {
             <td><small>${e.departamento}</small></td>
             <td>${evalBadge}</td>
                 <td class="text-center">
-                <button class="btn btn-info btn-circle btn-sm mr-1" onclick="verDetalle('${e.id}','${e.nombre.replace(/''''''''g,"\\\\'")}')" title="Ver detalle"><i class="fa fa-eye"></i></button>
+                <button class="btn btn-info btn-circle btn-sm mr-1" onclick="verDetalle('${e.id}','${e.nombre.replace(/'/g,"\\'")}')" title="Ver detalle"><i class="fa fa-eye"></i></button>
                 <button class="btn btn-warning btn-circle btn-sm mr-1" onclick="abrirEditar('${e.id}')" title="Editar"><i class="fa fa-edit"></i></button>
                 <a href="/riiss/evaluaciones/nueva/${e.id}" class="btn btn-danger btn-circle btn-sm" title="Evaluar"><i class="fa fa-clipboard-check"></i></a>
             </td>
