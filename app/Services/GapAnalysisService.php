@@ -84,6 +84,22 @@ class GapAnalysisService
         $preguntasRelacionadas = $this->buscarPreguntasRelacionadas($servicio, $est);
 
         if ($preguntasRelacionadas->isEmpty()) {
+            GapAnalysisItem::create([
+                'evaluacion_id'           => $evaluacionId,
+                'cartera_servicio_id'     => $servicio->id,
+                'servicio_nombre'         => $servicio->servicio,
+                'grupo_servicio'          => $servicio->grupo_servicio,
+                'tipo_prestacion'         => $servicio->tipo_prestacion,
+                'especialidad'            => $servicio->especialidad_1,
+                'requerido_para_nivel'    => $servicio->requerido,
+                'estado'                  => 'no_verificable',
+                'criterio_evaluacion'     => 'No existen preguntas en el formulario que validen este servicio.',
+                'preguntas_relacionadas'  => [],
+                'respuestas_relacionadas' => [],
+                'accion_recomendada'      => "Verificar presencialmente la disponibilidad de: {$servicio->servicio}.",
+                'prioridad'               => $servicio->requerido ? 1 : 0,
+            ]);
+
             return $this->crearResultado(
                 $servicio, 'no_verificable', [], [],
                 'No existen preguntas en el formulario que validen este servicio.',
@@ -95,6 +111,22 @@ class GapAnalysisService
         $respuestasRelacionadas = $respuestas->only($preguntaIds);
 
         if ($respuestasRelacionadas->isEmpty()) {
+            GapAnalysisItem::create([
+                'evaluacion_id'           => $evaluacionId,
+                'cartera_servicio_id'     => $servicio->id,
+                'servicio_nombre'         => $servicio->servicio,
+                'grupo_servicio'          => $servicio->grupo_servicio,
+                'tipo_prestacion'         => $servicio->tipo_prestacion,
+                'especialidad'            => $servicio->especialidad_1,
+                'requerido_para_nivel'    => $servicio->requerido,
+                'estado'                  => 'pendiente',
+                'criterio_evaluacion'     => 'Preguntas identificadas pero sin respuestas registradas.',
+                'preguntas_relacionadas'  => $preguntaIds,
+                'respuestas_relacionadas' => [],
+                'accion_recomendada'      => "Completar las respuestas para: {$servicio->servicio}.",
+                'prioridad'               => 1,
+            ]);
+
             return $this->crearResultado(
                 $servicio, 'pendiente', $preguntaIds, [],
                 'Preguntas identificadas pero sin respuestas registradas.',
