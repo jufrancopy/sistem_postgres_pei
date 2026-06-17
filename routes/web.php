@@ -480,6 +480,16 @@ Route::group(['middleware' => 'auth'], function () {
         Route::delete('asignaciones/{asignacion}', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'destroy'])
             ->name('asignaciones.destroy');
 
+        // Formularios por nivel
+        Route::get('formularios', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'index'])
+            ->name('formularios.index');
+        Route::get('formularios/datos', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'datos'])
+            ->name('formularios.datos');
+        Route::get('formularios/tipologias', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'tipologias'])
+            ->name('formularios.tipologias');
+        Route::patch('formularios/preguntas/{pregunta}/mapeo', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'actualizarMapeo'])
+            ->name('formularios.preguntas.mapeo');
+
         // Mis asignaciones (evaluador)
         Route::get('mis-asignaciones', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'misAsignaciones'])
             ->name('mis-asignaciones');
