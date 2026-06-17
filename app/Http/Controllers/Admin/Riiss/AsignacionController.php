@@ -29,7 +29,7 @@ class AsignacionController extends Controller
      */
     public function datos(Request $request): JsonResponse
     {
-        $query = Asignacion::with(['establecimiento', 'evaluador', 'asignadoPor', 'evaluacion'])
+        $query = Asignacion::with(['establecimiento', 'evaluador', 'asignadoPor'])
             ->orderByDesc('created_at');
 
         if ($request->filled('estado'))     $query->where('estado', $request->estado);
@@ -161,6 +161,12 @@ class AsignacionController extends Controller
 
     private function formatear(Asignacion $a): array
     {
+        // Buscar la evaluación más reciente del establecimiento
+        $evaluacion = Evaluacion::where('id_establecimiento', $a->id_establecimiento)
+            ->whereIn('estado', ['en_progreso', 'completada', 'borrador'])
+            ->latest()
+            ->first();
+
         return [
             'id'                 => $a->id,
             'establecimiento'    => $a->establecimiento->nombre_oficial ?? '—',
@@ -178,8 +184,9 @@ class AsignacionController extends Controller
             'estado_color'       => $a->estado_color,
             'instrucciones'      => $a->instrucciones,
             'notificado_at'      => $a->notificado_at?->format('d/m/Y H:i'),
-            'evaluacion_id'      => $a->evaluacion_id,
-            'evaluacion_progreso'=> $a->evaluacion?->porcentaje_cumplimiento,
+            'evaluacion_id'      => $evaluacion?->id,
+            'evaluacion_progreso'=> $evaluacion?->porcentaje_cumplimiento,
+            'evaluacion_estado'  => $evaluacion?->estado,
             'created_at'         => $a->created_at?->format('d/m/Y'),
         ];
     }
