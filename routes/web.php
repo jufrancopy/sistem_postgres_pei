@@ -491,6 +491,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('formularios.tipologias.show');
         Route::post('formularios/tipologias/{tipologia}/reglas', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'updateTipologia'])
             ->name('formularios.tipologias.update');
+        Route::patch('formularios/tipologias/{tipologia}/renombrar', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'renombrarTipologia'])
+            ->name('formularios.tipologias.renombrar');
         Route::patch('formularios/preguntas/{pregunta}/mapeo', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'actualizarMapeo'])
             ->name('formularios.preguntas.mapeo');
         Route::patch('formularios/preguntas/{pregunta}', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'updatePregunta'])

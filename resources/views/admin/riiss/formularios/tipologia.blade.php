@@ -35,9 +35,14 @@
                     La condición limita la sección a casos específicos del establecimiento.
                 </small>
             </div>
-            <button class="btn btn-danger" onclick="guardarTodo()">
-                <i class="fa fa-save mr-1"></i>Guardar cambios
-            </button>
+            <div style="gap:8px" class="d-flex">
+                <button class="btn btn-outline-secondary btn-sm" onclick="abrirRenombrar()">
+                    <i class="fa fa-edit mr-1"></i>Renombrar tipología
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="guardarTodo()">
+                    <i class="fa fa-save mr-1"></i>Guardar cambios
+                </button>
+            </div>
         </div>
 
         <div id="msgGuardar"></div>
@@ -95,16 +100,43 @@
 
     </div>
 </div>
+
+{{-- Modal renombrar --}}
+<div class="modal fade" id="modalRenombrar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header card-header-danger" style="background:linear-gradient(135deg,#c62828,#e91e63)">
+                <h5 class="modal-title text-white"><i class="fa fa-edit mr-2"></i>Renombrar tipología</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning py-2 small">
+                    <i class="fa fa-exclamation-triangle mr-1"></i>
+                    Esto actualizará el nombre en <strong>establecimientos</strong>, <strong>cartera de servicios</strong> y <strong>reglas del formulario</strong>.
+                </div>
+                <div class="form-group">
+                    <label class="small font-weight-bold">Nuevo nombre</label>
+                    <input type="text" id="nuevoNombre" class="form-control">
+                </div>
+                <div id="renombrarMsg"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button class="btn btn-danger" onclick="guardarRenombrar()"><i class="fa fa-save mr-1"></i>Renombrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
 <script>
-var UPDATE_URL = '/riiss/formularios/tipologias/{{ urlencode($tipologia) }}/reglas';
+var UPDATE_URL   = '/riiss/formularios/tipologias/{{ urlencode($tipologia) }}/reglas';
+var RENAME_URL   = '/riiss/formularios/tipologias/{{ urlencode($tipologia) }}/renombrar';
 var CSRF = '{{ csrf_token() }}';
 
-// Si se desmarca "aplica", deshabilitar requerida y condición
 function syncRequerida(chk) {
-    var id   = $(chk).data('id');
+    var id = $(chk).data('id');
     var aplica = chk.checked;
     $('[data-id="' + id + '"].chk-requerida').prop('disabled', !aplica);
     $('[data-id="' + id + '"].inp-condicion').prop('disabled', !aplica);
@@ -124,7 +156,6 @@ function guardarTodo() {
             condicion: $('[data-id="' + id + '"].inp-condicion').val() || null,
         };
     });
-
     $.ajax({
         url: UPDATE_URL, method: 'POST', contentType: 'application/json',
         data: JSON.stringify({ _token: CSRF, reglas: reglas }),
@@ -134,8 +165,34 @@ function guardarTodo() {
                 setTimeout(function() { $('#msgGuardar').html(''); }, 3000);
             }
         },
-        error: function() {
-            $('#msgGuardar').html('<div class="alert alert-danger py-2">Error al guardar.</div>');
+        error: function() { $('#msgGuardar').html('<div class="alert alert-danger py-2">Error al guardar.</div>'); }
+    });
+}
+
+function abrirRenombrar() {
+    $('#nuevoNombre').val('{{ $tipologia }}');
+    $('#renombrarMsg').html('');
+    $('#modalRenombrar').modal('show');
+}
+
+function guardarRenombrar() {
+    var nuevo = $('#nuevoNombre').val().trim();
+    if (!nuevo) return;
+    $.ajax({
+        url: RENAME_URL, method: 'POST', contentType: 'application/json',
+        data: JSON.stringify({ _token: CSRF, _method: 'PATCH', nuevo_nombre: nuevo }),
+        success: function(r) {
+            if (r.ok) {
+                $('#modalRenombrar').modal('hide');
+                // Redirigir a la nueva URL
+                window.location.href = '/riiss/formularios/tipologias/' + encodeURIComponent(nuevo);
+            } else {
+                $('#renombrarMsg').html('<div class="alert alert-danger py-2">' + r.message + '</div>');
+            }
+        },
+        error: function(xhr) {
+            var msg = xhr.responseJSON?.message || 'Error al renombrar.';
+            $('#renombrarMsg').html('<div class="alert alert-danger py-2">' + msg + '</div>');
         }
     });
 }

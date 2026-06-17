@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Admin\Riiss;
 
 use App\Http\Controllers\Controller;
+use App\Models\Riiss\CarteraServicio;
+use App\Models\Riiss\Establecimiento;
 use App\Models\Riiss\FormularioPregunta;
 use App\Models\Riiss\FormularioSeccion;
 use App\Models\Riiss\ReglaSeccionFormulario;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FormularioController extends Controller
 {
@@ -162,6 +165,32 @@ class FormularioController extends Controller
             'ok'   => true,
             'data' => $secciones->values(),
         ]);
+    }
+
+    /**
+     * PATCH /riiss/formularios/tipologias/{tipologia}/renombrar
+     * Renombra una tipología en todas las tablas relacionadas.
+     */
+    public function renombrarTipologia(Request $request, string $tipologia): JsonResponse
+    {
+        $tipologia = urldecode($tipologia);
+        $request->validate(['nuevo_nombre' => 'required|string|max:100']);
+        $nuevo = trim($request->nuevo_nombre);
+
+        if ($nuevo === $tipologia) {
+            return response()->json(['ok' => false, 'message' => 'El nombre es igual al actual.'], 422);
+        }
+
+        DB::transaction(function () use ($tipologia, $nuevo) {
+            ReglaSeccionFormulario::where('tipologia_clasificacion', $tipologia)
+                ->update(['tipologia_clasificacion' => $nuevo]);
+            Establecimiento::where('tipologia_clasificacion', $tipologia)
+                ->update(['tipologia_clasificacion' => $nuevo]);
+            CarteraServicio::where('tipologia_clasificacion', $tipologia)
+                ->update(['tipologia_clasificacion' => $nuevo]);
+        });
+
+        return response()->json(['ok' => true, 'message' => "Tipología renombrada a '{$nuevo}' en todas las tablas."]);
     }
 
     /**
