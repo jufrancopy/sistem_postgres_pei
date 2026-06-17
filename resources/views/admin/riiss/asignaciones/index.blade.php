@@ -98,7 +98,28 @@
     </div>
 </div>
 
+{{-- Modal Gap Analysis --}}
+<div class="modal fade" id="modalGap" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header" style="background:linear-gradient(135deg,#1e40af,#3b82f6)">
+                <h5 class="modal-title text-white">
+                    <i class="fa fa-chart-bar mr-2"></i>Comparación: Evaluación vs Cartera de Servicios
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body" id="modalGapBody">
+                <div class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Modal nueva asignación --}}
+
 <div class="modal fade" id="modalNuevaAsignacion" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -248,6 +269,7 @@ function renderTabla(items) {
             + '<td class="text-center">'
             + (a.evaluacion_id
                 ? '<a href="/riiss/evaluaciones/' + a.evaluacion_id + '" class="circle-btn circle-btn-success btn-sm mr-1" title="Ver evaluación"><i class="fa fa-eye"></i></a>'
+                + '<button class="circle-btn circle-btn-primary btn-sm mr-1" onclick="verGap(' + a.evaluacion_id + ')" title="Gap Analysis"><i class="fa fa-chart-bar"></i></button>'
                 : '')
             + '<button class="circle-btn circle-btn-info btn-sm mr-1" onclick="renotificar(' + a.id + ')" title="Reenviar email"><i class="fa fa-envelope"></i></button>'
             + (a.estado !== 'cancelada' && a.estado !== 'completada'
@@ -322,6 +344,77 @@ function cancelar(id) {
             mostrarToast('Asignación cancelada', 'success');
             cargarAsignaciones();
         }
+    });
+}
+
+function verGap(evaluacionId) {
+    $('#modalGapBody').html('<div class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i></div>');
+    $('#modalGap').modal('show');
+
+    $.get('/riiss/evaluaciones/' + evaluacionId + '/gap', function(r) {
+        if (!r.ok) { $('#modalGapBody').html('<div class="alert alert-danger">Error al cargar el análisis.</div>'); return; }
+        var d = r.data;
+        var colorClasif = { CUMPLE: '#065f46', CUMPLE_PARCIALMENTE: '#1e40af', NO_CUMPLE: '#991b1b' };
+        var bgClasif    = { CUMPLE: '#d1fae5', CUMPLE_PARCIALMENTE: '#dbeafe', NO_CUMPLE: '#fee2e2' };
+        var clasif      = d.clasificacion || '—';
+
+        var html = '<div class="row mb-4">';
+        // Tarjetas resumen
+        html += '<div class="col-md-3"><div class="card text-center border-0 shadow-sm"><div class="card-body py-3">'
+             + '<h2 class="mb-0 font-weight-bold" style="color:' + (colorClasif[clasif]||'#374151') + '">' + (d.porcentaje||0) + '%</h2>'
+             + '<small class="text-muted">Cumplimiento</small></div></div></div>';
+        html += '<div class="col-md-3"><div class="card text-center border-0 shadow-sm"><div class="card-body py-3">'
+             + '<h2 class="mb-0 font-weight-bold text-success">' + (d.resumen.cumple||0) + '</h2>'
+             + '<small class="text-muted">Cumplen</small></div></div></div>';
+        html += '<div class="col-md-3"><div class="card text-center border-0 shadow-sm"><div class="card-body py-3">'
+             + '<h2 class="mb-0 font-weight-bold text-danger">' + (d.resumen.no_cumple||0) + '</h2>'
+             + '<small class="text-muted">No cumplen</small></div></div></div>';
+        html += '<div class="col-md-3"><div class="card text-center border-0 shadow-sm"><div class="card-body py-3">'
+             + '<h2 class="mb-0 font-weight-bold text-warning">' + (d.resumen.no_verificable||0) + '</h2>'
+             + '<small class="text-muted">No verificables</small></div></div></div>';
+        html += '</div>';
+
+        // Badge clasificación
+        html += '<div class="text-center mb-4"><span class="px-4 py-2 rounded font-weight-bold" style="background:' + (bgClasif[clasif]||'#f3f4f6') + ';color:' + (colorClasif[clasif]||'#374151') + ';font-size:1rem">'
+             + clasif.replace(/_/g,' ') + '</span></div>';
+
+        // Tabla por grupos
+        if (d.por_grupo && d.por_grupo.length) {
+            html += '<h6 class="font-weight-bold mb-2"><i class="fa fa-layer-group mr-1"></i>Por grupo de servicios</h6>';
+            html += '<div class="table-responsive mb-4"><table class="table table-sm table-hover">';
+            html += '<thead class="thead-light"><tr><th>Grupo</th><th class="text-center">Total</th><th class="text-center text-success">Cumple</th><th class="text-center text-danger">No cumple</th><th class="text-center text-warning">No verif.</th><th>Barra</th></tr></thead><tbody>';
+            d.por_grupo.forEach(function(g) {
+                var pct = g.total > 0 ? Math.round((g.cumple / g.total) * 100) : 0;
+                var barColor = pct >= 90 ? '#22c55e' : pct >= 70 ? '#3b82f6' : '#ef4444';
+                html += '<tr><td><strong>' + (g.grupo||'Sin grupo') + '</strong></td>'
+                     + '<td class="text-center">' + g.total + '</td>'
+                     + '<td class="text-center text-success font-weight-bold">' + g.cumple + '</td>'
+                     + '<td class="text-center text-danger font-weight-bold">' + g.no_cumple + '</td>'
+                     + '<td class="text-center text-warning font-weight-bold">' + g.no_verificable + '</td>'
+                     + '<td style="min-width:100px"><div style="height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:' + barColor + ';transition:width .4s"></div></div><small>' + pct + '%</small></td>'
+                     + '</tr>';
+            });
+            html += '</tbody></table></div>';
+        }
+
+        // Acciones críticas
+        if (d.acciones_criticas && d.acciones_criticas.length) {
+            html += '<h6 class="font-weight-bold mb-2"><i class="fa fa-exclamation-triangle mr-1 text-danger"></i>Servicios críticos faltantes</h6>';
+            html += '<div class="table-responsive"><table class="table table-sm">';
+            html += '<thead class="thead-light"><tr><th>Servicio</th><th>Grupo</th><th>Acción recomendada</th></tr></thead><tbody>';
+            d.acciones_criticas.forEach(function(a) {
+                html += '<tr><td><strong>' + a.servicio + '</strong></td><td><small>' + (a.grupo||'—') + '</small></td><td><small class="text-muted">' + (a.accion||'—') + '</small></td></tr>';
+            });
+            html += '</tbody></table></div>';
+        }
+
+        if (!d.por_grupo || !d.por_grupo.length) {
+            html += '<div class="alert alert-info">No hay datos de gap analysis. Ejecute el análisis primero desde la vista de evaluación.</div>';
+        }
+
+        $('#modalGapBody').html(html);
+    }).fail(function() {
+        $('#modalGapBody').html('<div class="alert alert-danger">Error al conectar con el servidor.</div>');
     });
 }
 
