@@ -260,6 +260,7 @@ Route::group(['middleware' => ['auth']], function () {
         // ── Tareas: Administrador y Gestor de Actividades ─────────────────
         Route::middleware(['role:Administrador|Gestor de Actividades'])->group(function () {
             Route::post('activities/{activityId}/tareas', 'Admin\Globales\ActivityController@storeTarea')->name('activities.tareas.store');
+            Route::patch('activities/tareas/{taskId}/reasignar', 'Admin\Globales\ActivityController@reasignarTarea')->name('activities.tareas.reasignar');
             Route::delete('activities/tareas/{taskId}', 'Admin\Globales\ActivityController@destroyTarea')->name('activities.tareas.destroy');
             Route::post('activities/tareas/{taskId}/evidencias', 'Admin\Globales\ActivityController@storeEvidencia')->name('activities.tareas.evidencias.store');
             Route::delete('activities/tareas/evidencias/{evidenceId}', 'Admin\Globales\ActivityController@destroyEvidencia')->name('activities.tareas.evidencias.destroy');

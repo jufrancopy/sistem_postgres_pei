@@ -100,7 +100,7 @@
     </div>
 
     {{-- ── Barra de acciones ── --}}
-    <div class="task-action-bar" onclick="event.stopPropagation()">
+    <div class="task-action-bar">
 
         {{-- Mover --}}
         @if($puedeMover)
@@ -119,29 +119,28 @@
         {{-- Comentarios --}}
         <button class="tac-btn {{ $comentariosCount > 0 ? 'tac-amber' : 'tac-gray' }} btn-toggle-comments"
                 data-task-id="{{ $task->id }}"
-                title="Comentarios{{ $comentariosCount > 0 ? ' ('.$comentariosCount.')' : '' }}"
-                onclick="event.stopPropagation()">
+                title="Comentarios{{ $comentariosCount > 0 ? ' ('.$comentariosCount.')' : '' }}">
             <i class="fa fa-comment-alt"></i>
             @if($comentariosCount > 0)<span style="font-size:.6rem">{{ $comentariosCount }}</span>@endif
         </button>
 
         @if($puedeGestionar)
         {{-- Evidencia --}}
-        <button class="tac-btn tac-gray btn-add-evidence" data-id="{{ $task->id }}" title="Evidencia" onclick="event.stopPropagation()">
+        <button class="tac-btn tac-gray btn-add-evidence" data-id="{{ $task->id }}" title="Evidencia">
             <i class="fa fa-paperclip"></i>
         </button>
         {{-- Notificar --}}
         @if($task->assignedTo)
-        <button class="tac-btn tac-teal btn-notificar-tarea" data-id="{{ $task->id }}" title="Notificar" onclick="event.stopPropagation()">
+        <button class="tac-btn tac-teal btn-notificar-tarea" data-id="{{ $task->id }}" title="Notificar">
             <i class="fa fa-paper-plane"></i>
         </button>
         @endif
         {{-- Editar --}}
-        <button class="tac-btn tac-violet editTaskBtn" data-id="{{ $task->id }}" title="Editar" onclick="event.stopPropagation()">
+        <button class="tac-btn tac-violet editTaskBtn" data-id="{{ $task->id }}" title="Editar">
             <i class="fa fa-pen"></i>
         </button>
         {{-- Eliminar --}}
-        <button class="tac-btn tac-red btn-delete-task" data-id="{{ $task->id }}" title="Eliminar" onclick="event.stopPropagation()">
+        <button class="tac-btn tac-red btn-delete-task" data-id="{{ $task->id }}" title="Eliminar">
             <i class="fa fa-trash"></i>
         </button>
         @endif

@@ -109,7 +109,12 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
+function abrirDetalleTask(taskId) {
+    _detalleTaskId = taskId;
+    $('#modalDetalleTarea').modal('show');
+}
 var _detalleTaskId = null;
 var _statusBase    = "{{ url('admin/globales/activities/tareas') }}";
 var _comentBase    = "{{ url('admin/globales/activities/tareas') }}";
@@ -124,11 +129,6 @@ var _statusMap = {
     2: { label: 'Finalizado',  bg: '#10b981' },
     4: { label: 'Priorizado',  bg: '#f97316' },
 };
-
-function abrirDetalleTask(taskId) {
-    _detalleTaskId = taskId;
-    $('#modalDetalleTarea').modal('show');
-}
 
 $('#modalDetalleTarea').on('show.bs.modal', function() {
     if (_detalleTaskId) renderDetalleBasico(_detalleTaskId);
@@ -246,12 +246,10 @@ $('#detalle-reasignar-btn').on('click', function() {
     var $btn = $(this).prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i>Reasignando...');
 
     $.ajax({
-        url: '/admin/globales/activities/' + window.activityId + '/tareas',
-        method: 'POST',
+        url: _statusBase + '/' + _detalleTaskId + '/reasignar',
+        method: 'PATCH',
         data: {
             _token:      $('meta[name="csrf-token"]').attr('content'),
-            _method:     'PUT',
-            task_id:     _detalleTaskId,
             assigned_to: nuevoId,
         },
         success: function(r) {
@@ -357,3 +355,4 @@ $(document).on('click', '.btn-delete-task-detalle', function() {
     }, 300);
 });
 </script>
+@endpush

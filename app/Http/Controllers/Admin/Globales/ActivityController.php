@@ -88,6 +88,20 @@ class ActivityController extends Controller
 
     // ── Tareas del tablero ────────────────────────────────────────
 
+    public function reasignarTarea(Request $request, $taskId)
+    {
+        $task = ActivityTask::findOrFail($taskId);
+        $user = Auth::user();
+
+        if (!$user->hasAnyRole(['Administrador', 'Gestor de Actividades']) && $task->assigned_to !== $user->id) {
+            return response()->json(['error' => 'Sin permiso'], 403);
+        }
+
+        $task->update(['assigned_to' => $request->assigned_to]);
+
+        return response()->json(['success' => 'Tarea reasignada', 'task' => $task->load('assignedTo')]);
+    }
+
     public function storeTarea(Request $request, $activityId)
     {
         $request->validate(['title' => 'required'], ['title.required' => 'El título es requerido']);
@@ -189,7 +203,7 @@ class ActivityController extends Controller
 
         $venc = null; $vencColor = null;
         if ($task->fecha_vencimiento && $task->status !== 2) {
-            $dias = now()->startOfDay()->diffInDays($task->fecha_vencimiento->startOfDay(), false);
+            $dias = now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($task->fecha_vencimiento)->startOfDay(), false);
             if ($dias < 0)       { $vencColor = '#ef4444'; $venc = 'Vencida hace ' . abs($dias) . 'd'; }
             elseif ($dias === 0) { $vencColor = '#ef4444'; $venc = '¡Vence hoy!'; }
             elseif ($dias <= 3)  { $vencColor = '#f97316'; $venc = 'Vence en ' . $dias . 'd'; }

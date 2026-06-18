@@ -304,7 +304,7 @@
 
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
 var activityId   = {{ $activity->id }};
 var storeUrl     = "{{ route('globales.activities.tareas.store', $activity->id) }}";
@@ -730,4 +730,4 @@ $('#completionModal').on('hidden.bs.modal', function() {
     pendingDrag = null;
 });
 </script>
-@endsection
+@endpush
