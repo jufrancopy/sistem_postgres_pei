@@ -142,7 +142,7 @@
 {{-- Tablero completo --}}
 <div class="row">
     @foreach($columnas as $status => $col)
-    @php $colTareas = $activity->tasks->where('status', $status); @endphp
+    @php $colTareas = $activity->tasks->where('status', $status)->where('assigned_to', $userId); @endphp
     <div class="col-md mb-4" style="min-width:220px">
         <div style="border-radius:10px 10px 0 0;background:{{ $col['color'] }};padding:10px 14px;color:#fff;font-weight:700;font-size:.84rem;display:flex;align-items:center;justify-content:space-between">
             <span><i class="fa {{ $col['icon'] }} mr-2"></i>{{ $col['label'] }}</span>
