@@ -463,7 +463,10 @@ class ActivityController extends Controller
     {
         $userId = Auth::id();
         $actividades = Activity::with(['responsibles', 'tasks'])
-            ->whereHas('responsibles', fn($q) => $q->where('users.id', $userId))
+            ->where(function($q) use ($userId) {
+                $q->whereHas('responsibles', fn($q) => $q->where('users.id', $userId))
+                  ->orWhereHas('tasks', fn($q) => $q->where('assigned_to', $userId));
+            })
             ->latest()->get();
 
         return view('admin.globales.activities.mis_actividades', compact('actividades', 'userId'));

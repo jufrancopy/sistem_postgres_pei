@@ -174,7 +174,7 @@
 
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
 var statusBase = "{{ url('admin/globales/activities/tareas') }}";
 var statuses   = @json(array_keys($columnas));
@@ -220,4 +220,4 @@ function moveTask(taskId, newStatus, note) {
 }
 @include('admin.globales.activities.partials.scripts_comentarios')
 </script>
-@endsection
+@endpush
