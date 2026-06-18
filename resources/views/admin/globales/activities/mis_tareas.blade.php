@@ -176,6 +176,7 @@
 
 @push('scripts')
 <script>
+var activityId = {{ $activity->id }};
 var statusBase = "{{ url('admin/globales/activities/tareas') }}";
 var statuses   = @json(array_keys($columnas));
 $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });

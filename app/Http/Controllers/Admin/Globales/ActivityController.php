@@ -207,7 +207,7 @@ class ActivityController extends Controller
             if ($dias < 0)       { $vencColor = '#ef4444'; $venc = 'Vencida hace ' . abs($dias) . 'd'; }
             elseif ($dias === 0) { $vencColor = '#ef4444'; $venc = '¡Vence hoy!'; }
             elseif ($dias <= 3)  { $vencColor = '#f97316'; $venc = 'Vence en ' . $dias . 'd'; }
-            else                 { $vencColor = '#22c55e'; $venc = $task->fecha_vencimiento->format('d/m/Y'); }
+            else                 { $vencColor = '#22c55e'; $venc = \Carbon\Carbon::parse($task->fecha_vencimiento)->format('d/m/Y'); }
         }
 
         return response()->json([
