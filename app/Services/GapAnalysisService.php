@@ -223,7 +223,7 @@ class GapAnalysisService
         }
 
         $preguntaIds            = $preguntasRelacionadas->pluck('id')->map(fn($id) => (int)$id)->toArray();
-        $respuestasRelacionadas = $respuestas->only($preguntaIds);
+        $respuestasRelacionadas = collect($preguntaIds)->map(fn($id) => $respuestas->get($id))->filter();
 
         if ($respuestasRelacionadas->isEmpty()) {
             \Log::info('GAP_PENDIENTE', [
