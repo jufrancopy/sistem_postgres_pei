@@ -122,6 +122,20 @@
     padding: 18px;
     overflow-x: auto;
 }
+.gantt-chart-wrapper {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 18px;
+}
+#ganttChart {
+    width: 100%;
+    min-height: 360px;
+}
+#ganttEmpty {
+    font-size: .95rem;
+    color: #64748b;
+}
 .gantt-header {
     font-size: 1rem;
     font-weight: 700;
@@ -346,56 +360,13 @@
 
 {{-- ── TABLERO GANTT ── --}}
 <div id="vistaGantt" style="display:none">
-    @php
-        $timelineTasks = $activity->tasks->filter(fn($t) => $t->fecha_inicio || $t->fecha_vencimiento);
-        $timelineStart = $timelineTasks->min(function ($t) {
-            if ($t->fecha_inicio) return \Carbon\Carbon::parse($t->fecha_inicio)->startOfDay();
-            if ($t->fecha_vencimiento) return \Carbon\Carbon::parse($t->fecha_vencimiento)->startOfDay();
-            return null;
-        });
-        $timelineEnd = $timelineTasks->max(function ($t) {
-            if ($t->fecha_vencimiento) return \Carbon\Carbon::parse($t->fecha_vencimiento)->startOfDay();
-            if ($t->fecha_inicio) return \Carbon\Carbon::parse($t->fecha_inicio)->startOfDay();
-            return null;
-        });
-        $daysTotal = $timelineStart && $timelineEnd ? $timelineStart->diffInDays($timelineEnd) + 1 : 0;
-    @endphp
-    @if($timelineTasks->count() && $timelineStart && $timelineEnd)
-    <div class="gantt-container">
+    <div class="gantt-chart-wrapper">
         <div class="gantt-header">Cronograma de tareas</div>
-        <div class="gantt-row" style="font-weight:700;color:#334155">
-            <div class="gantt-task">Tarea</div>
-            <div class="gantt-meta">Inicio / Vencimiento</div>
+        <div id="ganttChart" style="width:100%; min-height:360px;"></div>
+        <div id="ganttEmpty" class="text-center text-muted py-5" style="display:none;">
+            No hay tareas con fecha de inicio o vencimiento. Agregá fechas para ver el cronograma.
         </div>
-        @foreach($timelineTasks as $task)
-            @php
-                $start = $task->fecha_inicio
-                    ? \Carbon\Carbon::parse($task->fecha_inicio)->startOfDay()
-                    : ($task->fecha_vencimiento ? \Carbon\Carbon::parse($task->fecha_vencimiento)->startOfDay() : $timelineStart);
-                $end = $task->fecha_vencimiento
-                    ? \Carbon\Carbon::parse($task->fecha_vencimiento)->startOfDay()
-                    : $start;
-                $offsetDays = $timelineStart->diffInDays($start);
-                $durationDays = max(1, $start->diffInDays($end) + 1);
-                $barLeft = $offsetDays * 22;
-                $barWidth = $durationDays * 22;
-            @endphp
-            <div class="gantt-row">
-                <div class="gantt-task">
-                    <strong>{{ Str::limit($task->title, 40) }}</strong>
-                    <div class="gantt-meta">{{ $task->assignedTo?->name ?? 'Sin responsable' }}</div>
-                </div>
-                <div class="gantt-bar-wrap">
-                    <div class="gantt-bar" style="left:{{ $barLeft }}px; width:{{ $barWidth }}px; background:{{ $task->color ?? '#6b7280' }}22; border:1px solid {{ $task->color ?? '#6b7280' }};">
-                        <span class="gantt-bar-label">{{ $task->fecha_inicio ? \Carbon\Carbon::parse($task->fecha_inicio)->format('d/m') : '—' }} — {{ $task->fecha_vencimiento ? \Carbon\Carbon::parse($task->fecha_vencimiento)->format('d/m') : '—' }}</span>
-                    </div>
-                </div>
-            </div>
-        @endforeach
     </div>
-    @else
-    <div class="text-center text-muted py-5">No hay tareas con fecha de inicio o vencimiento. Agregá fechas para ver el cronograma.</div>
-    @endif
 </div>
 
 {{-- ── MODALES ── --}}
@@ -433,7 +404,101 @@ $('#btnVistaGantt').click(function() {
     $('#vistaGantt').show(); $('#vistaEstado').hide(); $('#vistaEtiqueta').hide();
     $(this).addClass('btn-primary active').removeClass('btn-outline-secondary');
     $('#btnVistaEstado, #btnVistaEtiqueta').removeClass('btn-primary active').addClass('btn-outline-secondary');
+    renderGantt();
 });
+
+var ganttTasks = @json($activity->tasks
+    ->filter(fn($t) => $t->fecha_inicio || $t->fecha_vencimiento)
+    ->map(fn($t) => [
+        'id'       => 'task_' . $t->id,
+        'name'     => Str::limit($t->title, 50),
+        'resource' => $t->assignedTo?->name ?? 'Sin responsable',
+        'start'    => $t->fecha_inicio?->format('Y-m-d'),
+        'end'      => $t->fecha_vencimiento?->format('Y-m-d'),
+        'color'    => $t->color ?? '#6b7280',
+    ])->values());
+
+var ganttRendered = false;
+
+function parseDate(value) {
+    if (!value) return null;
+    var parts = value.split('-');
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+}
+
+function ensureGanttReady(callback) {
+    if (window.google && google.charts && google.visualization && google.visualization.Gantt) {
+        return callback();
+    }
+    google.charts.load('current', { packages: ['gantt'] });
+    google.charts.setOnLoadCallback(callback);
+}
+
+function renderGantt() {
+    if (ganttRendered) {
+        drawGanttChart();
+        return;
+    }
+
+    if (!ganttTasks.length) {
+        $('#ganttChart').hide();
+        $('#ganttEmpty').show();
+        return;
+    }
+
+    $('#ganttEmpty').hide();
+    $('#ganttChart').show();
+    ensureGanttReady(function() {
+        drawGanttChart();
+        ganttRendered = true;
+    });
+}
+
+function drawGanttChart() {
+    if (!ganttTasks.length) {
+        $('#ganttChart').hide();
+        $('#ganttEmpty').show();
+        return;
+    }
+
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Task ID');
+    data.addColumn('string', 'Task Name');
+    data.addColumn('string', 'Resource');
+    data.addColumn('date', 'Start');
+    data.addColumn('date', 'End');
+    data.addColumn('number', 'Duration');
+    data.addColumn('number', 'Percent Complete');
+    data.addColumn('string', 'Dependencies');
+
+    ganttTasks.forEach(function(task) {
+        var start = parseDate(task.start) || parseDate(task.end);
+        var end = parseDate(task.end) || parseDate(task.start);
+        if (!start || !end) return;
+        if (end < start) end = new Date(start);
+        if (start.getTime() === end.getTime()) {
+            end = new Date(start);
+            end.setDate(end.getDate() + 1);
+        }
+        data.addRow([task.id, task.name, task.resource, start, end, null, 0, null]);
+    });
+
+    var options = {
+        height: Math.max(300, ganttTasks.length * 48 + 80),
+        gantt: {
+            trackHeight: 32,
+            barCornerRadius: 4,
+            barHeight: 20,
+            arrow: { angle: 100, width: 2, color: '#64748b' },
+            palette: ganttTasks.map(function(task) {
+                return { color: task.color, dark: task.color };
+            })
+        }
+    };
+
+    var chart = new google.visualization.Gantt(document.getElementById('ganttChart'));
+    chart.draw(data, options);
+}
 
 // ── Etiquetas existentes (reutilizables) ─────────────────────────────────────
 var etiquetasActividad = @json(
