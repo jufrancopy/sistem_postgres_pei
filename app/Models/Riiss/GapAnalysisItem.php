@@ -11,7 +11,7 @@ class GapAnalysisItem extends Model
 
     protected $fillable = [
         'evaluacion_id', 'cartera_servicio_id', 'servicio_nombre',
-        'grupo_servicio', 'tipo_prestacion', 'especialidad',
+        'grupo_servicio', 'dimension', 'tipo_prestacion', 'especialidad',
         'requerido_para_nivel', 'estado', 'criterio_evaluacion',
         'preguntas_relacionadas', 'respuestas_relacionadas',
         'accion_recomendada', 'prioridad',
