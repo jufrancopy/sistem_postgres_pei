@@ -221,10 +221,15 @@ class GapAnalysisService
             return $this->crearResultado($servicio, 'no_verificable', [], [], 'Sin preguntas de validación.', 0);
         }
 
-        $preguntaIds            = $preguntasRelacionadas->pluck('id')->toArray();
+        $preguntaIds            = $preguntasRelacionadas->pluck('id')->map(fn($id) => (int)$id)->toArray();
         $respuestasRelacionadas = $respuestas->only($preguntaIds);
 
         if ($respuestasRelacionadas->isEmpty()) {
+            \Log::debug('GAP_PENDIENTE', [
+                'servicio'     => $servicio->servicio,
+                'preguntaIds'  => $preguntaIds,
+                'respKeys'     => $respuestas->keys()->take(5)->toArray(),
+            ]);
             GapAnalysisItem::create([
                 'evaluacion_id'           => $evaluacionId,
                 'cartera_servicio_id'     => $servicio->id,
