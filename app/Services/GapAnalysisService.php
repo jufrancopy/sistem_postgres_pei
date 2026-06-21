@@ -226,12 +226,6 @@ class GapAnalysisService
         $respuestasRelacionadas = collect($preguntaIds)->map(fn($id) => $respuestas->get($id))->filter();
 
         if ($respuestasRelacionadas->isEmpty()) {
-            \Log::info('GAP_PENDIENTE', [
-                'servicio'     => $servicio->servicio,
-                'preguntaIds'  => $preguntaIds,
-                'respTotal'    => $respuestas->count(),
-                'pregInResp'   => collect($preguntaIds)->filter(fn($id) => $respuestas->has($id))->values()->toArray(),
-            ]);
             GapAnalysisItem::create([
                 'evaluacion_id'           => $evaluacionId,
                 'cartera_servicio_id'     => $servicio->id,
