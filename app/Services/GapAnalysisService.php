@@ -90,12 +90,11 @@ class GapAnalysisService
     private function ejecutarDimensionHabilitacion(Evaluacion $evaluacion): array
     {
         $est        = $evaluacion->establecimiento;
-        $respuestas = $evaluacion->respuestas->keyBy('formulario_pregunta_id');
+        $respuestas = $evaluacion->respuestas->keyBy(fn($r) => (int) $r->formulario_pregunta_id);
         $contadores = ['cumple' => 0, 'no_cumple' => 0, 'no_verificable' => 0, 'no_aplica' => 0, 'pendiente' => 0];
         $resultados = [];
 
         $preguntas = FormularioPregunta::where('dimension', 'condiciones_habilitantes')
-            ->where('activa', true)
             ->whereIn('formulario_seccion_id',
                 $this->formularioService->seccionesAplicables($est)->pluck('id')
             )

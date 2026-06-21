@@ -219,7 +219,7 @@ function renderResumenGap(data) {
             <div class="col-6 mb-2 border-right">
                 <div class="small text-muted font-weight-bold mb-1">Cartera Servicios</div>
                 <div class="h4 font-weight-bold text-${c?.porcentaje >= 90 ? 'success' : c?.porcentaje >= 70 ? 'warning' : 'danger'}">${c?.porcentaje ?? 0}%</div>
-                <small class="text-muted">✅ ${c?.resumen?.cumple ?? 0} / ❌ ${c?.resumen?.no_cumple ?? 0}</small>
+                <small class="text-muted">✅ ${c?.resumen?.cumple ?? 0} / ❌ ${c?.resumen?.no_cumple ?? 0} / ⏳ ${c?.resumen?.pendiente ?? 0} / ⚠️ ${c?.resumen?.no_verificable ?? 0}</small>
             </div>
             <div class="col-6 mb-2">
                 <div class="small text-muted font-weight-bold mb-1">Habilitación</div>
