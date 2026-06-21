@@ -51,6 +51,15 @@
                                 <select name="assigned_to" id="task_assigned_to" style="width:100%"></select>
                             </div>
                         </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">
+                                    <i class="fa fa-calendar-plus mr-1 text-success"></i>Fecha de inicio
+                                </label>
+                                <input type="date" name="fecha_inicio" id="task_fecha_inicio" class="form-control">
+                            </div>
+                        </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="small font-weight-bold">

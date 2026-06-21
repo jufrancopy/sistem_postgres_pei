@@ -39,6 +39,7 @@
 {{-- ── CARD ── --}}
 <div class="task-card {{ $isDone ? 'completed-card' : '' }} {{ $vencColor === '#ef4444' ? 'task-vencida' : '' }}"
      data-id="{{ $task->id }}"
+     data-fecha-inicio="{{ $task->fecha_inicio?->format('Y-m-d') }}"
      style="border-left-color:{{ $cardColor }};{{ $vencColor === '#ef4444' && !$isDone ? 'box-shadow:0 0 0 2px #ef444430;' : '' }}">
 
     @if($modoColaborador && $esMia)

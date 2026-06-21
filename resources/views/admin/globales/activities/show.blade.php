@@ -209,6 +209,9 @@
         <button class="btn btn-sm btn-outline-secondary" id="btnVistaEtiqueta">
             <i class="fa fa-tag mr-1"></i>Por etiqueta
         </button>
+        <button class="btn btn-sm btn-outline-secondary" id="btnVistaGantt">
+            <i class="fa fa-stream mr-1"></i>Cronograma
+        </button>
     </div>
 </div>
 
@@ -294,6 +297,48 @@
     @endforelse
 </div>
 
+{{-- ── TABLERO GANTT ── --}}
+<div id="vistaGantt" style="display:none">
+    @php
+        $timelineTasks = $activity->tasks->filter(fn($t) => $t->fecha_inicio || $t->fecha_vencimiento);
+        $timelineStart = $timelineTasks->min(fn($t) => $t->fecha_inicio?->startOfDay() ?? $t->fecha_vencimiento?->startOfDay());
+        $timelineEnd = $timelineTasks->max(fn($t) => $t->fecha_vencimiento?->startOfDay() ?? $t->fecha_inicio?->startOfDay());
+        $daysTotal = $timelineStart && $timelineEnd ? $timelineStart->diffInDays($timelineEnd) + 1 : 0;
+    @endphp
+    @if($timelineTasks->count() && $timelineStart && $timelineEnd)
+    <div class="gantt-container">
+        <div class="gantt-header">Cronograma de tareas</div>
+        <div class="gantt-row" style="font-weight:700;color:#334155">
+            <div class="gantt-task">Tarea</div>
+            <div class="gantt-meta">Inicio / Vencimiento</div>
+        </div>
+        @foreach($timelineTasks as $task)
+            @php
+                $start = $task->fecha_inicio ? $task->fecha_inicio->startOfDay() : ($task->fecha_vencimiento ? $task->fecha_vencimiento->startOfDay() : $timelineStart);
+                $end = $task->fecha_vencimiento ? $task->fecha_vencimiento->startOfDay() : $start;
+                $offsetDays = $timelineStart->diffInDays($start);
+                $durationDays = max(1, $start->diffInDays($end) + 1);
+                $barLeft = $offsetDays * 22;
+                $barWidth = $durationDays * 22;
+            @endphp
+            <div class="gantt-row">
+                <div class="gantt-task">
+                    <strong>{{ Str::limit($task->title, 40) }}</strong>
+                    <div class="gantt-meta">{{ $task->assignedTo?->name ?? 'Sin responsable' }}</div>
+                </div>
+                <div class="gantt-bar-wrap">
+                    <div class="gantt-bar" style="left:{{ $barLeft }}px; width:{{ $barWidth }}px; background:{{ $task->color ?? '#6b7280' }}22; border:1px solid {{ $task->color ?? '#6b7280' }};">
+                        {{ $task->fecha_inicio?->format('d/m') ?? '—' }} — {{ $task->fecha_vencimiento?->format('d/m') ?? '—' }}
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+    @else
+    <div class="text-center text-muted py-5">No hay tareas con fecha de inicio o vencimiento. Agregá fechas para ver el cronograma.</div>
+    @endif
+</div>
+
 {{-- ── MODALES ── --}}
 @include('admin.globales.activities.partials.modal_tarea', ['activity' => $activity])
 @include('admin.globales.activities.partials.modal_completion')
@@ -316,14 +361,19 @@ $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('cont
 
 // ── Toggle vista ──────────────────────────────────────────────────────────────
 $('#btnVistaEstado').click(function() {
-    $('#vistaEstado').show(); $('#vistaEtiqueta').hide();
+    $('#vistaEstado').show(); $('#vistaEtiqueta').hide(); $('#vistaGantt').hide();
     $(this).addClass('btn-primary active').removeClass('btn-outline-secondary');
-    $('#btnVistaEtiqueta').removeClass('btn-primary active').addClass('btn-outline-secondary');
+    $('#btnVistaEtiqueta, #btnVistaGantt').removeClass('btn-primary active').addClass('btn-outline-secondary');
 });
 $('#btnVistaEtiqueta').click(function() {
-    $('#vistaEtiqueta').show(); $('#vistaEstado').hide();
+    $('#vistaEtiqueta').show(); $('#vistaEstado').hide(); $('#vistaGantt').hide();
     $(this).addClass('btn-primary active').removeClass('btn-outline-secondary');
-    $('#btnVistaEstado').removeClass('btn-primary active').addClass('btn-outline-secondary');
+    $('#btnVistaEstado, #btnVistaGantt').removeClass('btn-primary active').addClass('btn-outline-secondary');
+});
+$('#btnVistaGantt').click(function() {
+    $('#vistaGantt').show(); $('#vistaEstado').hide(); $('#vistaEtiqueta').hide();
+    $(this).addClass('btn-primary active').removeClass('btn-outline-secondary');
+    $('#btnVistaEstado, #btnVistaEtiqueta').removeClass('btn-primary active').addClass('btn-outline-secondary');
 });
 
 // ── Etiquetas existentes (reutilizables) ─────────────────────────────────────
@@ -430,20 +480,35 @@ $('#tareaForm').submit(function(e) {
 $('body').on('click', '.editTaskBtn', function() {
     var taskId = $(this).data('id');
     $.get(storeUrl.replace('/tareas', '') + '/../tareas/' + taskId + '/edit', function(data) {
-        // fallback: rellenar desde el card
+        if (data?.task) {
+            var task = data.task;
+            $('#tareaHeading').text('Editar Tarea');
+            $('#task_id').val(taskId);
+            $('#task_title').val(task.title);
+            $('#task_details').val(task.details || '');
+            $('#task_etiqueta').val(task.etiqueta || '');
+            $('#task_fecha_inicio').val(task.fecha_inicio || '');
+            $('#task_fecha_vencimiento').val(task.fecha_vencimiento || '');
+            initResponsableSelect(task.assigned_to, task.assignedTo?.name || '');
+            colorSeleccionado = task.color || '#6b7280';
+            renderPaleta();
+            cargarEtiquetasExistentes();
+            $('#tareaModal').modal('show');
+        }
+    }).fail(function() {
+        var $card = $('[data-id="' + taskId + '"]').first();
+        $('#tareaHeading').text('Editar Tarea');
+        $('#task_id').val(taskId);
+        $('#task_title').val($card.find('.task-title').clone().find('.fa-check-circle').remove().end().text().trim());
+        $('#task_details').val($card.find('.task-desc').text().trim());
+        $('#task_etiqueta').val($card.find('.task-etiqueta').text().trim());
+        $('#task_fecha_inicio').val($card.data('fecha-inicio') || '');
+        colorSeleccionado = $card.css('border-left-color') || '#6b7280';
+        renderPaleta();
+        initResponsableSelect(null, null);
+        cargarEtiquetasExistentes();
+        $('#tareaModal').modal('show');
     });
-    // Abrir modal de tarea relleno desde el DOM
-    var $card = $('[data-id="' + taskId + '"]').first();
-    $('#tareaHeading').text('Editar Tarea');
-    $('#task_id').val(taskId);
-    $('#task_title').val($card.find('.task-title').clone().find('.fa-check-circle').remove().end().text().trim());
-    $('#task_details').val($card.find('.task-desc').text().trim());
-    $('#task_etiqueta').val($card.find('.task-etiqueta').text().trim());
-    colorSeleccionado = $card.css('border-left-color') || '#6b7280';
-    renderPaleta();
-    initResponsableSelect(null, null);
-    cargarEtiquetasExistentes();
-    $('#tareaModal').modal('show');
 });
 
 // ── Editar tarea (POST con datos reales) ──────────────────────────────────────

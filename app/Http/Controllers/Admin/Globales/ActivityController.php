@@ -114,6 +114,7 @@ class ActivityController extends Controller
                 'details'           => $request->details,
                 'etiqueta'          => $request->etiqueta,
                 'color'             => $request->color ?? '#6b7280',
+                'fecha_inicio'     => $request->fecha_inicio ?: null,
                 'fecha_vencimiento' => $request->fecha_vencimiento ?: null,
                 'assigned_to'       => $request->assigned_to,
                 'status'            => $request->status ?? 0,
