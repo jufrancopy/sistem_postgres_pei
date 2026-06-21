@@ -294,9 +294,19 @@ class EvaluacionController extends Controller
     {
         $this->authorizeEvaluacion($evaluacion);
 
+        $est = $evaluacion->establecimiento;
+        $debug = [
+            'tipologia'        => $est->tipologia_clasificacion,
+            'complejidad'      => $est->complejidad,
+            'nivel_atencion'   => $est->nivel_atencion,
+            'grado_complejidad'=> $est->grado_complejidad,
+            'grado_type'       => gettype($est->grado_complejidad),
+            'servicios_count'  => $this->carteraService->serviciosRequeridos($est)->count(),
+        ];
+
         $resultado = $this->gapService->ejecutar($evaluacion);
 
-        return response()->json(['ok' => true, 'data' => $resultado]);
+        return response()->json(['ok' => true, 'data' => $resultado, 'debug' => $debug]);
     }
 
     /**
