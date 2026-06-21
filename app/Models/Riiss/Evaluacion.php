@@ -19,12 +19,14 @@ class Evaluacion extends Model
         'id_establecimiento', 'fecha_evaluacion', 'evaluador_nombre',
         'evaluadores', 'evaluador_telefono', 'evaluador_usuario_institucional',
         'estado', 'porcentaje_cumplimiento', 'clasificacion_resultado',
+        'pct_habilitacion', 'clasificacion_habilitacion',
         'observaciones_generales', 'metadata',
     ];
 
     protected $casts = [
         'fecha_evaluacion'        => 'date',
         'porcentaje_cumplimiento' => 'decimal:2',
+        'pct_habilitacion'        => 'decimal:2',
         'metadata'                => 'array',
         'evaluadores'             => 'array',
     ];

@@ -12,68 +12,186 @@ use Illuminate\Support\Collection;
 class GapAnalysisService
 {
     public function __construct(
-        private CarteraMatchingService  $carteraService,
+        private CarteraMatchingService   $carteraService,
         private FormularioDinamicoService $formularioService
     ) {}
 
     /**
-     * Ejecuta el análisis de brechas completo para una evaluación.
+     * Ejecuta el análisis completo en dos dimensiones.
      */
     public function ejecutar(Evaluacion $evaluacion): array
     {
-        $est              = $evaluacion->establecimiento;
-        $serviciosRequeridos = $this->carteraService->serviciosRequeridos($est);
-        $respuestas       = $evaluacion->respuestas->keyBy('formulario_pregunta_id');
-
-        // Limpiar gap anterior
         $evaluacion->gapAnalysis()->delete();
 
-        $resultados = [];
-        $contadores = ['cumple' => 0, 'no_cumple' => 0, 'no_verificable' => 0, 'no_aplica' => 0, 'pendiente' => 0];
+        $dimCartera      = $this->ejecutarDimensionCartera($evaluacion);
+        $dimHabilitacion = $this->ejecutarDimensionHabilitacion($evaluacion);
 
-        foreach ($serviciosRequeridos as $servicio) {
+        $clasificacionFinal = $this->clasificacionFinal(
+            $dimCartera['clasificacion'],
+            $dimHabilitacion['clasificacion']
+        );
+
+        $evaluacion->update([
+            'porcentaje_cumplimiento'  => $dimCartera['porcentaje'],
+            'clasificacion_resultado'  => $dimCartera['clasificacion'],
+            'pct_habilitacion'         => $dimHabilitacion['porcentaje'],
+            'clasificacion_habilitacion' => $dimHabilitacion['clasificacion'],
+        ]);
+
+        return [
+            'evaluacion_id'       => $evaluacion->id,
+            'establecimiento'     => $evaluacion->establecimiento->toResumenArray(),
+            'clasificacion_final' => $clasificacionFinal,
+            'cartera'             => $dimCartera,
+            'habilitacion'        => $dimHabilitacion,
+        ];
+    }
+
+    // ─── DIMENSIÓN A: CARTERA DE SERVICIOS ───────────────────────
+
+    private function ejecutarDimensionCartera(Evaluacion $evaluacion): array
+    {
+        $est             = $evaluacion->establecimiento;
+        $servicios       = $this->carteraService->serviciosRequeridos($est);
+        $respuestas      = $evaluacion->respuestas->keyBy('formulario_pregunta_id');
+        $contadores      = ['cumple' => 0, 'no_cumple' => 0, 'no_verificable' => 0, 'no_aplica' => 0, 'pendiente' => 0];
+        $resultados      = [];
+
+        foreach ($servicios as $servicio) {
             $resultado    = $this->evaluarServicio($servicio, $est, $respuestas, $evaluacion->id);
             $resultados[] = $resultado;
             $contadores[$resultado['estado']]++;
         }
 
-        // Calcular porcentaje
-        $total          = count($resultados);
+        $total           = count($resultados);
         $totalEvaluables = $total - ($contadores['no_aplica'] + $contadores['pendiente']);
-        $porcentaje     = $totalEvaluables > 0
+        $porcentaje      = $totalEvaluables > 0
             ? round(($contadores['cumple'] / $totalEvaluables) * 100, 2)
             : 0;
 
-        $clasificacion = match(true) {
-            $porcentaje >= 90 => 'CUMPLE',
-            $porcentaje >= 70 => 'CUMPLE_PARCIALMENTE',
-            default           => 'NO_CUMPLE',
-        };
-
-        $evaluacion->update([
-            'porcentaje_cumplimiento' => $porcentaje,
-            'clasificacion_resultado' => $clasificacion,
-        ]);
+        $clasificacion = $this->clasificar($porcentaje);
 
         return [
-            'evaluacion_id'    => $evaluacion->id,
-            'establecimiento'  => $est->toResumenArray(),
-            'resumen'          => [
-                'total_servicios_evaluados' => $total,
-                'cumple'                    => $contadores['cumple'],
-                'no_cumple'                 => $contadores['no_cumple'],
-                'no_verificable'            => $contadores['no_verificable'],
-                'no_aplica'                 => $contadores['no_aplica'],
-                'pendiente'                 => $contadores['pendiente'],
-                'porcentaje_cumplimiento'   => $porcentaje,
-                'clasificacion'             => $clasificacion,
-            ],
+            'porcentaje'        => $porcentaje,
+            'clasificacion'     => $clasificacion,
+            'resumen'           => array_merge($contadores, [
+                'total'    => $total,
+                'criticos' => collect($resultados)->where('prioridad', '>=', 2)->count(),
+            ]),
             'detalles'          => $resultados,
             'acciones_criticas' => collect($resultados)
                 ->filter(fn($r) => $r['prioridad'] >= 2 && $r['estado'] !== 'cumple')
                 ->values()->toArray(),
         ];
     }
+
+    // ─── DIMENSIÓN B: CONDICIONES HABILITANTES ───────────────────
+
+    private function ejecutarDimensionHabilitacion(Evaluacion $evaluacion): array
+    {
+        $est        = $evaluacion->establecimiento;
+        $respuestas = $evaluacion->respuestas->keyBy('formulario_pregunta_id');
+        $contadores = ['cumple' => 0, 'no_cumple' => 0, 'no_verificable' => 0, 'no_aplica' => 0, 'pendiente' => 0];
+        $resultados = [];
+
+        $preguntas = FormularioPregunta::where('dimension', 'condiciones_habilitantes')
+            ->where('activa', true)
+            ->whereIn('formulario_seccion_id',
+                $this->formularioService->seccionesAplicables($est)->pluck('id')
+            )
+            ->get();
+
+        foreach ($preguntas as $pregunta) {
+            $respuesta = $respuestas->get($pregunta->id);
+
+            if (!$respuesta) {
+                $estado    = 'pendiente';
+                $prioridad = 1;
+                $accion    = "Completar respuesta para: {$pregunta->pregunta}";
+            } else {
+                $estado    = $pregunta->evaluarRespuesta($respuesta->respuesta);
+                $prioridad = $estado === 'no_cumple' ? 2 : ($estado === 'no_verificable' ? 1 : 0);
+                $accion    = $estado !== 'cumple' ? "Verificar condición: {$pregunta->pregunta}" : null;
+            }
+
+            $contadores[$estado]++;
+
+            GapAnalysisItem::create([
+                'evaluacion_id'           => $evaluacion->id,
+                'cartera_servicio_id'     => null,
+                'servicio_nombre'         => $pregunta->pregunta,
+                'grupo_servicio'          => $pregunta->seccion->seccion ?? 'General',
+                'dimension'               => 'condiciones_habilitantes',
+                'tipo_prestacion'         => 'habilitacion',
+                'especialidad'            => null,
+                'requerido_para_nivel'    => true,
+                'estado'                  => $estado,
+                'criterio_evaluacion'     => $respuesta?->respuesta ?? 'Sin respuesta',
+                'preguntas_relacionadas'  => [$pregunta->id],
+                'respuestas_relacionadas' => $respuesta ? [[
+                    'pregunta'  => $pregunta->pregunta,
+                    'respuesta' => $respuesta->respuesta,
+                    'estado'    => $estado,
+                ]] : [],
+                'accion_recomendada'      => $accion,
+                'prioridad'               => $prioridad,
+            ]);
+
+            $resultados[] = [
+                'pregunta'  => $pregunta->pregunta,
+                'seccion'   => $pregunta->seccion->seccion ?? 'General',
+                'estado'    => $estado,
+                'prioridad' => $prioridad,
+                'icono'     => $this->icono($estado),
+                'accion'    => $accion,
+            ];
+        }
+
+        $total           = count($resultados);
+        $totalEvaluables = $total - ($contadores['no_aplica'] + $contadores['pendiente']);
+        $porcentaje      = $totalEvaluables > 0
+            ? round(($contadores['cumple'] / $totalEvaluables) * 100, 2)
+            : 0;
+
+        return [
+            'porcentaje'    => $porcentaje,
+            'clasificacion' => $this->clasificar($porcentaje),
+            'resumen'       => array_merge($contadores, ['total' => $total]),
+            'detalles'      => $resultados,
+        ];
+    }
+
+    // ─── HELPERS ─────────────────────────────────────────────────
+
+    private function clasificar(float $pct): string
+    {
+        return match(true) {
+            $pct >= 90 => 'CUMPLE',
+            $pct >= 70 => 'CUMPLE_PARCIALMENTE',
+            default    => 'NO_CUMPLE',
+        };
+    }
+
+    private function clasificacionFinal(string $cartera, string $habilitacion): string
+    {
+        if ($cartera === 'CUMPLE' && $habilitacion === 'CUMPLE') return 'APTO_HABILITACION';
+        if ($cartera === 'NO_CUMPLE') return 'NO_APTO';
+        return 'OBSERVADO';
+    }
+
+    private function icono(string $estado): string
+    {
+        return match($estado) {
+            'cumple'         => '✅',
+            'no_cumple'      => '❌',
+            'no_verificable' => '⚠️',
+            'no_aplica'      => '⬜',
+            'pendiente'      => '⏳',
+            default          => '❓',
+        };
+    }
+
+    // ─── EVALUACIÓN DE SERVICIO (dim cartera) ────────────────────
 
     private function evaluarServicio(
         CarteraServicio $servicio,
@@ -89,6 +207,7 @@ class GapAnalysisService
                 'cartera_servicio_id'     => $servicio->id,
                 'servicio_nombre'         => $servicio->servicio,
                 'grupo_servicio'          => $servicio->grupo_servicio,
+                'dimension'               => 'cartera_servicios',
                 'tipo_prestacion'         => $servicio->tipo_prestacion,
                 'especialidad'            => $servicio->especialidad_1,
                 'requerido_para_nivel'    => $servicio->requerido,
@@ -96,18 +215,14 @@ class GapAnalysisService
                 'criterio_evaluacion'     => 'No existen preguntas en el formulario que validen este servicio.',
                 'preguntas_relacionadas'  => [],
                 'respuestas_relacionadas' => [],
-                'accion_recomendada'      => "Verificar presencialmente la disponibilidad de: {$servicio->servicio}.",
+                'accion_recomendada'      => "Verificar presencialmente: {$servicio->servicio}.",
                 'prioridad'               => $servicio->requerido ? 1 : 0,
             ]);
 
-            return $this->crearResultado(
-                $servicio, 'no_verificable', [], [],
-                'No existen preguntas en el formulario que validen este servicio.',
-                0, null, $evaluacionId
-            );
+            return $this->crearResultado($servicio, 'no_verificable', [], [], 'Sin preguntas de validación.', 0);
         }
 
-        $preguntaIds          = $preguntasRelacionadas->pluck('id')->toArray();
+        $preguntaIds            = $preguntasRelacionadas->pluck('id')->toArray();
         $respuestasRelacionadas = $respuestas->only($preguntaIds);
 
         if ($respuestasRelacionadas->isEmpty()) {
@@ -116,106 +231,100 @@ class GapAnalysisService
                 'cartera_servicio_id'     => $servicio->id,
                 'servicio_nombre'         => $servicio->servicio,
                 'grupo_servicio'          => $servicio->grupo_servicio,
+                'dimension'               => 'cartera_servicios',
                 'tipo_prestacion'         => $servicio->tipo_prestacion,
                 'especialidad'            => $servicio->especialidad_1,
                 'requerido_para_nivel'    => $servicio->requerido,
                 'estado'                  => 'pendiente',
-                'criterio_evaluacion'     => 'Preguntas identificadas pero sin respuestas registradas.',
+                'criterio_evaluacion'     => 'Preguntas identificadas pero sin respuestas.',
                 'preguntas_relacionadas'  => $preguntaIds,
                 'respuestas_relacionadas' => [],
-                'accion_recomendada'      => "Completar las respuestas para: {$servicio->servicio}.",
+                'accion_recomendada'      => "Completar respuestas para: {$servicio->servicio}.",
                 'prioridad'               => 1,
             ]);
 
-            return $this->crearResultado(
-                $servicio, 'pendiente', $preguntaIds, [],
-                'Preguntas identificadas pero sin respuestas registradas.',
-                1, null, $evaluacionId
-            );
+            return $this->crearResultado($servicio, 'pendiente', $preguntaIds, [], 'Sin respuestas.', 1);
         }
 
-        $estados            = [];
-        $detallesRespuestas = [];
-        $hayNoCumple        = false;
-        $hayNoVerificable   = false;
+        $estados = [];
+        $detalles = [];
+        $hayNoCumple = false;
+        $hayNoVerificable = false;
 
         foreach ($preguntasRelacionadas as $pregunta) {
             $respuesta = $respuestas->get($pregunta->id);
             if (!$respuesta) continue;
 
-            $estadoRespuesta = $pregunta->evaluarRespuesta($respuesta->respuesta);
-            $estados[]       = $estadoRespuesta;
-            $detallesRespuestas[$pregunta->id] = [
+            $estadoResp = $pregunta->evaluarRespuesta($respuesta->respuesta);
+            $estados[]  = $estadoResp;
+            $detalles[$pregunta->id] = [
                 'pregunta'  => $pregunta->pregunta,
                 'respuesta' => $respuesta->respuesta,
-                'estado'    => $estadoRespuesta,
+                'estado'    => $estadoResp,
             ];
 
-            if ($estadoRespuesta === 'no_cumple')      $hayNoCumple      = true;
-            if ($estadoRespuesta === 'no_verificable') $hayNoVerificable = true;
+            if ($estadoResp === 'no_cumple')      $hayNoCumple      = true;
+            if ($estadoResp === 'no_verificable') $hayNoVerificable = true;
         }
 
-        if ($hayNoCumple) {
-            $estado   = 'no_cumple';
-            $prioridad = 2;
-        } elseif ($hayNoVerificable && !in_array('cumple', $estados)) {
-            $estado   = 'no_verificable';
-            $prioridad = 1;
-        } elseif (in_array('cumple', $estados)) {
-            $estado   = 'cumple';
-            $prioridad = 0;
-        } else {
-            $estado   = 'no_verificable';
-            $prioridad = 1;
-        }
+        $estado = match(true) {
+            $hayNoCumple                                       => 'no_cumple',
+            $hayNoVerificable && !in_array('cumple', $estados) => 'no_verificable',
+            in_array('cumple', $estados)                       => 'cumple',
+            default                                            => 'no_verificable',
+        };
 
-        $criterio = $this->generarCriterio($servicio, $detallesRespuestas);
-        $accion   = $this->generarAccion($servicio, $estado, $detallesRespuestas);
+        $prioridad = match($estado) {
+            'no_cumple'      => 2,
+            'no_verificable' => 1,
+            default          => 0,
+        };
+
+        $criterio = $this->generarCriterio($servicio, $detalles);
+        $accion   = $this->generarAccion($servicio, $estado, $detalles);
 
         GapAnalysisItem::create([
             'evaluacion_id'           => $evaluacionId,
             'cartera_servicio_id'     => $servicio->id,
             'servicio_nombre'         => $servicio->servicio,
             'grupo_servicio'          => $servicio->grupo_servicio,
+            'dimension'               => 'cartera_servicios',
             'tipo_prestacion'         => $servicio->tipo_prestacion,
             'especialidad'            => $servicio->especialidad_1,
             'requerido_para_nivel'    => $servicio->requerido,
             'estado'                  => $estado,
             'criterio_evaluacion'     => $criterio,
             'preguntas_relacionadas'  => $preguntaIds,
-            'respuestas_relacionadas' => $detallesRespuestas,
+            'respuestas_relacionadas' => $detalles,
             'accion_recomendada'      => $accion,
             'prioridad'               => $prioridad,
         ]);
 
-        return $this->crearResultado($servicio, $estado, $preguntaIds, $detallesRespuestas, $criterio, $prioridad, $accion, $evaluacionId);
+        return $this->crearResultado($servicio, $estado, $preguntaIds, $detalles, $criterio, $prioridad, $accion);
     }
 
     private function buscarPreguntasRelacionadas(CarteraServicio $servicio, Establecimiento $est): Collection
     {
         $seccionesAplicables = $this->formularioService->seccionesAplicables($est)->pluck('id');
         $query = FormularioPregunta::where('activa', true)
+            ->where('dimension', 'cartera_servicios')
             ->whereIn('formulario_seccion_id', $seccionesAplicables);
 
-        // Estrategia 1: Match directo por grupo
         if ($servicio->grupo_servicio) {
             $porGrupo = (clone $query)->where('servicio_cartera_grupo', $servicio->grupo_servicio)->get();
             if ($porGrupo->isNotEmpty()) return $porGrupo;
         }
 
-        // Estrategia 2: Match por especialidad
         if ($servicio->especialidad_1) {
             $porEsp = (clone $query)->where('especialidad_relacionada', $servicio->especialidad_1)->get();
             if ($porEsp->isNotEmpty()) return $porEsp;
         }
 
-        // Estrategia 3: Match por tags JSON
         if ($servicio->grupo_servicio) {
             $porTags = (clone $query)->whereJsonContains('tags_cartera', $servicio->grupo_servicio)->get();
             if ($porTags->isNotEmpty()) return $porTags;
         }
 
-        // Estrategia 4: Búsqueda textual
         $palabras = $this->extraerPalabrasClave($servicio->servicio);
         if (!empty($palabras)) {
             $textual = (clone $query)->where(function ($q) use ($palabras) {
@@ -243,8 +352,7 @@ class GapAnalysisService
         array $respuestas,
         string $criterio,
         int $prioridad,
-        ?string $accion = null,
-        int $evaluacionId = 0
+        ?string $accion = null
     ): array {
         return [
             'cartera_servicio_id' => $servicio->id,
@@ -254,14 +362,7 @@ class GapAnalysisService
             'especialidad'        => $servicio->especialidad_1,
             'requerido'           => $servicio->requerido,
             'estado'              => $estado,
-            'icono'               => match($estado) {
-                'cumple'         => '✅',
-                'no_cumple'      => '❌',
-                'no_verificable' => '⚠️',
-                'no_aplica'      => '⬜',
-                'pendiente'      => '⏳',
-                default          => '❓',
-            },
+            'icono'               => $this->icono($estado),
             'prioridad'           => $prioridad,
             'criterio'            => $criterio,
             'preguntas_evaluadas' => $preguntas,
@@ -272,9 +373,7 @@ class GapAnalysisService
 
     private function generarCriterio(CarteraServicio $servicio, array $respuestas): string
     {
-        if (empty($respuestas)) {
-            return "Servicio '{$servicio->servicio}' requerido para {$servicio->tipo_prestacion} - Sin preguntas evaluadas.";
-        }
+        if (empty($respuestas)) return "Servicio '{$servicio->servicio}' sin preguntas evaluadas.";
         $partes = ["Servicio: {$servicio->servicio}"];
         foreach ($respuestas as $r) {
             $icono    = match($r['estado']) { 'cumple' => '✅', 'no_cumple' => '❌', default => '⚠️' };
@@ -291,57 +390,84 @@ class GapAnalysisService
         if (!empty($noCumple)) {
             $items = array_map(fn($r) => "- \"{$r['pregunta']}\"", $noCumple);
             return "El establecimiento NO cuenta con los requisitos para: {$servicio->servicio}.\n"
-                . "Preguntas sin cumplir:\n" . implode("\n", $items)
-                . "\n\nAcción: Verificar infraestructura, equipamiento y RRHH necesarios.";
+                . implode("\n", $items)
+                . "\nAcción: Verificar infraestructura, equipamiento y RRHH necesarios.";
         }
 
-        if ($estado === 'no_verificable') {
-            return "No se pudo verificar la disponibilidad de: {$servicio->servicio}. Se requiere evaluación presencial o documentación adicional.";
-        }
-
-        return "Pendiente de evaluación para: {$servicio->servicio}.";
+        return $estado === 'no_verificable'
+            ? "No se pudo verificar: {$servicio->servicio}. Se requiere evaluación presencial."
+            : "Pendiente de evaluación para: {$servicio->servicio}.";
     }
 
-    /**
-     * Obtener el gap analysis ya persistido sin re-ejecutar.
-     */
+    // ─── OBTENER GAP PERSISTIDO ──────────────────────────────────
+
     public function obtenerGapPersistido(Evaluacion $evaluacion): array
     {
-        $items     = $evaluacion->gapAnalysis()->orderBy('prioridad', 'desc')->get();
-        $agrupados = $items->groupBy('grupo_servicio')->map(fn($grupo) => [
-            'grupo'          => $grupo->first()->grupo_servicio ?? 'Sin grupo',
+        $items       = $evaluacion->gapAnalysis()->orderBy('prioridad', 'desc')->get();
+        $cartera     = $items->where('dimension', 'cartera_servicios');
+        $habilitacion = $items->where('dimension', 'condiciones_habilitantes');
+
+        return [
+            'evaluacion_id'       => $evaluacion->id,
+            'clasificacion_final' => $this->clasificacionFinal(
+                $evaluacion->clasificacion_resultado ?? 'NO_CUMPLE',
+                $evaluacion->clasificacion_habilitacion ?? 'NO_CUMPLE'
+            ),
+            'cartera' => [
+                'porcentaje'    => $evaluacion->porcentaje_cumplimiento,
+                'clasificacion' => $evaluacion->clasificacion_resultado,
+                'resumen'       => $this->resumenItems($cartera),
+                'por_grupo'     => $this->agrupar($cartera),
+                'acciones_criticas' => $this->accionesCriticas($cartera),
+            ],
+            'habilitacion' => [
+                'porcentaje'    => $evaluacion->pct_habilitacion,
+                'clasificacion' => $evaluacion->clasificacion_habilitacion,
+                'resumen'       => $this->resumenItems($habilitacion),
+                'por_grupo'     => $this->agrupar($habilitacion),
+                'acciones_criticas' => $this->accionesCriticas($habilitacion),
+            ],
+        ];
+    }
+
+    private function resumenItems(Collection $items): array
+    {
+        return [
+            'total'          => $items->count(),
+            'cumple'         => $items->where('estado', 'cumple')->count(),
+            'no_cumple'      => $items->where('estado', 'no_cumple')->count(),
+            'no_verificable' => $items->where('estado', 'no_verificable')->count(),
+            'pendiente'      => $items->where('estado', 'pendiente')->count(),
+            'criticos'       => $items->where('prioridad', '>=', 2)->count(),
+        ];
+    }
+
+    private function agrupar(Collection $items): array
+    {
+        return $items->groupBy('grupo_servicio')->map(fn($grupo) => [
+            'grupo'          => $grupo->first()->grupo_servicio ?? 'General',
             'total'          => $grupo->count(),
             'cumple'         => $grupo->where('estado', 'cumple')->count(),
             'no_cumple'      => $grupo->where('estado', 'no_cumple')->count(),
             'no_verificable' => $grupo->where('estado', 'no_verificable')->count(),
             'items'          => $grupo->map(fn($i) => [
-                'servicio' => $i->servicio_nombre,
-                'estado'   => $i->estado,
-                'icono'    => $i->icono,
-                'prioridad'=> $i->prioridad,
-                'accion'   => $i->accion_recomendada,
+                'servicio'  => $i->servicio_nombre,
+                'estado'    => $i->estado,
+                'icono'     => $i->icono,
+                'prioridad' => $i->prioridad,
+                'accion'    => $i->accion_recomendada,
             ])->values()->toArray(),
-        ]);
+        ])->values()->toArray();
+    }
 
-        return [
-            'evaluacion_id' => $evaluacion->id,
-            'porcentaje'    => $evaluacion->porcentaje_cumplimiento,
-            'clasificacion' => $evaluacion->clasificacion_resultado,
-            'resumen'       => [
-                'total'          => $items->count(),
-                'cumple'         => $items->where('estado', 'cumple')->count(),
-                'no_cumple'      => $items->where('estado', 'no_cumple')->count(),
-                'no_verificable' => $items->where('estado', 'no_verificable')->count(),
-                'criticos'       => $items->where('prioridad', '>=', 2)->count(),
-            ],
-            'por_grupo'         => $agrupados->values()->toArray(),
-            'acciones_criticas' => $items->where('prioridad', '>=', 2)
-                ->where('estado', '!=', 'cumple')
-                ->map(fn($i) => [
-                    'servicio' => $i->servicio_nombre,
-                    'grupo'    => $i->grupo_servicio,
-                    'accion'   => $i->accion_recomendada,
-                ])->values()->toArray(),
-        ];
+    private function accionesCriticas(Collection $items): array
+    {
+        return $items->where('prioridad', '>=', 2)
+            ->where('estado', '!=', 'cumple')
+            ->map(fn($i) => [
+                'servicio' => $i->servicio_nombre,
+                'grupo'    => $i->grupo_servicio,
+                'accion'   => $i->accion_recomendada,
+            ])->values()->toArray();
     }
 }

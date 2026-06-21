@@ -12,7 +12,7 @@ class FormularioPregunta extends Model
     protected $fillable = [
         'formulario_seccion_id', 'pregunta', 'tipo_respuesta', 'opciones',
         'respuesta_ejemplo', 'orden', 'activa', 'tags_cartera',
-        'servicio_cartera_grupo', 'especialidad_relacionada',
+        'servicio_cartera_grupo', 'especialidad_relacionada', 'dimension',
     ];
 
     protected $casts = [
