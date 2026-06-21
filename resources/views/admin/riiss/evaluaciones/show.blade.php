@@ -101,7 +101,12 @@
         <ul class="nav nav-tabs mb-4" id="evalTabs">
             <li class="nav-item">
                 <a class="nav-link active" data-toggle="tab" href="#tabGap">
-                    <i class="fa fa-chart-bar mr-1"></i>Gap Analysis
+                    <i class="fa fa-chart-bar mr-1"></i>Cartera de Servicios
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#tabHabilitacion">
+                    <i class="fa fa-building mr-1"></i>Condiciones Habilitantes
                 </a>
             </li>
             <li class="nav-item">
@@ -118,9 +123,16 @@
 
         <div class="tab-content">
 
-            {{-- Tab Gap --}}
+            {{-- Tab Gap Cartera --}}
             <div class="tab-pane fade show active" id="tabGap">
                 <div id="gapContenido">
+                    <div class="text-center py-5"><div class="spinner-border text-danger"></div></div>
+                </div>
+            </div>
+
+            {{-- Tab Habilitación --}}
+            <div class="tab-pane fade" id="tabHabilitacion">
+                <div id="habilitacionContenido">
                     <div class="text-center py-5"><div class="spinner-border text-danger"></div></div>
                 </div>
             </div>
@@ -181,49 +193,57 @@ function cargarGap() {
     $.get(`/riiss/evaluaciones/${EVAL_ID}/gap`, function(r) {
         if (!r.ok) return;
         renderResumenGap(r.data);
-        renderGapPorGrupo(r.data);
+        renderGapPorGrupo(r.data.cartera, 'gapContenido', 'cartera-');
+        renderGapPorGrupo(r.data.habilitacion, 'habilitacionContenido', 'hab-');
         renderAcciones(r.data);
     });
 }
 
 function renderResumenGap(data) {
-    const res = data.resumen;
+    const c = data.cartera;
+    const h = data.habilitacion;
+    const badgeFinal = {
+        'APTO_HABILITACION': 'success',
+        'OBSERVADO':         'warning',
+        'NO_APTO':           'danger',
+    }[data.clasificacion_final] ?? 'secondary';
+
     $('#resumenGap').html(`
-        <h6 class="font-weight-bold mb-3">Gap Analysis</h6>
+        <h6 class="font-weight-bold mb-2">Resultado</h6>
+        <div class="text-center mb-3">
+            <span class="badge badge-${badgeFinal}" style="font-size:.85rem;padding:6px 12px">
+                ${(data.clasificacion_final ?? '—').replace(/_/g,' ')}
+            </span>
+        </div>
         <div class="row text-center">
-            <div class="col-6 mb-2">
-                <div class="h4 font-weight-bold text-success">${res.cumple}</div>
-                <small class="text-muted">✅ Cumplen</small>
+            <div class="col-6 mb-2 border-right">
+                <div class="small text-muted font-weight-bold mb-1">Cartera Servicios</div>
+                <div class="h4 font-weight-bold text-${c?.porcentaje >= 90 ? 'success' : c?.porcentaje >= 70 ? 'warning' : 'danger'}">${c?.porcentaje ?? 0}%</div>
+                <small class="text-muted">✅ ${c?.resumen?.cumple ?? 0} / ❌ ${c?.resumen?.no_cumple ?? 0}</small>
             </div>
             <div class="col-6 mb-2">
-                <div class="h4 font-weight-bold text-danger">${res.no_cumple}</div>
-                <small class="text-muted">❌ No cumplen</small>
-            </div>
-            <div class="col-6 mb-2">
-                <div class="h4 font-weight-bold text-warning">${res.no_verificable}</div>
-                <small class="text-muted">⚠️ No verificables</small>
-            </div>
-            <div class="col-6 mb-2">
-                <div class="h4 font-weight-bold text-danger">${res.criticos}</div>
-                <small class="text-muted">🔴 Críticos</small>
+                <div class="small text-muted font-weight-bold mb-1">Habilitación</div>
+                <div class="h4 font-weight-bold text-${h?.porcentaje >= 90 ? 'success' : h?.porcentaje >= 70 ? 'warning' : 'danger'}">${h?.porcentaje ?? 0}%</div>
+                <small class="text-muted">✅ ${h?.resumen?.cumple ?? 0} / ❌ ${h?.resumen?.no_cumple ?? 0}</small>
             </div>
         </div>
     `);
 }
 
-function renderGapPorGrupo(data) {
-    if (!data.por_grupo?.length) {
-        $('#gapContenido').html('<p class="text-muted text-center py-4">Sin datos de gap analysis. Ejecute el análisis primero.</p>');
+function renderGapPorGrupo(dim, containerId, prefix) {
+    if (!dim?.por_grupo?.length) {
+        $(`#${containerId}`).html('<p class="text-muted text-center py-4">Sin datos. Ejecute el análisis primero.</p>');
         return;
     }
 
     let html = '';
-    data.por_grupo.forEach((grupo, i) => {
+    dim.por_grupo.forEach((grupo, i) => {
+        const key = prefix + i;
         const pct = grupo.total > 0 ? Math.round((grupo.cumple / grupo.total) * 100) : 0;
         const color = pct >= 90 ? '#22c55e' : pct >= 70 ? '#f97316' : '#ef4444';
 
         html += `<div class="mb-3">
-            <div class="grupo-header d-flex align-items-center" onclick="toggleGrupo(${i})">
+            <div class="grupo-header d-flex align-items-center" onclick="toggleGrupo('${key}')">
                 <strong class="flex-grow-1">${grupo.grupo ?? 'Sin grupo'}</strong>
                 <div style="width:80px;margin-right:12px">
                     <div style="height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden">
@@ -234,9 +254,9 @@ function renderGapPorGrupo(data) {
                 <span class="badge badge-success mr-1">${grupo.cumple}</span>
                 <span class="badge badge-danger mr-1">${grupo.no_cumple}</span>
                 <span class="badge badge-warning">${grupo.no_verificable}</span>
-                <i class="fa fa-chevron-down ml-2 text-muted" id="chevron-${i}"></i>
+                <i class="fa fa-chevron-down ml-2 text-muted" id="chevron-${key}"></i>
             </div>
-            <div id="grupo-items-${i}" style="display:none;padding-left:12px">
+            <div id="grupo-items-${key}" style="display:none;padding-left:12px">
                 ${grupo.items.map(item => `
                     <div class="gap-item gap-${item.estado}">
                         <div class="d-flex align-items-start">
@@ -254,17 +274,22 @@ function renderGapPorGrupo(data) {
         </div>`;
     });
 
-    $('#gapContenido').html(html);
+    $(`#${containerId}`).html(html);
 }
 
 function renderAcciones(data) {
-    if (!data.acciones_criticas?.length) {
+    const criticos = [
+        ...(data.cartera?.acciones_criticas ?? []),
+        ...(data.habilitacion?.acciones_criticas ?? [])
+    ];
+
+    if (!criticos.length) {
         $('#accionesContenido').html('<p class="text-muted text-center py-4">No hay acciones críticas pendientes. ✅</p>');
         return;
     }
 
-    let html = '<div class="alert alert-danger mb-3"><i class="fa fa-exclamation-triangle mr-2"></i>Se requieren acciones inmediatas en los siguientes servicios:</div>';
-    data.acciones_criticas.forEach(a => {
+    let html = '<div class="alert alert-danger mb-3"><i class="fa fa-exclamation-triangle mr-2"></i>Se requieren acciones inmediatas:</div>';
+    criticos.forEach(a => {
         html += `<div class="gap-item gap-no_cumple mb-3">
             <strong>${a.servicio}</strong>
             <span class="badge badge-secondary ml-2">${a.grupo ?? ''}</span>
@@ -275,9 +300,9 @@ function renderAcciones(data) {
     $('#accionesContenido').html(html);
 }
 
-function toggleGrupo(i) {
-    const $items = $(`#grupo-items-${i}`);
-    const $chev  = $(`#chevron-${i}`);
+function toggleGrupo(key) {
+    const $items = $(`#grupo-items-${key}`);
+    const $chev  = $(`#chevron-${key}`);
     $items.slideToggle(200);
     $chev.toggleClass('fa-chevron-down fa-chevron-up');
 }
