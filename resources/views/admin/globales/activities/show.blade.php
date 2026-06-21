@@ -301,8 +301,16 @@
 <div id="vistaGantt" style="display:none">
     @php
         $timelineTasks = $activity->tasks->filter(fn($t) => $t->fecha_inicio || $t->fecha_vencimiento);
-        $timelineStart = $timelineTasks->min(fn($t) => $t->fecha_inicio?->startOfDay() ?? $t->fecha_vencimiento?->startOfDay());
-        $timelineEnd = $timelineTasks->max(fn($t) => $t->fecha_vencimiento?->startOfDay() ?? $t->fecha_inicio?->startOfDay());
+        $timelineStart = $timelineTasks->min(function ($t) {
+            if ($t->fecha_inicio) return \Carbon\Carbon::parse($t->fecha_inicio)->startOfDay();
+            if ($t->fecha_vencimiento) return \Carbon\Carbon::parse($t->fecha_vencimiento)->startOfDay();
+            return null;
+        });
+        $timelineEnd = $timelineTasks->max(function ($t) {
+            if ($t->fecha_vencimiento) return \Carbon\Carbon::parse($t->fecha_vencimiento)->startOfDay();
+            if ($t->fecha_inicio) return \Carbon\Carbon::parse($t->fecha_inicio)->startOfDay();
+            return null;
+        });
         $daysTotal = $timelineStart && $timelineEnd ? $timelineStart->diffInDays($timelineEnd) + 1 : 0;
     @endphp
     @if($timelineTasks->count() && $timelineStart && $timelineEnd)
@@ -314,8 +322,12 @@
         </div>
         @foreach($timelineTasks as $task)
             @php
-                $start = $task->fecha_inicio ? $task->fecha_inicio->startOfDay() : ($task->fecha_vencimiento ? $task->fecha_vencimiento->startOfDay() : $timelineStart);
-                $end = $task->fecha_vencimiento ? $task->fecha_vencimiento->startOfDay() : $start;
+                $start = $task->fecha_inicio
+                    ? \Carbon\Carbon::parse($task->fecha_inicio)->startOfDay()
+                    : ($task->fecha_vencimiento ? \Carbon\Carbon::parse($task->fecha_vencimiento)->startOfDay() : $timelineStart);
+                $end = $task->fecha_vencimiento
+                    ? \Carbon\Carbon::parse($task->fecha_vencimiento)->startOfDay()
+                    : $start;
                 $offsetDays = $timelineStart->diffInDays($start);
                 $durationDays = max(1, $start->diffInDays($end) + 1);
                 $barLeft = $offsetDays * 22;
