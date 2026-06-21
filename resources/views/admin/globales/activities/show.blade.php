@@ -114,6 +114,53 @@
 .color-swatch:hover { transform: scale(1.2); }
 .color-swatch.selected { border-color: #1e293b; transform: scale(1.15); }
 
+/* ── Gantt Cronograma ── */
+.gantt-container {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff;
+    padding: 18px;
+    overflow-x: auto;
+}
+.gantt-header {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: #1e293b;
+}
+.gantt-row {
+    display: grid;
+    grid-template-columns: minmax(260px, 280px) minmax(0, 1fr);
+    gap: 18px;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #eff2f7;
+    min-width: 720px;
+}
+.gantt-row:last-child { border-bottom: none; }
+.gantt-task { display: flex; flex-direction: column; gap: 6px; }
+.gantt-meta { font-size: .82rem; color: #64748b; line-height: 1.3; }
+.gantt-bar-wrap {
+    position: relative;
+    min-height: 50px;
+    background: #f8fafc;
+    border-radius: 999px;
+    overflow: hidden;
+}
+.gantt-bar {
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    font-size: .78rem;
+    color: #111;
+    white-space: nowrap;
+}
+.gantt-bar span { display: inline-block; }
+
 /* ── Responsive ── */
 @media(max-width:768px) {
     .board-row { overflow-x: auto; flex-wrap: nowrap !important; padding-bottom: 12px; }
@@ -340,7 +387,7 @@
                 </div>
                 <div class="gantt-bar-wrap">
                     <div class="gantt-bar" style="left:{{ $barLeft }}px; width:{{ $barWidth }}px; background:{{ $task->color ?? '#6b7280' }}22; border:1px solid {{ $task->color ?? '#6b7280' }};">
-                        {{ $task->fecha_inicio ? \Carbon\Carbon::parse($task->fecha_inicio)->format('d/m') : '—' }} — {{ $task->fecha_vencimiento ? \Carbon\Carbon::parse($task->fecha_vencimiento)->format('d/m') : '—' }}
+                        <span class="gantt-bar-label">{{ $task->fecha_inicio ? \Carbon\Carbon::parse($task->fecha_inicio)->format('d/m') : '—' }} — {{ $task->fecha_vencimiento ? \Carbon\Carbon::parse($task->fecha_vencimiento)->format('d/m') : '—' }}</span>
                     </div>
                 </div>
             </div>
