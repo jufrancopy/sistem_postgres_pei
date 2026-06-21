@@ -403,9 +403,8 @@ class GapAnalysisService
 
     public function obtenerGapPersistido(Evaluacion $evaluacion): array
     {
-        $items       = $evaluacion->gapAnalysis()->orderBy('prioridad', 'desc')->get();
-        $cartera     = $items->where('dimension', 'cartera_servicios');
-        $habilitacion = $items->where('dimension', 'condiciones_habilitantes');
+        $cartera      = $evaluacion->gapAnalysis()->where('dimension', 'cartera_servicios')->orderBy('prioridad', 'desc')->get();
+        $habilitacion = $evaluacion->gapAnalysis()->where('dimension', 'condiciones_habilitantes')->orderBy('prioridad', 'desc')->get();
 
         return [
             'evaluacion_id'       => $evaluacion->id,
