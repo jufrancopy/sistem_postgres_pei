@@ -283,14 +283,25 @@ function toggleGrupo(i) {
 }
 
 function reejecutarGap() {
-    if (!confirm('¿Re-ejecutar el análisis de brechas? Esto sobreescribirá el análisis anterior.')) return;
-    $.ajax({
-        url: `/riiss/evaluaciones/${EVAL_ID}/ejecutar-gap`,
-        method: 'POST',
-        data: { _token: '{{ csrf_token() }}' },
-        success: function(r) {
-            if (r.ok) { cargarGap(); mostrarToast('Análisis re-ejecutado', 'success'); }
-        }
+    Swal.fire({
+        title: '¿Re-ejecutar análisis?',
+        text: 'Esto sobreescribirá el análisis anterior.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e53e3e',
+        cancelButtonColor: '#718096',
+        confirmButtonText: 'Sí, re-ejecutar',
+        cancelButtonText: 'Cancelar'
+    }).then(result => {
+        if (!result.isConfirmed) return;
+        $.ajax({
+            url: `/riiss/evaluaciones/${EVAL_ID}/ejecutar-gap`,
+            method: 'POST',
+            data: { _token: '{{ csrf_token() }}' },
+            success: function(r) {
+                if (r.ok) { cargarGap(); mostrarToast('Análisis re-ejecutado', 'success'); }
+            }
+        });
     });
 }
 
