@@ -96,9 +96,9 @@ class CarteraServicio extends Model
             str_contains($tipologia, 'CLINICA PERIFERICA'),
             str_contains($tipologia, 'CLÍNICA PERIFÉRICA') => $this->aplica_clinica_periferica,
             str_contains($tipologia, 'HOSPITAL') => match(true) {
-                $est->grado_complejidad === 3 => $this->aplica_hospital_alta,
-                $est->grado_complejidad === 2 => $this->aplica_hospital_mediana,
-                default                       => $this->aplica_hospital_baja,
+                (int)$est->grado_complejidad === 3 => $this->aplica_hospital_alta,
+                (int)$est->grado_complejidad === 2 => $this->aplica_hospital_mediana,
+                default                            => $this->aplica_hospital_baja,
             },
             default => false,
         };
