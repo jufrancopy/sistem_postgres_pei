@@ -296,12 +296,15 @@ class EvaluacionController extends Controller
 
         $est = $evaluacion->establecimiento;
         $debug = [
-            'tipologia'        => $est->tipologia_clasificacion,
-            'complejidad'      => $est->complejidad,
-            'nivel_atencion'   => $est->nivel_atencion,
-            'grado_complejidad'=> $est->grado_complejidad,
-            'grado_type'       => gettype($est->grado_complejidad),
-            'servicios_count'  => $this->carteraService->serviciosRequeridos($est)->count(),
+            'tipologia'         => $est->tipologia_clasificacion,
+            'complejidad'       => $est->complejidad,
+            'nivel_atencion'    => $est->nivel_atencion,
+            'grado_complejidad' => $est->grado_complejidad,
+            'grado_type'        => gettype($est->grado_complejidad),
+            'servicios_count'   => $this->carteraService->serviciosRequeridos($est)->count(),
+            'respuestas_count'  => $evaluacion->respuestas()->count(),
+            'respuestas_loaded' => $evaluacion->respuestas->count(),
+            'primera_respuesta' => $evaluacion->respuestas()->first()?->toArray(),
         ];
 
         $resultado = $this->gapService->ejecutar($evaluacion);
