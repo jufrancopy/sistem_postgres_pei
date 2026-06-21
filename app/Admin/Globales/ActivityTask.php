@@ -19,6 +19,13 @@ class ActivityTask extends Model
     ];
 
     protected $dates = ['completed_at', 'fecha_inicio', 'fecha_vencimiento'];
+
+    protected $casts = [
+        'fecha_inicio'      => 'datetime',
+        'fecha_vencimiento' => 'datetime',
+        'completed_at'      => 'datetime',
+    ];
+
     public function getEstadoVencimientoAttribute(): ?string
     {
         if (!$this->fecha_vencimiento || $this->status === 2) return null;

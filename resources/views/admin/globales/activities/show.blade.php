@@ -340,7 +340,7 @@
                 </div>
                 <div class="gantt-bar-wrap">
                     <div class="gantt-bar" style="left:{{ $barLeft }}px; width:{{ $barWidth }}px; background:{{ $task->color ?? '#6b7280' }}22; border:1px solid {{ $task->color ?? '#6b7280' }};">
-                        {{ $task->fecha_inicio?->format('d/m') ?? '—' }} — {{ $task->fecha_vencimiento?->format('d/m') ?? '—' }}
+                        {{ $task->fecha_inicio ? \Carbon\Carbon::parse($task->fecha_inicio)->format('d/m') : '—' }} — {{ $task->fecha_vencimiento ? \Carbon\Carbon::parse($task->fecha_vencimiento)->format('d/m') : '—' }}
                     </div>
                 </div>
             </div>
