@@ -407,16 +407,20 @@ $('#btnVistaGantt').click(function() {
     renderGantt();
 });
 
-var ganttTasks = @json($activity->tasks
-    ->filter(fn($t) => $t->fecha_inicio || $t->fecha_vencimiento)
-    ->map(fn($t) => [
-        'id'       => 'task_' . $t->id,
-        'name'     => Str::limit($t->title, 50),
-        'resource' => $t->assignedTo?->name ?? 'Sin responsable',
-        'start'    => $t->fecha_inicio?->format('Y-m-d'),
-        'end'      => $t->fecha_vencimiento?->format('Y-m-d'),
-        'color'    => $t->color ?? '#6b7280',
-    ])->values());
+@php
+    $ganttTasks = $activity->tasks
+        ->filter(fn($t) => $t->fecha_inicio || $t->fecha_vencimiento)
+        ->map(fn($t) => [
+            'id'       => 'task_' . $t->id,
+            'name'     => Str::limit($t->title, 50),
+            'resource' => $t->assignedTo?->name ?? 'Sin responsable',
+            'start'    => $t->fecha_inicio?->format('Y-m-d'),
+            'end'      => $t->fecha_vencimiento?->format('Y-m-d'),
+            'color'    => $t->color ?? '#6b7280',
+        ])->values();
+@endphp
+
+var ganttTasks = @json($ganttTasks);
 
 var ganttRendered = false;
 
