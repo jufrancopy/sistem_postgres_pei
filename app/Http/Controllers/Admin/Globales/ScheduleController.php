@@ -5,11 +5,43 @@ namespace App\Http\Controllers\Admin\Globales;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Period;
-use App\Models\Schedule;
 use App\Models\ScheduleItem;
+use App\Services\CronogramaImporter;
 
 class ScheduleController extends Controller
 {
+    public function index()
+    {
+        $periods = Period::withCount('schedules')->orderByDesc('id')->get();
+        return view('admin.globales.cronogramas.index', compact('periods'));
+    }
+
+    public function show(Period $period)
+    {
+        $period->load(['schedules.items.responsible']);
+        return view('admin.globales.cronogramas.show', compact('period'));
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:json,txt',
+        ]);
+
+        $file = $request->file('file');
+        $json = json_decode(file_get_contents($file->getRealPath()), true);
+
+        if (!$json) {
+            return back()->withErrors(['file' => 'El archivo JSON no es válido.']);
+        }
+
+        $importer = new CronogramaImporter();
+        $period = $importer->import($json);
+
+        return redirect()->route('globales.cronogramas.show', $period->id)
+            ->with('success', 'Cronograma importado correctamente.');
+    }
+
     public function gantt(Request $request)
     {
         $periodId = $request->get('period_id');

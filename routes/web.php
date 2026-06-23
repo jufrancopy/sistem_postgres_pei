@@ -175,6 +175,12 @@ Route::group(['middleware' => ['auth']], function () {
         // Cronogramas - endpoint para Gantt
         Route::get('cronogramas/gantt', 'Admin\Globales\ScheduleController@gantt')->name('cronogramas.gantt');
 
+        Route::middleware(['role:Administrador|Gestor de Actividades'])->group(function () {
+            Route::get('cronogramas', 'Admin\Globales\ScheduleController@index')->name('cronogramas.index');
+            Route::post('cronogramas/import', 'Admin\Globales\ScheduleController@import')->name('cronogramas.import');
+            Route::get('cronogramas/{period}', 'Admin\Globales\ScheduleController@show')->name('cronogramas.show');
+        });
+
         // ── Reportes Gerenciales ───────────────────────────────────────────────
         Route::get('/reportes',      'Admin\Estadistica\SiessReporteController@index')->name('reportes.index');
         Route::get('/reportes/pdf',  'Admin\Estadistica\SiessReporteController@pdfGerencial')->name('reportes.pdf');
