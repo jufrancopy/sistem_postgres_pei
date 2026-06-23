@@ -51,6 +51,7 @@
                                 <select name="assigned_to" id="task_assigned_to" style="width:100%"></select>
                             </div>
                         </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">

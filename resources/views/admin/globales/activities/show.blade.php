@@ -557,19 +557,25 @@ $(document).on('click', '.color-swatch', function() {
 
 // ── Select2 responsable ───────────────────────────────────────────────────────
 function initResponsableSelect(selectedId, selectedText) {
-    $('#task_assigned_to').empty().select2({
-        placeholder: 'Seleccioná responsable',
-        allowClear: true,
-        dropdownParent: $('#tareaModal'),
-        ajax: {
-            url: getUsersUrl, dataType: 'json', delay: 250,
-            processResults: function(data) {
-                return { results: $.map(data, function(u) { return { id: u.id, text: u.name }; }) };
+    var $select = $('#task_assigned_to').empty();
+    if ($select.select2) {
+        $select.select2({
+            placeholder: 'Seleccioná responsable',
+            allowClear: true,
+            dropdownParent: $('#tareaModal'),
+            ajax: {
+                url: getUsersUrl, dataType: 'json', delay: 250,
+                processResults: function(data) {
+                    return { results: $.map(data, function(u) { return { id: u.id, text: u.name }; }) };
+                }
             }
-        }
-    });
+        });
+    }
     if (selectedId) {
-        $('#task_assigned_to').append(new Option(selectedText, selectedId, true, true)).trigger('change');
+        $select.append(new Option(selectedText, selectedId, true, true));
+        if ($select.select2) {
+            $select.trigger('change');
+        }
     }
 }
 
