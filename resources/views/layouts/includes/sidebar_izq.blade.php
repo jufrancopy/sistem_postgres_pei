@@ -11,6 +11,7 @@
     $enPlanificacion = str_contains($path, 'pei-') || str_contains($path, 'foda') || str_contains($path, 'planificacion') || str_contains($path, 'tasks') || str_contains($path, 'risks');
     $enProyectos     = str_contains($path, 'proyectos') || str_contains($path, 'epc') || str_contains($path, 'risks');
     $enSiess         = str_contains($path, 'siess') || str_contains($path, 'eph') || str_contains($path, 'dgeec') || str_contains($path, 'contexto');
+    $enCronogramas   = str_contains($path, 'cronogramas');
     $enModulosSiess  = str_contains($path, 'siess/modulos');
     $enFoda          = str_contains($path, 'foda');
 
@@ -31,6 +32,12 @@
                 <a class="nav-link" href="{{ url('home') }}">
                     <i class="material-icons">dashboard</i>
                     <p>Administrador</p>
+                </a>
+            </li>
+            <li class="nav-item {{ $enCronogramas ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('cronogramas.index') }}">
+                    <i class="material-icons">timeline</i>
+                    <p>Cronogramas</p>
                 </a>
             </li>
             <li class="nav-item ">
