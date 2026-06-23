@@ -35,7 +35,7 @@
                 </a>
             </li>
             <li class="nav-item {{ $enCronogramas ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('cronogramas.index') }}">
+                <a class="nav-link" href="{{ route('globales.cronogramas.index') }}">
                     <i class="material-icons">timeline</i>
                     <p>Cronogramas</p>
                 </a>

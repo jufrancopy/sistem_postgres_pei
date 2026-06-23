@@ -172,15 +172,6 @@ Route::group(['middleware' => ['auth']], function () {
         // Carga masiva de datos estructurados
         Route::post('/modulos/{modulo}/datos', 'Admin\Estadistica\SiessModuloController@storeDatos')->name('modulos.datos.store');
 
-        // Cronogramas - endpoint para Gantt
-        Route::get('cronogramas/gantt', 'Admin\Globales\ScheduleController@gantt')->name('cronogramas.gantt');
-
-        Route::middleware(['role:Administrador|Gestor de Actividades'])->group(function () {
-            Route::get('cronogramas', 'Admin\Globales\ScheduleController@index')->name('cronogramas.index');
-            Route::post('cronogramas/import', 'Admin\Globales\ScheduleController@import')->name('cronogramas.import');
-            Route::get('cronogramas/{period}', 'Admin\Globales\ScheduleController@show')->name('cronogramas.show');
-        });
-
         // ── Reportes Gerenciales ───────────────────────────────────────────────
         Route::get('/reportes',      'Admin\Estadistica\SiessReporteController@index')->name('reportes.index');
         Route::get('/reportes/pdf',  'Admin\Estadistica\SiessReporteController@pdfGerencial')->name('reportes.pdf');
@@ -257,6 +248,14 @@ Route::group(['middleware' => ['auth']], function () {
     Route::group(['prefix' => 'admin/globales', 'as' => 'globales.'], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
+
+        // Cronogramas
+        Route::get('cronogramas/gantt', 'Admin\Globales\ScheduleController@gantt')->name('cronogramas.gantt');
+        Route::middleware(['role:Administrador|Gestor de Actividades'])->group(function () {
+            Route::get('cronogramas', 'Admin\Globales\ScheduleController@index')->name('cronogramas.index');
+            Route::post('cronogramas/import', 'Admin\Globales\ScheduleController@import')->name('cronogramas.import');
+            Route::get('cronogramas/{period}', 'Admin\Globales\ScheduleController@show')->name('cronogramas.show');
+        });
 
         // ── Actividades: index/crear/editar/eliminar solo Administrador ────────
         Route::middleware(['role:Administrador'])->group(function () {
