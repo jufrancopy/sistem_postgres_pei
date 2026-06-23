@@ -15,8 +15,9 @@ class ActivityTask extends Model
     protected $fillable = [
         'activity_id', 'title', 'details', 'etiqueta', 'color',
         'fecha_inicio', 'fecha_vencimiento', 'assigned_to', 'status',
-        'completed_at', 'completed_by', 'completion_note'
+        'completed_at', 'completed_by', 'completion_note', 'schedule_item_id'
     ];
+
 
     protected $dates = ['completed_at', 'fecha_inicio', 'fecha_vencimiento'];
 
@@ -58,5 +59,10 @@ class ActivityTask extends Model
     public function comments()
     {
         return $this->hasMany(ActivityTaskComment::class, 'activity_task_id')->with('user')->orderBy('created_at', 'asc');
+    }
+
+    public function scheduleItem()
+    {
+        return $this->belongsTo(\App\Models\ScheduleItem::class, 'schedule_item_id');
     }
 }

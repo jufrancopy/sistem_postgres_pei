@@ -172,6 +172,9 @@ Route::group(['middleware' => ['auth']], function () {
         // Carga masiva de datos estructurados
         Route::post('/modulos/{modulo}/datos', 'Admin\Estadistica\SiessModuloController@storeDatos')->name('modulos.datos.store');
 
+        // Cronogramas - endpoint para Gantt
+        Route::get('cronogramas/gantt', 'Admin\Globales\ScheduleController@gantt')->name('cronogramas.gantt');
+
         // ── Reportes Gerenciales ───────────────────────────────────────────────
         Route::get('/reportes',      'Admin\Estadistica\SiessReporteController@index')->name('reportes.index');
         Route::get('/reportes/pdf',  'Admin\Estadistica\SiessReporteController@pdfGerencial')->name('reportes.pdf');
