@@ -1157,18 +1157,12 @@
                         }
                     });
 
-                    // Prevenir que el click en PGN afecte el Select2 de responsables
-                    $('#action_pgn_nodo').on('select2:opening', function(e) {
-                        e.stopPropagation();
-                    });
-
                     // ── Select2 Indicador ────────────────────────────────────
                     var $indicadorSel = $('#action_indicador_id');
                     if ($indicadorSel.hasClass('select2-hidden-accessible')) {
                         $indicadorSel.select2('destroy');
                     }
                     $indicadorSel.select2({
-                        dropdownParent: $('#ajaxActionsModal'),
                         placeholder: 'Buscar indicador por código o nombre...',
                         allowClear: true,
                         minimumInputLength: 0,
@@ -1271,7 +1265,6 @@
                         $pgnNodo.select2('destroy');
                     }
                     $pgnNodo.select2({
-                        dropdownParent: $('#ajaxActionsModal'),
                         placeholder: 'Buscar por código o nombre...',
                         allowClear: true,
                         minimumInputLength: 2,
