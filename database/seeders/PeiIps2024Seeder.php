@@ -285,21 +285,28 @@ class PeiIps2024Seeder extends Seeder
 
     private function accion(string $parentId, int $orden, int $indicadorId, string $nombre): void
     {
-        // Crear la acción sin indicador_id primero para evitar FK violation
-        // si los indicadores aún no están sembrados
-        $id = $this->perfil([
+        // 1. Crear goal (Acción Estratégica — nivel 2)
+        $goalId = $this->perfil([
             'name'       => '<p>' . $nombre . '</p>',
-            'level'      => 'action',
+            'level'      => 'goal',
             'parent_id'  => $parentId,
             'order_item' => $orden,
         ]);
 
-        // Vincular indicador solo si existe en la tabla
+        // 2. Crear action hijo (nivel hoja — donde vive el indicador y el reporte)
+        $actionId = $this->perfil([
+            'name'       => '<p>' . $nombre . '</p>',
+            'level'      => 'action',
+            'parent_id'  => $goalId,
+            'order_item' => 1,
+        ]);
+
+        // 3. Vincular indicador solo si existe
         $existe = \DB::table('planificacion.indicadores')
             ->where('id', $indicadorId)->exists();
         if ($existe) {
             \DB::table('planificacion.pei_profiles')
-                ->where('id', $id)
+                ->where('id', $actionId)
                 ->update(['indicador_id' => $indicadorId]);
         }
     }
