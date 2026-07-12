@@ -281,6 +281,7 @@ Route::group(['middleware' => ['auth']], function () {
 
         // ── Comentarios: todos los autenticados ───────────────────────────────
         Route::get('activities/tareas/{taskId}/detalle', 'Admin\Globales\ActivityController@detalleTarea')->name('activities.tareas.detalle');
+        Route::get('activities/{activityId}/reuniones', 'Admin\Globales\ActivityController@reuniones')->name('activities.reuniones');
         Route::get('activities/tareas/{taskId}/comentarios', 'Admin\Globales\ActivityController@getComentarios')->name('activities.tareas.comentarios.index');
         Route::post('activities/tareas/{taskId}/comentarios', 'Admin\Globales\ActivityController@storeComentario')->name('activities.tareas.comentarios.store');
         Route::delete('activities/tareas/comentarios/{commentId}', 'Admin\Globales\ActivityController@destroyComentario')->name('activities.tareas.comentarios.destroy');
@@ -379,6 +380,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('foda-modelo-categoria-aspectos/{idModelo}/{idCategoria}', 'Admin\Planificacion\Foda\FodaModeloController@listadoAspectos')->name('foda-modelo-categoria-aspectos');
     Route::get('foda-modelo-categoria-aspectos-crear/{idCategoria}', 'Admin\Planificacion\Foda\FodaAspectoController@crearAspecto')->name('foda-modelo-categoria-aspectos-crear');
     Route::resource('foda-perfiles', 'Admin\Planificacion\Foda\FodaPerfilController');
+    Route::get('get-foda-perfiles', 'Admin\Planificacion\Foda\FodaPerfilController@getPerfilesSelect2')->name('get-foda-perfiles');
     Route::resource('foda-analisis', 'Admin\Planificacion\Foda\FodaAnalisisController');
     Route::get('foda-analisis/{idPerfil}/matriz', 'Admin\Planificacion\Foda\FodaAnalisisController@matriz');
     Route::get('foda-ambiente-interno/{idCategoria}/{idPerfil}', 'Admin\Planificacion\Foda\FodaAnalisisController@categoriasAmbienteInterno')->name('foda-ambiente-interno');
@@ -420,6 +422,71 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('get-crossings', 'Admin\Planificacion\Foda\FodaCruceAmbienteController@getCrossings')->name('get-crossings');
     Route::post('foda-analisis/{id}/calcular-iea', 'Admin\Planificacion\Foda\FodaAnalisisController@calcularIEA')->name('foda-analisis.calcular-iea');
 
+
+    // ── Módulo de Monitoreo / Reportes de Avance ─────────────────────────────
+    Route::get('pei-profiles/{profileId}/mis-acciones',              'Admin\Planificacion\PeiReporteController@misAcciones')->name('pei.reportes.mis-acciones');
+    Route::get('pei-profiles/{profileId}/bsc',                       'Admin\Planificacion\PeiReporteController@bsc')->name('pei.bsc');
+    Route::post('pei-profiles/{profileId}/notificar-todos',          'Admin\Planificacion\PeiReporteController@notificarTodos')->name('pei.reportes.notificar-todos');
+    Route::post('pei-profiles/{profileId}/acciones/{accionId}/notificar', 'Admin\Planificacion\PeiReporteController@notificarAccion')->name('pei.reportes.notificar-accion');
+    Route::get('pei-profiles/{accionId}/reportes',                   'Admin\Planificacion\PeiReporteController@index')->name('pei.reportes.index');
+    Route::post('pei-profiles/{accionId}/reportes',                  'Admin\Planificacion\PeiReporteController@store')->name('pei.reportes.store');
+    Route::delete('pei-profiles/{accionId}/reportes/{id}',           'Admin\Planificacion\PeiReporteController@destroy')->name('pei.reportes.destroy');
+
+    // ── Marco Estratégico Específico (MEE) ───────────────────────────────────
+    Route::get('pei-profiles/{profileId}/mee',                      'Admin\Planificacion\MeeController@modulo')->name('pei.mee.modulo');
+    Route::get('pei-profiles/{profileId}/mee/marcos',               'Admin\Planificacion\MeeController@indexMarcos')->name('pei.mee.marcos.index');
+    Route::post('pei-profiles/{profileId}/mee/marcos',              'Admin\Planificacion\MeeController@storeMarco')->name('pei.mee.marcos.store');
+    Route::put('pei-profiles/{profileId}/mee/marcos/{id}',          'Admin\Planificacion\MeeController@updateMarco')->name('pei.mee.marcos.update');
+    Route::delete('pei-profiles/{profileId}/mee/marcos/{id}',       'Admin\Planificacion\MeeController@destroyMarco')->name('pei.mee.marcos.destroy');
+    Route::get('pei-profiles/{profileId}/mee/ofertas',              'Admin\Planificacion\MeeController@indexOfertas')->name('pei.mee.ofertas.index');
+    Route::post('pei-profiles/{profileId}/mee/ofertas',             'Admin\Planificacion\MeeController@storeOferta')->name('pei.mee.ofertas.store');
+    Route::put('pei-profiles/{profileId}/mee/ofertas/{id}',         'Admin\Planificacion\MeeController@updateOferta')->name('pei.mee.ofertas.update');
+    Route::delete('pei-profiles/{profileId}/mee/ofertas/{id}',      'Admin\Planificacion\MeeController@destroyOferta')->name('pei.mee.ofertas.destroy');
+
+    // ── Indicadores (Ficha Técnica) ───────────────────────────────────────────
+    Route::get('pei-profiles/{profileId}/indicadores/buscar',           'Admin\Planificacion\IndicadorController@buscar')->name('pei.indicadores.buscar');
+    Route::get('pei-profiles/{profileId}/indicadores/siguiente-codigo', 'Admin\Planificacion\IndicadorController@siguienteCodigo')->name('pei.indicadores.siguienteCodigo');
+    Route::get('pei-profiles/{profileId}/indicadores/modulo',           'Admin\Planificacion\IndicadorController@modulo')->name('pei.indicadores.modulo');
+    Route::get('pei-profiles/{profileId}/indicadores',              'Admin\Planificacion\IndicadorController@porPerfil')->name('pei.indicadores.index');
+    Route::post('pei-profiles/{profileId}/indicadores',             'Admin\Planificacion\IndicadorController@store')->name('pei.indicadores.store');
+    Route::put('pei-profiles/{profileId}/indicadores/{id}',         'Admin\Planificacion\IndicadorController@update')->name('pei.indicadores.update');
+    Route::delete('pei-profiles/{profileId}/indicadores/{id}',      'Admin\Planificacion\IndicadorController@destroy')->name('pei.indicadores.destroy');
+
+    // ── Marcos Referenciales (PND, ODS, MECIP, etc.) ──────────────────────────
+    Route::get('pei/marcos',                'Admin\Planificacion\MarcoReferencialController@index')->name('pei.marcos.index');
+    Route::post('pei/marcos',               'Admin\Planificacion\MarcoReferencialController@store')->name('pei.marcos.store');
+    Route::put('pei/marcos/{id}',           'Admin\Planificacion\MarcoReferencialController@update')->name('pei.marcos.update');
+    Route::delete('pei/marcos/{id}',        'Admin\Planificacion\MarcoReferencialController@destroy')->name('pei.marcos.destroy');
+    Route::patch('pei/marcos/{id}/toggle',  'Admin\Planificacion\MarcoReferencialController@toggle')->name('pei.marcos.toggle');
+    Route::get('pei/marcos/tipos',          'Admin\Planificacion\MarcoReferencialController@tipos')->name('pei.marcos.tipos');
+    Route::post('pei/marcos/tipos',         'Admin\Planificacion\MarcoReferencialController@storeTipo')->name('pei.marcos.tipos.store');
+    Route::get('pei/marcos/buscar',         'Admin\Planificacion\MarcoReferencialController@buscar')->name('pei.marcos.buscar');
+    Route::post('pei/marcos/crear',         'Admin\Planificacion\MarcoReferencialController@crear')->name('pei.marcos.crear');
+    Route::get('pei-profiles/{profileId}/marcos',        'Admin\Planificacion\MarcoReferencialController@porPerfil')->name('pei.marcos.porPerfil');
+    Route::post('pei-profiles/{profileId}/marcos/sync',  'Admin\Planificacion\MarcoReferencialController@sync')->name('pei.marcos.sync');
+
+    // ── Módulo PGN ────────────────────────────────────────────────────────────
+    Route::prefix('pgn')->name('pgn.')->middleware(['role:Administrador|Analista PEI'])->group(function () {
+        Route::get('/',                                     'Admin\Planificacion\Pgn\PgnController@index')->name('index');
+        // Estructura de niveles
+        Route::get('estructura/{anio}',                    'Admin\Planificacion\Pgn\PgnController@estructuraDeAnio')->name('estructura.anio');
+        Route::post('estructura',                          'Admin\Planificacion\Pgn\PgnController@storeEstructura')->name('estructura.store');
+        Route::put('estructura/{estructura}',              'Admin\Planificacion\Pgn\PgnController@updateEstructura')->name('estructura.update');
+        Route::delete('estructura/{estructura}',           'Admin\Planificacion\Pgn\PgnController@destroyEstructura')->name('estructura.destroy');
+        // Nodos
+        Route::get('nodos/{anio}',                         'Admin\Planificacion\Pgn\PgnController@nodosDeAnio')->name('nodos.anio');
+        Route::post('nodos',                               'Admin\Planificacion\Pgn\PgnController@storeNodo')->name('nodos.store');
+        Route::put('nodos/{nodo}',                         'Admin\Planificacion\Pgn\PgnController@updateNodo')->name('nodos.update');
+        Route::delete('nodos/{nodo}',                      'Admin\Planificacion\Pgn\PgnController@destroyNodo')->name('nodos.destroy');
+        // Búsqueda Select2
+        Route::get('buscar',                               'Admin\Planificacion\Pgn\PgnController@buscar')->name('buscar');
+        // Importación CSV
+        Route::post('importar',                            'Admin\Planificacion\Pgn\PgnController@importar')->name('importar');
+    });
+
+    // Vinculación PGN ↔ Acción PEI
+    Route::get('pei-profiles/{actionId}/pgn',  'Admin\Planificacion\Pgn\PeiAccionPgnController@porAccion')->name('pei.accion.pgn.get');
+    Route::post('pei-profiles/{actionId}/pgn', 'Admin\Planificacion\Pgn\PeiAccionPgnController@sync')->name('pei.accion.pgn.sync');
 
     //Rutas de Elaboración del PEI
     Route::resource('tasks', 'Admin\Planificacion\Task\TaskController');

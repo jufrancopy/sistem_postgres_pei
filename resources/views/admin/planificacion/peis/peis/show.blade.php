@@ -20,6 +20,20 @@
             <a href="{{ route('pei-profiles.dashboard', $profile->id) }}" class="btn btn-sm btn-dark">
                 <i class="fa fa-chart-bar mr-1"></i> Tablero de Monitoreo
             </a>
+            <a href="{{ route('pei.bsc', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
+                <i class="fa fa-th-large mr-1"></i> Balanced Scorecard
+            </a>
+            <a href="{{ route('pei.indicadores.modulo', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
+                <i class="fa fa-ruler-combined mr-1"></i> Indicadores
+            </a>
+            <a href="{{ route('pei.mee.modulo', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
+                <i class="fa fa-balance-scale mr-1"></i> Marco Estratégico Específico
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-success ml-2" id="btnNotificarTodosPei"
+                    data-profile="{{ $profile->id }}"
+                    title="Enviar email a todos los responsables de acciones del plan">
+                <i class="fa fa-paper-plane mr-1"></i> Notificar Responsables
+            </button>
         </div>
 
         <!-- HTML del segundo nav (inicialmente oculto) -->
@@ -165,6 +179,100 @@
                                                 </div>
 
                                             </div>
+
+                                            {{-- ── Marco Estratégico General ── --}}
+                                            @if($marcosGenerales->count() > 0)
+                                            @php
+                                                $coloresMeg = [
+                                                    'pnd'     => ['bg' => 'badge-danger',   'icon' => 'fa-flag'],
+                                                    'ods'     => ['bg' => 'badge-success',  'icon' => 'fa-globe'],
+                                                    'bsc'     => ['bg' => 'badge-primary',  'icon' => 'fa-chart-bar'],
+                                                    'mecip'   => ['bg' => 'badge-warning',  'icon' => 'fa-shield-alt'],
+                                                    'pgn'     => ['bg' => 'badge-dark',     'icon' => 'fa-coins'],
+                                                    'general' => ['bg' => 'badge-secondary','icon' => 'fa-link'],
+                                                ];
+                                            @endphp
+                                            <div class="mt-3 px-1">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-sitemap text-muted mr-2"></i>
+                                                    <span class="font-weight-bold text-uppercase" style="font-size:.75rem; letter-spacing:.05em; color:#495057">
+                                                        Marco Estratégico General
+                                                    </span>
+                                                    <span class="badge badge-light border ml-2" style="font-size:.68rem">
+                                                        {{ $marcosGenerales->count() }} referencial(es)
+                                                    </span>
+                                                </div>
+                                                <div class="d-flex flex-wrap" style="gap:.35rem">
+                                                    @foreach($marcosGenerales->groupBy('tipo') as $tipo => $items)
+                                                        @php
+                                                            $cfg = $coloresMeg[$tipo] ?? $coloresMeg['general'];
+                                                        @endphp
+                                                        @foreach($items as $marco)
+                                                        <span class="badge {{ $cfg['bg'] }}"
+                                                              style="font-size:.72rem; padding:.35em .6em"
+                                                              title="{{ ucfirst($tipo) }}">
+                                                            <i class="fa {{ $cfg['icon'] }} mr-1"></i>{{ $marco->nombre }}
+                                                        </span>
+                                                        @endforeach
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                            @endif
+
+                                            {{-- ── Marco Estratégico Específico ── --}}
+                                            @if($meeMarcos->count() > 0 || $meeOfertas->count() > 0)
+                                            <div class="mt-2 px-1">
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <i class="fa fa-balance-scale text-muted mr-2" style="font-size:.8rem"></i>
+                                                    <span class="font-weight-bold text-uppercase" style="font-size:.68rem; letter-spacing:.05em; color:#6c757d">
+                                                        Marco Estratégico Específico
+                                                    </span>
+                                                    <a href="{{ route('pei.mee.modulo', $profile->id) }}"
+                                                       class="btn btn-link p-0 ml-auto"
+                                                       style="font-size:.68rem; color:#1976d2"
+                                                       title="Gestionar Marco Estratégico Específico">
+                                                        <i class="fa fa-external-link-alt mr-1"></i>Ver todo
+                                                    </a>
+                                                </div>
+
+                                                {{-- Marco Legal --}}
+                                                @if($meeMarcos->count() > 0)
+                                                <div class="mb-1">
+                                                    <small class="text-uppercase text-muted d-block mb-1" style="font-size:.62rem; letter-spacing:.04em">
+                                                        <i class="fa fa-gavel mr-1"></i>Marco Legal
+                                                    </small>
+                                                    <div class="d-flex flex-wrap" style="gap:.25rem">
+                                                        @foreach($meeMarcos as $ml)
+                                                        <span class="badge badge-light border text-dark"
+                                                              style="font-size:.65rem; font-weight:500; padding:.25em .5em"
+                                                              title="{{ $ml->competencias ? strip_tags($ml->competencias) : '' }}">
+                                                            <i class="fa fa-file-alt mr-1 text-muted"></i>{{ $ml->marco_legal }}
+                                                        </span>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                                @endif
+
+                                                {{-- Oferta de Servicios --}}
+                                                @if($meeOfertas->count() > 0)
+                                                <div class="mt-1">
+                                                    <small class="text-uppercase text-muted d-block mb-1" style="font-size:.62rem; letter-spacing:.04em">
+                                                        <i class="fa fa-concierge-bell mr-1"></i>Oferta de Servicios
+                                                    </small>
+                                                    <div class="d-flex flex-wrap" style="gap:.25rem">
+                                                        @foreach($meeOfertas as $ofs)
+                                                        <span class="badge badge-light border"
+                                                              style="font-size:.65rem; font-weight:500; padding:.25em .5em; color:#2e7d32"
+                                                              title="{{ $ofs->beneficiarios ?? '' }}">
+                                                            <i class="fa fa-check-circle mr-1"></i>{{ $ofs->accion }}
+                                                        </span>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                                @endif
+                                            </div>
+                                            @endif
+
                                         </div>
                                     </div>
                                 </div>
@@ -633,44 +741,271 @@
                     $('#axis_group_id').val(data.profile.group_id);
                     $('#axis_dependency').val(data.profile.dependency_id);
 
-                    // ── Cargar estrategias FODA en el select del modal Estrategia ──
-                    // Construir URL con pei_id embebido para filtrar por FODA del grupo
-                    var urlCrossings = '{{ route('get-crossings') }}?pei_id={{ $profile->id }}';
-                    var selectAxisStrategies = $('#axis_strategies').select2();
-                    selectAxisStrategies.empty();
+                    // ── Perfil FODA: poblar select y pre-seleccionar ──
+                    var selectFodaPerfil = $('#axis_foda_perfil_id');
+                    selectFodaPerfil.empty().append('<option value="">— Sin perfil FODA vinculado —</option>');
+                    var currentFodaPerfilId = data.profile.foda_perfil_id || '';
 
-                    // Pre-seleccionar estrategias ya vinculadas (solo en edición)
-                    if (typeBtn === 'edit' && data.strategiesChecked && data.strategiesChecked.length > 0) {
-                        data.strategiesChecked.forEach(function(d) {
-                            var option = new Option(d.text, d.id, true, true);
-                            selectAxisStrategies.append(option).trigger('change');
+                    if (data.fodaPerfiles && data.fodaPerfiles.length > 0) {
+                        data.fodaPerfiles.forEach(function(p) {
+                            var label = '[' + p.type + '] ' + p.name;
+                            var selected = (p.id === currentFodaPerfilId) ? ' selected' : '';
+                            selectFodaPerfil.append('<option value="' + p.id + '"' + selected + '>' + label + '</option>');
                         });
                     }
 
-                    $('#axis_strategies').select2({
+                    // ── Función para inicializar Select2 de estrategias según perfil FODA ──
+                    function initAxisStrategiesSelect2(fodaPerfilId) {
+                        var urlCrossings = '{{ route('get-crossings') }}?pei_id={{ $profile->id }}';
+                        if (fodaPerfilId) {
+                            urlCrossings += '&foda_perfil_id=' + fodaPerfilId;
+                        }
+                        var $axisStrategies = $('#axis_strategies');
+                        if ($axisStrategies.hasClass('select2-hidden-accessible')) {
+                            $axisStrategies.select2('destroy');
+                        }
+                        $axisStrategies.select2({
+                            allowClear: true,
+                            placeholder: 'Seleccioná las estrategias FODA...',
+                            ajax: {
+                                url: urlCrossings,
+                                dataType: 'json',
+                                delay: 250,
+                                processResults: function(res) {
+                                    if (!res || res.length === 0) {
+                                        return { results: [{ id: '', text: '— Sin estrategias disponibles para este perfil FODA —', disabled: true }] };
+                                    }
+                                    return {
+                                        results: $.map(res, function(item) {
+                                            var label = item.tipo ? '[' + item.tipo + '] ' + item.estrategia : item.estrategia;
+                                            return { text: label, id: item.id };
+                                        })
+                                    };
+                                },
+                                cache: false
+                            }
+                        });
+                    }
+
+                    // Pre-seleccionar estrategias ya vinculadas (solo en edición)
+                    var selectAxisStrategies = $('#axis_strategies');
+                    selectAxisStrategies.empty();
+                    if (typeBtn === 'edit' && data.strategiesChecked && data.strategiesChecked.length > 0) {
+                        data.strategiesChecked.forEach(function(d) {
+                            selectAxisStrategies.append(new Option(d.text, d.id, true, true));
+                        });
+                    }
+
+                    initAxisStrategiesSelect2(currentFodaPerfilId);
+
+                    // Al cambiar el perfil FODA, limpiar estrategias y reinicializar
+                    selectFodaPerfil.off('change.foda').on('change.foda', function() {
+                        selectAxisStrategies.empty().trigger('change');
+                        initAxisStrategiesSelect2($(this).val());
+                    });
+
+                    // ── Marcos Referenciales ──
+                    var selectMarcos = $('#axis_marcos');
+                    selectMarcos.empty();
+
+                    // Pre-cargar marcos ya vinculados (solo en edición)
+                    if (typeBtn === 'edit') {
+                        $.get('{{ route('pei.marcos.porPerfil', ['profileId' => '__ID__']) }}'.replace('__ID__', profileID), function(marcos) {
+                            marcos.forEach(function(m) {
+                                selectMarcos.append(new Option(m.text, m.id, true, true));
+                            });
+                            selectMarcos.trigger('change');
+                        });
+                    }
+
+                    selectMarcos.select2({
+                        placeholder: 'Buscar o crear marco (PND, ODS, ...)...',
                         allowClear: true,
-                        placeholder: 'Seleccioná las estrategias FODA...',
+                        tags: true,
                         ajax: {
-                            url: urlCrossings,
+                            url: '{{ route('pei.marcos.buscar') }}',
                             dataType: 'json',
-                            delay: 250,
-                            processResults: function(data) {
-                                if (!data || data.length === 0) {
-                                    return { results: [{ id: '', text: '— Sin estrategias FODA disponibles para este PEI —', disabled: true }] };
-                                }
-                                return {
-                                    results: $.map(data, function(item) {
-                                        var label = item.tipo
-                                            ? '[' + item.tipo + '] ' + item.estrategia
-                                            : item.estrategia;
-                                        return { text: label, id: item.id };
-                                    })
-                                };
-                            },
-                            cache: false
+                            delay: 300,
+                            data: function(params) { return { q: params.term }; },
+                            processResults: function(data) { return { results: data }; },
+                            cache: true
+                        },
+                        createTag: function(params) {
+                            var term = $.trim(params.term);
+                            if (!term) return null;
+                            return { id: 'new::' + term, text: term + ' (crear nuevo)', newTag: true, nombre: term };
+                        },
+                        insertTag: function(data, tag) {
+                            data.unshift(tag);
                         }
                     });
-                });
+
+                    // ── Perspectiva BSC ──
+                    var $bscSelect = $('#axis_bsc_perspectiva');
+                    if ($bscSelect.hasClass('select2-hidden-accessible')) {
+                        $bscSelect.select2('destroy');
+                    }
+                    $bscSelect.select2({
+                        dropdownParent: $('#ajaxAxisModal'),
+                        placeholder: '— Sin perspectiva BSC —',
+                        allowClear: true,
+                    });
+                    var bscVal = (typeBtn === 'edit' && data.profile.bsc_perspectiva)
+                        ? data.profile.bsc_perspectiva
+                        : '';
+                    $bscSelect.val(bscVal).trigger('change');
+
+                    // ── Resultado Intermedio Institucional ──
+                    var riVal = (typeBtn === 'edit' && data.profile.resultado_intermedio)
+                        ? data.profile.resultado_intermedio : '';
+                    $('#axis_resultado_intermedio').val(riVal);
+
+                    // Sugerencias: resultados intermedios ya usados en este perfil
+                    var $riSug = $('#axis_ri_sugerencias').empty();
+                    if (data.resultadosIntermedios && data.resultadosIntermedios.length) {
+                        data.resultadosIntermedios.forEach(function(ri) {
+                            $('<span class="badge badge-success" style="cursor:pointer;font-size:.72rem">' + ri + '</span>')
+                                .on('click', function() { $('#axis_resultado_intermedio').val(ri); })
+                                .appendTo($riSug);
+                        });
+                    }
+
+                    // Vinculación presupuestaria del RI
+                    $('#axis_ri_presupuestario').val(typeBtn === 'edit' ? (data.profile.ri_presupuestario || '') : '');
+                    $('#axis_ri_programa').val(typeBtn === 'edit' ? (data.profile.ri_programa || '') : '');
+                    $('#axis_ri_recursos_gs').val(typeBtn === 'edit' ? (data.profile.ri_recursos_gs || '') : '');
+
+                    // Metas dinámicas del RI
+                    $('#riMetasContainer').empty();
+                    var _riMetaIdx = 0;
+
+                    function agregarRiMeta(anio, valor) {
+                        var idx = _riMetaIdx++;
+                        $('#riMetasContainer').append(
+                            '<div class="col-md-4 mb-1 ri-meta-row" data-idx="' + idx + '">' +
+                            '<div class="input-group input-group-sm">' +
+                                '<div class="input-group-prepend"><span class="input-group-text" style="font-size:.7rem">Año</span></div>' +
+                                '<input type="number" class="form-control ri-meta-anio" placeholder="{{ date("Y") }}" value="' + (anio||'') + '" min="2020" max="2100">' +
+                                '<input type="text" class="form-control ri-meta-valor" placeholder="Meta (%, nº, decimal)" value="' + (valor||'') + '">' +
+                                '<div class="input-group-append"><button type="button" class="btn btn-circle btn-danger btn-sm ri-meta-remove" title="Eliminar"><i class="fa fa-times"></i></button></div>' +
+                            '</div></div>'
+                        );
+                    }
+
+                    if (typeBtn === 'edit' && data.profile.ri_metas) {
+                        var riMetasData = typeof data.profile.ri_metas === 'string'
+                            ? JSON.parse(data.profile.ri_metas)
+                            : data.profile.ri_metas;
+                        if (Array.isArray(riMetasData) && riMetasData.length) {
+                            riMetasData.forEach(function(m) { agregarRiMeta(m.anio, m.valor); });
+                        }
+                    }
+
+                    // Botón agregar meta RI
+                    $('#btnAgregarRiMeta').off('click').on('click', function() { agregarRiMeta('', ''); });
+                    $(document).off('click.rimeta').on('click.rimeta', '.ri-meta-remove', function() {
+                        $(this).closest('.ri-meta-row').remove();
+                    });
+                }); // cierre del $.get de createAxis
+            }); // cierre del on('click', '#createAxis')
+
+            $('#saveBtnAxis').click(function(e) {
+                e.preventDefault();
+                $(this).html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
+
+                var saveBtnValue = $(this).val();
+
+                // Resolver marcos nuevos antes de guardar
+                var marcosSeleccionados = $('#axis_marcos').val() || [];
+                var marcosNuevos     = marcosSeleccionados.filter(function(v) { return String(v).startsWith('new::'); });
+                var marcosExistentes = marcosSeleccionados.filter(function(v) { return !String(v).startsWith('new::'); });
+
+                function guardarPeiYSincronizar(idsNuevos) {
+                    var todosLosMarcos = marcosExistentes.concat(idsNuevos);
+
+                    var formData = new FormData();
+                    $.each($('#axisForm').serializeArray(), function(k, input) {
+                        formData.append(input.name, input.value);
+                    });
+                    formData.append('name', axisEditor.getData());
+                    formData.append('bsc_perspectiva', $('#axis_bsc_perspectiva').val() || '');
+                    formData.append('resultado_intermedio', $('#axis_resultado_intermedio').val() || '');
+                    formData.append('ri_presupuestario', $('#axis_ri_presupuestario').val() || '');
+                    formData.append('ri_programa', $('#axis_ri_programa').val() || '');
+                    formData.append('ri_recursos_gs', $('#axis_ri_recursos_gs').val() || '');
+
+                    // Metas RI
+                    var riIdx = 0;
+                    $('#riMetasContainer .ri-meta-row').each(function() {
+                        var anio  = $(this).find('.ri-meta-anio').val();
+                        var valor = $.trim($(this).find('.ri-meta-valor').val());
+                        if (anio && valor) {
+                            formData.append('ri_metas[' + riIdx + '][anio]',  anio);
+                            formData.append('ri_metas[' + riIdx + '][valor]', valor);
+                            riIdx++;
+                        }
+                    });
+
+                    $.ajax({
+                        data: formData,
+                        url: "{{ route('pei-profiles.store') }}",
+                        type: 'POST',
+                        dataType: 'json',
+                        processData: false,
+                        contentType: false,
+                        success: function(data) {
+                            // Sincronizar marcos
+                            var coloresMarco = {pnd:'danger',ods:'success',mecip:'warning',pgn:'dark',general:'secondary'};
+                            var iconosMarco  = {pnd:'fa-flag',ods:'fa-globe',mecip:'fa-shield-alt',pgn:'fa-coins',general:'fa-link'};
+
+                            if (todosLosMarcos.length > 0) {
+                                var syncData = { _token: $('meta[name=csrf-token]').attr('content') };
+                                $.each(todosLosMarcos, function(i, id) { syncData['marcos[' + i + ']'] = id; });
+                                $.ajax({
+                                    url: '/pei-profiles/' + data.profile.id + '/marcos/sync',
+                                    type: 'POST', data: syncData,
+                                    success: function(resp) {
+                                        if (resp.marcos) {
+                                            var body = $('#marcos-body-' + data.profile.id).empty();
+                                            resp.marcos.forEach(function(m) {
+                                                var color = coloresMarco[m.tipo] || 'secondary';
+                                                var icono = iconosMarco[m.tipo] || 'fa-link';
+                                                body.append('<i class="fa ' + icono + ' text-muted mr-1" style="font-size:.75rem"></i>');
+                                                body.append('<span class="badge badge-' + color + ' mr-1 mb-1" style="font-size:.75rem">' + m.nombre + '</span>');
+                                            });
+                                        }
+                                    }
+                                });
+                            }
+
+                            toastr.success(data.success || 'Guardado correctamente.');
+                            $('#axisForm').trigger('reset');
+                            $('#ajaxAxisModal').modal('hide');
+                        },
+                        error: function(xhr) {
+                            var obj = xhr.responseJSON?.errors;
+                            if (obj) $.each(obj, function(k, v) { toastr.error('Atención: ' + v); });
+                            else toastr.error(xhr.responseJSON?.message || 'Error al guardar.');
+                            $('#saveBtnAxis').html('<i class="fa fa-save mr-1"></i>Guardar cambios');
+                        }
+                    });
+                }
+
+                // Si hay marcos nuevos, crearlos primero
+                if (marcosNuevos.length > 0) {
+                    var promises = marcosNuevos.map(function(tag) {
+                        var nombre = tag.replace('new::', '');
+                        return $.post('{{ route("pei.marcos.crear") }}', { nombre: nombre });
+                    });
+                    $.when.apply($, promises).then(function() {
+                        var ids = [].slice.call(arguments).map(function(r) {
+                            return Array.isArray(r) ? r[0].id : r.id;
+                        });
+                        guardarPeiYSincronizar(ids);
+                    });
+                } else {
+                    guardarPeiYSincronizar([]);
+                }
             });
 
             $('body').on('click', '#createGoals', function() {
@@ -728,38 +1063,36 @@
 
                     $('#actions_type').val(data.profile.type);
                     $('#actions_group_id').val(data.profile.group_id);
-                    $('#actions_indicator').val(data.profile.indicator);
-                    $('#actions_baseline').val(data.profile.baseline);
-                    $('#actions_target').val(data.profile.target);
                     $('#actions_dependency').val(data.profile.dependency_id);
 
-                    var selectResponsibles = $('#responsibles').select2();
-                    selectResponsibles.empty();
+                    // ── Select2 Responsables — usa la raíz del árbol institucional ──
+                    var $responsibles = $('#responsibles');
+                    if ($responsibles.hasClass('select2-hidden-accessible')) {
+                        $responsibles.select2('destroy');
+                    }
+                    $responsibles.empty();
+
+                    // Pre-cargar responsables ya asignados (edición)
                     data.responsiblesChecked.forEach(function(d) {
-                        var option = new Option(d.text, d.id, true, true);
-                        selectResponsibles.append(option).trigger('change');
-                        selectResponsibles.trigger({
-                            type: 'select2:select',
-                            params: {
-                                data: data
-                            }
-                        });
+                        $responsibles.append(new Option(d.text, d.id, true, true));
                     });
 
-                    var url = '/admin/globales/get-dependencies/' + data.profile.dependency_id;
-                    $('#responsibles').select2({
+                    $responsibles.select2({
+                        dropdownParent: $('#ajaxActionsModal'),
+                        placeholder: 'Buscar dependencia responsable...',
                         allowClear: true,
+                        minimumInputLength: 0,
                         ajax: {
-                            url: url,
+                            url: '{{ url("admin/globales/get-dependencies") }}/' + '{{ $orgRaizId }}',
                             dataType: 'json',
-                            delay: 250,
-                            processResults: function(data) {
+                            delay: 300,
+                            data: function(params) {
+                                return { q: params.term || '' };
+                            },
+                            processResults: function(res) {
                                 return {
-                                    results: $.map(data, function(item) {
-                                        return {
-                                            text: item.dependency,
-                                            id: item.id
-                                        }
+                                    results: $.map(res, function(item) {
+                                        return { id: item.id, text: item.dependency };
                                     })
                                 };
                             },
@@ -767,6 +1100,158 @@
                         }
                     });
 
+                    // ── Select2 Indicador ────────────────────────────────────
+                    var $indicadorSel = $('#action_indicador_id');
+                    if ($indicadorSel.hasClass('select2-hidden-accessible')) {
+                        $indicadorSel.select2('destroy');
+                    }
+                    $indicadorSel.select2({
+                        dropdownParent: $('#ajaxActionsModal'),
+                        placeholder: 'Buscar indicador por código o nombre...',
+                        allowClear: true,
+                        minimumInputLength: 0,
+                        ajax: {
+                            url: '{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/indicadores/buscar',
+                            dataType: 'json',
+                            delay: 250,
+                            data: function(params) { return { q: params.term || '' }; },
+                            processResults: function(data) {
+                                return { results: data };
+                            },
+                            cache: true
+                        },
+                        templateResult: function(item) {
+                            if (!item.id) return item.text;
+                            var sentidoIcon = item.sentido === 'ascendente'
+                                ? '<span class="text-success ml-1">▲</span>'
+                                : '<span class="text-danger ml-1">▼</span>';
+                            return $('<span>' +
+                                '<span class="badge badge-dark mr-2" style="font-size:.65rem">' + item.codigo + '</span>' +
+                                item.text.replace('[' + item.codigo + '] ', '') +
+                                sentidoIcon +
+                            '</span>');
+                        }
+                    });
+
+                    // Pre-cargar indicador vinculado en edición
+                    if (typeBtn === 'edit' && data.profile.indicador_id) {
+                        $.getJSON('{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/indicadores/buscar', { q: '' }, function(res) {
+                            var ind = res.find(function(i) { return i.id == data.profile.indicador_id; });
+                            if (ind) {
+                                var opt = new Option(ind.text, ind.id, true, true);
+                                $indicadorSel.append(opt).trigger('change');
+                                mostrarPreviewIndicador(ind);
+                            }
+                        });
+                    } else {
+                        $indicadorSel.val(null).trigger('change');
+                        $('#indicadorPreview').hide();
+                    }
+
+                    $indicadorSel.on('select2:select', function(e) {
+                        mostrarPreviewIndicador(e.params.data);
+                    });
+                    $indicadorSel.on('select2:clear', function() {
+                        $('#indicadorPreview').hide();
+                    });
+
+                    function mostrarPreviewIndicador(ind) {
+                        if (!ind || !ind.id) { $('#indicadorPreview').hide(); return; }
+
+                        // Llamar al detalle completo del indicador
+                        $.getJSON('{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/indicadores', function(todos) {
+                            var full = todos.find(function(i) { return i.id == ind.id; });
+                            if (!full) { $('#indicadorPreview').hide(); return; }
+
+                            var dimColors = { eficiencia:'#1976d2', eficacia:'#28a745', calidad:'#17a2b8', economia:'#ffc107' };
+                            var dimLabels = { eficiencia:'Eficiencia', eficacia:'Eficacia', calidad:'Calidad', economia:'Economía' };
+                            var color = dimColors[full.dimension] || '#6c757d';
+
+                            $('#ind_prev_codigo').text(full.codigo);
+                            $('#ind_prev_dimension')
+                                .text(dimLabels[full.dimension] || full.dimension)
+                                .attr('style', 'font-size:.68rem;background:' + color + ';color:#fff');
+                            $('#ind_prev_sentido').html(
+                                full.sentido === 'ascendente'
+                                    ? '<span class="text-success font-weight-bold">▲</span>'
+                                    : '<span class="text-danger font-weight-bold">▼</span>'
+                            );
+                            $('#ind_prev_nombre').text(full.nombre);
+                            $('#ind_prev_unidad').text(full.unidad_medida || '—');
+                            $('#ind_prev_formula').text(full.formula || '—');
+                            $('#ind_prev_linea_base').text(
+                                full.linea_base_anio
+                                    ? full.linea_base_anio + ': ' + (full.linea_base_valor || '—')
+                                    : '—'
+                            );
+                            $('#ind_prev_fuente').text(full.fuente || '—');
+
+                            var $metas = $('#ind_prev_metas').empty();
+                            if (full.metas && full.metas.length) {
+                                full.metas.forEach(function(m) {
+                                    $metas.append(
+                                        '<span class="badge badge-secondary" style="font-size:.7rem">' +
+                                        m.anio + ': ' + m.valor + '</span>'
+                                    );
+                                });
+                            } else {
+                                $metas.append('<span class="text-muted" style="font-size:.75rem">Sin metas definidas</span>');
+                            }
+
+                            $('#indicadorPreview').show();
+                        });
+                    }
+
+                    // ── Select2 PGN ──────────────────────────────────────────
+                    var anioActivo = new Date().getFullYear();
+                    var $pgnNodo = $('#action_pgn_nodo');
+                    if ($pgnNodo.hasClass('select2-hidden-accessible')) {
+                        $pgnNodo.select2('destroy');
+                    }
+                    $pgnNodo.select2({
+                        dropdownParent: $('#ajaxActionsModal'),
+                        placeholder: 'Buscar por código o nombre...',
+                        allowClear: true,
+                        minimumInputLength: 2,
+                        ajax: {
+                            url: '{{ route("pgn.buscar") }}',
+                            dataType: 'json',
+                            delay: 300,
+                            data: function(params) { return { q: params.term, anio: anioActivo }; },
+                            processResults: function(data) {
+                                return { results: $.map(data, function(n) {
+                                    return { id: n.id, text: n.text, nivel: n.nivel };
+                                })};
+                            },
+                            cache: true
+                        },
+                        templateResult: function(n) {
+                            if (!n.id) return n.text;
+                            return $('<span><small class="badge badge-secondary mr-1">' + (n.nivel||'') + '</small>' + n.text + '</span>');
+                        }
+                    });
+
+                    // Pre-cargar vinculación PGN existente (solo en edición)
+                    if (typeBtn === 'edit') {
+                        $('#action_pgn_nodo').val(null).trigger('change');
+                        $('#action_pgn_resultado').val('');
+                        $('#action_pgn_monto_vinculado').val('');
+                        $('#action_pgn_monto_ejecutado').val('');
+
+                        $.get('{{ route("pei.accion.pgn.get", ["actionId" => "__ID__"]) }}'.replace('__ID__', profileID), function(v) {
+                            if (!v) return;
+                            var opt = new Option(v.pgn_nodo_text, v.pgn_nodo_id, true, true);
+                            $('#action_pgn_nodo').append(opt).trigger('change');
+                            $('#action_pgn_resultado').val(v.resultado);
+                            $('#action_pgn_monto_vinculado').val(v.monto_vinculado_gs);
+                            $('#action_pgn_monto_ejecutado').val(v.monto_ejecutado_gs);
+                        });
+                    } else {
+                        $('#action_pgn_nodo').val(null).trigger('change');
+                        $('#action_pgn_resultado').val('');
+                        $('#action_pgn_monto_vinculado').val('');
+                        $('#action_pgn_monto_ejecutado').val('');
+                    }
 
                 });
             });
@@ -991,900 +1476,158 @@
             });
 
             $(document).ready(function() {
-                $('.quantitative, .qualitative').hide();
+                // ══ MÓDULO REPORTAR AVANCE ════════════════════════════════════
+                var _rpIndicador    = null;
+                var _rpBaseUrl      = '{{ url("pei-profiles") }}';
 
-                // Controlador de evento para el botón #reportProgress
-                $('#insertCheckbox').click(function() {
-                    var description = $('#description').val().trim();
-                    var value = $('#value').val().trim();
-                    var color = $('#color').val();
-
-                    // Validar que se hayan ingresado los datos requeridos
-                    if (description === '' || value === '') {
-                        alert('Por favor ingresa una descripción y un valor.');
-                        return;
+                function calcularSemaforoPrev(valor, indicador) {
+                    if (!valor || !indicador || !indicador.metas) return null;
+                    var anio  = new Date().getFullYear();
+                    var metas = indicador.metas;
+                    var meta  = metas.find(function(m) { return m.anio == anio; });
+                    if (!meta) meta = metas.sort(function(a,b) { return a.anio - b.anio; }).find(function(m) { return m.anio >= anio; });
+                    if (!meta) return null;
+                    var metaNum = parseFloat(String(meta.valor).replace(/[^0-9.]/g,''));
+                    if (!metaNum) return null;
+                    var pct = (valor / metaNum) * 100;
+                    var semaforo;
+                    if (indicador.sentido === 'descendente') {
+                        var ratio = valor / metaNum;
+                        semaforo = ratio <= 0.85 ? 'verde' : (ratio <= 1.0 ? 'amarillo' : 'rojo');
+                    } else {
+                        semaforo = pct >= 85 ? 'verde' : (pct >= 50 ? 'amarillo' : 'rojo');
                     }
-                    var checkboxHTML = `
-                    <div class="form-check">
-                        <div class="input-group">
-                            <input type="hidden" id="checkbox${Date.now()}" name="parameters[]" value="${description} (${value}%) ${color}" readonly class="form-control text-white ${color}" /> 
-                            <label class="badge ${color}">${description} (${value}%)</label>
-                            <div class="input-group-append">
-                                <a href="#" class="delete-checkbox input-group-text"><i class="fa fa-trash text-danger"></i></a>
-                            </div>
-                        </div>
-                    </div>`;
+                    return { semaforo: semaforo, pct: Math.round(pct * 100) / 100, metaLabel: meta.valor };
+                }
 
-                    // Evento click para eliminar el checkbox
-                    $('body').on('click', '.delete-checkbox', function(e) {
-                        e
-                            .preventDefault(); // Evitar que el enlace actúe como un enlace normal
+                $('body').on('click', '.reportProgress', function() {
+                    var accionId = $(this).data('id');
+                    _rpIndicador = null;
+                    $('#reportProgress_accionId').val(accionId);
+                    $('#rp_fecha_reporte').val(new Date().toISOString().split('T')[0]);
+                    $('#rp_periodo_label,#rp_valor_numerador,#rp_descripcion_avance,#rp_evidencia_url,#rp_evidencia_label').val('');
+                    $('#reportProgress_fichaIndicador').hide();
+                    $('#rp_semaforo_preview').hide();
+                    $('#rp_historial').html('<p class="text-muted text-center" style="font-size:.78rem">Cargando...</p>');
 
-                        // Obtener el contenedor del checkbox y eliminarlo
-                        $(this).closest('.form-check').remove();
+                    // Cargar datos de la acción
+                    $.getJSON(_rpBaseUrl + '/' + accionId + '/edit', function(data) {
+                        // Nombre de la acción
+                        var tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = data.profile.name;
+                        $('#reportProgress_accionNombre').text(tempDiv.textContent || data.profile.name);
                     });
 
-                    // Agregar el checkbox al contenedor
-                    $('#checkboxContainer').append(checkboxHTML);
-
-                    // Limpiar los campos después de insertar el checkbox
-                    $('#description').val('');
-                    $('#value').val('');
-                    $('#color').val('bg-danger'); // Reiniciar el color al predeterminado
-                });
-
-                $('body').on('click', '#reportProgress', function() {
-                    var profileID = $(this).data('id');
-
-                    $.get("{{ route('pei-profiles.index') }}" + '/' + profileID +
-                        '/report-progress',
-                        function(data) {
-                            $('#modalReportProgress').html(
-                                'Definición de Criterios de Evaluación');
-                            $('#ajaxDefineCriteriaModal').modal('show');
-
-                            function formatNumber(num) {
-                                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                            }
-
-                            // Llenar los campos del formulario con los datos recibidos
-                            $('#progress_profile_id').val(data.profile.id);
-                            $('#progress_action').val(data.profile.name);
-                            $('#progress_group_id').val(data.profile.group_id);
-                            $('#progress_mision').val(data.profile.mision);
-                            $('#progress_indicator').val(data.profile.indicator);
-                            $('#progress_vision').val(data.profile.vision);
-                            $('#progress_type').val(data.profile.progress_type);
-                            $('#progress_level').val(data.profile.level);
-                            $('#progress_period').val(data.profile.period);
-                            $('#progress_denominator').val(formatNumber(Math.round(data.profile
-                                .denominator)));
-                            $('#progress_numerator').val(data.profile.numerator);
-                            $('#progress_goal').val(data.profile.goal);
-                            $('#progress_baseline').val(data.profile.baseline);
-                            $('#progress_target').val(data.profile.target);
-                            $('#progress_dependency').val(data.profile.dependency_id);
-                            $('#progress_parent_id').val(data.profile.parent_id);
-                            $('#progress_order_item').val(data.profile.order_item);
-
-                            // Mostrar responsables en el contenedor
-                            var responsablesContainer = $('#responsiblesContainer');
-                            responsablesContainer.empty();
-                            data.responsiblesChecked.forEach(function(item) {
-                                var badge = $('<span></span>')
-                                    .addClass('badge badge-primary')
-                                    .text(item.text);
-                                responsablesContainer.append(badge);
-                            });
-
-                            // Llenar los campos del formulario con los datos recibidos
-                            $('#progress_profile_id').val(data.profile.id);
-                            // $('#progress_parent_id').val(data.profile.parent_id);
-
-                            $('#progress_report_type').val(null).trigger('change');
-
-                            $('#progress_report_type').select2({
-                                placeholder: 'Seleccione el Tipo de Reporte'
-                            });
-
-                            var responsiblesContainer = $('#responsiblesContainer')
-                            responsiblesContainer.empty();
-                            data.responsiblesChecked.forEach(function(item) {
-                                var badge = $('<span></span>')
-                                    .addClass(
-                                        'badge badge-primary'
-                                    ) // Clase Bootstrap para badge
-                                    .text(item.text); // Texto del badge
-                                responsiblesContainer.append(badge);
-                            });
-
-                            var selectResponsibles = $('#progress_responsibles').select2();
-                            selectResponsibles.empty();
-                            data.responsiblesChecked.forEach(function(d) {
-                                var option = new Option(d.text, d.id, true, true);
-                                selectResponsibles.append(option).trigger('change');
-                                selectResponsibles.trigger({
-                                    type: 'select2:select',
-                                    params: {
-                                        data: data
-                                    }
-                                });
-                            });
-
-                            var url = '/admin/globales/get-dependencies/' + data.profile
-                                .dependency_id;
-
-                            $('#progress_responsibles').select2({
-                                allowClear: true,
-                                ajax: {
-                                    url: url,
-                                    dataType: 'json',
-                                    delay: 250,
-                                    processResults: function(data) {
-                                        return {
-                                            results: $.map(data, function(item) {
-                                                return {
-                                                    text: item.dependency,
-                                                    id: item.id
-                                                }
-                                            })
-                                        };
-                                    },
-                                    cache: true
+                    // Cargar indicador de la acción
+                    $.getJSON(_rpBaseUrl + '/{{ $profile->id }}/indicadores', function(todos) {
+                        // Buscar si esta accion tiene indicador_id — necesitamos el perfil
+                        $.getJSON(_rpBaseUrl + '/' + accionId + '/edit', function(data) {
+                            if (data.profile.indicador_id) {
+                                var ind = todos.find(function(i) { return i.id == data.profile.indicador_id; });
+                                if (ind) {
+                                    _rpIndicador = ind;
+                                    var anio = new Date().getFullYear();
+                                    var meta = ind.metas ? ind.metas.find(function(m) { return m.anio == anio; }) : null;
+                                    var dimColors = { eficiencia:'#1976d2', eficacia:'#28a745', calidad:'#17a2b8', economia:'#ffc107' };
+                                    var dimLabels = { eficiencia:'Eficiencia', eficacia:'Eficacia', calidad:'Calidad', economia:'Economía' };
+                                    $('#rp_ind_codigo').text(ind.codigo);
+                                    $('#rp_ind_dimension').text(dimLabels[ind.dimension] || ind.dimension)
+                                        .attr('style','background:' + (dimColors[ind.dimension]||'#6c757d') + ';color:#fff;font-size:.65rem');
+                                    $('#rp_ind_sentido').html(ind.sentido === 'ascendente'
+                                        ? '<span class="text-success font-weight-bold">▲</span>'
+                                        : '<span class="text-danger font-weight-bold">▼</span>');
+                                    $('#rp_ind_nombre').text(ind.nombre);
+                                    $('#rp_ind_formula').text(ind.formula || '—');
+                                    $('#rp_ind_unidad').text(ind.unidad_medida || '—');
+                                    $('#rp_unidad_label').text(ind.unidad_medida || '—');
+                                    $('#rp_ind_meta_anio').text(meta ? anio + ': ' + meta.valor : 'Sin meta para ' + anio);
+                                    $('#reportProgress_fichaIndicador').show();
                                 }
-                            });
-
-                            $('.progress_responsibles').hide()
-
-                            $('#color').select2({
-                                placeholder: 'Seleccione el Color'
-                            });
-
-                            if (data.profile) {
-                                var reportType = data.profile.report_type;
-                                $('#progress_report_type').val(reportType).trigger('change');
-                                // Mostrar el div correspondiente basado en el tipo de reporte
-                                if (reportType === 'quantitative') {
-                                    $('.quantitative').show();
-                                    $('.qualitative').hide();
-                                } else if (reportType === 'qualitative') {
-                                    $('.quantitative').hide();
-                                    $('.qualitative').show();
-                                }
-
-                                // Procesar el valor de parameters
-                                var parameters = JSON.parse(data.profile.parameters);
-                                parameters.forEach(function(param) {
-                                    var parts = param.split(' ');
-                                    var value = parts.slice(0, -1).join(
-                                        ' '); // Extraer el valor
-                                    console.log("🚀 ~ parameters.forEach ~ value:",
-                                        value)
-                                    var color = parts.slice(-1)[0]; // Extraer el color
-
-                                    var checkboxHTML = `
-                                    <div class="form-check">
-                                        <div class="input-group">
-                                        <input type="hidden" id="checkbox${Date.now()}" name="parameters[]" value="${value} (${value}%) ${color}" checked/> 
-                                        <label class="badge ${color} mr-2">${value}</label>
-                                        <a href="#" class="delete-checkbox"><i class="fa fa-trash text-danger"></i></a>
-                                        </div>
-                                    </div>`;
-
-                                    // Evento click para eliminar el checkbox
-                                    $('body').on('click', '.delete-checkbox', function(
-                                        e) {
-                                        e
-                                            .preventDefault(); // Evitar que el enlace actúe como un enlace normal
-
-                                        // Obtener el contenedor del checkbox y eliminarlo
-                                        $(this).closest('.form-check').remove();
-                                    });
-
-                                    // Agregar el checkbox al contenedor
-                                    $('#checkboxContainer').append(checkboxHTML);
-
-                                });
-
                             }
-
-                            // Extraer el texto del contenido HTML
-                            var tempDiv = document.createElement("div");
-                            tempDiv.innerHTML = data.profile.name;
-                            var plainText = tempDiv.textContent || tempDiv.innerText || "";
-
-                            // Mostrar el texto limpio en el campo de texto
-                            $('#progress_action').val(plainText);
-                            $('#progress_group_id').val(data.profile.group_id);
-                            $('#progress_mision').val(data.profile.mision);
-                            $('#progress_indicator').val(data.profile.indicator);
-                            $('#progress_vision').val(data.profile.vision);
-                            $('#progress_type').val(data.profile.progress_type);
-                            $('#progress_level').val(data.profile.level);
-                            $('#progress_period').val(data.profile.period);
-                            $('#progress_denominator').val(data.profile.denominator);
-                            $('#progress_numerator').val(data.profile.numerator);
-                            $('#progress_goal').val(data.profile.goal);
-                            $('#progress_baseline').val(data.profile.baseline);
-                            $('#progress_target').val(data.profile.target);
-                            $('#progress_dependency').val(data.profile.dependency_id);
-                            $('#progress_parent_id').val(data.profile.parent_id);
-                            $('#progress_order_item').val(data.profile.order_item);
-                            console.log('Denominador: ', data.profile.denominator)
-
-                        }).fail(function() {
-                        alert('Error al cargar los datos del perfil.');
+                        });
                     });
 
+                    // Cargar historial
+                    $.getJSON(_rpBaseUrl + '/' + accionId + '/reportes', function(reportes) {
+                        $('#rp_historial_count').text(reportes.length);
+                        var $hist = $('#rp_historial').empty();
+                        if (!reportes.length) {
+                            $hist.html('<p class="text-muted text-center" style="font-size:.78rem">Sin reportes previos.</p>');
+                            return;
+                        }
+                        reportes.forEach(function(r) {
+                            var sc = {verde:'success',amarillo:'warning',rojo:'danger','sin-datos':'secondary'}[r.semaforo] || 'secondary';
+                            $hist.append(
+                                '<div class="d-flex align-items-start py-1" style="border-bottom:1px solid #f0f0f0;gap:.5rem;font-size:.75rem">' +
+                                '<span class="badge badge-' + sc + ' flex-shrink-0" style="font-size:.65rem;margin-top:2px">' + (r.semaforo||'—') + '</span>' +
+                                '<div style="flex:1;min-width:0">' +
+                                '<strong>' + r.fecha_reporte + '</strong>' + (r.periodo_label ? ' — ' + r.periodo_label : '') +
+                                (r.valor_numerador !== null ? ' <span class="badge badge-light border">' + r.valor_numerador + '</span>' : '') +
+                                (r.pct_avance !== null ? ' <small class="text-muted">(' + r.pct_avance + '%)</small>' : '') +
+                                '<div class="text-muted" style="font-size:.72rem">' + (r.descripcion_avance || '') + '</div>' +
+                                '<small class="text-muted">' + r.reportado_por + '</small>' +
+                                '</div>' +
+                                '</div>'
+                            );
+                        });
+                    }).fail(function() {
+                        $('#rp_historial').html('<p class="text-muted text-center" style="font-size:.78rem">Sin reportes previos.</p>');
+                    });
 
-
+                    $('#ajaxDefineCriteriaModal').modal('show');
                 });
-                // Controlador de evento para la calculadora
-                $('.calculator').on('click', 'button', function() {
-                    var num1 = parseFloat($('#progress_numerator').val());
-                    var num2 = parseFloat($('#progress_denominator').val());
 
-                    // Obtener la operación a realizar desde el atributo data-operation del botón clickeado
-                    var operation = $(this).data('operation');
-                    var result = 0;
+                // Preview semáforo en tiempo real
+                $('#rp_valor_numerador').on('input', function() {
+                    var val = parseFloat($(this).val());
+                    if (isNaN(val) || !_rpIndicador) { $('#rp_semaforo_preview').hide(); return; }
+                    var res = calcularSemaforoPrev(val, _rpIndicador);
+                    if (!res) { $('#rp_semaforo_preview').hide(); return; }
+                    var cols = {verde:'#28a745',amarillo:'#ffc107',rojo:'#dc3545'};
+                    var fg   = res.semaforo === 'amarillo' ? '#000' : '#fff';
+                    $('#rp_semaforo_badge')
+                        .text(res.semaforo.toUpperCase() + ' — ' + res.pct + '%')
+                        .attr('style','background:' + (cols[res.semaforo]||'#6c757d') + ';color:' + fg);
+                    $('#rp_pct_label').text('Meta: ' + res.metaLabel);
+                    $('#rp_semaforo_preview').show();
+                });
 
-                    // Realizar la operación matemática correspondiente
-                    switch (operation) {
-                        case 'add':
-                            result = num1 + num2;
-                            break;
-                        case 'subtract':
-                            result = num1 - num2;
-                            break;
-                        case 'multiply':
-                            result = num1 * num2;
-                            break;
-                        case 'divide':
-                            if (num2 !== 0) {
-                                result = num1 / num2;
-                            } else {
-                                alert('No se puede dividir por cero.');
+                // Guardar reporte
+                $('#btnGuardarReporte').on('click', function() {
+                    var accionId = $('#reportProgress_accionId').val();
+                    var fecha    = $('#rp_fecha_reporte').val();
+                    if (!fecha) { toastr.warning('La fecha del reporte es obligatoria.'); return; }
+
+                    $.ajax({
+                        url: _rpBaseUrl + '/' + accionId + '/reportes',
+                        type: 'POST',
+                        data: {
+                            fecha_reporte:      fecha,
+                            periodo_label:      $('#rp_periodo_label').val(),
+                            valor_numerador:    $('#rp_valor_numerador').val() || null,
+                            descripcion_avance: $('#rp_descripcion_avance').val(),
+                            evidencia_url:      $('#rp_evidencia_url').val(),
+                            evidencia_label:    $('#rp_evidencia_label').val(),
+                        },
+                        success: function(res) {
+                            toastr.success('Reporte guardado correctamente.');
+                            $('#ajaxDefineCriteriaModal').modal('hide');
+                            // Actualizar semáforo en el acordeón sin recargar
+                            if (res.reporte && res.reporte.semaforo) {
+                                var $header = $('#actionsBlock_' + accionId + ' .card-header');
+                                var colors = {verde:'#28a745',amarillo:'#ffc107',rojo:'#dc3545','sin-datos':'#6c757d'};
+                                $header.css('border-left-color', colors[res.reporte.semaforo] || '#6c757d');
                             }
-                            break;
-                        case 'percentage':
-                            var porcentaje = (num1 / num2) * 100; // Calcula el porcentaje
-
-                            // Redondear el resultado si no es entero
-                            if (!Number.isInteger(porcentaje)) {
-                                porcentaje = Math.round(
-                                    porcentaje); // Redondea el resultado a entero
-                            }
-                            result = porcentaje; // Agrega '%' al final
-                            break;
-                        default:
-                            result = 0;
-                            break;
-                    }
-
-
-                    // Mostrar el resultado en el campo de texto de resultado
-                    $('#progress_progress').val(result);
-                });
-
-                $('#progress_report_type').change(function() {
-                    var selectedOption = $(this).val();
-                    // Ocultar todos los divs
-                    $('.quantitative, .qualitative').hide();
-
-                    // Mostrar el div correspondiente al tipo seleccionado
-                    if (selectedOption === 'quantitative') {
-                        $('.quantitative').show();
-                    } else if (selectedOption === 'qualitative') {
-                        $('.qualitative').show();
-                    }
-                });
-            });
-
-            $('#saveBtnMision').click(function(e) {
-                e.preventDefault();
-                $(this).html('Enviando..');
-
-                var data = new FormData();
-                var form_data = $('#misionForm').serializeArray();
-
-                $.each(form_data, function(key, input) {
-                    data.append(input.name, input.value);
-                });
-
-                data.append('mision', misionEditor.getData());
-
-                $.ajax({
-                    data: data,
-                    url: "{{ route('pei-profiles.store') }}",
-                    type: "POST",
-                    dataType: 'json',
-                    processData: false,
-                    contentType: false,
-                    success: function(data) {
-                        console.log(data.profile.mision)
-                        Swal.fire(
-                            'Excelente!',
-                            'Has Agregado una Misión.',
-                            'success'
-                        )
-
-                        //Actaulizacmos La mision en el DOM
-                        $('.mision .card-body').html(data.profile.mision);
-
-                        $('#misionForm').trigger("reset");
-                        $('#ajaxMisionModal').modal('hide');
-
-                    },
-                    error: function(data) {
-                        var obj = data.responseJSON.errors;
-                        $.each(obj, function(key, value) {
-                            // Alert Toastr
-                            toastr.options = {
-                                closeButton: true,
-                                progressBar: true,
-                            };
-                            toastr.error("Atención: " + value);
-                        });
-
-                        $('#saveBtnMision').html('Guardar Cambios');
-                    }
-                });
-            });
-
-            $('#saveBtnVision').click(function(e) {
-                e.preventDefault();
-                $(this).html('Enviando..');
-
-                var data = new FormData();
-                var form_data = $('#visionForm').serializeArray();
-
-                $.each(form_data, function(key, input) {
-                    data.append(input.name, input.value);
-                });
-
-                data.append('vision', visionEditor.getData());
-
-                $.ajax({
-                    data: data,
-                    url: "{{ route('pei-profiles.store') }}",
-                    type: "POST",
-                    dataType: 'json',
-                    processData: false,
-                    contentType: false,
-                    success: function(data) {
-                        Swal.fire(
-                            'Excelente!',
-                            'Has Agregado una Visión.',
-                            'success'
-                        )
-
-                        //Actaulizacmos La mision en el DOM
-                        $('.vision .card-body').html(data.profile.vision);
-
-                        $('#visionForm').trigger("reset");
-                        $('#ajaxVisionModal').modal('hide');
-                    },
-
-                    error: function(data) {
-                        var obj = data.responseJSON.errors;
-                        $.each(obj, function(key, value) {
-                            // Alert Toastr
-                            toastr.options = {
-                                closeButton: true,
-                                progressBar: true,
-                            };
-                            toastr.error("Atención: " + value);
-                        });
-                        $('#saveBtnVision').html('Guardar Cambios');
-                    }
-
-                });
-            });
-
-            $('#saveBtnValues').click(function(e) {
-                e.preventDefault();
-                $(this).html('Enviando..');
-
-                var data = new FormData();
-                var form_data = $('#valuesForm').serializeArray();
-
-                $.each(form_data, function(key, input) {
-                    data.append(input.name, input.value);
-                });
-
-                data.append('values', valuesEditor.getData());
-
-                $.ajax({
-                    data: data,
-                    url: "{{ route('pei-profiles.store') }}",
-                    type: "POST",
-                    dataType: 'json',
-                    processData: false,
-                    contentType: false,
-                    success: function(data) {
-                        Swal.fire(
-                            'Excelente!',
-                            'Has Agregado Valores.',
-                            'success'
-                        )
-
-                        //Actaulizacmos La mision en el DOM
-                        $('.values .card-body').html(data.profile.values);
-
-                        $('#valuesForm').trigger("reset");
-                        $('#ajaxValuesModal').modal('hide');
-                    },
-
-                    error: function(data) {
-                        var obj = data.responseJSON.errors;
-                        $.each(obj, function(key, value) {
-                            // Alert Toastr
-                            toastr.options = {
-                                closeButton: true,
-                                progressBar: true,
-                            };
-                            toastr.error("Atención: " + value);
-                        });
-                        $('#saveBtnVision').html('Guardar Cambios');
-                    }
-
-                });
-            });
-
-            $('#saveBtnAxis').click(function(e) {
-                e.preventDefault();
-                $(this).html('Enviando..');
-
-                var saveBtnValue = $(this).val();
-
-                var data = new FormData();
-                var form_data = $('#axisForm').serializeArray();
-
-                $.each(form_data, function(key, input) {
-                    data.append(input.name, input.value);
-                });
-
-                data.append('name', axisEditor.getData());
-
-                $.ajax({
-                    data: data,
-                    url: "{{ route('pei-profiles.store') }}",
-                    type: "POST",
-                    dataType: 'json',
-                    processData: false,
-                    contentType: false,
-                    success: function(data) {
-                        Swal.fire(
-                            'Excelente!',
-                            'Has Agregado un Nuevo Eje.',
-                            'success'
-                        )
-
-                        $('#axisForm').trigger("reset");
-                        $('#ajaxAxisModal').modal('hide');
-
-                        var axisId = data.profile.id;
-                        var axisParentId = data.profile.parent_id;
-                        var axisName = data.profile.name;
-                        var accordionAxiID = data.profile.id
-
-                        if (saveBtnValue === "create") {
-                            var newAxisElement = '<div class="col-12 mb-3">' +
-                                '<div class="card bg-primary">' +
-                                '<div class="card-header bg-light" id="headingAxi_' + axisId +
-                                '">' +
-                                '<h2 class="mb-0" id="axisBlock_' + axisId + '">' +
-                                '<div class="d-flex justify-content-between">' +
-                                '<button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#' +
-                                axisId + '" aria-expanded="false" aria-controls="' + axisId +
-                                '" style="max-height: 100px; overflow-y: auto; white-space: pre-line; text-align: left; font-weight: bold;">' +
-                                axisName +
-                                '</button>' +
-                                '<a class="btn btn-success text-white btn-circle createAxis" data-id="' +
-                                axisId +
-                                '" data-type="edit" href="javascript:void(0)" id="createAxis"> <i class="fa fa-edit"></i>' +
-                                '</a>' +
-                                '<a class="btn btn-info text-white btn-circle createGoalsButton" data-id="' +
-                                axisId +
-                                '" data-type="create" href="javascript:void(0)" id="createGoals"> <i class="fa-solid fa-circle-plus fa-beat"></i>' +
-                                '</a>' +
-                                '<a class="btn btn-danger text-white btn-circle deleteItem" data-id="' +
-                                axisId +
-                                '" href="javascript:void(0)" id="deleteItem"> <i class="fa fa-trash"></i>' +
-                                '</a>' +
-                                '</div>' +
-                                '</h2>' +
-                                '</div>' +
-                                '<div id="' + axisId +
-                                '" class="collapse" aria-labelledby="headingAxi_' + axisId +
-                                '" data-parent="#accordionGoal_' + axisId + '">' +
-                                '<div class="row contentGoals">' +
-                                '<div class="col-12">' +
-                                '<div class="card-body">' +
-                                '<div id="accordionGoal_' + axisId + '">' +
-                                '</div>' +
-                                '</div>' +
-                                '</div>' +
-                                '</div>' +
-                                '</div>' +
-                                '</div>';
-
-                            // Agrega el nuevo elemento al primer nivel de contentMain
-                            $('.contentMain').prepend(
-                                newAxisElement);
-
-                        } else if (saveBtnValue === "edit") {
-
-                            $('#headingAxi_' + axisId + ' button').html(axisName);
-
+                        },
+                        error: function(xhr) {
+                            var e = xhr.responseJSON?.errors;
+                            if (e) $.each(e, (k,v) => toastr.error(v[0]));
+                            else toastr.error(xhr.responseJSON?.message || 'Error al guardar.');
                         }
-
-                    },
-
-                    error: function(data) {
-                        var obj = data.responseJSON.errors;
-                        $.each(obj, function(key, value) {
-                            // Alert Toastr
-                            toastr.options = {
-                                closeButton: true,
-                                progressBar: true,
-                            };
-                            toastr.error("Atención: " + value);
-                        });
-                        $('#saveBtnAxis').html('Guardar Cambios');
-                    }
-
+                    });
                 });
+                // ══ FIN MÓDULO REPORTAR AVANCE ═══════════════════════════════
             });
-
-            $('#saveBtnGoals').click(function(e) {
-                e.preventDefault();
-                $(this).html('Enviando..');
-
-                var saveBtnValue = $(this).val();
-
-                var data = new FormData();
-                var form_data = $('#goalsForm').serializeArray();
-
-                $.each(form_data, function(key, input) {
-                    data.append(input.name, input.value);
-                });
-
-                data.append('name', goalsEditor.getData());
-
-                $.ajax({
-                    data: data,
-                    url: "{{ route('pei-profiles.store') }}",
-                    type: "POST",
-                    dataType: 'json',
-                    processData: false,
-                    contentType: false,
-                    success: function(data) {
-                        Swal.fire(
-                            'Excelente!',
-                            'Has Agregado un nuevo Objetivo.',
-                            'success'
-                        )
-                        var parentId = data.profile.parent_id;
-                        var goalsId = data.profile.id;
-                        var goalsName = data.profile.name;
-                        var accordionGoalID = data.profile.id
-                        if (saveBtnValue === "create") {
-                            var newGoalsElement = '<div class="container">' +
-                                '<div class="card">' +
-                                '<div class="card-header bg-light" id="headingAxi">' +
-                                '<h2 class="mb-0" id="goalsBlock_' + goalsId + '">' +
-                                '<div class="d-flex justify-content-between">' +
-                                '<button class="btn btn-link btn-block text-left collapsed" ' +
-                                'type="button" data-toggle="collapse" ' +
-                                'data-target="#' + goalsId + '" aria-expanded="false" ' +
-                                'aria-controls="' + goalsId +
-                                '" style="max-height: 100px; overflow-y: auto; white-space: pre-line; text-align: left; font-weight: bold;">' +
-                                goalsName +
-                                '</button>' +
-                                '<a class="btn btn-warning text-white btn-circle showStrategies" ' +
-                                'data-id="' + goalsId +
-                                '" data-type="edit" href="javascript:void(0)" ' +
-                                'id="showStrategies"> <i class="fa fa-eye"></i>' +
-                                '</a>' +
-                                '<a class="btn btn-success text-white btn-circle createGoals" ' +
-                                'data-id="' + goalsId +
-                                '" data-type="edit" href="javascript:void(0)" ' +
-                                'id="createGoals"> <i class="fa fa-edit"></i>' +
-                                '</a>' +
-                                '<a class="btn btn-info text-white btn-circle createActionsButton" ' +
-                                'data-id="' + goalsId +
-                                '" data-type="create" href="javascript:void(0)" ' +
-                                'id="createActions"> <i class="fa-solid fa-circle-plus fa-beat"></i>' +
-                                '</a>' +
-                                '<a class="btn btn-danger text-white btn-circle deleteItem" ' +
-                                'data-id="' + goalsId + '" href="javascript:void(0)" ' +
-                                'id="deleteItem"> <i class="fa fa-trash"></i>' +
-                                '</a>' +
-                                '</div>' +
-                                '</h2>' +
-                                '</div>' +
-                                '<div id="' + goalsId + '" class="collapse" ' +
-                                'aria-labelledby="headingGoal_' + goalsId + '" ' +
-                                'data-parent="#accordionGoal_' + goalsId + '">' +
-                                '<div class="row contentActions">' +
-                                '<div class="card-body">';
-                            $('.contentGoals #accordionGoal_' + parentId).prepend(
-                                newGoalsElement);
-
-                        } else if (saveBtnValue === "edit") {
-                            $('#headingGoal_' + goalsId + ' button').html(goalsName);
-                        }
-                        $('#goalsForm').trigger("reset");
-                        $('#ajaxGoalsModal').modal('hide');
-                    },
-
-                    error: function(data) {
-                        var obj = data.responseJSON.errors;
-                        $.each(obj, function(key, value) {
-                            // Alert Toastr
-                            toastr.options = {
-                                closeButton: true,
-                                progressBar: true,
-                            };
-                            toastr.error("Atención: " + value);
-                        });
-                        $('#saveBtnVision').html('Guardar Cambios');
-                    }
-
-                });
-            });
-
-            $('#saveBtnActions').click(function(e) {
-                e.preventDefault();
-                $(this).html('Enviando..');
-
-                var saveBtnValue = $(this).val();
-                var data = new FormData();
-                var form_data = $('#actionsForm').serializeArray();
-
-                $.each(form_data, function(key, input) {
-                    data.append(input.name, input.value);
-                });
-
-                data.append('name', actionsEditor.getData());
-
-                $.ajax({
-                    data: data,
-                    url: "{{ route('pei-profiles.store') }}",
-                    type: "POST",
-                    dataType: 'json',
-                    processData: false,
-                    contentType: false,
-                    success: function(data) {
-
-                        Swal.fire(
-                            'Excelente!',
-                            'Has Agregado una nueva Acción.',
-                            'success'
-                        )
-
-                        var parentId = data.profile.parent_id;
-                        var actionsId = data.profile.id;
-                        var actionsName = data.profile.name;
-
-                        var goalId = data.profile
-                            .id; // Supongo que contiene el ID del objetivo al que deseas agregar o actualizar acciones
-
-                        if (saveBtnValue === "create") {
-                            // Crear una nueva fila de acción (action) y agregarla a la tabla existente
-                            var newRowHtml = `
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">
-                                        <div class="card-body" id="actionsBlock_${ actionsId }">
-                                            <div class="table-responsive">
-                                                <table class="table table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Nro.</th>
-                                                            <th>Acción</th>
-                                                            <th>Indicador</th>
-                                                            <th>Línea de Base</th>
-                                                            <th>Meta</th>
-                                                            <th>Responsable</th>
-                                                            <th>Acciones</th>
-                                                        </tr>
-                                                    </thead>                                  
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>${data.profile.order_item}</td>
-                                                            <td>${data.profile.name}</td>
-                                                            <td>${data.profile.indicator}</td>
-                                                            <td>${data.profile.baseline}</td>
-                                                            <td>${data.profile.target}</td>
-                                                            <td>${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}</td>
-                                                            <td>
-                                                                <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
-                                                                    <i class="fa fa-edit" aria-hidden="true"></i>
-                                                                </a>
-                                                                <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
-                                                                    <i class="fa fa-trash" aria-hidden="true"></i>
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </h5>
-                                </div>
-                            </div>`;
-
-                            // Agregar la nueva fila al final de la tabla del objetivo correspondiente
-                            $(`.actionDetail #actionDetail`).append(
-                                newRowHtml);
-                        } else if (saveBtnValue === "edit") {
-                            // Actualiza una fila de acción existente
-                            var updatedHtml = `
-                                <td>${data.profile.order_item}</td>
-                                <td>${data.profile.name}</td>
-                                <td>${data.profile.indicator}</td>
-                                <td>${data.profile.baseline}</td>
-                                <td>${data.profile.target}</td>
-                                <td>${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}</td>
-                                <td>
-                                    <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
-                                        <i class="fa fa-edit" aria-hidden="true"></i>
-                                    </a>
-                                    <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
-                                        <i class="fa fa-trash" aria-hidden="true"></i>
-                                    </a>
-                                </td>                            
-                        `;
-                            $(`#actionsBlock_${actionsId} table tbody tr`).html(updatedHtml);
-
-
-                        }
-
-                        $('#actionsForm').trigger("reset");
-                        $('#ajaxActionsModal').modal('hide');
-                    },
-
-                    error: function(data) {
-                        var obj = data.responseJSON.errors;
-                        $.each(obj, function(key, value) {
-                            // Alert Toastr
-                            toastr.options = {
-                                closeButton: true,
-                                progressBar: true,
-                            };
-                            toastr.error("Atención: " + value);
-                        });
-                        $('#saveBtnVision').html('Guardar Cambios');
-                    }
-
-                });
-            });
-
-            $('#saveBtnMonitoringType').click(function(e) {
-                e.preventDefault();
-                $(this).html('Enviando..');
-
-                var saveBtnValue = $(this).val();
-
-                var data = new FormData();
-                var form_data = $('#monitoringType').serializeArray();
-                $.each(form_data, function(key, input) {
-                    data.append(input.name, input.value);
-                });
-
-                $.ajax({
-                    data: data,
-                    url: "{{ route('pei-profiles.store') }}",
-                    type: "POST",
-                    dataType: 'json',
-                    processData: false,
-                    contentType: false,
-                    success: function(data) {
-
-                        Swal.fire(
-                            'Excelente!',
-                            'Has Agregado una nueva Acción.',
-                            'success'
-                        )
-
-                        var parentId = data.profile.parent_id;
-                        var actionsId = data.profile.id;
-                        var actionsName = data.profile.name;
-
-                        var goalId = data.profile
-                            .id; // Supongo que contiene el ID del objetivo al que deseas agregar o actualizar acciones
-
-                        if (saveBtnValue === "create") {
-                            // Crear una nueva fila de acción (action) y agregarla a la tabla existente
-                            var newRowHtml = `
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">
-                                        <div class="card-body" id="actionsBlock_${ actionsId }">
-                                            <div class="table-responsive">
-                                                <table class="table table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Nro.</th>
-                                                            <th>Acción</th>
-                                                            <th>Indicador</th>
-                                                            <th>Línea de Base</th>
-                                                            <th>Meta</th>
-                                                            <th>Responsable</th>
-                                                            <th>Acciones</th>
-                                                        </tr>
-                                                    </thead>                                  
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>${data.profile.order_item}</td>
-                                                            <td>${data.profile.name}</td>
-                                                            <td>${data.profile.indicator}</td>
-                                                            <td>${data.profile.baseline}</td>
-                                                            <td>${data.profile.target}</td>
-                                                            <td>${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}</td>
-                                                            <td>
-                                                                <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
-                                                                    <i class="fa fa-edit" aria-hidden="true"></i>
-                                                                </a>
-                                                                <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
-                                                                    <i class="fa fa-trash" aria-hidden="true"></i>
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </h5>
-                                </div>
-                            </div>`;
-
-                            // Agregar la nueva fila al final de la tabla del objetivo correspondiente
-                            $(`.actionDetail #actionDetail`).append(
-                                newRowHtml);
-                        } else if (saveBtnValue === "edit") {
-                            // Actualiza una fila de acción existente
-                            var updatedHtml = `
-                                <td>${data.profile.order_item}</td>
-                                <td>${data.profile.name}</td>
-                                <td>${data.profile.indicator}</td>
-                                <td>${data.profile.baseline}</td>
-                                <td>${data.profile.target}</td>
-                                <td>${data.profile.responsibles.map(responsible => `<span class="badge badge-secondary">${responsible.dependency}</span>`).join(', ')}</td>
-                                <td>
-                                    <a class="btn btn-success text-white btn-circle" data-id="${data.profile.id}" data-type="edit" href="javascript:void(0)" id="createActions">
-                                        <i class="fa fa-edit" aria-hidden="true"></i>
-                                    </a>
-                                    <a class="btn btn-danger text-white btn-circle deleteItem" data-id="${data.profile.id}" href="javascript:void(0)" id="deleteProfile">
-                                        <i class="fa fa-trash" aria-hidden="true"></i>
-                                    </a>
-                                </td>                            
-                        `;
-                            $(`#actionsBlock_${actionsId} table tbody tr`).html(updatedHtml);
-                        }
-
-                        $('#actionsForm').trigger("reset");
-                        $('#ajaxActionsModal').modal('hide');
-                    },
-
-                    error: function(data) {
-                        var obj = data.responseJSON.errors;
-                        $.each(obj, function(key, value) {
-                            // Alert Toastr
-                            toastr.options = {
-                                closeButton: true,
-                                progressBar: true,
-                            };
-                            toastr.error("Atención: " + value);
-                        });
-                        $('#saveBtnVision').html('Guardar Cambios');
-                    }
-
-                });
-            });
-
             // Agregar un controlador de eventos para el botón de eliminación
             $('.contentMain').on('click', '.deleteItem', function() {
                 var axisId = $(this).data('id');
@@ -1926,6 +1669,294 @@
             });
         });
 
+        // Inicializar popovers de marcos referenciales
+        $('[data-toggle="popover"]').popover();
+        // Cerrar popover al hacer click fuera
+        $('body').on('click', function(e) {
+            if (!$(e.target).closest('[data-toggle="popover"]').length) {
+                $('[data-toggle="popover"]').popover('hide');
+            }
+        });
+
+        // ══════════════════════════════════════════════════════════════════════
+        // MÓDULO: Ficha Técnica de Indicadores
+        // ══════════════════════════════════════════════════════════════════════
+        var _peiProfileId = '{{ $profile->id }}';
+        var _indicadorEditId = null;
+        var _metaIndex = 0;
+
+        var _dimensionLabels = { eficiencia:'Eficiencia', eficacia:'Eficacia', calidad:'Calidad', economia:'Economía' };
+        var _ambitoLabels    = { objetivo_estrategico:'Obj. Estratégico', objetivo_especifico:'Obj. Específico', accion_estrategica:'Acc. Estratégica', accion_operativa:'Acc. Operativa' };
+        var _frecuenciaLabels= { mensual:'Mensual', trimestral:'Trimestral', semestral:'Semestral', anual:'Anual', otro:'Otro' };
+        var _sentidoLabels   = { ascendente:'▲ Asc.', descendente:'▼ Desc.' };
+
+        // ── Estilos radio como card seleccionable ──────────────────────────
+        $(document).on('change', '.ind-radio', function() {
+            var name  = $(this).attr('name');
+            // Desmarcar todas las del mismo grupo
+            $('input[name="' + name + '"]').each(function() {
+                var card  = $(this).closest('.ind-radio-card');
+                var color = card.data('color') || 'secondary';
+                card.removeClass('ind-selected-' + color);
+            });
+            // Marcar la seleccionada
+            var card  = $(this).closest('.ind-radio-card');
+            var color = card.data('color') || 'secondary';
+            card.addClass('ind-selected-' + color);
+        });
+
+        // ── Agregar fila de meta ───────────────────────────────────────────
+        function agregarMeta(anio, valor) {
+            var idx = _metaIndex++;
+            var row = '<div class="col-md-3 mb-2 meta-row" data-idx="' + idx + '">' +
+                '<div class="input-group input-group-sm">' +
+                    '<div class="input-group-prepend">' +
+                        '<span class="input-group-text" style="font-size:.72rem">Año</span>' +
+                    '</div>' +
+                    '<input type="number" class="form-control meta-anio" placeholder="' + new Date().getFullYear() + '" value="' + (anio||'') + '" min="2020" max="2100">' +
+                    '<input type="text"   class="form-control meta-valor" placeholder="Meta" value="' + (valor||'') + '">' +
+                    '<div class="input-group-append">' +
+                        '<button type="button" class="btn btn-outline-danger btn-remove-meta" style="font-size:.72rem">' +
+                            '<i class="fa fa-times"></i>' +
+                        '</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+            $('#metasContainer').append(row);
+        }
+
+        $('#btnAgregarMeta').on('click', function() { agregarMeta('',''); });
+
+        $(document).on('click', '.btn-remove-meta', function() {
+            $(this).closest('.meta-row').remove();
+        });
+
+        // ── Leer metas del DOM ─────────────────────────────────────────────
+        function leerMetas() {
+            var metas = [];
+            $('#metasContainer .meta-row').each(function() {
+                var anio  = parseInt($(this).find('.meta-anio').val());
+                var valor = $.trim($(this).find('.meta-valor').val());
+                if (anio && valor) metas.push({ anio: anio, valor: valor });
+            });
+            return metas;
+        }
+
+        // ── Resetear formulario ────────────────────────────────────────────
+        function resetFormIndicador() {
+            _indicadorEditId = null;
+            $('#ind_id').val('');
+            $('#ind_pei_profile_id').val(_peiProfileId);
+            $('#ind_nombre').val('');
+            $('#ind_codigo_letras').val('');
+            $('#ind_codigo_numeros').val('');
+            $('[name="ind_dimension"],[name="ind_ambito"],[name="ind_frecuencia"],[name="ind_cobertura"],[name="ind_sentido"]').prop('checked',false);
+            $('.ind-radio-card').each(function() {
+                var color = $(this).data('color') || 'secondary';
+                $(this).removeClass('ind-selected-' + color);
+            });
+            $('#ind_descripcion,#ind_variables,#ind_formula,#ind_unidad_medida').val('');
+            $('#ind_frecuencia_otro,#ind_linea_base_anio,#ind_linea_base_valor').val('');
+            $('#ind_fuente,#ind_dependencia_responsable,#ind_comentarios').val('');
+            $('#metasContainer').empty();
+            _metaIndex = 0;
+        }
+
+        // ── Cargar datos en el formulario (edición) ────────────────────────
+        function cargarIndicador(ind) {
+            resetFormIndicador();
+            _indicadorEditId = ind.id;
+            $('#ind_id').val(ind.id);
+            $('#ind_nombre').val(ind.nombre);
+            $('#ind_codigo_letras').val(ind.codigo_letras);
+            $('#ind_codigo_numeros').val(ind.codigo_numeros);
+            // Radios
+            $.each(['dimension','ambito','frecuencia','cobertura','sentido'], function(i, campo) {
+                var val = ind[campo];
+                var radio = $('input[name="ind_' + campo + '"][value="' + val + '"]');
+                radio.prop('checked', true).trigger('change');
+            });
+            if (ind.frecuencia === 'otro') $('#ind_frecuencia_otro').val(ind.frecuencia_otro);
+            $('#ind_descripcion').val(ind.descripcion);
+            $('#ind_variables').val(ind.variables);
+            $('#ind_formula').val(ind.formula);
+            $('#ind_unidad_medida').val(ind.unidad_medida);
+            $('#ind_linea_base_anio').val(ind.linea_base_anio);
+            $('#ind_linea_base_valor').val(ind.linea_base_valor);
+            $('#ind_fuente').val(ind.fuente);
+            $('#ind_dependencia_responsable').val(ind.dependencia_responsable);
+            $('#ind_comentarios').val(ind.comentarios);
+            // Metas
+            if (ind.metas && ind.metas.length) {
+                ind.metas.forEach(function(m) { agregarMeta(m.anio, m.valor); });
+            }
+        }
+
+        // ── Abrir modal nuevo ──────────────────────────────────────────────
+        // ── Autocompletar código desde el servidor ─────────────────────────
+        function autoCompletarCodigo(callback) {
+            $.getJSON('{{ url("pei-profiles") }}/' + _peiProfileId + '/indicadores/siguiente-codigo',
+                function(res) {
+                    $('#ind_codigo_letras').val(res.letras);
+                    $('#ind_codigo_numeros').val(res.numeros);
+                    if (callback) callback(res);
+                }
+            );
+        }
+
+        $('body').on('click', '#btnNuevoIndicador', function() {
+            resetFormIndicador();
+            var subtitulo = $(this).data('subtitulo') || '{{ strip_tags($profile->name) }}';
+            $('#modalIndicadorTitulo').html('<i class="fa fa-ruler-combined mr-2"></i>Nueva Ficha de Indicador');
+            $('#modalIndicadorSubtitulo').text(subtitulo);
+            $('#modalIndicadoresList').modal('hide');
+            $('#modalIndicador').modal('show');
+            autoCompletarCodigo();
+        });
+
+        $('#btnNuevoIndicadorDesdeList').on('click', function() {
+            resetFormIndicador();
+            $('#modalIndicadorTitulo').html('<i class="fa fa-ruler-combined mr-2"></i>Nueva Ficha de Indicador');
+            $('#modalIndicadorSubtitulo').text('');
+            $('#modalIndicadoresList').modal('hide');
+            $('#modalIndicador').modal('show');
+            autoCompletarCodigo();
+        });
+
+        // ── Abrir modal lista de indicadores ──────────────────────────────
+        $('body').on('click', '#btnVerIndicadores', function() {
+            cargarListaIndicadores();
+            $('#modalIndicadoresList').modal('show');
+        });
+
+        function cargarListaIndicadores() {
+            $.getJSON('{{ url("pei-profiles") }}/' + _peiProfileId + '/indicadores', function(data) {
+                var tbody = $('#indicadoresListBody').empty();
+                if (!data.length) {
+                    tbody.append('<tr><td colspan="7" class="text-center text-muted py-3"><i class="fa fa-inbox mr-1"></i> Sin indicadores registrados.</td></tr>');
+                    return;
+                }
+                data.forEach(function(ind) {
+                    tbody.append(
+                        '<tr>' +
+                        '<td><span class="badge badge-dark" style="font-size:.7rem">' + ind.codigo + '</span></td>' +
+                        '<td style="font-size:.85rem">' + ind.nombre + '</td>' +
+                        '<td><span class="badge badge-info" style="font-size:.68rem">' + (_dimensionLabels[ind.dimension]||ind.dimension) + '</span></td>' +
+                        '<td style="font-size:.78rem">' + (_ambitoLabels[ind.ambito]||ind.ambito) + '</td>' +
+                        '<td style="font-size:.78rem">' + (_frecuenciaLabels[ind.frecuencia]||ind.frecuencia) + '</td>' +
+                        '<td>' + (ind.sentido === 'ascendente' ? '<span class="text-success font-weight-bold">▲</span>' : '<span class="text-danger font-weight-bold">▼</span>') + '</td>' +
+                        '<td class="text-center" style="white-space:nowrap">' +
+                            '<button class="btn btn-sm btn-outline-primary py-0 px-2 btnEditarIndicador" data-id="' + ind.id + '" title="Editar"><i class="fa fa-edit" style="font-size:.7rem"></i></button> ' +
+                            '<button class="btn btn-sm btn-outline-danger py-0 px-2 btnEliminarIndicador" data-id="' + ind.id + '" data-nombre="' + ind.nombre + '" title="Eliminar"><i class="fa fa-trash" style="font-size:.7rem"></i></button>' +
+                        '</td>' +
+                        '</tr>'
+                    );
+                });
+                // Guardar data para edición
+                $('#indicadoresListBody').data('indicadores', data);
+            });
+        }
+
+        // ── Editar desde lista ─────────────────────────────────────────────
+        $(document).on('click', '.btnEditarIndicador', function() {
+            var id   = $(this).data('id');
+            var data = $('#indicadoresListBody').data('indicadores') || [];
+            var ind  = data.find(function(i) { return i.id == id; });
+            if (!ind) return;
+            cargarIndicador(ind);
+            $('#modalIndicadorTitulo').html('<i class="fa fa-ruler-combined mr-2"></i>Editar Ficha de Indicador');
+            $('#modalIndicadorSubtitulo').text(ind.nombre);
+            $('#modalIndicadoresList').modal('hide');
+            $('#modalIndicador').modal('show');
+        });
+
+        // ── Eliminar desde lista ───────────────────────────────────────────
+        $(document).on('click', '.btnEliminarIndicador', function() {
+            var id     = $(this).data('id');
+            var nombre = $(this).data('nombre');
+            Swal.fire({
+                title: '¿Eliminar indicador?',
+                html: '<strong>' + nombre + '</strong>',
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#d33', cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar',
+            }).then(function(r) {
+                if (!r.isConfirmed) return;
+                $.ajax({
+                    url: '{{ url("pei-profiles") }}/' + _peiProfileId + '/indicadores/' + id,
+                    type: 'DELETE',
+                    success: function() {
+                        toastr.success('Indicador eliminado.');
+                        cargarListaIndicadores();
+                    }
+                });
+            });
+        });
+
+        // ── Guardar ficha ──────────────────────────────────────────────────
+        $('#btnGuardarIndicador').on('click', function() {
+            var nombre = $.trim($('#ind_nombre').val());
+            var dim    = $('input[name="ind_dimension"]:checked').val();
+            var amb    = $('input[name="ind_ambito"]:checked').val();
+            var frec   = $('input[name="ind_frecuencia"]:checked').val();
+            var cob    = $('input[name="ind_cobertura"]:checked').val();
+            var sent   = $('input[name="ind_sentido"]:checked').val();
+
+            if (!nombre)  { toastr.warning('El nombre del indicador es obligatorio.'); return; }
+            if (!dim)     { toastr.warning('Seleccioná la dimensión del indicador.'); return; }
+            if (!amb)     { toastr.warning('Seleccioná el ámbito del indicador.'); return; }
+            if (!frec)    { toastr.warning('Seleccioná la frecuencia de medición.'); return; }
+            if (!cob)     { toastr.warning('Seleccioná la cobertura geográfica.'); return; }
+            if (!sent)    { toastr.warning('Seleccioná el sentido del indicador.'); return; }
+
+            var payload = {
+                nombre:                   nombre,
+                codigo_letras:            $.trim($('#ind_codigo_letras').val()),
+                codigo_numeros:           $.trim($('#ind_codigo_numeros').val()),
+                dimension:                dim,
+                ambito:                   amb,
+                descripcion:              $.trim($('#ind_descripcion').val()),
+                variables:                $.trim($('#ind_variables').val()),
+                formula:                  $.trim($('#ind_formula').val()),
+                unidad_medida:            $.trim($('#ind_unidad_medida').val()),
+                frecuencia:               frec,
+                frecuencia_otro:          $.trim($('#ind_frecuencia_otro').val()),
+                cobertura:                cob,
+                sentido:                  sent,
+                linea_base_anio:          $('#ind_linea_base_anio').val() || null,
+                linea_base_valor:         $.trim($('#ind_linea_base_valor').val()),
+                fuente:                   $.trim($('#ind_fuente').val()),
+                dependencia_responsable:  $.trim($('#ind_dependencia_responsable').val()),
+                comentarios:              $.trim($('#ind_comentarios').val()),
+            };
+
+            // Metas como campos indexados (compatible con Laravel array validation)
+            var metas = leerMetas();
+            metas.forEach(function(m, i) {
+                payload['metas[' + i + '][anio]']  = m.anio;
+                payload['metas[' + i + '][valor]'] = m.valor;
+            });
+
+            var url    = _indicadorEditId
+                ? '{{ url("pei-profiles") }}/' + _peiProfileId + '/indicadores/' + _indicadorEditId
+                : '{{ url("pei-profiles") }}/' + _peiProfileId + '/indicadores';
+            var method = _indicadorEditId ? 'PUT' : 'POST';
+
+            $.ajax({
+                url: url, type: method, data: payload,
+                success: function(res) {
+                    toastr.success(_indicadorEditId ? 'Indicador actualizado.' : 'Indicador creado.');
+                    $('#modalIndicador').modal('hide');
+                },
+                error: function(xhr) {
+                    var e = xhr.responseJSON?.errors;
+                    if (e) $.each(e, (k,v) => toastr.error(v[0]));
+                    else toastr.error(xhr.responseJSON?.message || 'Error al guardar.');
+                }
+            });
+        });
+        // ══ Fin módulo indicadores ══════════════════════════════════════════
+
         // Verifica si hay datos en el localStorage
         var type = '{{ $type }}'
         var storedType = localStorage.getItem('type');
@@ -1943,10 +1974,76 @@
                 dynamicURL = dynamicURL.replace('taskIDPlaceholder', storedTaskID);
                 tasksShowLinkDynamic.innerHTML = '<a href="' + dynamicURL + '">Lista de Tareas</a>';
             }
-        } else if (storageType !== null && storedTaskID === null) {
+        } else if (storedType !== null && storedTaskID === null) {
             document.getElementById('default-nav').style.display = 'none';
             document.getElementById('dynamic-nav').style.display = 'block';
 
         }
     </script>
+
+<script>
+// ══ NOTIFICACIONES PEI ═══════════════════════════════════════════════════════
+// Handler global del botón Agregar Período de RI (delegado, se registra 1 sola vez)
+$(document).on('click', '.btnAgregarRiMetaBtn', function() {
+    var idx = $('#riMetasContainer .ri-meta-row').length;
+    $('#riMetasContainer').append(
+        '<div class="col-md-4 mb-1 ri-meta-row" data-idx="' + idx + '">' +
+        '<div class="input-group input-group-sm">' +
+            '<div class="input-group-prepend"><span class="input-group-text" style="font-size:.7rem">Año</span></div>' +
+            '<input type="number" class="form-control ri-meta-anio" placeholder="{{ date("Y") }}" min="2020" max="2100">' +
+            '<input type="text" class="form-control ri-meta-valor" placeholder="Meta (%, nº, decimal)">' +
+            '<div class="input-group-append"><button type="button" class="btn btn-circle btn-danger btn-sm ri-meta-remove" title="Eliminar"><i class="fa fa-times"></i></button></div>' +
+        '</div></div>'
+    );
+});
+$(document).on('click', '.ri-meta-remove', function() {
+    $(this).closest('.ri-meta-row').remove();
+});
+$('#btnNotificarTodosPei').on('click', function() {
+    var profileId = $(this).data('profile');
+    Swal.fire({
+        title: '¿Notificar a todos los responsables?',
+        html: 'Se enviará un email a cada persona asignada como responsable en alguna acción del plan, con el listado de sus acciones y el link para reportar avance.',
+        icon: 'question', showCancelButton: true,
+        confirmButtonColor: '#2e7d32', cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="fa fa-paper-plane mr-1"></i> Sí, notificar',
+        cancelButtonText: 'Cancelar',
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+        var $btn = $('#btnNotificarTodosPei').prop('disabled', true)
+            .html('<i class="fa fa-spinner fa-spin mr-1"></i> Enviando...');
+        $.ajax({
+            url: '{{ url("admin/pei-profiles") }}/' + profileId + '/notificar-todos',
+            type: 'POST',
+            success: function(res) { toastr.success(res.message); },
+            error: function(xhr)   { toastr.error(xhr.responseJSON?.message || 'Error al enviar.'); },
+            complete: function()   { $btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Notificar Responsables'); }
+        });
+    });
+});
+
+$(document).on('click', '.btnNotificarAccion', function() {
+    var accionId  = $(this).data('id');
+    var profileId = $(this).data('profile') || '{{ $profile->id }}';
+    var $btn      = $(this);
+    Swal.fire({
+        title: '¿Notificar al responsable de esta acción?',
+        text: 'Se enviará un email al responsable asignado.',
+        icon: 'question', showCancelButton: true,
+        confirmButtonColor: '#2e7d32', cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, notificar', cancelButtonText: 'Cancelar',
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+        $btn.prop('disabled', true);
+        $.ajax({
+            url:  '{{ url("admin/pei-profiles") }}/' + profileId + '/acciones/' + accionId + '/notificar',
+            type: 'POST',
+            success: function(res) { toastr.success(res.message); },
+            error: function(xhr)   { toastr.warning(xhr.responseJSON?.message || 'No se pudo enviar.'); },
+            complete: function()   { $btn.prop('disabled', false); }
+        });
+    });
+});
+// ══ FIN NOTIFICACIONES ════════════════════════════════════════════════════════
+</script>
 @stop

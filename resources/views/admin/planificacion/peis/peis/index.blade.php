@@ -138,6 +138,15 @@
                                             ]) !!}
                                         </div>
 
+                                        {{-- ── Perfil FODA vinculado ── --}}
+                                        <div class="form-group">
+                                            {{ Form::label('foda_perfil_id', 'Perfil FODA vinculado:') }}
+                                            {!! Form::select('foda_perfil_id', [], null, [
+                                                'id'    => 'foda_perfil_id',
+                                                'style' => 'width:100%',
+                                            ]) !!}
+                                        </div>
+
                                         {{-- ── Modelo de Niveles ── --}}
                                         <div class="form-group">
                                             {{ Form::label('modelo_niveles', 'Modelo de Niveles del Plan:') }}
@@ -146,6 +155,8 @@
                                                 'IPS'   => 'IPS 2023-2028 — Eje Estratégico / Objetivo / Acción',
                                                 'A'     => 'Clásico — Eje / Objetivo / Acción',
                                                 'B'     => 'Proyectos — Programa / Proyecto / Actividad',
+                                                'C'     => 'Estratégico — Eje / Meta / Tarea',
+                                                'D'     => 'Institucional — Estrategia / Plan / Acción',
                                                 'custom'=> 'Personalizado...',
                                             ], null, [
                                                 'id'    => 'modelo_niveles',
@@ -407,6 +418,21 @@
                         cache: true
                     }
                 });
+
+                // Perfil FODA
+                $('#foda_perfil_id').empty().select2({
+                    placeholder: 'Seleccioná el perfil FODA...',
+                    allowClear: true,
+                    ajax: {
+                        url: '{{ route('get-foda-perfiles') }}',
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function(res) {
+                            return { results: res };
+                        },
+                        cache: true
+                    }
+                });
             });
 
             $('body').on('click', '.editProfile', function() {
@@ -538,6 +564,25 @@
                     });
                     $('#analysts').trigger('change');
 
+                    // ── Perfil FODA ──
+                    $('#foda_perfil_id').empty().select2({
+                        placeholder: 'Seleccioná el perfil FODA...',
+                        allowClear: true,
+                        ajax: {
+                            url: '{{ route('get-foda-perfiles') }}',
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function(res) {
+                                return { results: res };
+                            },
+                            cache: true
+                        }
+                    });
+                    if (data.profile.foda_perfil_id && data.fodaPerfilNombre) {
+                        var opt = new Option(data.fodaPerfilNombre, data.profile.foda_perfil_id, true, true);
+                        $('#foda_perfil_id').append(opt).trigger('change');
+                    }
+
                     // ── Precargar modelo de niveles ──
                     $('#custom_niveles').hide();
 
@@ -556,6 +601,8 @@
                                 'IPS':   { axi: 'Eje Estratégico',      goal: 'Objetivo', action: 'Acción' },
                                 'A':     { axi: 'Eje',                  goal: 'Objetivo', action: 'Acción' },
                                 'B':     { axi: 'Programa',             goal: 'Proyecto', action: 'Actividad' },
+                                'C':     { axi: 'Eje',                  goal: 'Meta',     action: 'Tarea' },
+                                'D':     { axi: 'Estrategia',           goal: 'Plan',     action: 'Acción' },
                             };
                             var matchedKey = null;
                             $.each(modelos, function(key, m) {
@@ -594,6 +641,8 @@
                     'IPS':   { axi: 'Eje Estratégico',      goal: 'Objetivo',  action: 'Acción' },
                     'A':     { axi: 'Eje',                  goal: 'Objetivo',  action: 'Acción' },
                     'B':     { axi: 'Programa',             goal: 'Proyecto',  action: 'Actividad' },
+                    'C':     { axi: 'Eje',                  goal: 'Meta',      action: 'Tarea' },
+                    'D':     { axi: 'Estrategia',           goal: 'Plan',      action: 'Acción' },
                 };
                 var modeloSel = $('#modelo_niveles').val();
                 var labels;

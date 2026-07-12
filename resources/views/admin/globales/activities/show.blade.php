@@ -114,66 +114,79 @@
 .color-swatch:hover { transform: scale(1.2); }
 .color-swatch.selected { border-color: #1e293b; transform: scale(1.15); }
 
-/* ── Gantt Cronograma ── */
-.gantt-container {
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    background: #fff;
-    padding: 18px;
-    overflow-x: auto;
-}
-.gantt-chart-wrapper {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 18px;
-}
-#ganttChart {
+/* ── Tabla Cronograma Simple ── */
+.table-cronograma {
     width: 100%;
-    min-height: 360px;
+    border-collapse: collapse;
+    font-size: .85rem;
 }
-#ganttEmpty {
-    font-size: .95rem;
-    color: #64748b;
+.table-cronograma thead {
+    background: #f1f5f9;
+    border-bottom: 2px solid #1e293b;
 }
-.gantt-header {
-    font-size: 1rem;
+.table-cronograma th {
+    padding: 12px;
+    text-align: left;
     font-weight: 700;
-    margin-bottom: 18px;
     color: #1e293b;
-}
-.gantt-row {
-    display: grid;
-    grid-template-columns: minmax(260px, 280px) minmax(0, 1fr);
-    gap: 18px;
-    align-items: center;
-    padding: 14px 0;
-    border-bottom: 1px solid #eff2f7;
-    min-width: 720px;
-}
-.gantt-row:last-child { border-bottom: none; }
-.gantt-task { display: flex; flex-direction: column; gap: 6px; }
-.gantt-meta { font-size: .82rem; color: #64748b; line-height: 1.3; }
-.gantt-bar-wrap {
-    position: relative;
-    min-height: 50px;
-    background: #f8fafc;
-    border-radius: 999px;
-    overflow: hidden;
-}
-.gantt-bar {
-    position: absolute;
-    top: 8px;
-    bottom: 8px;
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    padding: 0 14px;
-    font-size: .78rem;
-    color: #111;
     white-space: nowrap;
 }
-.gantt-bar span { display: inline-block; }
+.table-cronograma td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+.table-cronograma tbody tr:hover {
+    background: #f8fafc;
+}
+.table-cronograma tbody tr:last-child td {
+    border-bottom: none;
+}
+.tarea-titulo {
+    font-weight: 600;
+    color: #1e293b;
+    cursor: pointer;
+}
+.tarea-titulo:hover {
+    color: #3b82f6;
+    text-decoration: underline;
+}
+.tarea-responsable {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: #dbeafe;
+    border-radius: 6px;
+    font-size: .8rem;
+}
+.tarea-responsable::before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: #fff;
+    font-size: .7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+.tarea-fecha {
+    color: #475569;
+    font-size: .8rem;
+    white-space: nowrap;
+}
+.tarea-fecha.vencida {
+    color: #ef4444;
+    font-weight: 600;
+}
+.tarea-fecha.proximo {
+    color: #f97316;
+    font-weight: 600;
+}
 
 /* ── Responsive ── */
 @media(max-width:768px) {
@@ -241,6 +254,10 @@
             <button class="btn btn-light btn-sm font-weight-bold" id="btnNuevaTarea">
                 <i class="fa fa-plus mr-1"></i>Nueva Tarea
             </button>
+            <button class="btn btn-sm font-weight-bold" style="background:rgba(255,255,255,.9);color:#1e3a5f;border:none"
+                    id="btnVerReuniones">
+                <i class="fa fa-users mr-1"></i>Reuniones
+            </button>
             <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)"
                     id="btnNotificarTodos" data-id="{{ $activity->id }}">
                 <i class="fa fa-paper-plane mr-1"></i>Notificar a todos
@@ -282,23 +299,41 @@
     $porVencer = $activity->tasks->filter(fn($t) => $t->status !== 2 && $t->fecha_vencimiento && !\Carbon\Carbon::parse($t->fecha_vencimiento)->isPast() && \Carbon\Carbon::parse($t->fecha_vencimiento)->diffInDays(now()) <= 3);
 @endphp
 @if($vencidas->count() > 0)
-<div class="alert alert-danger d-flex align-items-center mb-3 py-2" style="border-radius:10px">
+<div class="alert alert-danger d-flex align-items-center mb-3 py-2" style="border-radius:10px;cursor:pointer;transition:all .2s" 
+     id="alertVencidas" 
+     data-task-ids="{{ $vencidas->pluck('id')->join(',') }}"
+     onmouseover="this.style.opacity='0.85'" 
+     onmouseout="this.style.opacity='1'">
     <i class="fa fa-exclamation-circle fa-lg mr-3"></i>
-    <div>
+    <div style="flex:1">
         <strong>{{ $vencidas->count() }} tarea(s) vencida(s)</strong>
         — {{ $vencidas->pluck('title')->implode(', ') }}
     </div>
+    <small style="opacity:.7;margin-left:12px;white-space:nowrap">(click para filtrar)</small>
 </div>
 @endif
 @if($porVencer->count() > 0)
-<div class="alert alert-warning d-flex align-items-center mb-3 py-2" style="border-radius:10px">
+<div class="alert alert-warning d-flex align-items-center mb-3 py-2" style="border-radius:10px;cursor:pointer;transition:all .2s" 
+     id="alertPorVencer" 
+     data-task-ids="{{ $porVencer->pluck('id')->join(',') }}"
+     onmouseover="this.style.opacity='0.85'" 
+     onmouseout="this.style.opacity='1'">
     <i class="fa fa-clock fa-lg mr-3"></i>
-    <div>
+    <div style="flex:1">
         <strong>{{ $porVencer->count() }} tarea(s) próximas a vencer</strong>
         — {{ $porVencer->pluck('title')->implode(', ') }}
     </div>
+    <small style="opacity:.7;margin-left:12px;white-space:nowrap">(click para filtrar)</small>
 </div>
 @endif
+
+{{-- Badge filtro activo --}}
+<div id="filtroActivoContainer" style="display:none;margin-bottom:12px">
+    <span class="badge badge-info" style="font-size:.9rem;padding:8px 12px">
+        <i class="fa fa-filter mr-2"></i>Filtrando tareas... 
+        <a href="#" id="btnLimpiarFiltro" style="color:#fff;margin-left:8px;text-decoration:underline">Limpiar</a>
+    </span>
+</div>
 
 {{-- ── TABLERO POR ESTADO ── --}}
 <div id="vistaEstado">
@@ -360,10 +395,10 @@
 
 {{-- ── TABLERO GANTT ── --}}
 <div id="vistaGantt" style="display:none">
-    <div class="gantt-chart-wrapper">
-        <div class="gantt-header">Cronograma de tareas</div>
-        <div id="ganttChart" style="width:100%; min-height:360px;"></div>
-        <div id="ganttEmpty" class="text-center text-muted py-5" style="display:none;">
+    <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; overflow-x: auto; max-height: 600px; overflow-y: auto;">
+        <div style="font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: #1e293b;">Cronograma de tareas</div>
+        <div id="tablaCronograma"></div>
+        <div id="timelineEmpty" style="display:none; text-align:center; color:#94a3b8; font-size:.9rem; padding:32px;">
             No hay tareas con fecha de inicio o vencimiento. Agregá fechas para ver el cronograma.
         </div>
     </div>
@@ -376,6 +411,7 @@
 @include('admin.globales.activities.partials.modal_comentarios')
 @include('admin.globales.activities.partials.modal_ayuda', ['isScrumActivity' => $isScrumActivity])
 @include('admin.globales.activities.partials.modal_detalle_tarea')
+@include('admin.globales.activities.partials.modal_reuniones')
 
 @endsection
 
@@ -404,7 +440,7 @@ $('#btnVistaGantt').click(function() {
     $('#vistaGantt').show(); $('#vistaEstado').hide(); $('#vistaEtiqueta').hide();
     $(this).addClass('btn-primary active').removeClass('btn-outline-secondary');
     $('#btnVistaEstado, #btnVistaEtiqueta').removeClass('btn-primary active').addClass('btn-outline-secondary');
-    renderGantt();
+    renderTimeline();
 });
 
 @php
@@ -424,84 +460,74 @@ var ganttTasks = @json($ganttTasks);
 
 var ganttRendered = false;
 
-function parseDate(value) {
-    if (!value) return null;
-    var parts = value.split('-');
-    return new Date(parts[0], parts[1] - 1, parts[2]);
-}
-
-function ensureGanttReady(callback) {
-    if (window.google && google.charts && google.visualization && google.visualization.Gantt) {
-        return callback();
-    }
-    google.charts.load('current', { packages: ['gantt'] });
-    google.charts.setOnLoadCallback(callback);
-}
-
-function renderGantt() {
-    if (ganttRendered) {
-        drawGanttChart();
-        return;
-    }
-
+function renderTimeline() {
     if (!ganttTasks.length) {
-        $('#ganttChart').hide();
-        $('#ganttEmpty').show();
+        $('#tablaCronograma').hide();
+        $('#timelineEmpty').show();
         return;
     }
 
-    $('#ganttEmpty').hide();
-    $('#ganttChart').show();
-    ensureGanttReady(function() {
-        drawGanttChart();
-        ganttRendered = true;
-    });
-}
+    $('#timelineEmpty').hide();
+    $('#tablaCronograma').show();
 
-function drawGanttChart() {
-    if (!ganttTasks.length) {
-        $('#ganttChart').hide();
-        $('#ganttEmpty').show();
-        return;
-    }
-
-    var data = new google.visualization.DataTable();
-    data.addColumn('string', 'Task ID');
-    data.addColumn('string', 'Task Name');
-    data.addColumn('string', 'Resource');
-    data.addColumn('date', 'Start');
-    data.addColumn('date', 'End');
-    data.addColumn('number', 'Duration');
-    data.addColumn('number', 'Percent Complete');
-    data.addColumn('string', 'Dependencies');
-
-    ganttTasks.forEach(function(task) {
-        var start = parseDate(task.start) || parseDate(task.end);
-        var end = parseDate(task.end) || parseDate(task.start);
-        if (!start || !end) return;
-        if (end < start) end = new Date(start);
-        if (start.getTime() === end.getTime()) {
-            end = new Date(start);
-            end.setDate(end.getDate() + 1);
-        }
-        data.addRow([task.id, task.name, task.resource, start, end, null, 0, null]);
+    // Ordenar por fecha inicio o vencimiento
+    var tasksOrdenadas = ganttTasks.sort(function(a, b) {
+        var dateA = a.start || a.end;
+        var dateB = b.start || b.end;
+        return new Date(dateA) - new Date(dateB);
     });
 
-    var options = {
-        height: Math.max(300, ganttTasks.length * 48 + 80),
-        gantt: {
-            trackHeight: 32,
-            barCornerRadius: 4,
-            barHeight: 20,
-            arrow: { angle: 100, width: 2, color: '#64748b' },
-            palette: ganttTasks.map(function(task) {
-                return { color: task.color, dark: task.color };
-            })
-        }
-    };
+    // Generar tabla
+    var html = '<table class="table-cronograma"><thead><tr>' +
+        '<th style="width:35%">Tarea</th>' +
+        '<th style="width:20%">Responsable</th>' +
+        '<th style="width:15%">Inicio</th>' +
+        '<th style="width:15%">Vencimiento</th>' +
+        '<th style="width:15%">Duración</th>' +
+        '</tr></thead><tbody>';
 
-    var chart = new google.visualization.Gantt(document.getElementById('ganttChart'));
-    chart.draw(data, options);
+    tasksOrdenadas.forEach(function(task) {
+        var start = task.start ? new Date(task.start) : null;
+        var end = task.end ? new Date(task.end) : null;
+
+        var startStr = start ? start.toLocaleDateString('es-ES') : '—';
+        var endStr = end ? end.toLocaleDateString('es-ES') : '—';
+        var duration = '—';
+
+        if (start && end) {
+            var days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+            duration = days + ' día' + (days !== 1 ? 's' : '');
+        }
+
+        // Detectar si está vencida
+        var endClass = '';
+        if (end && end < new Date() && !task.completed) {
+            endClass = 'vencida';
+        } else if (end && !task.completed) {
+            var daysUntil = Math.ceil((end - new Date()) / (1000 * 60 * 60 * 24));
+            if (daysUntil <= 3 && daysUntil > 0) {
+                endClass = 'proximo';
+            }
+        }
+
+        html += '<tr style="cursor:pointer" class="task-row" data-id="' + task.id + '">' +
+            '<td><div class="tarea-titulo">' + task.name + '</div></td>' +
+            '<td><div class="tarea-responsable">' + task.resource + '</div></td>' +
+            '<td><div class="tarea-fecha">' + startStr + '</div></td>' +
+            '<td><div class="tarea-fecha ' + endClass + '">' + endStr + '</div></td>' +
+            '<td><div class="tarea-fecha">' + duration + '</div></td>' +
+            '</tr>';
+    });
+
+    html += '</tbody></table>';
+
+    $('#tablaCronograma').html(html);
+
+    // Evento click en fila
+    $('.task-row').on('click', function() {
+        var taskId = $(this).data('id');
+        // Podría abrir un modal, pero por ahora solo mostramos la tabla
+    });
 }
 
 // ── Etiquetas existentes (reutilizables) ─────────────────────────────────────
@@ -613,23 +639,26 @@ $('#tareaForm').submit(function(e) {
 // ── Editar tarea ─────────────────────────────────────────────────────────────
 $('body').on('click', '.editTaskBtn', function() {
     var taskId = $(this).data('id');
-    $.get(storeUrl.replace('/tareas', '') + '/../tareas/' + taskId + '/edit', function(data) {
-        if (data?.task) {
-            var task = data.task;
+    $.get(statusBase + '/' + taskId + '/detalle', function(res) {
+        if (res?.ok && res?.data) {
+            var task = res.data;
             $('#tareaHeading').text('Editar Tarea');
             $('#task_id').val(taskId);
             $('#task_title').val(task.title);
             $('#task_details').val(task.details || '');
             $('#task_etiqueta').val(task.etiqueta || '');
-            $('#task_fecha_inicio').val(task.fecha_inicio || '');
-            $('#task_fecha_vencimiento').val(task.fecha_vencimiento || '');
-            initResponsableSelect(task.assigned_to, task.assignedTo?.name || '');
+            $('#task_fecha_inicio').val(task.fecha_inicio_raw || '');
+            $('#task_fecha_vencimiento').val(task.fecha_vencimiento_raw || '');
+            $('#task_status').val(task.status);
+            $('#task_es_reunion').prop('checked', task.es_reunion == 1);
+            initResponsableSelect(task.assigned_to, task.responsable || '');
             colorSeleccionado = task.color || '#6b7280';
             renderPaleta();
             cargarEtiquetasExistentes();
             $('#tareaModal').modal('show');
         }
     }).fail(function() {
+        // fallback: tomar datos del DOM si falla la API
         var $card = $('[data-id="' + taskId + '"]').first();
         $('#tareaHeading').text('Editar Tarea');
         $('#task_id').val(taskId);
@@ -637,6 +666,7 @@ $('body').on('click', '.editTaskBtn', function() {
         $('#task_details').val($card.find('.task-desc').text().trim());
         $('#task_etiqueta').val($card.find('.task-etiqueta').text().trim());
         $('#task_fecha_inicio').val($card.data('fecha-inicio') || '');
+        $('#task_es_reunion').prop('checked', false);
         colorSeleccionado = $card.css('border-left-color') || '#6b7280';
         renderPaleta();
         initResponsableSelect(null, null);
@@ -928,5 +958,173 @@ $('#btnConfirmComplete').off('click').on('click', function() {
 $('#completionModal').on('hidden.bs.modal', function() {
     pendingDrag = null;
 });
+
+// ── FILTRO TAREAS VENCIDAS ────────────────────────────────────────────────────
+var filtroActivo = null;
+
+function aplicarFiltroVencidas(taskIds) {
+    if (!taskIds || taskIds.length === 0) {
+        limpiarFiltro();
+        return;
+    }
+    
+    filtroActivo = taskIds.split(',').map(id => parseInt(id));
+    
+    // Ocultar todas las tareas que NO están en la lista
+    $('.task-card').each(function() {
+        var taskId = $(this).data('id');
+        if (filtroActivo.includes(parseInt(taskId))) {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
+    
+    // Mostrar badge de filtro activo
+    $('#filtroActivoContainer').show();
+}
+
+function limpiarFiltro() {
+    filtroActivo = null;
+    
+    // Mostrar todas las tareas
+    $('.task-card').show();
+    
+    // Ocultar badge de filtro
+    $('#filtroActivoContainer').hide();
+}
+
+// Evento click en alerta de vencidas
+$('#alertVencidas').on('click', function(e) {
+    e.preventDefault();
+    var taskIds = $(this).data('task-ids');
+    aplicarFiltroVencidas(taskIds);
+    // Scroll al tablero
+    $('html, body').animate({ scrollTop: $('#vistaEstado').offset().top - 100 }, 300);
+});
+
+// Evento click en alerta de por vencer
+$('#alertPorVencer').on('click', function(e) {
+    e.preventDefault();
+    var taskIds = $(this).data('task-ids');
+    aplicarFiltroVencidas(taskIds);
+    // Scroll al tablero
+    $('html, body').animate({ scrollTop: $('#vistaEstado').offset().top - 100 }, 300);
+});
+
+// Botón limpiar filtro
+$('#btnLimpiarFiltro').on('click', function(e) {
+    e.preventDefault();
+    limpiarFiltro();
+});
+
+// ══ REUNIONES ════════════════════════════════════════════════════════════════
+(function() {
+    var _reunionesData = [];
+    var _filtroActivo  = 'todas';
+    var _reunionesUrl  = "{{ url('admin/globales/activities') }}/" + activityId + '/reuniones';
+
+    var _statusLabels = {
+        0: { label: 'Pendiente',   cls: 'badge-warning'   },
+        1: { label: 'En Progreso', cls: 'badge-primary'   },
+        3: { label: 'En Revisión', cls: 'badge-secondary' },
+        2: { label: 'Finalizada',  cls: 'badge-success'   },
+    };
+
+    $('#btnVerReuniones').on('click', function() {
+        $('#reunionesSubtitulo').text('');
+        $('#reunionesBody').html('<tr id="reunionesLoading"><td colspan="7" class="text-center text-muted py-4"><i class="fa fa-spinner fa-spin mr-2"></i>Cargando...</td></tr>');
+        $('#modalReuniones').modal('show');
+        $.getJSON(_reunionesUrl, function(data) {
+            _reunionesData = data;
+            $('#reunionesSubtitulo').text(data.length + ' reunión(es) registrada(s)');
+            renderReuniones(_filtroActivo);
+        }).fail(function() {
+            $('#reunionesBody').html('<tr><td colspan="7" class="text-center text-danger py-3"><i class="fa fa-exclamation-triangle mr-1"></i>Error al cargar reuniones.</td></tr>');
+        });
+    });
+
+    function renderReuniones(filtro) {
+        var data = _reunionesData.slice();
+        if (filtro === 'pendientes')  data = data.filter(function(r) { return r.status !== 2; });
+        if (filtro === 'finalizadas') data = data.filter(function(r) { return r.status === 2; });
+
+        $('#reunionesCount').text(data.length);
+        var tbody = $('#reunionesBody').empty();
+
+        if (!data.length) {
+            tbody.append('<tr><td colspan="7" class="text-center text-muted py-4"><i class="fa fa-inbox mr-1"></i>Sin reuniones' + (filtro !== 'todas' ? ' en este estado' : '') + '.</td></tr>');
+            return;
+        }
+
+        data.forEach(function(r) {
+            var st    = _statusLabels[r.status] || _statusLabels[0];
+            var fecha = r.fecha_inicio || '—';
+            var acta  = '';
+
+            if (r.evidencias && r.evidencias.length) {
+                r.evidencias.forEach(function(e) {
+                    if (e.es_pdf) {
+                        acta += '<button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 btnVerActa mr-1 mb-1" ' +
+                            'data-url="' + e.url + '" data-titulo="' + (e.label || r.title) + '" style="font-size:.7rem">' +
+                            '<i class="fa fa-file-pdf mr-1"></i>' + (e.label || 'Acta') + '</button>';
+                    } else {
+                        acta += '<a href="' + e.url + '" target="_blank" class="btn btn-sm btn-outline-secondary py-0 px-2 mr-1 mb-1" style="font-size:.7rem">' +
+                            '<i class="fa fa-link mr-1"></i>' + (e.label || 'Adjunto') + '</a>';
+                    }
+                });
+            } else {
+                acta = '<span class="text-muted" style="font-size:.72rem"><i class="fa fa-minus mr-1"></i>Sin acta</span>';
+            }
+
+            tbody.append(
+                '<tr>' +
+                '<td class="font-weight-bold" style="font-size:.83rem;vertical-align:middle">' + r.title + '</td>' +
+                '<td style="font-size:.8rem;color:#6c757d;vertical-align:middle">' + (r.details || '—') + '</td>' +
+                '<td style="vertical-align:middle">' + (r.etiqueta ? '<span class="badge badge-info" style="font-size:.68rem">' + r.etiqueta + '</span>' : '<span class="text-muted" style="font-size:.75rem">—</span>') + '</td>' +
+                '<td style="font-size:.8rem;vertical-align:middle">' + r.responsable + '</td>' +
+                '<td class="text-center" style="vertical-align:middle"><span class="badge ' + st.cls + '" style="font-size:.68rem">' + st.label + '</span></td>' +
+                '<td class="text-center" style="font-size:.78rem;vertical-align:middle">' + fecha + '</td>' +
+                '<td class="text-center" style="vertical-align:middle">' + acta + '</td>' +
+                '</tr>'
+            );
+        });
+    }
+
+    $('#filtroTodas').on('click', function() {
+        _filtroActivo = 'todas';
+        $(this).addClass('btn-dark active').removeClass('btn-outline-secondary');
+        $('#filtroPendientes,#filtroFinalizadas').addClass('btn-outline-secondary').removeClass('btn-warning btn-success active');
+        renderReuniones('todas');
+    });
+    $('#filtroPendientes').on('click', function() {
+        _filtroActivo = 'pendientes';
+        $(this).addClass('btn-warning active').removeClass('btn-outline-secondary');
+        $('#filtroTodas,#filtroFinalizadas').addClass('btn-outline-secondary').removeClass('btn-dark btn-success active');
+        renderReuniones('pendientes');
+    });
+    $('#filtroFinalizadas').on('click', function() {
+        _filtroActivo = 'finalizadas';
+        $(this).addClass('btn-success active').removeClass('btn-outline-secondary');
+        $('#filtroTodas,#filtroPendientes').addClass('btn-outline-secondary').removeClass('btn-dark btn-warning active');
+        renderReuniones('finalizadas');
+    });
+
+    $(document).on('click', '.btnVerActa', function() {
+        var url    = $(this).data('url');
+        var titulo = $(this).data('titulo');
+        $('#actaPdfTitulo').text(titulo);
+        $('#actaPdfDescargar').attr('href', url);
+        $('#actaPdfFrame').attr('src', url);
+        $('#modalReuniones').modal('hide');
+        $('#modalActaPdf').modal('show');
+    });
+
+    $('#modalActaPdf').on('hidden.bs.modal', function() {
+        $('#actaPdfFrame').attr('src', '');
+        $('#modalReuniones').modal('show');
+    });
+})();
+// ══ FIN REUNIONES ════════════════════════════════════════════════════════════
 </script>
 @endpush

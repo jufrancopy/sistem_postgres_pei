@@ -8,7 +8,7 @@
     $path = request()->path();
 
     // Detectar en qué sección estamos
-    $enPlanificacion = str_contains($path, 'pei-') || str_contains($path, 'foda') || str_contains($path, 'planificacion') || str_contains($path, 'tasks') || str_contains($path, 'risks');
+    $enPlanificacion = str_contains($path, 'pei-') || str_contains($path, 'foda') || str_contains($path, 'planificacion') || str_contains($path, 'tasks') || str_contains($path, 'risks') || str_contains($path, 'pgn') || str_contains($path, 'pei/marcos');
     $enProyectos     = str_contains($path, 'proyectos') || str_contains($path, 'epc') || str_contains($path, 'risks');
     $enSiess         = str_contains($path, 'siess') || str_contains($path, 'eph') || str_contains($path, 'dgeec') || str_contains($path, 'contexto');
     $enCronogramas   = str_contains($path, 'cronogramas');
@@ -110,6 +110,18 @@
                             <a class="nav-link" href="{{ route('tasks.index') }}">
                                 <span class="sidebar-mini"><i class="fa fa-tasks" style="font-size:.8rem"></i></span>
                                 <span class="sidebar-normal">Tareas</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('pgn*') }}">
+                            <a class="nav-link" href="{{ route('pgn.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-coins" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">PGN</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('pei/marcos*') }}">
+                            <a class="nav-link" href="{{ route('pei.marcos.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-link" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Marcos Referenciales</span>
                             </a>
                         </li>
                     </ul>
@@ -337,6 +349,39 @@
                 </a>
             </li>
         @endhasanyrole
+
+        {{-- Sidebar exclusivo para Analista PEI --}}
+        @role('Analista PEI')
+            @php $enPgnAnalista = str_contains($path, 'pgn') || str_contains($path, 'pei-'); @endphp
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ route('planificacion-dashboard') }}">
+                    <i class="material-icons">dashboard</i>
+                    <p>Inicio PEI</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="collapse" href="#peiAnalistaMenu" aria-expanded="{{ $enPgnAnalista ? 'true' : 'false' }}">
+                    <i class="material-icons">assignment</i>
+                    <p>Planificación <b class="caret"></b></p>
+                </a>
+                <div class="collapse {{ $enPgnAnalista ? 'show' : '' }}" id="peiAnalistaMenu">
+                    <ul class="nav">
+                        <li class="nav-item {{ $isActive('pei-profiles*') }}">
+                            <a class="nav-link" href="{{ route('pei-profiles.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-file-alt" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Perfiles PEI</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('pgn*') }}">
+                            <a class="nav-link" href="{{ route('pgn.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-coins" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">PGN</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        @endrole
 
         {{-- Sidebar exclusivo para Analista - RIISS --}}
         @role('Analista - RIISS')

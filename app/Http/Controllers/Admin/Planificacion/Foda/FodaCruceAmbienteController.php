@@ -89,32 +89,19 @@ class FodaCruceAmbienteController extends Controller
         $data = [];
 
         if ($request->has('q')) {
-            $search = $request->q;
+            $query = FodaCruceAmbiente::select('id', 'estrategia', 'tipo');
 
-            $query = FodaCruceAmbiente::select("id", "estrategia", "tipo");
-
-            // Si se pasa pei_id, filtrar solo los cruces del perfil FODA
-            // consolidado del grupo asociado a ese PEI
-            if ($request->pei_id) {
+            // Prioridad 1: foda_perfil_id directo
+            if ($request->foda_perfil_id) {
+                $query->where('perfil_id', $request->foda_perfil_id);
+            } elseif ($request->pei_id) {
                 $pei = \App\Admin\Planificacion\Pei\PeiProfile::find($request->pei_id);
-                if ($pei) {
-                    // Obtener todos los group_ids del grupo del PEI y sus descendientes
-                    $groupIds = collect([$pei->group_id]);
-                    if ($pei->group) {
-                        $groupIds = $groupIds->merge($pei->group->descendants()->pluck('id'));
-                    }
-                    // Buscar el perfil FODA consolidado de esos grupos
-                    $perfilFodaId = FodaPerfil::whereIn('group_id', $groupIds)
-                        ->where('type', 'consolidado')
-                        ->value('id');
-
-                    if ($perfilFodaId) {
-                        $query->where('perfil_id', $perfilFodaId);
-                    }
+                if ($pei && $pei->foda_perfil_id) {
+                    $query->where('perfil_id', $pei->foda_perfil_id);
                 }
             }
 
-            $data = $query->where('estrategia', 'LIKE', "%$search%")->get();
+            $data = $query->where('estrategia', 'LIKE', '%' . $request->q . '%')->get();
         }
 
         return response()->json($data);

@@ -81,6 +81,22 @@
                             <option value="2">Hecho / Finalizado</option>
                         </select>
                     </div>
+
+                    {{-- ── Tipo Reunión ── --}}
+                    <div class="form-group mb-1">
+                        <div class="custom-control custom-switch">
+                            <input type="hidden" name="es_reunion" value="0">
+                            <input type="checkbox" class="custom-control-input" id="task_es_reunion"
+                                   name="es_reunion" value="1">
+                            <label class="custom-control-label font-weight-bold small" for="task_es_reunion">
+                                <i class="fa fa-users mr-1 text-info"></i>
+                                Esta tarea es una <strong>Reunión</strong>
+                                <small class="text-muted font-weight-normal d-block" style="font-size:.72rem">
+                                    Habilita el registro de actas y aparece en la vista de Reuniones
+                                </small>
+                            </label>
+                        </div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">

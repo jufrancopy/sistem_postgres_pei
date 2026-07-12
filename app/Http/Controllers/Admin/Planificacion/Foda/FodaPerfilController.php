@@ -528,4 +528,17 @@ class FodaPerfilController extends Controller
 
         return response()->json(['success' => 'Perfil eliminado correctamente.']);
     }
+
+    public function getPerfilesSelect2(Request $request)
+    {
+        $q = $request->q ?? '';
+        $perfiles = FodaPerfil::whereIn('type', ['individual', 'consolidado'])
+            ->where('name', 'ILIKE', "%$q%")
+            ->orderBy('name')
+            ->get(['id', 'name', 'type']);
+
+        return response()->json(
+            $perfiles->map(fn($p) => ['id' => $p->id, 'text' => '[' . $p->type . '] ' . $p->name])
+        );
+    }
 }

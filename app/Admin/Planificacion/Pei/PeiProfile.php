@@ -14,6 +14,8 @@ use App\Admin\Planificacion\Task\Task;
 use App\Admin\Globales\Group;
 use App\Admin\Globales\Organigrama;
 use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
+use App\Admin\Planificacion\Foda\FodaPerfil;
+use App\Models\Planificacion\MarcoReferencial;
 
 class PeiProfile extends Model
 {
@@ -54,6 +56,25 @@ class PeiProfile extends Model
         'presupuesto_asignado',
         'presupuesto_ejecutado',
         'nivel_label',
+        'foda_perfil_id',
+        'bsc_perspectiva',
+        'indicador_id',
+        'resultado_intermedio',
+        'ri_presupuestario',
+        'ri_programa',
+        'ri_recursos_gs',
+        'ri_metas',
+    ];
+
+    protected $casts = [
+        'ri_metas' => 'array',
+    ];
+
+    const BSC_PERSPECTIVAS = [
+        'financiera'  => 'Perspectiva Financiera',
+        'clientes'    => 'Perspectiva de Clientes / Usuarios',
+        'procesos'    => 'Perspectiva de Procesos Internos',
+        'aprendizaje' => 'Perspectiva de Aprendizaje y Crecimiento',
     ];
 
     // Modelos de niveles predefinidos
@@ -64,6 +85,7 @@ class PeiProfile extends Model
             'B'     => ['master' => 'Plan',                   'axi' => 'Programa',             'goal' => 'Proyecto',  'action' => 'Actividad'],
             'C'     => ['master' => 'Estrategia',             'axi' => 'Eje',                  'goal' => 'Meta',      'action' => 'Tarea'],
             'D'     => ['master' => 'Objetivo Institucional', 'axi' => 'Estrategia',           'goal' => 'Plan',      'action' => 'Acción'],
+            'IPS'   => ['master' => 'PEI',                    'axi' => 'Eje Estratégico',      'goal' => 'Objetivo',  'action' => 'Acción'],
             'MECIP' => ['master' => 'PEI',                    'axi' => 'Objetivo Estratégico', 'goal' => 'Meta',      'action' => 'Acción'],
         ];
     }
@@ -184,5 +206,25 @@ class PeiProfile extends Model
     public function analyst()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function fodaPerfil()
+    {
+        return $this->belongsTo(FodaPerfil::class, 'foda_perfil_id');
+    }
+
+    public function indicador()
+    {
+        return $this->belongsTo(\App\Models\Planificacion\Indicador::class, 'indicador_id');
+    }
+
+    public function marcos()
+    {
+        return $this->belongsToMany(
+            MarcoReferencial::class,
+            'planificacion.pei_profile_marcos',
+            'pei_profile_id',
+            'marco_id'
+        );
     }
 }

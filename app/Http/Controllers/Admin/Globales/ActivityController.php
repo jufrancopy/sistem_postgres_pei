@@ -118,6 +118,7 @@ class ActivityController extends Controller
                 'fecha_vencimiento' => $request->fecha_vencimiento ?: null,
                 'assigned_to'       => $request->assigned_to,
                 'status'            => $request->status ?? 0,
+                'es_reunion'        => $request->boolean('es_reunion'),
             ]
         );
 
@@ -198,6 +199,36 @@ class ActivityController extends Controller
         ]);
     }
 
+    public function reuniones(int $activityId)
+    {
+        $activity  = \App\Admin\Globales\Activity::findOrFail($activityId);
+        $reuniones = ActivityTask::with(['assignedTo', 'evidences'])
+            ->where('activity_id', $activityId)
+            ->where('es_reunion', true)
+            ->orderBy('fecha_inicio')
+            ->get();
+
+        return response()->json($reuniones->map(fn($t) => [
+            'id'                => $t->id,
+            'title'             => $t->title,
+            'details'           => $t->details,
+            'etiqueta'          => $t->etiqueta,
+            'responsable'       => $t->assignedTo?->name ?? '—',
+            'status'            => $t->status,
+            'fecha_inicio'      => $t->fecha_inicio?->format('d/m/Y'),
+            'fecha_vencimiento' => $t->fecha_vencimiento instanceof \Carbon\Carbon
+                ? $t->fecha_vencimiento->format('d/m/Y')
+                : $t->fecha_vencimiento,
+            'evidencias'        => $t->evidences->map(fn($e) => [
+                'id'    => $e->id,
+                'type'  => $e->type,
+                'label' => $e->label,
+                'url'   => $e->type === 'url' ? $e->value : asset('storage/' . $e->value),
+                'es_pdf'=> str_ends_with(strtolower($e->value ?? ''), '.pdf'),
+            ]),
+        ]));
+    }
+
     public function detalleTarea($taskId)
     {
         $task = ActivityTask::with(['assignedTo', 'completedBy', 'evidences.user', 'comments.user'])->findOrFail($taskId);
@@ -220,11 +251,16 @@ class ActivityController extends Controller
                 'etiqueta'         => $task->etiqueta,
                 'color'            => $task->color ?? '#6b7280',
                 'status'           => $task->status,
+                'es_reunion'       => $task->es_reunion ? 1 : 0,
                 'assigned_to'      => $task->assigned_to,
                 'responsable'      => $task->assignedTo?->name ?? 'Sin asignar',
                 'completion_note'  => $task->completion_note,
                 'completed_by'     => $task->completedBy?->name,
                 'completed_at'     => $task->completed_at?->format('d/m/Y H:i'),
+                'fecha_inicio_raw'      => $task->fecha_inicio?->format('Y-m-d'),
+                'fecha_vencimiento_raw' => $task->fecha_vencimiento instanceof \Carbon\Carbon
+                    ? $task->fecha_vencimiento->format('Y-m-d')
+                    : $task->fecha_vencimiento,
                 'fecha_vencimiento'=> $venc,
                 'fecha_color'      => $vencColor,
                 'evidencias'       => $task->evidences->map(fn($e) => [

@@ -218,6 +218,14 @@ class PeiController extends Controller
                     'report_type' => $request->report_type,
                     'parameters' => $parametersJson,
                     'nivel_label' => $request->nivel_label ?: null,
+                    'foda_perfil_id' => $request->foda_perfil_id ?: null,
+                    'bsc_perspectiva' => $request->bsc_perspectiva ?: null,
+                    'indicador_id'    => $request->indicador_id ?: null,
+                    'resultado_intermedio' => $request->resultado_intermedio ?: null,
+                    'ri_presupuestario'    => $request->ri_presupuestario ?: null,
+                    'ri_programa'          => $request->ri_programa ?: null,
+                    'ri_recursos_gs'       => $request->ri_recursos_gs ?: null,
+                    'ri_metas'             => json_encode($request->input('ri_metas', [])),
                 ]
             );
         } else {
@@ -249,6 +257,14 @@ class PeiController extends Controller
                     'report_type' => $request->report_type,
                     'parameters' => $parametersJson,
                     'nivel_label' => $request->nivel_label ?: null,
+                    'foda_perfil_id' => $request->foda_perfil_id ?: null,
+                    'bsc_perspectiva' => $request->bsc_perspectiva ?: null,
+                    'indicador_id'    => $request->indicador_id ?: null,
+                    'resultado_intermedio' => $request->resultado_intermedio ?: null,
+                    'ri_presupuestario'    => $request->ri_presupuestario ?: null,
+                    'ri_programa'          => $request->ri_programa ?: null,
+                    'ri_recursos_gs'       => $request->ri_recursos_gs ?: null,
+                    'ri_metas'             => json_encode($request->input('ri_metas', [])),
                 ]
             );
         }
@@ -258,6 +274,19 @@ class PeiController extends Controller
         $profile->strategies()->sync($request->strategy_id);
         $profile->responsibles()->sync($request->responsible_id);
 
+        // Si se envía foda_perfil_id, guardarlo en el PEI raíz
+        if ($request->has('foda_perfil_id')) {
+            $peiRaiz = $profile->level === 'master'
+                ? $profile
+                : PeiProfile::where('_lft', '<=', $profile->_lft)
+                    ->where('_rgt', '>=', $profile->_rgt)
+                    ->where('level', 'master')
+                    ->first();
+            if ($peiRaiz) {
+                $peiRaiz->foda_perfil_id = $request->foda_perfil_id ?: null;
+                $peiRaiz->save();
+            }
+        }
         // Construir arrays para retornar en la respuesta JSON
         $strategiesChecked = $profile->strategies->map(function ($strategy) {
             return ['id' => $strategy->id, 'text' => $strategy->estrategia];
@@ -293,6 +322,16 @@ class PeiController extends Controller
             $groupParent = \App\Admin\Globales\Group::find($profile->group->parent_id);
         }
 
+        // Obtener foda_perfil_id del PEI raíz (nivel master)
+        $peiRaiz = $profile->level === 'master'
+            ? $profile
+            : PeiProfile::where('_lft', '<=', $profile->_lft)
+                ->where('_rgt', '>=', $profile->_rgt)
+                ->where('level', 'master')
+                ->first();
+        $fodaPerfilId = $peiRaiz ? $peiRaiz->foda_perfil_id : null;
+        // Inyectar en el profile para que el JS lo lea
+        $profile->foda_perfil_id = $fodaPerfilId;
         $strategiesChecked = [];
         foreach ($profile->strategies as $strategy) {
             $strategiesChecked[] = ['id' => $strategy->id, 'text' => $strategy->estrategia];
@@ -309,17 +348,29 @@ class PeiController extends Controller
         }
 
         return response()->json([
-            'profile'           => $profile,
-            'groupParent'       => $groupParent,
-            'analystsChecked'   => $analystsChecked,
-            'strategiesChecked' => $strategiesChecked,
+            'profile'             => $profile,
+            'groupParent'         => $groupParent,
+            'analystsChecked'     => $analystsChecked,
+            'strategiesChecked'   => $strategiesChecked,
             'responsiblesChecked' => $responsiblesChecked,
+            'fodaPerfiles'        => \App\Admin\Planificacion\Foda\FodaPerfil::whereIn('type', ['individual', 'consolidado'])
+                                        ->orderBy('name')
+                                        ->get(['id', 'name', 'type']),
+            'fodaPerfilNombre'     => $profile->fodaPerfil ? '[' . $profile->fodaPerfil->type . '] ' . $profile->fodaPerfil->name : null,
+            'resultadosIntermedios' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'axi')
+                                        ->whereNotNull('resultado_intermedio')
+                                        ->distinct()
+                                        ->pluck('resultado_intermedio'),
         ]);
     }
 
     public function show(Request $request, $id)
     {
-        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])
+        $profile = PeiProfile::with([
+                'analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies',
+                'children.marcos', 'children.strategies',
+                'children.children.children.indicador', // acciones (level=action) con su indicador
+            ])
             ->findOrFail($id);
         $type = $profile->type;
 
@@ -332,6 +383,33 @@ class PeiController extends Controller
                 $niveles = array_merge($nivelesDefault, $decoded);
             }
         }
+
+        // Raíz del organigrama para el selector de responsables
+        // Si el perfil tiene dependency_id, usamos su raíz; si no, la primera raíz disponible
+        $orgRaizId = null;
+        if ($profile->dependency_id) {
+            $orgNodo = \App\Admin\Globales\Organigrama::find($profile->dependency_id);
+            if ($orgNodo) {
+                $orgRaizId = $orgNodo->isRoot()
+                    ? $orgNodo->id
+                    : (\App\Admin\Globales\Organigrama::whereAncestorOf($orgNodo)->whereIsRoot()->first()?->id ?? $orgNodo->id);
+            }
+        }
+        if (!$orgRaizId) {
+            $orgRaizId = \App\Admin\Globales\Organigrama::whereIsRoot()->value('id');
+        }
+
+        // Marco Estratégico General: todos los marcos de los ejes (axi), deduplicados por id
+        $marcosGenerales = $profile->children
+            ->flatMap(fn($axi) => $axi->marcos)
+            ->unique('id')
+            ->sortBy('tipo');
+
+        // Marco Estratégico Específico: marcos legales y oferta de servicios del perfil
+        $meeMarcos  = \App\Models\Planificacion\MeeMarcoLegal::where('pei_profile_id', $id)
+            ->orderBy('orden')->get();
+        $meeOfertas = \App\Models\Planificacion\MeeOfertaServicio::where('pei_profile_id', $id)
+            ->orderBy('orden')->get();
 
         if ($request->ajax()) {
             return response()->json(['profile' => $profile]);

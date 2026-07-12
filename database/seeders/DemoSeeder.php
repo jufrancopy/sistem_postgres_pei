@@ -25,12 +25,12 @@ class DemoSeeder extends Seeder
 {
     // ── Organigramas reales que usamos ────────────────────────
     const ORG_IPS        = 8;   // INSTITUTO DE PREVISIÓN SOCIAL
-    const ORG_CONSEJO    = 9;   // Consejo de Administración
-    const ORG_SALUD      = 10;  // Gerencia de Salud
-    const ORG_LOGISTICA  = 11;  // Gerencia de Abastecimiento y Logística
-    const ORG_TECNOLOGIA = 12;  // Gerencia de Desarrollo y Tecnología
-    const ORG_ECONOMICAS = 13;  // Gerencia de Prestaciones Económicas
-    const ORG_FINANCIERA = 14;  // Gerencia Administrativa y Financiera
+    const ORG_CONSEJO    = 48;  // CONSEJO DE ADMINISTRACIÓN
+    const ORG_SALUD      = 53;  // GERENCIA GENERAL DE SALUD
+    const ORG_LOGISTICA  = 54;  // GERENCIA DE ADMINISTRACIÓN Y FINANZAS
+    const ORG_TECNOLOGIA = 52;  // GERENCIA DE DESARROLLO Y TECNOLOGÍA
+    const ORG_ECONOMICAS = 55;  // GERENCIA DE PARTICIPACIÓN ECONÓMICA DEL SOC
+    const ORG_FINANCIERA = 54;  // GERENCIA DE ADMINISTRACIÓN Y FINANZAS
 
     // ── Modelo FODA real ──────────────────────────────────────
     const FODA_MODEL_ID  = 1;   // Analisis FODA

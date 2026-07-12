@@ -1,9 +1,10 @@
 {{-- Inicio Modales --}}
 <div class="modal fade" id="ajaxMisionModal" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="card-header card-header-info">
-                <h4 class="modal-title" id="modalHeadingMision"></h4>
+            <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
+                <h5 class="modal-title text-white" id="modalHeadingMision"></h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
                 <form id="misionForm" name="misionForm" class="form-horizontal">
@@ -44,7 +45,7 @@
                     </div>
 
                     <div class="col-sm-offset-2 col-sm-10">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                         <button type="submit" class="btn btn-success" id="saveBtnMision" value="create">Guardar
                             cambios
                         </button>
@@ -56,10 +57,11 @@
 </div>
 
 <div class="modal fade" id="ajaxVisionModal" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="card-header card-header-info">
-                <h4 class="modal-title" id="modalHeadingVision"></h4>
+            <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
+                <h5 class="modal-title text-white" id="modalHeadingVision"></h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
                 <form id="visionForm" name="visionForm" class="form-horizontal">
@@ -99,8 +101,7 @@
                     </div>
 
                     <div class="col-sm-offset-2 col-sm-10">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar
-                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                         <button type="submit" class="btn btn-success" id="saveBtnVision" value="create">Guardar
                             cambios
                         </button>
@@ -113,11 +114,11 @@
 </div>
 
 <div class="modal fade" id="ajaxValuesModal" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-
-            <div class="card-header card-header-info">
-                <h4 class="modal-title" id="modalHeadingValues"></h4>
+            <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
+                <h5 class="modal-title text-white" id="modalHeadingValues"></h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
 
             <div class="modal-body">
@@ -158,7 +159,7 @@
                     </div>
 
                     <div class="col-sm-offset-2 col-sm-10">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                         <button type="submit" class="btn btn-success" id="saveBtnValues" value="create">Guardar
                             cambios
                         </button>
@@ -174,11 +175,12 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
 
-            <div class="card-header card-header-info">
-                <h4 class="modal-title" id="modalHeadingAxis"></h4>
-                <small class="text-white opacity-75">
-                    <i class="fa fa-bullseye mr-1"></i> Objetivo Estratégico — fundamentado en las estrategias del cruce FODA
-                </small>
+            <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
+                <div>
+                    <h5 class="modal-title text-white mb-0" id="modalHeadingAxis"></h5>
+                    <small class="text-white" style="opacity:.8"><i class="fa fa-bullseye mr-1"></i> Objetivo Estratégico</small>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
 
             <div class="modal-body">
@@ -215,6 +217,76 @@
                         ]) }}
                     </div>
 
+                    {{-- ── Resultado Intermedio Institucional ── --}}
+                    <div class="form-group mb-3">
+                        <label class="control-label font-weight-bold">
+                            <i class="fa fa-flag mr-1 text-success"></i> Resultado Intermedio Institucional
+                            <span class="badge badge-light border ml-1" style="font-size:.68rem; font-weight:400">opcional</span>
+                        </label>
+                        <input type="text" id="axis_resultado_intermedio" name="resultado_intermedio"
+                               class="form-control mt-1" autocomplete="off"
+                               placeholder="Logro superior al que contribuye este objetivo...">
+                        <small class="form-text text-muted">
+                            Ej: "Asegurados y beneficiarios acceden a servicios de salud"
+                        </small>
+                        <div id="axis_ri_sugerencias" class="d-flex flex-wrap mt-1" style="gap:4px"></div>
+                    </div>
+
+                    {{-- ── Vinculación Presupuestaria del Resultado Intermedio ── --}}
+                    <div class="card bg-light mb-3" id="ri_vinculacion_block">
+                        <div class="card-body">
+                            <p class="text-uppercase font-weight-bold text-muted mb-3" style="font-size:.68rem; letter-spacing:.05em; border-bottom:1px solid #dee2e6; padding-bottom:.5rem">
+                                <i class="fa fa-coins mr-1"></i> Vinculación Presupuestaria (2)
+                            </p>
+
+                            <div class="mb-3">
+                                <label class="small font-weight-bold d-block" style="margin-bottom:.4rem">Resultado Intermedio Presupuestario (2.1)</label>
+                                <input type="text" id="axis_ri_presupuestario" name="ri_presupuestario"
+                                       class="form-control form-control-sm"
+                                       placeholder="Descripción del resultado presupuestario...">
+                                <small class="text-muted d-block" style="font-size:.72rem;margin-top:.3rem">
+                                    Ej: Trabajadores dependientes que aportan al seguro social...
+                                </small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="small font-weight-bold d-block" style="margin-bottom:.4rem">Programa Presupuestario (2.2)</label>
+                                <input type="text" id="axis_ri_programa" name="ri_programa"
+                                       class="form-control form-control-sm"
+                                       placeholder="Nombre del programa y actividad...">
+                                <small class="text-muted d-block" style="font-size:.72rem;margin-top:.3rem">
+                                    Ej: Programa, Central — Actividad: Servicios de Prestaciones Sanitarias
+                                </small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="small font-weight-bold d-block" style="margin-bottom:.4rem">Recursos Asignados (2.3) — Gs.</label>
+                                <input type="number" id="axis_ri_recursos_gs" name="ri_recursos_gs"
+                                       class="form-control form-control-sm" min="0" step="1"
+                                       placeholder="0">
+                                <small class="text-muted d-block" style="font-size:.72rem;margin-top:.3rem">
+                                    Ingresar sin puntos ni comas. Ej: 6341255316165
+                                </small>
+                            </div>
+
+                            {{-- Metas dinámicas del Resultado Intermedio --}}
+                            <div class="mb-0">
+                                <div class="d-flex align-items-center mb-2">
+                                    <label class="small font-weight-bold mb-0">
+                                        <i class="fa fa-bullseye mr-1"></i> Metas del Resultado Intermedio
+                                    </label>
+                                    <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 ml-auto btnAgregarRiMetaBtn" style="font-size:.72rem">
+                                        <i class="fa fa-plus mr-1"></i> Agregar período
+                                    </button>
+                                </div>
+                                <small class="text-muted d-block mb-2" style="font-size:.72rem">
+                                    El valor puede ser porcentaje, número entero o decimal (ej: 85%, 1200, 3.5).
+                                </small>
+                                <div id="riMetasContainer" class="row no-gutters" style="gap:.3rem 0"></div>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- ── Estrategias del Cruce de Ambientes (FODA) ── --}}
                     <div class="form-group mb-3">
                         {{ Form::label('axis_strategies', 'Estrategias del Cruce de Ambientes (FODA):', ['class' => 'control-label font-weight-bold']) }}
@@ -228,8 +300,38 @@
                         ]) !!}
                     </div>
 
+                    {{-- ── Marcos Referenciales (PND, ODS, etc.) ── --}}
+                    <div class="form-group mb-3">
+                        <label class="control-label font-weight-bold">
+                            <i class="fa fa-link mr-1"></i> Marcos Referenciales
+                        </label>
+                        <small class="form-text text-muted mb-1">
+                            Vinculá este objetivo a PND 2050, ODS u otro marco normativo.
+                            Si no existe, escribilo y se creará automáticamente.
+                        </small>
+                        <select id="axis_marcos" name="marco_id[]" style="width:100%" multiple></select>
+                    </div>
+
+                    {{-- ── Perspectiva BSC (opcional) ── --}}
+                    <div class="form-group mb-3">
+                        <label class="control-label font-weight-bold">
+                            <i class="fa fa-chart-bar mr-1 text-primary"></i> Perspectiva BSC
+                            <span class="badge badge-light border ml-1" style="font-size:.68rem; font-weight:400">opcional</span>
+                        </label>
+                        <small class="form-text text-muted mb-1">
+                            Si el plan usa el modelo Balanced Scorecard, clasificá este objetivo en su perspectiva correspondiente.
+                        </small>
+                        <select id="axis_bsc_perspectiva" name="bsc_perspectiva" class="form-control" style="width:100%">
+                            <option value="">— Sin perspectiva BSC —</option>
+                            <option value="financiera">💰 Perspectiva Financiera</option>
+                            <option value="clientes">👥 Perspectiva de Clientes / Usuarios</option>
+                            <option value="procesos">⚙️ Perspectiva de Procesos Internos</option>
+                            <option value="aprendizaje">📚 Perspectiva de Aprendizaje y Crecimiento</option>
+                        </select>
+                    </div>
+
                     <div class="col-sm-offset-2 col-sm-10 mt-3">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                         <button type="submit" class="btn btn-success" id="saveBtnAxis" value="create">
                             <i class="fa fa-save mr-1"></i> Guardar cambios
                         </button>
@@ -245,11 +347,12 @@
     <div class="modal-dialog">
         <div class="modal-content">
 
-            <div class="card-header card-header-info">
-                <h4 class="modal-title" id="modalHeadingGoals"></h4>
-                <small class="text-white opacity-75">
-                    <i class="fa fa-flag-checkered mr-1"></i> Meta — resultado cuantitativo/cualitativo del Objetivo Estratégico
-                </small>
+            <div class="modal-header" style="background:linear-gradient(135deg,#1565c0,#1976d2)">
+                <div>
+                    <h5 class="modal-title text-white mb-0" id="modalHeadingGoals"></h5>
+                    <small class="text-white" style="opacity:.8"><i class="fa fa-flag-checkered mr-1"></i> Meta</small>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
 
             <div class="modal-body">
@@ -286,7 +389,7 @@
                     </div>
 
                     <div class="col-sm-offset-2 col-sm-10 mt-3">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                         <button type="submit" class="btn btn-success" id="saveBtnGoals" value="create">
                             <i class="fa fa-save mr-1"></i> Guardar cambios
                         </button>
@@ -301,9 +404,9 @@
 <div class="modal fade" id="ajaxStrategiesModal" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-
-            <div class="card-header card-header-info">
-                <h4 class="modal-title" id="modalHeadingStrategies"></h4>
+            <div class="modal-header" style="background:linear-gradient(135deg,#e65100,#f57c00)">
+                <h5 class="modal-title text-white" id="modalHeadingStrategies"></h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
 
             <div class="modal-body">
@@ -324,8 +427,7 @@
                 </div>
                 <div class="col-sm-offset-2 col-sm-10">
                     <div class="text-center">
-                        <button type="button" class="btn btn-info" data-dismiss="modal">Cerrar
-                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                     </div>
                 </div>
             </div>
@@ -334,14 +436,15 @@
 </div>
 
 <div class="modal fade" id="ajaxActionsModal" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
 
-            <div class="card-header card-header-info">
-                <h4 class="modal-title" id="modalHeadingActions"></h4>
-                <small class="text-white opacity-75">
-                    <i class="fa fa-rocket mr-1"></i> {{ $niveles['action'] ?? 'Acción' }} — con indicador, responsable y meta
-                </small>
+            <div class="modal-header" style="background:linear-gradient(135deg,#2e7d32,#388e3c)">
+                <div>
+                    <h5 class="modal-title text-white mb-0" id="modalHeadingActions"></h5>
+                    <small class="text-white" style="opacity:.8"><i class="fa fa-rocket mr-1"></i> {{ $niveles['action'] ?? 'Acción' }}</small>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
 
             <div class="modal-body">
@@ -377,20 +480,66 @@
                             'id' => 'actions_order_item',
                         ]) }}
                     </div>
-                    <div class="form-group indicator">
-                        {{ Form::label('indicator', 'Indicador de Gestión:', ['class' => 'control-label']) }}
-                        {{ Form::text('indicator', null, ['class' => 'form-control', 'id' => 'actions_indicator']) }}
-                    </div>
 
-                    <div class="form-group baseline">
-                        {{ Form::label('baseline', 'Línea de Base:', ['class' => 'control-label']) }}
-                        {{ Form::text('baseline', null, ['class' => 'form-control', 'id' => 'actions_baseline']) }}
+                    {{-- ── Indicador de la Ficha Técnica ── --}}
+                    <hr class="my-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <h6 class="font-weight-bold mb-0">
+                            <i class="fa fa-ruler-combined mr-1 text-primary"></i> Indicador
+                        </h6>
+                        <a href="{{ route('pei.indicadores.modulo', $profile->id) }}"
+                           target="_blank"
+                           class="btn btn-sm btn-outline-primary py-0 px-2 ml-auto"
+                           style="font-size:.72rem" title="Gestionar fichas de indicadores">
+                            <i class="fa fa-external-link-alt mr-1"></i> Gestionar Indicadores
+                        </a>
                     </div>
+                    <div class="form-group mb-3">
+                        <small class="form-text text-muted mb-1">
+                            Seleccioná el indicador de la ficha técnica que mide esta acción.
+                            Si no existe aún, crealo desde "Gestionar Indicadores".
+                        </small>
+                        <select id="action_indicador_id" name="indicador_id" style="width:100%"></select>
 
-                    <div class="form-group target">
-                        {{ Form::label('target', 'Meta:', ['class' => 'control-label']) }}
-                        {{ Form::text('target', null, ['class' => 'form-control', 'id' => 'actions_target']) }}
+                        {{-- Ficha técnica del indicador seleccionado (readonly) --}}
+                        <div id="indicadorPreview" class="mt-3" style="display:none">
+                            <div class="card border-0" style="background:#f0f4ff;border:1px solid #c5cae9!important">
+                                <div class="card-body py-2 px-3">
+                                    <div class="d-flex align-items-center mb-2" style="gap:.4rem">
+                                        <span class="badge badge-dark" id="ind_prev_codigo" style="font-size:.72rem"></span>
+                                        <span class="badge" id="ind_prev_dimension" style="font-size:.68rem"></span>
+                                        <span id="ind_prev_sentido" style="font-size:.85rem"></span>
+                                        <span class="font-weight-bold ml-1" id="ind_prev_nombre" style="font-size:.85rem"></span>
+                                    </div>
+                                    <div class="row" style="font-size:.78rem">
+                                        <div class="col-md-6">
+                                            <div class="mb-1">
+                                                <span class="text-muted text-uppercase" style="font-size:.65rem;letter-spacing:.04em">Unidad de medida</span>
+                                                <div id="ind_prev_unidad" class="font-weight-bold"></div>
+                                            </div>
+                                            <div class="mb-1">
+                                                <span class="text-muted text-uppercase" style="font-size:.65rem;letter-spacing:.04em">Fórmula</span>
+                                                <div id="ind_prev_formula" style="font-style:italic"></div>
+                                            </div>
+                                            <div class="mb-1">
+                                                <span class="text-muted text-uppercase" style="font-size:.65rem;letter-spacing:.04em">Línea de base</span>
+                                                <div id="ind_prev_linea_base"></div>
+                                            </div>
+                                            <div>
+                                                <span class="text-muted text-uppercase" style="font-size:.65rem;letter-spacing:.04em">Fuente</span>
+                                                <div id="ind_prev_fuente" class="text-muted" style="font-size:.75rem"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <span class="text-muted text-uppercase d-block mb-1" style="font-size:.65rem;letter-spacing:.04em">Metas por período</span>
+                                            <div id="ind_prev_metas" class="d-flex flex-wrap" style="gap:.3rem"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    <hr class="my-3">
 
                     <div class="form-group">
                         {{ Form::label('responsibles', 'Asignar Responsables:') }}
@@ -401,8 +550,43 @@
                         ]) !!}
                     </div>
 
+                    {{-- ── Vinculación PGN ── --}}
+                    <hr class="my-3">
+                    <h6 class="font-weight-bold text-info mb-3">
+                        <i class="fa fa-coins mr-1"></i> Vinculación Presupuestaria (PGN)
+                    </h6>
+
+                    <div class="form-group">
+                        <label class="control-label">Actividad PGN</label>
+                        <small class="form-text text-muted mb-1">Buscá por código o nombre. Solo nodos hoja del año activo.</small>
+                        <select id="action_pgn_nodo" name="pgn_nodo_id" style="width:100%"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Resultado</label>
+                        <input type="text" class="form-control" id="action_pgn_resultado" name="pgn_resultado"
+                            placeholder="Ej: Resultado 1.1 — Servicios de salud fortalecidos">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label">Monto Vinculado (Gs.)</label>
+                                <input type="number" class="form-control" id="action_pgn_monto_vinculado"
+                                    name="pgn_monto_vinculado" min="0" step="1" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label">Monto Ejecutado (Gs.)</label>
+                                <input type="number" class="form-control" id="action_pgn_monto_ejecutado"
+                                    name="pgn_monto_ejecutado" min="0" step="1" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-sm-offset-2 col-sm-10 mt-3">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                         <button type="submit" class="btn btn-success" id="saveBtnActions" value="create">
                             <i class="fa fa-save mr-1"></i> Guardar cambios
                         </button>
@@ -418,9 +602,9 @@
 <div class="modal fade" id="ajaxHistoricalModal" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-
-            <div class="card-header card-header-info">
-                <h4 class="modal-title" id="modalHeadingHistorical"></h4>
+            <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
+                <h5 class="modal-title text-white" id="modalHeadingHistorical"></h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
 
             <div class="modal-body">
@@ -447,9 +631,9 @@
 <div class="modal fade" id="ajaxAxisListlModal" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-
-            <div class="card-header card-header-info">
-                <h4 class="modal-title" id="modalHeadingAxisList"></h4>
+            <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
+                <h5 class="modal-title text-white" id="modalHeadingAxisList"></h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
 
             <div class="modal-body">
@@ -471,8 +655,7 @@
                 </div>
                 <div class="col-sm-offset-2 col-sm-10">
                     <div class="text-center">
-                        <button type="button" class="btn btn-info" data-dismiss="modal">Cerrar
-                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                     </div>
                 </div>
             </div>
@@ -483,9 +666,9 @@
 <div class="modal fade" id="ajaxGoalsListModal" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-
-            <div class="card-header card-header-info">
-                <h4 class="modal-title" id="modalHeadingGoalsList"></h4>
+            <div class="modal-header" style="background:linear-gradient(135deg,#1565c0,#1976d2)">
+                <h5 class="modal-title text-white" id="modalHeadingGoalsList"></h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
 
             <div class="modal-body">
@@ -506,8 +689,7 @@
                 </div>
                 <div class="col-sm-offset-2 col-sm-10">
                     <div class="text-center">
-                        <button type="button" class="btn btn-info" data-dismiss="modal">Cerrar
-                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                     </div>
                 </div>
             </div>
@@ -518,9 +700,9 @@
 <div class="modal fade" id="ajaxActionsListModal" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-
-            <div class="card-header card-header-info">
-                <h4 class="modal-title" id="modalHeadingActionsList"></h4>
+            <div class="modal-header" style="background:linear-gradient(135deg,#2e7d32,#388e3c)">
+                <h5 class="modal-title text-white" id="modalHeadingActionsList"></h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
 
             <div class="modal-body">
@@ -543,8 +725,7 @@
                 </div>
                 <div class="col-sm-offset-2 col-sm-10">
                     <div class="text-center">
-                        <button type="button" class="btn btn-info" data-dismiss="modal">Cerrar
-                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                     </div>
                 </div>
             </div>
@@ -555,167 +736,429 @@
 <div class="modal fade" id="ajaxDefineCriteriaModal" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-
-            <div class="card-header card-header-info">
-                <h4 class="modal-title" id="modalReportProgress"></h4>
+            <div class="modal-header py-2" style="background:linear-gradient(135deg,#1b5e20,#2e7d32)">
+                <div>
+                    <h5 class="modal-title text-white mb-0" id="modalReportProgress">
+                        <i class="fa fa-chart-line mr-2"></i>Reportar Avance
+                    </h5>
+                    <small class="text-white" style="opacity:.75;font-size:.75rem" id="reportProgress_accionNombre"></small>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
 
             <div class="modal-body">
-                <form id="monitoringType" name="monitoringType" class="form-horizontal">
-                    {{ Form::hidden('profile_id', null, ['id' => 'progress_profile_id']) }}
-                    {{ Form::hidden('parent_id', null, ['id' => 'progress_parent_id']) }}
-                    {{ Form::hidden('group_id', null, ['id' => 'progress_group_id']) }}
-                    {{ Form::hidden('mision', null, ['id' => 'progress_mision']) }}
-                    {{ Form::hidden('vision', null, ['id' => 'progress_vision']) }}
-                    {{ Form::hidden('type', 'institucional', ['id' => 'progress_type']) }}
-                    {{ Form::hidden('level', 'action', ['id' => 'progress_level']) }}
-                    {{ Form::hidden('period', null, ['class' => 'form-control', 'id' => 'progress_period']) }}
-                    {{-- {{ Form::hidden('numerator', null, ['class' => 'form-control', 'id' => 'progress_numerator']) }}
-                    {{ Form::hidden('operator', null, ['class' => 'form-control', 'id' => 'progress_numerator']) }} --}}
-                    {{-- {{ Form::hidden('denominator', null, ['class' => 'form-control', 'id' => 'progress_denominator']) }} --}}
-                    {{ Form::hidden('goal', null, ['class' => 'form-control', 'id' => 'progress_goal']) }}
-                    {{-- {{ Form::hidden('progress', null, ['class' => 'form-control', 'id' => 'progress_progress']) }} --}}
-                    {{ Form::hidden('dependency_id', null, ['class' => 'form-control', 'id' => 'progress_dependency']) }}
-                    {{ Form::hidden('order_item', null, ['class' => 'form-control', 'id' => 'progress_order_item']) }}
+                <input type="hidden" id="reportProgress_accionId">
 
-                    <div class="progress_action mb-2">
-                        {{ Form::label('name', 'Acción:', ['class' => 'control-label']) }}
-                        {{ Form::text('name', null, [
-                            'class' => 'form-control',
-                            'id' => 'progress_action',
-                            'readonly',
-                        ]) }}
+                {{-- Ficha del indicador (readonly) --}}
+                <div id="reportProgress_fichaIndicador" class="mb-3 p-2 rounded" style="display:none;background:#f0f4ff;border:1px solid #c5cae9;font-size:.8rem">
+                    <div class="d-flex align-items-center flex-wrap mb-1" style="gap:.3rem">
+                        <span class="badge badge-dark" id="rp_ind_codigo" style="font-size:.65rem"></span>
+                        <span class="badge" id="rp_ind_dimension" style="font-size:.65rem"></span>
+                        <span id="rp_ind_sentido"></span>
+                        <strong id="rp_ind_nombre"></strong>
                     </div>
-
-                    <div class="progress_indicator mb-2">
-                        {{ Form::label('indicator', 'Indicador:', ['class' => 'control-label']) }}
-                        {{ Form::text('indicator', null, [
-                            'class' => 'form-control',
-                            'id' => 'progress_indicator',
-                            'readonly',
-                        ]) }}
-                    </div>
-
-                    <div class="progress_baseline mb-2">
-                        {{ Form::label('baseline', 'Linea de Base:', ['class' => 'control-label']) }}
-                        {{ Form::text('baseline', null, [
-                            'class' => 'form-control',
-                            'id' => 'progress_baseline',
-                            'readonly',
-                        ]) }}
-                    </div>
-
-                    <div class="progress_target mb-2">
-                        {{ Form::label('target', 'Meta', ['class' => 'control-label']) }}
-                        {{ Form::text('target', null, [
-                            'class' => 'form-control',
-                            'id' => 'progress_target',
-                            'readonly',
-                        ]) }}
-                    </div>
-
-                    {{ Form::label('responsiblesDetail', 'Responsables', ['class' => 'control-label']) }}
-                    <div id="responsiblesContainer" class="mb-2"></div>
-
-                    <div class="form-group progress_responsibles">
-                        {{ Form::label('progress_responsibles', 'Responsables:') }}
-                        {!! Form::select('responsible_id[]', [], null, [
-                            'id' => 'progress_responsibles',
-                            'style' => 'width:100%',
-                            'multiple',
-                        ]) !!}
-                    </div>
-
-                    <div class="progress_report_type mb-2">
-                        {{ Form::label('report_type', 'Tipo de Reporte:', ['class' => 'control-label']) }}
-                        {{ Form::select('report_type', ['qualitative' => 'Cualitativo', 'quantitative' => 'Cuantitativo'], null, [
-                            'class' => 'form-control',
-                            'placeholder' => '',
-                            'id' => 'progress_report_type',
-                            'style' => 'width: 100%',
-                        ]) }}
-                    </div>
-
-                    <div class="qualitative">
-                        <div id="parameters" class="mt-4">
-                            <div class="form-group">
-                                <label for="description">Descripción:</label>
-                                <input type="text" class="form-control" id="description">
-                            </div>
-                            <div class="form-group">
-                                <label for="value">Valor (%):</label>
-                                <input type="text" class="form-control" id="value">
-                            </div>
-                            <div class="form-group">
-                                <label for="color">Color:</label>
-                                {{ Form::select(
-                                    'color',
-                                    [
-                                        'badge-danger' => 'Rojo',
-                                        'badge-warning' => 'Amarillo',
-                                        'badge-success' => 'Verde',
-                                        'badge-info' => 'Azul',
-                                        'badge-primary' => 'Primario',
-                                        'badge-secondary' => 'Secundario',
-                                        'badge-dark' => 'Oscuro',
-                                        'badge-light' => 'Claro',
-                                    ],
-                                    null,
-                                    [
-                                        'class' => 'form-control',
-                                        'placeholder' => '',
-                                        'style' => 'width:100%',
-                                        'id' => 'color',
-                                    ],
-                                ) }}
-
-                            </div>
-                            <button type="button" class="btn btn-primary" id="insertCheckbox">Insertar
-                                Parámetro</button>
+                    <div class="row" style="font-size:.76rem">
+                        <div class="col-md-6">
+                            <span class="text-muted">Fórmula: </span><span id="rp_ind_formula" style="font-style:italic"></span>
                         </div>
-
-                        <div id="checkboxContainer">
-
+                        <div class="col-md-6">
+                            <span class="text-muted">Unidad: </span><span id="rp_ind_unidad"></span>
                         </div>
                     </div>
+                    <div class="mt-1">
+                        <span class="text-muted" style="font-size:.72rem">Meta del año actual: </span>
+                        <strong id="rp_ind_meta_anio" style="font-size:.78rem;color:#1a237e"></strong>
+                    </div>
+                </div>
 
-                    <div class="quantitative">
-                        <div class="calculator">
-                            {{-- <h3>Calculadora</h3> --}}
-                            <input type="number" id="progress_denominator" class="form-control" name="denominator"
-                                placeholder="META NUMÉRICA">
-                            <input type="number" id="progress_numerator" class="form-control"
-                                placeholder="Logrado">
-                            {{-- <button type="button" class="btn btn-primary operation-btn" data-operation="add">Sumar (+)</button>
-                            <button type="button" class="btn btn-primary operation-btn" data-operation="subtract">Restar (-)</button>
-                            <button type="button" class="btn btn-primary operation-btn" data-operation="multiply">Multiplicar (x)</button>
-                            <button type="button" class="btn btn-primary operation-btn" data-operation="divide">Dividir (/)</button> --}}
-                            <button type="button" class="btn btn-primary operation-btn"
-                                data-operation="percentage">Generar Avance (%)</button>
-                        </div>
-
-                        <div class="progress_progress mb-2">
-                            {{ Form::label('progress', 'Resultado:', ['class' => 'control-label']) }}
-                            {{ Form::text('progress', null, [
-                                'class' => 'form-control',
-                                'id' => 'progress_progress',
-                                'readonly' => 'readonly',
-                            ]) }}
+                {{-- Formulario de reporte --}}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold small">Fecha del reporte <span class="text-danger">*</span></label>
+                            <input type="date" id="rp_fecha_reporte" class="form-control"
+                                   value="{{ date('Y-m-d') }}">
                         </div>
                     </div>
-
-                    <div class="col-sm-offset-2 col-sm-10">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-success" id="saveBtnMonitoringType"
-                            value="create">Guardar
-                            cambios
-                        </button>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold small">Período</label>
+                            <input type="text" id="rp_periodo_label" class="form-control"
+                                   placeholder="Ej: Ene-Jun 2025, 1er Trim 2025...">
+                        </div>
                     </div>
+                </div>
 
-                </form>
+                <div class="form-group mb-3">
+                    <label class="font-weight-bold small">
+                        Valor logrado <span class="text-muted font-weight-normal">(numerador del indicador)</span>
+                    </label>
+                    <div class="input-group">
+                        <input type="number" id="rp_valor_numerador" class="form-control"
+                               step="0.0001" placeholder="Ej: 85 (si la meta es 100%)">
+                        <div class="input-group-append">
+                            <span class="input-group-text" id="rp_unidad_label" style="font-size:.8rem">—</span>
+                        </div>
+                    </div>
+                    {{-- Semáforo preview en tiempo real --}}
+                    <div id="rp_semaforo_preview" class="mt-1" style="display:none">
+                        <span class="badge" id="rp_semaforo_badge" style="font-size:.78rem"></span>
+                        <span class="text-muted ml-1" id="rp_pct_label" style="font-size:.75rem"></span>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="font-weight-bold small">Descripción del avance</label>
+                    <textarea id="rp_descripcion_avance" class="form-control" rows="3"
+                              placeholder="Describí qué se logró, qué está en progreso y qué obstáculos encontraste..."></textarea>
+                </div>
+
+                <div class="form-group mb-0">
+                    <label class="font-weight-bold small">Evidencia <span class="text-muted font-weight-normal">(opcional)</span></label>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <input type="text" id="rp_evidencia_url" class="form-control form-control-sm"
+                                   placeholder="URL del documento, informe, acta...">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" id="rp_evidencia_label" class="form-control form-control-sm"
+                                   placeholder="Descripción breve">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Historial de reportes anteriores --}}
+                <div class="mt-3">
+                    <div class="d-flex align-items-center mb-1">
+                        <small class="text-uppercase font-weight-bold text-muted" style="font-size:.65rem;letter-spacing:.04em">
+                            <i class="fa fa-history mr-1"></i> Reportes anteriores
+                        </small>
+                        <span class="badge badge-light border ml-2" id="rp_historial_count" style="font-size:.65rem">0</span>
+                    </div>
+                    <div id="rp_historial" style="max-height:150px;overflow-y:auto">
+                        <p class="text-muted text-center" style="font-size:.78rem">Sin reportes previos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                    <i class="fa fa-times mr-1"></i> Cerrar
+                </button>
+                <button type="button" class="btn btn-success" id="btnGuardarReporte">
+                    <i class="fa fa-save mr-1"></i> Guardar Reporte
+                </button>
             </div>
         </div>
     </div>
 </div>
-
 {{-- Fin Modales --}}
+
+{{-- ══ Modal Ficha Técnica de Indicador ═══════════════════════════════════ --}}
+<div class="modal fade" id="modalIndicador" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
+                <div>
+                    <h5 class="modal-title text-white mb-0" id="modalIndicadorTitulo">
+                        <i class="fa fa-ruler-combined mr-2"></i>Ficha del Indicador
+                    </h5>
+                    <small class="text-white" style="opacity:.8" id="modalIndicadorSubtitulo"></small>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+
+            <div class="modal-body p-0">
+
+                {{-- Encabezado de la ficha --}}
+                <div class="px-4 pt-3 pb-2" style="background:#f8f9fa;border-bottom:1px solid #dee2e6">
+                    <div class="row">
+                        {{-- 1. Nombre --}}
+                        <div class="col-md-9">
+                            <label class="font-weight-bold text-uppercase" style="font-size:.72rem;letter-spacing:.05em">
+                                <span class="badge badge-dark mr-1">1</span> Nombre del Indicador <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="ind_nombre" class="form-control form-control-sm"
+                                   placeholder="Ingrese el nombre del indicador">
+                        </div>
+                        {{-- 2. Código --}}
+                        <div class="col-md-3">
+                            <label class="font-weight-bold text-uppercase" style="font-size:.72rem;letter-spacing:.05em">
+                                <span class="badge badge-dark mr-1">2</span> Código
+                            </label>
+                            <div class="input-group input-group-sm">
+                                <input type="text" id="ind_codigo_letras" class="form-control text-center text-uppercase"
+                                       maxlength="10" placeholder="AAA" style="font-weight:bold">
+                                <div class="input-group-prepend input-group-append">
+                                    <span class="input-group-text">-</span>
+                                </div>
+                                <input type="text" id="ind_codigo_numeros" class="form-control text-center"
+                                       maxlength="10" placeholder="000" style="font-weight:bold">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-4 py-3">
+                    <input type="hidden" id="ind_id">
+                    <input type="hidden" id="ind_pei_profile_id">
+
+                    {{-- 3. Dimensión --}}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <label class="font-weight-bold text-uppercase d-block mb-2" style="font-size:.72rem;letter-spacing:.05em">
+                            <span class="badge badge-dark mr-1">3</span> Dimensión del Indicador <span class="text-danger">*</span>
+                        </label>
+                        <div class="row">
+                            @foreach(['eficiencia'=>'Eficiencia','eficacia'=>'Eficacia','calidad'=>'Calidad','economia'=>'Economía'] as $val => $lbl)
+                            <div class="col-6 col-md-3 mb-2">
+                                <label class="d-flex align-items-center p-2 rounded border ind-radio-label"
+                                       style="cursor:pointer;gap:.5rem;font-size:.88rem">
+                                    <input type="radio" name="ind_dimension" value="{{ $val }}" class="ind-radio"> {{ $lbl }}
+                                </label>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- 4. Ámbito --}}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <label class="font-weight-bold text-uppercase d-block mb-2" style="font-size:.72rem;letter-spacing:.05em">
+                            <span class="badge badge-dark mr-1">4</span> Ámbito del Indicador <span class="text-danger">*</span>
+                        </label>
+                        <div class="row">
+                            @foreach(['objetivo_estrategico'=>'Objetivo Estratégico','objetivo_especifico'=>'Objetivo Específico','accion_estrategica'=>'Acción Estratégica','accion_operativa'=>'Acción Operativa'] as $val => $lbl)
+                            <div class="col-6 col-md-3 mb-2">
+                                <label class="d-flex align-items-center p-2 rounded border ind-radio-label"
+                                       style="cursor:pointer;gap:.5rem;font-size:.88rem">
+                                    <input type="radio" name="ind_ambito" value="{{ $val }}" class="ind-radio"> {{ $lbl }}
+                                </label>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- 5-6. Descripción y Variables --}}
+                    <div class="row mb-3 pb-3 border-bottom">
+                        <div class="col-md-6">
+                            <label class="font-weight-bold text-uppercase" style="font-size:.72rem;letter-spacing:.05em">
+                                <span class="badge badge-dark mr-1">5</span> Descripción del Indicador
+                            </label>
+                            <small class="d-block text-muted mb-1" style="font-size:.75rem">
+                                En qué consiste y qué permite medir.
+                            </small>
+                            <textarea id="ind_descripcion" class="form-control form-control-sm" rows="3"
+                                      placeholder="Describir en qué consiste el indicador..."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="font-weight-bold text-uppercase" style="font-size:.72rem;letter-spacing:.05em">
+                                <span class="badge badge-dark mr-1">6</span> Variables
+                            </label>
+                            <small class="d-block text-muted mb-1" style="font-size:.75rem">
+                                Variables que interactúan en la medición.
+                            </small>
+                            <textarea id="ind_variables" class="form-control form-control-sm" rows="3"
+                                      placeholder="Identificar y describir las variables..."></textarea>
+                        </div>
+                    </div>
+
+                    {{-- 7-8. Fórmula y Unidad --}}
+                    <div class="row mb-3 pb-3 border-bottom">
+                        <div class="col-md-8">
+                            <label class="font-weight-bold text-uppercase" style="font-size:.72rem;letter-spacing:.05em">
+                                <span class="badge badge-dark mr-1">7</span> Fórmula para el Cálculo
+                            </label>
+                            <input type="text" id="ind_formula" class="form-control form-control-sm"
+                                   placeholder="Ej: (A / B) × 100">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="font-weight-bold text-uppercase" style="font-size:.72rem;letter-spacing:.05em">
+                                <span class="badge badge-dark mr-1">8</span> Unidad de Medida
+                            </label>
+                            <input type="text" id="ind_unidad_medida" class="form-control form-control-sm"
+                                   placeholder="Ej: Porcentaje, Absoluto, Tasa">
+                        </div>
+                    </div>
+
+                    {{-- 9. Frecuencia --}}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <label class="font-weight-bold text-uppercase d-block mb-2" style="font-size:.72rem;letter-spacing:.05em">
+                            <span class="badge badge-dark mr-1">9</span> Frecuencia de Medición <span class="text-danger">*</span>
+                        </label>
+                        <div class="row align-items-center">
+                            @foreach(['mensual'=>'Mensual','trimestral'=>'Trimestral','semestral'=>'Semestral','anual'=>'Anual'] as $val => $lbl)
+                            <div class="col-6 col-md-2 mb-2">
+                                <label class="d-flex align-items-center p-2 rounded border ind-radio-label"
+                                       style="cursor:pointer;gap:.5rem;font-size:.88rem">
+                                    <input type="radio" name="ind_frecuencia" value="{{ $val }}" class="ind-radio"> {{ $lbl }}
+                                </label>
+                            </div>
+                            @endforeach
+                            <div class="col-12 col-md-4 mb-2">
+                                <label class="d-flex align-items-center p-2 rounded border ind-radio-label"
+                                       style="cursor:pointer;gap:.5rem;font-size:.88rem">
+                                    <input type="radio" name="ind_frecuencia" value="otro" class="ind-radio">
+                                    <span>Otro:</span>
+                                    <input type="text" id="ind_frecuencia_otro" class="form-control form-control-sm"
+                                           placeholder="Especifique" style="flex:1">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 10-11. Cobertura y Sentido --}}
+                    <div class="row mb-3 pb-3 border-bottom">
+                        <div class="col-md-7">
+                            <label class="font-weight-bold text-uppercase d-block mb-2" style="font-size:.72rem;letter-spacing:.05em">
+                                <span class="badge badge-dark mr-1">10</span> Cobertura Geográfica <span class="text-danger">*</span>
+                            </label>
+                            <div class="row">
+                                @foreach(['nacional'=>'Nacional','regional'=>'Regional','departamental'=>'Departamental','municipal'=>'Municipal'] as $val => $lbl)
+                                <div class="col-6 mb-2">
+                                    <label class="d-flex align-items-center p-2 rounded border ind-radio-label"
+                                           style="cursor:pointer;gap:.5rem;font-size:.88rem">
+                                        <input type="radio" name="ind_cobertura" value="{{ $val }}" class="ind-radio"> {{ $lbl }}
+                                    </label>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="font-weight-bold text-uppercase d-block mb-2" style="font-size:.72rem;letter-spacing:.05em">
+                                <span class="badge badge-dark mr-1">11</span> Sentido del Indicador <span class="text-danger">*</span>
+                            </label>
+                            <label class="d-flex align-items-center p-2 rounded border mb-2 ind-radio-label"
+                                   style="cursor:pointer;gap:.5rem;font-size:.88rem">
+                                <input type="radio" name="ind_sentido" value="ascendente" class="ind-radio">
+                                <span>▲ Ascendente</span>
+                                <small class="text-muted ml-1">(más es mejor)</small>
+                            </label>
+                            <label class="d-flex align-items-center p-2 rounded border ind-radio-label"
+                                   style="cursor:pointer;gap:.5rem;font-size:.88rem">
+                                <input type="radio" name="ind_sentido" value="descendente" class="ind-radio">
+                                <span>▼ Descendente</span>
+                                <small class="text-muted ml-1">(menos es mejor)</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    {{-- 12. Línea de Base --}}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <label class="font-weight-bold text-uppercase d-block mb-2" style="font-size:.72rem;letter-spacing:.05em">
+                            <span class="badge badge-dark mr-1">12</span> Línea de Base del Indicador
+                        </label>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="text-uppercase" style="font-size:.68rem;color:#6c757d">Año</label>
+                                <input type="number" id="ind_linea_base_anio" class="form-control form-control-sm"
+                                       placeholder="{{ date('Y') }}" min="2000" max="2100">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-uppercase" style="font-size:.68rem;color:#6c757d">Valor</label>
+                                <input type="text" id="ind_linea_base_valor" class="form-control form-control-sm"
+                                       placeholder="Valor inicial de referencia">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 13. Metas --}}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex align-items-center mb-2">
+                            <label class="font-weight-bold text-uppercase mb-0" style="font-size:.72rem;letter-spacing:.05em">
+                                <span class="badge badge-dark mr-1">13</span> Metas del Indicador
+                            </label>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 ml-auto"
+                                    id="btnAgregarMeta" style="font-size:.75rem">
+                                <i class="fa fa-plus mr-1"></i> Agregar período
+                            </button>
+                        </div>
+                        <div id="metasContainer" class="row">
+                            {{-- Las metas se agregan dinámicamente --}}
+                        </div>
+                    </div>
+
+                    {{-- 14-15. Fuente y Responsable --}}
+                    <div class="row mb-3 pb-3 border-bottom">
+                        <div class="col-md-6">
+                            <label class="font-weight-bold text-uppercase" style="font-size:.72rem;letter-spacing:.05em">
+                                <span class="badge badge-dark mr-1">14</span> Fuente(s) de Información
+                            </label>
+                            <input type="text" id="ind_fuente" class="form-control form-control-sm"
+                                   placeholder="Registros administrativos, censos, informes...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="font-weight-bold text-uppercase" style="font-size:.72rem;letter-spacing:.05em">
+                                <span class="badge badge-dark mr-1">15</span> Dependencia Responsable
+                            </label>
+                            <input type="text" id="ind_dependencia_responsable" class="form-control form-control-sm"
+                                   placeholder="Dirección o unidad a cargo del cálculo y reporte">
+                        </div>
+                    </div>
+
+                    {{-- 16. Comentarios --}}
+                    <div class="mb-2">
+                        <label class="font-weight-bold text-uppercase" style="font-size:.72rem;letter-spacing:.05em">
+                            <span class="badge badge-dark mr-1">16</span> Comentarios
+                        </label>
+                        <textarea id="ind_comentarios" class="form-control form-control-sm" rows="2"
+                                  placeholder="Observaciones adicionales sobre el indicador..."></textarea>
+                    </div>
+
+                </div>{{-- /px-4 --}}
+            </div>{{-- /modal-body --}}
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                    <i class="fa fa-times mr-1"></i> Cerrar
+                </button>
+                <button type="button" class="btn btn-success" id="btnGuardarIndicador">
+                    <i class="fa fa-save mr-1"></i> Guardar Ficha
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+{{-- /Modal Ficha Técnica --}}
+
+{{-- ══ Modal Lista de Indicadores del Perfil ══════════════════════════════ --}}
+<div class="modal fade" id="modalIndicadoresList" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
+                <h5 class="modal-title text-white mb-0">
+                    <i class="fa fa-ruler-combined mr-2"></i> Indicadores del Plan
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-end mb-2">
+                    <button type="button" class="btn btn-sm btn-success" id="btnNuevoIndicadorDesdeList">
+                        <i class="fa fa-plus mr-1"></i> Nuevo Indicador
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover" id="tablaIndicadoresList">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width:80px">Código</th>
+                                <th>Nombre</th>
+                                <th style="width:100px">Dimensión</th>
+                                <th style="width:120px">Ámbito</th>
+                                <th style="width:90px">Frecuencia</th>
+                                <th style="width:80px">Sentido</th>
+                                <th style="width:90px" class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="indicadoresListBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{{-- /Modal Lista --}}

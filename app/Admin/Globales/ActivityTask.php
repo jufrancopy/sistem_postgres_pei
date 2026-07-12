@@ -15,16 +15,15 @@ class ActivityTask extends Model
     protected $fillable = [
         'activity_id', 'title', 'details', 'etiqueta', 'color',
         'fecha_inicio', 'fecha_vencimiento', 'assigned_to', 'status',
-        'completed_at', 'completed_by', 'completion_note', 'schedule_item_id'
+        'completed_at', 'completed_by', 'completion_note', 'schedule_item_id',
+        'es_reunion',
     ];
-
-
-    protected $dates = ['completed_at', 'fecha_inicio', 'fecha_vencimiento'];
 
     protected $casts = [
         'fecha_inicio'      => 'datetime',
         'fecha_vencimiento' => 'datetime',
         'completed_at'      => 'datetime',
+        'es_reunion'        => 'boolean',
     ];
 
     public function getEstadoVencimientoAttribute(): ?string
