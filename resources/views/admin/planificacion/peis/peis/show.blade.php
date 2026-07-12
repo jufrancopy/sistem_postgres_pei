@@ -909,6 +909,58 @@
                 }); // cierre del $.get de createAxis
             }); // cierre del on('click', '#createAxis')
 
+            // ── Submit del form de Acciones ───────────────────────────────────
+            $('#actionsForm').on('submit', function(e) {
+                e.preventDefault();
+                var $btn = $('#saveBtnActions').prop('disabled', true)
+                    .html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
+
+                var formData = new FormData(this);
+                formData.append('name', actionsEditor.getData());
+                formData.append('indicador_id', $('#action_indicador_id').val() || '');
+
+                // Agregar responsables del Select2 manualmente
+                formData.delete('responsible_id[]'); // limpiar si hubiera
+                var respIds = $('#responsibles').val() || [];
+                if (!Array.isArray(respIds)) respIds = [respIds];
+                respIds.forEach(function(id) {
+                    if (id) formData.append('responsible_id[]', id);
+                });
+
+                $.ajax({
+                    data: formData,
+                    url: "{{ route('pei-profiles.store') }}",
+                    type: 'POST',
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    success: function(res) {
+                        // Sincronizar PGN
+                        var pgnNodoId = $('#action_pgn_nodo').val();
+                        $.ajax({
+                            url: '{{ url("pei-profiles") }}/' + res.profile.id + '/pgn',
+                            type: 'POST',
+                            data: {
+                                _token: $('meta[name=csrf-token]').attr('content'),
+                                pgn_nodo_id:         pgnNodoId || null,
+                                pgn_resultado:       $('#action_pgn_resultado').val(),
+                                pgn_monto_vinculado: $('#action_pgn_monto_vinculado').val(),
+                                pgn_monto_ejecutado: $('#action_pgn_monto_ejecutado').val(),
+                            }
+                        });
+                        toastr.success(res.success || 'Acción guardada.');
+                        $('#actionsForm').trigger('reset');
+                        $('#ajaxActionsModal').modal('hide');
+                    },
+                    error: function(xhr) {
+                        var e = xhr.responseJSON?.errors;
+                        if (e) $.each(e, (k,v) => toastr.error(v));
+                        else toastr.error(xhr.responseJSON?.message || 'Error al guardar.');
+                        $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i>Guardar cambios');
+                    }
+                });
+            });
+
             $('#saveBtnAxis').click(function(e) {
                 e.preventDefault();
                 $(this).html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
@@ -1083,7 +1135,12 @@
                         allowClear: true,
                         minimumInputLength: 0,
                         ajax: {
-                            url: '{{ url("admin/globales/get-dependencies") }}/' + '{{ $orgRaizId }}',
+                            url: function() {
+                                var rootId = '{{ $orgRaizId ?? "" }}';
+                                return rootId
+                                    ? '{{ url("admin/globales/get-dependencies") }}/' + rootId
+                                    : '{{ url("admin/globales/get-dependencies-root") }}';
+                            },
                             dataType: 'json',
                             delay: 300,
                             data: function(params) {
