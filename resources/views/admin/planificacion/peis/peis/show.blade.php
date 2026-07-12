@@ -1130,7 +1130,7 @@
                     });
 
                     $responsibles.select2({
-                        dropdownParent: $('#ajaxActionsModal'),
+                        dropdownParent: $responsibles.closest('.form-group'),
                         placeholder: 'Buscar dependencia responsable...',
                         allowClear: true,
                         minimumInputLength: 0,
