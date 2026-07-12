@@ -502,7 +502,7 @@
                         <select id="action_indicador_id" name="indicador_id" style="width:100%"></select>
 
                         {{-- Ficha técnica del indicador seleccionado (readonly) --}}
-                        <div id="indicadorPreview" class="mt-3" style="display:none">
+                        <div id="indicadorPreview" class="mt-3" style="display:none;pointer-events:none;user-select:none">
                             <div class="card border-0" style="background:#f0f4ff;border:1px solid #c5cae9!important">
                                 <div class="card-body py-2 px-3">
                                     <div class="d-flex align-items-center mb-2" style="gap:.4rem">

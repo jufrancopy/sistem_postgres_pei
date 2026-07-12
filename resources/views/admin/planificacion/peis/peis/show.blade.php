@@ -1206,9 +1206,11 @@
                     }
 
                     $indicadorSel.on('select2:select', function(e) {
+                        e.stopPropagation();
                         mostrarPreviewIndicador(e.params.data);
                     });
-                    $indicadorSel.on('select2:clear', function() {
+                    $indicadorSel.on('select2:clear', function(e) {
+                        e.stopPropagation();
                         $('#indicadorPreview').hide();
                     });
 
