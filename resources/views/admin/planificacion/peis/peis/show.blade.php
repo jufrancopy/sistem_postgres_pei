@@ -1133,7 +1133,7 @@
                         dropdownParent: $responsibles.closest('.form-group'),
                         placeholder: 'Buscar dependencia responsable...',
                         allowClear: true,
-                        minimumInputLength: 0,
+                        minimumInputLength: 2,
                         ajax: {
                             url: function() {
                                 var rootId = '{{ $orgRaizId ?? "" }}';
