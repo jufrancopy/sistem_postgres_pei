@@ -17,9 +17,10 @@ class PeiIps2024Seeder extends Seeder
     private Carbon $now;
     private string $nivelLabel;
 
-    const MASTER_ID = 'a2344e1c-1396-4fe3-8c20-fe51fb187e2a';
-    const ORG_IPS   = 8;
+    const ORG_IPS   = 26;
     const USER_ID   = 201;
+    // Se genera dinámicamente — ver crearOObtenerMaster()
+    private string $masterId;
 
     public function run(): void
     {
@@ -31,13 +32,55 @@ class PeiIps2024Seeder extends Seeder
             'action' => 'Acción',
         ]);
 
+        $this->masterId = $this->crearOObtenerMaster();
         $this->command->info('── Construyendo PEI IPS 2024-2028 (Hoja 12)...');
+        $this->command->info('   Master ID: ' . $this->masterId);
+
         $this->actualizarMaster();
         $this->ri1_salud();
         $this->ri2_prestaciones();
         $this->ri3_gestion();
         \App\Admin\Planificacion\Pei\PeiProfile::fixTree();
         $this->command->info('✅ PEI IPS 2024-2028 completo.');
+    }
+
+    private function crearOObtenerMaster(): string
+    {
+        // Buscar si ya existe un perfil raíz con este nombre exacto
+        $existe = DB::table('planificacion.pei_profiles')
+            ->where('level', 'master')
+            ->where('name', 'like', '%Plan Estratégico Institucional IPS 2024%')
+            ->whereNull('deleted_at')
+            ->whereNull('parent_id')
+            ->first();
+
+        if ($existe) {
+            $this->command->info('   Perfil existente encontrado: ' . $existe->id);
+            return $existe->id;
+        }
+
+        // Crear uno nuevo
+        $id = (string) \Illuminate\Support\Str::uuid();
+        DB::table('planificacion.pei_profiles')->insert([
+            'id'             => $id,
+            'name'           => 'Plan Estratégico Institucional IPS 2024–2028',
+            'level'          => 'master',
+            'type'           => 'corporative',
+            'year_start'     => '2024-01-01',
+            'year_end'       => '2028-12-31',
+            'report_type'    => 'quantitative',
+            'user_id'        => self::USER_ID,
+            'dependency_id'  => self::ORG_IPS,
+            'group_id'       => 50,
+            'foda_perfil_id' => '9d7aa6a5-badb-488a-89a7-19a40c35107c',
+            'nivel_label'    => $this->nivelLabel,
+            'ri_metas'       => '[]',
+            '_lft'           => 0, '_rgt' => 0,
+            'created_at'     => $this->now,
+            'updated_at'     => $this->now,
+        ]);
+        $this->command->info('   Nuevo perfil creado: ' . $id);
+        return $id;
     }
 
     private function actualizarMaster(): void
@@ -229,7 +272,7 @@ class PeiIps2024Seeder extends Seeder
             'year_end'     => '2028-12-31',
             'report_type'  => 'quantitative',
             'user_id'      => self::USER_ID,
-            'dependency_id'=> self::ORG_IPS,
+            'dependency_id'=> 26,
             'nivel_label'  => $this->nivelLabel,
             'ri_metas'     => '[]',
             '_lft'         => 0,

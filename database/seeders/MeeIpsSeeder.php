@@ -8,11 +8,26 @@ use App\Models\Planificacion\MeeOfertaServicio;
 
 class MeeIpsSeeder extends Seeder
 {
-    const PERFIL_ID = 'a2344e1c-1396-4fe3-8c20-fe51fb187e2a';
+    private function getPerfilId(): string
+    {
+        $perfil = \DB::table('planificacion.pei_profiles')
+            ->where('level', 'master')
+            ->where('name', 'like', '%Plan Estratégico Institucional IPS 2024%')
+            ->whereNull('deleted_at')
+            ->whereNull('parent_id')
+            ->first();
+
+        if (!$perfil) {
+            throw new \Exception('No se encontró el perfil PEI IPS 2024. Ejecutá PeiIps2024Seeder primero.');
+        }
+        return $perfil->id;
+    }
 
     public function run(): void
     {
-        $ahora = now();
+        $ahora    = now();
+        $perfilId = $this->getPerfilId();
+        $this->command->info('Sembrando MEE para: ' . $perfilId);
 
         // ── Sección A: Marco Legal ─────────────────────────────────────────────
         $marcos = [
@@ -56,11 +71,11 @@ class MeeIpsSeeder extends Seeder
         foreach ($marcos as $m) {
             MeeMarcoLegal::firstOrCreate(
                 [
-                    'pei_profile_id' => self::PERFIL_ID,
+                    'pei_profile_id' => $perfilId,
                     'marco_legal'    => $m['marco_legal'],
                 ],
                 array_merge($m, [
-                    'pei_profile_id' => self::PERFIL_ID,
+                    'pei_profile_id' => $perfilId,
                     'created_at'     => $ahora,
                     'updated_at'     => $ahora,
                 ])
@@ -92,11 +107,11 @@ class MeeIpsSeeder extends Seeder
         foreach ($ofertas as $o) {
             MeeOfertaServicio::firstOrCreate(
                 [
-                    'pei_profile_id' => self::PERFIL_ID,
+                    'pei_profile_id' => $perfilId,
                     'accion'         => $o['accion'],
                 ],
                 array_merge($o, [
-                    'pei_profile_id' => self::PERFIL_ID,
+                    'pei_profile_id' => $perfilId,
                     'created_at'     => $ahora,
                     'updated_at'     => $ahora,
                 ])

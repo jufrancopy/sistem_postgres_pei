@@ -7,12 +7,28 @@ use App\Models\Planificacion\Indicador;
 
 class IndicadoresIpsSeeder extends Seeder
 {
-    const PERFIL_ID = 'a2344e1c-1396-4fe3-8c20-fe51fb187e2a';
-    const LETRAS    = 'IPS';
+    const LETRAS = 'IPS';
+
+    private function getPerfilId(): string
+    {
+        $perfil = \DB::table('planificacion.pei_profiles')
+            ->where('level', 'master')
+            ->where('name', 'like', '%Plan Estratégico Institucional IPS 2024%')
+            ->whereNull('deleted_at')
+            ->whereNull('parent_id')
+            ->first();
+
+        if (!$perfil) {
+            throw new \Exception('No se encontró el perfil PEI IPS 2024. Ejecutá PeiIps2024Seeder primero.');
+        }
+        return $perfil->id;
+    }
 
     public function run(): void
     {
-        $ahora = now();
+        $ahora    = now();
+        $perfilId = $this->getPerfilId();
+        $this->command->info('Sembrando indicadores para: ' . $perfilId);
 
         $indicadores = [
             // ── Área 1: Servicios de Salud ─────────────────────────────────────────
@@ -368,12 +384,12 @@ class IndicadoresIpsSeeder extends Seeder
 
             Indicador::firstOrCreate(
                 [
-                    'pei_profile_id' => self::PERFIL_ID,
+                    'pei_profile_id' => $perfilId,
                     'codigo_letras'  => $d['codigo_letras'],
                     'codigo_numeros' => $d['codigo_numeros'],
                 ],
                 array_merge($d, [
-                    'pei_profile_id' => self::PERFIL_ID,
+                    'pei_profile_id' => $perfilId,
                     'metas'          => $metas,
                     'created_at'     => $ahora,
                     'updated_at'     => $ahora,
@@ -382,6 +398,6 @@ class IndicadoresIpsSeeder extends Seeder
             $count++;
         }
 
-        $this->command->info("✅ {$count} indicadores IPS sembrados en el perfil " . self::PERFIL_ID);
+        $this->command->info("✅ {$count} indicadores IPS sembrados en el perfil " . $perfilId);
     }
 }
