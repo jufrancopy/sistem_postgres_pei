@@ -85,7 +85,7 @@ class PeiIps2024Seeder extends Seeder
 
     private function actualizarMaster(): void
     {
-        DB::table('planificacion.pei_profiles')->where('id', self::MASTER_ID)->update([
+        DB::table('planificacion.pei_profiles')->where('id', $this->masterId)->update([
             'nivel_label' => $this->nivelLabel,
             'mision'      => '<p>Garantizar, oportuna y eficientemente, las prestaciones del Seguro Social con calidad y calidez, contribuyendo al bienestar de los asegurados, jubilados, pensionados y sus familias.</p>',
             'vision'      => '<p>Ser la institución líder en seguridad social del Paraguay, con amplia cobertura, gestión eficiente y tecnología de vanguardia al servicio de la ciudadanía.</p>',
@@ -113,7 +113,7 @@ class PeiIps2024Seeder extends Seeder
         $oe1 = $this->perfil(array_merge($riComun1, [
             'name'            => '<p><strong>Desarrollar la red integrada e integral de servicios de salud con enfoque preventivo y de calidad para los asegurados y beneficiarios.</strong></p>',
             'level'           => 'axi',
-            'parent_id'       => self::MASTER_ID,
+            'parent_id'       => $this->masterId,
             'order_item'      => 1,
             'bsc_perspectiva' => 'clientes',
             'ri_metas'        => $riMetas1,
@@ -145,7 +145,7 @@ class PeiIps2024Seeder extends Seeder
         $oe2 = $this->perfil(array_merge($riComun1, [
             'name'            => '<p><strong>Optimizar la gestión médica, logística y planificación de los servicios de salud en la red de establecimientos sanitarios.</strong></p>',
             'level'           => 'axi',
-            'parent_id'       => self::MASTER_ID,
+            'parent_id'       => $this->masterId,
             'order_item'      => 2,
             'bsc_perspectiva' => 'clientes',
             'ri_metas'        => $riMetas2,
@@ -180,7 +180,7 @@ class PeiIps2024Seeder extends Seeder
         $oe3 = $this->perfil(array_merge($riComun2, [
             'name'            => '<p><strong>Asegurar la administración y el acceso a las prestaciones económicas de trabajadores, jubilados y pensionados.</strong></p>',
             'level'           => 'axi',
-            'parent_id'       => self::MASTER_ID,
+            'parent_id'       => $this->masterId,
             'order_item'      => 3,
             'bsc_perspectiva' => 'financiera',
             'ri_metas'        => $riMetas3,
@@ -198,7 +198,7 @@ class PeiIps2024Seeder extends Seeder
         $oe4 = $this->perfil(array_merge($riComun2, [
             'name'            => '<p><strong>Garantizar la sostenibilidad financiera de los fondos del seguro social.</strong></p>',
             'level'           => 'axi',
-            'parent_id'       => self::MASTER_ID,
+            'parent_id'       => $this->masterId,
             'order_item'      => 4,
             'bsc_perspectiva' => 'financiera',
             'ri_metas'        => $riMetas4,
@@ -227,7 +227,7 @@ class PeiIps2024Seeder extends Seeder
         $oe5 = $this->perfil(array_merge($riComun3, [
             'name'            => '<p><strong>Alinear la planificación estratégica, gestión por procesos y control interno (MECIP) con la transformación digital de la institución.</strong></p>',
             'level'           => 'axi',
-            'parent_id'       => self::MASTER_ID,
+            'parent_id'       => $this->masterId,
             'order_item'      => 5,
             'bsc_perspectiva' => 'procesos',
             'ri_metas'        => $riMetas5,
@@ -247,7 +247,7 @@ class PeiIps2024Seeder extends Seeder
         $oe6 = $this->perfil(array_merge($riComun3, [
             'name'            => '<p><strong>Mejorar la eficiencia de la gestión administrativa, el desarrollo del talento humano y el uso de los recursos institucionales.</strong></p>',
             'level'           => 'axi',
-            'parent_id'       => self::MASTER_ID,
+            'parent_id'       => $this->masterId,
             'order_item'      => 6,
             'bsc_perspectiva' => 'aprendizaje',
             'ri_metas'        => $riMetas6,
