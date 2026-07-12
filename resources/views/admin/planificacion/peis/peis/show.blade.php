@@ -1153,8 +1153,13 @@
                                     })
                                 };
                             },
-                            cache: true
+                            cache: false
                         }
+                    });
+
+                    // Prevenir que el click en PGN afecte el Select2 de responsables
+                    $('#action_pgn_nodo').on('select2:opening', function(e) {
+                        e.stopPropagation();
                     });
 
                     // ── Select2 Indicador ────────────────────────────────────
