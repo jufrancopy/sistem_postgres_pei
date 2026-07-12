@@ -501,43 +501,6 @@
                         </small>
                         <select id="action_indicador_id" name="indicador_id" style="width:100%"></select>
 
-                        {{-- Ficha técnica del indicador seleccionado (readonly) --}}
-                        <div id="indicadorPreview" class="mt-3" style="display:none;pointer-events:none;user-select:none">
-                            <div class="card border-0" style="background:#f0f4ff;border:1px solid #c5cae9!important">
-                                <div class="card-body py-2 px-3">
-                                    <div class="d-flex align-items-center mb-2" style="gap:.4rem">
-                                        <span class="badge badge-dark" id="ind_prev_codigo" style="font-size:.72rem"></span>
-                                        <span class="badge" id="ind_prev_dimension" style="font-size:.68rem"></span>
-                                        <span id="ind_prev_sentido" style="font-size:.85rem"></span>
-                                        <span class="font-weight-bold ml-1" id="ind_prev_nombre" style="font-size:.85rem"></span>
-                                    </div>
-                                    <div class="row" style="font-size:.78rem">
-                                        <div class="col-md-6">
-                                            <div class="mb-1">
-                                                <span class="text-muted text-uppercase" style="font-size:.65rem;letter-spacing:.04em">Unidad de medida</span>
-                                                <div id="ind_prev_unidad" class="font-weight-bold"></div>
-                                            </div>
-                                            <div class="mb-1">
-                                                <span class="text-muted text-uppercase" style="font-size:.65rem;letter-spacing:.04em">Fórmula</span>
-                                                <div id="ind_prev_formula" style="font-style:italic"></div>
-                                            </div>
-                                            <div class="mb-1">
-                                                <span class="text-muted text-uppercase" style="font-size:.65rem;letter-spacing:.04em">Línea de base</span>
-                                                <div id="ind_prev_linea_base"></div>
-                                            </div>
-                                            <div>
-                                                <span class="text-muted text-uppercase" style="font-size:.65rem;letter-spacing:.04em">Fuente</span>
-                                                <div id="ind_prev_fuente" class="text-muted" style="font-size:.75rem"></div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <span class="text-muted text-uppercase d-block mb-1" style="font-size:.65rem;letter-spacing:.04em">Metas por período</span>
-                                            <div id="ind_prev_metas" class="d-flex flex-wrap" style="gap:.3rem"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                     <hr class="my-3">
 

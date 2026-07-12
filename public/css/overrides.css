@@ -24,3 +24,11 @@ body {
   box-shadow: none !important;
   outline: none !important;
 }
+
+/* Fix: z-index select2 dentro de modales */
+.modal .select2-container {
+  z-index: 9999;
+}
+.select2-dropdown {
+  z-index: 99999 !important;
+}

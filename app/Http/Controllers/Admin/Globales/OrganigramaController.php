@@ -72,13 +72,13 @@ class OrganigramaController extends Controller
             return response()->json([]);
         }
 
-        $query = $rootNode->descendants();
+        $search = $request->get('q', '');
 
-        if ($request->has('q') && trim($request->q) !== '') {
-            $query->where('dependency', 'LIKE', '%' . $request->q . '%');
-        }
+        $ids = $rootNode->descendants()->pluck('id')->prepend($rootNode->id);
 
-        $data = $query->get(['id', 'dependency']);
+        $data = Organigrama::whereIn('id', $ids)
+            ->where('dependency', 'LIKE', '%' . $search . '%')
+            ->get(['id', 'dependency']);
 
         return response()->json($data);
     }

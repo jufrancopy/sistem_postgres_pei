@@ -394,7 +394,15 @@
                 $('#group_roots').on('change', function() {
                     var groupRootID = $(this).val();
                     var url = 'admin/globales/get-groups/' + groupRootID;
-                    initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
+                    $.getJSON(url, function(data) {
+                        if (data.length === 0) {
+                            var rootText = $('#group_roots').select2('data')[0].text;
+                            var opt = new Option(rootText, groupRootID, true, true);
+                            $('#groups').empty().append(opt).trigger('change');
+                        } else {
+                            initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
+                        }
+                    });
                 });
 
                 //Analysts
@@ -533,7 +541,15 @@
                     $('#group_roots').off('change').on('change', function() {
                         var groupRootID = $(this).val();
                         var url = 'admin/globales/get-groups/' + groupRootID;
-                        initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
+                        $.getJSON(url, function(data) {
+                            if (data.length === 0) {
+                                var rootText = $('#group_roots').select2('data')[0].text;
+                                var opt = new Option(rootText, groupRootID, true, true);
+                                $('#groups').empty().append(opt).trigger('change');
+                            } else {
+                                initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
+                            }
+                        });
                     });
 
                     // ── Analistas: primero inicializar select2 con ajax, luego precargar valores ──
@@ -658,6 +674,14 @@
                 }
                 if (labels) {
                     $('#nivel_label').val(JSON.stringify(labels));
+                }
+
+                // Si es corporativo, el grupo raíz (Evento) es el group_id
+                if ($('#type_profile').val() === 'corporative' && $('#group_roots').val()) {
+                    var rootVal  = $('#group_roots').val();
+                    var rootText = $('#group_roots').select2('data')[0].text;
+                    var opt = new Option(rootText, rootVal, true, true);
+                    $('#groups').empty().append(opt).trigger('change');
                 }
 
                 $(this).html('Enviando..');

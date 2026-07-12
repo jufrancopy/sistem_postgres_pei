@@ -353,7 +353,9 @@
                             </div>
 
                             {{-- Inicio Contenido Desplegable (Acordeon) --}}
+                            <div id="pei-accordion-container">
                             @include('admin.planificacion.peis.peis.accordion')
+                            </div>
                             {{-- Fin Contenido Desplegable (Acordeon) --}}
 
                         </div>
@@ -502,6 +504,17 @@
                         },
                         cache: true
                     }
+                });
+            }
+
+            // ── Recargar acordeón sin recargar la página ──────────────────────
+            function recargarAcordeon() {
+                $('#pei-accordion-container').css('opacity', '0.5');
+                $.get('{{ url("admin/pei-profiles") }}/' + '{{ $profile->id }}' + '/accordion', function(html) {
+                    $('#pei-accordion-container').html(html).css('opacity', '1');
+                    $('[data-toggle="popover"]').popover();
+                }).fail(function() {
+                    $('#pei-accordion-container').css('opacity', '1');
                 });
             }
 
@@ -951,6 +964,7 @@
                         toastr.success(res.success || 'Acción guardada.');
                         $('#actionsForm').trigger('reset');
                         $('#ajaxActionsModal').modal('hide');
+                        recargarAcordeon();
                     },
                     error: function(xhr) {
                         var e = xhr.responseJSON?.errors;
@@ -1033,6 +1047,7 @@
                             toastr.success(data.success || 'Guardado correctamente.');
                             $('#axisForm').trigger('reset');
                             $('#ajaxAxisModal').modal('hide');
+                            recargarAcordeon();
                         },
                         error: function(xhr) {
                             var obj = xhr.responseJSON?.errors;
@@ -1129,18 +1144,16 @@
                         $responsibles.append(new Option(d.text, d.id, true, true));
                     });
 
+                    var rootId = '{{ $orgRaizId ?? "" }}';
                     $responsibles.select2({
-                        dropdownParent: $responsibles.closest('.form-group'),
+                        dropdownParent: $('#ajaxActionsModal'),
                         placeholder: 'Buscar dependencia responsable...',
                         allowClear: true,
-                        minimumInputLength: 2,
+                        minimumInputLength: 1,
                         ajax: {
-                            url: function() {
-                                var rootId = '{{ $orgRaizId ?? "" }}';
-                                return rootId
-                                    ? '{{ url("admin/globales/get-dependencies") }}/' + rootId
-                                    : '{{ url("admin/globales/get-dependencies-root") }}';
-                            },
+                            url: rootId
+                                ? '{{ url("admin/globales/get-dependencies") }}/' + rootId
+                                : '{{ url("admin/globales/get-dependencies-root") }}',
                             dataType: 'json',
                             delay: 300,
                             data: function(params) {
@@ -1163,7 +1176,7 @@
                         $indicadorSel.select2('destroy');
                     }
                     $indicadorSel.select2({
-                        dropdownParent: $('#action_indicador_id').closest('.form-group'),
+                        dropdownParent: $('#ajaxActionsModal'),
                         placeholder: 'Buscar indicador por código o nombre...',
                         allowClear: true,
                         minimumInputLength: 0,
@@ -1197,68 +1210,10 @@
                             if (ind) {
                                 var opt = new Option(ind.text, ind.id, true, true);
                                 $indicadorSel.append(opt).trigger('change');
-                                mostrarPreviewIndicador(ind);
                             }
                         });
                     } else {
                         $indicadorSel.val(null).trigger('change');
-                        $('#indicadorPreview').hide();
-                    }
-
-                    $indicadorSel.on('select2:select', function(e) {
-                        e.stopPropagation();
-                        mostrarPreviewIndicador(e.params.data);
-                    });
-                    $indicadorSel.on('select2:clear', function(e) {
-                        e.stopPropagation();
-                        $('#indicadorPreview').hide();
-                    });
-
-                    function mostrarPreviewIndicador(ind) {
-                        if (!ind || !ind.id) { $('#indicadorPreview').hide(); return; }
-
-                        // Llamar al detalle completo del indicador
-                        $.getJSON('{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/indicadores', function(todos) {
-                            var full = todos.find(function(i) { return i.id == ind.id; });
-                            if (!full) { $('#indicadorPreview').hide(); return; }
-
-                            var dimColors = { eficiencia:'#1976d2', eficacia:'#28a745', calidad:'#17a2b8', economia:'#ffc107' };
-                            var dimLabels = { eficiencia:'Eficiencia', eficacia:'Eficacia', calidad:'Calidad', economia:'Economía' };
-                            var color = dimColors[full.dimension] || '#6c757d';
-
-                            $('#ind_prev_codigo').text(full.codigo);
-                            $('#ind_prev_dimension')
-                                .text(dimLabels[full.dimension] || full.dimension)
-                                .attr('style', 'font-size:.68rem;background:' + color + ';color:#fff');
-                            $('#ind_prev_sentido').html(
-                                full.sentido === 'ascendente'
-                                    ? '<span class="text-success font-weight-bold">▲</span>'
-                                    : '<span class="text-danger font-weight-bold">▼</span>'
-                            );
-                            $('#ind_prev_nombre').text(full.nombre);
-                            $('#ind_prev_unidad').text(full.unidad_medida || '—');
-                            $('#ind_prev_formula').text(full.formula || '—');
-                            $('#ind_prev_linea_base').text(
-                                full.linea_base_anio
-                                    ? full.linea_base_anio + ': ' + (full.linea_base_valor || '—')
-                                    : '—'
-                            );
-                            $('#ind_prev_fuente').text(full.fuente || '—');
-
-                            var $metas = $('#ind_prev_metas').empty();
-                            if (full.metas && full.metas.length) {
-                                full.metas.forEach(function(m) {
-                                    $metas.append(
-                                        '<span class="badge badge-secondary" style="font-size:.7rem">' +
-                                        m.anio + ': ' + m.valor + '</span>'
-                                    );
-                                });
-                            } else {
-                                $metas.append('<span class="text-muted" style="font-size:.75rem">Sin metas definidas</span>');
-                            }
-
-                            $('#indicadorPreview').show();
-                        });
                     }
 
                     // ── Select2 PGN ──────────────────────────────────────────

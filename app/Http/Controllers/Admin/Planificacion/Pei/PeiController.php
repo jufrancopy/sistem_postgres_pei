@@ -500,6 +500,25 @@ class PeiController extends Controller
         return view('admin.planificacion.peis.peis.proceso', compact('profile', 'niveles'));
     }
 
+    public function accordion(Request $request, string $profileId)
+    {
+        $profile = \App\Admin\Planificacion\Pei\PeiProfile::with([
+            'children.marcos',
+            'children.strategies',
+            'children.children.children.indicador',
+            'children.children.children.responsibles',
+        ])->findOrFail($profileId);
+
+        $nivelesDefault = ['master'=>'PEI','axi'=>'Nivel 1','goal'=>'Nivel 2','action'=>'Acción'];
+        $niveles = $nivelesDefault;
+        if ($profile->nivel_label) {
+            $decoded = json_decode($profile->nivel_label, true);
+            if (is_array($decoded)) $niveles = array_merge($nivelesDefault, $decoded);
+        }
+
+        return view('admin.planificacion.peis.peis.accordion', compact('profile', 'niveles'));
+    }
+
     public function dashboard($idProfile)
     {
         $profile = PeiProfile::with(['group', 'analysts', 'dependency'])->findOrFail($idProfile);

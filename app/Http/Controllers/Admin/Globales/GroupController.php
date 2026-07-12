@@ -87,29 +87,21 @@ class GroupController extends Controller
 
     public function getRootGroups(Request $request)
     {
-        $data = [];
-
-        if ($request->has('q')) {
-            $search = $request->q;
-            $data = Group::select("id", "name")
-                ->where('name', 'LIKE', "%$search%")
-                ->where('parent_id', null)
-                ->get();
-        }
+        $search = $request->get('q', '');
+        $data = Group::select("id", "name")
+            ->where('name', 'LIKE', "%$search%")
+            ->whereNull('parent_id')
+            ->get();
         return response()->json($data);
     }
 
     public function getGroupsFromRoot(Request $request, $idRoot)
     {
-        $data = [];
-
-        if ($request->has('q')) {
-            $search = $request->q;
-            $data = Group::select("id", "name")
-                ->where('name', 'LIKE', "%$search%")
-                ->where('parent_id', $idRoot)
-                ->get();
-        }
+        $search = $request->get('q', '');
+        $data = Group::select("id", "name")
+            ->where('name', 'LIKE', "%$search%")
+            ->where('parent_id', $idRoot)
+            ->get();
         return response()->json($data);
     }
 

@@ -15,6 +15,8 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/fontawesome-all.css') }}" rel="stylesheet">
     <link href="{{ asset('css/select2.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/overrides.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/personalizaciones.css') }}" rel="stylesheet">
     <link href="{{ asset('css/galeriaimg.css') }}" rel="stylesheet">
 
 </head>

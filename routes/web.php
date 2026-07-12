@@ -101,6 +101,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('pei-profiles/{idProfile}/raci', 'Admin\Planificacion\Pei\PeiController@syncRaci')->name('pei-profiles.raci.sync');
     Route::get('pei-profiles/{idProfile}/alertas-presupuestarias', 'Admin\Planificacion\Pei\PeiController@getAlertasPresupuestarias')->name('pei-profiles.alertas-presupuestarias');
     Route::get('pei-profiles/{idProfile}/proceso', 'Admin\Planificacion\Pei\PeiController@proceso')->name('pei-profiles.proceso');
+    Route::get('pei-profiles/{profileId}/accordion',    'Admin\Planificacion\Pei\PeiController@accordion')->name('pei-profiles.accordion');
     Route::get('pei-profiles/{idProfile}/dashboard', 'Admin\Planificacion\Pei\PeiController@dashboard')->name('pei-profiles.dashboard');
 
     // Relevamientos

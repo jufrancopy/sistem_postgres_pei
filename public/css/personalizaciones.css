@@ -13,3 +13,14 @@
    -o-transition: max-height 500ms ease-out;
    transition: max-height 500ms ease-out;
 }
+
+/* Forzar select2 dropdown siempre hacia abajo dentro de modales */
+.select2-dropdown--above {
+    border-top: 1px solid #aaa !important;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    top: 100% !important;
+    bottom: auto !important;
+    margin-top: 2px !important;
+    margin-bottom: 0 !important;
+}
