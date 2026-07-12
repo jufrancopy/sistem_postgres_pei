@@ -82,7 +82,11 @@ class PgnController extends Controller
     {
         $request->validate([
             'anio'              => 'required|integer',
-            'pgn_estructura_id' => 'required|integer|exists:planificacion.pgn_estructura,id',
+            'pgn_estructura_id' => ['required','integer', function($attr, $val, $fail) {
+                if (!\App\Models\Planificacion\PgnEstructura::find($val)) {
+                    $fail('El nivel presupuestario seleccionado no existe.');
+                }
+            }],
             'nombre'            => 'required|string|max:500',
             'parent_id'         => 'nullable|integer',
             'codigo'            => 'nullable|string|max:50',
