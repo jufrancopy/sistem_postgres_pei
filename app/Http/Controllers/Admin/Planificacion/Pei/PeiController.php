@@ -527,12 +527,32 @@ class PeiController extends Controller
     {
         $master = PeiProfile::findOrFail($idProfile);
 
-        $actions = PeiProfile::whereIn('id', $master->descendants()->pluck('id'))
+        // Incluir acciones con tipo_indicador legacy O con indicador_id vinculado
+        $actions = PeiProfile::with('indicador')
+            ->whereIn('id', $master->descendants()->pluck('id'))
             ->where('level', 'action')
-            ->whereNotNull('tipo_indicador')
-            ->get(['id', 'name', 'tipo_indicador', 'progress', 'target', 'semaforo']);
+            ->where(function($q) {
+                $q->whereNotNull('tipo_indicador')
+                  ->orWhereNotNull('indicador_id');
+            })
+            ->get(['id', 'name', 'tipo_indicador', 'progress', 'target', 'semaforo', 'numerator', 'denominator', 'indicador_id']);
 
         $resultado = $actions->map(function ($action) {
+            // Si tiene indicador vinculado, calcular desde ahí
+            if ($action->indicador && $action->semaforo) {
+                $pct = ($action->denominator && $action->denominator > 0)
+                    ? round(($action->numerator / $action->denominator) * 100, 1)
+                    : null;
+                return [
+                    'id'             => $action->id,
+                    'name'           => strip_tags($action->name),
+                    'tipo_indicador' => $action->indicador->sentido === 'descendente' ? 'lag' : 'lead',
+                    'semaforo'       => $action->semaforo,
+                    'avance_pct'     => $pct,
+                ];
+            }
+
+            // Flujo legacy
             $action->calcularSemaforo();
             return [
                 'id'             => $action->id,
