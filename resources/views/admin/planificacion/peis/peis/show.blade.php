@@ -509,12 +509,32 @@
 
             // ── Recargar acordeón sin recargar la página ──────────────────────
             function recargarAcordeon() {
+                var scrollPos = $(window).scrollTop();
+                // Guardar qué ejes están abiertos
+                var abiertos = [];
+                $('.collapse.show').each(function() {
+                    abiertos.push($(this).attr('id'));
+                });
+
                 $('#pei-accordion-container').css('opacity', '0.5');
-                $.get('{{ url("admin/pei-profiles") }}/' + '{{ $profile->id }}' + '/accordion', function(html) {
-                    $('#pei-accordion-container').html(html).css('opacity', '1');
-                    $('[data-toggle="popover"]').popover();
-                }).fail(function() {
-                    $('#pei-accordion-container').css('opacity', '1');
+                $.ajax({
+                    url: '{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/accordion',
+                    type: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    success: function(html) {
+                        $('#pei-accordion-container').html(html).css('opacity', '1');
+                        // Restaurar ejes abiertos
+                        abiertos.forEach(function(id) {
+                            $('#' + id).addClass('show');
+                        });
+                        // Restaurar scroll
+                        $(window).scrollTop(scrollPos);
+                        // Reinicializar popovers
+                        $('[data-toggle="popover"]').popover();
+                    },
+                    error: function() {
+                        $('#pei-accordion-container').css('opacity', '1');
+                    }
                 });
             }
 
@@ -962,6 +982,7 @@
                             }
                         });
                         toastr.success(res.success || 'Acción guardada.');
+                        $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i>Guardar cambios');
                         $('#actionsForm').trigger('reset');
                         $('#ajaxActionsModal').modal('hide');
                         recargarAcordeon();
