@@ -1163,6 +1163,7 @@
                         $indicadorSel.select2('destroy');
                     }
                     $indicadorSel.select2({
+                        dropdownParent: $('#action_indicador_id').closest('.form-group'),
                         placeholder: 'Buscar indicador por código o nombre...',
                         allowClear: true,
                         minimumInputLength: 0,
@@ -1265,6 +1266,7 @@
                         $pgnNodo.select2('destroy');
                     }
                     $pgnNodo.select2({
+                        dropdownParent: $('#action_pgn_nodo').closest('.form-group'),
                         placeholder: 'Buscar por código o nombre...',
                         allowClear: true,
                         minimumInputLength: 2,
