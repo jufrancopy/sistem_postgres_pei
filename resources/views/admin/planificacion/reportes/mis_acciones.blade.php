@@ -162,7 +162,6 @@ $baseUrl       = url('pei-profiles');
                 <div style="flex-shrink:0">
                     <button class="btn btn-sm btnReportar"
                             data-id="{{ $accion->id }}"
-                            data-nombre="{{ strip_tags($accion->name) }}"
                             style="background:#1a237e;color:#fff;font-size:.75rem;padding:.3rem .7rem;border-radius:6px;white-space:nowrap">
                         <i class="fa fa-chart-line mr-1"></i>
                         {{ $ultimoReporte ? 'Actualizar' : 'Reportar' }}
@@ -292,7 +291,12 @@ $baseUrl       = url('pei-profiles');
 $(function() {
     $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
 
-    var _baseUrl  = '{{ $baseUrl }}';
+    // Verificar que el modal existe en el DOM
+    if ($('#modalReportar').length === 0) {
+        console.error('SIPLAN: #modalReportar no encontrado en el DOM');
+    }
+
+    var _baseUrl   = '{{ $baseUrl }}';
     var _profileId = '{{ $profile->id }}';
     var _indicador = null;
 
@@ -325,7 +329,8 @@ $(function() {
     // ── Abrir modal ──────────────────────────────────────────────────────────
     $(document).on('click', '.btnReportar', function() {
         var id     = $(this).data('id');
-        var nombre = $(this).data('nombre');
+        // Tomar el nombre del texto visible de la card
+        var nombre = $(this).closest('.card-body').find('.font-weight-bold').first().text().trim();
         _indicador = null;
 
         $('#rp_accion_id').val(id);
@@ -435,9 +440,13 @@ $(function() {
                 setTimeout(function(){ location.reload(); }, 800);
             },
             error: function(xhr) {
-                var e = xhr.responseJSON?.errors;
-                if (e) $.each(e, (k,v) => toastr.error(v[0]));
-                else toastr.error(xhr.responseJSON?.message || 'Error al guardar.');
+                var resp = xhr.responseJSON || {};
+                var e = resp.errors;
+                if (e) {
+                    $.each(e, function(k, v) { toastr.error(v[0]); });
+                } else {
+                    toastr.error(resp.message || 'Error al guardar.');
+                }
                 $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i>Guardar reporte');
             }
         });
