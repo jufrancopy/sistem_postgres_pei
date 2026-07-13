@@ -146,6 +146,7 @@ class OrganigramaController extends Controller
             'manager'              => $request->manager,
             'phone'                => $request->phone,
             'email'                => $request->email,
+            'user_id'              => $request->user_id ?: null,
             'tipo_establecimiento' => $request->tipo_establecimiento ?: null,
             'nivel_complejidad'    => $request->nivel_complejidad ?: null,
             'tenencia'             => $request->tenencia ?: null,
@@ -189,6 +190,7 @@ class OrganigramaController extends Controller
             'manager'              => $request->manager,
             'phone'                => $request->phone,
             'email'                => $request->email,
+            'user_id'              => $request->user_id ?: null,
             'tipo_establecimiento' => $request->tipo_establecimiento ?: null,
             'nivel_complejidad'    => $request->nivel_complejidad ?: null,
             'tenencia'             => $request->tenencia ?: null,
@@ -207,5 +209,20 @@ class OrganigramaController extends Controller
         Organigrama::find($id)->delete();
 
         return back()->with('success', 'Dependencia eliminada correctamente.');
+    }
+
+    // ── Búsqueda de usuarios para el select2 de responsable ──────────────────
+    public function buscarUsuarios(\Illuminate\Http\Request $request)
+    {
+        $q = $request->get('q', '');
+        $usuarios = \App\Models\User::where(function($query) use ($q) {
+                $query->where('name', 'ilike', '%' . $q . '%')
+                      ->orWhere('email', 'ilike', '%' . $q . '%');
+            })
+            ->orderBy('name')
+            ->limit(15)
+            ->get(['id', 'name', 'email']);
+
+        return response()->json($usuarios);
     }
 }

@@ -181,11 +181,14 @@ class PeiReporteController extends Controller
             if (is_array($decoded)) $niveles = array_merge($nivelesDefault, $decoded);
         }
 
-        // IDs de acciones donde el usuario es responsable
+        // IDs de acciones donde el usuario es responsable — FILTRADO por este perfil/plan
+        $descendantIds = $profile->descendants()->where('level', 'action')->pluck('id')->toArray();
+
         $misAccionesIds = \DB::table('planificacion.peis_profiles_has_responsibles')
             ->where('responsible_id', function($q) use ($userId) {
                 $q->select('id')->from('organigramas')->where('user_id', $userId)->limit(1);
             })
+            ->whereIn('profile_id', $descendantIds)
             ->pluck('profile_id')
             ->toArray();
 

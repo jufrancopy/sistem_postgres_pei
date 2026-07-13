@@ -302,6 +302,8 @@ Route::group(['middleware' => ['auth']], function () {
         Route::resource('users', 'Admin\UserController');
         Route::resource('permisos', 'Admin\PermissionController');
         Route::resource('roles', 'Admin\RoleController');
+        Route::get('roles/{id}/edit-ajax', 'Admin\RoleController@editAjax')->name('roles.edit-ajax');
+        Route::get('roles/{id}/show-ajax', 'Admin\RoleController@showAjax')->name('roles.show-ajax');
         Route::get('get-roles', 'Admin\RoleController@getRoles')->name('get-roles');
         Route::get('get-role/{userId}', 'Admin\RoleController@getRole')->name('get-role');
 
@@ -321,6 +323,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-root-of-dependency/{idSelection}', 'Admin\Globales\OrganigramaController@getRootOfDependency')->name('get-root-of-dependency');
         Route::post('organigramas/{id}/mover', 'Admin\Globales\OrganigramaController@mover')->name('organigramas.mover');
         Route::get('get-dependencies-root', 'Admin\Globales\OrganigramaController@getDependenciesRoot')->name('get-dependencies-root');
+        Route::get('usuarios-buscar', 'Admin\Globales\OrganigramaController@buscarUsuarios')->name('usuarios.buscar');
 
         //Variables de Encuesta
         Route::resource('variables', 'Admin\Globales\Formulario\VariableController');

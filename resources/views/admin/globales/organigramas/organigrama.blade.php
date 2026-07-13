@@ -84,10 +84,23 @@
                         <input type="text" name="dependency" id="dep_dependency" class="form-control" required
                                placeholder="Ej: Dirección de Tecnología">
                     </div>
+
+                    {{-- Selector de usuario del sistema --}}
                     <div class="form-group">
-                        <label>Responsable</label>
+                        <label class="font-weight-bold">
+                            Responsable del sistema
+                            <span class="text-muted font-weight-normal" style="font-size:.8rem">
+                                (vinculá un usuario del sistema)
+                            </span>
+                        </label>
+                        <select id="dep_user_id" name="user_id" style="width:100%"></select>
+                        <small class="text-muted">Escribí al menos 2 letras para buscar por nombre o correo.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nombre del responsable</label>
                         <input type="text" name="manager" id="dep_manager" class="form-control"
-                               placeholder="Nombre del responsable">
+                               placeholder="Se completa al seleccionar usuario, o escribí manualmente">
                     </div>
                     <div class="row">
                         <div class="col-md-6">
@@ -158,26 +171,35 @@ $(function() {
                 onEnd: function(evt) {
                     $('#moveIndicator').fadeOut(200);
 
-                    var nodoId   = $(evt.item).data('id');
-                    var nuevoParentEl = evt.to.closest('[data-id]');
-                    var nuevoParentId = nuevoParentEl ? $(nuevoParentEl).data('id') : null;
+                    var nodoId = $(evt.item).data('id');
 
-                    // Si no cambió de padre, no hacer nada
+                    // evt.to es el <ul> destino — su padre <li> tiene el data-id del nodo padre
+                    var $toUl        = $(evt.to);
+                    var $parentLi    = $toUl.closest('li.nodo-item');
+                    var nuevoParentId = $parentLi.length ? $parentLi.data('id') : null;
+
+                    // Si no cambió nada, ignorar
                     if (evt.from === evt.to && evt.oldIndex === evt.newIndex) return;
 
-                    // Si se soltó en el grupo raíz (sin padre), no permitir
+                    // No permitir soltar en nivel raíz (fuera de cualquier li)
                     if (!nuevoParentId) {
-                        toastr.warning('No se puede mover a nivel raíz. Elegí una dependencia destino.');
+                        toastr.warning('No se puede mover a nivel raíz. Soltá dentro de una dependencia.');
                         location.reload();
                         return;
                     }
 
-                    var nombreNodo   = $(evt.item).find('.dep-nombre').first().text().trim();
-                    var nombrePadre  = $(nuevoParentEl).find('.dep-nombre').first().text().trim();
+                    // No mover sobre sí mismo
+                    if (nuevoParentId == nodoId) {
+                        location.reload();
+                        return;
+                    }
+
+                    var nombreNodo  = $(evt.item).find('> .nodo-row .dep-nombre').text().trim();
+                    var nombrePadre = $parentLi.find('> .nodo-row .dep-nombre').text().trim();
 
                     Swal.fire({
                         title: '¿Confirmar movimiento?',
-                        html: '<strong>' + nombreNodo + '</strong><br>→ Nuevo padre: <strong>' + nombrePadre + '</strong>',
+                        html: '<strong>' + nombreNodo + '</strong><br><i class="fa fa-arrow-down text-muted"></i> Nuevo padre: <strong>' + nombrePadre + '</strong>',
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonText: 'Sí, mover',
@@ -189,13 +211,13 @@ $(function() {
                                 parent_id: nuevoParentId
                             }, function(res) {
                                 toastr.success(res.success);
-                                setTimeout(function() { location.reload(); }, 800);
+                                setTimeout(function() { location.reload(); }, 600);
                             }).fail(function(xhr) {
                                 toastr.error(xhr.responseJSON?.error || 'Error al mover.');
                                 location.reload();
                             });
                         } else {
-                            location.reload(); // revertir visualmente
+                            location.reload();
                         }
                     });
                 }
@@ -224,6 +246,47 @@ $(function() {
         abrirModalCrear($(this).data('id'), $(this).data('nombre'));
     });
 
+    // ── Inicializar Select2 de usuario ────────────────────────────────────────
+    function initUserSelect(userId, userName, userEmail) {
+        var $sel = $('#dep_user_id');
+        if ($sel.hasClass('select2-hidden-accessible')) $sel.select2('destroy');
+        $sel.empty();
+
+        $sel.select2({
+            dropdownParent: $('#modalDependencia'),
+            placeholder: '— Buscar por nombre o correo —',
+            allowClear: true,
+            minimumInputLength: 2,
+            ajax: {
+                url: '{{ route("globales.usuarios.buscar") }}',
+                dataType: 'json',
+                delay: 250,
+                data: function(p) { return { q: p.term }; },
+                processResults: function(data) {
+                    return { results: data.map(function(u) {
+                        return { id: u.id, text: u.name, email: u.email, name: u.name };
+                    })};
+                }
+            },
+            templateResult: function(u) {
+                if (u.loading) return u.text;
+                return $('<span><i class="fa fa-user mr-1 text-muted"></i><strong>' + u.text + '</strong>'
+                    + (u.email ? ' <small class="text-muted ml-1">— ' + u.email + '</small>' : '') + '</span>');
+            }
+        });
+
+        if (userId) {
+            var label = (userName || 'Usuario #' + userId) + (userEmail ? ' — ' + userEmail : '');
+            $sel.append(new Option(label, userId, true, true)).trigger('change');
+        }
+
+        $sel.off('select2:select').on('select2:select', function(e) {
+            var d = e.params.data;
+            $('#dep_manager').val(d.name || '');
+            $('#dep_email').val(d.email || '');
+        });
+    }
+
     function abrirModalCrear(parentId, parentNombre) {
         $('#modalDepTitulo').text('Agregar en: ' + parentNombre);
         $('#formDependencia')[0].reset();
@@ -231,6 +294,7 @@ $(function() {
         $('#dep_parent_id').val(parentId);
         $('#dep_method').val('POST');
         $('#modalDependencia').modal('show');
+        initUserSelect(null, null, null);
     }
 
     // ── Editar ────────────────────────────────────────────────────────────────
@@ -243,10 +307,11 @@ $(function() {
             $('#dep_parent_id').val(dep.parent_id);
             $('#dep_method').val('PUT');
             $('#dep_dependency').val(dep.dependency);
-            $('#dep_manager').val(dep.manager);
-            $('#dep_phone').val(dep.phone);
-            $('#dep_email').val(dep.email);
+            $('#dep_manager').val(dep.manager || '');
+            $('#dep_phone').val(dep.phone || '');
+            $('#dep_email').val(dep.email || '');
             $('#modalDependencia').modal('show');
+            initUserSelect(dep.user_id, dep.manager, dep.email);
         });
     });
 
