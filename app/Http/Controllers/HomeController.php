@@ -20,6 +20,11 @@ class HomeController extends Controller
             return redirect()->route('planificacion-dashboard');
         }
 
+        // Analista de Monitoreo PEI → su dashboard de planes
+        if ($user->hasRole('Analista de Monitoreo PEI')) {
+            return redirect()->route('pei.monitoreo.dashboard');
+        }
+
         // Analista RIISS → módulo de establecimientos
         if ($user->hasRole('Analista - RIISS')) {
             return redirect()->route('riiss.establecimientos.index');

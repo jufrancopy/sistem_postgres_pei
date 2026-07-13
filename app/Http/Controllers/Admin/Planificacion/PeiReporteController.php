@@ -161,6 +161,75 @@ class PeiReporteController extends Controller
         return view('admin.planificacion.bsc.index', compact('profile', 'niveles', 'perspectivas'));
     }
 
+    // ── Dashboard del Analista de Monitoreo PEI ──────────────────────────────
+    public function monitoreDashboard()
+    {
+        $userId = Auth::id();
+        $orgId  = \App\Admin\Globales\Organigrama::where('user_id', $userId)->value('id');
+
+        $planes = collect();
+        $totalAcciones = 0;
+        $totalReportadas = 0;
+
+        if ($orgId) {
+            $profileIds = \DB::table('planificacion.peis_profiles_has_responsibles')
+                ->where('responsible_id', $orgId)
+                ->pluck('profile_id');
+
+            $masterIds = PeiProfile::whereIn('id', $profileIds)
+                ->get()
+                ->map(fn($p) => PeiProfile::where('_lft', '<=', $p->_lft)
+                    ->where('_rgt', '>=', $p->_rgt)
+                    ->where('level', 'master')
+                    ->value('id'))
+                ->filter()->unique()->values();
+
+            $planes = PeiProfile::whereIn('id', $masterIds)
+                ->orderBy('year_start', 'desc')
+                ->get()
+                ->map(function($plan) use ($orgId, $userId, $profileIds) {
+                    // Acciones de este plan asignadas al usuario
+                    $descendantIds = $plan->descendants()->where('level', 'action')->pluck('id')->toArray();
+                    $misIds = \DB::table('planificacion.peis_profiles_has_responsibles')
+                        ->where('responsible_id', $orgId)
+                        ->whereIn('profile_id', $descendantIds)
+                        ->pluck('profile_id')->toArray();
+
+                    $reportadas = PeiAccionReporte::where('user_id', $userId)
+                        ->whereIn('pei_profile_id', $misIds)
+                        ->distinct('pei_profile_id')
+                        ->count('pei_profile_id');
+
+                    // Semáforo agregado
+                    $acciones = PeiProfile::whereIn('id', $misIds)->get(['semaforo']);
+                    $verde    = $acciones->where('semaforo', 'verde')->count();
+                    $amarillo = $acciones->where('semaforo', 'amarillo')->count();
+                    $rojo     = $acciones->where('semaforo', 'rojo')->count();
+
+                    return [
+                        'id'          => $plan->id,
+                        'name'        => strip_tags($plan->name),
+                        'year_start'  => $plan->year_start,
+                        'year_end'    => $plan->year_end,
+                        'total'       => count($misIds),
+                        'reportadas'  => $reportadas,
+                        'sin_reporte' => count($misIds) - $reportadas,
+                        'verde'       => $verde,
+                        'amarillo'    => $amarillo,
+                        'rojo'        => $rojo,
+                    ];
+                });
+
+            $totalAcciones   = $planes->sum('total');
+            $totalReportadas = $planes->sum('reportadas');
+        }
+
+        $usuario = Auth::user();
+        return view('admin.planificacion.reportes.dashboard', compact(
+            'planes', 'totalAcciones', 'totalReportadas', 'usuario'
+        ));
+    }
+
     // ── Vista del responsable: ver el PEI y sus acciones asignadas ────────────
     public function misAcciones(string $profileId)
     {

@@ -429,6 +429,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     // ── Módulo de Monitoreo / Reportes de Avance ─────────────────────────────
     Route::get('pei-profiles/{profileId}/mis-acciones',              'Admin\Planificacion\PeiReporteController@misAcciones')->name('pei.reportes.mis-acciones');
+    Route::get('pei-monitoreo/dashboard',                             'Admin\Planificacion\PeiReporteController@monitoreDashboard')->name('pei.monitoreo.dashboard');
     Route::get('pei-profiles/{profileId}/bsc',                       'Admin\Planificacion\PeiReporteController@bsc')->name('pei.bsc');
     Route::post('pei-profiles/{profileId}/notificar-todos',          'Admin\Planificacion\PeiReporteController@notificarTodos')->name('pei.reportes.notificar-todos');
     Route::post('pei-profiles/{profileId}/acciones/{accionId}/notificar', 'Admin\Planificacion\PeiReporteController@notificarAccion')->name('pei.reportes.notificar-accion');

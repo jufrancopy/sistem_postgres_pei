@@ -416,7 +416,7 @@
             $enMonitoreo = str_contains($path, 'mis-acciones');
         @endphp
             <li class="nav-item active">
-                <a class="nav-link" href="{{ route('pei.reportes.mis-acciones', $peisMisAcciones->first()->id ?? '#') }}">
+                <a class="nav-link" href="{{ route('pei.monitoreo.dashboard') }}">
                     <i class="material-icons">track_changes</i>
                     <p>Mis Acciones PEI</p>
                 </a>

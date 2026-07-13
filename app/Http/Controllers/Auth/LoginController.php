@@ -43,6 +43,8 @@ class LoginController extends Controller
             return redirect()->route('planificacion-dashboard');
         } elseif ($user->hasRole('Analista - RIISS')) {
             return redirect()->route('riiss.establecimientos.index');
+        } elseif ($user->hasRole('Analista de Monitoreo PEI')) {
+            return redirect()->route('pei.monitoreo.dashboard');
         } elseif ($user->hasRole(['Gestor de Actividades', 'Colaborador de Actividades'])) {
             return redirect()->route('globales.activities.mis-actividades');
         } else {
