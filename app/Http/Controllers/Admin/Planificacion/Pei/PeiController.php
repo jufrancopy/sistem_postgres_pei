@@ -500,6 +500,52 @@ class PeiController extends Controller
         return view('admin.planificacion.peis.peis.proceso', compact('profile', 'niveles'));
     }
 
+    public function matrizPdf($idProfile)
+    {
+        $profile = PeiProfile::with([
+            'children.children.children.indicador',
+            'children.children.children.responsibles',
+        ])->findOrFail($idProfile);
+
+        $nivelesDefault = ['master' => 'PEI', 'axi' => 'Objetivo Estratégico', 'goal' => 'Meta', 'action' => 'Acción Estratégica'];
+        $niveles = $nivelesDefault;
+        if ($profile->nivel_label) {
+            $decoded = json_decode($profile->nivel_label, true);
+            if (is_array($decoded)) $niveles = array_merge($nivelesDefault, $decoded);
+        }
+
+        $anioInicio = (int) \Carbon\Carbon::parse($profile->year_start)->format('Y');
+        $anioFin    = (int) \Carbon\Carbon::parse($profile->year_end)->format('Y');
+        $anios      = range($anioInicio, $anioFin);
+
+        $pdf = Pdf::loadView('admin.planificacion.peis.peis.matriz_pdf', compact('profile', 'niveles', 'anios'))
+            ->setPaper('a3', 'landscape')
+            ->setOption(['isPhpEnabled' => true, 'isHtml5ParserEnabled' => true, 'defaultFont' => 'DejaVu Sans']);
+
+        return $pdf->download('matriz-pei-' . \Illuminate\Support\Str::slug(strip_tags($profile->name)) . '.pdf');
+    }
+
+    public function matriz(Request $request, $idProfile)
+    {
+        $profile = PeiProfile::with([
+            'children.children.children.indicador',
+            'children.children.children.responsibles',
+        ])->findOrFail($idProfile);
+
+        $nivelesDefault = ['master' => 'PEI', 'axi' => 'Objetivo Estratégico', 'goal' => 'Meta', 'action' => 'Acción Estratégica'];
+        $niveles = $nivelesDefault;
+        if ($profile->nivel_label) {
+            $decoded = json_decode($profile->nivel_label, true);
+            if (is_array($decoded)) $niveles = array_merge($nivelesDefault, $decoded);
+        }
+
+        $anioInicio = (int) \Carbon\Carbon::parse($profile->year_start)->format('Y');
+        $anioFin    = (int) \Carbon\Carbon::parse($profile->year_end)->format('Y');
+        $anios      = range($anioInicio, $anioFin);
+
+        return view('admin.planificacion.peis.peis.matriz', compact('profile', 'niveles', 'anios'));
+    }
+
     public function accordion(Request $request, string $profileId)
     {
         $profile = \App\Admin\Planificacion\Pei\PeiProfile::with([
@@ -533,6 +579,42 @@ class PeiController extends Controller
             ->value('id');
 
         return view('admin.planificacion.peis.peis.dashboard', compact('profile', 'analisisFoda', 'perfilFodaId'));
+    }
+
+    public function reordenar(Request $request, $id)
+    {
+        $node = PeiProfile::findOrFail($id);
+        $direction = $request->input('direction'); // 'up' | 'down'
+
+        $siblings = PeiProfile::where('parent_id', $node->parent_id)
+            ->orderBy('order_item')
+            ->get();
+
+        $currentIndex = $siblings->search(fn($s) => $s->id === $node->id);
+
+        $swapIndex = $direction === 'up' ? $currentIndex - 1 : $currentIndex + 1;
+
+        if ($swapIndex < 0 || $swapIndex >= $siblings->count()) {
+            return response()->json(['error' => 'No se puede mover en esa dirección.'], 422);
+        }
+
+        $swap = $siblings[$swapIndex];
+
+        // Intercambiar order_item
+        $tempOrder = $node->order_item;
+        $node->order_item = $swap->order_item ?? $swapIndex;
+        $swap->order_item = $tempOrder ?? $currentIndex;
+
+        // Si ambos tienen el mismo order_item, forzar diferencia
+        if ($node->order_item === $swap->order_item) {
+            $node->order_item = $swapIndex;
+            $swap->order_item = $currentIndex;
+        }
+
+        $node->save();
+        $swap->save();
+
+        return response()->json(['success' => true]);
     }
 
     public function destroy(Request $request, $id)

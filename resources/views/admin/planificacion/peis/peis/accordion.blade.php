@@ -78,6 +78,12 @@
                         {{ $bscLabels[$bscPerspectiva] }}
                     </span>
                     @endif
+                    <button class="btn btn-sm btn-outline-light py-0 px-1 btnReordenar" data-id="{{ $axi->id }}" data-dir="up" title="Subir">
+                        <i class="fa fa-arrow-up" style="font-size:.7rem"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-light py-0 px-1 btnReordenar" data-id="{{ $axi->id }}" data-dir="down" title="Bajar">
+                        <i class="fa fa-arrow-down" style="font-size:.7rem"></i>
+                    </button>
                     <a class="btn btn-sm btn-outline-light py-0 px-2" data-id="{{ $axi->id }}"
                        data-type="edit" href="javascript:void(0)" id="createAxis" title="Editar">
                         <i class="fa fa-edit" style="font-size:.75rem"></i>
@@ -190,6 +196,12 @@
                             </div>
                             {{-- Fila 2: botones --}}
                             <div class="d-flex align-items-center mt-1 flex-wrap" style="gap:.3rem">
+                                <button class="btn btn-sm btn-outline-secondary py-0 px-1 btnReordenar" data-id="{{ $goal->id }}" data-dir="up" title="Subir">
+                                    <i class="fa fa-arrow-up" style="font-size:.65rem"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary py-0 px-1 btnReordenar" data-id="{{ $goal->id }}" data-dir="down" title="Bajar">
+                                    <i class="fa fa-arrow-down" style="font-size:.65rem"></i>
+                                </button>
                                 <a class="btn btn-sm btn-outline-primary py-0 px-2" data-id="{{ $goal->id }}"
                                    data-type="edit" href="javascript:void(0)" id="createGoals" title="Editar">
                                     <i class="fa fa-edit" style="font-size:.7rem"></i>
@@ -285,6 +297,12 @@
                                                         </div>
                                                     </div>
                                                     <div class="d-flex flex-shrink-0" style="gap:.3rem">
+                                                        <button class="btn btn-sm btn-outline-secondary py-0 px-1 btnReordenar" data-id="{{ $action->id }}" data-dir="up" title="Subir">
+                                                            <i class="fa fa-arrow-up" style="font-size:.65rem"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-secondary py-0 px-1 btnReordenar" data-id="{{ $action->id }}" data-dir="down" title="Bajar">
+                                                            <i class="fa fa-arrow-down" style="font-size:.65rem"></i>
+                                                        </button>
                                                         <a class="btn btn-sm btn-outline-info py-0 px-2"
                                                            data-id="{{ $action->id }}" data-type="edit"
                                                            href="javascript:void(0)" id="createActions" title="Editar">

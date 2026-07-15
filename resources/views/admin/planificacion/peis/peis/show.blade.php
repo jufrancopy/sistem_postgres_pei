@@ -29,6 +29,9 @@
             <a href="{{ route('pei.mee.modulo', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
                 <i class="fa fa-balance-scale mr-1"></i> Marco Estratégico Específico
             </a>
+            <a href="{{ route('pei-profiles.matriz', $profile->id) }}" class="btn btn-sm btn-outline-primary ml-2" target="_blank">
+                <i class="fa fa-table mr-1"></i> Formulación Estratégica Integrada
+            </a>
             <button type="button" class="btn btn-sm btn-outline-success ml-2" id="btnNotificarTodosPei"
                     data-profile="{{ $profile->id }}"
                     title="Enviar email a todos los responsables de acciones del plan">
