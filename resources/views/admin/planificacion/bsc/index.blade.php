@@ -179,14 +179,17 @@
                                 @endif
 
                                 {{-- Objetivos y acciones (colapsable) --}}
-                                @if(count($eje['objetivos']) > 0)
+                                @php
+                                    $totalAccEje = collect($eje['objetivos'])->sum(fn($o) => count($o['acciones']));
+                                @endphp
+                                @if($totalAccEje > 0)
                                 <div class="mt-2">
                                     <a href="javascript:void(0)"
                                        data-toggle="collapse"
                                        data-target="#bsc-eje-{{ $eje['id'] }}"
                                        style="font-size:.68rem;color:{{ $p['color'] }};text-decoration:none">
                                         <i class="fa fa-chevron-down mr-1"></i>
-                                        Ver {{ count($eje['objetivos']) }} objetivo(s)
+                                        Ver {{ $totalAccEje }} acción(es)
                                     </a>
                                     <div class="collapse mt-1" id="bsc-eje-{{ $eje['id'] }}">
                                         @foreach($eje['objetivos'] as $obj)
