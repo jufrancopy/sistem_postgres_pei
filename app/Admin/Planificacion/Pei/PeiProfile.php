@@ -59,11 +59,13 @@ class PeiProfile extends Model
         'foda_perfil_id',
         'bsc_perspectiva',
         'indicador_id',
+        'public_token',
         'resultado_intermedio',
         'ri_presupuestario',
         'ri_programa',
         'ri_recursos_gs',
         'ri_metas',
+        'public_token',
     ];
 
     protected $casts = [
@@ -96,6 +98,13 @@ class PeiProfile extends Model
     public static function etiquetasMecip(): array
     {
         return self::modelosDeNiveles()['MECIP'];
+    }
+
+    public function generatePublicToken(): string
+    {
+        $token = bin2hex(random_bytes(24));
+        $this->update(['public_token' => $token]);
+        return $token;
     }
 
     public function getLabelNivel(): string
@@ -211,6 +220,18 @@ class PeiProfile extends Model
     public function fodaPerfil()
     {
         return $this->belongsTo(FodaPerfil::class, 'foda_perfil_id');
+    }
+
+    public function generatePublicToken(): string
+    {
+        $token = \Illuminate\Support\Str::random(48);
+        $this->update(['public_token' => $token]);
+        return $token;
+    }
+
+    public function revokePublicToken(): void
+    {
+        $this->update(['public_token' => null]);
     }
 
     public function indicador()

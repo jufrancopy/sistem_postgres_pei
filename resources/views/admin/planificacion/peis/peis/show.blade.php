@@ -37,6 +37,14 @@
                     title="Enviar email a todos los responsables de acciones del plan">
                 <i class="fa fa-paper-plane mr-1"></i> Notificar Responsables
             </button>
+            {{-- Botón Vista Pública --}}
+            <button type="button" class="btn btn-sm btn-outline-secondary ml-2" id="btnPublicLink"
+                    data-profile="{{ $profile->id }}"
+                    data-token="{{ $profile->public_token }}"
+                    title="Generar y compartir enlace público del plan">
+                <i class="fa fa-share-alt mr-1"></i>
+                {{ $profile->public_token ? 'Enlace público' : 'Generar enlace público' }}
+            </button>
         </div>
 
         <!-- HTML del segundo nav (inicialmente oculto) -->
@@ -2059,6 +2067,79 @@ $('#btnNotificarTodosPei').on('click', function() {
         });
     });
 });
+
+// ── Enlace público ────────────────────────────────────────────────────────────
+$('#btnPublicLink').on('click', function() {
+    var profileId = $(this).data('profile');
+    var token     = $(this).data('token');
+    var baseUrl   = '{{ url("/public/pei") }}/';
+
+    if (token) {
+        // Ya tiene token — mostrar opciones
+        var pubUrl = baseUrl + token;
+        Swal.fire({
+            title: 'Enlace público activo',
+            html: '<div class="text-left">' +
+                '<p style="font-size:.85rem">Cualquier persona con este enlace puede ver el plan sin iniciar sesión.</p>' +
+                '<div class="input-group mb-3">' +
+                '<input type="text" id="swal_pub_url" class="form-control form-control-sm" readonly value="' + pubUrl + '">' +
+                '<div class="input-group-append">' +
+                '<button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById(\'swal_pub_url\').select();document.execCommand(\'copy\');toastr.success(\'Copiado!\')">Copiar</button>' +
+                '</div></div>' +
+                '<a href="' + pubUrl + '" target="_blank" class="btn btn-sm btn-primary w-100 mb-2"><i class="fa fa-external-link-alt mr-1"></i> Abrir vista pública</a>' +
+                '</div>',
+            showCancelButton: true,
+            showDenyButton: true,
+            confirmButtonText: '<i class="fa fa-sync mr-1"></i> Regenerar token',
+            denyButtonText: '<i class="fa fa-ban mr-1"></i> Revocar acceso',
+            cancelButtonText: 'Cerrar',
+            confirmButtonColor: '#1976d2',
+            denyButtonColor: '#dc3545',
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                generarToken(profileId);
+            } else if (result.isDenied) {
+                $.ajax({
+                    url: '{{ url("admin/pei-profiles") }}/' + profileId + '/public-token',
+                    type: 'DELETE',
+                    success: function() {
+                        toastr.success('Acceso público revocado.');
+                        $('#btnPublicLink').data('token','').text(' Generar enlace público').prepend('<i class="fa fa-share-alt mr-1"></i>');
+                    }
+                });
+            }
+        });
+    } else {
+        generarToken(profileId);
+    }
+});
+
+function generarToken(profileId) {
+    $.ajax({
+        url: '{{ url("admin/pei-profiles") }}/' + profileId + '/public-token',
+        type: 'POST',
+        success: function(res) {
+            var pubUrl = res.url;
+            $('#btnPublicLink').data('token', res.token)
+                .html('<i class="fa fa-share-alt mr-1"></i> Enlace público');
+            Swal.fire({
+                title: '¡Enlace generado!',
+                html: '<div class="text-left">' +
+                    '<p style="font-size:.85rem">Compartí este enlace para acceso de solo lectura.</p>' +
+                    '<div class="input-group">' +
+                    '<input type="text" id="swal_new_url" class="form-control form-control-sm" readonly value="' + pubUrl + '">' +
+                    '<div class="input-group-append">' +
+                    '<button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById(\'swal_new_url\').select();document.execCommand(\'copy\');toastr.success(\'Copiado!\')">Copiar</button>' +
+                    '</div></div>' +
+                    '<a href="' + pubUrl + '" target="_blank" class="btn btn-sm btn-primary w-100 mt-2"><i class="fa fa-external-link-alt mr-1"></i> Abrir</a>' +
+                    '</div>',
+                icon: 'success',
+                confirmButtonText: 'Listo',
+            });
+        },
+        error: function() { toastr.error('Error al generar el enlace.'); }
+    });
+}
 
 $(document).on('click', '.btnNotificarAccion', function() {
     var accionId  = $(this).data('id');

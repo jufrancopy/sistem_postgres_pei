@@ -68,6 +68,9 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home')->middleware('auth');
 
+// ── Vistas públicas PEI (sin autenticación) ───────────────────────────────────
+Route::get('/public/pei/{token}', 'Admin\Planificacion\PublicPeiController@show')->name('pei.public.show');
+
 Route::group(['middleware' => ['auth']], function () {
     Route::resource('products', 'Admin\ProductController');
 
@@ -433,6 +436,8 @@ Route::group(['middleware' => ['auth']], function () {
     // ── Módulo de Monitoreo / Reportes de Avance ─────────────────────────────
     Route::get('pei-profiles/{profileId}/mis-acciones',              'Admin\Planificacion\PeiReporteController@misAcciones')->name('pei.reportes.mis-acciones');
     Route::get('pei-monitoreo/dashboard',                             'Admin\Planificacion\PeiReporteController@monitoreDashboard')->name('pei.monitoreo.dashboard');
+    Route::post('pei-profiles/{profileId}/public-token',              'Admin\Planificacion\PublicPeiController@generateToken')->name('pei.public.token.generate');
+    Route::delete('pei-profiles/{profileId}/public-token',            'Admin\Planificacion\PublicPeiController@revokeToken')->name('pei.public.token.revoke');
     Route::get('pei-profiles/{profileId}/bsc',                       'Admin\Planificacion\PeiReporteController@bsc')->name('pei.bsc');
     Route::post('pei-profiles/{profileId}/notificar-todos',          'Admin\Planificacion\PeiReporteController@notificarTodos')->name('pei.reportes.notificar-todos');
     Route::post('pei-profiles/{profileId}/acciones/{accionId}/notificar', 'Admin\Planificacion\PeiReporteController@notificarAccion')->name('pei.reportes.notificar-accion');
