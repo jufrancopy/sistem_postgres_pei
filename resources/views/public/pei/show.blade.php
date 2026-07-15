@@ -97,6 +97,56 @@ body{background:#f0f2f8;font-family:'Inter',sans-serif;color:#1e293b;min-height:
 /* ── Footer ── */
 .pub-footer{text-align:center;padding:2rem 1rem;color:#94a3b8;font-size:.72rem;border-top:1px solid #e2e8f0;margin-top:2rem}
 .pub-footer strong{color:#64748b}
+
+/* ── RESPONSIVE MOBILE ── */
+@media(max-width:640px){
+    /* Hero */
+    .hero{padding:1.5rem 0 0}
+    .hero-title{font-size:1.15rem}
+    .hero-meta{gap:.5rem;font-size:.73rem}
+    .hero-stats{flex-wrap:wrap;border-radius:.5rem .5rem 0 0}
+    .hero-stat{flex:1 1 40%;min-width:80px;padding:.65rem .5rem}
+    .hero-stat .stat-num{font-size:1.3rem}
+    .hero-stat:last-child{flex:1 1 100%}
+
+    /* Nav tabs — scroll horizontal */
+    .pub-nav-inner{padding:0 .75rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .pub-nav-inner::-webkit-scrollbar{display:none}
+    .pub-tab{padding:.7rem .8rem;font-size:.75rem}
+    .pub-tab i{display:none}
+
+    /* Content */
+    .pub-content{padding:1rem .75rem}
+
+    /* BSC — una columna */
+    .bsc-grid{grid-template-columns:1fr;gap:1rem}
+    .bsc-eje-item{padding:.7rem .9rem}
+    .bsc-sem-row{flex-wrap:wrap;gap:.3rem}
+    .sem-bar{width:100%;flex:1 1 100%;order:10}
+
+    /* Acciones en BSC — solo nombre, ocultar indicador */
+    .bsc-accion-row span:last-child{display:none}
+
+    /* Matriz — tabla scrollable */
+    .mat-wrap{border-radius:.5rem}
+    .mat-wrap .table-responsive{-webkit-overflow-scrolling:touch}
+    .mat-wrap table{font-size:.72rem;min-width:500px}
+    .mat-wrap thead th{padding:.45rem .5rem;font-size:.62rem}
+    .mat-wrap tbody td{padding:.4rem .5rem}
+    .td-ind{display:none} /* ocultar col indicador en mobile */
+
+    /* MECIP */
+    .mecip-eje-header{flex-direction:column;align-items:flex-start;gap:.4rem}
+    .mecip-eje-header > div{width:100%;justify-content:flex-start}
+    .mecip-action-row{padding:.3rem .4rem .3rem .75rem;font-size:.75rem}
+    .mecip-ind-badge{display:none}
+}
+
+@media(max-width:400px){
+    .hero-title{font-size:1rem}
+    .hero-stat .stat-num{font-size:1.1rem}
+    .pub-tab{padding:.6rem .65rem;font-size:.7rem}
+}
 </style>
 </head>
 <body>
