@@ -71,7 +71,6 @@ body{background:#f0f2f8;font-family:'Inter',sans-serif;color:#1e293b;min-height:
 /* Semáforo dot */
 .sdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block}
 .sdot-verde{background:#22c55e}.sdot-amarillo{background:#eab308}.sdot-rojo{background:#ef4444}.sdot-sin{background:#cbd5e1}
-</style>
 
 /* ── Matriz ── */
 .mat-wrap{background:#fff;border-radius:1rem;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07)}
@@ -99,6 +98,8 @@ body{background:#f0f2f8;font-family:'Inter',sans-serif;color:#1e293b;min-height:
 .pub-footer{text-align:center;padding:2rem 1rem;color:#94a3b8;font-size:.72rem;border-top:1px solid #e2e8f0;margin-top:2rem}
 .pub-footer strong{color:#64748b}
 </style>
+</head>
+<body>
 
 @php
 $todasAcciones = $profile->descendants()->where('level','action')->get();
@@ -108,8 +109,6 @@ $gRojo     = $todasAcciones->where('semaforo','rojo')->count();
 $gTotal    = $todasAcciones->count();
 $gPct      = $gTotal > 0 ? round(($gVerde / $gTotal) * 100) : 0;
 @endphp
-
-</head><body>
 
 {{-- ══ HERO ══════════════════════════════════════════════════════════════════ --}}
 <div class="hero">
