@@ -2073,6 +2073,7 @@ $('#btnPublicLink').on('click', function() {
     var profileId = $(this).data('profile');
     var token     = $(this).data('token');
     var baseUrl   = '{{ url("/public/pei") }}/';
+    var apiBase   = '{{ url("pei-profiles") }}/';
 
     if (token) {
         // Ya tiene token — mostrar opciones
@@ -2097,26 +2098,27 @@ $('#btnPublicLink').on('click', function() {
             denyButtonColor: '#dc3545',
         }).then(function(result) {
             if (result.isConfirmed) {
-                generarToken(profileId);
+                generarToken(profileId, apiBase);
             } else if (result.isDenied) {
                 $.ajax({
-                    url: '{{ url("admin/pei-profiles") }}/' + profileId + '/public-token',
+                    url: apiBase + profileId + '/public-token',
                     type: 'DELETE',
                     success: function() {
                         toastr.success('Acceso público revocado.');
-                        $('#btnPublicLink').data('token','').text(' Generar enlace público').prepend('<i class="fa fa-share-alt mr-1"></i>');
+                        $('#btnPublicLink').data('token','')
+                            .html('<i class="fa fa-share-alt mr-1"></i> Generar enlace público');
                     }
                 });
             }
         });
     } else {
-        generarToken(profileId);
+        generarToken(profileId, apiBase);
     }
 });
 
-function generarToken(profileId) {
+function generarToken(profileId, apiBase) {
     $.ajax({
-        url: '{{ url("admin/pei-profiles") }}/' + profileId + '/public-token',
+        url: apiBase + profileId + '/public-token',
         type: 'POST',
         success: function(res) {
             var pubUrl = res.url;
