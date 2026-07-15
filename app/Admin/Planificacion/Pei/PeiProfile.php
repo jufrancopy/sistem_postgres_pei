@@ -107,6 +107,11 @@ class PeiProfile extends Model
         return $token;
     }
 
+    public function revokePublicToken(): void
+    {
+        $this->update(['public_token' => null]);
+    }
+
     public function getLabelNivel(): string
     {
         if ($this->nivel_label) {
@@ -220,18 +225,6 @@ class PeiProfile extends Model
     public function fodaPerfil()
     {
         return $this->belongsTo(FodaPerfil::class, 'foda_perfil_id');
-    }
-
-    public function generatePublicToken(): string
-    {
-        $token = \Illuminate\Support\Str::random(48);
-        $this->update(['public_token' => $token]);
-        return $token;
-    }
-
-    public function revokePublicToken(): void
-    {
-        $this->update(['public_token' => null]);
     }
 
     public function indicador()
