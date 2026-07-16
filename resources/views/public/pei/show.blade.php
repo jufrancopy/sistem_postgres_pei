@@ -233,8 +233,12 @@ $gPct      = $gTotal > 0 ? round(($gVerde / $gTotal) * 100) : 0;
         <h3><i class="fa {{ $persp['icon'] }}"></i> {{ $persp['label'] }}</h3>
         <div class="bsc-persp-badges">
             @php $totEjes = $persp['ejes']->count(); $totAcc = $persp['ejes']->sum('total'); @endphp
-            <span class="bsc-persp-badge">{{ $totEjes }} {{ $totEjes == 1 ? 'eje' : 'ejes' }}</span>
-            <span class="bsc-persp-badge">{{ $totAcc }} acciones</span>
+            <span class="bsc-persp-badge">
+                {{ $totEjes }} {{ $niveles['axi'] ?? 'Objetivo' }}{{ $totEjes == 1 ? '' : 's' }}
+            </span>
+            <span class="bsc-persp-badge">
+                {{ $totAcc }} {{ $niveles['action'] ?? 'Acción' }}{{ $totAcc == 1 ? '' : 'es' }}
+            </span>
         </div>
     </div>
     @foreach($persp['ejes'] as $eje)
