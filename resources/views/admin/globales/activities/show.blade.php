@@ -1074,7 +1074,8 @@ $('#btnLimpiarFiltro').on('click', function(e) {
                     }
                 });
             } else {
-                acta = '<span class="text-muted" style="font-size:.72rem"><i class="fa fa-minus mr-1"></i>Sin acta</span>';
+                acta = '<button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 btnSubirActa" data-task-id="' + r.id + '" style="font-size:.7rem">'
+                     + '<i class="fa fa-upload mr-1"></i>Subir acta</button>';
             }
 
             tbody.append(
@@ -1108,6 +1109,22 @@ $('#btnLimpiarFiltro').on('click', function(e) {
         $(this).addClass('btn-success active').removeClass('btn-outline-secondary');
         $('#filtroTodas,#filtroPendientes').addClass('btn-outline-secondary').removeClass('btn-dark btn-warning active');
         renderReuniones('finalizadas');
+    });
+
+    $(document).on('click', '.btnSubirActa', function() {
+        $('#evidence_task_id').val($(this).data('task-id'));
+        $('#modalReuniones').modal('hide');
+        $('#evidenceModal').modal('show');
+    });
+
+    $('#evidenceModal').on('hidden.bs.modal', function() {
+        if ($('#modalReuniones').data('bs.modal')) {
+            $('#modalReuniones').modal('show');
+            $.getJSON(_reunionesUrl, function(data) {
+                _reunionesData = data;
+                renderReuniones(_filtroActivo);
+            });
+        }
     });
 
     $(document).on('click', '.btnVerActa', function() {
