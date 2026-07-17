@@ -179,6 +179,7 @@ $(function() {
     // ── Select2 helpers ───────────────────────────────────────────────────────
     var getUsersUrl = '{{ route("globales.get-users") }}';
     var buscarAccionesUrl = '{{ route("globales.activities.pei.buscar") }}';
+    var buscarPlanesUrl   = '{{ route("globales.activities.pei.buscar-planes") }}';
 
     function initTipoSelect() {
         $('#type').select2({ placeholder: 'Seleccioná el tipo', dropdownParent: $('#activityModal') });
@@ -187,10 +188,10 @@ $(function() {
     function initPeiSelect(selected) {
         $('#pei_profile_id').empty().select2({
             allowClear: true,
-            placeholder: 'Buscar acción estratégica... (opcional)',
+            placeholder: 'Buscar plan estratégico... (opcional)',
             dropdownParent: $('#activityModal'),
             ajax: {
-                url: buscarAccionesUrl, dataType: 'json', delay: 300,
+                url: buscarPlanesUrl, dataType: 'json', delay: 300,
                 data: function(p) { return { q: p.term }; },
                 processResults: function(d) { return { results: d.results }; }
             }

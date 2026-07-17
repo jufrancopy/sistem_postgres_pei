@@ -94,6 +94,21 @@ class ActivityController extends Controller
         return response()->json(['success' => 'Eliminado correctamente']);
     }
 
+    public function buscarPlanesPei(Request $request)
+    {
+        $q = $request->get('q', '');
+        $planes = \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'master')
+            ->whereNull('deleted_at')
+            ->where('name', 'ilike', "%{$q}%")
+            ->limit(20)
+            ->get()
+            ->map(fn($p) => [
+                'id'   => $p->id,
+                'text' => strip_tags($p->name),
+            ]);
+        return response()->json(['results' => $planes]);
+    }
+
     public function buscarAccionesPei(Request $request)
     {
         $q          = $request->get('q', '');
