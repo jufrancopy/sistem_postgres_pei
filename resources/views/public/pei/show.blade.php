@@ -74,12 +74,13 @@ body{background:#f0f2f8;font-family:'Inter',sans-serif;color:#1e293b;min-height:
 
 /* ── Matriz ── */
 .mat-wrap{background:#fff;border-radius:1rem;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07)}
-.mat-wrap table{font-size:.8rem}
-.mat-wrap thead th{background:#f8faff;color:#475569;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;padding:.6rem .75rem;border-bottom:2px solid #e2e8f0}
-.mat-wrap tbody td{padding:.55rem .75rem;vertical-align:middle;border-color:#f1f5f9}
-.td-axi{background:#eff6ff;font-weight:700;color:#1e3a8a;font-size:.78rem}
-.td-obj{background:#fafbff;color:#334155;font-size:.78rem}
-.td-accion{color:#1e293b}
+.mat-wrap table{font-size:.8rem;border-collapse:collapse}
+.mat-wrap thead th{background:#f8faff;color:#475569;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;padding:.6rem .75rem;border:1px solid #e2e8f0;border-bottom:2px solid #cbd5e1}
+.mat-wrap tbody td{padding:.55rem .75rem;vertical-align:middle;border:1px solid #e2e8f0}
+.mat-wrap tbody tr:last-child td{border-bottom:1px solid #e2e8f0}
+.td-axi{background:#eff6ff;font-weight:700;color:#1e3a8a;font-size:.78rem;border-left:4px solid #1e3a8a !important;border-right:2px solid #bfdbfe !important}
+.td-obj{background:#f8faff;color:#334155;font-size:.78rem;border-right:2px solid #dbeafe !important}
+.td-accion{color:#1e293b;border-bottom:1px solid #f1f5f9 !important}
 .td-ind{color:#64748b;font-size:.73rem}
 
 /* ── MECIP ── */
