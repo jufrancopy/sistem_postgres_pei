@@ -605,6 +605,25 @@ function initResponsableSelect(selectedId, selectedText) {
     }
 }
 
+// ── Select2 acción PEI ─────────────────────────────────────────────────────
+var buscarAccionesUrl = '{{ route("globales.activities.pei.buscar") }}';
+function initPeiActionSelect(selectedId, selectedText) {
+    var $sel = $('#task_pei_action_id').empty();
+    $sel.select2({
+        placeholder: 'Buscar acción estratégica... (opcional)',
+        allowClear: true,
+        dropdownParent: $('#tareaModal'),
+        ajax: {
+            url: buscarAccionesUrl, dataType: 'json', delay: 300,
+            data: function(p) { return { q: p.term, activity_id: activityId }; },
+            processResults: function(d) { return { results: d.results }; }
+        }
+    });
+    if (selectedId) {
+        $sel.append(new Option(selectedText, selectedId, true, true)).trigger('change');
+    }
+}
+
 // ── Nueva tarea ───────────────────────────────────────────────────────────────
 $('#btnNuevaTarea').click(function() {
     $('#tareaHeading').text('Nueva Tarea');
@@ -614,6 +633,7 @@ $('#btnNuevaTarea').click(function() {
     renderPaleta();
     initResponsableSelect(null, null);
     cargarEtiquetasExistentes();
+    initPeiActionSelect(null, null);
     $('#tareaModal').modal('show');
 });
 
@@ -652,6 +672,7 @@ $('body').on('click', '.editTaskBtn', function() {
             $('#task_status').val(task.status);
             $('#task_es_reunion').prop('checked', task.es_reunion == 1);
             initResponsableSelect(task.assigned_to, task.responsable || '');
+            initPeiActionSelect(task.pei_action_id || null, task.pei_action_nombre || null);
             colorSeleccionado = task.color || '#6b7280';
             renderPaleta();
             cargarEtiquetasExistentes();
