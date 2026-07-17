@@ -99,6 +99,11 @@
                             <label class="small font-weight-bold">Responsables</label>
                             <select name="responsible_id[]" id="responsibles" class="form-control" multiple style="width:100%"></select>
                         </div>
+                        <div class="col-md-12 mb-0">
+                            <label class="small font-weight-bold">Vincular a Acción Estratégica del PEI <span class="text-muted font-weight-normal">(opcional)</span></label>
+                            <select name="pei_profile_id" id="pei_profile_id" class="form-control" style="width:100%"></select>
+                            <small class="text-muted">Buscar por nombre de la acción o del objetivo estratégico.</small>
+                        </div>
                     </div>
 
                     <div class="alert alert-danger errors d-none"></div>
@@ -173,9 +178,26 @@ $(function() {
 
     // ── Select2 helpers ───────────────────────────────────────────────────────
     var getUsersUrl = '{{ route("globales.get-users") }}';
+    var buscarAccionesUrl = '{{ route("globales.activities.pei.buscar") }}';
 
     function initTipoSelect() {
         $('#type').select2({ placeholder: 'Seleccioná el tipo', dropdownParent: $('#activityModal') });
+    }
+
+    function initPeiSelect(selected) {
+        $('#pei_profile_id').empty().select2({
+            allowClear: true,
+            placeholder: 'Buscar acción estratégica... (opcional)',
+            dropdownParent: $('#activityModal'),
+            ajax: {
+                url: buscarAccionesUrl, dataType: 'json', delay: 300,
+                data: function(p) { return { q: p.term }; },
+                processResults: function(d) { return { results: d.results }; }
+            }
+        });
+        if (selected) {
+            $('#pei_profile_id').append(new Option(selected.text, selected.id, true, true)).trigger('change');
+        }
     }
 
     function initResponsablesSelect(selected) {
@@ -205,6 +227,7 @@ $(function() {
         $('.errors').addClass('d-none').text('');
         initTipoSelect();
         initResponsablesSelect(null);
+        initPeiSelect(null);
         $('#activityModal').modal('show');
     });
 
@@ -222,6 +245,7 @@ $(function() {
             initTipoSelect();
             $('#type').val(data.activity.type).trigger('change');
             initResponsablesSelect(data.responsiblesChecked);
+            initPeiSelect(data.peiSelected);
             $('#activityModal').modal('show');
         });
     });

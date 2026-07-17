@@ -289,6 +289,7 @@ Route::group(['middleware' => ['auth']], function () {
         // ── Comentarios: todos los autenticados ───────────────────────────────
         Route::get('activities/tareas/{taskId}/detalle', 'Admin\Globales\ActivityController@detalleTarea')->name('activities.tareas.detalle');
         Route::get('activities/{activityId}/reuniones', 'Admin\Globales\ActivityController@reuniones')->name('activities.reuniones');
+        Route::get('activities/pei/buscar-acciones', 'Admin\Globales\ActivityController@buscarAccionesPei')->name('activities.pei.buscar');
         Route::get('activities/tareas/{taskId}/comentarios', 'Admin\Globales\ActivityController@getComentarios')->name('activities.tareas.comentarios.index');
         Route::post('activities/tareas/{taskId}/comentarios', 'Admin\Globales\ActivityController@storeComentario')->name('activities.tareas.comentarios.store');
         Route::delete('activities/tareas/comentarios/{commentId}', 'Admin\Globales\ActivityController@destroyComentario')->name('activities.tareas.comentarios.destroy');

@@ -57,11 +57,12 @@ class ActivityController extends Controller
         $activity = Activity::updateOrCreate(
             ['id' => $request->activity_id],
             [
-                'name'        => $request->name,
-                'type'        => $request->type,
-                'description' => $request->description,
-                'date_start'  => $request->date_start,
-                'date_end'    => $request->date_end,
+                'name'           => $request->name,
+                'type'           => $request->type,
+                'description'    => $request->description,
+                'date_start'     => $request->date_start,
+                'date_end'       => $request->date_end,
+                'pei_profile_id' => $request->pei_profile_id ?: null,
             ]
         );
 
@@ -75,15 +76,38 @@ class ActivityController extends Controller
 
     public function edit($id)
     {
-        $activity = Activity::with('responsibles')->findOrFail($id);
+        $activity = Activity::with('responsibles', 'peiProfile')->findOrFail($id);
         $responsiblesChecked = $activity->responsibles->map(fn($r) => ['id' => $r->id, 'text' => $r->name]);
-        return response()->json(['activity' => $activity, 'responsiblesChecked' => $responsiblesChecked]);
+        $peiSelected = $activity->peiProfile
+            ? ['id' => $activity->peiProfile->id, 'text' => strip_tags($activity->peiProfile->name)]
+            : null;
+        return response()->json([
+            'activity'            => $activity,
+            'responsiblesChecked' => $responsiblesChecked,
+            'peiSelected'         => $peiSelected,
+        ]);
     }
 
     public function destroy($id)
     {
         Activity::findOrFail($id)->delete();
         return response()->json(['success' => 'Eliminado correctamente']);
+    }
+
+    public function buscarAccionesPei(Request $request)
+    {
+        $q = $request->get('q', '');
+        $acciones = \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')
+            ->where('name', 'ilike', "%{$q}%")
+            ->whereNull('deleted_at')
+            ->with('ancestors')
+            ->limit(20)
+            ->get()
+            ->map(fn($a) => [
+                'id'   => $a->id,
+                'text' => strip_tags($a->ancestors->where('level', 'axi')->first()?->name ?? '') . ' › ' . strip_tags($a->name),
+            ]);
+        return response()->json(['results' => $acciones]);
     }
 
     // ── Tareas del tablero ────────────────────────────────────────
