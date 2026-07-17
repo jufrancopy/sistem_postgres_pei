@@ -23,7 +23,7 @@
                     </button>
                     <span class="badge badge-dark ml-auto" id="reunionesCount" style="font-size:.75rem"></span>
                 </div>
-                <div class="table-responsive">
+                <div class="table-responsive px-3 pb-3">
                     <table class="table table-hover table-sm mb-0">
                         <thead class="thead-light">
                             <tr>
