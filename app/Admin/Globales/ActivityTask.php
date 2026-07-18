@@ -13,7 +13,7 @@ class ActivityTask extends Model
     protected $table = 'activity_tasks';
 
     protected $fillable = [
-        'activity_id', 'pei_action_id', 'title', 'details', 'etiqueta', 'color',
+        'activity_id', 'title', 'details', 'etiqueta', 'color',
         'fecha_inicio', 'fecha_vencimiento', 'assigned_to', 'status',
         'completed_at', 'completed_by', 'completion_note', 'schedule_item_id',
         'es_reunion',
@@ -63,10 +63,5 @@ class ActivityTask extends Model
     public function scheduleItem()
     {
         return $this->belongsTo(\App\Models\ScheduleItem::class, 'schedule_item_id');
-    }
-
-    public function peiAction()
-    {
-        return $this->belongsTo(\App\Admin\Planificacion\Pei\PeiProfile::class, 'pei_action_id');
     }
 }

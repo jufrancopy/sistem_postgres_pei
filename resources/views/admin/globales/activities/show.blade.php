@@ -633,7 +633,6 @@ $('#btnNuevaTarea').click(function() {
     renderPaleta();
     initResponsableSelect(null, null);
     cargarEtiquetasExistentes();
-    initPeiActionSelect(null, null);
     $('#tareaModal').modal('show');
 });
 
@@ -672,7 +671,6 @@ $('body').on('click', '.editTaskBtn', function() {
             $('#task_status').val(task.status);
             $('#task_es_reunion').prop('checked', task.es_reunion == 1);
             initResponsableSelect(task.assigned_to, task.responsable || '');
-            initPeiActionSelect(task.pei_action_id || null, task.pei_action_nombre || null);
             colorSeleccionado = task.color || '#6b7280';
             renderPaleta();
             cargarEtiquetasExistentes();

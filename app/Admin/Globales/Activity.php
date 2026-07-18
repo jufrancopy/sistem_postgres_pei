@@ -5,18 +5,12 @@ namespace App\Admin\Globales;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
-use App\Admin\Planificacion\Pei\PeiProfile;
 
 class Activity extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name', 'type', 'description', 'date_start', 'date_end', 'pei_profile_id'];
-
-    public function peiProfile()
-    {
-        return $this->belongsTo(PeiProfile::class, 'pei_profile_id');
-    }
+    protected $fillable = ['name', 'type', 'description', 'date_start', 'date_end'];
 
     public function responsibles()
     {

@@ -57,12 +57,11 @@ class ActivityController extends Controller
         $activity = Activity::updateOrCreate(
             ['id' => $request->activity_id],
             [
-                'name'           => $request->name,
-                'type'           => $request->type,
-                'description'    => $request->description,
-                'date_start'     => $request->date_start,
-                'date_end'       => $request->date_end,
-                'pei_profile_id' => $request->pei_profile_id ?: null,
+                'name'        => $request->name,
+                'type'        => $request->type,
+                'description' => $request->description,
+                'date_start'  => $request->date_start,
+                'date_end'    => $request->date_end,
             ]
         );
 
@@ -76,15 +75,11 @@ class ActivityController extends Controller
 
     public function edit($id)
     {
-        $activity = Activity::with('responsibles', 'peiProfile')->findOrFail($id);
+        $activity = Activity::with('responsibles')->findOrFail($id);
         $responsiblesChecked = $activity->responsibles->map(fn($r) => ['id' => $r->id, 'text' => $r->name]);
-        $peiSelected = $activity->peiProfile
-            ? ['id' => $activity->peiProfile->id, 'text' => strip_tags($activity->peiProfile->name)]
-            : null;
         return response()->json([
             'activity'            => $activity,
             'responsiblesChecked' => $responsiblesChecked,
-            'peiSelected'         => $peiSelected,
         ]);
     }
 
@@ -94,55 +89,6 @@ class ActivityController extends Controller
         return response()->json(['success' => 'Eliminado correctamente']);
     }
 
-    public function buscarPlanesPei(Request $request)
-    {
-        $q = $request->get('q', '');
-        $planes = \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'master')
-            ->whereNull('deleted_at')
-            ->where('name', 'ilike', "%{$q}%")
-            ->limit(20)
-            ->get()
-            ->map(fn($p) => [
-                'id'   => $p->id,
-                'text' => strip_tags($p->name),
-            ]);
-        return response()->json(['results' => $planes]);
-    }
-
-    public function buscarAccionesPei(Request $request)
-    {
-        $q          = $request->get('q', '');
-        $activityId = $request->get('activity_id');
-
-        $masterId = null;
-        if ($activityId) {
-            $activity = Activity::find($activityId);
-            $masterId = $activity?->pei_profile_id;
-        }
-
-        $query = \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')
-            ->whereNull('deleted_at')
-            ->with('ancestors');
-
-        if ($masterId) {
-            $master = \App\Admin\Planificacion\Pei\PeiProfile::find($masterId);
-            if ($master) {
-                $query->where('_lft', '>', $master->_lft)
-                      ->where('_rgt', '<', $master->_rgt);
-            }
-        }
-
-        if ($q) {
-            $query->where('name', 'ilike', "%{$q}%");
-        }
-
-        $acciones = $query->limit(30)->get()->map(fn($a) => [
-            'id'   => $a->id,
-            'text' => strip_tags($a->ancestors->where('level', 'axi')->first()?->name ?? '') . ' › ' . strip_tags($a->name),
-        ]);
-
-        return response()->json(['results' => $acciones]);
-    }
     // ── Tareas del tablero ────────────────────────────────────────
 
     public function reasignarTarea(Request $request, $taskId)
@@ -167,7 +113,6 @@ class ActivityController extends Controller
             ['id' => $request->task_id ?: null],
             [
                 'activity_id'       => $activityId,
-                'pei_action_id'     => $request->pei_action_id ?: null,
                 'title'             => $request->title,
                 'details'           => $request->details,
                 'etiqueta'          => $request->etiqueta,
@@ -289,7 +234,7 @@ class ActivityController extends Controller
 
     public function detalleTarea($taskId)
     {
-        $task = ActivityTask::with(['assignedTo', 'completedBy', 'evidences.user', 'comments.user', 'peiAction'])->findOrFail($taskId);
+        $task = ActivityTask::with(['assignedTo', 'completedBy', 'evidences.user', 'comments.user'])->findOrFail($taskId);
 
         $venc = null; $vencColor = null;
         if ($task->fecha_vencimiento && $task->status !== 2) {
@@ -310,8 +255,6 @@ class ActivityController extends Controller
                 'color'            => $task->color ?? '#6b7280',
                 'status'           => $task->status,
                 'es_reunion'       => $task->es_reunion ? 1 : 0,
-                'pei_action_id'    => $task->pei_action_id,
-                'pei_action_nombre'=> $task->peiAction ? strip_tags($task->peiAction->name) : null,
                 'assigned_to'      => $task->assigned_to,
                 'responsable'      => $task->assignedTo?->name ?? 'Sin asignar',
                 'completion_note'  => $task->completion_note,

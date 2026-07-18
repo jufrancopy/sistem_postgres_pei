@@ -98,16 +98,6 @@
                         </div>
                     </div>
 
-                    {{-- ── Acción Estratégica PEI ── --}}
-                    <div class="form-group mb-0" id="peiActionGroup">
-                        <label class="small font-weight-bold">
-                            <i class="fa fa-bullseye mr-1 text-primary"></i>
-                            Acción Estratégica del PEI
-                            <span class="text-muted font-weight-normal">(opcional)</span>
-                        </label>
-                        <select name="pei_action_id" id="task_pei_action_id" style="width:100%"></select>
-                        <small class="text-muted">Vincula esta tarea a una acción del plan estratégico.</small>
-                    </div>
                 </form>
             </div>
             <div class="modal-footer">
