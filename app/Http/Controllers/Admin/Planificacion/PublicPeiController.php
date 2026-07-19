@@ -16,6 +16,7 @@ class PublicPeiController extends Controller
             ->with([
                 'children.children.children.indicador',
                 'children.children.children.responsibles',
+                'children.children.children.activityTasks',
                 'children.marcos',
             ])
             ->firstOrFail();

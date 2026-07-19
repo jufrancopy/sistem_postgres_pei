@@ -554,9 +554,9 @@
                         <i class="fa fa-tasks mr-1 text-success"></i> Actividad de Gestión
                     </h6>
                     <div class="form-group mb-2">
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="action_cuenta_actividad">
-                            <label class="custom-control-label small font-weight-bold" for="action_cuenta_actividad">
+                        <div class="d-flex align-items-center" style="gap:.5rem">
+                            <input type="checkbox" id="action_cuenta_actividad" style="width:16px;height:16px;cursor:pointer;flex-shrink:0">
+                            <label for="action_cuenta_actividad" class="mb-0 small font-weight-bold" style="cursor:pointer">
                                 Esta acción cuenta con una Actividad
                             </label>
                         </div>
@@ -583,18 +583,28 @@
                             <select id="action_activity_id_select" style="width:100%"></select>
                         </div>
                         <div id="panel_actividad_vinculada" class="mt-2" style="display:none">
-                            <span class="badge badge-success p-2" style="font-size:.8rem">
-                                <i class="fa fa-check-circle mr-1"></i>
-                                <span id="action_actividad_nombre_vinculada"></span>
-                            </span>
-                            <a id="action_actividad_link" href="#" target="_blank"
-                               class="btn btn-sm btn-outline-success ml-2" style="font-size:.72rem">
-                                <i class="fa fa-external-link-alt mr-1"></i>Abrir tablero
-                            </a>
-                            <button type="button" class="btn btn-sm btn-outline-danger ml-1" id="btnDesvincularActividad"
-                                style="font-size:.72rem">
-                                <i class="fa fa-unlink mr-1"></i>Desvincular
-                            </button>
+                            <div class="d-flex align-items-center flex-wrap" style="gap:.4rem">
+                                <span class="badge badge-success p-2" style="font-size:.8rem">
+                                    <i class="fa fa-check-circle mr-1"></i>
+                                    <span id="action_actividad_nombre_vinculada"></span>
+                                </span>
+                                <a id="action_actividad_link" href="#" target="_blank"
+                                   class="btn btn-sm btn-outline-success" style="font-size:.72rem">
+                                    <i class="fa fa-external-link-alt mr-1"></i>Abrir tablero
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="btnDesvincularActividad"
+                                    style="font-size:.72rem">
+                                    <i class="fa fa-unlink mr-1"></i>Desvincular
+                                </button>
+                            </div>
+                            {{-- Selector de tareas de la actividad --}}
+                            <div class="mt-2">
+                                <label class="small font-weight-bold mb-1">
+                                    <i class="fa fa-check-square mr-1 text-success"></i> Tareas vinculadas a esta acción
+                                </label>
+                                <select id="action_activity_tasks" name="activity_task_ids[]" style="width:100%" multiple></select>
+                                <small class="text-muted" style="font-size:.72rem">Seleccioná una o varias tareas de la actividad.</small>
+                            </div>
                         </div>
                     </div>
                     {{ Form::hidden('activity_id', null, ['id' => 'actions_activity_id']) }}

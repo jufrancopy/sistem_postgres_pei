@@ -238,6 +238,16 @@ class PeiProfile extends Model
         return $this->belongsTo(\App\Admin\Globales\Activity::class, 'activity_id');
     }
 
+    public function activityTasks()
+    {
+        return $this->belongsToMany(
+            \App\Admin\Globales\ActivityTask::class,
+            'pei_profile_tasks',
+            'pei_profile_id',
+            'activity_task_id'
+        );
+    }
+
     public function marcos()
     {
         return $this->belongsToMany(

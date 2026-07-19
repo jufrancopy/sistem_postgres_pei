@@ -502,6 +502,21 @@
                                             </div>
                                             @endif
 
+                                            {{-- Tareas vinculadas --}}
+                                            @if($action->activityTasks->count() > 0)
+                                            <div class="px-3 py-1 d-flex flex-wrap align-items-center" style="gap:.3rem;border-top:1px solid #e9ecef;background:#f8fff8;font-size:.75rem">
+                                                <span class="text-muted text-uppercase flex-shrink-0" style="font-size:.6rem;letter-spacing:.04em">
+                                                    <i class="fa fa-check-square mr-1 text-success"></i>Tareas
+                                                </span>
+                                                @foreach($action->activityTasks as $at)
+                                                <span class="badge badge-light border" style="font-size:.68rem">
+                                                    <i class="fa fa-circle mr-1" style="font-size:.45rem;color:{{ $at->status == 2 ? '#28a745' : ($at->status == 1 ? '#ffc107' : '#6c757d') }}"></i>
+                                                    {{ \Illuminate\Support\Str::limit($at->title, 50) }}
+                                                </span>
+                                                @endforeach
+                                            </div>
+                                            @endif
+
                                             {{-- Fila reporte: siempre visible --}}
                                             <div style="border-top:1px solid #e9ecef;background:{{ $rpColor['bg'] }};font-size:.78rem">
                                                 <div class="d-flex align-items-center px-3 py-2" style="gap:.6rem;flex-wrap:wrap">

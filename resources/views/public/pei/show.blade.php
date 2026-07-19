@@ -94,6 +94,10 @@ body{background:#f0f2f8;font-family:'Inter',sans-serif;color:#1e293b;min-height:
 .mecip-action-row{display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem .3rem 1rem;border-bottom:1px solid #f8fafc;font-size:.78rem;color:#334155}
 .mecip-action-row:last-child{border-bottom:none}
 .mecip-ind-badge{margin-left:auto;flex-shrink:0;background:#f1f5f9;color:#475569;border-radius:.3rem;padding:.1rem .4rem;font-size:.62rem;font-weight:600}
+.mecip-tasks{padding:.25rem .5rem .25rem 1.75rem;display:flex;flex-wrap:wrap;gap:.3rem;background:#fafbff;border-bottom:1px solid #f1f5f9}
+.mecip-task-badge{display:inline-flex;align-items:center;gap:.25rem;background:#fff;border:1px solid #e2e8f0;border-radius:.4rem;padding:.15rem .45rem;font-size:.68rem;color:#475569}
+.mecip-task-badge.done{background:#f0fdf4;border-color:#bbf7d0;color:#15803d}
+.mecip-task-badge.progress{background:#fffbeb;border-color:#fde68a;color:#92400e}
 
 /* ── Footer ── */
 .pub-footer{text-align:center;padding:2rem 1rem;color:#94a3b8;font-size:.72rem;border-top:1px solid #e2e8f0;margin-top:2rem}
@@ -376,6 +380,20 @@ $gPct      = $gTotal > 0 ? round(($gVerde / $gTotal) * 100) : 0;
                 <span class="mecip-ind-badge">{{ $action->indicador->codigoCompleto() }}</span>
                 @endif
             </div>
+            @if($action->activityTasks->count() > 0)
+            <div class="mecip-tasks">
+                @foreach($action->activityTasks as $task)
+                @php
+                    $taskClass = $task->status == 2 ? 'done' : ($task->status == 1 ? 'progress' : '');
+                    $taskIcon  = $task->status == 2 ? 'fa-check-circle' : ($task->status == 1 ? 'fa-spinner' : 'fa-circle');
+                @endphp
+                <span class="mecip-task-badge {{ $taskClass }}">
+                    <i class="fa {{ $taskIcon }}" style="font-size:.55rem"></i>
+                    {{ \Illuminate\Support\Str::limit($task->title, 55) }}
+                </span>
+                @endforeach
+            </div>
+            @endif
             @endforeach
         </div>
         @endforeach

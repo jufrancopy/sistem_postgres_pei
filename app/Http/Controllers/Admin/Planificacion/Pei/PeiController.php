@@ -275,6 +275,7 @@ class PeiController extends Controller
         $profile->analysts()->sync($request->analyst_id);
         $profile->strategies()->sync($request->strategy_id);
         $profile->responsibles()->sync($request->responsible_id);
+        $profile->activityTasks()->sync($request->input('activity_task_ids', []));
 
         // Si se envía foda_perfil_id, guardarlo en el PEI raíz
         if ($request->has('foda_perfil_id')) {
@@ -312,6 +313,16 @@ class PeiController extends Controller
         }
 
         return response()->json($responseData);
+    }
+
+    public function tareasDeActividad(Request $request, $activityId)
+    {
+        $tasks = \App\Admin\Globales\ActivityTask::where('activity_id', $activityId)
+            ->whereNull('deleted_at')
+            ->orderBy('id')
+            ->get(['id', 'title'])
+            ->map(fn($t) => ['id' => $t->id, 'text' => $t->title]);
+        return response()->json(['results' => $tasks]);
     }
 
     public function buscarActividades(Request $request)
@@ -383,6 +394,7 @@ class PeiController extends Controller
             'activitySelected'    => $profile->activity
                                         ? ['id' => $profile->activity->id, 'text' => $profile->activity->name]
                                         : null,
+            'activityTasksSelected' => $profile->activityTasks->map(fn($t) => ['id' => $t->id, 'text' => $t->title])->values(),
             'fodaPerfiles'        => \App\Admin\Planificacion\Foda\FodaPerfil::whereIn('type', ['individual', 'consolidado'])
                                         ->orderBy('name')
                                         ->get(['id', 'name', 'type']),
@@ -583,6 +595,7 @@ class PeiController extends Controller
             'children.strategies',
             'children.children.children.indicador',
             'children.children.children.responsibles',
+            'children.children.children.activityTasks',
         ])->findOrFail($profileId);
 
         $nivelesDefault = ['master'=>'PEI','axi'=>'Nivel 1','goal'=>'Nivel 2','action'=>'Acción'];

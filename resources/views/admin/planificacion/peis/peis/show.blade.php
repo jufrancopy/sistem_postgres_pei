@@ -971,6 +971,13 @@
                     if (id) formData.append('responsible_id[]', id);
                 });
 
+                // Agregar tareas de actividad seleccionadas
+                formData.delete('activity_task_ids[]');
+                var taskIds = $('#action_activity_tasks').val() || [];
+                taskIds.forEach(function(id) {
+                    if (id) formData.append('activity_task_ids[]', id);
+                });
+
                 $.ajax({
                     data: formData,
                     url: "{{ route('pei-profiles.store') }}",
@@ -1302,15 +1309,32 @@
                     // ── Panel Actividad vinculada ────────────────────────────────
                     var buscarActividadesUrl = '{{ route("pei.actividades.buscar") }}';
 
-                    function mostrarActividadVinculada(id, nombre) {
+                    function mostrarActividadVinculada(id, nombre, tareasPreseleccionadas) {
                         $('#actions_activity_id').val(id);
                         $('#action_actividad_nombre_vinculada').text(nombre);
                         $('#action_actividad_link').attr('href', '{{ url("admin/globales/activities") }}/' + id);
                         $('#panel_actividad_vinculada').show();
                         $('#panel_nueva_actividad, #panel_existente_actividad').hide();
+
+                        // Cargar tareas de la actividad en el select2
+                        var $tareasSelect = $('#action_activity_tasks');
+                        if ($tareasSelect.hasClass('select2-hidden-accessible')) $tareasSelect.select2('destroy');
+                        $tareasSelect.empty();
+
+                        $.getJSON('{{ route("pei.actividades.tareas", ["activityId" => "__AID__"]) }}'.replace('__AID__', id), function(res) {
+                            res.results.forEach(function(t) {
+                                var presel = tareasPreseleccionadas && tareasPreseleccionadas.some(function(p) { return p.id == t.id; });
+                                $tareasSelect.append(new Option(t.text, t.id, presel, presel));
+                            });
+                            $tareasSelect.select2({
+                                dropdownParent: $('#ajaxActionsModal'),
+                                placeholder: 'Seleccioná las tareas...',
+                                allowClear: true,
+                            }).trigger('change');
+                        });
                     }
 
-                    function resetActividadPanel(activityId, activityName) {
+                    function resetActividadPanel(activityId, activityName, tareasPreseleccionadas) {
                         $('#action_actividad_nombre').val('');
                         $('#panel_actividad_vinculada').hide();
                         $('#panel_nueva_actividad').show();
@@ -1320,7 +1344,7 @@
                         if (activityId) {
                             $('#action_cuenta_actividad').prop('checked', true);
                             $('#action_actividad_panel').show();
-                            mostrarActividadVinculada(activityId, activityName);
+                            mostrarActividadVinculada(activityId, activityName, tareasPreseleccionadas || []);
                         } else {
                             $('#action_cuenta_actividad').prop('checked', false);
                             $('#action_actividad_panel').hide();
@@ -1331,7 +1355,8 @@
                     // Precargar en edición
                     resetActividadPanel(
                         data.activitySelected ? data.activitySelected.id : null,
-                        data.activitySelected ? data.activitySelected.text : null
+                        data.activitySelected ? data.activitySelected.text : null,
+                        data.activityTasksSelected || []
                     );
 
                     // Checkbox toggle
@@ -1371,7 +1396,7 @@
                                 processResults: function(d) { return { results: d.results }; }
                             }
                         }).off('select2:select').on('select2:select', function(e) {
-                            mostrarActividadVinculada(e.params.data.id, e.params.data.text);
+                            mostrarActividadVinculada(e.params.data.id, e.params.data.text, []);
                         });
                     });
 
@@ -1384,7 +1409,7 @@
                         $.post('{{ url("pei-profiles") }}/' + pid + '/actividad',
                             { _token: $('meta[name=csrf-token]').attr('content'), nombre: nombre },
                             function(res) {
-                                mostrarActividadVinculada(res.activity.id, res.activity.text);
+                                mostrarActividadVinculada(res.activity.id, res.activity.text, []);
                                 toastr.success(res.success);
                             }
                         ).fail(function() {
