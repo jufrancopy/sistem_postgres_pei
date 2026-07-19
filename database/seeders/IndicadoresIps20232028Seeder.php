@@ -58,6 +58,33 @@ class IndicadoresIps20232028Seeder extends Seeder
         }
 
         $this->command->info("✅ {$count} indicadores IPS 2023-2028 sembrados.");
+        $this->vincularIndicadores($perfilId);
+    }
+
+    private function vincularIndicadores(string $perfilId): void
+    {
+        $master = \DB::table('planificacion.pei_profiles')->where('id', $perfilId)->first();
+
+        $acciones = \DB::table('planificacion.pei_profiles')
+            ->where('level', 'action')
+            ->where('_lft', '>', (int) $master->_lft)
+            ->where('_rgt', '<', (int) $master->_rgt)
+            ->whereNull('deleted_at')
+            ->orderBy('_lft')
+            ->pluck('id');
+
+        $indicadores = \DB::table('planificacion.indicadores')
+            ->where('pei_profile_id', $perfilId)
+            ->orderBy('codigo_numeros')
+            ->pluck('id');
+
+        $count = min(count($acciones), count($indicadores));
+        for ($i = 0; $i < $count; $i++) {
+            \DB::table('planificacion.pei_profiles')
+                ->where('id', $acciones[$i])
+                ->update(['indicador_id' => $indicadores[$i]]);
+        }
+        $this->command->info("✅ {$count} acciones vinculadas a sus indicadores.");
     }
 
     private function getIndicadores(): array
