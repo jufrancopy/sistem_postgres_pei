@@ -542,6 +542,97 @@ class PeiController extends Controller
         return view('admin.planificacion.peis.peis.proceso', compact('profile', 'niveles'));
     }
 
+    public function certificacionMef($idProfile)
+    {
+        $profile = PeiProfile::with(['group', 'fodaPerfil'])->findOrFail($idProfile);
+
+        $nivelesDefault = ['master' => 'PEI', 'axi' => 'Nivel 1', 'goal' => 'Nivel 2', 'action' => 'Acción'];
+        $niveles = $nivelesDefault;
+        if ($profile->nivel_label) {
+            $decoded = json_decode($profile->nivel_label, true);
+            if (is_array($decoded)) $niveles = array_merge($nivelesDefault, $decoded);
+        }
+
+        $fodaPerfil   = $profile->fodaPerfil;
+        $fodaPerfilId = $fodaPerfil?->id;
+        $fodaTipoGrupal = $fodaPerfil && in_array($fodaPerfil->type, ['consolidado', 'grupal']);
+
+        // ── 1. Mapeo de actores ───────────────────────────────────────────
+        $totalActores = \DB::table('planificacion.pei_actores')->where('pei_profile_id', $idProfile)->count();
+
+        // ── 2+13. Marco Estratégico General / Vinculación PND-PAM-ODS ────
+        $axisIds      = $profile->descendants()->where('level', 'axi')->pluck('id');
+        $totalMarcos  = \DB::table('planificacion.pei_profile_marcos')
+            ->whereIn('pei_profile_id', $axisIds)
+            ->count();
+
+        // ── 3. Marco Estratégico Específico ──────────────────────────────
+        $totalMeeMarcos  = \DB::table('planificacion.mee_marco_legal')->where('pei_profile_id', $idProfile)->count();
+        $totalMeeOfertas = \DB::table('planificacion.mee_oferta_servicios')->where('pei_profile_id', $idProfile)->count();
+
+        // ── 4. FODA Análisis ──────────────────────────────────────────────
+        $fodaAnalizados = 0;
+        if ($fodaPerfilId) {
+            if ($fodaTipoGrupal) {
+                $subgroupIds  = \App\Admin\Globales\Group::where('parent_id', $fodaPerfil->group_id)->pluck('id');
+                $subPerfilIds = \App\Admin\Planificacion\Foda\FodaPerfil::whereIn('group_id', $subgroupIds)->pluck('id');
+                $fodaAnalizados = \App\Admin\Planificacion\Foda\FodaAnalisis::whereIn('perfil_id', $subPerfilIds)
+                    ->whereIn('tipo', ['Fortaleza','Debilidad','Oportunidad','Amenaza'])->count();
+            } else {
+                $fodaAnalizados = \App\Admin\Planificacion\Foda\FodaAnalisis::where('perfil_id', $fodaPerfilId)
+                    ->whereIn('tipo', ['Fortaleza','Debilidad','Oportunidad','Amenaza'])->count();
+            }
+        }
+
+        // ── 5. FODA Integrado / Cruce ─────────────────────────────────────
+        $totalCruces = $fodaPerfilId
+            ? \App\Admin\Planificacion\Foda\FodaCruceAmbiente::where('perfil_id', $fodaPerfilId)->count()
+            : 0;
+
+        // ── 6-8. Misión, Visión, Valores ──────────────────────────────────
+        $tieneMision  = !empty(strip_tags($profile->mision ?? ''));
+        $tieneVision  = !empty(strip_tags($profile->vision ?? ''));
+        $tieneValores = !empty(strip_tags($profile->values ?? ''));
+
+        // ── 9. Objetivos Estratégicos (axi) ───────────────────────────────
+        $totalEjes          = $profile->descendants()->where('level', 'axi')->count();
+        $ejesConEstrategia  = $profile->descendants()->where('level', 'axi')->whereHas('strategies')->count();
+        $ejesConRI          = $profile->descendants()->where('level', 'axi')->whereNotNull('resultado_intermedio')->count();
+
+        // ── 10. Acciones Estratégicas ─────────────────────────────────────
+        $totalAcciones = $profile->descendants()->where('level', 'action')->count();
+
+        // ── 11. Indicadores ───────────────────────────────────────────────
+        $accionesConIndicador = $profile->descendants()->where('level', 'action')->whereNotNull('indicador_id')->count();
+
+        // ── 12. Formulación Estratégica Integrada ─────────────────────────
+        $accionesConPresupuesto = $profile->descendants()->where('level', 'action')->whereNotNull('presupuesto_asignado')->count();
+
+        // ── Checklist ─────────────────────────────────────────────────────
+        $checklist = [
+            ['num' => 1,    'label' => 'Mapeo de Actores',                          'ok' => $totalActores > 0,          'valor' => $totalActores . ' actores',          'url' => route('pei-actores.index', $idProfile),                                                                  'pendiente' => false],
+            ['num' => '2+13','label' => 'Marco Estratégico General / PND-PAM-ODS',  'ok' => $totalMarcos > 0,           'valor' => $totalMarcos . ' marcos vinculados', 'url' => route('pei-profiles.show', $profile->id),                              'pendiente' => false],
+            ['num' => 3,    'label' => 'Marco Estratégico Específico',              'ok' => $totalMeeMarcos > 0,        'valor' => $totalMeeMarcos . ' marcos legales, ' . $totalMeeOfertas . ' servicios', 'url' => route('pei-profiles.show', $profile->id), 'pendiente' => false],
+            ['num' => 4,    'label' => 'Análisis Situacional FODA',                 'ok' => $fodaAnalizados > 0,        'valor' => $fodaAnalizados . ' aspectos analizados', 'url' => $fodaPerfilId ? ($fodaTipoGrupal ? route('foda-matriz-groups', $fodaPerfil->group_id) : route('foda-cruce-ambientes', $fodaPerfilId)) : null, 'pendiente' => false],
+            ['num' => 5,    'label' => 'FODA Integrado (Cruce de Ambientes)',       'ok' => $totalCruces > 0,           'valor' => $totalCruces . ' estrategias de cruce', 'url' => $fodaPerfilId ? ($fodaTipoGrupal ? route('foda-matriz-groups-crossing', $fodaPerfil->group_id) : route('foda-cruce-ambientes', $fodaPerfilId)) : null, 'pendiente' => false],
+            ['num' => 6,    'label' => 'Misión',                                    'ok' => $tieneMision,               'valor' => $tieneMision ? 'Definida' : 'Pendiente',  'url' => route('pei-profiles.show', $profile->id),                          'pendiente' => false],
+            ['num' => 7,    'label' => 'Visión',                                    'ok' => $tieneVision,               'valor' => $tieneVision ? 'Definida' : 'Pendiente',  'url' => route('pei-profiles.show', $profile->id),                          'pendiente' => false],
+            ['num' => 8,    'label' => 'Valores',                                   'ok' => $tieneValores,              'valor' => $tieneValores ? 'Definidos' : 'Pendiente', 'url' => route('pei-profiles.show', $profile->id),                          'pendiente' => false],
+            ['num' => 9,    'label' => 'Objetivos Estratégicos',                    'ok' => $ejesConEstrategia > 0,     'valor' => $ejesConEstrategia . '/' . $totalEjes . ' con estrategia FODA · ' . $ejesConRI . ' con resultado intermedio', 'url' => route('pei-profiles.show', $profile->id), 'pendiente' => false],
+            ['num' => 10,   'label' => 'Acciones Estratégicas',                     'ok' => $totalAcciones > 0,         'valor' => $totalAcciones . ' acciones',         'url' => route('pei-profiles.show', $profile->id),                              'pendiente' => false],
+            ['num' => 11,   'label' => 'Indicadores',                               'ok' => $accionesConIndicador > 0,  'valor' => $accionesConIndicador . '/' . $totalAcciones . ' acciones con indicador', 'url' => route('pei-profiles.show', $profile->id), 'pendiente' => false],
+            ['num' => 12,   'label' => 'Formulación Estratégica Integrada',         'ok' => $accionesConPresupuesto > 0,'valor' => $accionesConPresupuesto . '/' . $totalAcciones . ' acciones con presupuesto', 'url' => route('pei-profiles.show', $profile->id), 'pendiente' => false],
+        ];
+
+        $completados = collect($checklist)->where('ok', true)->count();
+        $total       = collect($checklist)->count();
+        $pct         = round(($completados / $total) * 100);
+
+        return view('admin.planificacion.peis.peis.certificacion-mef', compact(
+            'profile', 'niveles', 'checklist', 'completados', 'total', 'pct'
+        ));
+    }
+
     public function matrizPdf($idProfile)
     {
         $profile = PeiProfile::with([

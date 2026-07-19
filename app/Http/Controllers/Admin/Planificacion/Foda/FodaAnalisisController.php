@@ -297,7 +297,13 @@ class FodaAnalisisController extends Controller
         foreach ($groups as $group) {
             $groupId[] = $group->id;
         }
-        $profile = FodaPerfil::where('group_id', $idGroup)->first();
+        $profile = FodaPerfil::where('group_id', $idGroup)->where('type', 'consolidado')->first()
+            ?? FodaPerfil::whereIn('group_id', array_merge([$idGroup], $groupId))->first();
+
+        if (!$profile) {
+            abort(404, 'No se encontró un perfil FODA para este grupo.');
+        }
+
         $idPerfil = $profile->id;
 
 

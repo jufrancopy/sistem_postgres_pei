@@ -61,6 +61,7 @@ class PeiProfile extends Model
         'indicador_id',
         'activity_id',
         'public_token',
+        'public_tabs',
         'resultado_intermedio',
         'ri_presupuestario',
         'ri_programa',
@@ -70,7 +71,8 @@ class PeiProfile extends Model
     ];
 
     protected $casts = [
-        'ri_metas' => 'array',
+        'ri_metas'    => 'array',
+        'public_tabs' => 'array',
     ];
 
     const BSC_PERSPECTIVAS = [
@@ -226,6 +228,11 @@ class PeiProfile extends Model
     public function fodaPerfil()
     {
         return $this->belongsTo(FodaPerfil::class, 'foda_perfil_id');
+    }
+
+    public function actores()
+    {
+        return $this->hasMany(\App\Models\Planificacion\PeiActor::class, 'pei_profile_id');
     }
 
     public function indicador()

@@ -104,6 +104,11 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('pei-profiles/{idProfile}/raci', 'Admin\Planificacion\Pei\PeiController@syncRaci')->name('pei-profiles.raci.sync');
     Route::get('pei-profiles/{idProfile}/alertas-presupuestarias', 'Admin\Planificacion\Pei\PeiController@getAlertasPresupuestarias')->name('pei-profiles.alertas-presupuestarias');
     Route::get('pei-profiles/{idProfile}/proceso', 'Admin\Planificacion\Pei\PeiController@proceso')->name('pei-profiles.proceso');
+    Route::get('pei-profiles/{idProfile}/certificacion-mef', 'Admin\Planificacion\Pei\PeiController@certificacionMef')->name('pei-profiles.certificacion-mef');
+    Route::get('pei-profiles/{peiId}/actores', 'Admin\Planificacion\Pei\PeiActorController@index')->name('pei-actores.index');
+    Route::post('pei-profiles/{peiId}/actores', 'Admin\Planificacion\Pei\PeiActorController@store')->name('pei-actores.store');
+    Route::delete('pei-profiles/{peiId}/actores/{actorId}', 'Admin\Planificacion\Pei\PeiActorController@destroy')->name('pei-actores.destroy');
+    Route::get('instituciones-paraguay/buscar', 'Admin\Planificacion\Pei\PeiActorController@buscarInstituciones')->name('instituciones-paraguay.buscar');
     Route::get('pei-profiles/{profileId}/accordion',    'Admin\Planificacion\Pei\PeiController@accordion')->name('pei-profiles.accordion');
     Route::post('pei-profiles/{id}/reordenar',           'Admin\Planificacion\Pei\PeiController@reordenar')->name('pei-profiles.reordenar');
     Route::get('pei-profiles/{idProfile}/matriz',        'Admin\Planificacion\Pei\PeiController@matriz')->name('pei-profiles.matriz');

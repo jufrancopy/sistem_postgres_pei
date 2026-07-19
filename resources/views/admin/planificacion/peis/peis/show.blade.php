@@ -288,6 +288,56 @@
                                     </div>
                                 </div>
 
+                                {{-- ── Mapeo de Actores ── --}}
+                                <div class="col-12 mb-3">
+                                    <div class="card border-left" style="border-left:4px solid #17a2b8!important">
+                                        <div class="card-header d-flex align-items-center py-2">
+                                            <i class="fa fa-users text-info mr-2"></i>
+                                            <h6 class="mb-0">Mapeo de Actores</h6>
+                                            <a href="{{ route('pei-actores.index', $profile->id) }}"
+                                               class="btn btn-sm btn-outline-info ml-auto">
+                                                <i class="fa fa-external-link-alt mr-1"></i> Gestionar actores
+                                            </a>
+                                        </div>
+                                        <div class="card-body py-2">
+                                            @php $actores = \App\Models\Planificacion\PeiActor::with(['organigrama','user'])->where('pei_profile_id', $profile->id)->orderBy('orden')->get(); @endphp
+                                            @if($actores->isEmpty())
+                                                <p class="text-muted mb-0" style="font-size:.85rem">
+                                                    <i class="fa fa-info-circle mr-1"></i> Sin actores registrados.
+                                                    <a href="{{ route('pei-actores.index', $profile->id) }}">Agregar ahora</a>
+                                                </p>
+                                            @else
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm mb-0" style="font-size:.82rem">
+                                                        <thead class="thead-light">
+                                                            <tr>
+                                                                <th>Tipo</th>
+                                                                <th>Dependencia</th>
+                                                                <th>Persona Referente</th>
+                                                                <th>Aportes</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach($actores as $actor)
+                                                            <tr>
+                                                                <td>
+                                                                    <span class="badge badge-{{ $actor->tipo === 'interno' ? 'info' : 'secondary' }}">
+                                                                        {{ ucfirst($actor->tipo) }}
+                                                                    </span>
+                                                                </td>
+                                                                <td>{{ $actor->dependencia_label }}</td>
+                                                                <td>{{ $actor->persona_label }}</td>
+                                                                <td class="text-muted">{{ Str::limit($actor->aportes, 60) }}</td>
+                                                            </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="col mision">
                                     <div class="card">
                                         <div class="card-header d-flex align-items-center">
@@ -2200,14 +2250,39 @@ $('#btnNotificarTodosPei').on('click', function() {
 });
 
 // ── Enlace público ────────────────────────────────────────────────────────────
+var _tabsDisponibles = [
+    { key: 'bsc',      label: 'Balanced Scorecard' },
+    { key: 'matriz',   label: 'Matriz Estratégica' },
+    { key: 'mecip',    label: 'Vista Jerárquica' },
+    { key: 'planilla', label: 'Vista Personalizada (Planilla)' },
+];
+
+function _tabsCheckboxesHtml(seleccionadas) {
+    var html = '<div style="margin:10px 0 4px;font-size:.82rem;font-weight:600;color:#334155">Pestañas visibles:</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:12px">';
+    _tabsDisponibles.forEach(function(t) {
+        var chk = seleccionadas.indexOf(t.key) >= 0 ? 'checked' : '';
+        html += '<label style="display:flex;align-items:center;gap:6px;font-size:.82rem;cursor:pointer">' +
+            '<input type="checkbox" class="swal-tab-chk" value="' + t.key + '" ' + chk + '> ' + t.label + '</label>';
+    });
+    html += '</div>';
+    return html;
+}
+
+function _getTabsSeleccionadas() {
+    var tabs = [];
+    document.querySelectorAll('.swal-tab-chk:checked').forEach(function(c){ tabs.push(c.value); });
+    return tabs.length ? tabs : ['bsc'];
+}
+
 $('#btnPublicLink').on('click', function() {
-    var profileId = $(this).data('profile');
-    var token     = $(this).data('token');
-    var baseUrl   = '{{ url("/public/pei") }}/';
-    var apiBase   = '{{ url("pei-profiles") }}/';
+    var profileId      = $(this).data('profile');
+    var token          = $(this).data('token');
+    var baseUrl        = '{{ url("/public/pei") }}/';
+    var apiBase        = '{{ url("pei-profiles") }}/';
+    var tabsActuales   = {!! json_encode($profile->public_tabs ?? ['bsc','matriz','mecip','planilla']) !!};
 
     if (token) {
-        // Ya tiene token — mostrar opciones
         var pubUrl = baseUrl + token;
         Swal.fire({
             title: 'Enlace público activo',
@@ -2218,18 +2293,20 @@ $('#btnPublicLink').on('click', function() {
                 '<div class="input-group-append">' +
                 '<button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById(\'swal_pub_url\').select();document.execCommand(\'copy\');toastr.success(\'Copiado!\')">Copiar</button>' +
                 '</div></div>' +
-                '<a href="' + pubUrl + '" target="_blank" class="btn btn-sm btn-primary w-100 mb-2"><i class="fa fa-external-link-alt mr-1"></i> Abrir vista pública</a>' +
+                '<a href="' + pubUrl + '" target="_blank" class="btn btn-sm btn-primary w-100 mb-3"><i class="fa fa-external-link-alt mr-1"></i> Abrir vista pública</a>' +
+                _tabsCheckboxesHtml(tabsActuales) +
                 '</div>',
             showCancelButton: true,
             showDenyButton: true,
-            confirmButtonText: '<i class="fa fa-sync mr-1"></i> Regenerar token',
+            confirmButtonText: '<i class="fa fa-sync mr-1"></i> Guardar y regenerar',
             denyButtonText: '<i class="fa fa-ban mr-1"></i> Revocar acceso',
             cancelButtonText: 'Cerrar',
             confirmButtonColor: '#1976d2',
             denyButtonColor: '#dc3545',
+            preConfirm: function() { return _getTabsSeleccionadas(); },
         }).then(function(result) {
             if (result.isConfirmed) {
-                generarToken(profileId, apiBase);
+                generarToken(profileId, apiBase, result.value);
             } else if (result.isDenied) {
                 $.ajax({
                     url: apiBase + profileId + '/public-token',
@@ -2243,14 +2320,33 @@ $('#btnPublicLink').on('click', function() {
             }
         });
     } else {
-        generarToken(profileId, apiBase);
+        // Sin token — mostrar selector de tabs antes de generar
+        Swal.fire({
+            title: 'Generar enlace público',
+            html: '<div class="text-left">' +
+                '<p style="font-size:.85rem">Seleccioná las pestañas que estarán disponibles en la vista pública.</p>' +
+                _tabsCheckboxesHtml(['bsc','matriz','mecip','planilla']) +
+                '</div>',
+            confirmButtonText: '<i class="fa fa-share-alt mr-1"></i> Generar enlace',
+            showCancelButton: true,
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#1976d2',
+            preConfirm: function() { return _getTabsSeleccionadas(); },
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                generarToken(profileId, apiBase, result.value);
+            }
+        });
     }
 });
 
-function generarToken(profileId, apiBase) {
+function generarToken(profileId, apiBase, tabs) {
     $.ajax({
         url: apiBase + profileId + '/public-token',
         type: 'POST',
+        data: JSON.stringify({ tabs: tabs }),
+        contentType: 'application/json',
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
         success: function(res) {
             var pubUrl = res.url;
             $('#btnPublicLink').data('token', res.token)

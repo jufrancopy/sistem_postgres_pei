@@ -13,21 +13,34 @@ $descendantGroupIds = $profile->group
     : [$groupId];
 
 // ── Paso 2: FODA ──────────────────────────────────────────
-$fodaPerfiles   = FodaPerfil::whereIn('group_id', $descendantGroupIds)->get();
-$fodaTotal      = $fodaPerfiles->count();
-$fodaConsolidado= FodaPerfil::whereIn('group_id', $descendantGroupIds)->where('type','consolidado')->exists();
-$fodaAnalisis   = \App\Admin\Planificacion\Foda\FodaAnalisis::whereIn('perfil_id', $fodaPerfiles->pluck('id'))
-    ->selectRaw('tipo, COUNT(*) as total')
-    ->groupBy('tipo')
-    ->pluck('total','tipo');
+$fodaPerfilVinculado = $profile->fodaPerfil;
+$fodaPerfilId        = $fodaPerfilVinculado?->id;
+
+if ($fodaPerfilId) {
+    if (in_array($fodaPerfilVinculado->type, ['consolidado', 'grupal'])) {
+        // Los análisis están en los perfiles de los subgrupos
+        $subgroupIds  = \App\Admin\Globales\Group::where('parent_id', $fodaPerfilVinculado->group_id)->pluck('id');
+        $subPerfilIds = \App\Admin\Planificacion\Foda\FodaPerfil::whereIn('group_id', $subgroupIds)->pluck('id');
+        $fodaAnalisis = \App\Admin\Planificacion\Foda\FodaAnalisis::whereIn('perfil_id', $subPerfilIds)
+            ->selectRaw('tipo, COUNT(*) as total')->groupBy('tipo')->pluck('total','tipo');
+    } else {
+        $fodaAnalisis = \App\Admin\Planificacion\Foda\FodaAnalisis::where('perfil_id', $fodaPerfilId)
+            ->selectRaw('tipo, COUNT(*) as total')->groupBy('tipo')->pluck('total','tipo');
+    }
+} else {
+    $fodaAnalisis = collect();
+}
 $fodaPendientes = $fodaAnalisis->get('Pendiente', 0);
 $fodaAnalizados = $fodaAnalisis->except('Pendiente')->sum();
 
 // ── Paso 3: Cruce de Ambientes ────────────────────────────
-$perfilConsolidadoId = FodaPerfil::whereIn('group_id', $descendantGroupIds)
-    ->where('type','consolidado')->value('id');
-$cruces = $perfilConsolidadoId
-    ? FodaCruceAmbiente::where('perfil_id', $perfilConsolidadoId)
+// Si el FODA vinculado es grupal/consolidado, el cruce está en foda-matriz-groups/{group_id}/crossing
+// Si es individual, está en foda-cruce-ambientes/{perfil_id}
+$fodaTipoGrupal = $fodaPerfilVinculado && in_array($fodaPerfilVinculado->type, ['grupal', 'consolidado']);
+$groupIdCruce   = $fodaPerfilVinculado?->group_id;
+
+$cruces = $fodaPerfilId
+    ? FodaCruceAmbiente::where('perfil_id', $fodaPerfilId)
         ->selectRaw('tipo, COUNT(*) as total')->groupBy('tipo')->pluck('total','tipo')
     : collect();
 $totalCruces = $cruces->sum();
@@ -62,7 +75,7 @@ function pasoEstado($condicion) {
     return $condicion ? 'completo' : 'pendiente';
 }
 $estados = [
-    1 => pasoEstado($fodaAnalizados > 0),
+    1 => pasoEstado($fodaPerfilId !== null),
     2 => pasoEstado($totalCruces > 0),
     3 => pasoEstado($tieneMision && $tieneVision),
     4 => pasoEstado($axisConEstrategia > 0),
@@ -110,6 +123,9 @@ $pctGlobal   = round(($completados / 6) * 100);
                 <a href="{{ route('pei-profiles.dashboard', $profile->id) }}" class="btn btn-sm btn-dark">
                     <i class="fa fa-chart-bar mr-1"></i> Tablero de Monitoreo
                 </a>
+                <a href="{{ route('pei-profiles.certificacion-mef', $profile->id) }}" class="btn btn-sm btn-warning">
+                    <i class="fa fa-certificate mr-1"></i> Certificación MEF
+                </a>
             </div>
         </div>
 
@@ -138,16 +154,17 @@ $pctGlobal   = round(($completados / 6) * 100);
                 'estado' => $estados[1],
                 'descripcion' => 'Análisis FODA grupal con validación IEA. Identifica fortalezas, debilidades, oportunidades y amenazas.',
                 'metricas' => [
-                    ['label' => 'Perfiles FODA', 'valor' => $fodaTotal],
-                    ['label' => 'Analizados',    'valor' => $fodaAnalizados],
-                    ['label' => 'Pendientes',    'valor' => $fodaPendientes],
-                    ['label' => 'Consolidado',   'valor' => $fodaConsolidado ? '✅ Sí' : '⏳ No'],
+                    ['label' => 'Perfil FODA',  'valor' => $fodaPerfilVinculado ? $fodaPerfilVinculado->name : '⏳ Sin vincular'],
+                    ['label' => 'Analizados',   'valor' => $fodaAnalizados],
+                    ['label' => 'Pendientes',   'valor' => $fodaPendientes],
+                    ['label' => 'Tipo',         'valor' => $fodaPerfilVinculado ? ucfirst($fodaPerfilVinculado->type) : '—'],
                 ],
                 'acciones' => array_filter([
-                    ['url' => route('foda-list-groups') . '?pei_id=' . $profile->id, 'label' => 'Ver Matrices Grupales', 'clase' => 'btn-info'],
-                    $fodaConsolidado && $perfilConsolidadoId
-                        ? ['url' => route('foda-cruce-ambientes', $perfilConsolidadoId), 'label' => 'Ver Consolidado', 'clase' => 'btn-outline-success']
-                        : null,
+                    $fodaPerfilId
+                        ? ($fodaTipoGrupal
+                            ? ['url' => route('foda-matriz-groups-crossing', $groupIdCruce), 'label' => 'Ver Perfil FODA', 'clase' => 'btn-info']
+                            : ['url' => route('foda-cruce-ambientes', $fodaPerfilId), 'label' => 'Ver Perfil FODA', 'clase' => 'btn-info'])
+                        : ['url' => route('pei-profiles.show', $profile->id), 'label' => 'Vincular FODA al PEI', 'clase' => 'btn-outline-info'],
                 ]),
             ])
 
@@ -164,10 +181,12 @@ $pctGlobal   = round(($completados / 6) * 100);
                     ['label' => 'Estrategias DO', 'valor' => $cruces->get('DO', 0)],
                     ['label' => 'Estrategias DA', 'valor' => $cruces->get('DA', 0)],
                 ],
-                'acciones' => $perfilConsolidadoId ? [
-                    ['url' => route('foda-cruce-ambientes', $perfilConsolidadoId), 'label' => 'Ver Cruce', 'clase' => 'btn-warning'],
+                'acciones' => $fodaPerfilId ? [
+                    $fodaTipoGrupal
+                        ? ['url' => route('foda-matriz-groups-crossing', $groupIdCruce), 'label' => 'Ver Cruce de Ambientes', 'clase' => 'btn-warning']
+                        : ['url' => route('foda-cruce-ambientes', $fodaPerfilId), 'label' => 'Ver Cruce de Ambientes', 'clase' => 'btn-warning'],
                 ] : [
-                    ['url' => route('foda-list-groups'), 'label' => 'Generar Consolidado', 'clase' => 'btn-outline-warning'],
+                    ['url' => route('foda-list-groups'), 'label' => 'Ir a Matrices FODA', 'clase' => 'btn-outline-warning'],
                 ],
             ])
 

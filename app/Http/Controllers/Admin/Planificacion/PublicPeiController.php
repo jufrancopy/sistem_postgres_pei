@@ -79,14 +79,20 @@ class PublicPeiController extends Controller
 
         $perspectivas = $perspectivas->filter(fn($p) => $p['ejes']->count() > 0);
 
-        return view('public.pei.show', compact('profile', 'niveles', 'perspectivas', 'token'));
+        $tabsHabilitadas = $profile->public_tabs ?? ['bsc', 'matriz', 'mecip', 'planilla'];
+
+        return view('public.pei.show', compact('profile', 'niveles', 'perspectivas', 'token', 'tabsHabilitadas'));
     }
 
     // ── Generar / regenerar token (con auth) ─────────────────────────────────
     public function generateToken(Request $request, string $profileId)
     {
         $profile = PeiProfile::findOrFail($profileId);
-        $token   = $profile->generatePublicToken();
+
+        $tabs = $request->input('tabs', ['bsc', 'matriz', 'mecip', 'planilla']);
+        $profile->update(['public_tabs' => $tabs]);
+
+        $token = $profile->generatePublicToken();
 
         return response()->json([
             'ok'    => true,

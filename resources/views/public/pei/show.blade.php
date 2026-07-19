@@ -145,6 +145,17 @@ body{background:#f0f2f8;font-family:'Inter',sans-serif;color:#1e293b;min-height:
     .mecip-eje-header > div{width:100%;justify-content:flex-start}
     .mecip-action-row{padding:.3rem .4rem .3rem .75rem;font-size:.75rem}
     .mecip-ind-badge{display:none}
+
+    /* Planilla — tarjetas apiladas */
+    .planilla-wrap table{display:none}
+    .planilla-cards{display:block}
+    .planilla-eje-row{font-size:.78rem;padding:.5rem .75rem}
+    .planilla-goal-row{font-size:.74rem;padding:.45rem .75rem}
+    .planilla-card{background:#fff;border:1px solid #e2e8f0;border-radius:.5rem;margin:.4rem .25rem;padding:.6rem .75rem;font-size:.75rem}
+    .planilla-card-field{display:flex;gap:.4rem;padding:.2rem 0;border-bottom:1px solid #f1f5f9;font-size:.72rem}
+    .planilla-card-field:last-child{border-bottom:none}
+    .planilla-card-label{font-weight:600;color:#64748b;min-width:90px;flex-shrink:0;font-size:.68rem;text-transform:uppercase;letter-spacing:.03em}
+    .planilla-card-value{color:#1e293b;flex:1}
 }
 
 @media(max-width:400px){
@@ -212,17 +223,29 @@ $gPct      = $gTotal > 0 ? round(($gVerde / $gTotal) * 100) : 0;
 </div>
 
 {{-- ══ NAV TABS ════════════════════════════════════════════════════════════════ --}}
+@php $firstTab = $tabsHabilitadas[0] ?? 'bsc'; @endphp
 <div class="pub-nav">
     <div class="pub-nav-inner">
-        <button class="pub-tab active" data-tab="bsc">
+        @if(in_array('bsc', $tabsHabilitadas))
+        <button class="pub-tab {{ $firstTab === 'bsc' ? 'active' : '' }}" data-tab="bsc">
             <i class="fa fa-th-large"></i> Balanced Scorecard
         </button>
-        <button class="pub-tab" data-tab="matriz">
+        @endif
+        @if(in_array('matriz', $tabsHabilitadas))
+        <button class="pub-tab {{ $firstTab === 'matriz' ? 'active' : '' }}" data-tab="matriz">
             <i class="fa fa-table"></i> Matriz Estratégica
         </button>
-        <button class="pub-tab" data-tab="mecip">
+        @endif
+        @if(in_array('mecip', $tabsHabilitadas))
+        <button class="pub-tab {{ $firstTab === 'mecip' ? 'active' : '' }}" data-tab="mecip">
             <i class="fa fa-shield-alt"></i> Vista Jerárquica
         </button>
+        @endif
+        @if(in_array('planilla', $tabsHabilitadas))
+        <button class="pub-tab {{ $firstTab === 'planilla' ? 'active' : '' }}" data-tab="planilla">
+            <i class="fa fa-file-alt"></i> Vista Personalizada
+        </button>
+        @endif
     </div>
 </div>
 
@@ -230,7 +253,8 @@ $gPct      = $gTotal > 0 ? round(($gVerde / $gTotal) * 100) : 0;
 <div class="pub-content">
 
 {{-- ── TAB BSC ──────────────────────────────────────────────────────────────── --}}
-<div class="tab-section active" id="tab-bsc">
+@if(in_array('bsc', $tabsHabilitadas))
+<div class="tab-section {{ $firstTab === 'bsc' ? 'active' : '' }}" id="tab-bsc">
 <div class="bsc-grid">
 @foreach($perspectivas as $key => $persp)
 <div class="bsc-perspectiva">
@@ -291,8 +315,10 @@ $gPct      = $gTotal > 0 ? round(($gVerde / $gTotal) * 100) : 0;
 </div>
 </div>
 
+@endif
 {{-- ── TAB MATRIZ ───────────────────────────────────────────────────────────── --}}
-<div class="tab-section" id="tab-matriz">
+@if(in_array('matriz', $tabsHabilitadas))
+<div class="tab-section {{ $firstTab === 'matriz' ? 'active' : '' }}" id="tab-matriz">
 <div class="mat-wrap">
 <div class="table-responsive">
 <table class="table table-hover mb-0">
@@ -341,8 +367,10 @@ $gPct      = $gTotal > 0 ? round(($gVerde / $gTotal) * 100) : 0;
 </div>
 </div>
 
+@endif
 {{-- ── TAB MECIP / JERÁRQUICO ───────────────────────────────────────────────── --}}
-<div class="tab-section" id="tab-mecip">
+@if(in_array('mecip', $tabsHabilitadas))
+<div class="tab-section {{ $firstTab === 'mecip' ? 'active' : '' }}" id="tab-mecip">
 <div class="mecip-wrap">
 @foreach($profile->children->sortBy('order_item') as $axi)
 @php
@@ -402,6 +430,139 @@ $gPct      = $gTotal > 0 ? round(($gVerde / $gTotal) * 100) : 0;
 @endforeach
 </div>
 </div>
+@endif
+
+{{-- ── TAB PLANILLA ─────────────────────────────────────────────────────────── --}}
+@if(in_array('planilla', $tabsHabilitadas))
+@php
+    // Recolectar todos los años de metas de indicadores del perfil
+    $aniosMetas = collect();
+    foreach($profile->children->sortBy('order_item') as $_axi) {
+        foreach($_axi->children->sortBy('order_item') as $_goal) {
+            foreach($_goal->children->sortBy('order_item') as $_action) {
+                if($_action->indicador && $_action->indicador->metas) {
+                    $metas = is_string($_action->indicador->metas)
+                        ? json_decode($_action->indicador->metas, true)
+                        : $_action->indicador->metas;
+                    if(is_array($metas)) {
+                        foreach($metas as $m) {
+                            if(!empty($m['anio'])) $aniosMetas->push((int)$m['anio']);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    $aniosMetas = $aniosMetas->unique()->sort()->values();
+@endphp
+<div class="tab-section {{ $firstTab === 'planilla' ? 'active' : '' }}" id="tab-planilla">
+<div style="background:#fff;border-radius:1rem;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07)" class="planilla-wrap">
+<div class="table-responsive" style="-webkit-overflow-scrolling:touch">
+<table class="table table-bordered mb-0" style="font-size:.78rem;border-collapse:collapse">
+    <tbody>
+    @foreach($profile->children->sortBy('order_item') as $axi)
+        {{-- Fila Eje --}}
+        @php $colSpan = 4 + $aniosMetas->count(); @endphp
+        <tr style="background:#1e3a8a">
+            <td colspan="{{ $colSpan }}" style="padding:.55rem .75rem;font-weight:700;color:#fff;font-size:.8rem;border-left:4px solid #60a5fa">
+                {{ strip_tags($axi->name) }}
+                <span style="margin-left:.75rem;color:rgba(255,255,255,.65);font-size:.68rem;font-weight:400">
+                    ({{ $axi->descendants()->where('level','action')->count() }} {{ strtolower($niveles['action'] ?? 'acción') }}{{ $axi->descendants()->where('level','action')->count() == 1 ? '' : 'es' }})
+                </span>
+            </td>
+        </tr>
+        @foreach($axi->children->sortBy('order_item') as $goal)
+        {{-- Fila Objetivo --}}
+        <tr style="background:#dbeafe">
+            <td colspan="{{ $colSpan }}" style="padding:.5rem .75rem;font-weight:600;color:#1e3a8a;font-size:.77rem;border-left:4px solid #93c5fd">
+                {{ strip_tags($goal->name) }}
+                <span style="margin-left:.75rem;color:#1e3a8a;font-size:.68rem;font-weight:400;opacity:.75">
+                    ({{ $goal->children->count() }} {{ strtolower($niveles['action'] ?? 'acción') }}{{ $goal->children->count() == 1 ? '' : 'es' }})
+                </span>
+            </td>
+        </tr>
+        {{-- Fila cabecera de acciones --}}
+        <tr style="background:#f8faff">
+            <th style="padding:.45rem .75rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:#fff;background:#3b5998;border-top:2px solid #93c5fd">{{ $niveles['action'] ?? 'Acción' }}</th>
+            <th style="padding:.45rem .75rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:#fff;background:#3b5998;border-top:2px solid #93c5fd">Indicador</th>
+            <th style="padding:.45rem .75rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:#fff;background:#3b5998;border-top:2px solid #93c5fd">Línea de Base</th>
+            @foreach($aniosMetas as $anio)
+            <th style="text-align:center;padding:.45rem .5rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:#fff;background:#3b5998;border-top:2px solid #93c5fd">Meta {{ $anio }}</th>
+            @endforeach
+            <th style="padding:.45rem .75rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:#fff;background:#3b5998;border-top:2px solid #93c5fd">Responsable</th>
+        </tr>
+        @foreach($goal->children->sortBy('order_item') as $action)
+        @php
+            $ind = $action->indicador;
+            $metasPorAnio = [];
+            if($ind && $ind->metas) {
+                $metasArr = is_string($ind->metas) ? json_decode($ind->metas, true) : $ind->metas;
+                if(is_array($metasArr)) {
+                    foreach($metasArr as $m) {
+                        if(!empty($m['anio'])) $metasPorAnio[(int)$m['anio']] = $m['valor'];
+                    }
+                }
+            }
+            $responsables = $action->responsibles->pluck('dependency')->implode(', ');
+        @endphp
+        <tr>
+            <td style="padding:.5rem .75rem;vertical-align:middle">{{ strip_tags($action->name) }}</td>
+            <td style="padding:.5rem .75rem;vertical-align:middle;color:#475569;font-size:.73rem">{{ $ind ? $ind->nombre : '—' }}</td>
+            <td style="padding:.5rem .75rem;vertical-align:middle;color:#64748b;font-size:.73rem">{{ $ind ? ($ind->linea_base_valor ?? '—') : '—' }}</td>
+            @foreach($aniosMetas as $anio)
+            <td style="text-align:center;padding:.5rem .5rem;vertical-align:middle;font-size:.73rem;color:#334155">{{ $metasPorAnio[$anio] ?? '—' }}</td>
+            @endforeach
+            <td style="padding:.5rem .75rem;vertical-align:middle;font-size:.73rem;color:#475569">{{ $responsables ?: '—' }}</td>
+        </tr>
+        @endforeach
+        @endforeach
+    @endforeach
+    </tbody>
+</table>
+</div>
+</div>
+
+{{-- Tarjetas mobile (visible solo en <640px via CSS) --}}
+<div class="planilla-cards">
+@foreach($profile->children->sortBy('order_item') as $axi)
+    <div class="planilla-eje-row" style="background:#1e3a8a;color:#fff;font-weight:700;border-left:4px solid #60a5fa;margin-bottom:2px">
+        {{ strip_tags($axi->name) }}
+        <span style="opacity:.65;font-weight:400;font-size:.68rem"> ({{ $axi->descendants()->where('level','action')->count() }} {{ strtolower($niveles['action'] ?? 'acción') }}{{ $axi->descendants()->where('level','action')->count() == 1 ? '' : 'es' }})</span>
+    </div>
+    @foreach($axi->children->sortBy('order_item') as $goal)
+    <div class="planilla-goal-row" style="background:#dbeafe;color:#1e3a8a;font-weight:600;border-left:4px solid #93c5fd;margin-bottom:2px">
+        {{ strip_tags($goal->name) }}
+        <span style="opacity:.7;font-weight:400;font-size:.68rem"> ({{ $goal->children->count() }} {{ strtolower($niveles['action'] ?? 'acción') }}{{ $goal->children->count() == 1 ? '' : 'es' }})</span>
+    </div>
+    @foreach($goal->children->sortBy('order_item') as $action)
+    @php
+        $ind2 = $action->indicador;
+        $metas2 = [];
+        if($ind2 && $ind2->metas) {
+            $arr2 = is_string($ind2->metas) ? json_decode($ind2->metas, true) : $ind2->metas;
+            if(is_array($arr2)) foreach($arr2 as $m) if(!empty($m['anio'])) $metas2[(int)$m['anio']] = $m['valor'];
+        }
+        $resp2 = $action->responsibles->pluck('dependency')->implode(', ');
+    @endphp
+    <div class="planilla-card">
+        <div style="font-weight:600;color:#1e293b;margin-bottom:.4rem;font-size:.78rem">{{ strip_tags($action->name) }}</div>
+        @if($ind2)
+        <div class="planilla-card-field"><span class="planilla-card-label">Indicador</span><span class="planilla-card-value">{{ $ind2->nombre }}</span></div>
+        <div class="planilla-card-field"><span class="planilla-card-label">Línea de Base</span><span class="planilla-card-value">{{ $ind2->linea_base_valor ?? '—' }}</span></div>
+        @foreach($aniosMetas as $anio)
+        <div class="planilla-card-field"><span class="planilla-card-label">Meta {{ $anio }}</span><span class="planilla-card-value">{{ $metas2[$anio] ?? '—' }}</span></div>
+        @endforeach
+        @endif
+        @if($resp2)
+        <div class="planilla-card-field"><span class="planilla-card-label">Responsable</span><span class="planilla-card-value">{{ $resp2 }}</span></div>
+        @endif
+    </div>
+    @endforeach
+    @endforeach
+@endforeach
+</div>
+</div>
+@endif
 
 </div>{{-- /pub-content --}}
 
