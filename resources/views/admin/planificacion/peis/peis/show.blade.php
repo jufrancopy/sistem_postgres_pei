@@ -1299,6 +1299,112 @@
                         $('#action_pgn_monto_ejecutado').val('');
                     }
 
+                    // ── Panel Actividad vinculada ────────────────────────────────
+                    var buscarActividadesUrl = '{{ route("pei.actividades.buscar") }}';
+
+                    function mostrarActividadVinculada(id, nombre) {
+                        $('#actions_activity_id').val(id);
+                        $('#action_actividad_nombre_vinculada').text(nombre);
+                        $('#action_actividad_link').attr('href', '{{ url("admin/globales/activities") }}/' + id);
+                        $('#panel_actividad_vinculada').show();
+                        $('#panel_nueva_actividad, #panel_existente_actividad').hide();
+                    }
+
+                    function resetActividadPanel(activityId, activityName) {
+                        $('#action_actividad_nombre').val('');
+                        $('#panel_actividad_vinculada').hide();
+                        $('#panel_nueva_actividad').show();
+                        $('#panel_existente_actividad').hide();
+                        $('#btnActividadNueva').addClass('active');
+                        $('#btnActividadExistente').removeClass('active');
+                        if (activityId) {
+                            $('#action_cuenta_actividad').prop('checked', true);
+                            $('#action_actividad_panel').show();
+                            mostrarActividadVinculada(activityId, activityName);
+                        } else {
+                            $('#action_cuenta_actividad').prop('checked', false);
+                            $('#action_actividad_panel').hide();
+                            $('#actions_activity_id').val('');
+                        }
+                    }
+
+                    // Precargar en edición
+                    resetActividadPanel(
+                        data.activitySelected ? data.activitySelected.id : null,
+                        data.activitySelected ? data.activitySelected.text : null
+                    );
+
+                    // Checkbox toggle
+                    $('#action_cuenta_actividad').off('change').on('change', function() {
+                        if ($(this).is(':checked')) {
+                            $('#action_actividad_panel').slideDown(150);
+                        } else {
+                            $('#action_actividad_panel').slideUp(150);
+                            $('#actions_activity_id').val('');
+                            $('#panel_actividad_vinculada').hide();
+                        }
+                    });
+
+                    // Tabs nueva / existente
+                    $('#btnActividadNueva').off('click').on('click', function() {
+                        $(this).addClass('active');
+                        $('#btnActividadExistente').removeClass('active');
+                        $('#panel_nueva_actividad').show();
+                        $('#panel_existente_actividad').hide();
+                    });
+
+                    $('#btnActividadExistente').off('click').on('click', function() {
+                        $(this).addClass('active');
+                        $('#btnActividadNueva').removeClass('active');
+                        $('#panel_existente_actividad').show();
+                        $('#panel_nueva_actividad').hide();
+
+                        var $sel = $('#action_activity_id_select');
+                        if ($sel.hasClass('select2-hidden-accessible')) $sel.select2('destroy');
+                        $sel.empty().select2({
+                            placeholder: 'Buscar actividad existente...',
+                            allowClear: true,
+                            dropdownParent: $('#ajaxActionsModal'),
+                            ajax: {
+                                url: buscarActividadesUrl, dataType: 'json', delay: 300,
+                                data: function(p) { return { q: p.term }; },
+                                processResults: function(d) { return { results: d.results }; }
+                            }
+                        }).off('select2:select').on('select2:select', function(e) {
+                            mostrarActividadVinculada(e.params.data.id, e.params.data.text);
+                        });
+                    });
+
+                    // Crear nueva actividad
+                    $('#btnCrearActividad').off('click').on('click', function() {
+                        var pid = $('#actions_profile_id').val();
+                        if (!pid) { toastr.warning('Guardá la acción primero antes de crear la actividad.'); return; }
+                        var nombre = $('#action_actividad_nombre').val();
+                        var $btn = $(this).prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i>Creando...');
+                        $.post('{{ url("pei-profiles") }}/' + pid + '/actividad',
+                            { _token: $('meta[name=csrf-token]').attr('content'), nombre: nombre },
+                            function(res) {
+                                mostrarActividadVinculada(res.activity.id, res.activity.text);
+                                toastr.success(res.success);
+                            }
+                        ).fail(function() {
+                            toastr.error('Error al crear la actividad.');
+                        }).always(function() {
+                            $btn.prop('disabled', false).html('<i class="fa fa-plus mr-1"></i>Crear y vincular');
+                        });
+                    });
+
+                    // Desvincular
+                    $('#btnDesvincularActividad').off('click').on('click', function() {
+                        $('#actions_activity_id').val('');
+                        $('#panel_actividad_vinculada').hide();
+                        $('#panel_nueva_actividad').show();
+                        $('#panel_existente_actividad').hide();
+                        $('#btnActividadNueva').addClass('active');
+                        $('#btnActividadExistente').removeClass('active');
+                    });
+                    // ── Fin Panel Actividad ───────────────────────────────────
+
                 });
             });
 

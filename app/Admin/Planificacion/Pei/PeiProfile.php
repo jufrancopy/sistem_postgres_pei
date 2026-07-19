@@ -59,6 +59,7 @@ class PeiProfile extends Model
         'foda_perfil_id',
         'bsc_perspectiva',
         'indicador_id',
+        'activity_id',
         'public_token',
         'resultado_intermedio',
         'ri_presupuestario',
@@ -230,6 +231,11 @@ class PeiProfile extends Model
     public function indicador()
     {
         return $this->belongsTo(\App\Models\Planificacion\Indicador::class, 'indicador_id');
+    }
+
+    public function activity()
+    {
+        return $this->belongsTo(\App\Admin\Globales\Activity::class, 'activity_id');
     }
 
     public function marcos()

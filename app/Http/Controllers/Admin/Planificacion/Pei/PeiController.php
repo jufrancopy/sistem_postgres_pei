@@ -221,6 +221,7 @@ class PeiController extends Controller
                     'foda_perfil_id' => $request->foda_perfil_id ?: null,
                     'bsc_perspectiva' => $request->bsc_perspectiva ?: null,
                     'indicador_id'    => $request->indicador_id ?: null,
+                    'activity_id'     => $request->activity_id ?: null,
                     'resultado_intermedio' => $request->resultado_intermedio ?: null,
                     'ri_presupuestario'    => $request->ri_presupuestario ?: null,
                     'ri_programa'          => $request->ri_programa ?: null,
@@ -233,9 +234,9 @@ class PeiController extends Controller
                 ['id' => $profileId],
                 [
                     'name' => $request->name,
-                    'type' => $request->type,
                     'year_start' => $request->year_start,
                     'year_end' => $request->year_end,
+                    'type' => $request->type,
                     'level' => $request->level,
                     'mision' => $request->mision,
                     'vision' => $request->vision,
@@ -260,6 +261,7 @@ class PeiController extends Controller
                     'foda_perfil_id' => $request->foda_perfil_id ?: null,
                     'bsc_perspectiva' => $request->bsc_perspectiva ?: null,
                     'indicador_id'    => $request->indicador_id ?: null,
+                    'activity_id'     => $request->activity_id ?: null,
                     'resultado_intermedio' => $request->resultado_intermedio ?: null,
                     'ri_presupuestario'    => $request->ri_presupuestario ?: null,
                     'ri_programa'          => $request->ri_programa ?: null,
@@ -312,11 +314,36 @@ class PeiController extends Controller
         return response()->json($responseData);
     }
 
+    public function buscarActividades(Request $request)
+    {
+        $q = $request->get('q', '');
+        $actividades = \App\Admin\Globales\Activity::whereNull('deleted_at')
+            ->where('name', 'ilike', "%{$q}%")
+            ->limit(20)->get()
+            ->map(fn($a) => ['id' => $a->id, 'text' => $a->name]);
+        return response()->json(['results' => $actividades]);
+    }
+
+    public function crearActividadParaAccion(Request $request, $profileId)
+    {
+        $profile  = PeiProfile::findOrFail($profileId);
+        $nombre   = $request->get('nombre') ?: strip_tags($profile->name);
+        $activity = \App\Admin\Globales\Activity::create([
+            'name'       => $nombre,
+            'type'       => 'kanba',
+            'date_start' => $profile->year_start,
+            'date_end'   => $profile->year_end,
+        ]);
+        $profile->update(['activity_id' => $activity->id]);
+        return response()->json([
+            'success'  => 'Actividad creada y vinculada',
+            'activity' => ['id' => $activity->id, 'text' => $activity->name],
+        ]);
+    }
+
     public function edit($id)
     {
-        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles'])->find($id);
-
-        // Cargar el grupo padre (Evento) si existe
+        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'activity'])->find($id);
         $groupParent = null;
         if ($profile->group && $profile->group->parent_id) {
             $groupParent = \App\Admin\Globales\Group::find($profile->group->parent_id);
@@ -353,6 +380,9 @@ class PeiController extends Controller
             'analystsChecked'     => $analystsChecked,
             'strategiesChecked'   => $strategiesChecked,
             'responsiblesChecked' => $responsiblesChecked,
+            'activitySelected'    => $profile->activity
+                                        ? ['id' => $profile->activity->id, 'text' => $profile->activity->name]
+                                        : null,
             'fodaPerfiles'        => \App\Admin\Planificacion\Foda\FodaPerfil::whereIn('type', ['individual', 'consolidado'])
                                         ->orderBy('name')
                                         ->get(['id', 'name', 'type']),

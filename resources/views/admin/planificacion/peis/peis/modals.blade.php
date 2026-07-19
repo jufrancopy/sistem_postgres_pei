@@ -548,6 +548,57 @@
                         </div>
                     </div>
 
+                    {{-- ── Actividad vinculada ── --}}
+                    <hr class="my-3">
+                    <h6 class="font-weight-bold mb-2">
+                        <i class="fa fa-tasks mr-1 text-success"></i> Actividad de Gestión
+                    </h6>
+                    <div class="form-group mb-2">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="action_cuenta_actividad">
+                            <label class="custom-control-label small font-weight-bold" for="action_cuenta_actividad">
+                                Esta acción cuenta con una Actividad
+                            </label>
+                        </div>
+                    </div>
+                    <div id="action_actividad_panel" style="display:none">
+                        <div class="btn-group btn-group-sm mb-2" role="group">
+                            <button type="button" class="btn btn-outline-success active" id="btnActividadNueva">
+                                <i class="fa fa-plus mr-1"></i>Crear nueva
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" id="btnActividadExistente">
+                                <i class="fa fa-search mr-1"></i>Vincular existente
+                            </button>
+                        </div>
+                        <div id="panel_nueva_actividad">
+                            <div class="form-group mb-1">
+                                <input type="text" class="form-control form-control-sm" id="action_actividad_nombre"
+                                    placeholder="Nombre (por defecto: nombre de la acción)">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-success" id="btnCrearActividad">
+                                <i class="fa fa-plus mr-1"></i>Crear y vincular
+                            </button>
+                        </div>
+                        <div id="panel_existente_actividad" style="display:none">
+                            <select id="action_activity_id_select" style="width:100%"></select>
+                        </div>
+                        <div id="panel_actividad_vinculada" class="mt-2" style="display:none">
+                            <span class="badge badge-success p-2" style="font-size:.8rem">
+                                <i class="fa fa-check-circle mr-1"></i>
+                                <span id="action_actividad_nombre_vinculada"></span>
+                            </span>
+                            <a id="action_actividad_link" href="#" target="_blank"
+                               class="btn btn-sm btn-outline-success ml-2" style="font-size:.72rem">
+                                <i class="fa fa-external-link-alt mr-1"></i>Abrir tablero
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger ml-1" id="btnDesvincularActividad"
+                                style="font-size:.72rem">
+                                <i class="fa fa-unlink mr-1"></i>Desvincular
+                            </button>
+                        </div>
+                    </div>
+                    {{ Form::hidden('activity_id', null, ['id' => 'actions_activity_id']) }}
+
                     <div class="col-sm-offset-2 col-sm-10 mt-3">
                         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                         <button type="submit" class="btn btn-success" id="saveBtnActions" value="create">
