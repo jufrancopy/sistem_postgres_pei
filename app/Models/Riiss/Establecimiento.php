@@ -6,6 +6,7 @@ use App\Enums\ComplejidadEnum;
 use App\Enums\TipoEstablecimientoEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -51,6 +52,11 @@ class Establecimiento extends Model
     public function evaluaciones(): HasMany
     {
         return $this->hasMany(Evaluacion::class, 'id_establecimiento');
+    }
+
+    public function complejidadTipo(): BelongsTo
+    {
+        return $this->belongsTo(ComplejidadTipo::class, 'complejidad_tipo_id');
     }
 
     public function homologaciones(): HasMany
@@ -147,15 +153,15 @@ class Establecimiento extends Model
      */
     public function recalcularCamposDerivados(): void
     {
-        $enum = ComplejidadEnum::fromString($this->complejidad);
-        if ($enum) {
-            $this->nivel_atencion     = $enum->nivelAtencion();
-            $this->grado_complejidad  = $enum->gradoComplejidad();
-            $this->es_hospitalario    = $enum->esHospitalario();
-            $this->tiene_internacion  = $enum->requiereInternacion();
-            $this->tiene_quirofano_req= $enum->requiereQuirofano();
-            $this->tiene_uti_req      = $enum->requiereUTI();
-            $this->tiene_urgencias_req= $enum->requiereUrgencias();
+        $tipo = $this->complejidadTipo;
+        if ($tipo) {
+            $this->nivel_atencion      = $tipo->nivel_atencion;
+            $this->grado_complejidad   = $tipo->grado;
+            $this->es_hospitalario     = $tipo->es_hospitalario;
+            $this->tiene_internacion   = $tipo->requiere_internacion;
+            $this->tiene_quirofano_req = $tipo->requiere_quirofano;
+            $this->tiene_uti_req       = $tipo->requiere_uti;
+            $this->tiene_urgencias_req = $tipo->requiere_urgencias;
         }
         $this->saveQuietly();
     }

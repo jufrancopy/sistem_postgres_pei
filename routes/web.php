@@ -624,6 +624,16 @@ Route::group(['middleware' => 'auth'], function () {
         Route::patch('establecimientos/{id}', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'update'])
             ->name('establecimientos.update');
 
+        // Grados de Complejidad (solo Administrador)
+        Route::middleware(['role:Administrador'])->group(function () {
+            Route::get('complejidad', [\App\Http\Controllers\Admin\Riiss\ComplejidadTipoController::class, 'index'])
+                ->name('complejidad.index');
+            Route::get('complejidad/{complejidadTipo}/edit', [\App\Http\Controllers\Admin\Riiss\ComplejidadTipoController::class, 'edit'])
+                ->name('complejidad.edit');
+            Route::put('complejidad/{complejidadTipo}', [\App\Http\Controllers\Admin\Riiss\ComplejidadTipoController::class, 'update'])
+                ->name('complejidad.update');
+        });
+
         // Evaluaciones — helpers
         Route::get('evaluaciones/usuarios', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'buscarUsuarios'])
             ->name('evaluaciones.usuarios');
