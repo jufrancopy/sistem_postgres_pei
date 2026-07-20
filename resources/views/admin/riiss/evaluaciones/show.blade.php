@@ -11,6 +11,9 @@
 .gap-no_aplica     { border-left:4px solid #e2e8f0; background:#f8fafc; }
 .grupo-header { background:#f9fafb; border-radius:8px; padding:10px 14px; margin-bottom:8px; cursor:pointer; }
 .pct-ring { width:80px; height:80px; }
+#evalTabs .nav-link { color:#343a40 !important; }
+#evalTabs .nav-link.active { color:#1a237e !important; font-weight:600; }
+#evalTabs .nav-link:hover { color:#1a237e !important; }
 </style>
 @endpush
 
@@ -98,25 +101,30 @@
         </div>
 
         {{-- Tabs --}}
-        <ul class="nav nav-tabs mb-4" id="evalTabs">
+        <ul class="nav nav-tabs mb-4" id="evalTabs" style="border-bottom:2px solid #dee2e6">
             <li class="nav-item">
-                <a class="nav-link active" data-toggle="tab" href="#tabGap">
+                <a class="nav-link active text-dark" data-toggle="tab" href="#tabGap">
                     <i class="fa fa-chart-bar mr-1"></i>Cartera de Servicios
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#tabHabilitacion">
+                <a class="nav-link text-dark" data-toggle="tab" href="#tabHabilitacion">
                     <i class="fa fa-building mr-1"></i>Condiciones Habilitantes
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#tabRespuestas">
+                <a class="nav-link text-dark" data-toggle="tab" href="#tabRespuestas">
                     <i class="fa fa-list mr-1"></i>Respuestas
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#tabAcciones">
+                <a class="nav-link text-dark" data-toggle="tab" href="#tabAcciones">
                     <i class="fa fa-exclamation-triangle mr-1 text-danger"></i>Acciones Críticas
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" data-toggle="tab" href="#tabMatriz">
+                    <i class="fa fa-th mr-1"></i>Matriz de Servicios
                 </a>
             </li>
         </ul>
@@ -159,6 +167,117 @@
                 <div id="accionesContenido">
                     <div class="text-center py-5"><div class="spinner-border text-danger"></div></div>
                 </div>
+            </div>
+
+            {{-- Tab Matriz de Servicios --}}
+            <div class="tab-pane fade" id="tabMatriz">
+            @php
+                use App\Models\Riiss\CarteraServicio;
+                $columnas = [
+                    ['key' => 'aplica_puesto_sanitario',  'label' => 'Puesto Sanitario',     'nivel' => 1, 'complejidad' => 1],
+                    ['key' => 'aplica_unidad_sanitaria',  'label' => 'Unidad Sanitaria',      'nivel' => 1, 'complejidad' => 2],
+                    ['key' => 'aplica_clinica_periferica','label' => 'Clínica Periférica',     'nivel' => 2, 'complejidad' => 3],
+                    ['key' => 'aplica_hospital_baja',     'label' => 'Hospital Baja',         'nivel' => 3, 'complejidad' => 4],
+                    ['key' => 'aplica_hospital_mediana',  'label' => 'Hospital Mediana',      'nivel' => 3, 'complejidad' => 5],
+                    ['key' => 'aplica_hospital_alta',     'label' => 'Hospital Alta',         'nivel' => 3, 'complejidad' => 6],
+                ];
+                $servicios = CarteraServicio::orderBy('tipo_prestacion')->orderBy('grupo_servicio')->orderBy('servicio')->get();
+                $porTipo   = $servicios->groupBy('tipo_prestacion');
+
+                // Columna del establecimiento evaluado
+                $estTipologia = strtoupper($evaluacion->establecimiento->tipologia_clasificacion ?? '');
+                if (str_contains($estTipologia, 'PUESTO SANITARIO')) {
+                    $colActual = 'aplica_puesto_sanitario';
+                } elseif (str_contains($estTipologia, 'UNIDAD SANITARIA')) {
+                    $colActual = 'aplica_unidad_sanitaria';
+                } elseif (str_contains($estTipologia, 'CLINICA PERIFERICA') || str_contains($estTipologia, 'CLÍNICA PERIFÉRICA')) {
+                    $colActual = 'aplica_clinica_periferica';
+                } elseif (str_contains($estTipologia, 'HOSPITAL')) {
+                    $grado = (int)$evaluacion->establecimiento->grado_complejidad;
+                    $colActual = $grado >= 3 ? 'aplica_hospital_alta' : ($grado === 2 ? 'aplica_hospital_mediana' : 'aplica_hospital_baja');
+                } else {
+                    $colActual = null;
+                }
+
+                // Gap: servicios que tiene/no tiene el establecimiento
+                $gapItems = $evaluacion->gapAnalysis()->where('dimension','cartera_servicios')->get()->keyBy('servicio_nombre');
+            @endphp
+            <div class="table-responsive" style="max-height:70vh;overflow-y:auto">
+            <table class="table table-bordered table-sm mb-0" style="font-size:.75rem;border-collapse:collapse;color:#212529">
+                <thead style="position:sticky;top:0;z-index:10">
+                    <tr style="background:#1a237e;color:#fff;text-align:center">
+                        <th rowspan="2" style="text-align:left;min-width:130px;vertical-align:middle;background:#1a237e">Tipo de Prestación</th>
+                        <th rowspan="2" style="text-align:left;min-width:200px;vertical-align:middle;background:#1a237e">Servicio</th>
+                        @php $niveles_vistos = []; @endphp
+                        @foreach($columnas as $col)
+                        @php $nk = 'N'.$col['nivel']; @endphp
+                        @if(!in_array($nk, $niveles_vistos))
+                        @php
+                            $span = collect($columnas)->where('nivel', $col['nivel'])->count();
+                            $niveles_vistos[] = $nk;
+                        @endphp
+                        <th colspan="{{ $span }}" style="background:#283593;border-bottom:1px solid #3949ab">NIVEL {{ $col['nivel'] }}</th>
+                        @endif
+                        @endforeach
+                    </tr>
+                    <tr style="background:#283593;color:#fff;text-align:center">
+                        @foreach($columnas as $col)
+                        <th style="min-width:90px;font-weight:600;font-size:.68rem;{{ $col['key'] === $colActual ? 'background:#1565c0;border-bottom:3px solid #42a5f5' : 'background:#283593' }}">
+                            {{ $col['label'] }}
+                            @if($col['key'] === $colActual)
+                            <div style="font-size:.6rem;color:#90caf9">★ Este establecimiento</div>
+                            @endif
+                        </th>
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody style="color:#212529">
+                @foreach($porTipo as $tipo => $items)
+                    @foreach($items as $i => $srv)
+                    @php
+                        $gap = $gapItems->get($srv->servicio);
+                        $rowBg = $gap ? ($gap->estado === 'cumple' ? '#f0fdf4' : ($gap->estado === 'no_cumple' ? '#fef2f2' : '')) : '';
+                    @endphp
+                    <tr style="{{ $rowBg ? 'background:'.$rowBg : '' }}">
+                        @if($i === 0)
+                        <td rowspan="{{ $items->count() }}" style="font-weight:700;font-size:.72rem;color:#1a237e;vertical-align:middle;background:#e8eaf6;border-right:3px solid #9fa8da;white-space:nowrap">{{ $tipo }}</td>
+                        @endif
+                        <td style="vertical-align:middle;color:#212529">
+                            {{ $srv->servicio }}
+                            @if($gap)
+                            <span class="ml-1" title="{{ $gap->estado }}">
+                                @if($gap->estado === 'cumple') <i class="fa fa-check-circle text-success" style="font-size:.7rem"></i>
+                                @elseif($gap->estado === 'no_cumple') <i class="fa fa-times-circle text-danger" style="font-size:.7rem"></i>
+                                @endif
+                            </span>
+                            @endif
+                        </td>
+                        @foreach($columnas as $col)
+                        @php
+                            $aplica = $srv->{$col['key']};
+                            $esActual = $col['key'] === $colActual;
+                        @endphp
+                        <td style="text-align:center;vertical-align:middle;{{ $esActual ? 'background:#e3f2fd;border-left:2px solid #42a5f5;border-right:2px solid #42a5f5' : '' }}">
+                            @if($aplica)
+                                <span style="color:#22c55e;font-size:1rem">&#10003;</span>
+                            @else
+                                <span style="color:#ef4444;font-size:.9rem">&#10007;</span>
+                            @endif
+                        </td>
+                        @endforeach
+                    </tr>
+                    @endforeach
+                @endforeach
+                </tbody>
+            </table>
+            </div>
+            <div class="mt-2 px-1" style="font-size:.72rem;color:#64748b">
+                <span style="color:#22c55e">&#10003;</span> Aplica &nbsp;
+                <span style="color:#ef4444">&#10007;</span> No aplica &nbsp;
+                <i class="fa fa-check-circle text-success"></i> Cumple (evaluado) &nbsp;
+                <i class="fa fa-times-circle text-danger"></i> No cumple (evaluado) &nbsp;
+                <span style="background:#e3f2fd;padding:1px 6px;border-radius:3px">Columna resaltada = este establecimiento</span>
+            </div>
             </div>
 
         </div>
