@@ -49,7 +49,9 @@ class EstablecimientoController extends Controller
             'sin_evaluacion' => (clone $base)->whereDoesntHave('evaluaciones')->count(),
         ];
 
-        return view('admin.riiss.establecimientos.index', compact('departamentos', 'tipos', 'complejidades', 'stats'));
+        $complejidadTipos = \App\Models\Riiss\ComplejidadTipo::orderBy('grado')->get();
+
+        return view('admin.riiss.establecimientos.index', compact('departamentos', 'tipos', 'complejidades', 'stats', 'complejidadTipos'));
     }
 
     private function indexJson(Request $request): JsonResponse
@@ -92,7 +94,7 @@ class EstablecimientoController extends Controller
 
         $validated = $request->validate([
             'nombre_oficial'          => 'sometimes|string|max:300',
-            'complejidad'             => 'sometimes|string|max:100',
+            'complejidad_tipo_id'     => 'sometimes|exists:complejidad_tipos,id',
             'tipologia_clasificacion' => 'sometimes|string|max:100',
             'departamento'            => 'sometimes|string|max:100',
             'microred'                => 'nullable|string|max:100',
@@ -107,7 +109,8 @@ class EstablecimientoController extends Controller
         $est->update($validated);
 
         // Si cambió la complejidad, recalcular derivados
-        if (isset($validated['complejidad'])) {
+        if (isset($validated['complejidad_tipo_id'])) {
+            $est->refresh();
             $est->recalcularCamposDerivados();
         }
 

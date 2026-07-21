@@ -181,6 +181,7 @@ class Establecimiento extends Model
             'tipo_label'              => $this->tipo_est_label,
             'tipologia'               => $this->tipologia_clasificacion,
             'complejidad'             => $this->complejidad,
+            'complejidad_tipo_id'     => $this->complejidad_tipo_id,
             'complejidad_label'       => $this->complejidad_label,
             'complejidad_color'       => $this->complejidad_color,
             'nivel'                   => $this->nivel_atencion,

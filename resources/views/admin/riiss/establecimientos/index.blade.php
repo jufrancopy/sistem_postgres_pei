@@ -208,11 +208,9 @@
                     <div class="col-md-6 mb-3">
                         <label class="small font-weight-bold">Complejidad</label>
                         <select id="editComplejidad" class="form-control">
-                            <option value="No Hospitalario de Baja Complejidad">No Hospitalario de Baja Complejidad</option>
-                            <option value="No Hospitalario de Mediana Complejidad">No Hospitalario de Mediana Complejidad</option>
-                            <option value="Hospitalario 1 Baja Complejidad">Hospitalario 1 Baja Complejidad</option>
-                            <option value="Hospitalario 2 Mediana Complejidad">Hospitalario 2 Mediana Complejidad</option>
-                            <option value="Hospitalario 3 Alta Complejidad">Hospitalario 3 Alta Complejidad</option>
+                            @foreach($complejidadTipos as $ct)
+                            <option value="{{ $ct->id }}">{{ $ct->nombre }}</option>
+                            @endforeach
                         </select>
                         <small class="text-muted">Al cambiar esto se recalculan nivel, grado y requisitos automáticamente</small>
                     </div>
@@ -477,7 +475,7 @@ function abrirEditar(id) {
         if (!r.ok) return;
         var e = r.data;
         $('#editNombre').val(e.nombre_oficial);
-        $('#editComplejidad').val(e.complejidad);
+        $('#editComplejidad').val(e.complejidad_tipo_id);
         $('#editTipologia').val(e.tipologia_clasificacion);
         $('#editDepartamento').val(e.departamento);
         $('#editMicrored').val(e.microred || '');
@@ -500,7 +498,7 @@ function guardarEstablecimiento() {
             _token:                  '{{ csrf_token() }}',
             _method:                 'PATCH',
             nombre_oficial:          $('#editNombre').val(),
-            complejidad:             $('#editComplejidad').val(),
+            complejidad_tipo_id:      $('#editComplejidad').val(),
             tipologia_clasificacion: $('#editTipologia').val(),
             departamento:            $('#editDepartamento').val(),
             microred:                $('#editMicrored').val() || null,
