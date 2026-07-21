@@ -52,7 +52,7 @@
                 <div class="col-md-2">
                     <div class="form-group">
                         <label class="small font-weight-bold">Nivel de Atención <span class="text-danger">*</span></label>
-                        <select name="nivel_atencion" class="form-control @error('nivel_atencion') is-invalid @enderror" required>
+                        <select name="nivel_atencion" id="sel_nivel" class="form-control @error('nivel_atencion') is-invalid @enderror" required>
                             @foreach([1,2,3,4] as $n)
                                 <option value="{{ $n }}" {{ old('nivel_atencion', $tipo->nivel_atencion) == $n ? 'selected' : '' }}>
                                     Nivel {{ $n }}
@@ -80,7 +80,7 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="small font-weight-bold">Estado</label>
-                        <select name="activo" class="form-control">
+                        <select name="activo" id="sel_activo" class="form-control">
                             <option value="1" {{ old('activo', $tipo->activo) ? 'selected' : '' }}>Activo</option>
                             <option value="0" {{ !old('activo', $tipo->activo) ? 'selected' : '' }}>Inactivo</option>
                         </select>
@@ -142,3 +142,11 @@
 </form>
 
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    $('#sel_nivel, #sel_activo').select2({ minimumResultsForSearch: Infinity });
+});
+</script>
+@endpush
