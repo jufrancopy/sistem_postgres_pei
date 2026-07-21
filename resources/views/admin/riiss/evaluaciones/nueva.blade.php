@@ -998,9 +998,9 @@ function ejecutarAnalisis() {
 function mostrarResultado(data) {
     // Limpiar localStorage — evaluación completada
     localStorage.removeItem('riiss_eval_' + EST_ID);
-    var res    = data.resumen;
-    var clasif = res.clasificacion;
-    var pct    = res.porcentaje_cumplimiento;
+    var res    = data.cartera.resumen;
+    var clasif = data.clasificacion_final;
+    var pct    = data.cartera.porcentaje;
     var iconos = { CUMPLE: '✅', CUMPLE_PARCIALMENTE: '⚠️', NO_CUMPLE: '❌' };
     var labels = { CUMPLE: 'CUMPLE', CUMPLE_PARCIALMENTE: 'CUMPLE PARCIALMENTE', NO_CUMPLE: 'NO CUMPLE' };
 
@@ -1009,9 +1009,9 @@ function mostrarResultado(data) {
     const horaStr  = ahora.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' });
 
     var acciones = '';
-    if (data.acciones_criticas && data.acciones_criticas.length) {
+    if (data.cartera.acciones_criticas && data.cartera.acciones_criticas.length) {
         acciones = '<div class="mt-4 text-left"><h6 class="font-weight-bold"><i class="fa fa-exclamation-triangle text-danger mr-2"></i>Acciones críticas</h6><ul class="list-unstyled">'
-            + data.acciones_criticas.slice(0,5).map(function(a) {
+            + data.cartera.acciones_criticas.slice(0,5).map(function(a) {
                 return '<li class="mb-2 p-2 bg-white rounded" style="border-left:3px solid #ef4444"><strong>' + a.servicio + '</strong><small class="d-block text-muted">' + (a.accion_recomendada || '') + '</small></li>';
             }).join('') + '</ul></div>';
     }
