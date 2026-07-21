@@ -273,7 +273,9 @@
                 <button class="btn-filtro-matriz" data-filtro="no_cumple">
                     <i class="fa fa-times" style="font-size:.6rem;color:#b91c1c"></i> No cumple
                 </button>
-                <div style="margin-left:auto">
+                <button class="btn-filtro-matriz" data-filtro="no_verificable">
+                    <i class="fa fa-question" style="font-size:.6rem;color:#c2410c"></i> No verificado
+                </button>                <div style="margin-left:auto">
                     <div style="position:relative">
                         <i class="fa fa-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:.65rem;color:#94a3b8"></i>
                         <input type="text" id="buscadorMatriz" placeholder="Buscar servicio…"
@@ -304,10 +306,11 @@
                         var pasaBusqueda = busqueda === '' || nom.indexOf(busqueda) !== -1;
 
                         var pasaFiltro = true;
-                        if(filtroActual === 'requeridos')  pasaFiltro = req;
-                        if(filtroActual === 'opcionales')  pasaFiltro = !req;
-                        if(filtroActual === 'cumple')      pasaFiltro = estado === 'cumple';
-                        if(filtroActual === 'no_cumple')   pasaFiltro = estado === 'no_cumple';
+                        if(filtroActual === 'requeridos')    pasaFiltro = req;
+                        if(filtroActual === 'opcionales')    pasaFiltro = !req;
+                        if(filtroActual === 'cumple')        pasaFiltro = estado === 'cumple';
+                        if(filtroActual === 'no_cumple')     pasaFiltro = estado === 'no_cumple';
+                        if(filtroActual === 'no_verificable') pasaFiltro = estado === 'no_verificable';
 
                         tr.classList.toggle('fila-oculta', !(pasaFiltro && pasaBusqueda));
                     });
@@ -388,6 +391,10 @@
                             <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#dcfce7">
                                 <i class="fa fa-check" style="font-size:.65rem;color:#15803d"></i>
                             </span>
+                            @elseif($gap && $gap->estado === 'no_verificable')
+                            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#fff7ed;border:1px solid #fed7aa" title="No verificado en visita">
+                                <i class="fa fa-question" style="font-size:.6rem;color:#c2410c"></i>
+                            </span>
                             @endif
                         </td>
                         <td style="text-align:center;vertical-align:middle;background:#fff5f5">
@@ -407,6 +414,7 @@
             <div class="mt-2 px-1 d-flex flex-wrap" style="gap:.75rem;font-size:.72rem;color:#64748b">
                 <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#dcfce7"><i class="fa fa-check" style="font-size:.55rem;color:#15803d"></i></span> Cumple</span>
                 <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fee2e2"><i class="fa fa-times" style="font-size:.55rem;color:#b91c1c"></i></span> No cumple</span>
+                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fff7ed;border:1px solid #fed7aa"><i class="fa fa-question" style="font-size:.55rem;color:#c2410c"></i></span> No verificado en visita (pendiente de confirmación)</span>
                 <span style="background:#e2e8f0;padding:1px 5px;border-radius:3px">req.</span> = requerido para este nivel
             </div>
 
