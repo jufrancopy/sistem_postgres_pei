@@ -11,6 +11,25 @@
 .estado-vencida     { background:#fee2e2; color:#991b1b; }
 .estado-cancelada   { background:#f1f5f9; color:#64748b; }
 .vencida-row { background:#fff5f5 !important; }
+.circle-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    border: none;
+    cursor: pointer;
+    font-size: .8rem;
+    transition: opacity .15s, transform .1s;
+}
+.circle-btn:hover { opacity: .85; transform: scale(1.08); }
+.circle-btn-success { background:#d1fae5; color:#065f46; }
+.circle-btn-primary { background:#dbeafe; color:#1e40af; }
+.circle-btn-info    { background:#e0f2fe; color:#0369a1; }
+.circle-btn-danger  { background:#fee2e2; color:#991b1b; }
+.circle-btn-warning { background:#fef3c7; color:#92400e; }
 </style>
 @endpush
 
