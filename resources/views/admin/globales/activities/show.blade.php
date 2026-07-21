@@ -327,6 +327,11 @@
 </div>
 @endif
 
+{{-- Buscador de tareas --}}
+<div class="mb-3">
+    <select id="buscadorTareas" style="width:100%" multiple="multiple"></select>
+</div>
+
 {{-- Badge filtro activo --}}
 <div id="filtroActivoContainer" style="display:none;margin-bottom:12px">
     <span class="badge badge-info" style="font-size:.9rem;padding:8px 12px">
@@ -891,6 +896,48 @@ $(document).on('click', '.btn-delete-comment', function(e) {
 
 // Init paleta
 renderPaleta();
+
+// ── Buscador de tareas con Select2 ───────────────────────────────────────────
+(function() {
+    // Recolectar todas las tareas del DOM
+    var tareas = [];
+    $('.task-card').each(function() {
+        var id    = $(this).data('id');
+        var title = $(this).find('.task-title').clone().find('i').remove().end().text().trim();
+        if (id && title) tareas.push({ id: id, text: title });
+    });
+
+    $('#buscadorTareas').select2({
+        placeholder: 'Buscar tareas...',
+        allowClear: true,
+        data: tareas,
+        language: {
+            noResults: function() { return 'Sin resultados'; },
+            searching: function() { return 'Buscando...'; }
+        }
+    });
+
+    $('#buscadorTareas').on('change', function() {
+        var selected = $(this).val(); // array de ids o null
+        if (!selected || !selected.length) {
+            $('.task-card').show();
+            $('#filtroActivoContainer').hide();
+            return;
+        }
+        selected = selected.map(String);
+        $('.task-card').each(function() {
+            var id = String($(this).data('id'));
+            $(this).toggle(selected.includes(id));
+        });
+        $('#filtroActivoContainer').show();
+    });
+
+    // Limpiar filtro también resetea el select2
+    $('#btnLimpiarFiltro').on('click', function(e) {
+        e.preventDefault();
+        $('#buscadorTareas').val(null).trigger('change');
+    });
+})();
 </script>
 
 {{-- SortableJS --}}
