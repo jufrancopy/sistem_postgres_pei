@@ -103,7 +103,7 @@
         {{-- Tabs --}}
         <ul class="nav nav-tabs mb-4" id="evalTabs" style="border-bottom:2px solid #dee2e6">
             <li class="nav-item">
-                <a class="nav-link active text-dark" data-toggle="tab" href="#tabGap">
+                <a class="nav-link text-dark" data-toggle="tab" href="#tabGap">
                     <i class="fa fa-chart-bar mr-1"></i>Cartera de Servicios
                 </a>
             </li>
@@ -123,7 +123,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" data-toggle="tab" href="#tabMatriz">
+                <a class="nav-link active text-dark" data-toggle="tab" href="#tabMatriz">
                     <i class="fa fa-th mr-1"></i>Matriz de Servicios
                 </a>
             </li>
@@ -132,7 +132,7 @@
         <div class="tab-content">
 
             {{-- Tab Gap Cartera --}}
-            <div class="tab-pane fade show active" id="tabGap">
+            <div class="tab-pane fade" id="tabGap">
                 <div id="gapContenido">
                     <div class="text-center py-5"><div class="spinner-border text-danger"></div></div>
                 </div>
@@ -170,7 +170,7 @@
             </div>
 
             {{-- Tab Matriz de Servicios --}}
-            <div class="tab-pane fade" id="tabMatriz">
+            <div class="tab-pane fade show active" id="tabMatriz">
             @php
                 use App\Models\Riiss\CarteraServicio;
                 use App\Models\Riiss\ComplejidadTipo;
@@ -208,72 +208,120 @@
 
                 // Gap analysis
                 $gapItems = $evaluacion->gapAnalysis()->where('dimension','cartera_servicios')->get()->keyBy('servicio_nombre');
+
+                $nombreNivel = $complejidadTipoEst?->nombre ?? 'Sin clasificación';
+                $tipoLabel   = $complejidadTipoEst?->tipo_establecimiento ?? '';
             @endphp
-            <div class="table-responsive" style="max-height:70vh;overflow-y:auto">
-            <table class="table table-bordered table-sm mb-0" style="font-size:.75rem;border-collapse:collapse;color:#212529">
+
+            {{-- Encabezado del nivel --}}
+            <div class="d-flex align-items-center mb-3 p-3 rounded"
+                 style="background:linear-gradient(135deg,#1a237e,#283593);color:#fff">
+                <div style="flex:1">
+                    <div style="font-size:.65rem;opacity:.65;text-transform:uppercase;letter-spacing:.07em">Nivel evaluado</div>
+                    <div style="font-size:1rem;font-weight:700">{{ $nombreNivel }}</div>
+                    @if($tipoLabel)<div style="font-size:.75rem;opacity:.75">{{ $tipoLabel }}</div>@endif
+                </div>
+                <div class="text-right">
+                    <div style="font-size:.65rem;opacity:.65;text-transform:uppercase">Total servicios</div>
+                    <div style="font-size:1.5rem;font-weight:800">{{ $servicios->count() }}</div>
+                </div>
+            </div>
+
+            {{-- Selector de columnas --}}
+            <div class="mb-3 p-2 rounded d-flex flex-wrap align-items-center"
+                 style="background:#f8faff;border:1px solid #e2e8f0;gap:.5rem">
+                <span style="font-size:.72rem;font-weight:600;color:#475569;margin-right:.25rem">
+                    <i class="fa fa-columns mr-1"></i>Columnas visibles:
+                </span>
+                @foreach($columnas->unique('key') as $col)
+                @php $esActual = $col['key'] === $colActual; @endphp
+                <label class="mb-0 d-flex align-items-center"
+                       style="gap:.3rem;cursor:pointer;font-size:.75rem;
+                              background:{{ $esActual ? '#e8eaf6' : '#fff' }};
+                              border:1px solid {{ $esActual ? '#9fa8da' : '#e2e8f0' }};
+                              border-radius:20px;padding:.2rem .6rem;
+                              font-weight:{{ $esActual ? '600' : '400' }};
+                              color:{{ $esActual ? '#1a237e' : '#64748b' }}">
+                    <input type="checkbox"
+                           class="col-toggle"
+                           data-col="{{ $col['key'] }}"
+                           {{ $esActual ? 'checked' : '' }}
+                           style="cursor:pointer">
+                    {{ $col['label'] }}
+                    @if($esActual)<i class="fa fa-star ml-1" style="font-size:.6rem;color:#7986cb"></i>@endif
+                </label>
+                @endforeach
+            </div>
+
+            {{-- Tabla principal --}}
+            <div class="table-responsive" style="max-height:62vh;overflow-y:auto;border:1px solid #e2e8f0;border-radius:.5rem">
+            <table class="table table-bordered table-sm mb-0" id="matrizTable"
+                   style="font-size:.78rem;border-collapse:collapse;color:#212529">
                 <thead style="position:sticky;top:0;z-index:10">
                     <tr style="background:#1a237e;color:#fff;text-align:center">
-                        <th rowspan="2" style="text-align:left;min-width:130px;vertical-align:middle;background:#1a237e">Tipo de Prestación</th>
-                        <th rowspan="2" style="text-align:left;min-width:200px;vertical-align:middle;background:#1a237e">Servicio</th>
-                        @php $niveles_vistos = []; @endphp
-                        @foreach($columnas as $col)
-                        @php $nk = 'N'.$col['nivel']; @endphp
-                        @if(!in_array($nk, $niveles_vistos))
-                        @php
-                            $span = $columnas->where('nivel', $col['nivel'])->count();
-                            $niveles_vistos[] = $nk;
-                        @endphp
-                        <th colspan="{{ $span }}" style="background:#283593;border-bottom:1px solid #3949ab;font-size:.7rem">
-                            NIVEL DE ATENCIÓN {{ $col['nivel'] }}
-                        </th>
-                        @endif
-                        @endforeach
-                    </tr>
-                    <tr style="background:#283593;color:#fff;text-align:center">
-                        @foreach($columnas as $col)
-                        @php $esActual = $col['key'] === $colActual; @endphp
-                        <th style="min-width:100px;font-weight:600;font-size:.65rem;vertical-align:middle;
-                            {{ $esActual ? 'background:#1565c0;border-bottom:3px solid #42a5f5' : 'background:#283593' }}">
-                            <div style="font-size:.62rem;opacity:.75;font-weight:400;margin-bottom:.15rem">{{ $col['tipo_label'] }}</div>
+                        <th rowspan="2" style="text-align:left;min-width:120px;vertical-align:middle;background:#1a237e;border-color:#283593">Tipo de Prestación</th>
+                        <th rowspan="2" style="text-align:left;min-width:220px;vertical-align:middle;background:#1a237e;border-color:#283593">Servicio</th>
+                        @foreach($columnas->unique('key') as $col)
+                        <th class="col-header col-{{ $col['key'] }}"
+                            style="background:#283593;border-color:#3949ab;min-width:110px;font-size:.68rem;
+                                   {{ !($col['key'] === $colActual) ? 'display:none' : '' }}">
+                            <div style="font-size:.6rem;opacity:.7;font-weight:400">{{ $col['tipo_label'] }}</div>
                             <div>{{ $col['label'] }}</div>
-                            @if($esActual)
-                            <div style="font-size:.58rem;color:#90caf9;margin-top:.15rem">★ Este establecimiento</div>
+                            @if($col['key'] === $colActual)
+                            <div style="font-size:.58rem;color:#90caf9;margin-top:.1rem">★ Este establecimiento</div>
                             @endif
                         </th>
                         @endforeach
                     </tr>
                 </thead>
-                <tbody style="color:#212529">
-                @foreach($porTipo as $tipo => $items)
+                <tbody>
+                @foreach($servicios->groupBy('tipo_prestacion') as $tipo => $items)
                     @foreach($items as $i => $srv)
                     @php
                         $gap = $gapItems->get($srv->servicio);
-                        $rowBg = $gap ? ($gap->estado === 'cumple' ? '#f0fdf4' : ($gap->estado === 'no_cumple' ? '#fef2f2' : '')) : '';
+                        $rowBg = $gap
+                            ? ($gap->estado === 'cumple'    ? '#f0fdf4'
+                            : ($gap->estado === 'no_cumple' ? '#fef2f2' : ''))
+                            : '';
                     @endphp
                     <tr style="{{ $rowBg ? 'background:'.$rowBg : '' }}">
                         @if($i === 0)
-                        <td rowspan="{{ $items->count() }}" style="font-weight:700;font-size:.72rem;color:#1a237e;vertical-align:middle;background:#e8eaf6;border-right:3px solid #9fa8da;white-space:nowrap">{{ $tipo }}</td>
+                        <td rowspan="{{ $items->count() }}"
+                            style="font-weight:700;font-size:.72rem;color:#1a237e;vertical-align:middle;
+                                   background:#e8eaf6;border-right:3px solid #9fa8da;white-space:nowrap">
+                            {{ $tipo }}
+                        </td>
                         @endif
-                        <td style="vertical-align:middle;color:#212529">
+                        <td style="vertical-align:middle">
                             {{ $srv->servicio }}
+                            @if($srv->requerido)
+                            <span style="font-size:.58rem;background:#e2e8f0;color:#475569;border-radius:3px;padding:1px 4px;margin-left:3px">req.</span>
+                            @endif
                             @if($gap)
-                            <span class="ml-1" title="{{ $gap->estado }}">
-                                @if($gap->estado === 'cumple') <i class="fa fa-check-circle text-success" style="font-size:.7rem"></i>
-                                @elseif($gap->estado === 'no_cumple') <i class="fa fa-times-circle text-danger" style="font-size:.7rem"></i>
+                            <span class="ml-1">
+                                @if($gap->estado === 'cumple')
+                                    <i class="fa fa-check-circle text-success" style="font-size:.72rem" title="Cumple"></i>
+                                @elseif($gap->estado === 'no_cumple')
+                                    <i class="fa fa-times-circle text-danger" style="font-size:.72rem" title="No cumple"></i>
                                 @endif
                             </span>
                             @endif
                         </td>
-                        @foreach($columnas as $col)
-                        @php
-                            $aplica = $srv->{$col['key']};
-                            $esActual = $col['key'] === $colActual;
-                        @endphp
-                        <td style="text-align:center;vertical-align:middle;{{ $esActual ? 'background:#e3f2fd;border-left:2px solid #42a5f5;border-right:2px solid #42a5f5' : '' }}">
-                            @if($aplica)
-                                <span style="color:#22c55e;font-size:1rem">&#10003;</span>
+                        @foreach($columnas->unique('key') as $col)
+                        <td class="col-cell col-{{ $col['key'] }}"
+                            style="text-align:center;vertical-align:middle;
+                                   {{ $col['key'] === $colActual ? 'background:#e3f2fd' : '' }};
+                                   {{ !($col['key'] === $colActual) ? 'display:none' : '' }}">
+                            @if($srv->{$col['key']})
+                                <span style="display:inline-flex;align-items:center;justify-content:center;
+                                             width:22px;height:22px;border-radius:50%;background:#dcfce7">
+                                    <i class="fa fa-check" style="font-size:.62rem;color:#15803d"></i>
+                                </span>
                             @else
-                                <span style="color:#ef4444;font-size:.9rem">&#10007;</span>
+                                <span style="display:inline-flex;align-items:center;justify-content:center;
+                                             width:22px;height:22px;border-radius:50%;background:#fee2e2">
+                                    <i class="fa fa-times" style="font-size:.62rem;color:#b91c1c"></i>
+                                </span>
                             @endif
                         </td>
                         @endforeach
@@ -283,14 +331,28 @@
                 </tbody>
             </table>
             </div>
-            <div class="mt-2 px-1" style="font-size:.72rem;color:#64748b">
-                <span style="color:#22c55e">&#10003;</span> Aplica &nbsp;
-                <span style="color:#ef4444">&#10007;</span> No aplica &nbsp;
-                <i class="fa fa-check-circle text-success"></i> Cumple (evaluado) &nbsp;
-                <i class="fa fa-times-circle text-danger"></i> No cumple (evaluado) &nbsp;
-                <span style="background:#e3f2fd;padding:1px 6px;border-radius:3px">Columna resaltada = este establecimiento</span>
+
+            <div class="mt-2 px-1 d-flex flex-wrap" style="gap:.75rem;font-size:.72rem;color:#64748b">
+                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#dcfce7"><i class="fa fa-check" style="font-size:.55rem;color:#15803d"></i></span> Aplica</span>
+                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fee2e2"><i class="fa fa-times" style="font-size:.55rem;color:#b91c1c"></i></span> No aplica</span>
+                <span><i class="fa fa-check-circle text-success"></i> Cumple (evaluado)</span>
+                <span><i class="fa fa-times-circle text-danger"></i> No cumple (evaluado)</span>
+                <span style="background:#e2e8f0;padding:1px 5px;border-radius:3px">req. = requerido</span>
+                <span><i class="fa fa-star" style="color:#7986cb;font-size:.65rem"></i> = este establecimiento</span>
             </div>
             </div>
+
+            <script>
+            document.querySelectorAll('.col-toggle').forEach(function(cb) {
+                cb.addEventListener('change', function() {
+                    var col = this.dataset.col;
+                    var show = this.checked;
+                    document.querySelectorAll('.col-' + col).forEach(function(el) {
+                        el.style.display = show ? '' : 'none';
+                    });
+                });
+            });
+            </script>
 
         </div>
 
