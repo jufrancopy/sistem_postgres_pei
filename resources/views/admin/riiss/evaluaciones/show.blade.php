@@ -385,15 +385,21 @@
                             <span style="font-size:.58rem;background:#e2e8f0;color:#475569;border-radius:3px;padding:1px 4px;margin-left:3px">req.</span>
                             @endif
                         </td>
-                        {{-- Columna Evaluación separada --}}
+                        {{-- Columnas Cumple / No cumple --}}
+                        @if($gap && $gap->estado === 'no_verificable')
+                        <td colspan="2" style="text-align:center;vertical-align:middle;background:#fffbeb;border-left:1px solid #fde68a;border-right:1px solid #fde68a">
+                            <span style="display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:#92400e;font-weight:600">
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#fef3c7;border:1px solid #fcd34d">
+                                    <i class="fa fa-clock" style="font-size:.55rem;color:#d97706"></i>
+                                </span>
+                                Pendiente de verificar
+                            </span>
+                        </td>
+                        @else
                         <td style="text-align:center;vertical-align:middle;background:#f0fdf4">
                             @if($gap && $gap->estado === 'cumple')
                             <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#dcfce7">
                                 <i class="fa fa-check" style="font-size:.65rem;color:#15803d"></i>
-                            </span>
-                            @elseif($gap && $gap->estado === 'no_verificable')
-                            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#fff7ed;border:1px solid #fed7aa" title="No verificado en visita">
-                                <i class="fa fa-question" style="font-size:.6rem;color:#c2410c"></i>
                             </span>
                             @endif
                         </td>
@@ -404,6 +410,7 @@
                             </span>
                             @endif
                         </td>
+                        @endif
                     </tr>
                     @endforeach
                 @endforeach
