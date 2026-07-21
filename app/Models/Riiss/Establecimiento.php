@@ -78,11 +78,17 @@ class Establecimiento extends Model
 
     public function getComplejidadLabelAttribute(): string
     {
+        if ($this->complejidadTipo) {
+            return 'Nivel ' . $this->complejidadTipo->nivel_atencion . ' - ' . $this->complejidadTipo->nombre;
+        }
         return ComplejidadEnum::fromString($this->complejidad)?->label() ?? $this->complejidad;
     }
 
     public function getComplejidadColorAttribute(): string
     {
+        if ($this->complejidadTipo) {
+            return $this->complejidadTipo->color;
+        }
         return ComplejidadEnum::fromString($this->complejidad)?->color() ?? '#6b7280';
     }
 

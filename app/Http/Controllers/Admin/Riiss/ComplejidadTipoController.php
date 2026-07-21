@@ -35,13 +35,20 @@ class ComplejidadTipoController extends Controller
             'activo'               => 'boolean',
         ]);
 
-        $nivelAnterior = $complejidadTipo->nivel_atencion;
-        $gradoAnterior = $complejidadTipo->grado;
+        $nivelAnterior        = $complejidadTipo->nivel_atencion;
+        $esHospitalarioAnterior = $complejidadTipo->es_hospitalario;
 
         $complejidadTipo->update($data);
 
-        // Recalcular establecimientos afectados si cambiaron nivel o flags
-        if ($nivelAnterior !== $complejidadTipo->nivel_atencion) {
+        // Recalcular todos los establecimientos de este grado si cambió algo relevante
+        $cambioCritico = $nivelAnterior !== $complejidadTipo->nivel_atencion
+            || $esHospitalarioAnterior !== $complejidadTipo->es_hospitalario
+            || array_key_exists('requiere_internacion', $data)
+            || array_key_exists('requiere_quirofano', $data)
+            || array_key_exists('requiere_uti', $data)
+            || array_key_exists('requiere_urgencias', $data);
+
+        if ($cambioCritico) {
             Establecimiento::where('complejidad_tipo_id', $complejidadTipo->id)
                 ->whereNull('deleted_at')
                 ->each(fn($e) => $e->recalcularCamposDerivados());
