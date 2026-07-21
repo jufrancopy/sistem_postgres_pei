@@ -314,6 +314,12 @@
                                 <span class="sidebar-normal">Formularios</span>
                             </a>
                         </li>
+                        <li class="nav-item {{ $isActive('riiss/complejidad*') }}">
+                            <a class="nav-link" href="{{ route('complejidad.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-layer-group" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Complejidad</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>

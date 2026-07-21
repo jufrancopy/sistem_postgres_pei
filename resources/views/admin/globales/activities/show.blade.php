@@ -400,10 +400,10 @@
 
 {{-- ── TABLERO GANTT ── --}}
 <div id="vistaGantt" style="display:none">
-    <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; overflow-x: auto; max-height: 600px; overflow-y: auto;">
-        <div style="font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: #1e293b;">Cronograma de tareas</div>
-        <div id="tablaCronograma"></div>
-        <div id="timelineEmpty" style="display:none; text-align:center; color:#94a3b8; font-size:.9rem; padding:32px;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;overflow:hidden">
+        <div style="font-size:1rem;font-weight:700;margin-bottom:8px;color:#1e293b">Cronograma de tareas</div>
+        <div id="gantt_chart" style="width:100%;min-height:300px"></div>
+        <div id="timelineEmpty" style="display:none;text-align:center;color:#94a3b8;font-size:.9rem;padding:32px">
             No hay tareas con fecha de inicio o vencimiento. Agregá fechas para ver el cronograma.
         </div>
     </div>
@@ -467,71 +467,47 @@ var ganttRendered = false;
 
 function renderTimeline() {
     if (!ganttTasks.length) {
-        $('#tablaCronograma').hide();
+        $('#gantt_chart').hide();
         $('#timelineEmpty').show();
         return;
     }
-
     $('#timelineEmpty').hide();
-    $('#tablaCronograma').show();
+    $('#gantt_chart').show();
 
-    // Ordenar por fecha inicio o vencimiento
-    var tasksOrdenadas = ganttTasks.sort(function(a, b) {
-        var dateA = a.start || a.end;
-        var dateB = b.start || b.end;
-        return new Date(dateA) - new Date(dateB);
-    });
+    google.charts.load('current', { packages: ['gantt'] });
+    google.charts.setOnLoadCallback(function() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'ID');
+        data.addColumn('string', 'Tarea');
+        data.addColumn('string', 'Responsable');
+        data.addColumn('date',   'Inicio');
+        data.addColumn('date',   'Fin');
+        data.addColumn('number', 'Duración (días)');
+        data.addColumn('number', '% Completado');
+        data.addColumn('string', 'Dependencias');
 
-    // Generar tabla
-    var html = '<table class="table-cronograma"><thead><tr>' +
-        '<th style="width:35%">Tarea</th>' +
-        '<th style="width:20%">Responsable</th>' +
-        '<th style="width:15%">Inicio</th>' +
-        '<th style="width:15%">Vencimiento</th>' +
-        '<th style="width:15%">Duración</th>' +
-        '</tr></thead><tbody>';
+        ganttTasks.forEach(function(t) {
+            var start = t.start ? new Date(t.start) : null;
+            var end   = t.end   ? new Date(t.end)   : null;
+            if (!start && end) { start = new Date(end); start.setDate(start.getDate() - 1); }
+            if (!end && start) { end   = new Date(start); end.setDate(end.getDate() + 1); }
+            data.addRow([ t.id, t.name, t.resource, start, end, null, 0, null ]);
+        });
 
-    tasksOrdenadas.forEach(function(task) {
-        var start = task.start ? new Date(task.start) : null;
-        var end = task.end ? new Date(task.end) : null;
+        var rowHeight  = 42;
+        var chartH     = Math.max(200, ganttTasks.length * rowHeight + 80);
+        $('#gantt_chart').css('height', chartH + 'px');
 
-        var startStr = start ? start.toLocaleDateString('es-ES') : '—';
-        var endStr = end ? end.toLocaleDateString('es-ES') : '—';
-        var duration = '—';
-
-        if (start && end) {
-            var days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-            duration = days + ' día' + (days !== 1 ? 's' : '');
-        }
-
-        // Detectar si está vencida
-        var endClass = '';
-        if (end && end < new Date() && !task.completed) {
-            endClass = 'vencida';
-        } else if (end && !task.completed) {
-            var daysUntil = Math.ceil((end - new Date()) / (1000 * 60 * 60 * 24));
-            if (daysUntil <= 3 && daysUntil > 0) {
-                endClass = 'proximo';
+        var chart = new google.visualization.Gantt(document.getElementById('gantt_chart'));
+        chart.draw(data, {
+            height:          chartH,
+            gantt: {
+                trackHeight:     rowHeight,
+                labelStyle:      { fontName: 'inherit', fontSize: 12 },
+                criticalPathEnabled: false,
+                arrow:           { angle: 100, width: 0, color: 'transparent', radius: 0 },
             }
-        }
-
-        html += '<tr style="cursor:pointer" class="task-row" data-id="' + task.id + '">' +
-            '<td><div class="tarea-titulo">' + task.name + '</div></td>' +
-            '<td><div class="tarea-responsable">' + task.resource + '</div></td>' +
-            '<td><div class="tarea-fecha">' + startStr + '</div></td>' +
-            '<td><div class="tarea-fecha ' + endClass + '">' + endStr + '</div></td>' +
-            '<td><div class="tarea-fecha">' + duration + '</div></td>' +
-            '</tr>';
-    });
-
-    html += '</tbody></table>';
-
-    $('#tablaCronograma').html(html);
-
-    // Evento click en fila
-    $('.task-row').on('click', function() {
-        var taskId = $(this).data('id');
-        // Podría abrir un modal, pero por ahora solo mostramos la tabla
+        });
     });
 }
 
@@ -1192,4 +1168,8 @@ $('#btnLimpiarFiltro').on('click', function(e) {
 })();
 // ══ FIN REUNIONES ════════════════════════════════════════════════════════════
 </script>
+
+{{-- Google Charts --}}
+<script src="/assets/googleCharts/loader.js"></script>
+
 @endpush
