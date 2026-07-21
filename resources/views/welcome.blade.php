@@ -332,11 +332,31 @@ table.t tr:hover td { background: #fafcff; }
 
 /* ── FOOTER ──────────────────────────── */
 footer {
-    text-align: center; padding: 28px 16px;
     border-top: 1px solid var(--border);
+    background: var(--surface);
+    padding: 36px 24px 28px;
     color: var(--muted); font-size: 11px; line-height: 1.8;
 }
 footer strong { color: var(--text); }
+.footer-inner { max-width: 1100px; margin: 0 auto; }
+.footer-top { display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border); }
+.footer-brand { display:flex;align-items:center;gap:10px;margin-bottom:8px }
+.footer-logo { width:40px;height:40px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#1d4ed8,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;letter-spacing:-1px }
+.footer-brand-name { font-size:14px;font-weight:800;color:var(--text) }
+.footer-brand-sub  { font-size:10px;color:var(--muted) }
+.footer-dev { text-align:right }
+.footer-dev-label { font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px;font-weight:600 }
+.ai-badges { display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end }
+.ai-badge { display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--surface2);color:var(--text);text-decoration:none;transition:box-shadow .15s,transform .1s }
+.ai-badge:hover { box-shadow:0 2px 8px rgba(0,0,0,.1);transform:translateY(-1px) }
+.ai-badge-kiro   { border-color:#f59e0b44;background:#fffbeb;color:#92400e }
+.ai-badge-claude { border-color:#f9731688;background:#fff7ed;color:#9a3412 }
+.ai-badge-gemini { border-color:#3b82f688;background:#eff6ff;color:#1e40af }
+.footer-dev-by { margin-top:8px;font-size:11px;color:var(--muted);text-align:right }
+.footer-dev-by a { color:var(--blue);text-decoration:none;font-weight:600 }
+.footer-dev-by a:hover { text-decoration:underline }
+.footer-bottom { text-align:center;font-size:10px;color:var(--muted) }
+.footer-bottom span { margin:0 6px }
 
 /* ════════════════════════════════════════
    RESPONSIVE
@@ -440,107 +460,257 @@ footer strong { color: var(--text); }
 
 <div class="wrap">
 
-    {{-- KPI STRIP --}}
-    <div class="kpi-strip" style="margin-top: 8px;">
+{{-- ═══════════════════════════════════════════════════════════════
+     TABS DE DEPARTAMENTO
+═══════════════════════════════════════════════════════════════ --}}
+<style>
+/* Dept tabs */
+.dept-nav{display:flex;gap:2px;background:var(--border);border-radius:12px;padding:3px;margin-bottom:24px;flex-wrap:wrap}
+.dept-tab{flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;gap:7px;
+    padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);
+    border:none;background:transparent;cursor:pointer;transition:all .15s;white-space:nowrap}
+.dept-tab:hover{color:var(--text);background:rgba(255,255,255,.6)}
+.dept-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.dept-tab i{font-size:13px}
+.dept-section{display:none}.dept-section.active{display:block}
+
+/* Tabla de niveles */
+.nivel-table th{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+    padding:.5rem .75rem;background:var(--surface2);border-bottom:2px solid var(--border)}
+.nivel-table td{padding:.5rem .75rem;font-size:.8rem;vertical-align:middle;border-bottom:1px solid #f1f5f9}
+.nivel-table tr:last-child td{border-bottom:none}
+.nivel-tag{display:inline-block;padding:.15rem .5rem;border-radius:20px;font-size:.68rem;font-weight:600}
+</style>
+
+{{-- Nav tabs departamentales --}}
+<div class="dept-nav" id="deptTabs">
+    <button class="dept-tab active" data-dept="riiss">
+        <i class="fa fa-hospital"></i> Red de Salud RIISS
+    </button>
+    <button class="dept-tab" data-dept="planificacion">
+        <i class="fa fa-bullseye"></i> Planificación
+    </button>
+    <button class="dept-tab" data-dept="estadisticas">
+        <i class="fa fa-chart-bar"></i> Estadísticas
+    </button>
+</div>
+
+{{-- ══ RIISS ══════════════════════════════════════════════════════════════════ --}}
+<div class="dept-section active" id="dept-riiss">
+
+    {{-- KPIs RIISS --}}
+    <div class="kpi-strip" style="margin-bottom:24px">
         <div class="kpi-card">
-            <div class="kpi-ic blue"><i class="fa fa-spinner"></i></div>
-            <div>
-                <div class="kpi-num">{{ $tareasEnCurso }}</div>
-                <div class="kpi-lbl">Tareas en progreso</div>
-            </div>
+            <div class="kpi-ic blue"><i class="fa fa-clipboard-list"></i></div>
+            <div><div class="kpi-num">{{ $evalTotal }}</div><div class="kpi-lbl">Evaluaciones totales</div></div>
         </div>
         <div class="kpi-card">
             <div class="kpi-ic green"><i class="fa fa-check-circle"></i></div>
-            <div>
-                <div class="kpi-num">{{ $tareasHechas }}</div>
-                <div class="kpi-lbl">Tareas completadas</div>
-            </div>
+            <div><div class="kpi-num">{{ $evalCompletadas }}</div><div class="kpi-lbl">Completadas</div></div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-ic red"><i class="fa fa-clock"></i></div>
-            <div>
-                <div class="kpi-num">{{ $tareasVencidas }}</div>
-                <div class="kpi-lbl">Tareas vencidas</div>
-            </div>
+            <div class="kpi-ic amber"><i class="fa fa-spinner"></i></div>
+            <div><div class="kpi-num">{{ $evalEnCurso }}</div><div class="kpi-lbl">En curso</div></div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-ic violet"><i class="fa fa-chart-bar"></i></div>
-            <div>
-                <div class="kpi-num">{{ $siessAprobados }}</div>
-                <div class="kpi-lbl">Extractos aprobados</div>
-            </div>
+            <div class="kpi-ic violet"><i class="fa fa-sitemap"></i></div>
+            <div><div class="kpi-num">{{ \App\Models\Riiss\Establecimiento::count() }}</div><div class="kpi-lbl">Establecimientos</div></div>
         </div>
     </div>
 
-    {{-- ACTIVIDADES --}}
-    <div class="sec-header">
-        <div class="sec-icon" style="background:var(--blue-lt);color:var(--blue)"><i class="fa fa-columns"></i></div>
-        <div>
-            <span class="sec-title">Actividades en curso</span>
-            <span class="sec-sub">· Tablero de tareas</span>
-        </div>
-    </div>
-
-    @if($activities->count())
-    <div class="activities-grid">
-        @foreach($activities as $act)
-        @php
-            $total    = $act->tasks->count();
-            $hechas   = $act->tasks->where('status', 2)->count();
-            $enCurso  = $act->tasks->where('status', 1)->count();
-            $pend     = $act->tasks->where('status', 0)->count();
-            $pct      = $total > 0 ? round(($hechas/$total)*100) : 0;
-            $venc     = $act->tasks->filter(fn($t) =>
-                $t->status !== 2 && $t->fecha_vencimiento &&
-                \Carbon\Carbon::parse($t->fecha_vencimiento)->isPast()
-            )->count();
-        @endphp
-        <div class="act-card">
-            <div class="act-card-accent"></div>
-            <span class="act-type {{ $act->type === 'scrum' ? 'scrum' : 'kanban' }}">
-                <i class="fa {{ $act->type === 'scrum' ? 'fa-sync-alt' : 'fa-stream' }}"></i>
-                {{ ucfirst($act->type ?? 'kanban') }}
-            </span>
-            <div class="act-name">{{ $act->name }}</div>
-            <div class="act-meta">
-                @if($act->date_start)
-                <span><i class="fa fa-calendar" style="font-size:10px"></i> {{ \Carbon\Carbon::parse($act->date_start)->format('d/m/Y') }}</span>
-                @endif
-                @if($act->responsibles->count())
-                <span><i class="fa fa-user" style="font-size:10px"></i> {{ $act->responsibles->first()->name }}</span>
-                @endif
-            </div>
-            <div class="act-progress"><div class="act-progress-fill" style="width:{{ $pct }}%"></div></div>
-            <div class="act-footer">
-                <div class="act-pills">
-                    @if($pend)    <span class="act-pill pill-p"><i class="fa fa-inbox"></i>{{ $pend }}</span>@endif
-                    @if($enCurso) <span class="act-pill pill-r"><i class="fa fa-spinner"></i>{{ $enCurso }}</span>@endif
-                    @if($hechas)  <span class="act-pill pill-d"><i class="fa fa-check"></i>{{ $hechas }}</span>@endif
-                    @if($venc)    <span class="act-pill pill-v"><i class="fa fa-exclamation"></i>{{ $venc }}</span>@endif
-                    @if($total === 0)<span style="font-size:10px;color:var(--muted)">Sin tareas</span>@endif
-                </div>
-                <span class="act-pct">{{ $pct }}%</span>
-            </div>
-        </div>
-        @endforeach
-    </div>
-    @else
-    <div class="card" style="margin-bottom:32px">
-        <div class="empty"><i class="fa fa-inbox"></i>Sin actividades registradas</div>
-    </div>
-    @endif
-
-    {{-- FODA + PEI --}}
     <div class="twin">
+
+        {{-- Últimas evaluaciones --}}
+        <div>
+            <div class="sec-header">
+                <div class="sec-icon" style="background:var(--green-lt);color:var(--green)"><i class="fa fa-clipboard-check"></i></div>
+                <div><span class="sec-title">Últimas evaluaciones</span><span class="sec-sub">· RIISS Red de Salud IPS</span></div>
+            </div>
+            <div class="card">
+                @if($evalRecientes->count())
+                <div style="overflow-x:auto">
+                <table class="t">
+                    <thead><tr>
+                        <th>Establecimiento</th>
+                        <th>Nivel</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th class="text-right">% Cumpl.</th>
+                    </tr></thead>
+                    <tbody>
+                    @foreach($evalRecientes as $ev)
+                    @php
+                        $p   = (float)($ev->porcentaje_cumplimiento ?? 0);
+                        $cls = $p >= 90 ? 'b-green' : ($p >= 70 ? 'b-amber' : 'b-red');
+                        $stc = ['completada'=>'b-green','en_curso'=>'b-blue','borrador'=>'b-gray'][$ev->estado] ?? 'b-gray';
+                    @endphp
+                    <tr>
+                        <td style="font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                            {{ $ev->establecimiento?->nombre ?? '—' }}
+                        </td>
+                        <td>
+                            <span style="font-size:.68rem;color:var(--muted)">
+                                {{ $ev->establecimiento?->complejidadTipo?->nombre ?? '—' }}
+                            </span>
+                        </td>
+                        <td style="white-space:nowrap;color:var(--muted);font-size:11px">
+                            {{ $ev->fecha_evaluacion ? \Carbon\Carbon::parse($ev->fecha_evaluacion)->format('d/m/Y') : '—' }}
+                        </td>
+                        <td><span class="badge {{ $stc }}">{{ ucfirst(str_replace('_',' ',$ev->estado)) }}</span></td>
+                        <td class="text-right">
+                            <div class="pct-row" style="justify-content:flex-end">
+                                <div class="pct-track" style="min-width:50px">
+                                    <div class="pct-fill {{ $p>=90?'pct-hi':($p>=70?'pct-md':'pct-lo') }}" style="width:{{ $p }}%"></div>
+                                </div>
+                                <span class="pct-val {{ $p>=90?'':($p>=70?'':'') }}" style="color:{{ $p>=90?'var(--green)':($p>=70?'var(--amber)':'var(--red)') }}">{{ $p }}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+                </div>
+                @else
+                <div class="empty"><i class="fa fa-hospital"></i>Sin evaluaciones</div>
+                @endif
+            </div>
+        </div>
+
+        {{-- Tabla de niveles de complejidad --}}
+        <div>
+            <div class="sec-header">
+                <div class="sec-icon" style="background:#fdf4ff;color:#9333ea"><i class="fa fa-layer-group"></i></div>
+                <div><span class="sec-title">Niveles de complejidad</span><span class="sec-sub">· Clasificación RIISS</span></div>
+            </div>
+            <div class="card">
+                <div style="overflow-x:auto">
+                <table class="t nivel-table" style="width:100%">
+                    <thead><tr>
+                        <th>Grado</th>
+                        <th>Clasificación</th>
+                        <th>Tipo de establecimiento</th>
+                        <th class="text-center">Hospitalario</th>
+                    </tr></thead>
+                    <tbody>
+                    @foreach($complejidadTipos as $ct)
+                    <tr>
+                        <td>
+                            <span class="nivel-tag"
+                                  style="background:{{ $ct->color ?? '#e2e8f0' }}22;
+                                         color:{{ $ct->color ?? '#475569' }};
+                                         border:1px solid {{ $ct->color ?? '#e2e8f0' }}55">
+                                Grado {{ $ct->grado }}
+                            </span>
+                        </td>
+                        <td style="font-weight:600;font-size:.8rem">{{ $ct->nombre }}</td>
+                        <td style="font-size:.75rem;color:var(--muted)">{{ $ct->tipo_establecimiento ?? '—' }}</td>
+                        <td class="text-center">
+                            @if($ct->es_hospitalario)
+                                <span class="badge b-blue"><i class="fa fa-hospital" style="font-size:.6rem"></i> Sí</span>
+                            @else
+                                <span class="badge b-gray">No</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{{-- ══ PLANIFICACIÓN ══════════════════════════════════════════════════════════ --}}
+<div class="dept-section" id="dept-planificacion">
+
+    <div class="kpi-strip" style="margin-bottom:24px">
+        <div class="kpi-card">
+            <div class="kpi-ic violet"><i class="fa fa-bullseye"></i></div>
+            <div><div class="kpi-num">{{ $peiPlanes }}</div><div class="kpi-lbl">Planes PEI</div></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-ic blue"><i class="fa fa-rocket"></i></div>
+            <div><div class="kpi-num">{{ $peiAcciones }}</div><div class="kpi-lbl">Acciones estratégicas</div></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-ic amber"><i class="fa fa-th-large"></i></div>
+            <div><div class="kpi-num">{{ $fodaAnalisis }}</div><div class="kpi-lbl">Análisis FODA</div></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-ic green"><i class="fa fa-chess"></i></div>
+            <div><div class="kpi-num">{{ $fodaEstrategias }}</div><div class="kpi-lbl">Estrategias de cruce</div></div>
+        </div>
+    </div>
+
+    <div class="twin">
+
+        {{-- Planes PEI --}}
+        <div>
+            <div class="sec-header">
+                <div class="sec-icon" style="background:var(--violet-lt);color:var(--violet)"><i class="fa fa-bullseye"></i></div>
+                <div><span class="sec-title">Planes Estratégicos</span><span class="sec-sub">· PEI activos</span></div>
+            </div>
+            <div class="card">
+                <div class="sem-strip">
+                    <div class="sem-cell" style="background:#ecfdf5">
+                        <div class="sem-dot" style="background:#059669;box-shadow:0 0 8px rgba(5,150,105,.4)"></div>
+                        <div class="sem-num" style="color:var(--green)">{{ $peiSemaforo->get('verde', 0) }}</div>
+                        <div class="sem-lbl" style="color:var(--green)">Verde</div>
+                    </div>
+                    <div class="sem-cell" style="background:var(--amber-lt)">
+                        <div class="sem-dot" style="background:#d97706;box-shadow:0 0 8px rgba(217,119,6,.4)"></div>
+                        <div class="sem-num" style="color:var(--amber)">{{ $peiSemaforo->get('amarillo', 0) }}</div>
+                        <div class="sem-lbl" style="color:var(--amber)">Amarillo</div>
+                    </div>
+                    <div class="sem-cell" style="background:var(--red-lt)">
+                        <div class="sem-dot" style="background:#dc2626;box-shadow:0 0 8px rgba(220,38,38,.4)"></div>
+                        <div class="sem-num" style="color:var(--red)">{{ $peiSemaforo->get('rojo', 0) }}</div>
+                        <div class="sem-lbl" style="color:var(--red)">Rojo</div>
+                    </div>
+                </div>
+                @if($peiRecientes->count())
+                <div style="border-top:1px solid var(--border)">
+                    <div style="padding:10px 18px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">
+                        Planes disponibles
+                    </div>
+                    @foreach($peiRecientes as $pei)
+                    <div style="padding:10px 18px;border-bottom:1px solid #f8fafc;display:flex;align-items:center;justify-content:space-between;gap:8px">
+                        <div style="min-width:0;flex:1">
+                            <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                                {{ \Illuminate\Support\Str::limit(strip_tags($pei->name), 42) }}
+                            </div>
+                            @if($pei->year_start)
+                            <div style="font-size:10px;color:var(--muted)">
+                                {{ \Carbon\Carbon::parse($pei->year_start)->format('Y') }}–{{ $pei->year_end ? \Carbon\Carbon::parse($pei->year_end)->format('Y') : '' }}
+                            </div>
+                            @endif
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                            @if($pei->public_token)
+                            <a href="{{ route('pei.public.show', $pei->public_token) }}" target="_blank"
+                               style="font-size:.68rem;color:var(--blue);text-decoration:none;display:flex;align-items:center;gap:3px;
+                                      background:var(--blue-lt);padding:2px 7px;border-radius:20px">
+                                <i class="fa fa-external-link-alt" style="font-size:.6rem"></i> Ver
+                            </a>
+                            @endif
+                            @if($pei->semaforo)
+                            <span style="width:9px;height:9px;border-radius:50%;display:inline-block;background:{{ $pei->semaforo==='verde'?'#059669':($pei->semaforo==='amarillo'?'#d97706':'#dc2626') }}"></span>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+            </div>
+        </div>
 
         {{-- FODA --}}
         <div>
             <div class="sec-header">
                 <div class="sec-icon" style="background:var(--amber-lt);color:var(--amber)"><i class="fa fa-th-large"></i></div>
-                <div>
-                    <span class="sec-title">Análisis FODA</span>
-                    <span class="sec-sub">· Planificación estratégica</span>
-                </div>
+                <div><span class="sec-title">Análisis FODA</span><span class="sec-sub">· Planificación estratégica</span></div>
             </div>
             <div class="card">
                 <div class="foda-quad">
@@ -566,205 +736,169 @@ footer strong { color: var(--text); }
                     <div class="card-row"><span class="lbl">Aspectos analizados</span><span class="val">{{ $fodaAnalisis }}</span></div>
                     <div class="card-row"><span class="lbl">Estrategias de cruce</span><span class="val" style="color:var(--violet)">{{ $fodaEstrategias }}</span></div>
                 </div>
-                @if($fodaIeaResumen->count())
-                <div style="padding:12px 18px;border-top:1px solid var(--border);background:var(--surface2)">
-                    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">IEA — Eficiencia de Activos</div>
-                    <div style="display:flex;gap:6px;flex-wrap:wrap">
-                        @if($fodaIeaResumen->get('fortaleza'))<span class="badge b-green"><i class="fa fa-arrow-up" style="font-size:9px"></i> {{ $fodaIeaResumen->get('fortaleza') }} fortaleza</span>@endif
-                        @if($fodaIeaResumen->get('neutro'))<span class="badge b-gray">– {{ $fodaIeaResumen->get('neutro') }} neutro</span>@endif
-                        @if($fodaIeaResumen->get('debilidad'))<span class="badge b-red"><i class="fa fa-arrow-down" style="font-size:9px"></i> {{ $fodaIeaResumen->get('debilidad') }} debilidad</span>@endif
-                    </div>
-                </div>
-                @endif
-            </div>
-        </div>
-
-        {{-- PEI --}}
-        <div>
-            <div class="sec-header">
-                <div class="sec-icon" style="background:var(--violet-lt);color:var(--violet)"><i class="fa fa-bullseye"></i></div>
-                <div>
-                    <span class="sec-title">Plan Estratégico</span>
-                    <span class="sec-sub">· PEI</span>
-                </div>
-            </div>
-            <div class="card">
-                <div class="sem-strip">
-                    <div class="sem-cell" style="background:#ecfdf5">
-                        <div class="sem-dot" style="background:#059669;box-shadow:0 0 8px rgba(5,150,105,.5)"></div>
-                        <div class="sem-num" style="color:var(--green)">{{ $peiSemaforo->get('verde', 0) }}</div>
-                        <div class="sem-lbl" style="color:var(--green)">Verde</div>
-                    </div>
-                    <div class="sem-cell" style="background:var(--amber-lt)">
-                        <div class="sem-dot" style="background:#d97706;box-shadow:0 0 8px rgba(217,119,6,.5)"></div>
-                        <div class="sem-num" style="color:var(--amber)">{{ $peiSemaforo->get('amarillo', 0) }}</div>
-                        <div class="sem-lbl" style="color:var(--amber)">Amarillo</div>
-                    </div>
-                    <div class="sem-cell" style="background:var(--red-lt)">
-                        <div class="sem-dot" style="background:#dc2626;box-shadow:0 0 8px rgba(220,38,38,.5)"></div>
-                        <div class="sem-num" style="color:var(--red)">{{ $peiSemaforo->get('rojo', 0) }}</div>
-                        <div class="sem-lbl" style="color:var(--red)">Rojo</div>
-                    </div>
-                </div>
-                <div class="card-rows">
-                    <div class="card-row"><span class="lbl">Planes estratégicos</span><span class="val">{{ $peiPlanes }}</span></div>
-                    <div class="card-row"><span class="lbl">Acciones / indicadores</span><span class="val">{{ $peiAcciones }}</span></div>
-                </div>
-                @if($peiRecientes->count())
-                <div style="border-top:1px solid var(--border)">
-                    <div style="padding:10px 18px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Planes recientes</div>
-                    @foreach($peiRecientes as $pei)
-                    <div style="padding:10px 18px;border-bottom:1px solid #f8fafc;display:flex;align-items:center;justify-content:space-between;gap:8px">
-                        <div style="min-width:0">
-                            <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ Str::limit(strip_tags($pei->name), 40) }}</div>
-                            @if($pei->year_start)<div style="font-size:10px;color:var(--muted)">{{ $pei->year_start }}{{ $pei->year_end ? ' — '.$pei->year_end : '' }}</div>@endif
-                        </div>
-                        @if($pei->semaforo)
-                        <span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block;background:{{ $pei->semaforo==='verde'?'#059669':($pei->semaforo==='amarillo'?'#d97706':'#dc2626') }}"></span>
-                        @endif
-                    </div>
-                    @endforeach
-                </div>
-                @endif
             </div>
         </div>
 
     </div>
+</div>
 
-    {{-- EVALUACIONES + SIESS --}}
-    <div class="twin">
+{{-- ══ ESTADÍSTICAS ══════════════════════════════════════════════════════════ --}}
+<div class="dept-section" id="dept-estadisticas">
 
-        {{-- EVALUACIONES --}}
-        <div>
-            <div class="sec-header">
-                <div class="sec-icon" style="background:var(--green-lt);color:var(--green)"><i class="fa fa-hospital"></i></div>
-                <div>
-                    <span class="sec-title">Evaluaciones RIISS</span>
-                    <span class="sec-sub">· Red de Salud IPS</span>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-head">
-                    <span class="card-head-title"><i class="fa fa-clipboard-list" style="color:var(--green)"></i> Últimas evaluaciones</span>
-                    <span class="card-count">{{ $evalTotal }} total</span>
-                </div>
-                @if($evaluaciones->count())
-                <div style="overflow-x:auto">
-                <table class="t">
-                    <thead>
-                        <tr>
-                            <th>Establecimiento</th>
-                            <th>Fecha</th>
-                            <th>Cumplimiento</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($evaluaciones as $ev)
-                        @php
-                            $p = (float)($ev->porcentaje_cumplimiento ?? 0);
-                            $pc = $p >= 70 ? 'pct-hi' : ($p >= 40 ? 'pct-md' : 'pct-lo');
-                            $estado = $ev->estado ?? 'pendiente';
-                            $bClass = match($estado) {
-                                'completada' => 'b-green',
-                                'en_curso'   => 'b-blue',
-                                default      => 'b-amber',
-                            };
-                        @endphp
-                        <tr>
-                            <td style="font-weight:600;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                                {{ $ev->establecimiento?->nombre_oficial ?? '—' }}
-                            </td>
-                            <td style="white-space:nowrap;color:var(--muted)">{{ $ev->fecha_evaluacion?->format('d/m/Y') ?? '—' }}</td>
-                            <td>
-                                @if($ev->porcentaje_cumplimiento !== null)
-                                <div class="pct-row">
-                                    <div class="pct-track"><div class="pct-fill {{ $pc }}" style="width:{{ min(100,$p) }}%"></div></div>
-                                    <span class="pct-val" style="color:var(--text)">{{ number_format($p,1) }}%</span>
-                                </div>
-                                @else<span style="color:var(--muted)">—</span>@endif
-                            </td>
-                            <td><span class="badge {{ $bClass }}">{{ ucfirst(str_replace('_',' ',$estado)) }}</span></td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                </div>
-                @else
-                <div class="empty"><i class="fa fa-hospital"></i>Sin evaluaciones</div>
-                @endif
-                <div class="row-summary">
-                    <span><b style="color:var(--green)">{{ $evalCompletadas }}</b> completadas</span>
-                    <span><b style="color:var(--blue)">{{ $evalEnCurso }}</b> en curso</span>
-                    <span><b>{{ $evalTotal }}</b> total</span>
-                </div>
-            </div>
+    <div class="kpi-strip" style="margin-bottom:24px">
+        <div class="kpi-card">
+            <div class="kpi-ic green"><i class="fa fa-check-double"></i></div>
+            <div><div class="kpi-num">{{ $siessAprobados }}</div><div class="kpi-lbl">Extractos aprobados</div></div>
         </div>
-
-        {{-- SIESS --}}
-        <div>
-            <div class="sec-header">
-                <div class="sec-icon" style="background:var(--violet-lt);color:var(--violet)"><i class="fa fa-chart-line"></i></div>
-                <div>
-                    <span class="sec-title">Módulos SIESS</span>
-                    <span class="sec-sub">· Estadísticas institucionales</span>
-                </div>
-            </div>
-
-            <div class="card" style="margin-bottom:12px">
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)">
-                    <div style="background:var(--green-lt);padding:16px;text-align:center">
-                        <div style="font-size:1.6rem;font-weight:900;color:var(--green)">{{ $siessAprobados }}</div>
-                        <div style="font-size:10px;color:var(--green);font-weight:700;margin-top:4px">Aprobados</div>
-                    </div>
-                    <div style="background:var(--amber-lt);padding:16px;text-align:center">
-                        <div style="font-size:1.6rem;font-weight:900;color:var(--amber)">{{ $siessPendientes }}</div>
-                        <div style="font-size:10px;color:var(--amber);font-weight:700;margin-top:4px">Pendientes</div>
-                    </div>
-                    <div style="background:var(--red-lt);padding:16px;text-align:center">
-                        <div style="font-size:1.6rem;font-weight:900;color:var(--red)">{{ $siessObjetados }}</div>
-                        <div style="font-size:10px;color:var(--red);font-weight:700;margin-top:4px">Objetados</div>
-                    </div>
-                </div>
-            </div>
-
-            @if($siessModulos->count())
-            <div class="siess-grid">
-                @foreach($siessModulos as $mod)
-                @php $res = $mod->resumenEstados(); @endphp
-                <div class="siess-card">
-                    <div class="siess-name">{{ $mod->nombre }}</div>
-                    <div class="siess-code">{{ $mod->codigo }} · {{ ucfirst($mod->periodicidad ?? '') }}</div>
-                    <div class="siess-pills">
-                        @if(($res['aprobado'] ?? 0) + ($res['aprobado_silencio'] ?? 0) > 0)
-                        <span class="siess-pill" style="background:var(--green-lt);color:var(--green)"><i class="fa fa-check" style="font-size:9px"></i> {{ ($res['aprobado'] ?? 0) + ($res['aprobado_silencio'] ?? 0) }}</span>
-                        @endif
-                        @if(($res['pendiente_validacion'] ?? 0) > 0)
-                        <span class="siess-pill" style="background:var(--amber-lt);color:var(--amber)"><i class="fa fa-clock" style="font-size:9px"></i> {{ $res['pendiente_validacion'] }}</span>
-                        @endif
-                        @if(($res['objetado'] ?? 0) > 0)
-                        <span class="siess-pill" style="background:var(--red-lt);color:var(--red)"><i class="fa fa-times" style="font-size:9px"></i> {{ $res['objetado'] }}</span>
-                        @endif
-                        @if(($res['borrador'] ?? 0) > 0)
-                        <span class="siess-pill" style="background:#f1f5f9;color:var(--muted)">{{ $res['borrador'] }} borr.</span>
-                        @endif
-                    </div>
-                </div>
-                @endforeach
-            </div>
-            @else
-            <div class="card"><div class="empty"><i class="fa fa-chart-bar"></i>Sin módulos activos</div></div>
-            @endif
+        <div class="kpi-card">
+            <div class="kpi-ic amber"><i class="fa fa-clock"></i></div>
+            <div><div class="kpi-num">{{ $siessPendientes }}</div><div class="kpi-lbl">Pendientes</div></div>
         </div>
-
+        <div class="kpi-card">
+            <div class="kpi-ic red"><i class="fa fa-times-circle"></i></div>
+            <div><div class="kpi-num">{{ $siessObjetados }}</div><div class="kpi-lbl">Objetados</div></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-ic blue"><i class="fa fa-database"></i></div>
+            <div><div class="kpi-num">{{ $siessModulos->count() }}</div><div class="kpi-lbl">Módulos activos</div></div>
+        </div>
     </div>
+
+    <div class="sec-header">
+        <div class="sec-icon" style="background:var(--violet-lt);color:var(--violet)"><i class="fa fa-chart-line"></i></div>
+        <div><span class="sec-title">Módulos SIESS</span><span class="sec-sub">· Estadísticas institucionales</span></div>
+    </div>
+
+    @if($siessModulos->count())
+    <div class="siess-grid">
+        @foreach($siessModulos as $mod)
+        @php $res = $mod->resumenEstados(); @endphp
+        <div class="siess-card">
+            <div class="siess-name">{{ $mod->nombre }}</div>
+            <div class="siess-code">{{ $mod->codigo }} · {{ ucfirst($mod->periodicidad ?? '') }}</div>
+            <div class="siess-pills">
+                @if(($res['aprobado'] ?? 0) + ($res['aprobado_silencio'] ?? 0) > 0)
+                <span class="siess-pill" style="background:var(--green-lt);color:var(--green)"><i class="fa fa-check" style="font-size:9px"></i> {{ ($res['aprobado'] ?? 0) + ($res['aprobado_silencio'] ?? 0) }}</span>
+                @endif
+                @if(($res['pendiente_validacion'] ?? 0) > 0)
+                <span class="siess-pill" style="background:var(--amber-lt);color:var(--amber)"><i class="fa fa-clock" style="font-size:9px"></i> {{ $res['pendiente_validacion'] }}</span>
+                @endif
+                @if(($res['objetado'] ?? 0) > 0)
+                <span class="siess-pill" style="background:var(--red-lt);color:var(--red)"><i class="fa fa-times" style="font-size:9px"></i> {{ $res['objetado'] }}</span>
+                @endif
+                @if(($res['borrador'] ?? 0) > 0)
+                <span class="siess-pill" style="background:#f1f5f9;color:var(--muted)">{{ $res['borrador'] }} borr.</span>
+                @endif
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @else
+    <div class="card"><div class="empty"><i class="fa fa-chart-bar"></i>Sin módulos activos</div></div>
+    @endif
 
 </div>
 
+</div>{{-- /wrap --}}
+
 <footer>
-    <strong>SIPLAN</strong> · Sistema de Planificación Estratégica Institucional<br>
-    Instituto de Previsión Social del Paraguay · Datos en tiempo real
+<div class="footer-inner">
+
+    <div class="footer-top">
+        {{-- Brand --}}
+        <div>
+            <div class="footer-brand" style="margin-bottom:8px">
+                <div class="footer-logo">SP</div>
+                <div>
+                    <div class="footer-brand-name">SIPLAN</div>
+                    <div class="footer-brand-sub">Sistema de Planificación Estratégica · IPS Paraguay</div>
+                </div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);max-width:340px;line-height:1.6">
+                Plataforma de monitoreo estratégico institucional para el
+                <strong style="color:var(--text)">Instituto de Previsión Social del Paraguay</strong>.
+                Datos en tiempo real.
+            </div>
+        </div>
+
+        {{-- Desarrollado con IA --}}
+        <div class="footer-dev">
+            <div class="footer-dev-label">Desarrollado con asistencia de IA</div>
+            <div class="ai-badges">
+                {{-- Amazon Kiro --}}
+                <a class="ai-badge ai-badge-kiro" href="https://kiro.dev" target="_blank" title="Amazon Kiro">
+                    <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                        <rect width="48" height="48" rx="8" fill="#F59E0B"/>
+                        <path d="M12 36L24 12L36 36H28L24 27L20 36H12Z" fill="white"/>
+                    </svg>
+                    Kiro
+                </a>
+                {{-- Amazon Q --}}
+                <a class="ai-badge" href="https://aws.amazon.com/q/" target="_blank"
+                   title="Amazon Q"
+                   style="border-color:#22927344;background:#ecfdf5;color:#166534">
+                    <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                        <rect width="48" height="48" rx="8" fill="#1A9C3E"/>
+                        <path d="M24 10C16.3 10 10 16.3 10 24C10 31.7 16.3 38 24 38C27.4 38 30.5 36.8 32.9 34.8L36 38L38 36L34.8 32.9C36.8 30.5 38 27.4 38 24C38 16.3 31.7 10 24 10ZM24 34C18.5 34 14 29.5 14 24C14 18.5 18.5 14 24 14C29.5 14 34 18.5 34 24C34 26.6 33 29 31.3 30.8L27 26.5C27.6 25.8 28 24.9 28 24C28 21.8 26.2 20 24 20C21.8 20 20 21.8 20 24C20 26.2 21.8 28 24 28C24.9 28 25.8 27.6 26.5 27L30.8 31.3C29 33 26.6 34 24 34Z" fill="white"/>
+                    </svg>
+                    Amazon Q
+                </a>
+                {{-- Claude --}}
+                <a class="ai-badge ai-badge-claude" href="https://claude.ai" target="_blank" title="Anthropic Claude">
+                    <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                        <rect width="48" height="48" rx="8" fill="#F97316"/>
+                        <path d="M24 8L38 32H10L24 8Z" fill="white" opacity=".9"/>
+                        <path d="M16 32L24 18L32 32" fill="#F97316"/>
+                    </svg>
+                    Claude
+                </a>
+                {{-- Gemini --}}
+                <a class="ai-badge ai-badge-gemini" href="https://gemini.google.com" target="_blank" title="Google Gemini">
+                    <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                        <rect width="48" height="48" rx="8" fill="#4285F4"/>
+                        <path d="M24 8C24 8 30 20 30 24C30 28 24 40 24 40C24 40 18 28 18 24C18 20 24 8 24 8Z" fill="white"/>
+                        <path d="M8 24C8 24 20 18 24 18C28 18 40 24 40 24C40 24 28 30 24 30C20 30 8 24 8 24Z" fill="white" opacity=".7"/>
+                    </svg>
+                    Gemini
+                </a>
+            </div>
+            <div class="footer-dev-by">
+                Desarrollado por
+                <a href="https://www.linkedin.com/in/jufrancopy/" target="_blank">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="#0077b5" style="vertical-align:middle;margin-right:2px"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+                    Julio Franco
+                </a>
+                · IPS Paraguay
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <span>© {{ date('Y') }} SIPLAN</span>
+        <span>·</span>
+        <span>Instituto de Previsión Social del Paraguay</span>
+        <span>·</span>
+        <span>Todos los derechos reservados</span>
+    </div>
+
+</div>
 </footer>
+
+<script>
+document.querySelectorAll('.dept-tab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.dept-tab').forEach(function(b){ b.classList.remove('active'); });
+        document.querySelectorAll('.dept-section').forEach(function(s){ s.classList.remove('active'); });
+        this.classList.add('active');
+        document.getElementById('dept-' + this.dataset.dept).classList.add('active');
+        window.location.hash = this.dataset.dept;
+    });
+});
+var hash = window.location.hash.replace('#','');
+if(hash && document.querySelector('.dept-tab[data-dept="'+hash+'"]')) {
+    document.querySelector('.dept-tab[data-dept="'+hash+'"]').click();
+}
+</script>
 
 </body>
 </html>

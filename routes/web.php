@@ -23,6 +23,13 @@ Route::get('/', function () {
     $evalCompletadas = \App\Models\Riiss\Evaluacion::where('estado', 'completada')->count();
     $evalEnCurso     = \App\Models\Riiss\Evaluacion::where('estado', 'en_curso')->count();
 
+    // RIISS — últimas evaluaciones con semáforo y establecimiento
+    $evalRecientes = \App\Models\Riiss\Evaluacion::with('establecimiento.complejidadTipo')
+        ->latest('fecha_evaluacion')->take(10)->get();
+
+    // Tipos de complejidad para la tabla de niveles
+    $complejidadTipos = \App\Models\Riiss\ComplejidadTipo::activos()->get();
+
     // SIESS
     $siessModulos    = \App\Models\Estadistica\SiessModulo::where('activo', true)->orderBy('orden')->get();
     $siessAprobados  = \App\Models\Estadistica\SiessExtracto::aprobados()->count();
@@ -42,21 +49,21 @@ Route::get('/', function () {
         ->groupBy('iea_clasificacion')
         ->pluck('total', 'iea_clasificacion');
 
-    // PEI — solo raíces master (parent_id null)
-    $peiPlanes       = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')->where('level', 'master')->count();
-    $peiAcciones     = \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->count();
-    $peiSemaforo     = \App\Admin\Planificacion\Pei\PeiProfile::whereNotNull('semaforo')
+    // PEI — solo raíces master
+    $peiPlanes    = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')->where('level', 'master')->count();
+    $peiAcciones  = \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->count();
+    $peiSemaforo  = \App\Admin\Planificacion\Pei\PeiProfile::whereNotNull('semaforo')
         ->selectRaw('semaforo, count(*) as total')
-        ->groupBy('semaforo')
-        ->pluck('total', 'semaforo');
-    $peiRecientes    = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')
-        ->where('level', 'master')
-        ->latest()->take(5)
-        ->get(['id', 'name', 'year_start', 'year_end', 'semaforo', 'type']);
+        ->groupBy('semaforo')->pluck('total', 'semaforo');
+    $peiRecientes = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')
+        ->where('level', 'master')->whereNull('deleted_at')
+        ->latest()->take(10)
+        ->get(['id', 'name', 'year_start', 'year_end', 'semaforo', 'public_token']);
 
     return view('welcome', compact(
         'activities', 'totalTareas', 'tareasEnCurso', 'tareasHechas', 'tareasVencidas',
         'evaluaciones', 'evalTotal', 'evalCompletadas', 'evalEnCurso',
+        'evalRecientes', 'complejidadTipos',
         'siessModulos', 'siessAprobados', 'siessPendientes', 'siessObjetados',
         'fodaPerfiles', 'fodaAnalisis', 'fodaFortalezas', 'fodaDebilidades',
         'fodaOportunidades', 'fodaAmenazas', 'fodaEstrategias', 'fodaIeaResumen',
