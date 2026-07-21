@@ -546,7 +546,7 @@ footer strong { color: var(--text); }
                     @endphp
                     <tr>
                         <td style="font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                            {{ $ev->establecimiento?->nombre ?? '—' }}
+                            {{ $ev->establecimiento?->nombre_oficial ?? '—' }}
                         </td>
                         <td>
                             <span style="font-size:.68rem;color:var(--muted)">
@@ -565,7 +565,7 @@ footer strong { color: var(--text); }
                                 <span class="pct-val" style="color:{{ $p>=90?'var(--green)':($p>=70?'var(--amber)':'var(--red)') }}">{{ $p }}%</span>
                                 <button class="btn-matriz"
                                         data-eval="{{ $ev->id }}"
-                                        data-nombre="{{ $ev->establecimiento?->nombre ?? 'Evaluación #'.$ev->id }}"
+                                        data-nombre="{{ $ev->establecimiento?->nombre_oficial ?? 'Evaluación #'.$ev->id }}"
                                         title="Ver Matriz de Servicios"
                                         style="flex-shrink:0;display:inline-flex;align-items:center;gap:3px;
                                                padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;

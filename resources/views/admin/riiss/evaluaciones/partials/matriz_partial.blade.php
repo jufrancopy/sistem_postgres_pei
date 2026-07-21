@@ -12,7 +12,7 @@ $semLabel = ['verde'=>'En meta','amarillo'=>'En proceso','rojo'=>'Crítico','sin
     </div>
     <div class="text-right">
         <div style="font-size:.65rem;opacity:.65;text-transform:uppercase">Establecimiento</div>
-        <div style="font-size:.85rem;font-weight:700">{{ $evaluacion->establecimiento?->nombre ?? '—' }}</div>
+        <div style="font-size:.85rem;font-weight:700">{{ $evaluacion->establecimiento?->nombre_oficial ?? '—' }}</div>
     </div>
 </div>
 
