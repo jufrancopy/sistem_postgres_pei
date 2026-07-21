@@ -679,6 +679,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('evaluaciones.gap');
         Route::get('evaluaciones/{evaluacion}/resumen-clasificacion', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'resumenClasificacion'])
             ->name('evaluaciones.clasificacion');
+        Route::get('evaluaciones/{evaluacion}/matriz-partial', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'matrizPartial'])
+            ->name('evaluaciones.matriz-partial');
         Route::get('evaluaciones/{evaluacion}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'show'])
             ->name('evaluaciones.show');
         Route::delete('evaluaciones/{evaluacion}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'destroy'])

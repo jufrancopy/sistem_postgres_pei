@@ -558,11 +558,22 @@ footer strong { color: var(--text); }
                         </td>
                         <td><span class="badge {{ $stc }}">{{ ucfirst(str_replace('_',' ',$ev->estado)) }}</span></td>
                         <td class="text-right">
-                            <div class="pct-row" style="justify-content:flex-end">
+                            <div class="pct-row" style="justify-content:flex-end;gap:6px">
                                 <div class="pct-track" style="min-width:50px">
                                     <div class="pct-fill {{ $p>=90?'pct-hi':($p>=70?'pct-md':'pct-lo') }}" style="width:{{ $p }}%"></div>
                                 </div>
-                                <span class="pct-val {{ $p>=90?'':($p>=70?'':'') }}" style="color:{{ $p>=90?'var(--green)':($p>=70?'var(--amber)':'var(--red)') }}">{{ $p }}%</span>
+                                <span class="pct-val" style="color:{{ $p>=90?'var(--green)':($p>=70?'var(--amber)':'var(--red)') }}">{{ $p }}%</span>
+                                <button class="btn-matriz"
+                                        data-eval="{{ $ev->id }}"
+                                        data-nombre="{{ $ev->establecimiento?->nombre ?? 'Evaluación #'.$ev->id }}"
+                                        title="Ver Matriz de Servicios"
+                                        style="flex-shrink:0;display:inline-flex;align-items:center;gap:3px;
+                                               padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;
+                                               background:var(--blue-lt);color:var(--blue);border:1px solid #bfdbfe;
+                                               cursor:pointer;white-space:nowrap">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                                    Matriz
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -800,6 +811,89 @@ footer strong { color: var(--text); }
 </div>
 
 </div>{{-- /wrap --}}
+
+{{-- ══ MODAL MATRIZ DE SERVICIOS ══════════════════════════════════════════════ --}}
+<div id="modalMatriz" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);overflow-y:auto;padding:20px 12px">
+    <div style="background:#fff;border-radius:16px;max-width:1000px;margin:0 auto;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.25)">
+        {{-- Header --}}
+        <div style="background:linear-gradient(135deg,#1a237e,#283593);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between">
+            <div>
+                <div style="font-size:.65rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem">
+                    <i class="fa fa-th" style="margin-right:.3rem"></i>Matriz de Servicios
+                </div>
+                <div id="modalMatrizNombre" style="font-size:.95rem;font-weight:700;color:#fff"></div>
+            </div>
+            <button onclick="cerrarModalMatriz()"
+                    style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center">
+                ✕
+            </button>
+        </div>
+        {{-- Body --}}
+        <div id="modalMatrizBody" style="padding:1.25rem;max-height:80vh;overflow-y:auto">
+            <div style="text-align:center;padding:3rem;color:#64748b">
+                <div style="width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div>
+                Cargando matriz…
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-matriz:hover{background:#dbeafe!important;transform:translateY(-1px)}
+</style>
+
+<script>
+function abrirModalMatriz(evalId, nombre) {
+    document.getElementById('modalMatrizNombre').textContent = nombre;
+    document.getElementById('modalMatrizBody').innerHTML =
+        '<div style="text-align:center;padding:3rem;color:#64748b">' +
+        '<div style="width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div>' +
+        'Cargando matriz…</div>';
+    document.getElementById('modalMatriz').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+
+    fetch('/riiss/evaluaciones/' + evalId + '/matriz-partial', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r){ return r.text(); })
+    .then(function(html){
+        document.getElementById('modalMatrizBody').innerHTML = html;
+        // Re-ejecutar scripts del partial
+        var scripts = document.getElementById('modalMatrizBody').querySelectorAll('script');
+        scripts.forEach(function(s){
+            var ns = document.createElement('script');
+            ns.textContent = s.textContent;
+            s.parentNode.replaceChild(ns, s);
+        });
+    })
+    .catch(function(){
+        document.getElementById('modalMatrizBody').innerHTML =
+            '<div style="text-align:center;padding:2rem;color:#dc2626">Error al cargar la matriz.</div>';
+    });
+}
+
+function cerrarModalMatriz() {
+    document.getElementById('modalMatriz').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// Botones Matriz
+document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.btn-matriz');
+    if (btn) abrirModalMatriz(btn.dataset.eval, btn.dataset.nombre);
+});
+
+// Cerrar al click fuera
+document.getElementById('modalMatriz').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalMatriz();
+});
+
+// Cerrar con ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') cerrarModalMatriz();
+});
+</script>
 
 <footer>
 <div class="footer-inner">

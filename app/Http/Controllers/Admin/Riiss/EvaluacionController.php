@@ -386,6 +386,50 @@ class EvaluacionController extends Controller
         return response()->json(['ok' => true, 'message' => 'Evaluación eliminada']);
     }
 
+    /**
+     * GET /riiss/evaluaciones/{id}/matriz-partial
+     * Retorna el HTML de la Matriz de Servicios para usar en modal (sin auth requerida para welcome).
+     */
+    public function matrizPartial(Evaluacion $evaluacion)
+    {
+        $mapGradoColumna = [
+            1 => 'aplica_puesto_sanitario',
+            2 => 'aplica_clinica_periferica',
+            3 => 'aplica_hospital_baja',
+            4 => 'aplica_hospital_mediana',
+            5 => 'aplica_hospital_alta',
+            6 => 'aplica_hospital_alta',
+        ];
+
+        $tiposComplejidad   = \App\Models\Riiss\ComplejidadTipo::activos()->get();
+        $complejidadTipoEst = $evaluacion->establecimiento->complejidadTipo;
+        $gradoEst           = $complejidadTipoEst?->grado ?? 0;
+        $colActual          = $mapGradoColumna[$gradoEst] ?? null;
+        $nombreNivel        = $complejidadTipoEst?->nombre ?? 'Sin clasificación';
+        $tipoLabel          = $complejidadTipoEst?->tipo_establecimiento ?? '';
+
+        $columnas  = $tiposComplejidad->map(fn($tipo) => [
+            'key'        => $mapGradoColumna[$tipo->grado] ?? null,
+            'label'      => $tipo->nombre,
+            'tipo_label' => $tipo->tipo_establecimiento,
+            'nivel'      => $tipo->nivel_atencion,
+            'grado'      => $tipo->grado,
+            'color'      => $tipo->color ?? '#1a237e',
+        ])->filter(fn($c) => $c['key'] !== null)->values();
+
+        $servicios = \App\Models\Riiss\CarteraServicio::orderBy('tipo_prestacion')
+            ->orderBy('grupo_servicio')->orderBy('servicio')->get();
+
+        $gapItems = $evaluacion->gapAnalysis()
+            ->where('dimension', 'cartera_servicios')
+            ->get()->keyBy('servicio_nombre');
+
+        return view('admin.riiss.evaluaciones.partials.matriz_partial', compact(
+            'evaluacion', 'columnas', 'servicios', 'gapItems',
+            'colActual', 'nombreNivel', 'tipoLabel', 'mapGradoColumna'
+        ));
+    }
+
     private function authorizeEvaluacion(Evaluacion $evaluacion): void
     {
         if (!auth()->user()->hasAnyRole(['Administrador', 'Analista - RIISS'])) {
