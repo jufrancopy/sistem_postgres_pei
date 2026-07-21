@@ -228,7 +228,7 @@
             </div>
 
             {{-- Selector de columnas --}}
-            <div class="mb-3 p-2 rounded d-flex flex-wrap align-items-center"
+            <div class="mb-2 p-2 rounded d-flex flex-wrap align-items-center"
                  style="background:#f8faff;border:1px solid #e2e8f0;gap:.5rem">
                 <span style="font-size:.72rem;font-weight:600;color:#475569;margin-right:.25rem">
                     <i class="fa fa-columns mr-1"></i>Columnas visibles:
@@ -253,28 +253,106 @@
                 @endforeach
             </div>
 
+            {{-- Filtros de filas + buscador --}}
+            <div class="mb-2 d-flex flex-wrap align-items-center" style="gap:.4rem">
+                <span style="font-size:.72rem;font-weight:600;color:#475569">
+                    <i class="fa fa-filter mr-1"></i>Filtrar:
+                </span>
+                <button class="btn-filtro-matriz active" data-filtro="requeridos">
+                    <i class="fa fa-star" style="font-size:.6rem"></i> Requeridos
+                </button>
+                <button class="btn-filtro-matriz" data-filtro="todos">
+                    <i class="fa fa-list" style="font-size:.6rem"></i> Todos
+                </button>
+                <button class="btn-filtro-matriz" data-filtro="opcionales">
+                    <i class="fa fa-circle" style="font-size:.6rem"></i> Opcionales
+                </button>
+                <button class="btn-filtro-matriz" data-filtro="cumple">
+                    <i class="fa fa-check" style="font-size:.6rem;color:#15803d"></i> Cumple
+                </button>
+                <button class="btn-filtro-matriz" data-filtro="no_cumple">
+                    <i class="fa fa-times" style="font-size:.6rem;color:#b91c1c"></i> No cumple
+                </button>
+                <div style="margin-left:auto">
+                    <div style="position:relative">
+                        <i class="fa fa-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:.65rem;color:#94a3b8"></i>
+                        <input type="text" id="buscadorMatriz" placeholder="Buscar servicio…"
+                               style="padding:.3rem .5rem .3rem 1.6rem;border:1px solid #e2e8f0;border-radius:20px;font-size:.75rem;width:180px;outline:none;color:#334155">
+                    </div>
+                </div>
+            </div>
+
+            <style>
+            .btn-filtro-matriz{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;border-radius:20px;font-size:.72rem;font-weight:600;border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer;transition:all .15s}
+            .btn-filtro-matriz:hover{border-color:#94a3b8;color:#334155}
+            .btn-filtro-matriz.active{background:#1a237e;color:#fff;border-color:#1a237e}
+            #matrizTable tbody tr.fila-oculta{display:none}
+            </style>
+
+            <script>
+            (function(){
+                var filtroActual = 'requeridos';
+                var busqueda = '';
+
+                function aplicarFiltro(){
+                    var filas = document.querySelectorAll('#matrizTable tbody tr');
+                    filas.forEach(function(tr){
+                        var req     = tr.dataset.req  === '1';
+                        var estado  = tr.dataset.eval || '';
+                        var nom     = (tr.dataset.nombre || '').toLowerCase();
+
+                        var pasaBusqueda = busqueda === '' || nom.indexOf(busqueda) !== -1;
+
+                        var pasaFiltro = true;
+                        if(filtroActual === 'requeridos')  pasaFiltro = req;
+                        if(filtroActual === 'opcionales')  pasaFiltro = !req;
+                        if(filtroActual === 'cumple')      pasaFiltro = estado === 'cumple';
+                        if(filtroActual === 'no_cumple')   pasaFiltro = estado === 'no_cumple';
+
+                        tr.classList.toggle('fila-oculta', !(pasaFiltro && pasaBusqueda));
+                    });
+                }
+
+                document.querySelectorAll('.btn-filtro-matriz').forEach(function(btn){
+                    btn.addEventListener('click', function(){
+                        document.querySelectorAll('.btn-filtro-matriz').forEach(function(b){b.classList.remove('active')});
+                        this.classList.add('active');
+                        filtroActual = this.dataset.filtro;
+                        aplicarFiltro();
+                    });
+                });
+
+                var buscador = document.getElementById('buscadorMatriz');
+                if(buscador){
+                    buscador.addEventListener('input', function(){
+                        busqueda = this.value.toLowerCase().trim();
+                        aplicarFiltro();
+                    });
+                }
+
+                // Aplicar filtro inicial (requeridos por defecto)
+                aplicarFiltro();
+            })();
+            </script>
+
             {{-- Tabla principal --}}
             <div class="table-responsive" style="max-height:62vh;overflow-y:auto;border:1px solid #e2e8f0;border-radius:.5rem">
             <table class="table table-bordered table-sm mb-0" id="matrizTable"
                    style="font-size:.78rem;border-collapse:collapse;color:#212529">
-                <thead style="position:sticky;top:0;z-index:10">
-                    <tr style="background:#1a237e;color:#fff;text-align:center">
                         <th rowspan="2" style="text-align:left;min-width:120px;vertical-align:middle;background:#1a237e;border-color:#283593">Tipo de Prestación</th>
                         <th rowspan="2" style="text-align:left;min-width:220px;vertical-align:middle;background:#1a237e;border-color:#283593">Servicio</th>
-                        <th rowspan="2" style="text-align:center;width:90px;vertical-align:middle;background:#1565c0;border-color:#1565c0;font-size:.65rem">
-                            Evaluación<br><span style="font-size:.55rem;opacity:.75;font-weight:400">en este estab.</span>
+                        <th colspan="2" style="text-align:center;background:#1565c0;border-color:#1565c0;font-size:.68rem;padding:.5rem">
+                            {{ $nombreNivel }}
+                            @if($tipoLabel)<div style="font-size:.58rem;opacity:.7;font-weight:400;margin-top:.1rem">{{ $tipoLabel }} · ★ Este establecimiento</div>@endif
                         </th>
-                        @foreach($columnas->unique('key') as $col)
-                        <th class="col-header col-{{ $col['key'] }}"
-                            style="background:#283593;border-color:#3949ab;min-width:110px;font-size:.68rem;
-                                   {{ !($col['key'] === $colActual) ? 'display:none' : '' }}">
-                            <div style="font-size:.6rem;opacity:.7;font-weight:400">{{ $col['tipo_label'] }}</div>
-                            <div>{{ $col['label'] }}</div>
-                            @if($col['key'] === $colActual)
-                            <div style="font-size:.58rem;color:#90caf9;margin-top:.1rem">★ Este establecimiento</div>
-                            @endif
+                    </tr>
+                    <tr style="background:#1565c0;color:#fff;text-align:center">
+                        <th style="width:90px;font-size:.65rem;font-weight:700;background:#1b5e20;border-color:#2e7d32">
+                            <i class="fa fa-check mr-1" style="font-size:.6rem"></i>Cumple
                         </th>
-                        @endforeach
+                        <th style="width:90px;font-size:.65rem;font-weight:700;background:#b71c1c;border-color:#c62828">
+                            <i class="fa fa-times mr-1" style="font-size:.6rem"></i>No cumple
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -287,7 +365,10 @@
                             : ($gap->estado === 'no_cumple' ? '#fef2f2' : ''))
                             : '';
                     @endphp
-                    <tr style="{{ $rowBg ? 'background:'.$rowBg : '' }}">
+                    <tr style="{{ $rowBg ? 'background:'.$rowBg : '' }}"
+            data-req="{{ $srv->requerido ? '1' : '0' }}"
+            data-eval="{{ $gap?->estado ?? '' }}"
+            data-nombre="{{ strtolower($srv->servicio) }}">
                         @if($i === 0)
                         <td rowspan="{{ $items->count() }}"
                             style="font-weight:700;font-size:.72rem;color:#1a237e;vertical-align:middle;
@@ -302,41 +383,20 @@
                             @endif
                         </td>
                         {{-- Columna Evaluación separada --}}
-                        <td style="text-align:center;vertical-align:middle;background:#f0f4ff">
-                            @if($gap)
-                                @if($gap->estado === 'cumple')
-                                <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#dcfce7">
-                                    <i class="fa fa-check" style="font-size:.65rem;color:#15803d"></i>
-                                </span>
-                                @elseif($gap->estado === 'no_cumple')
-                                <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#fee2e2">
-                                    <i class="fa fa-times" style="font-size:.65rem;color:#b91c1c"></i>
-                                </span>
-                                @else
-                                <span style="color:#cbd5e1;font-size:.75rem">—</span>
-                                @endif
-                            @else
-                            <span style="color:#cbd5e1;font-size:.75rem">—</span>
+                        <td style="text-align:center;vertical-align:middle;background:#f0fdf4">
+                            @if($gap && $gap->estado === 'cumple')
+                            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#dcfce7">
+                                <i class="fa fa-check" style="font-size:.65rem;color:#15803d"></i>
+                            </span>
                             @endif
                         </td>
-                        @foreach($columnas->unique('key') as $col)
-                        <td class="col-cell col-{{ $col['key'] }}"
-                            style="text-align:center;vertical-align:middle;
-                                   {{ $col['key'] === $colActual ? 'background:#e3f2fd' : '' }};
-                                   {{ !($col['key'] === $colActual) ? 'display:none' : '' }}">
-                            @if($srv->{$col['key']})
-                                <span style="display:inline-flex;align-items:center;justify-content:center;
-                                             width:22px;height:22px;border-radius:50%;background:#dcfce7">
-                                    <i class="fa fa-check" style="font-size:.62rem;color:#15803d"></i>
-                                </span>
-                            @else
-                                <span style="display:inline-flex;align-items:center;justify-content:center;
-                                             width:22px;height:22px;border-radius:50%;background:#fee2e2">
-                                    <i class="fa fa-times" style="font-size:.62rem;color:#b91c1c"></i>
-                                </span>
+                        <td style="text-align:center;vertical-align:middle;background:#fff5f5">
+                            @if($gap && $gap->estado === 'no_cumple')
+                            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#fee2e2">
+                                <i class="fa fa-times" style="font-size:.65rem;color:#b91c1c"></i>
+                            </span>
                             @endif
                         </td>
-                        @endforeach
                     </tr>
                     @endforeach
                 @endforeach
@@ -345,12 +405,9 @@
             </div>
 
             <div class="mt-2 px-1 d-flex flex-wrap" style="gap:.75rem;font-size:.72rem;color:#64748b">
-                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#dcfce7"><i class="fa fa-check" style="font-size:.55rem;color:#15803d"></i></span> Aplica al nivel</span>
-                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fee2e2"><i class="fa fa-times" style="font-size:.55rem;color:#b91c1c"></i></span> No aplica al nivel</span>
-                <span style="background:#f0f4ff;padding:1px 6px;border-radius:3px;border:1px solid #c5cae9">Evaluación</span> = resultado en este establecimiento
-                <span style="background:#e2e8f0;padding:1px 5px;border-radius:3px">req.</span> = requerido
-                <span><i class="fa fa-star" style="color:#7986cb;font-size:.65rem"></i> = este establecimiento</span>
-            </div>
+                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#dcfce7"><i class="fa fa-check" style="font-size:.55rem;color:#15803d"></i></span> Cumple</span>
+                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fee2e2"><i class="fa fa-times" style="font-size:.55rem;color:#b91c1c"></i></span> No cumple</span>
+                <span style="background:#e2e8f0;padding:1px 5px;border-radius:3px">req.</span> = requerido para este nivel
             </div>
 
             <script>
