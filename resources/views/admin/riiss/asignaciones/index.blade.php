@@ -400,31 +400,36 @@ function verGap(evaluacionId, idEstablecimiento) {
 function renderGapCompleto(d) {
     var colorClasif = { CUMPLE: '#065f46', CUMPLE_PARCIALMENTE: '#1e40af', NO_CUMPLE: '#991b1b' };
     var bgClasif    = { CUMPLE: '#d1fae5', CUMPLE_PARCIALMENTE: '#dbeafe', NO_CUMPLE: '#fee2e2' };
-    var clasif      = d.clasificacion || '—';
+    var clasif      = d.clasificacion_final || d.clasificacion || '—';
+    var cartera     = d.cartera || d;
+    var resumen     = cartera.resumen || {};
+    var porcentaje  = cartera.porcentaje || 0;
+    var por_grupo   = cartera.por_grupo || [];
+    var acciones    = cartera.acciones_criticas || [];
 
     var html = '<div class="row mb-4">';
     html += '<div class="col-md-3"><div class="card text-center border-0 shadow-sm"><div class="card-body py-3">'
-         + '<h2 class="mb-0 font-weight-bold" style="color:' + (colorClasif[clasif]||'#374151') + '">' + (d.porcentaje||0) + '%</h2>'
+         + '<h2 class="mb-0 font-weight-bold" style="color:' + (colorClasif[clasif]||'#374151') + '">' + porcentaje + '%</h2>'
          + '<small class="text-muted">Cumplimiento</small></div></div></div>';
     html += '<div class="col-md-3"><div class="card text-center border-0 shadow-sm"><div class="card-body py-3">'
-         + '<h2 class="mb-0 font-weight-bold text-success">' + (d.resumen.cumple||0) + '</h2>'
+         + '<h2 class="mb-0 font-weight-bold text-success">' + (resumen.cumple||0) + '</h2>'
          + '<small class="text-muted">Cumplen</small></div></div></div>';
     html += '<div class="col-md-3"><div class="card text-center border-0 shadow-sm"><div class="card-body py-3">'
-         + '<h2 class="mb-0 font-weight-bold text-danger">' + (d.resumen.no_cumple||0) + '</h2>'
+         + '<h2 class="mb-0 font-weight-bold text-danger">' + (resumen.no_cumple||0) + '</h2>'
          + '<small class="text-muted">No cumplen</small></div></div></div>';
     html += '<div class="col-md-3"><div class="card text-center border-0 shadow-sm"><div class="card-body py-3">'
-         + '<h2 class="mb-0 font-weight-bold text-warning">' + (d.resumen.no_verificable||0) + '</h2>'
+         + '<h2 class="mb-0 font-weight-bold text-warning">' + (resumen.no_verificable||0) + '</h2>'
          + '<small class="text-muted">No verificables</small></div></div></div>';
     html += '</div>';
 
     html += '<div class="text-center mb-4"><span class="px-4 py-2 rounded font-weight-bold" style="background:' + (bgClasif[clasif]||'#f3f4f6') + ';color:' + (colorClasif[clasif]||'#374151') + ';font-size:1rem">'
          + clasif.replace(/_/g,' ') + '</span></div>';
 
-    if (d.por_grupo && d.por_grupo.length) {
+    if (por_grupo.length) {
         html += '<h6 class="font-weight-bold mb-2"><i class="fa fa-layer-group mr-1"></i>Por grupo de servicios</h6>';
         html += '<div class="table-responsive mb-4"><table class="table table-sm table-hover">';
         html += '<thead class="thead-light"><tr><th>Grupo</th><th class="text-center">Total</th><th class="text-center text-success">Cumple</th><th class="text-center text-danger">No cumple</th><th class="text-center text-warning">No verif.</th><th>Barra</th></tr></thead><tbody>';
-        d.por_grupo.forEach(function(g) {
+        por_grupo.forEach(function(g) {
             var pct = g.total > 0 ? Math.round((g.cumple / g.total) * 100) : 0;
             var barColor = pct >= 90 ? '#22c55e' : pct >= 70 ? '#3b82f6' : '#ef4444';
             html += '<tr><td><strong>' + (g.grupo||'Sin grupo') + '</strong></td>'
@@ -438,17 +443,17 @@ function renderGapCompleto(d) {
         html += '</tbody></table></div>';
     }
 
-    if (d.acciones_criticas && d.acciones_criticas.length) {
+    if (acciones.length) {
         html += '<h6 class="font-weight-bold mb-2"><i class="fa fa-exclamation-triangle mr-1 text-danger"></i>Servicios críticos faltantes</h6>';
         html += '<div class="table-responsive"><table class="table table-sm">';
         html += '<thead class="thead-light"><tr><th>Servicio</th><th>Grupo</th><th>Acción recomendada</th></tr></thead><tbody>';
-        d.acciones_criticas.forEach(function(a) {
+        acciones.forEach(function(a) {
             html += '<tr><td><strong>' + a.servicio + '</strong></td><td><small>' + (a.grupo||'—') + '</small></td><td><small class="text-muted">' + (a.accion||'—') + '</small></td></tr>';
         });
         html += '</tbody></table></div>';
     }
 
-    if (!d.por_grupo || !d.por_grupo.length) {
+    if (!por_grupo.length) {
         html += '<div class="alert alert-info">No hay datos de gap analysis. Ejecute el análisis primero desde la vista de evaluación.</div>';
     }
 
