@@ -173,33 +173,40 @@
             <div class="tab-pane fade" id="tabMatriz">
             @php
                 use App\Models\Riiss\CarteraServicio;
-                $columnas = [
-                    ['key' => 'aplica_puesto_sanitario',  'label' => 'Puesto Sanitario',     'nivel' => 1, 'complejidad' => 1],
-                    ['key' => 'aplica_unidad_sanitaria',  'label' => 'Unidad Sanitaria',      'nivel' => 1, 'complejidad' => 2],
-                    ['key' => 'aplica_clinica_periferica','label' => 'Clínica Periférica',     'nivel' => 2, 'complejidad' => 3],
-                    ['key' => 'aplica_hospital_baja',     'label' => 'Hospital Baja',         'nivel' => 3, 'complejidad' => 4],
-                    ['key' => 'aplica_hospital_mediana',  'label' => 'Hospital Mediana',      'nivel' => 3, 'complejidad' => 5],
-                    ['key' => 'aplica_hospital_alta',     'label' => 'Hospital Alta',         'nivel' => 3, 'complejidad' => 6],
+                use App\Models\Riiss\ComplejidadTipo;
+
+                // Mapeo dinámico: grado → columna aplica_* de CarteraServicio
+                $mapGradoColumna = [
+                    1 => 'aplica_puesto_sanitario',
+                    2 => 'aplica_clinica_periferica',
+                    3 => 'aplica_hospital_baja',
+                    4 => 'aplica_hospital_mediana',
+                    5 => 'aplica_hospital_alta',
+                    6 => 'aplica_hospital_alta',
                 ];
+
+                $tiposComplejidad = ComplejidadTipo::activos()->get();
+
+                $columnas = $tiposComplejidad->map(function($tipo) use ($mapGradoColumna) {
+                    return [
+                        'key'        => $mapGradoColumna[$tipo->grado] ?? null,
+                        'label'      => $tipo->nombre,
+                        'tipo_label' => $tipo->tipo_establecimiento,
+                        'nivel'      => $tipo->nivel_atencion,
+                        'grado'      => $tipo->grado,
+                        'color'      => $tipo->color ?? '#1a237e',
+                    ];
+                })->filter(fn($c) => $c['key'] !== null)->values();
+
                 $servicios = CarteraServicio::orderBy('tipo_prestacion')->orderBy('grupo_servicio')->orderBy('servicio')->get();
                 $porTipo   = $servicios->groupBy('tipo_prestacion');
 
-                // Columna del establecimiento evaluado
-                $estTipologia = strtoupper($evaluacion->establecimiento->tipologia_clasificacion ?? '');
-                if (str_contains($estTipologia, 'PUESTO SANITARIO')) {
-                    $colActual = 'aplica_puesto_sanitario';
-                } elseif (str_contains($estTipologia, 'UNIDAD SANITARIA')) {
-                    $colActual = 'aplica_unidad_sanitaria';
-                } elseif (str_contains($estTipologia, 'CLINICA PERIFERICA') || str_contains($estTipologia, 'CLÍNICA PERIFÉRICA')) {
-                    $colActual = 'aplica_clinica_periferica';
-                } elseif (str_contains($estTipologia, 'HOSPITAL')) {
-                    $grado = (int)$evaluacion->establecimiento->grado_complejidad;
-                    $colActual = $grado >= 3 ? 'aplica_hospital_alta' : ($grado === 2 ? 'aplica_hospital_mediana' : 'aplica_hospital_baja');
-                } else {
-                    $colActual = null;
-                }
+                // Columna del establecimiento evaluado — basada en complejidad_tipo_id
+                $complejidadTipoEst = $evaluacion->establecimiento->complejidadTipo;
+                $gradoEst   = $complejidadTipoEst?->grado ?? 0;
+                $colActual  = $mapGradoColumna[$gradoEst] ?? null;
 
-                // Gap: servicios que tiene/no tiene el establecimiento
+                // Gap analysis
                 $gapItems = $evaluacion->gapAnalysis()->where('dimension','cartera_servicios')->get()->keyBy('servicio_nombre');
             @endphp
             <div class="table-responsive" style="max-height:70vh;overflow-y:auto">
@@ -213,19 +220,24 @@
                         @php $nk = 'N'.$col['nivel']; @endphp
                         @if(!in_array($nk, $niveles_vistos))
                         @php
-                            $span = collect($columnas)->where('nivel', $col['nivel'])->count();
+                            $span = $columnas->where('nivel', $col['nivel'])->count();
                             $niveles_vistos[] = $nk;
                         @endphp
-                        <th colspan="{{ $span }}" style="background:#283593;border-bottom:1px solid #3949ab">NIVEL {{ $col['nivel'] }}</th>
+                        <th colspan="{{ $span }}" style="background:#283593;border-bottom:1px solid #3949ab;font-size:.7rem">
+                            NIVEL DE ATENCIÓN {{ $col['nivel'] }}
+                        </th>
                         @endif
                         @endforeach
                     </tr>
                     <tr style="background:#283593;color:#fff;text-align:center">
                         @foreach($columnas as $col)
-                        <th style="min-width:90px;font-weight:600;font-size:.68rem;{{ $col['key'] === $colActual ? 'background:#1565c0;border-bottom:3px solid #42a5f5' : 'background:#283593' }}">
-                            {{ $col['label'] }}
-                            @if($col['key'] === $colActual)
-                            <div style="font-size:.6rem;color:#90caf9">★ Este establecimiento</div>
+                        @php $esActual = $col['key'] === $colActual; @endphp
+                        <th style="min-width:100px;font-weight:600;font-size:.65rem;vertical-align:middle;
+                            {{ $esActual ? 'background:#1565c0;border-bottom:3px solid #42a5f5' : 'background:#283593' }}">
+                            <div style="font-size:.62rem;opacity:.75;font-weight:400;margin-bottom:.15rem">{{ $col['tipo_label'] }}</div>
+                            <div>{{ $col['label'] }}</div>
+                            @if($esActual)
+                            <div style="font-size:.58rem;color:#90caf9;margin-top:.15rem">★ Este establecimiento</div>
                             @endif
                         </th>
                         @endforeach
