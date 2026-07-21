@@ -261,6 +261,9 @@
                     <tr style="background:#1a237e;color:#fff;text-align:center">
                         <th rowspan="2" style="text-align:left;min-width:120px;vertical-align:middle;background:#1a237e;border-color:#283593">Tipo de Prestación</th>
                         <th rowspan="2" style="text-align:left;min-width:220px;vertical-align:middle;background:#1a237e;border-color:#283593">Servicio</th>
+                        <th rowspan="2" style="text-align:center;width:90px;vertical-align:middle;background:#1565c0;border-color:#1565c0;font-size:.65rem">
+                            Evaluación<br><span style="font-size:.55rem;opacity:.75;font-weight:400">en este estab.</span>
+                        </th>
                         @foreach($columnas->unique('key') as $col)
                         <th class="col-header col-{{ $col['key'] }}"
                             style="background:#283593;border-color:#3949ab;min-width:110px;font-size:.68rem;
@@ -297,14 +300,23 @@
                             @if($srv->requerido)
                             <span style="font-size:.58rem;background:#e2e8f0;color:#475569;border-radius:3px;padding:1px 4px;margin-left:3px">req.</span>
                             @endif
+                        </td>
+                        {{-- Columna Evaluación separada --}}
+                        <td style="text-align:center;vertical-align:middle;background:#f0f4ff">
                             @if($gap)
-                            <span class="ml-1">
                                 @if($gap->estado === 'cumple')
-                                    <i class="fa fa-check-circle text-success" style="font-size:.72rem" title="Cumple"></i>
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#dcfce7">
+                                    <i class="fa fa-check" style="font-size:.65rem;color:#15803d"></i>
+                                </span>
                                 @elseif($gap->estado === 'no_cumple')
-                                    <i class="fa fa-times-circle text-danger" style="font-size:.72rem" title="No cumple"></i>
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#fee2e2">
+                                    <i class="fa fa-times" style="font-size:.65rem;color:#b91c1c"></i>
+                                </span>
+                                @else
+                                <span style="color:#cbd5e1;font-size:.75rem">—</span>
                                 @endif
-                            </span>
+                            @else
+                            <span style="color:#cbd5e1;font-size:.75rem">—</span>
                             @endif
                         </td>
                         @foreach($columnas->unique('key') as $col)
@@ -333,11 +345,10 @@
             </div>
 
             <div class="mt-2 px-1 d-flex flex-wrap" style="gap:.75rem;font-size:.72rem;color:#64748b">
-                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#dcfce7"><i class="fa fa-check" style="font-size:.55rem;color:#15803d"></i></span> Aplica</span>
-                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fee2e2"><i class="fa fa-times" style="font-size:.55rem;color:#b91c1c"></i></span> No aplica</span>
-                <span><i class="fa fa-check-circle text-success"></i> Cumple (evaluado)</span>
-                <span><i class="fa fa-times-circle text-danger"></i> No cumple (evaluado)</span>
-                <span style="background:#e2e8f0;padding:1px 5px;border-radius:3px">req. = requerido</span>
+                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#dcfce7"><i class="fa fa-check" style="font-size:.55rem;color:#15803d"></i></span> Aplica al nivel</span>
+                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fee2e2"><i class="fa fa-times" style="font-size:.55rem;color:#b91c1c"></i></span> No aplica al nivel</span>
+                <span style="background:#f0f4ff;padding:1px 6px;border-radius:3px;border:1px solid #c5cae9">Evaluación</span> = resultado en este establecimiento
+                <span style="background:#e2e8f0;padding:1px 5px;border-radius:3px">req.</span> = requerido
                 <span><i class="fa fa-star" style="color:#7986cb;font-size:.65rem"></i> = este establecimiento</span>
             </div>
             </div>

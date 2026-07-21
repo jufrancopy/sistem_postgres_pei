@@ -392,6 +392,7 @@ class EvaluacionController extends Controller
      */
     public function matrizPartial(Evaluacion $evaluacion)
     {
+        // Público — sin autenticación requerida
         $mapGradoColumna = [
             1 => 'aplica_puesto_sanitario',
             2 => 'aplica_clinica_periferica',
