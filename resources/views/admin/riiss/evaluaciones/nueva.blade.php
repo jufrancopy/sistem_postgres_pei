@@ -150,7 +150,7 @@
 }
 
 #evalWrapper { display:flex; gap:16px; align-items:flex-start; }
-#sidebarSecciones { width:260px; flex-shrink:0; position:sticky; top:80px; max-height:calc(100vh - 100px); overflow-y:auto; }
+#sidebarSecciones { width:260px; flex-shrink:0; position:sticky; top:80px; max-height:calc(100vh - 100px); overflow-y:auto; overflow-x:visible; }
 #contenidoFormulario { flex:1; min-width:0; }
 
 /* Ensure the card and rows don't clip the Select2 dropdown */
@@ -1058,7 +1058,7 @@ function initBuscadorPreguntas() {
         allowClear: true,
         width: '100%',
         data: datos,
-        dropdownParent: $('body'),
+        dropdownParent: $('#buscadorPreguntas').parent(),
         templateResult: function(item) {
             if (!item.id) return item.text;
             return $('<div><div style="font-size:.82rem;line-height:1.3">' + item.text + '</div><small style="color:#9ca3af">' + item.seccion + '</small></div>');
@@ -1074,9 +1074,16 @@ function initBuscadorPreguntas() {
         $('#cardDatosEstablecimiento').slideUp(150);
         setTimeout(function() {
             var el = document.getElementById('preg-' + pid);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            $('#preg-' + pid).css('background', '#fef9c3');
-            setTimeout(function() { $('#preg-' + pid).css('background', ''); }, 1500);
+            if (el) {
+                // Compatible con Windows Chrome — fallback a scrollTop si smooth no funciona
+                try {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } catch(err) {
+                    el.scrollIntoView(true);
+                }
+                $(el).css('background', '#fef9c3');
+                setTimeout(function() { $(el).css('background', ''); }, 1500);
+            }
         }, 200);
     });
 
