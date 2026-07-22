@@ -239,6 +239,9 @@
     <div id="sidebarSecciones">
         <div class="card shadow-sm">
             <div class="card-body p-2">
+                <div class="px-2 mb-2">
+                    <select id="buscadorPreguntas" style="width:100%"></select>
+                </div>
                 <div class="small font-weight-bold text-uppercase text-muted px-2 mb-2">Secciones</div>
                 <div id="listaSecciones">
                     <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-danger"></div></div>
@@ -251,7 +254,7 @@
     <div id="contenidoFormulario">
 
         {{-- Card unificado: Datos del establecimiento + Visita --}}
-        <div class="card shadow-sm mb-4">
+        <div class="card shadow-sm mb-4" id="cardDatosEstablecimiento">
             <div class="card-body">
                 <h6 class="font-weight-bold mb-3">
                     <i class="fa fa-hospital mr-2 text-danger"></i>Datos del establecimiento
@@ -695,6 +698,7 @@ function cargarFormulario(callback) {
         renderSecciones(formulario.secciones);
         $('#botonesAccion').show();
         actualizarProgreso();
+        initBuscadorPreguntas();
 
         // Ejecutar callback después de renderizar (para aplicar respuestas guardadas)
         if (typeof callback === 'function') {
@@ -1036,6 +1040,50 @@ function mostrarResultado(data) {
     $('#panelResultado').html(html).show();
     $('#botonesAccion').hide();
     $('html, body').animate({ scrollTop: $('#panelResultado').offset().top - 80 }, 600);
+}
+
+// ── Buscador de preguntas con Select2 ────────────────────────────────────
+function initBuscadorPreguntas() {
+    if (!formulario) return;
+
+    var datos = [];
+    formulario.secciones.forEach(function(s) {
+        s.preguntas.forEach(function(p) {
+            datos.push({ id: p.id, text: p.pregunta, seccion: s.seccion });
+        });
+    });
+
+    $('#buscadorPreguntas').select2({
+        placeholder: '🔍 Buscar pregunta...',
+        allowClear: true,
+        width: '100%',
+        data: datos,
+        dropdownParent: $('body'),
+        templateResult: function(item) {
+            if (!item.id) return item.text;
+            return $('<div><div style="font-size:.82rem;line-height:1.3">' + item.text + '</div><small style="color:#9ca3af">' + item.seccion + '</small></div>');
+        },
+        language: {
+            noResults:  function() { return 'Sin resultados'; },
+            searching:  function() { return 'Buscando...'; },
+        },
+    });
+
+    $('#buscadorPreguntas').on('select2:select', function(e) {
+        var pid = e.params.data.id;
+        $('#cardDatosEstablecimiento').slideUp(150);
+        setTimeout(function() {
+            var el = document.getElementById('preg-' + pid);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            $('#preg-' + pid).css('background', '#fef9c3');
+            setTimeout(function() { $('#preg-' + pid).css('background', ''); }, 1500);
+        }, 200);
+    });
+
+    $('#buscadorPreguntas').on('select2:clear', function() {
+        $('#cardDatosEstablecimiento').slideDown(150);
+        $(this).val(null).trigger('change');
+    });
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
