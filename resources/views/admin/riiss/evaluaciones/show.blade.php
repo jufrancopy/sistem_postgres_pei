@@ -299,17 +299,19 @@
                 function aplicarFiltro(){
                     var filas = document.querySelectorAll('#matrizTable tbody tr');
                     filas.forEach(function(tr){
-                        var req     = tr.dataset.req  === '1';
-                        var estado  = tr.dataset.eval || '';
+                        var req     = tr.dataset.req    === '1';
+                        var estado  = tr.dataset.eval   || '';
+                        var aplica  = tr.dataset.aplica === '1';
                         var nom     = (tr.dataset.nombre || '').toLowerCase();
 
                         var pasaBusqueda = busqueda === '' || nom.indexOf(busqueda) !== -1;
 
                         var pasaFiltro = true;
-                        if(filtroActual === 'requeridos')    pasaFiltro = req;
-                        if(filtroActual === 'opcionales')    pasaFiltro = !req;
-                        if(filtroActual === 'cumple')        pasaFiltro = estado === 'cumple';
-                        if(filtroActual === 'no_cumple')     pasaFiltro = estado === 'no_cumple';
+                        if(filtroActual === 'requeridos')     pasaFiltro = req && aplica;
+                        if(filtroActual === 'todos')          pasaFiltro = true;
+                        if(filtroActual === 'opcionales')     pasaFiltro = !req && aplica;
+                        if(filtroActual === 'cumple')         pasaFiltro = estado === 'cumple';
+                        if(filtroActual === 'no_cumple')      pasaFiltro = estado === 'no_cumple';
                         if(filtroActual === 'no_verificable') pasaFiltro = estado === 'no_verificable';
 
                         tr.classList.toggle('fila-oculta', !(pasaFiltro && pasaBusqueda));
@@ -373,7 +375,8 @@
                     <tr style="{{ $rowBg ? 'background:'.$rowBg : '' }}"
                         data-req="{{ $srv->requerido ? '1' : '0' }}"
                         data-eval="{{ $gap?->estado ?? '' }}"
-                        data-nombre="{{ strtolower($srv->servicio) }}">
+                        data-nombre="{{ strtolower($srv->servicio) }}"
+                        data-aplica="{{ $colActual && $srv->$colActual ? '1' : '0' }}">
                         {{-- Tipo: siempre mostrado, con borde superior solo en la primera fila del grupo --}}
                         <td style="font-weight:{{ $i === 0 ? '700' : '400' }};font-size:.72rem;
                                    color:{{ $i === 0 ? '#1a237e' : 'transparent' }};
