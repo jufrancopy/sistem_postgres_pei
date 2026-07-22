@@ -342,6 +342,8 @@
             <div class="table-responsive" style="max-height:62vh;overflow-y:auto;border:1px solid #e2e8f0;border-radius:.5rem">
             <table class="table table-bordered table-sm mb-0" id="matrizTable"
                    style="font-size:.78rem;border-collapse:collapse;color:#212529">
+                <thead style="position:sticky;top:0;z-index:10">
+                    <tr style="background:#1a237e;color:#fff;text-align:center">
                         <th rowspan="2" style="text-align:left;min-width:120px;vertical-align:middle;background:#1a237e;border-color:#283593">Tipo de Prestación</th>
                         <th rowspan="2" style="text-align:left;min-width:220px;vertical-align:middle;background:#1a237e;border-color:#283593">Servicio</th>
                         <th colspan="2" style="text-align:center;background:#1565c0;border-color:#1565c0;font-size:.68rem;padding:.5rem">
@@ -366,7 +368,7 @@
                         $rowBg = $gap
                             ? ($gap->estado === 'cumple'    ? '#f0fdf4'
                             : ($gap->estado === 'no_cumple' ? '#fef2f2' : ''))
-                            : '';
+                            : (!$srv->requerido ? '#fafafa' : '');
                     @endphp
                     <tr style="{{ $rowBg ? 'background:'.$rowBg : '' }}"
                         data-req="{{ $srv->requerido ? '1' : '0' }}"
@@ -403,6 +405,8 @@
                             <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#dcfce7">
                                 <i class="fa fa-check" style="font-size:.65rem;color:#15803d"></i>
                             </span>
+                            @elseif(!$gap && !$srv->requerido)
+                            <span style="font-size:.65rem;color:#cbd5e1" title="Servicio opcional — no evaluado">—</span>
                             @endif
                         </td>
                         <td style="text-align:center;vertical-align:middle;background:#fff5f5">
