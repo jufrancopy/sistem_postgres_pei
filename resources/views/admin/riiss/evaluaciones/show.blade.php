@@ -233,7 +233,7 @@
                 <span style="font-size:.72rem;font-weight:600;color:#475569;margin-right:.25rem">
                     <i class="fa fa-columns mr-1"></i>Columnas visibles:
                 </span>
-                @foreach($columnas->unique('key') as $col)
+                @foreach($columnas as $col)
                 @php $esActual = $col['key'] === $colActual; @endphp
                 <label class="mb-0 d-flex align-items-center"
                        style="gap:.3rem;cursor:pointer;font-size:.75rem;
@@ -244,10 +244,10 @@
                               color:{{ $esActual ? '#1a237e' : '#64748b' }}">
                     <input type="checkbox"
                            class="col-toggle"
-                           data-col="{{ $col['key'] }}"
-                           {{ $esActual ? 'checked' : '' }}
+                           data-col="col-grado-{{ $col['grado'] }}"
+                           @if($esActual) checked @endif
                            style="cursor:pointer">
-                    {{ $col['label'] }}
+                    Grado {{ $col['grado'] }} · {{ $col['tipo_label'] }}
                     @if($esActual)<i class="fa fa-star ml-1" style="font-size:.6rem;color:#7986cb"></i>@endif
                 </label>
                 @endforeach
@@ -291,93 +291,78 @@
             #matrizTable tbody tr.fila-oculta{display:none}
             </style>
 
-            <script>
-            (function(){
-                var filtroActual = 'requeridos';
-                var busqueda = '';
 
-                function aplicarFiltro(){
-                    var filas = document.querySelectorAll('#matrizTable tbody tr');
-                    filas.forEach(function(tr){
-                        var req     = tr.dataset.req    === '1';
-                        var estado  = tr.dataset.eval   || '';
-                        var aplica  = tr.dataset.aplica === '1';
-                        var nom     = (tr.dataset.nombre || '').toLowerCase();
-
-                        var pasaBusqueda = busqueda === '' || nom.indexOf(busqueda) !== -1;
-
-                        var pasaFiltro = true;
-                        if(filtroActual === 'requeridos')     pasaFiltro = req && aplica;
-                        if(filtroActual === 'todos')          pasaFiltro = true;
-                        if(filtroActual === 'opcionales')     pasaFiltro = !req && aplica;
-                        if(filtroActual === 'cumple')         pasaFiltro = estado === 'cumple';
-                        if(filtroActual === 'no_cumple')      pasaFiltro = estado === 'no_cumple';
-                        if(filtroActual === 'no_verificable') pasaFiltro = estado === 'no_verificable';
-
-                        tr.classList.toggle('fila-oculta', !(pasaFiltro && pasaBusqueda));
-                    });
-                }
-
-                document.querySelectorAll('.btn-filtro-matriz').forEach(function(btn){
-                    btn.addEventListener('click', function(){
-                        document.querySelectorAll('.btn-filtro-matriz').forEach(function(b){b.classList.remove('active')});
-                        this.classList.add('active');
-                        filtroActual = this.dataset.filtro;
-                        aplicarFiltro();
-                    });
-                });
-
-                var buscador = document.getElementById('buscadorMatriz');
-                if(buscador){
-                    buscador.addEventListener('input', function(){
-                        busqueda = this.value.toLowerCase().trim();
-                        aplicarFiltro();
-                    });
-                }
-
-                // Aplicar filtro inicial (requeridos por defecto)
-                aplicarFiltro();
-            })();
-            </script>
 
             {{-- Tabla principal --}}
             <div class="table-responsive" style="max-height:62vh;overflow-y:auto;border:1px solid #e2e8f0;border-radius:.5rem">
             <table class="table table-bordered table-sm mb-0" id="matrizTable"
                    style="font-size:.78rem;border-collapse:collapse;color:#212529">
                 <thead style="position:sticky;top:0;z-index:10">
+                    {{-- Fila 1: nombre del nivel --}}
                     <tr style="background:#1a237e;color:#fff;text-align:center">
-                        <th rowspan="2" style="text-align:left;min-width:120px;vertical-align:middle;background:#1a237e;border-color:#283593">Tipo de Prestación</th>
-                        <th rowspan="2" style="text-align:left;min-width:220px;vertical-align:middle;background:#1a237e;border-color:#283593">Servicio</th>
-                        <th colspan="2" style="text-align:center;background:#1565c0;border-color:#1565c0;font-size:.68rem;padding:.5rem">
-                            {{ $nombreNivel }}
-                            @if($tipoLabel)<div style="font-size:.58rem;opacity:.7;font-weight:400;margin-top:.1rem">{{ $tipoLabel }} · ★ Este establecimiento</div>@endif
+                        <th rowspan="3" style="text-align:left;min-width:120px;vertical-align:middle;background:#1a237e;border-color:#283593">Tipo de Prestación</th>
+                        <th rowspan="3" style="text-align:left;min-width:220px;vertical-align:middle;background:#1a237e;border-color:#283593">Servicio</th>
+                        @foreach($columnas as $col)
+                        @php $esActual = $col['key'] === $colActual; @endphp
+                        <th @if($esActual) colspan="2" @endif
+                            class="col-grado-{{ $col['grado'] }}"
+                            style="font-size:.68rem;font-weight:700;padding:.4rem .3rem;min-width:{{ $esActual ? '160px' : '70px' }};
+                                   background:{{ $esActual ? '#1565c0' : '#283593' }};
+                                   border-color:{{ $esActual ? '#1565c0' : '#3949ab' }};
+                                   {{ $esActual ? 'border-left:3px solid #90caf9;border-right:3px solid #90caf9' : '' }}">
+                            {{ $col['label'] }}
                         </th>
+                        @endforeach
                     </tr>
-                    <tr style="background:#1565c0;color:#fff;text-align:center">
-                        <th style="width:90px;font-size:.65rem;font-weight:700;background:#1b5e20;border-color:#2e7d32">
+                    {{-- Fila 2: tipo establecimiento --}}
+                    <tr style="background:#283593;color:#fff;text-align:center">
+                        @foreach($columnas as $col)
+                        @php $esActual = $col['key'] === $colActual; @endphp
+                        <th @if($esActual) colspan="2" @endif
+                            class="col-grado-{{ $col['grado'] }}"
+                            style="font-size:.62rem;font-weight:400;padding:.25rem;
+                                   background:{{ $esActual ? '#1565c0' : '#283593' }};
+                                   border-color:{{ $esActual ? '#1565c0' : '#3949ab' }}">
+                            {{ $col['tipo_label'] }}
+                            @if($esActual)<span style="display:block;font-size:.58rem;opacity:.8">★ Este establecimiento</span>@endif
+                        </th>
+                        @endforeach
+                    </tr>
+                    {{-- Fila 3: Aplica para otras / Cumple+No cumple para la actual --}}
+                    <tr style="background:#3949ab;color:#fff;text-align:center">
+                        @foreach($columnas as $col)
+                        @php $esActual = $col['key'] === $colActual; @endphp
+                        @if($esActual)
+                        <th class="col-grado-{{ $col['grado'] }}" style="width:80px;font-size:.65rem;font-weight:700;background:#1b5e20;border-color:#2e7d32">
                             <i class="fa fa-check mr-1" style="font-size:.6rem"></i>Cumple
                         </th>
-                        <th style="width:90px;font-size:.65rem;font-weight:700;background:#b71c1c;border-color:#c62828">
+                        <th class="col-grado-{{ $col['grado'] }}" style="width:80px;font-size:.65rem;font-weight:700;background:#b71c1c;border-color:#c62828">
                             <i class="fa fa-times mr-1" style="font-size:.6rem"></i>No cumple
                         </th>
+                        @else
+                        <th class="col-grado-{{ $col['grado'] }}" style="font-size:.6rem;font-weight:400;background:#3949ab;border-color:#3949ab">
+                            Aplica
+                        </th>
+                        @endif
+                        @endforeach
                     </tr>
                 </thead>
                 <tbody>
                 @foreach($servicios->groupBy('tipo_prestacion') as $tipo => $items)
                     @foreach($items as $i => $srv)
                     @php
-                        $gap = $gapItems->get($srv->servicio);
+                        $gap           = $gapItems->get($srv->servicio);
+                        $aplicaAlNivel = $colActual ? (bool)($srv->{$colActual} ?? false) : false;
                         $rowBg = $gap
                             ? ($gap->estado === 'cumple'    ? '#f0fdf4'
                             : ($gap->estado === 'no_cumple' ? '#fef2f2' : ''))
-                            : (!$srv->requerido ? '#fafafa' : '');
+                            : '';
                     @endphp
                     <tr style="{{ $rowBg ? 'background:'.$rowBg : '' }}"
                         data-req="{{ $srv->requerido ? '1' : '0' }}"
                         data-eval="{{ $gap?->estado ?? '' }}"
                         data-nombre="{{ strtolower($srv->servicio) }}"
-                        data-aplica="{{ $colActual && $srv->$colActual ? '1' : '0' }}">
-                        {{-- Tipo: siempre mostrado, con borde superior solo en la primera fila del grupo --}}
+                        data-aplica="{{ $aplicaAlNivel ? '1' : '0' }}">
                         <td style="font-weight:{{ $i === 0 ? '700' : '400' }};font-size:.72rem;
                                    color:{{ $i === 0 ? '#1a237e' : 'transparent' }};
                                    vertical-align:middle;background:#e8eaf6;
@@ -392,34 +377,49 @@
                             <span style="font-size:.58rem;background:#e2e8f0;color:#475569;border-radius:3px;padding:1px 4px;margin-left:3px">req.</span>
                             @endif
                         </td>
-                        {{-- Columnas Cumple / No cumple --}}
-                        @if($gap && $gap->estado === 'no_verificable')
-                        <td colspan="2" style="text-align:center;vertical-align:middle;background:#fffbeb;border-left:1px solid #fde68a;border-right:1px solid #fde68a">
-                            <span style="display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:#92400e;font-weight:600">
-                                <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#fef3c7;border:1px solid #fcd34d">
-                                    <i class="fa fa-clock" style="font-size:.55rem;color:#d97706"></i>
+                        @foreach($columnas as $col)
+                        @php $aplica = (bool)($srv->{$col['key']} ?? false); @endphp
+                        @if($col['key'] === $colActual)
+                            {{-- Celda Cumple --}}
+                            @if($gap && $gap->estado === 'no_verificable')
+                            <td colspan="2" class="col-grado-{{ $col['grado'] }}"
+                                style="text-align:center;vertical-align:middle;background:#fffbeb">
+                                <span style="display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:#92400e;font-weight:600">
+                                    <i class="fa fa-clock" style="color:#d97706"></i> Pendiente de verificar
                                 </span>
-                                Pendiente de verificar
-                            </span>
-                        </td>
+                            </td>
+                            @else
+                            <td class="col-grado-{{ $col['grado'] }}" style="text-align:center;vertical-align:middle;background:#f0fdf4">
+                                @if($gap && $gap->estado === 'cumple')
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#dcfce7">
+                                    <i class="fa fa-check" style="font-size:.6rem;color:#15803d"></i>
+                                </span>
+                                @elseif(!$aplica)
+                                <span style="font-size:.65rem;color:#cbd5e1">—</span>
+                                @endif
+                            </td>
+                            {{-- Celda No cumple --}}
+                            <td class="col-grado-{{ $col['grado'] }}" style="text-align:center;vertical-align:middle;background:#fff5f5">
+                                @if($gap && $gap->estado === 'no_cumple')
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#fee2e2">
+                                    <i class="fa fa-times" style="font-size:.6rem;color:#b91c1c"></i>
+                                </span>
+                                @elseif(!$aplica)
+                                <span style="font-size:.65rem;color:#cbd5e1">—</span>
+                                @endif
+                            </td>
+                            @endif
                         @else
-                        <td style="text-align:center;vertical-align:middle;background:#f0fdf4">
-                            @if($gap && $gap->estado === 'cumple')
-                            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#dcfce7">
-                                <i class="fa fa-check" style="font-size:.65rem;color:#15803d"></i>
-                            </span>
-                            @elseif(!$gap && !$srv->requerido)
-                            <span style="font-size:.65rem;color:#cbd5e1" title="Servicio opcional — no evaluado">—</span>
-                            @endif
-                        </td>
-                        <td style="text-align:center;vertical-align:middle;background:#fff5f5">
-                            @if($gap && $gap->estado === 'no_cumple')
-                            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#fee2e2">
-                                <i class="fa fa-times" style="font-size:.65rem;color:#b91c1c"></i>
-                            </span>
-                            @endif
-                        </td>
+                            {{-- Otras columnas: solo aplica o no --}}
+                            <td class="col-grado-{{ $col['grado'] }}" style="text-align:center;vertical-align:middle">
+                                @if($aplica)
+                                <i class="fa fa-check" style="color:#15803d"></i>
+                                @else
+                                <i class="fa fa-times" style="color:#dc2626"></i>
+                                @endif
+                            </td>
                         @endif
+                        @endforeach
                     </tr>
                     @endforeach
                 @endforeach
@@ -428,23 +428,14 @@
             </div>
 
             <div class="mt-2 px-1 d-flex flex-wrap" style="gap:.75rem;font-size:.72rem;color:#64748b">
-                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#dcfce7"><i class="fa fa-check" style="font-size:.55rem;color:#15803d"></i></span> Cumple</span>
-                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fee2e2"><i class="fa fa-times" style="font-size:.55rem;color:#b91c1c"></i></span> No cumple</span>
-                <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fff7ed;border:1px solid #fed7aa"><i class="fa fa-question" style="font-size:.55rem;color:#c2410c"></i></span> No verificado en visita (pendiente de confirmación)</span>
+                <span><i class="fa fa-check" style="color:#15803d"></i> Aplica / Cumple</span>
+                <span><i class="fa fa-times" style="color:#b91c1c"></i> No aplica / No cumple</span>
+                <span><i class="fa fa-clock" style="color:#d97706"></i> Pendiente de verificar</span>
                 <span style="background:#e2e8f0;padding:1px 5px;border-radius:3px">req.</span> = requerido para este nivel
+                <span style="background:#e8eaf6;padding:1px 5px;border-radius:3px">★ Este est.</span> = columna del establecimiento evaluado
             </div>
 
-            <script>
-            document.querySelectorAll('.col-toggle').forEach(function(cb) {
-                cb.addEventListener('change', function() {
-                    var col = this.dataset.col;
-                    var show = this.checked;
-                    document.querySelectorAll('.col-' + col).forEach(function(el) {
-                        el.style.display = show ? '' : 'none';
-                    });
-                });
-            });
-            </script>
+
 
         </div>
 
@@ -614,6 +605,63 @@ function reejecutarGap() {
         });
     });
 }
+
+// ── Matriz: filtros + buscador + col-toggle ─────────────────────────────
+$(document).ready(function(){
+    var filtroActual = 'requeridos';
+    var busqueda = '';
+
+    function aplicarFiltro(){
+        document.querySelectorAll('#matrizTable tbody tr').forEach(function(tr){
+            var req    = tr.dataset.req    === '1';
+            var estado = tr.dataset.eval   || '';
+            var aplica = tr.dataset.aplica === '1';
+            var nom    = (tr.dataset.nombre || '').toLowerCase();
+            var pasaBusqueda = busqueda === '' || nom.indexOf(busqueda) !== -1;
+            var pasaFiltro;
+            if(filtroActual === 'requeridos')          pasaFiltro = req && aplica;
+            else if(filtroActual === 'opcionales')     pasaFiltro = !req && aplica;
+            else if(filtroActual === 'cumple')         pasaFiltro = estado === 'cumple';
+            else if(filtroActual === 'no_cumple')      pasaFiltro = estado === 'no_cumple';
+            else if(filtroActual === 'no_verificable') pasaFiltro = estado === 'no_verificable';
+            else pasaFiltro = true;
+            tr.classList.toggle('fila-oculta', !(pasaFiltro && pasaBusqueda));
+        });
+    }
+
+    document.querySelectorAll('.btn-filtro-matriz').forEach(function(btn){
+        btn.addEventListener('click', function(){
+            document.querySelectorAll('.btn-filtro-matriz').forEach(function(b){ b.classList.remove('active'); });
+            this.classList.add('active');
+            filtroActual = this.dataset.filtro;
+            aplicarFiltro();
+        });
+    });
+
+    var buscador = document.getElementById('buscadorMatriz');
+    if(buscador) buscador.addEventListener('input', function(){
+        busqueda = this.value.toLowerCase().trim();
+        aplicarFiltro();
+    });
+
+    // col-toggle: oculta/muestra columnas por grado
+    document.querySelectorAll('.col-toggle').forEach(function(cb){
+        if(!cb.checked){
+            document.querySelectorAll('.' + cb.dataset.col).forEach(function(el){
+                el.style.display = 'none';
+            });
+        }
+        cb.addEventListener('change', function(){
+            var cls = this.dataset.col; // ej: col-grado-1
+            var show = this.checked;
+            document.querySelectorAll('.' + cls).forEach(function(el){
+                el.style.display = show ? '' : 'none';
+            });
+        });
+    });
+
+    aplicarFiltro();
+});
 
 function mostrarToast(msg, tipo) {
     const color = tipo === 'success' ? '#22c55e' : '#ef4444';
