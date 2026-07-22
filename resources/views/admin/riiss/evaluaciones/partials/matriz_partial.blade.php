@@ -4,21 +4,20 @@ $tipoLabel   = $evaluacion->establecimiento?->complejidadTipo?->tipo_establecimi
 @endphp
 
 {{-- Encabezado nivel --}}
-<div class="d-flex align-items-center mb-3 p-3 rounded"
-     style="background:linear-gradient(135deg,#1a237e,#283593);color:#fff">
+<div style="display:flex;align-items:center;margin-bottom:12px;padding:12px;border-radius:8px;background:linear-gradient(135deg,#1a237e,#283593);color:#fff">
     <div style="flex:1">
         <div style="font-size:.65rem;opacity:.65;text-transform:uppercase;letter-spacing:.07em">Nivel evaluado</div>
         <div style="font-size:1rem;font-weight:700">{{ $nombreNivel }}</div>
         @if($tipoLabel)<div style="font-size:.75rem;opacity:.75">{{ $tipoLabel }}</div>@endif
     </div>
-    <div class="text-right">
+    <div style="text-align:right">
         <div style="font-size:.65rem;opacity:.65;text-transform:uppercase">Total servicios</div>
         <div style="font-size:1.5rem;font-weight:800">{{ $servicios->count() }}</div>
     </div>
 </div>
 
 {{-- Filtros --}}
-<div class="mb-2 d-flex flex-wrap align-items-center" style="gap:.4rem">
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-bottom:8px">
     <span style="font-size:.72rem;font-weight:600;color:#475569">
         <i class="fa fa-filter mr-1"></i>Filtrar:
     </span>
@@ -57,9 +56,8 @@ $tipoLabel   = $evaluacion->establecimiento?->complejidadTipo?->tipo_establecimi
 </style>
 
 {{-- Tabla --}}
-<div class="table-responsive" style="max-height:55vh;overflow-y:auto;border:1px solid #e2e8f0;border-radius:.5rem">
-<table class="table table-bordered table-sm mb-0" id="matrizModalTable"
-       style="font-size:.78rem;border-collapse:collapse;color:#212529">
+<div style="width:100%;overflow-x:auto;max-height:55vh;overflow-y:auto;border:1px solid #e2e8f0;border-radius:.5rem">
+<table style="width:100%;font-size:.78rem;border-collapse:collapse;color:#212529" id="matrizModalTable">
     <thead style="position:sticky;top:0;z-index:10">
         <tr style="background:#1a237e;color:#fff;text-align:center">
             <th rowspan="2" style="text-align:left;min-width:120px;vertical-align:middle;background:#1a237e;border-color:#283593">Tipo de Prestación</th>
@@ -143,7 +141,7 @@ $tipoLabel   = $evaluacion->establecimiento?->complejidadTipo?->tipo_establecimi
 </table>
 </div>
 
-<div class="mt-2 d-flex flex-wrap" style="gap:.6rem;font-size:.7rem;color:#64748b">
+<div style="display:flex;flex-wrap:wrap;gap:.6rem;font-size:.7rem;color:#64748b;margin-top:8px">
     <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#dcfce7"><i class="fa fa-check" style="font-size:.5rem;color:#15803d"></i></span> Cumple</span>
     <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fee2e2"><i class="fa fa-times" style="font-size:.5rem;color:#b91c1c"></i></span> No cumple</span>
     <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fef3c7;border:1px solid #fcd34d"><i class="fa fa-clock" style="font-size:.5rem;color:#d97706"></i></span> Pendiente</span>
