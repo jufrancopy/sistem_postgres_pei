@@ -34,6 +34,12 @@
                     <p>Administrador</p>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url('/') }}" target="_blank">
+                    <i class="material-icons">public</i>
+                    <p>Ver sitio público</p>
+                </a>
+            </li>
             <li class="nav-item {{ $enCronogramas ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('globales.cronogramas.index') }}">
                     <i class="material-icons">timeline</i>
