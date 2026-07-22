@@ -146,7 +146,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .modal-head{background:linear-gradient(135deg,#1a237e,#283593);padding:.85rem 1.2rem;display:flex;align-items:center;justify-content:space-between}
 .modal-close{background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .1s}
 .modal-close:hover{background:rgba(255,255,255,.25)}
-.modal-body{padding:1.25rem;max-height:80vh;overflow-y:auto}
+.modal-body{padding:1.5rem 1.75rem;max-height:80vh;overflow-y:auto}
 
 /* FOOTER */
 .site-footer{border-top:1px solid var(--border);background:var(--surface);padding:32px clamp(16px,4vw,32px) 24px}
@@ -511,7 +511,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
             </div>
             <button class="modal-close" onclick="cerrarModalMatriz()">✕</button>
         </div>
-        <div id="modalMatrizBody" class="modal-body">
+        <div id="modalMatrizBody" class="modal-body" style="padding:1rem">
             <div style="text-align:center;padding:3rem;color:var(--muted)"><div class="spinner"></div>Cargando…</div>
         </div>
     </div>

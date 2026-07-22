@@ -1,12 +1,4 @@
 @php
-$mapGradoColumna = [
-    1 => 'aplica_puesto_sanitario',
-    2 => 'aplica_clinica_periferica',
-    3 => 'aplica_hospital_baja',
-    4 => 'aplica_hospital_mediana',
-    5 => 'aplica_hospital_alta',
-    6 => 'aplica_hospital_alta',
-];
 $nombreNivel = $evaluacion->establecimiento?->complejidadTipo?->nombre ?? 'Sin clasificación';
 $tipoLabel   = $evaluacion->establecimiento?->complejidadTipo?->tipo_establecimiento ?? '';
 @endphp
@@ -25,31 +17,6 @@ $tipoLabel   = $evaluacion->establecimiento?->complejidadTipo?->tipo_establecimi
     </div>
 </div>
 
-{{-- Selector de columnas --}}
-<div class="mb-3 p-2 rounded d-flex flex-wrap align-items-center"
-     style="background:#f8faff;border:1px solid #e2e8f0;gap:.5rem">
-    <span style="font-size:.72rem;font-weight:600;color:#475569;margin-right:.25rem">
-        <i class="fa fa-columns mr-1"></i>Columnas visibles:
-    </span>
-    @foreach($columnas->unique('key') as $col)
-    @php $esActual = $col['key'] === $colActual; @endphp
-    <label class="mb-0 d-flex align-items-center"
-           style="gap:.3rem;cursor:pointer;font-size:.75rem;
-                  background:{{ $esActual ? '#e8eaf6' : '#fff' }};
-                  border:1px solid {{ $esActual ? '#9fa8da' : '#e2e8f0' }};
-                  border-radius:20px;padding:.2rem .6rem;
-                  font-weight:{{ $esActual ? '600' : '400' }};
-                  color:{{ $esActual ? '#1a237e' : '#64748b' }}">
-        <input type="checkbox" class="col-toggle-modal"
-               data-col="{{ $col['key'] }}"
-               {{ $esActual ? 'checked' : '' }}
-               style="cursor:pointer">
-        {{ $col['label'] }}
-        @if($esActual)<i class="fa fa-star ml-1" style="font-size:.6rem;color:#7986cb"></i>@endif
-    </label>
-    @endforeach
-</div>
-
 {{-- Tabla --}}
 <div class="table-responsive" style="max-height:62vh;overflow-y:auto;border:1px solid #e2e8f0;border-radius:.5rem">
 <table class="table table-bordered table-sm mb-0"
@@ -57,21 +24,19 @@ $tipoLabel   = $evaluacion->establecimiento?->complejidadTipo?->tipo_establecimi
     <thead style="position:sticky;top:0;z-index:10">
         <tr style="background:#1a237e;color:#fff;text-align:center">
             <th rowspan="2" style="text-align:left;min-width:120px;vertical-align:middle;background:#1a237e;border-color:#283593">Tipo de Prestación</th>
-            <th rowspan="2" style="text-align:left;min-width:200px;vertical-align:middle;background:#1a237e;border-color:#283593">Servicio</th>
-            <th rowspan="2" style="text-align:center;width:90px;vertical-align:middle;background:#1565c0;border-color:#1565c0;font-size:.65rem">
-                Evaluación<br><span style="font-size:.55rem;opacity:.75;font-weight:400">en este estab.</span>
+            <th rowspan="2" style="text-align:left;min-width:220px;vertical-align:middle;background:#1a237e;border-color:#283593">Servicio</th>
+            <th colspan="2" style="background:#1565c0;border-color:#1565c0;font-size:.68rem;padding:.5rem">
+                {{ $nombreNivel }}
+                @if($tipoLabel)<div style="font-size:.58rem;opacity:.7;font-weight:400;margin-top:.1rem">{{ $tipoLabel }} · ★ Este establecimiento</div>@endif
             </th>
-            @foreach($columnas->unique('key') as $col)
-            <th class="col-header-modal col-modal-{{ $col['key'] }}"
-                style="background:#283593;border-color:#3949ab;min-width:100px;font-size:.65rem;
-                       {{ !($col['key'] === $colActual) ? 'display:none' : '' }}">
-                <div style="font-size:.58rem;opacity:.7;font-weight:400">{{ $col['tipo_label'] }}</div>
-                <div>{{ $col['label'] }}</div>
-                @if($col['key'] === $colActual)
-                <div style="font-size:.56rem;color:#90caf9;margin-top:.1rem">★ Este establecimiento</div>
-                @endif
+        </tr>
+        <tr style="background:#1565c0;color:#fff;text-align:center">
+            <th style="width:90px;font-size:.65rem;font-weight:700;background:#1b5e20;border-color:#2e7d32">
+                <i class="fa fa-check mr-1" style="font-size:.6rem"></i>Cumple
             </th>
-            @endforeach
+            <th style="width:90px;font-size:.65rem;font-weight:700;background:#b71c1c;border-color:#c62828">
+                <i class="fa fa-times mr-1" style="font-size:.6rem"></i>No cumple
+            </th>
         </tr>
     </thead>
     <tbody>
@@ -93,7 +58,7 @@ $tipoLabel   = $evaluacion->establecimiento?->complejidadTipo?->tipo_establecimi
             </td>
             @endif
 
-            {{-- Servicio — solo nombre --}}
+            {{-- Servicio --}}
             <td style="vertical-align:middle">
                 {{ $srv->servicio }}
                 @if($srv->requerido)
@@ -101,42 +66,32 @@ $tipoLabel   = $evaluacion->establecimiento?->complejidadTipo?->tipo_establecimi
                 @endif
             </td>
 
-            {{-- Evaluación — columna separada --}}
-            <td style="text-align:center;vertical-align:middle;background:#f0f4ff">
-                @if($gap)
-                    @if($gap->estado === 'cumple')
-                    <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#dcfce7">
-                        <i class="fa fa-check" style="font-size:.65rem;color:#15803d"></i>
+            {{-- Cumple / No cumple / Pendiente --}}
+            @if($gap && $gap->estado === 'no_verificable')
+            <td colspan="2" style="text-align:center;vertical-align:middle;background:#fffbeb;border-left:1px solid #fde68a;border-right:1px solid #fde68a">
+                <span style="display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:#92400e;font-weight:600">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#fef3c7;border:1px solid #fcd34d">
+                        <i class="fa fa-clock" style="font-size:.55rem;color:#d97706"></i>
                     </span>
-                    @elseif($gap->estado === 'no_cumple')
-                    <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#fee2e2">
-                        <i class="fa fa-times" style="font-size:.65rem;color:#b91c1c"></i>
-                    </span>
-                    @else
-                    <span style="color:#cbd5e1;font-size:.75rem">—</span>
-                    @endif
-                @else
-                <span style="color:#cbd5e1;font-size:.75rem">—</span>
-                @endif
-            </td>
-
-            {{-- Columnas de niveles --}}
-            @foreach($columnas->unique('key') as $col)
-            <td class="col-cell-modal col-modal-{{ $col['key'] }}"
-                style="text-align:center;vertical-align:middle;
-                       {{ $col['key'] === $colActual ? 'background:#e3f2fd' : '' }};
-                       {{ !($col['key'] === $colActual) ? 'display:none' : '' }}">
-                @if($srv->{$col['key']})
-                <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#dcfce7">
-                    <i class="fa fa-check" style="font-size:.58rem;color:#15803d"></i>
+                    Pendiente de verificar
                 </span>
-                @else
-                <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#fee2e2">
-                    <i class="fa fa-times" style="font-size:.58rem;color:#b91c1c"></i>
+            </td>
+            @else
+            <td style="text-align:center;vertical-align:middle;background:#f0fdf4">
+                @if($gap && $gap->estado === 'cumple')
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#dcfce7">
+                    <i class="fa fa-check" style="font-size:.65rem;color:#15803d"></i>
                 </span>
                 @endif
             </td>
-            @endforeach
+            <td style="text-align:center;vertical-align:middle;background:#fff5f5">
+                @if($gap && $gap->estado === 'no_cumple')
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#fee2e2">
+                    <i class="fa fa-times" style="font-size:.65rem;color:#b91c1c"></i>
+                </span>
+                @endif
+            </td>
+            @endif
         </tr>
         @endforeach
     @endforeach
@@ -144,22 +99,9 @@ $tipoLabel   = $evaluacion->establecimiento?->complejidadTipo?->tipo_establecimi
 </table>
 </div>
 
-<div class="mt-2 d-flex flex-wrap" style="gap:.75rem;font-size:.72rem;color:#64748b">
-    <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#dcfce7"><i class="fa fa-check" style="font-size:.55rem;color:#15803d"></i></span> Aplica al nivel</span>
-    <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fee2e2"><i class="fa fa-times" style="font-size:.55rem;color:#b91c1c"></i></span> No aplica al nivel</span>
-    <span style="background:#f0f4ff;padding:1px 6px;border-radius:3px;border:1px solid #c5cae9">Evaluación</span> = resultado en este establecimiento
+<div class="mt-2 d-flex flex-wrap" style="gap:.6rem;font-size:.7rem;color:#64748b">
+    <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#dcfce7"><i class="fa fa-check" style="font-size:.5rem;color:#15803d"></i></span> Cumple</span>
+    <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fee2e2"><i class="fa fa-times" style="font-size:.5rem;color:#b91c1c"></i></span> No cumple</span>
+    <span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#fef3c7;border:1px solid #fcd34d"><i class="fa fa-clock" style="font-size:.5rem;color:#d97706"></i></span> Pendiente de verificar</span>
     <span style="background:#e2e8f0;padding:1px 5px;border-radius:3px">req.</span> = requerido
-    <span><i class="fa fa-star" style="color:#7986cb;font-size:.65rem"></i> = este establecimiento</span>
 </div>
-
-<script>
-document.querySelectorAll('.col-toggle-modal').forEach(function(cb) {
-    cb.addEventListener('change', function() {
-        var col = this.dataset.col;
-        var show = this.checked;
-        document.querySelectorAll('.col-modal-' + col).forEach(function(el) {
-            el.style.display = show ? '' : 'none';
-        });
-    });
-});
-</script>

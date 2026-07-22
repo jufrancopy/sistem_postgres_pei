@@ -369,16 +369,18 @@
                             : '';
                     @endphp
                     <tr style="{{ $rowBg ? 'background:'.$rowBg : '' }}"
-            data-req="{{ $srv->requerido ? '1' : '0' }}"
-            data-eval="{{ $gap?->estado ?? '' }}"
-            data-nombre="{{ strtolower($srv->servicio) }}">
-                        @if($i === 0)
-                        <td rowspan="{{ $items->count() }}"
-                            style="font-weight:700;font-size:.72rem;color:#1a237e;vertical-align:middle;
-                                   background:#e8eaf6;border-right:3px solid #9fa8da;white-space:nowrap">
-                            {{ $tipo }}
+                        data-req="{{ $srv->requerido ? '1' : '0' }}"
+                        data-eval="{{ $gap?->estado ?? '' }}"
+                        data-nombre="{{ strtolower($srv->servicio) }}">
+                        {{-- Tipo: siempre mostrado, con borde superior solo en la primera fila del grupo --}}
+                        <td style="font-weight:{{ $i === 0 ? '700' : '400' }};font-size:.72rem;
+                                   color:{{ $i === 0 ? '#1a237e' : 'transparent' }};
+                                   vertical-align:middle;background:#e8eaf6;
+                                   border-right:3px solid #9fa8da;white-space:nowrap;
+                                   {{ $i === 0 ? 'border-top:2px solid #c5cae9' : 'border-top:1px solid #e8eaf6' }};
+                                   user-select:none">
+                            {{ $i === 0 ? $tipo : '&nbsp;' }}
                         </td>
-                        @endif
                         <td style="vertical-align:middle">
                             {{ $srv->servicio }}
                             @if($srv->requerido)
