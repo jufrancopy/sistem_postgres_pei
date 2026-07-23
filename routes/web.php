@@ -74,6 +74,8 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home')->middleware('auth');
+Route::get('/home-config', 'Admin\HomeConfigController@edit')->name('home-config.edit');
+Route::put('/home-config', 'Admin\HomeConfigController@update')->name('home-config.update');
 
 // ── Vistas públicas PEI (sin autenticación) ───────────────────────────────────
 Route::get('/public/pei/{token}', 'Admin\Planificacion\PublicPeiController@show')->name('pei.public.show');

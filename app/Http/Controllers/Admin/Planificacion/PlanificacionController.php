@@ -11,11 +11,16 @@ use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
 use App\Admin\Planificacion\Pei\PeiProfile;
 use App\Models\Proyectos\ProyectoInstitucional;
+use App\Models\HomeConfiguration;
 
 class PlanificacionController extends Controller
 {
     public function dashboard(Request $request)
     {
+        // ── Cargar configuración del dashboard ─────────────────────────────────
+        $config = HomeConfiguration::firstOrNew([]);
+        $config->save();
+
         // ── Solo PEIs corporativos (los que consolidan grupos) ────────────────
         $peisCorporativos = PeiProfile::whereIsRoot()
             ->where('type', 'corporative')
@@ -23,8 +28,8 @@ class PlanificacionController extends Controller
             ->orderByDesc('year_start')
             ->get();
 
-        // PEI seleccionado — por defecto el más reciente
-        $peiSeleccionadoId = $request->pei_id ?? $peisCorporativos->first()?->id;
+        // PEI seleccionado — por defecto el más reciente o el configurado
+        $peiSeleccionadoId = $request->pei_id ?? ($config->pei_profile_id ?? $peisCorporativos->first()?->id);
         $peiActual = $peiSeleccionadoId
             ? PeiProfile::with(['group', 'analysts'])->find($peiSeleccionadoId)
             : null;
@@ -78,32 +83,46 @@ class PlanificacionController extends Controller
         $totalCruces       = 0;
         $crucesPorTipo     = collect();
 
-        if ($peiActual && $peiActual->group_id) {
-            $groupIds = collect([$peiActual->group_id]);
-            if ($peiActual->group) {
-                $groupIds = $groupIds->merge($peiActual->group->descendants()->pluck('id'));
-            }
-            $totalFodaPerfiles = FodaPerfil::whereIn('group_id', $groupIds)->count();
-            $fodaConsolidados  = FodaPerfil::whereIn('group_id', $groupIds)->where('type','consolidado')->count();
-            $perfilIds         = FodaPerfil::whereIn('group_id', $groupIds)->pluck('id');
-            $totalAnalisis     = FodaAnalisis::whereIn('perfil_id', $perfilIds)->count();
-            $analisisConIea    = FodaAnalisis::whereIn('perfil_id', $perfilIds)->whereNotNull('iea_valor')->count();
+        if ($config->show_foda && $config->foda_profile_id) {
+            // Usar FODA configurado
+            $fodaProfile = FodaPerfil::find($config->foda_profile_id);
+            if ($fodaProfile) {
+                $totalFodaPerfiles = 1;
+                $fodaConsolidados  = 1;
+                $totalAnalisis     = FodaAnalisis::where('perfil_id', $config->foda_profile_id)->count();
+                $analisisConIea    = FodaAnalisis::where('perfil_id', $config->foda_profile_id)
+                    ->whereNotNull('iea_valor')->count();
 
-            $perfilConsolidadoId = FodaPerfil::whereIn('group_id', $groupIds)->where('type','consolidado')->value('id');
-            if ($perfilConsolidadoId) {
-                $totalCruces   = FodaCruceAmbiente::where('perfil_id', $perfilConsolidadoId)->count();
-                $crucesPorTipo = FodaCruceAmbiente::where('perfil_id', $perfilConsolidadoId)
-                    ->selectRaw('tipo, COUNT(*) as total')->groupBy('tipo')->pluck('total','tipo');
+                if ($config->foda_analisis_id) {
+                    $totalCruces   = FodaCruceAmbiente::where('perfil_id', $config->foda_profile_id)
+                        ->where('analisis_id', $config->foda_analisis_id)->count();
+                    $crucesPorTipo = FodaCruceAmbiente::where('perfil_id', $config->foda_profile_id)
+                        ->where('analisis_id', $config->foda_analisis_id)
+                        ->selectRaw('tipo, COUNT(*) as total')->groupBy('tipo')->pluck('total','tipo');
+                } else {
+                    $totalCruces   = FodaCruceAmbiente::where('perfil_id', $config->foda_profile_id)->count();
+                    $crucesPorTipo = FodaCruceAmbiente::where('perfil_id', $config->foda_profile_id)
+                        ->selectRaw('tipo, COUNT(*) as total')->groupBy('tipo')->pluck('total','tipo');
+                }
             }
         } else {
-            // Sin filtro de grupo — totales globales
-            $totalFodaPerfiles = FodaPerfil::count();
-            $fodaConsolidados  = FodaPerfil::where('type','consolidado')->count();
-            $totalAnalisis     = FodaAnalisis::count();
-            $analisisConIea    = FodaAnalisis::whereNotNull('iea_valor')->count();
-            $totalCruces       = FodaCruceAmbiente::count();
-            $crucesPorTipo     = FodaCruceAmbiente::selectRaw('tipo, COUNT(*) as total')
-                ->groupBy('tipo')->pluck('total','tipo');
+            // Sin filtro — totales globales (solo si no está configurado)
+            if (!$config->show_foda) {
+                $totalFodaPerfiles = 0;
+                $fodaConsolidados  = 0;
+                $totalAnalisis     = 0;
+                $analisisConIea    = 0;
+                $totalCruces       = 0;
+                $crucesPorTipo     = collect();
+            } else {
+                $totalFodaPerfiles = FodaPerfil::count();
+                $fodaConsolidados  = FodaPerfil::where('type','consolidado')->count();
+                $totalAnalisis     = FodaAnalisis::count();
+                $analisisConIea    = FodaAnalisis::whereNotNull('iea_valor')->count();
+                $totalCruces       = FodaCruceAmbiente::count();
+                $crucesPorTipo     = FodaCruceAmbiente::selectRaw('tipo, COUNT(*) as total')
+                    ->groupBy('tipo')->pluck('total','tipo');
+            }
         }
 
         // ── Proyectos vinculados al PEI seleccionado ──────────────────────────
@@ -121,7 +140,7 @@ class PlanificacionController extends Controller
             'totalFodaPerfiles', 'fodaConsolidados', 'totalAnalisis',
             'analisisConIea', 'totalCruces', 'crucesPorTipo',
             'totalProyectos', 'proyectosActivos', 'proyectosEjecucion',
-            'proyectosSinPei', 'proyectosPorEstado'
+            'proyectosSinPei', 'proyectosPorEstado', 'config'
         ));
     }
 }
