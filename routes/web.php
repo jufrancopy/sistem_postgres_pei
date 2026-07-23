@@ -398,6 +398,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('pei-profiles/{profileId}/acciones/{accionId}/notificar', 'Admin\Planificacion\PeiReporteController@notificarAccion')->name('pei.reportes.notificar-accion');
     Route::get('pei-profiles/{accionId}/reportes',                   'Admin\Planificacion\PeiReporteController@index')->name('pei.reportes.index');
     Route::post('pei-profiles/{accionId}/reportes',                  'Admin\Planificacion\PeiReporteController@store')->name('pei.reportes.store');
+    Route::put('pei-profiles/{accionId}/reportes/{id}',              'Admin\Planificacion\PeiReporteController@update')->name('pei.reportes.update');
     Route::delete('pei-profiles/{accionId}/reportes/{id}',           'Admin\Planificacion\PeiReporteController@destroy')->name('pei.reportes.destroy');
 
     // ── Marco Estratégico Específico (MEE) ───────────────────────────────────

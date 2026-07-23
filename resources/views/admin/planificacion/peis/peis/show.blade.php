@@ -1736,6 +1736,38 @@
                 var _rpIndicador    = null;
                 var _rpBaseUrl      = '{{ url("pei-profiles") }}';
 
+                function cargarHistorial(accionId) {
+                    $.getJSON(_rpBaseUrl + '/' + accionId + '/reportes', function(reportes) {
+                        $('#rp_historial_count').text(reportes.length);
+                        var $hist = $('#rp_historial').empty();
+                        if (!reportes.length) {
+                            $hist.html('<p class="text-muted text-center" style="font-size:.78rem">Sin reportes previos.</p>');
+                            return;
+                        }
+                        reportes.forEach(function(r) {
+                            var sc = {verde:'success',amarillo:'warning',rojo:'danger','sin-datos':'secondary'}[r.semaforo] || 'secondary';
+                            $hist.append(
+                                '<div class="d-flex align-items-start py-1" style="border-bottom:1px solid #f0f0f0;gap:.5rem;font-size:.75rem">' +
+                                '<span class="badge badge-' + sc + ' flex-shrink-0" style="font-size:.65rem;margin-top:2px">' + (r.semaforo||'—') + '</span>' +
+                                '<div style="flex:1;min-width:0">' +
+                                '<strong>' + r.fecha_reporte + '</strong>' + (r.periodo_label ? ' — ' + r.periodo_label : '') +
+                                (r.valor_numerador !== null ? ' <span class="badge badge-light border">' + r.valor_numerador + '</span>' : '') +
+                                (r.pct_avance !== null ? ' <small class="text-muted">(' + r.pct_avance + '%)</small>' : '') +
+                                '<div class="text-muted" style="font-size:.72rem">' + (r.descripcion_avance || '') + '</div>' +
+                                '<small class="text-muted">' + r.reportado_por + '</small>' +
+                                '</div>' +
+                                '<div class="d-flex flex-shrink-0" style="gap:.25rem">' +
+                                '<button class="btn btn-xs btn-outline-primary py-0 px-1 btnEditarReporte" data-id="' + r.id + '" data-accion="' + accionId + '" data-r=\'' + JSON.stringify(r) + '\' title="Editar"><i class="fa fa-edit" style="font-size:.65rem"></i></button>' +
+                                '<button class="btn btn-xs btn-outline-danger py-0 px-1 btnEliminarReporte" data-id="' + r.id + '" data-accion="' + accionId + '" title="Eliminar"><i class="fa fa-trash" style="font-size:.65rem"></i></button>' +
+                                '</div>' +
+                                '</div>'
+                            );
+                        });
+                    }).fail(function() {
+                        $('#rp_historial').html('<p class="text-muted text-center" style="font-size:.78rem">Sin reportes previos.</p>');
+                    });
+                }
+
                 function calcularSemaforoPrev(valor, indicador) {
                     if (!valor || !indicador || !indicador.metas) return null;
                     var anio  = new Date().getFullYear();
@@ -1804,31 +1836,7 @@
                     });
 
                     // Cargar historial
-                    $.getJSON(_rpBaseUrl + '/' + accionId + '/reportes', function(reportes) {
-                        $('#rp_historial_count').text(reportes.length);
-                        var $hist = $('#rp_historial').empty();
-                        if (!reportes.length) {
-                            $hist.html('<p class="text-muted text-center" style="font-size:.78rem">Sin reportes previos.</p>');
-                            return;
-                        }
-                        reportes.forEach(function(r) {
-                            var sc = {verde:'success',amarillo:'warning',rojo:'danger','sin-datos':'secondary'}[r.semaforo] || 'secondary';
-                            $hist.append(
-                                '<div class="d-flex align-items-start py-1" style="border-bottom:1px solid #f0f0f0;gap:.5rem;font-size:.75rem">' +
-                                '<span class="badge badge-' + sc + ' flex-shrink-0" style="font-size:.65rem;margin-top:2px">' + (r.semaforo||'—') + '</span>' +
-                                '<div style="flex:1;min-width:0">' +
-                                '<strong>' + r.fecha_reporte + '</strong>' + (r.periodo_label ? ' — ' + r.periodo_label : '') +
-                                (r.valor_numerador !== null ? ' <span class="badge badge-light border">' + r.valor_numerador + '</span>' : '') +
-                                (r.pct_avance !== null ? ' <small class="text-muted">(' + r.pct_avance + '%)</small>' : '') +
-                                '<div class="text-muted" style="font-size:.72rem">' + (r.descripcion_avance || '') + '</div>' +
-                                '<small class="text-muted">' + r.reportado_por + '</small>' +
-                                '</div>' +
-                                '</div>'
-                            );
-                        });
-                    }).fail(function() {
-                        $('#rp_historial').html('<p class="text-muted text-center" style="font-size:.78rem">Sin reportes previos.</p>');
-                    });
+                    cargarHistorial(accionId);
 
                     $('#ajaxDefineCriteriaModal').modal('show');
                 });
@@ -1867,12 +1875,17 @@
                         },
                         success: function(res) {
                             toastr.success('Reporte guardado correctamente.');
-                            $('#ajaxDefineCriteriaModal').modal('hide');
-                            // Actualizar semáforo en el acordeón sin recargar
+                            // Limpiar campos
+                            $('#rp_periodo_label,#rp_valor_numerador,#rp_descripcion_avance,#rp_evidencia_url,#rp_evidencia_label').val('');
+                            $('#rp_fecha_reporte').val(new Date().toISOString().split('T')[0]);
+                            $('#rp_semaforo_preview').hide();
+                            // Recargar historial sin cerrar el modal
+                            cargarHistorial(accionId);
+                            // Actualizar semáforo en el acordeón
                             if (res.reporte && res.reporte.semaforo) {
-                                var $header = $('#actionsBlock_' + accionId + ' .card-header');
                                 var colors = {verde:'#28a745',amarillo:'#ffc107',rojo:'#dc3545','sin-datos':'#6c757d'};
-                                $header.css('border-left-color', colors[res.reporte.semaforo] || '#6c757d');
+                                $('#actionsBlock_' + accionId + ' .card-header')
+                                    .css('border-left-color', colors[res.reporte.semaforo] || '#6c757d');
                             }
                         },
                         error: function(xhr) {
@@ -1882,6 +1895,79 @@
                         }
                     });
                 });
+
+                // ── Editar reporte ─────────────────────────────────────────────────────────────
+                $(document).on('click', '.btnEditarReporte', function() {
+                    var r       = $(this).data('r');
+                    var id      = r.id;
+                    var accionId = $(this).data('accion');
+                    Swal.fire({
+                        title: 'Editar Reporte',
+                        html:
+                            '<div class="text-left" style="font-size:.85rem">' +
+                            '<div class="form-group mb-2"><label>Fecha</label>' +
+                            '<input id="edit_rp_fecha" class="form-control form-control-sm" type="date" value="' + (r.fecha_reporte_raw || r.fecha_reporte.split('/').reverse().join('-')) + '"></div>' +
+                            '<div class="form-group mb-2"><label>Período</label>' +
+                            '<input id="edit_rp_periodo" class="form-control form-control-sm" type="text" value="' + (r.periodo_label||'') + '"></div>' +
+                            '<div class="form-group mb-2"><label>Valor logrado</label>' +
+                            '<input id="edit_rp_valor" class="form-control form-control-sm" type="number" step="0.0001" value="' + (r.valor_numerador !== null ? r.valor_numerador : '') + '"></div>' +
+                            '<div class="form-group mb-2"><label>Descripción</label>' +
+                            '<textarea id="edit_rp_desc" class="form-control form-control-sm" rows="3">' + (r.descripcion_avance||'') + '</textarea></div>' +
+                            '<div class="form-group mb-0"><label>Evidencia URL</label>' +
+                            '<input id="edit_rp_url" class="form-control form-control-sm" type="text" value="' + (r.evidencia_url||'') + '"></div>' +
+                            '</div>',
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="fa fa-save mr-1"></i> Guardar',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#1976d2',
+                        preConfirm: function() {
+                            return {
+                                fecha_reporte:      $('#edit_rp_fecha').val(),
+                                periodo_label:      $('#edit_rp_periodo').val(),
+                                valor_numerador:    $('#edit_rp_valor').val() || null,
+                                descripcion_avance: $('#edit_rp_desc').val(),
+                                evidencia_url:      $('#edit_rp_url').val(),
+                            };
+                        }
+                    }).then(function(result) {
+                        if (!result.isConfirmed) return;
+                        $.ajax({
+                            url:  _rpBaseUrl + '/' + accionId + '/reportes/' + id,
+                            type: 'PUT',
+                            data: result.value,
+                            success: function() {
+                                toastr.success('Reporte actualizado.');
+                                cargarHistorial(accionId);
+                            },
+                            error: function() { toastr.error('Error al actualizar el reporte.'); }
+                        });
+                    });
+                });
+
+                // ── Eliminar reporte ───────────────────────────────────────────────────────────
+                $(document).on('click', '.btnEliminarReporte', function() {
+                    var id       = $(this).data('id');
+                    var accionId = $(this).data('accion');
+                    Swal.fire({
+                        title: '¿Eliminar este reporte?',
+                        icon: 'warning', showCancelButton: true,
+                        confirmButtonColor: '#d33', cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar',
+                    }).then(function(result) {
+                        if (!result.isConfirmed) return;
+                        $.ajax({
+                            url:  _rpBaseUrl + '/' + accionId + '/reportes/' + id,
+                            type: 'DELETE',
+                            success: function() {
+                                toastr.success('Reporte eliminado.');
+                                $('[data-id="' + id + '"].btnEliminarReporte').closest('.d-flex').remove();
+                                recargarAcordeon();
+                            },
+                            error: function() { toastr.error('Error al eliminar el reporte.'); }
+                        });
+                    });
+                });
+
                 // ══ FIN MÓDULO REPORTAR AVANCE ═══════════════════════════════
             });
             // Agregar un controlador de eventos para el botón de eliminación

@@ -289,6 +289,7 @@ class PeiReporteController extends Controller
         return response()->json($reportes->map(fn($r) => [
             'id'                => $r->id,
             'fecha_reporte'     => $r->fecha_reporte->format('d/m/Y'),
+            'fecha_reporte_raw' => $r->fecha_reporte->format('Y-m-d'),
             'periodo_label'     => $r->periodo_label,
             'valor_numerador'   => $r->valor_numerador,
             'pct_avance'        => $r->pct_avance,
@@ -338,13 +339,36 @@ class PeiReporteController extends Controller
         return response()->json(['ok' => true, 'reporte' => $reporte], 201);
     }
 
+    // ── Editar reporte ────────────────────────────────────────────────────────
+    public function update(Request $request, string $accionId, int $id)
+    {
+        $reporte = PeiAccionReporte::where('pei_profile_id', $accionId)->findOrFail($id);
+        $accion  = PeiProfile::with('indicador')->findOrFail($accionId);
+
+        $data = $request->validate([
+            'fecha_reporte'      => 'required|date',
+            'periodo_label'      => 'nullable|string|max:50',
+            'valor_numerador'    => 'nullable|numeric',
+            'descripcion_avance' => 'nullable|string',
+            'evidencia_url'      => 'nullable|string|max:500',
+            'evidencia_label'    => 'nullable|string|max:200',
+        ]);
+
+        $reporte->fill($data);
+
+        if ($accion->indicador && $request->valor_numerador !== null) {
+            $reporte->calcularSemaforo($accion->indicador);
+        }
+
+        $reporte->save();
+
+        return response()->json(['ok' => true, 'reporte' => $reporte]);
+    }
+
     // ── Eliminar reporte ──────────────────────────────────────────────────────
     public function destroy(string $accionId, int $id)
     {
-        $reporte = PeiAccionReporte::where('pei_profile_id', $accionId)
-            ->where('user_id', Auth::id())
-            ->findOrFail($id);
-
+        $reporte = PeiAccionReporte::where('pei_profile_id', $accionId)->findOrFail($id);
         $reporte->delete();
         return response()->json(['ok' => true]);
     }

@@ -859,7 +859,7 @@
                         </small>
                         <span class="badge badge-light border ml-2" id="rp_historial_count" style="font-size:.65rem">0</span>
                     </div>
-                    <div id="rp_historial" style="max-height:150px;overflow-y:auto">
+                    <div id="rp_historial" style="max-height:200px;overflow-y:auto">
                         <p class="text-muted text-center" style="font-size:.78rem">Sin reportes previos.</p>
                     </div>
                 </div>
