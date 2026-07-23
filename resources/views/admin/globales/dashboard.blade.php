@@ -191,7 +191,7 @@
                             $modulos = [
                                 ['url' => route('planificacion-dashboard'),          'icon' => 'fa-chess',          'color' => 'primary',   'label' => 'Planificación',     'sub' => 'FODA · PEI · Riesgos'],
                                 ['url' => route('siess.dashboard'),                  'icon' => 'fa-chart-bar',      'color' => 'info',      'label' => 'SIESS',             'sub' => 'Estadísticas · Res. 266/22'],
-                                ['url' => route('proyectos-institucionales.index'),  'icon' => 'fa-project-diagram','color' => 'success',   'label' => 'Proyectos',         'sub' => 'Seguimiento y Control'],
+                                ['url' => route('proyectos-institucionales.all'),  'icon' => 'fa-project-diagram','color' => 'success',   'label' => 'Proyectos',         'sub' => 'Seguimiento y Control'],
                                 ['url' => route('globales.organigramas.index'),      'icon' => 'fa-sitemap',        'color' => 'warning',   'label' => 'Organigramas',      'sub' => 'Red de Salud · Estructura'],
                                 ['url' => route('surveys.index'),                    'icon' => 'fa-poll',           'color' => 'danger',    'label' => 'Encuestas',         'sub' => 'Formularios · Respuestas'],
                                 ['url' => route('globales.activities.index'),        'icon' => 'fa-rocket',         'color' => 'secondary', 'label' => 'Actividades',       'sub' => 'Tareas · Evidencias'],

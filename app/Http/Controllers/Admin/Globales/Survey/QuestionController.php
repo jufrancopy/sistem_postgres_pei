@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Admin\Globales\Question;
 use App\Models\Admin\Globales\Survey;
-use Gemini\Laravel\Facades\Gemini;
+use App\Services\GroqService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -41,8 +41,8 @@ class QuestionController extends Controller
             $prompt = $language === 'language_en' ? $promptEn : $promptEs;
 
             try {
-                $response = Gemini::generativeModel("gemini-1.5-flash")->generateContent($prompt);
-                $questionsData = $response->candidates[0]->content->parts[0]->text;
+                $groq = new GroqService();
+                $questionsData = $groq->generarTextoLibre($prompt);
 
                 // 1️⃣ Limpiar y normalizar el texto recibido
                 $questionsData = str_replace(["\n", "\r", '`'], '', $questionsData);

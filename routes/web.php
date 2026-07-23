@@ -201,6 +201,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('proyectos-dashboard', 'Admin\Proyectos\ProyectosDashboardController@index')->name('proyectos-dashboard');
 
     // ── Proyectos Institucionales (SCPI) ──────────────────────────────────────────────────────
+    Route::get('proyectos-institucionales',                    'Admin\Proyectos\ProyectoInstitucionalController@index')->name('proyectos-institucionales.all');
     Route::get('pei-profiles/{profileId}/proyectos',          'Admin\Proyectos\ProyectoInstitucionalController@index')->name('proyectos-institucionales.index');
     Route::get('pei-profiles/{profileId}/proyectos/create',   'Admin\Proyectos\ProyectoInstitucionalController@createForPerfil')->name('proyectos-institucionales.create-for-perfil');
     Route::post('pei-profiles/{profileId}/proyectos',         'Admin\Proyectos\ProyectoInstitucionalController@store')->name('proyectos-institucionales.store');

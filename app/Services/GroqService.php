@@ -18,6 +18,33 @@ class GroqService
         $this->model  = env('GROQ_MODEL', 'llama-3.3-70b-versatile');
     }
 
+    public function generarTextoLibre(string $prompt, int $maxTokens = 1500): string
+    {
+        try {
+            $response = $this->client->post('https://api.groq.com/openai/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Content-Type'  => 'application/json',
+                ],
+                'json' => [
+                    'model'       => $this->model,
+                    'messages'    => [['role' => 'user', 'content' => $prompt]],
+                    'temperature' => 0.7,
+                    'max_tokens'  => $maxTokens,
+                ],
+            ]);
+
+            $data = json_decode($response->getBody()->getContents(), true);
+            return trim($data['choices'][0]['message']['content'] ?? '');
+
+        } catch (RequestException $e) {
+            $body = $e->hasResponse()
+                ? json_decode($e->getResponse()->getBody()->getContents(), true)
+                : [];
+            throw new \Exception($body['error']['message'] ?? 'Error al conectar con Groq API.');
+        }
+    }
+
     /**
      * Genera una estrategia FODA usando Groq / Llama 3.
      *
