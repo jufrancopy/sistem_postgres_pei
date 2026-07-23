@@ -264,4 +264,9 @@ class PeiProfile extends Model
             'marco_id'
         );
     }
+
+    public function proyectos()
+    {
+        return $this->hasMany(\App\Models\Proyectos\ProyectoInstitucional::class, 'pei_profile_id');
+    }
 }

@@ -517,6 +517,38 @@
                                             </div>
                                             @endif
 
+                                            {{-- Proyectos vinculados --}}
+                                            @php
+                                                $proyectosAccion = \App\Models\Proyectos\ProyectoInstitucional::where('pei_profile_id', $action->id)
+                                                    ->whereNull('deleted_at')
+                                                    ->get();
+                                            @endphp
+                                            @if($proyectosAccion->count() > 0)
+                                            <div class="px-3 py-2 d-flex flex-wrap align-items-start" style="gap:.4rem;border-top:1px solid #e9ecef;background:#f5f3ff;font-size:.78rem">
+                                                <span class="text-muted text-uppercase flex-shrink-0" style="font-size:.6rem;letter-spacing:.04em;margin-top:3px">
+                                                    <i class="fa fa-project-diagram mr-1 text-violet" style="color:#7c3aed"></i>Proyectos
+                                                </span>
+                                                @foreach($proyectosAccion as $proy)
+                                                @php
+                                                    $badgeCls = \App\Models\Proyectos\ProyectoInstitucional::estadoBadge($proy->estado);
+                                                @endphp
+                                                <a href="{{ route('proyectos-institucionales.show', $proy->id) }}"
+                                                   class="d-inline-flex align-items-center text-decoration-none"
+                                                   style="gap:.3rem;background:#ede9fe;border:1px solid #c4b5fd;border-radius:6px;padding:.2rem .55rem;font-size:.72rem;color:#5b21b6">
+                                                    <i class="fa fa-folder-open" style="font-size:.6rem"></i>
+                                                    <span class="font-weight-600">{{ $proy->codigo }}</span>
+                                                    <span style="color:#7c3aed;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $proy->nombre }}</span>
+                                                    <span class="badge {{ $badgeCls }}" style="font-size:.58rem;margin-left:.2rem">
+                                                        {{ \App\Models\Proyectos\ProyectoInstitucional::estadoLabel($proy->estado) }}
+                                                    </span>
+                                                    @if($proy->avance_pct > 0)
+                                                    <span style="font-size:.62rem;color:#6d28d9;font-weight:600">{{ $proy->avance_pct }}%</span>
+                                                    @endif
+                                                </a>
+                                                @endforeach
+                                            </div>
+                                            @endif
+
                                             {{-- Fila reporte: siempre visible --}}
                                             <div style="border-top:1px solid #e9ecef;background:{{ $rpColor['bg'] }};font-size:.78rem">
                                                 <div class="d-flex align-items-center px-3 py-2" style="gap:.6rem;flex-wrap:wrap">
