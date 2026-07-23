@@ -153,9 +153,19 @@ class ProyectoInstitucionalController extends Controller
     // ── Editar ────────────────────────────────────────────────────────────────
     public function edit($id)
     {
-        $proyecto = ProyectoInstitucional::with(['checklist'])->findOrFail($id);
+        $proyecto = ProyectoInstitucional::with(['checklist', 'peiProfile.parent.parent'])->findOrFail($id);
         $checklistItems = ProyectoInstitucional::CHECKLIST_ITEMS;
-        return view('admin.proyectos.institucionales.edit', compact('proyecto', 'checklistItems'));
+
+        $peiAccionTexto = null;
+        if ($p = $proyecto->peiProfile) {
+            $partes = [];
+            if ($p->parent?->parent) $partes[] = strip_tags($p->parent->parent->name);
+            if ($p->parent)          $partes[] = strip_tags($p->parent->name);
+            $contexto = implode(' › ', $partes);
+            $peiAccionTexto = strip_tags($p->name) . ($contexto ? ' [' . \Illuminate\Support\Str::limit($contexto, 60) . ']' : '');
+        }
+
+        return view('admin.proyectos.institucionales.edit', compact('proyecto', 'checklistItems', 'peiAccionTexto'));
     }
 
     public function update(Request $request, $id)
@@ -276,8 +286,7 @@ class ProyectoInstitucionalController extends Controller
             'nombre'                     => $request->nombre,
             'descripcion'                => $request->descripcion,
             'estado'                     => 'solicitud',
-            'pei_profile_id'             => $perfil->id,
-            'pei_accion_id'              => $request->pei_accion_id ?: null,
+            'pei_profile_id'             => $request->pei_accion_id ?: $perfil->id,
             'dependencia_solicitante_id' => $request->dependencia_solicitante_id ?: null,
             'fecha_solicitud'            => now(),
             'fecha_fin_estimada'         => $request->fecha_fin_estimada,

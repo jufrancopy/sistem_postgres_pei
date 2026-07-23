@@ -45,7 +45,7 @@
                     <select name="pei_profile_id" id="pei_profile_id" class="form-control" style="width:100%">
                         @if($proyecto->peiProfile)
                         <option value="{{ $proyecto->pei_profile_id }}" selected>
-                            {{ strip_tags($proyecto->peiProfile->name) }}
+                            {{ $peiAccionTexto }}
                         </option>
                         @else
                         <option value="">Buscar acción del PEI...</option>
