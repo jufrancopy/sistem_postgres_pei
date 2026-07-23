@@ -176,7 +176,7 @@ class SurveyController extends Controller
 
     public function show($id)
     {
-        $survey = Survey::find($id);
+        $survey = Survey::with(['group.members', 'questions.answersHasQuestions'])->find($id);
 
         return view('admin.surveys.show', compact('survey'));
     }

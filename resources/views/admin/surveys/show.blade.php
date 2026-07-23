@@ -2,174 +2,226 @@
 @section('title', 'Encuestas')
 
 @section('content')
-    <div class="card">
-        <div class="card-header card-header-info">
-            <h4 class="card-title ">Preguntas de {{ $survey->name }}</h4>
+    <div class="card shadow-sm">
+        <div class="card-header card-header-info py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="card-title mb-0">
+                        <i class="fa fa-list-ol mr-2"></i>{{ $survey->name }}
+                    </h4>
+                    <p class="card-category mb-0 text-muted">
+                        {{ $survey->description ?? 'Sin descripción' }}
+                    </p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="badge badge-info mr-2">
+                        <i class="fa fa-users mr-1"></i> {{ $survey->group->name ?? 'Sin grupo' }}
+                    </span>
+                    <span class="badge badge-primary">
+                        <i class="fa fa-question-circle mr-1"></i> {{ $survey->questions->count() }} Preguntas
+                    </span>
+                </div>
+            </div>
         </div>
 
-        <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
+        <nav aria-label="breadcrumb" class="bg-white rounded-0 p-3 mb-0">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('surveys.index') }}">Encuestas</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Preguntas de {{ $survey->name }}</li>
+                <li class="breadcrumb-item"><a href="{{ route('surveys.index') }}" class="text-decoration-none">Encuestas</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Gestión de Preguntas</li>
             </ol>
         </nav>
-        <div class="card-header">
-            <div class="accordion" id="accordionParticipants">
-                <div class="card">
-                    <div class="card-header" id="headingParticipants">
-                        <h5 class="mb-0">
-                            <button class="btn btn-link" type="button" data-toggle="collapse"
-                                data-target="#collapseParticipants" aria-expanded="false"
-                                aria-controls="collapseParticipants">
-                                Lista de Participantes
-                                <i class="fa fa-chevron-down ml-2"></i>
-                            </button>
-                        </h5>
-                    </div>
 
-                    <div id="collapseParticipants" class="collapse" aria-labelledby="headingParticipants"
-                        data-parent="#accordionParticipants">
-                        <div class="card-body">
-                            <table class="table table-striped table-hover">
-                                <thead>
+        <div class="card-body">
+            {{-- Accordion de Participantes --}}
+            <div class="card border-0 mb-4 shadow-sm">
+                <div class="card-header bg-light" id="headingParticipants">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link text-decoration-none w-100 text-left" type="button" data-toggle="collapse"
+                            data-target="#collapseParticipants" aria-expanded="false"
+                            aria-controls="collapseParticipants">
+                            <i class="fa fa-users mr-2 text-primary"></i> Lista de Participantes
+                            <i class="fa fa-chevron-down float-right text-muted"></i>
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapseParticipants" class="collapse" aria-labelledby="headingParticipants">
+                    <div class="card-body p-0">
+                        @if($survey->group)
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="thead-light">
                                     <tr>
-                                        <th>#</th>
+                                        <th class="text-center" style="width: 50px;">#</th>
                                         <th>Nombre</th>
                                         <th>Email</th>
-                                        <th>Estado</th>
+                                        <th class="text-center" style="width: 100px;">Estado</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($survey->group->members as $index => $participant)
+                                    @forelse($survey->group->members as $index => $participant)
                                         <tr>
-                                            <td>{{ $index + 1 }}</td>
+                                            <td class="text-center">{{ $index + 1 }}</td>
                                             <td>{{ $participant->name }}</td>
                                             <td>{{ $participant->email }}</td>
-                                            <td>{{ $participant->status }}</td>
+                                            <td class="text-center">
+                                                <span class="badge badge-success">Activo</span>
+                                            </td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-3">
+                                                No hay participantes registrados para este grupo
+                                            </td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
+                        @else
+                        <div class="alert alert-warning m-3">
+                            <i class="fa fa-exclamation-triangle mr-2"></i>
+                            Esta encuesta no tiene un grupo de trabajo asignado
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center" id="questionsHeader">
-                        <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)"
-                            id="createNewQuestion">
-                            Nueva Pregunta
-                        </a>
-                        <a class="btn btn-info mb-2" data-group-id="null" href="javascript:void(0)"
-                            id="createNewQuestionWithIA">
-                            Generar con IA
-                        </a>
-                        <div class="d-flex align-items-center">
-                            <span class="btn btn-primary" id="totalQuestions">
-                                Total de Preguntas <i class="fa fa-question-circle mr-2" aria-hidden="true"></i>:
-                                {{ $survey->questions->count() }}
-                            </span>
-                        </div>
-                    </div>
-                    {{-- Inicio Lista de Preguntas --}}
-                    <div class="card-body">
-                        <div class="accordion" id="accordionExample">
 
-                            @foreach ($survey->questions as $key => $question)
-                                <div class="card">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h2 class="mb-0" style="flex-grow: 1;">
-                                            <button class="btn btn-link text-left" type="button" data-toggle="collapse"
-                                                data-target="#collapse{{ $key }}" aria-expanded="true"
-                                                aria-controls="collapse{{ $key }}"
-                                                style="white-space: normal; overflow-wrap: break-word;">
-                                                {!! $question->question !!}
-                                            </button>
-                                        </h2>
-
-                                        <div class="ml-2 d-flex align-items-center">
-                                            @if ($question->countAnswers() > 0)
-                                                <button class="btn btn-success btn-circle mr-2">
-                                                    <i class="fa fa-check" aria-hidden="true"></i>
-                                                </button>
-                                            @else
-                                                <button class="btn btn-warning btn-circle mr-2">
-                                                    <i class="fa fa-times" aria-hidden="true"></i>
-                                                </button>
-                                            @endif
-
-                                            <button class="btn btn-danger btn-circle delete-question"
-                                                data-id="{{ $question->id }}">
-                                                <i class="fa fa-trash" aria-hidden="true"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div id="collapse{{ $key }}" class="collapse"
-                                        aria-labelledby="heading{{ $key }}" data-parent="#accordionExample">
-                                        <div class="card-body">
-                                            <ul>
-                                                @php
-                                                    $answersArray = $question->answersHasQuestions;
-                                                @endphp
-
-                                                @if ($answersArray->isNotEmpty())
-                                                    @foreach ($answersArray as $ans)
-                                                        @php
-                                                            $decodedAnswers = is_array($ans->answers)
-                                                                ? $ans->answers
-                                                                : json_decode($ans->answers, true);
-                                                        @endphp
-
-                                                        @if (!empty($decodedAnswers))
-                                                            @foreach ($decodedAnswers as $item)
-                                                                <li
-                                                                    @if (isset($item['is_correct']) && $item['is_correct']) style="color: green;" @endif>
-                                                                    {{ is_string($item['answer']) ? $item['answer'] : json_encode($item['answer']) }}
-                                                                    @if (isset($item['is_correct']) && $item['is_correct'])
-                                                                        (Correcta)
-                                                                    @endif
-                                                                </li>
-                                                            @endforeach
-                                                        @else
-                                                            <li>No hay respuestas disponibles para esta pregunta.</li>
-                                                        @endif
-                                                    @endforeach
-                                                @else
-                                                    <li>No hay respuestas disponibles para esta pregunta.</li>
-                                                @endif
-                                            </ul>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            @endforeach
-
-                        </div>
-                    </div>
-                    {{-- Fin Lista de Preguntas --}}
-
-
-                    {{-- Inicio Modal Preguntas --}}
-                    @include('admin.surveys.partials.modals.create')
-                    {{-- Fin Modal Preguntas --}}
+            {{-- Header de Acciones --}}
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <h5 class="mb-0 font-weight-bold">
+                    <i class="fa fa-question-circle mr-2 text-info"></i>Preguntas de la Encuesta
+                </h5>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-success" id="createNewQuestion">
+                        <i class="fa fa-plus mr-2"></i>Nueva Pregunta
+                    </button>
+                    <button class="btn btn-info" id="createNewQuestionWithIA">
+                        <i class="fa fa-robot mr-2"></i>Generar con IA
+                    </button>
                 </div>
+            </div>
 
+            {{-- Lista de Preguntas --}}
+            <div class="accordion" id="accordionExample">
+                @forelse($survey->questions as $key => $question)
+                    <div class="card border shadow-sm mb-3">
+                        <div class="card-header bg-white py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h2 class="mb-0" style="flex-grow: 1;">
+                                    <button class="btn btn-link text-decoration-none text-left w-100" type="button" data-toggle="collapse"
+                                        data-target="#collapse{{ $key }}" aria-expanded="true"
+                                        aria-controls="collapse{{ $key }}"
+                                        style="white-space: normal; overflow-wrap: break-word;">
+                                        <span class="badge badge-secondary mr-2">{{ $key + 1 }}</span>
+                                        {!! $question->question !!}
+                                    </button>
+                                </h2>
+
+                                <div class="ml-3 d-flex align-items-center">
+                                    @if ($question->countAnswers() > 0)
+                                        <button class="btn btn-success btn-sm mr-2" title="Tiene respuestas">
+                                            <i class="fa fa-check"></i>
+                                        </button>
+                                    @else
+                                        <button class="btn btn-warning btn-circle mr-2" title="Sin respuestas">
+                                            <i class="fa fa-exclamation-triangle"></i>
+                                        </button>
+                                    @endif
+
+                                    <button class="btn btn-danger btn-circle delete-question"
+                                        data-id="{{ $question->id }}" title="Eliminar pregunta">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="collapse{{ $key }}" class="collapse" aria-labelledby="heading{{ $key }}" data-parent="#accordionExample">
+                            <div class="card-body">
+                                <h6 class="text-muted mb-3">
+                                    <i class="fa fa-list mr-2"></i>Respuestas disponibles:
+                                </h6>
+                                <ul class="list-group list-group-flush">
+                                    @php
+                                        $answersArray = $question->answersHasQuestions;
+                                    @endphp
+
+                                    @if ($answersArray->isNotEmpty())
+                                        @foreach ($answersArray as $ans)
+                                            @php
+                                                $decodedAnswers = is_array($ans->answers)
+                                                    ? $ans->answers
+                                                    : json_decode($ans->answers, true);
+                                            @endphp
+
+                                            @if (!empty($decodedAnswers))
+                                                @foreach ($decodedAnswers as $item)
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <span class="mb-0">
+                                                            @if (isset($item['is_correct']) && $item['is_correct'])
+                                                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                                                <strong>{{ is_string($item['answer']) ? $item['answer'] : json_encode($item['answer']) }}</strong>
+                                                                <span class="badge badge-success ml-2">Correcta</span>
+                                                            @else
+                                                                <i class="fa fa-circle text-muted mr-2"></i>
+                                                                {{ is_string($item['answer']) ? $item['answer'] : json_encode($item['answer']) }}
+                                                            @endif
+                                                        </span>
+                                                    </li>
+                                                @endforeach
+                                            @else
+                                                <li class="list-group-item text-muted">
+                                                    No hay respuestas disponibles para esta pregunta.
+                                                </li>
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        <li class="list-group-item text-muted">
+                                            No hay respuestas disponibles para esta pregunta.
+                                        </li>
+                                    @endif
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-center py-5">
+                        <i class="fa fa-question-circle fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay preguntas en esta encuesta</h5>
+                        <p class="text-muted">Haz clic en "Nueva Pregunta" o "Generar con IA" para comenzar</p>
+                    </div>
+                @endforelse
             </div>
         </div>
     </div>
+
+    {{-- Modal Preguntas --}}
+    @include('admin.surveys.partials.modals.create')
 @stop
+
 @section('css')
     <style>
-        .correct-answer {
-            color: green;
-            font-weight: bold;
+        .list-group-item {
+            border-left: none;
+            border-right: none;
+        }
+        .list-group-item:first-child {
+            border-top: none;
+        }
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+        .card-header {
+            transition: all 0.3s ease;
+        }
+        .card-header:hover {
+            background-color: #f8f9fa;
         }
     </style>
 @endsection
+
 @section('scripts')
     <script type="text/javascript">
         $(function() {
