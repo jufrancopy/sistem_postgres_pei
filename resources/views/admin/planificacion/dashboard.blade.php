@@ -24,7 +24,7 @@
                     <label class="font-weight-bold mr-3 mb-0 text-nowrap">
                         <i class="fa fa-file-alt mr-1 text-info"></i> Plan Estratégico:
                     </label>
-                    <select name="pei_id" class="form-control" onchange="this.form.submit()" style="max-width:400px">
+                    <select name="pei_id" id="selectPei" class="form-control select2" style="max-width:400px">
                         @foreach($peisCorporativos as $pei)
                         <option value="{{ $pei->id }}" {{ $pei->id == $peiSeleccionadoId ? 'selected' : '' }}>
                             {{ strip_tags($pei->name) }}
@@ -290,6 +290,10 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
 $(function() {
+    // Select2 Plan Estratégico
+    $('#selectPei').select2({ width: '400px', minimumResultsForSearch: 5 })
+        .on('select2:select', function() { $('#formSelectorPei').submit(); });
+
     // Semáforo
     new Chart(document.getElementById('chartSemaforo'), {
         type: 'doughnut',
