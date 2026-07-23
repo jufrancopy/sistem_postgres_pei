@@ -8,7 +8,7 @@
     </div>
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-2">
         <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{{ route('proyectos-institucionales.index') }}">Proyectos</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('proyectos-institucionales.index', $proyecto->pei_profile_id) }}">Proyectos</a></li>
             <li class="breadcrumb-item"><a href="{{ route('proyectos-institucionales.show', $proyecto->id) }}">{{ $proyecto->codigo }}</a></li>
             <li class="breadcrumb-item active">Editar</li>
         </ol>
@@ -58,17 +58,13 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Dependencia Solicitante</label>
-                        <select id="raiz_solicitante" class="form-control mb-2" style="width:100%">
-                            <option value="">1. Elegir organigrama raíz...</option>
-                        </select>
-                        <select name="dependencia_solicitante_id" id="dep_solicitante" class="form-control" style="width:100%"
-                                {{ $proyecto->dependenciaSolicitante ? '' : 'disabled' }}>
+                        <select name="dependencia_solicitante_id" id="dep_solicitante" class="form-control" style="width:100%">
                             @if($proyecto->dependenciaSolicitante)
                             <option value="{{ $proyecto->dependencia_solicitante_id }}" selected>
                                 {{ $proyecto->dependenciaSolicitante->dependency }}
                             </option>
                             @else
-                            <option value="">2. Elegir dependencia...</option>
+                            <option value="">Buscar dependencia solicitante...</option>
                             @endif
                         </select>
                     </div>
@@ -76,17 +72,13 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Dependencia Ejecutora</label>
-                        <select id="raiz_ejecutora" class="form-control mb-2" style="width:100%">
-                            <option value="">1. Elegir organigrama raíz...</option>
-                        </select>
-                        <select name="dependencia_ejecutora_id" id="dep_ejecutora" class="form-control" style="width:100%"
-                                {{ $proyecto->dependenciaEjecutora ? '' : 'disabled' }}>
+                        <select name="dependencia_ejecutora_id" id="dep_ejecutora" class="form-control" style="width:100%">
                             @if($proyecto->dependenciaEjecutora)
                             <option value="{{ $proyecto->dependencia_ejecutora_id }}" selected>
                                 {{ $proyecto->dependenciaEjecutora->dependency }}
                             </option>
                             @else
-                            <option value="">2. Elegir dependencia...</option>
+                            <option value="">Buscar dependencia ejecutora...</option>
                             @endif
                         </select>
                     </div>
@@ -134,87 +126,26 @@
 $(function() {
     $('#pei_profile_id').select2({
         placeholder: 'Buscar acción del PEI...', allowClear: true,
-        ajax: { url: '{{ route('proyectos-institucionales.pei-acciones') }}', dataType: 'json', delay: 250,
+        ajax: { url: '{{ route('proyectos-institucionales.acciones-de-perfil', $proyecto->pei_profile_id) }}', dataType: 'json', delay: 250,
             processResults: function(d) { return { results: d }; }, cache: true }
     });
-    function initDepDosPasos(raizId, hijaId, nombreHija, precargarRaizId, precargarRaizNombre) {
-        var $raiz = $(raizId);
-        var $hija = $(hijaId);
+    var depUrl = '{{ url("admin/globales/get-dependencies") }}/{{ $proyecto->peiProfile?->dependency_id }}';
 
-        $raiz.select2({
-            placeholder: '1. Elegir organigrama raíz...',
-            allowClear: true,
-            ajax: {
-                url: '{{ route('globales.get-dependencies-root') }}',
-                dataType: 'json', delay: 250,
-                processResults: function(data) {
-                    return { results: $.map(data, function(i) { return { id: i.id, text: i.dependency }; }) };
-                }, cache: true
-            }
-        });
-
-        // Precargar raíz si viene de edición
-        if (precargarRaizId && precargarRaizNombre) {
-            var opt = new Option(precargarRaizNombre, precargarRaizId, true, true);
-            $raiz.append(opt).trigger('change');
-            $hija.prop('disabled', false);
-            $hija.select2({
-                placeholder: '2. Buscar ' + nombreHija + '...',
-                allowClear: true,
-                ajax: {
-                    url: '{{ url('admin/globales/get-dependencies') }}/' + precargarRaizId,
-                    dataType: 'json', delay: 250,
-                    processResults: function(data) {
-                        var results = [{ id: precargarRaizId, text: precargarRaizNombre + ' (raíz)' }];
-                        if (Array.isArray(data)) {
-                            data.forEach(function(i) { results.push({ id: i.id, text: i.dependency }); });
-                        }
-                        return { results: results };
-                    }, cache: true
-                }
-            });
-        }
-
-        $raiz.on('change', function() {
-            var rId = $(this).val();
-            var rNombre = $(this).find('option:selected').text();
-            $hija.empty().append('<option value="">2. Elegir ' + nombreHija + '...</option>');
-            $hija.prop('disabled', !rId);
-            if (!rId) return;
-            $hija.select2({
-                placeholder: '2. Buscar ' + nombreHija + '...',
-                allowClear: true,
-                ajax: {
-                    url: '{{ url('admin/globales/get-dependencies') }}/' + rId,
-                    dataType: 'json', delay: 250,
-                    processResults: function(data) {
-                        var results = [{ id: rId, text: rNombre + ' (raíz)' }];
-                        if (Array.isArray(data)) {
-                            data.forEach(function(i) { results.push({ id: i.id, text: i.dependency }); });
-                        }
-                        return { results: results };
-                    }, cache: true
-                }
-            });
-        });
-    }
-
-    // Precargar raíces desde el servidor si hay dependencias asignadas
-    @if($proyecto->dependenciaSolicitante)
-    $.get('{{ url('admin/globales/get-root-of-dependency') }}/{{ $proyecto->dependencia_solicitante_id }}', function(raiz) {
-        initDepDosPasos('#raiz_solicitante', '#dep_solicitante', 'dependencia solicitante', raiz.id, raiz.dependency);
+    $('#dep_solicitante').select2({
+        placeholder: 'Buscar dependencia solicitante...', allowClear: true,
+        ajax: { url: depUrl, dataType: 'json', delay: 250,
+            processResults: function(data) {
+                return { results: $.map(data, function(i) { return { id: i.id, text: i.dependency }; }) };
+            }, cache: true }
     });
-    @else
-    initDepDosPasos('#raiz_solicitante', '#dep_solicitante', 'dependencia solicitante');
-    @endif
 
-    @if($proyecto->dependenciaEjecutora)
-    $.get('{{ url('admin/globales/get-root-of-dependency') }}/{{ $proyecto->dependencia_ejecutora_id }}', function(raiz) {
-        initDepDosPasos('#raiz_ejecutora', '#dep_ejecutora', 'dependencia ejecutora', raiz.id, raiz.dependency);
+    $('#dep_ejecutora').select2({
+        placeholder: 'Buscar dependencia ejecutora...', allowClear: true,
+        ajax: { url: depUrl, dataType: 'json', delay: 250,
+            processResults: function(data) {
+                return { results: $.map(data, function(i) { return { id: i.id, text: i.dependency }; }) };
+            }, cache: true }
     });
-    @else
-    initDepDosPasos('#raiz_ejecutora', '#dep_ejecutora', 'dependencia ejecutora');
-    @endif
 });
 </script>
 @stop

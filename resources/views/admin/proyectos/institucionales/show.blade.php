@@ -6,35 +6,23 @@
 {{-- ── Header ── --}}
 <div class="card mb-3">
     <div class="card-header card-header-info">
-        <div class="d-flex justify-content-between align-items-start">
-            <div>
-                <h4 class="card-title mb-1">
-                    <span class="badge badge-light text-dark mr-2">{{ $proyecto->codigo }}</span>
-                    {{ $proyecto->nombre }}
-                </h4>
-                <div>
-                    <span class="badge {{ \App\Models\Proyectos\ProyectoInstitucional::estadoBadge($proyecto->estado) }} mr-2">
-                        {{ \App\Models\Proyectos\ProyectoInstitucional::estadoLabel($proyecto->estado) }}
-                    </span>
-                    @if($proyecto->peiProfile)
-                    <span class="badge badge-success">
-                        <i class="fa fa-link mr-1"></i> Vinculado al PEI
-                    </span>
-                    @else
-                    <span class="badge badge-warning">
-                        <i class="fa fa-unlink mr-1"></i> Sin vincular al PEI
-                    </span>
-                    @endif
-                </div>
-            </div>
-            <div class="text-right">
-                <a href="{{ route('proyectos-institucionales.edit', $proyecto->id) }}" class="btn btn-primary btn-circle" title="Editar">
-                    <i class="fa fa-edit"></i>
-                </a>
-                <a href="{{ route('proyectos-institucionales.index') }}" class="btn btn-secondary btn-circle ml-1" title="Volver">
-                    <i class="fa fa-arrow-left"></i>
-                </a>
-            </div>
+        <h4 class="card-title">
+            <span class="badge badge-light text-dark mr-2" style="font-size:.75rem">{{ $proyecto->codigo }}</span>
+            {{ $proyecto->nombre }}
+        </h4>
+        <p class="card-category">
+            <span class="badge {{ \App\Models\Proyectos\ProyectoInstitucional::estadoBadge($proyecto->estado) }} mr-1">
+                {{ \App\Models\Proyectos\ProyectoInstitucional::estadoLabel($proyecto->estado) }}
+            </span>
+            @if($proyecto->peiProfile)
+            <span class="badge badge-success"><i class="fa fa-link mr-1"></i> Vinculado al PEI</span>
+            @else
+            <span class="badge badge-warning"><i class="fa fa-unlink mr-1"></i> Sin vincular al PEI</span>
+            @endif
+        </p>
+        <div style="position:absolute;top:16px;right:16px">
+            <a href="{{ route('proyectos-institucionales.edit', $proyecto->id) }}" class="btn btn-primary btn-circle" title="Editar"><i class="fa fa-edit"></i></a>
+            <a href="{{ route('proyectos-institucionales.index', $proyecto->pei_profile_id) }}" class="btn btn-secondary btn-circle ml-1" title="Volver"><i class="fa fa-arrow-left"></i></a>
         </div>
     </div>
 </div>
@@ -43,6 +31,63 @@
 
     {{-- ── Columna izquierda: info + checklist ── --}}
     <div class="col-md-8">
+
+        {{-- Panel de atención (solo en estado solicitud) ── --}}
+        @if($proyecto->estado === 'solicitud')
+        <div class="card shadow mb-3 border-left-warning">
+            <div class="card-header bg-warning-subtle d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 font-weight-bold text-warning">
+                    <i class="fa fa-bell mr-1"></i> Solicitud pendiente de atención
+                </h6>
+                <span class="badge badge-warning">Requiere asignación</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3" style="font-size:.85rem">Asigná el analista y la dependencia ejecutora para poder avanzar el proyecto al siguiente estado.</p>
+                <form action="{{ route('proyectos-institucionales.update', $proyecto->id) }}" method="POST">
+                    @csrf @method('PUT')
+                    {{-- campos ocultos para no pisar los demás --}}
+                    <input type="hidden" name="nombre" value="{{ $proyecto->nombre }}">
+                    <input type="hidden" name="descripcion" value="{{ $proyecto->descripcion }}">
+                    <input type="hidden" name="fecha_fin_estimada" value="{{ $proyecto->fecha_fin_estimada?->format('Y-m-d') }}">
+                    <input type="hidden" name="pei_profile_id" value="{{ $proyecto->pei_profile_id }}">
+                    <input type="hidden" name="dependencia_solicitante_id" value="{{ $proyecto->dependencia_solicitante_id }}">
+                    <input type="hidden" name="presupuesto_estimado" value="{{ $proyecto->presupuesto_estimado }}">
+                    <input type="hidden" name="presupuesto_ejecutado" value="{{ $proyecto->presupuesto_ejecutado ?? 0 }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Analista Responsable <span class="text-danger">*</span></label>
+                                <select name="analista_id" id="analista_asignar" class="form-control" style="width:100%">
+                                    @if($proyecto->analista)
+                                    <option value="{{ $proyecto->analista_id }}" selected>{{ $proyecto->analista->name }}</option>
+                                    @else
+                                    <option value="">Buscar analista...</option>
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Dependencia Ejecutora</label>
+                                <select name="dependencia_ejecutora_id" id="dep_ejecutora_asignar" class="form-control" style="width:100%">
+                                    @if($proyecto->dependenciaEjecutora)
+                                    <option value="{{ $proyecto->dependencia_ejecutora_id }}" selected>{{ $proyecto->dependenciaEjecutora->dependency }}</option>
+                                    @else
+                                    <option value="">Buscar dependencia...</option>
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fa fa-user-check mr-1"></i> Asignar y continuar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @endif
 
         {{-- Flujo de estados ── --}}
         <div class="card shadow mb-3">
@@ -311,6 +356,29 @@
 <script>
 $(function() {
     $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+
+    @if($proyecto->estado === 'solicitud')
+    var depUrl = '{{ url("admin/globales/get-dependencies") }}/{{ $proyecto->peiProfile?->dependency_id }}';
+
+    $('#analista_asignar').select2({
+        placeholder: 'Buscar analista...', allowClear: true,
+        ajax: {
+            url: '{{ route("globales.get-users") }}',
+            dataType: 'json', delay: 250,
+            processResults: function(d) { return { results: $.map(d, function(i) { return { id: i.id, text: i.name }; }) }; },
+            cache: true
+        }
+    });
+
+    $('#dep_ejecutora_asignar').select2({
+        placeholder: 'Buscar dependencia ejecutora...', allowClear: true,
+        ajax: {
+            url: depUrl, dataType: 'json', delay: 250,
+            processResults: function(d) { return { results: $.map(d, function(i) { return { id: i.id, text: i.dependency }; }) }; },
+            cache: true
+        }
+    });
+    @endif
 
     // ── Cambiar estado ────────────────────────────────────────────────────────
     $('#btnConfirmarEstado').on('click', function() {

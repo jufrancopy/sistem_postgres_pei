@@ -29,6 +29,13 @@ class ProyectoInstitucionalController extends Controller
             ])
             ->when($request->estado, fn($q) => $q->where('estado', $request->estado))
             ->when($request->q,      fn($q) => $q->where('nombre', 'like', '%'.$request->q.'%'))
+            ->when($request->pei_profile_id, function($q) use ($request) {
+                $perfil = PeiProfile::find($request->pei_profile_id);
+                if ($perfil) {
+                    $accionIds = $perfil->descendants()->pluck('id')->push($perfil->id);
+                    $q->whereIn('pei_profile_id', $accionIds);
+                }
+            })
             ->latest();
 
             return DataTables::of($query)
@@ -73,7 +80,7 @@ class ProyectoInstitucionalController extends Controller
     public function create()
     {
         $estados = ProyectoInstitucional::ESTADOS;
-        return view('admin.proyectos.institucionales.create', compact('estados'));
+        return view('admin.proyectos.institucionales.create', compact('estados') + ['perfil' => null]);
     }
 
     public function store(Request $request)
@@ -158,13 +165,13 @@ class ProyectoInstitucionalController extends Controller
         $proyecto->update([
             'nombre'                    => $request->nombre,
             'descripcion'               => $request->descripcion,
-            'pei_profile_id'            => $request->pei_profile_id ?: null,
+            'pei_profile_id'            => $request->pei_profile_id ?: $proyecto->pei_profile_id,
             'dependencia_solicitante_id'=> $request->dependencia_solicitante_id ?: null,
             'dependencia_ejecutora_id'  => $request->dependencia_ejecutora_id ?: null,
             'analista_id'               => $request->analista_id ?: null,
             'presupuesto_estimado'      => $request->presupuesto_estimado,
             'presupuesto_aprobado'      => $request->presupuesto_aprobado,
-            'presupuesto_ejecutado'     => $request->presupuesto_ejecutado,
+            'presupuesto_ejecutado'     => $request->presupuesto_ejecutado ?? $proyecto->presupuesto_ejecutado ?? 0,
             'fecha_fin_estimada'        => $request->fecha_fin_estimada,
             'nro_resolucion'            => $request->nro_resolucion,
             'avance_pct'                => $request->avance_pct ?? $proyecto->avance_pct,
@@ -240,7 +247,73 @@ class ProyectoInstitucionalController extends Controller
         ]);
     }
 
-    // ── API: buscar acciones del PEI para vincular ────────────────────────────
+    // ── Crear proyecto en el contexto de un perfil PEI ───────────────────────
+    public function createForPerfil($profileId)
+    {
+        $perfil  = PeiProfile::findOrFail($profileId);
+        $estados = ProyectoInstitucional::ESTADOS;
+        return view('admin.proyectos.institucionales.create', compact('perfil', 'estados'));
+    }
+
+    // ── Solicitud pública de proyecto ─────────────────────────────────────────
+    public function solicitarForm($profileId)
+    {
+        $perfil = PeiProfile::findOrFail($profileId);
+        return view('public.proyectos.solicitar', compact('perfil'));
+    }
+
+    public function solicitarStore(Request $request, $profileId)
+    {
+        $perfil = PeiProfile::findOrFail($profileId);
+
+        $request->validate([
+            'nombre'      => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+        ]);
+
+        $proyecto = ProyectoInstitucional::create([
+            'codigo'                     => ProyectoInstitucional::generarCodigo(),
+            'nombre'                     => $request->nombre,
+            'descripcion'                => $request->descripcion,
+            'estado'                     => 'solicitud',
+            'pei_profile_id'             => $perfil->id,
+            'pei_accion_id'              => $request->pei_accion_id ?: null,
+            'dependencia_solicitante_id' => $request->dependencia_solicitante_id ?: null,
+            'fecha_solicitud'            => now(),
+            'fecha_fin_estimada'         => $request->fecha_fin_estimada,
+        ]);
+
+        foreach (array_keys(ProyectoInstitucional::CHECKLIST_ITEMS) as $item) {
+            ProyectoChecklist::create(['proyecto_id' => $proyecto->id, 'item' => $item, 'completado' => false]);
+        }
+
+        $proyecto->historial()->create([
+            'estado_anterior' => null,
+            'estado_nuevo'    => 'solicitud',
+            'usuario_id'      => null,
+            'comentario'      => 'Solicitud enviada desde formulario público.',
+            'fecha'           => now(),
+        ]);
+
+        return back()->with('success', "Solicitud {$proyecto->codigo} enviada correctamente. Un analista se pondrá en contacto.");
+    }
+
+    // ── API: acciones filtradas por perfil ────────────────────────────────────
+    public function getAccionesDePerfil(Request $request, $profileId)
+    {
+        $perfil = PeiProfile::findOrFail($profileId);
+        $ids    = $perfil->descendants()->where('level', 'action')->pluck('id');
+
+        $data = PeiProfile::whereIn('id', $ids)
+            ->when($request->q, fn($q) => $q->where('name', 'ilike', '%'.$request->q.'%'))
+            ->limit(50)
+            ->get()
+            ->map(fn($p) => ['id' => $p->id, 'text' => strip_tags($p->name)]);
+
+        return response()->json($data);
+    }
+
+    // ── API: buscar acciones del PEI para vincular (genérico, sin contexto) ───
     public function getPeiAcciones(Request $request)
     {
         $data = PeiProfile::where('level', 'action')

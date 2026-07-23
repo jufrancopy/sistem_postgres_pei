@@ -200,81 +200,20 @@ Route::group(['middleware' => ['auth']], function () {
     // Rutas de Proyectos 
     Route::get('proyectos-dashboard', 'Admin\Proyectos\ProyectosDashboardController@index')->name('proyectos-dashboard');
 
-    //Estandar por Complejidad
-    Route::view('proyectos-epc-dashboard', 'admin.proyectos.epc.dashboard')->name('proyectos-epc-dashboard');
-    Route::get('proyectos-epc-home', 'Admin\Proyectos\EPC\EPCController@getHome')->name('proyectos-epc-home');
-    Route::get('proyectos-epc/{type}', 'Admin\Proyectos\EPC\EquipamientoController@getForType')->name('proyectos-epc');
-
-    // Horarios
-    Route::resource('proyectos-epc-horarios', 'Admin\Proyectos\EPC\HorarioController');
-
-    // Horarios
-    Route::resource('proyectos-epc-horarios', 'Admin\Proyectos\EPC\HorarioController');
-
-    // TTHH
-    Route::resource('proyectos-epc-tthh', 'Admin\Proyectos\EPC\TalentoHumanoController');
-    Route::get('tthhs/get',         'Admin\Proyectos\EPC\TalentoHumanoController@get')->name('tthhs.get');
-
-    // Equipamientos
-    Route::resource('proyectos-epc-equipamientos', 'Admin\Proyectos\EPC\EquipamientoController');
-    Route::get('equipamientos/get',         'Admin\Proyectos\EPC\EquipamientoController@get')->name('equipamientos.get');
-
-    // Orders
-    Route::resource('orders', 'OrdersController');
-
-    // Infraestructuras
-    Route::resource('proyectos-epc-infraestructuras', 'Admin\Proyectos\EPC\InfraestructuraController');
-    Route::get('infraestructuras/get', 'Admin\Proyectos\EPC\InfraestructuraController@get')->name('infraestructuras.get');
-
-    // Otros Servicios
-    Route::resource('proyectos-epc-otros_servs', 'Admin\Proyectos\EPC\OtroServicioController');
-    Route::get('otro-servicios/get', 'Admin\Proyectos\EPC\OtroServicioController@get')->name('otroServicios.get');
-
-    // Horarios
-    Route::resource('proyectos-epc-horarios', 'Admin\Proyectos\EPC\HorarioController');
-
-    // Prestaciones
-    Route::resource('proyectos-epc-prestaciones', 'Admin\Proyectos\EPC\PrestacionController');
-    Route::get('prestaciones/get', 'Admin\Proyectos\EPC\PrestacionController@get')->name('prestaciones.get');
-
-    // Turnos
-    Route::resource('proyectos-epc-turnos', 'Admin\Proyectos\EPC\TurnoController');
-
-    // Medicamento e Insumos
-    Route::resource('proyectos-epc-mds_ins', 'Admin\Proyectos\EPC\MedicamentoInsumoController');
-
-    // Specialties
-    Route::resource('proyectos-epc-especialidades', 'Admin\Proyectos\EPC\EspecialidadController');
-    Route::get('proyectos-epc-especialidad/{type}', 'Admin\Proyectos\EPC\EspecialidadController@getForType')->name('especialidades');
-
-    // Servicios
-    Route::resource('proyectos-epc-servicios', 'Admin\Proyectos\EPC\ServicioController');
-    Route::get('proyectos-epc-servs/{type}', 'Admin\Proyectos\EPC\ServicioController@getForType')->name('servicios');
-    Route::get('servicios/get', 'Admin\Proyectos\EPC\ServicioController@get')->name('servicios.get');
-
-    // Estándares 
-    Route::resource('proyectos-epc-estandares', 'Admin\Proyectos\EPC\EstandarController');
-
-    // Riesgos 
-    Route::resource('risks', 'Admin\Planificacion\Riesgo\RiskController');
-
-    // ── Proyectos Institucionales (SCPI) ──────────────────────────────────────
-    Route::resource('proyectos-institucionales', 'Admin\Proyectos\ProyectoInstitucionalController');
-    Route::post('proyectos-institucionales/{id}/estado',    'Admin\Proyectos\ProyectoInstitucionalController@cambiarEstado')->name('proyectos-institucionales.estado');
-    Route::post('proyectos-institucionales/{id}/checklist', 'Admin\Proyectos\ProyectoInstitucionalController@updateChecklist')->name('proyectos-institucionales.checklist');
-    Route::get('proyectos-institucionales-pei-acciones',    'Admin\Proyectos\ProyectoInstitucionalController@getPeiAcciones')->name('proyectos-institucionales.pei-acciones');
+    // ── Proyectos Institucionales (SCPI) ──────────────────────────────────────────────────────
+    Route::get('pei-profiles/{profileId}/proyectos',          'Admin\Proyectos\ProyectoInstitucionalController@index')->name('proyectos-institucionales.index');
+    Route::get('pei-profiles/{profileId}/proyectos/create',   'Admin\Proyectos\ProyectoInstitucionalController@createForPerfil')->name('proyectos-institucionales.create-for-perfil');
+    Route::post('pei-profiles/{profileId}/proyectos',         'Admin\Proyectos\ProyectoInstitucionalController@store')->name('proyectos-institucionales.store');
+    Route::get('pei-profiles/{profileId}/proyectos/acciones', 'Admin\Proyectos\ProyectoInstitucionalController@getAccionesDePerfil')->name('proyectos-institucionales.acciones-de-perfil');
+    Route::get('proyectos-institucionales/{id}',              'Admin\Proyectos\ProyectoInstitucionalController@show')->name('proyectos-institucionales.show');
+    Route::get('proyectos-institucionales/{id}/edit',         'Admin\Proyectos\ProyectoInstitucionalController@edit')->name('proyectos-institucionales.edit');
+    Route::put('proyectos-institucionales/{id}',              'Admin\Proyectos\ProyectoInstitucionalController@update')->name('proyectos-institucionales.update');
+    Route::post('proyectos-institucionales/{id}/estado',      'Admin\Proyectos\ProyectoInstitucionalController@cambiarEstado')->name('proyectos-institucionales.estado');
+    Route::post('proyectos-institucionales/{id}/checklist',   'Admin\Proyectos\ProyectoInstitucionalController@updateChecklist')->name('proyectos-institucionales.checklist');
 
     Route::group(['prefix' => 'admin/globales', 'as' => 'globales.'], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
-
-        // Cronogramas
-        Route::get('cronogramas/gantt', 'Admin\Globales\ScheduleController@gantt')->name('cronogramas.gantt');
-        Route::middleware(['role:Administrador|Gestor de Actividades'])->group(function () {
-            Route::get('cronogramas', 'Admin\Globales\ScheduleController@index')->name('cronogramas.index');
-            Route::post('cronogramas/import', 'Admin\Globales\ScheduleController@import')->name('cronogramas.import');
-            Route::get('cronogramas/{period}', 'Admin\Globales\ScheduleController@show')->name('cronogramas.show');
-        });
 
         // ── Actividades: index/crear/editar/eliminar solo Administrador ────────
         Route::middleware(['role:Administrador'])->group(function () {
@@ -690,3 +629,14 @@ Route::group(['middleware' => 'auth'], function () {
 Route::get('riiss/evaluaciones/{evaluacion}/matriz-partial',
     [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'matrizPartial'])
     ->name('evaluaciones.matriz-partial');
+
+// ── Rutas públicas Proyectos (sin auth) ───────────────────────────────────────
+Route::get('pei-profiles/{profileId}/solicitar-proyecto',
+    [\App\Http\Controllers\Admin\Proyectos\ProyectoInstitucionalController::class, 'solicitarForm'])
+    ->name('proyectos.solicitar.form');
+Route::post('pei-profiles/{profileId}/solicitar-proyecto',
+    [\App\Http\Controllers\Admin\Proyectos\ProyectoInstitucionalController::class, 'solicitarStore'])
+    ->name('proyectos.solicitar.store');
+Route::get('pei-profiles/{profileId}/proyectos/acciones-publico',
+    [\App\Http\Controllers\Admin\Proyectos\ProyectoInstitucionalController::class, 'getAccionesDePerfil'])
+    ->name('proyectos.solicitar.acciones');

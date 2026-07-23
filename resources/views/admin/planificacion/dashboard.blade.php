@@ -66,7 +66,8 @@
                 ['label'=>'Metas',             'valor'=>$totalMetas,      'sub'=>'definidas',                                   'color'=>'success', 'icon'=>'fa-flag',           'url'=>route('pei-profiles.show', $peiActual->id)],
                 ['label'=>'Acciones',          'valor'=>$totalAcciones,   'sub'=>$accionesSinResp.' sin responsable',           'color'=>$accionesSinResp>0?'warning':'success', 'icon'=>'fa-rocket', 'url'=>route('pei-profiles.show', $peiActual->id)],
                 ['label'=>'Perfiles FODA',     'valor'=>$totalFodaPerfiles,'sub'=>$fodaConsolidados.' consolidados',            'color'=>'danger',  'icon'=>'fa-search',         'url'=>route('foda-list-groups') . '?pei_id=' . $peiActual->id],
-                ['label'=>'Proyectos',         'valor'=>$totalProyectos,  'sub'=>$proyectosEjecucion.' en ejecución',           'color'=>'secondary','icon'=>'fa-project-diagram','url'=>route('proyectos-institucionales.index')],
+                ['label'=>'Proyectos',         'valor'=>$totalProyectos,  'sub'=>$proyectosEjecucion.' en ejecución',           'color'=>'secondary','icon'=>'fa-project-diagram','url'=>route('proyectos-institucionales.index', ['profileId' => $peiActual->id])],
+
                 ['label'=>'Proceso',           'valor'=>'Ver',            'sub'=>'pasos del plan',                              'color'=>'primary', 'icon'=>'fa-tasks',          'url'=>route('pei-profiles.proceso', $peiActual->id)],
             ];
             @endphp
@@ -176,7 +177,7 @@
                         @endif
                     </div>
                     <div class="card-footer py-2 text-right">
-                        <a href="{{ route('proyectos-institucionales.index') }}" class="btn btn-sm btn-outline-secondary">
+                        <a href="{{ route('proyectos-institucionales.index', ['profileId' => $peiActual->id]) }}" class="btn btn-sm btn-outline-secondary">
                             Ver todos
                         </a>
                     </div>

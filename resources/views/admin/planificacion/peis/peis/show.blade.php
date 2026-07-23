@@ -45,6 +45,12 @@
                 <i class="fa fa-share-alt mr-1"></i>
                 {{ $profile->public_token ? 'Enlace público' : 'Generar enlace público' }}
             </button>
+            <a href="{{ route('proyectos-institucionales.index', $profile->id) }}" class="btn btn-sm btn-success ml-2">
+                <i class="fa fa-project-diagram mr-1"></i> Proyectos
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-secondary ml-2" data-toggle="modal" data-target="#modalQrSolicitud">
+                <i class="fa fa-qrcode mr-1"></i> QR Solicitud
+            </button>
         </div>
 
         <!-- HTML del segundo nav (inicialmente oculto) -->
@@ -431,6 +437,29 @@
         </div>
         {{-- Fin Contenido Principal --}}
     </div>
+
+{{-- Modal QR Solicitud de Proyecto --}}
+<div class="modal fade" id="modalQrSolicitud" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title"><i class="fa fa-qrcode mr-1"></i> Solicitud de Proyecto</h6>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="text-muted mb-3" style="font-size:.85rem">Escaneá el QR para acceder al formulario de solicitud del plan <strong>{{ $profile->name }}</strong></p>
+                {!! QrCode::size(200)->generate(route('proyectos.solicitar.form', $profile->id)) !!}
+                <div class="mt-3">
+                    <a href="{{ route('proyectos.solicitar.form', $profile->id) }}" target="_blank"
+                       class="btn btn-sm btn-outline-primary btn-block">
+                        <i class="fa fa-external-link-alt mr-1"></i> Abrir enlace
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @stop
 
 @section('scripts')

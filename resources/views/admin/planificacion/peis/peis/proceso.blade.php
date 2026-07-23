@@ -126,6 +126,9 @@ $pctGlobal   = round(($completados / 6) * 100);
                 <a href="{{ route('pei-profiles.certificacion-mef', $profile->id) }}" class="btn btn-sm btn-warning">
                     <i class="fa fa-certificate mr-1"></i> Certificación MEF
                 </a>
+                <a href="{{ route('proyectos-institucionales.index', $profile->id) }}" class="btn btn-sm btn-success">
+                    <i class="fa fa-project-diagram mr-1"></i> Proyectos
+                </a>
             </div>
         </div>
 

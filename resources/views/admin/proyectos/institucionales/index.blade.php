@@ -2,6 +2,9 @@
 @section('title', 'Proyectos Institucionales — SCPI')
 
 @section('content')
+
+@php $peiProfileId = request()->route('profileId') ?? request('pei_profile_id'); @endphp
+
 <div class="card">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="fa fa-project-diagram mr-2"></i>Seguimiento y Control de Proyectos Institucionales</h4>
@@ -11,6 +14,9 @@
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-2">
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{{ route('proyectos-dashboard') }}">Proyectos</a></li>
+            @if($peiProfileId)
+            <li class="breadcrumb-item"><a href="{{ route('pei-profiles.proceso', $peiProfileId) }}">Perfil PEI</a></li>
+            @endif
             <li class="breadcrumb-item active">Proyectos Institucionales</li>
         </ol>
     </nav>
@@ -37,7 +43,7 @@
             </div>
             @endforeach
             <div class="col-xl-2 col-md-4 col-sm-6 mb-3 d-flex align-items-center">
-                <a href="{{ route('proyectos-institucionales.create') }}" class="btn btn-success btn-block">
+                <a href="{{ route('proyectos-institucionales.create-for-perfil', $peiProfileId) }}" class="btn btn-success btn-block">
                     <i class="fa fa-plus mr-1"></i> Nuevo Proyecto
                 </a>
             </div>
@@ -95,10 +101,11 @@ $(function() {
             paginate: { next: 'Siguiente', previous: 'Anterior' }
         },
         ajax: {
-            url: '{{ route('proyectos-institucionales.index') }}',
+            url: '{{ route('proyectos-institucionales.index', $peiProfileId) }}',
             data: function(d) {
-                d.estado = $('#filtroEstado').val();
-                d.q      = $('#filtroBuscar').val();
+                d.estado          = $('#filtroEstado').val();
+                d.q               = $('#filtroBuscar').val();
+                d.pei_profile_id  = '{{ $peiProfileId }}';
             }
         },
         columns: [

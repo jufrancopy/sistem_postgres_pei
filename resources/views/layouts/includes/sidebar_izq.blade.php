@@ -8,8 +8,8 @@
     $path = request()->path();
 
     // Detectar en qué sección estamos
-    $enPlanificacion = str_contains($path, 'pei-') || str_contains($path, 'foda') || str_contains($path, 'planificacion') || str_contains($path, 'tasks') || str_contains($path, 'risks') || str_contains($path, 'pgn') || str_contains($path, 'pei/marcos');
-    $enProyectos     = str_contains($path, 'proyectos') || str_contains($path, 'epc') || str_contains($path, 'risks');
+    $enPlanificacion = str_contains($path, 'pei-') || str_contains($path, 'foda') || str_contains($path, 'planificacion') || str_contains($path, 'tasks') || str_contains($path, 'pgn') || str_contains($path, 'pei/marcos');
+    $enProyectos     = str_contains($path, 'proyectos') || str_contains($path, 'epc');
     $enSiess         = str_contains($path, 'siess') || str_contains($path, 'eph') || str_contains($path, 'dgeec') || str_contains($path, 'contexto');
     $enCronogramas   = str_contains($path, 'cronogramas');
     $enModulosSiess  = str_contains($path, 'siess/modulos');
@@ -40,12 +40,6 @@
                     <p>Ver sitio público</p>
                 </a>
             </li>
-            <li class="nav-item {{ $enCronogramas ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('globales.cronogramas.index') }}">
-                    <i class="material-icons">timeline</i>
-                    <p>Cronogramas</p>
-                </a>
-            </li>
             <li class="nav-item ">
                 <a class="nav-link" href="{{ route('globales.dashboard') }}">
                     <i class="material-icons">settings_applications</i>
@@ -69,13 +63,7 @@
                         <li class="nav-item {{ $isActive('pei-profiles*') }}">
                             <a class="nav-link" href="{{ route('pei-profiles.index') }}">
                                 <span class="sidebar-mini"><i class="fa fa-file-alt" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Perfiles PEI</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('pei-profiles.index') }}#nuevo">
-                                <span class="sidebar-mini"><i class="fa fa-plus" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Nuevo Perfil PEI</span>
+                                <span class="sidebar-normal">PEI</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -153,28 +141,7 @@
                                 <span class="sidebar-normal">Dashboard</span>
                             </a>
                         </li>
-                        <li class="nav-item {{ $isActive('proyectos-institucionales*') }}">
-                            <a class="nav-link" href="{{ route('proyectos-institucionales.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-project-diagram" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Proyectos SCPI
-                                    @if($sinPei > 0)
-                                        <span class="badge badge-warning" style="font-size:.6rem">{{ $sinPei }}</span>
-                                    @endif
-                                </span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ $isActive('proyectos-epc*') }}">
-                            <a class="nav-link" href="{{ route('proyectos-epc-home') }}">
-                                <span class="sidebar-mini"><i class="fa fa-hospital" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">EPC</span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ $isActive('risks*') }}">
-                            <a class="nav-link" href="{{ route('risks.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-exclamation-triangle" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Riesgos</span>
-                            </a>
-                        </li>
+
                     </ul>
                 </div>
             </li>
@@ -381,7 +348,7 @@
                         <li class="nav-item {{ $isActive('pei-profiles*') }}">
                             <a class="nav-link" href="{{ route('pei-profiles.index') }}">
                                 <span class="sidebar-mini"><i class="fa fa-file-alt" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Perfiles PEI</span>
+                                <span class="sidebar-normal">PEI</span>
                             </a>
                         </li>
                         <li class="nav-item {{ $isActive('pgn*') }}">

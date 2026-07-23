@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Admin\Proyectos;
 
 use App\Http\Controllers\Controller;
 use App\Models\Proyectos\ProyectoInstitucional;
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Admin\Planificacion\Pei\PeiProfile;
 
 class ProyectosDashboardController extends Controller
 {
@@ -16,52 +15,50 @@ class ProyectosDashboardController extends Controller
 
     public function index()
     {
-        // ── KPIs generales ────────────────────────────────────────────────────
-        $total          = ProyectoInstitucional::count();
-        $activos        = ProyectoInstitucional::activos()->count();
-        $enEjecucion    = ProyectoInstitucional::enEjecucion()->count();
-        $finalizados    = ProyectoInstitucional::where('estado', 'finalizado')->count();
-        $sinPei         = ProyectoInstitucional::whereNull('pei_profile_id')->activos()->count();
-        $rechazados     = ProyectoInstitucional::whereIn('estado', ['rechazado_docs','rechazado_tecnico'])->count();
+        // KPIs globales
+        $total       = ProyectoInstitucional::count();
+        $activos     = ProyectoInstitucional::activos()->count();
+        $enEjecucion = ProyectoInstitucional::enEjecucion()->count();
+        $finalizados = ProyectoInstitucional::where('estado', 'finalizado')->count();
 
-        // ── Presupuesto ───────────────────────────────────────────────────────
-        $presupuestoTotal    = ProyectoInstitucional::sum('presupuesto_aprobado');
-        $presupuestoEjecutado= ProyectoInstitucional::sum('presupuesto_ejecutado');
-        $pctEjecucionPres    = $presupuestoTotal > 0
+        $presupuestoTotal     = ProyectoInstitucional::sum('presupuesto_aprobado');
+        $presupuestoEjecutado = ProyectoInstitucional::sum('presupuesto_ejecutado');
+        $pctEjecucionPres     = $presupuestoTotal > 0
             ? round($presupuestoEjecutado / $presupuestoTotal * 100) : 0;
 
-        // ── Por estado ────────────────────────────────────────────────────────
         $porEstado = ProyectoInstitucional::selectRaw('estado, COUNT(*) as total')
-            ->groupBy('estado')
-            ->pluck('total', 'estado');
+            ->groupBy('estado')->pluck('total', 'estado');
 
-        // ── Checklist: proyectos con checklist completo ───────────────────────
-        $conChecklistCompleto = ProyectoInstitucional::activos()->get()
-            ->filter(fn($p) => $p->checklistCompleto())->count();
+        // Planes PEI con sus proyectos agrupados
+        $accionIds = ProyectoInstitucional::whereNotNull('pei_profile_id')
+            ->pluck('pei_profile_id')->unique();
 
-        // ── Proyectos recientes ───────────────────────────────────────────────
-        $recientes = ProyectoInstitucional::with([
-            'dependenciaSolicitante', 'peiProfile', 'analista'
-        ])->latest()->limit(8)->get();
+        $planesPei = PeiProfile::whereNull('parent_id')
+            ->where('level', 'master')
+            ->whereHas('descendants', fn($q) => $q->whereIn('id', $accionIds))
+            ->with(['dependency'])
+            ->orderByDesc('year_start')
+            ->get()
+            ->map(function($plan) {
+                $accionIdsDelPlan = $plan->descendants()->where('level', 'action')->pluck('id');
+                $proyectos = ProyectoInstitucional::whereIn('pei_profile_id', $accionIdsDelPlan)
+                    ->with(['peiProfile', 'dependenciaSolicitante'])
+                    ->latest()->get();
+                $plan->proyectos        = $proyectos;
+                $plan->total_proyectos  = $proyectos->count();
+                $plan->en_ejecucion     = $proyectos->where('estado', 'en_ejecucion')->count();
+                $plan->finalizados      = $proyectos->where('estado', 'finalizado')->count();
+                $plan->solicitudes      = $proyectos->where('estado', 'solicitud')->count();
+                return $plan;
+            });
 
-        // ── Proyectos en ejecución con avance ────────────────────────────────
-        $enEjecucionDetalle = ProyectoInstitucional::enEjecucion()
-            ->with(['dependenciaEjecutora'])
-            ->orderByDesc('avance_pct')
-            ->limit(5)->get();
-
-        // ── EPC (Estándares por Complejidad) ──────────────────────────────────
-        $totalEspecialidades = DB::connection('pgsql')->table('proyecto.e_p_c_especialidads')->count();
-        $totalEquipamientos  = DB::connection('pgsql')->table('proyecto.e_p_c_equipamientos')->count();
-        $totalServicios      = DB::table('servicios')->count();
+        // Proyectos sin vincular a ningún plan
+        $sinPlan = ProyectoInstitucional::whereNull('pei_profile_id')->latest()->get();
 
         return view('admin.proyectos.dashboard', compact(
             'total', 'activos', 'enEjecucion', 'finalizados',
-            'sinPei', 'rechazados',
-            'presupuestoTotal', 'presupuestoEjecutado', 'pctEjecucionPres',
-            'porEstado', 'conChecklistCompleto',
-            'recientes', 'enEjecucionDetalle',
-            'totalEspecialidades', 'totalEquipamientos', 'totalServicios'
+            'presupuestoTotal', 'pctEjecucionPres',
+            'porEstado', 'planesPei', 'sinPlan'
         ));
     }
 }

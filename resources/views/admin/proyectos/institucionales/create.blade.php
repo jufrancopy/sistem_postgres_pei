@@ -1,22 +1,25 @@
 @extends('layouts.master')
-@section('title', 'Nuevo Proyecto Institucional')
+@section('title', 'Nuevo Proyecto — ' . ($perfil->name ?? ''))
 
 @section('content')
 <div class="card">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="fa fa-plus mr-2"></i>Nuevo Proyecto Institucional</h4>
-        <p class="card-category">El proyecto se creará en estado <strong>Solicitud</strong></p>
+        <p class="card-category">Plan: <strong>{{ $perfil->name ?? '' }}</strong> &mdash; El proyecto se creará en estado <strong>Solicitud</strong></p>
     </div>
 
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-2">
         <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{{ route('proyectos-institucionales.index') }}">Proyectos</a></li>
+            @if($perfil)
+            <li class="breadcrumb-item"><a href="{{ route('pei-profiles.show', $perfil->id) }}">{{ $perfil->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('proyectos-institucionales.index', $perfil->id) }}">Proyectos</a></li>
+            @endif
             <li class="breadcrumb-item active">Nuevo</li>
         </ol>
     </nav>
 
     <div class="card-body">
-        <form action="{{ route('proyectos-institucionales.store') }}" method="POST">
+        <form action="{{ route('proyectos-institucionales.store', $perfil->id) }}" method="POST">
             @csrf
 
             @if($errors->any())
@@ -60,8 +63,15 @@
                         <strong>no podrás avanzar del estado Solicitud sin esta vinculación.</strong>
                     </small>
                     <select name="pei_profile_id" id="pei_profile_id" class="form-control" style="width:100%">
+                        @if(isset($perfil))
+                        <option value="">Buscar acción del plan {{ strip_tags($perfil->name) }}...</option>
+                        @else
                         <option value="">Buscar acción del PEI... (opcional al crear)</option>
+                        @endif
                     </select>
+                    @isset($perfil)
+                    <input type="hidden" id="pei_perfil_context" value="{{ $perfil->id }}">
+                    @endisset
                     <div id="peiAviso" class="alert alert-warning mt-2 mb-0 py-2" style="display:none;font-size:.85rem">
                         <i class="fa fa-exclamation-triangle mr-1"></i>
                         Sin vinculación al PEI el proyecto quedará en estado <strong>Solicitud</strong> hasta que se vincule.
@@ -73,6 +83,11 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="font-weight-bold">Dependencia Solicitante</label>
+                        @isset($perfil)
+                        <select name="dependencia_solicitante_id" id="dep_solicitante" class="form-control" style="width:100%">
+                            <option value="">Buscar dependencia solicitante...</option>
+                        </select>
+                        @else
                         <select id="raiz_solicitante" class="form-control" style="width:100%">
                             <option value="">1. Elegir organigrama raíz...</option>
                         </select>
@@ -80,11 +95,17 @@
                         <select name="dependencia_solicitante_id" id="dep_solicitante" class="form-control" style="width:100%" disabled>
                             <option value="">2. Elegir dependencia...</option>
                         </select>
+                        @endisset
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="font-weight-bold">Dependencia Ejecutora</label>
+                        @isset($perfil)
+                        <select name="dependencia_ejecutora_id" id="dep_ejecutora" class="form-control" style="width:100%">
+                            <option value="">Buscar dependencia ejecutora...</option>
+                        </select>
+                        @else
                         <small class="d-block text-muted mb-1">
                             <i class="fa fa-info-circle mr-1"></i>
                             Se carga automáticamente al elegir el organigrama raíz de la Solicitante.
@@ -96,6 +117,7 @@
                         <select name="dependencia_ejecutora_id" id="dep_ejecutora" class="form-control" style="width:100%" disabled>
                             <option value="">2. Elegir dependencia...</option>
                         </select>
+                        @endisset
                     </div>
                 </div>
             </div>
@@ -119,7 +141,7 @@
             </div>
 
             <div class="text-right mt-3">
-                <a href="{{ route('proyectos-institucionales.index') }}" class="btn btn-secondary mr-2">Cancelar</a>
+                @if($perfil)<a href="{{ route('proyectos-institucionales.index', $perfil->id) }}" class="btn btn-secondary mr-2">Cancelar</a>@endif
                 <button type="submit" class="btn btn-success">
                     <i class="fa fa-save mr-1"></i> Crear Proyecto
                 </button>
@@ -133,11 +155,16 @@
 <script>
 $(function() {
     // PEI acciones
+    var perfilContext = $('#pei_perfil_context').val();
+    var accionesUrl = perfilContext
+        ? '{{ url('pei-profiles') }}/' + perfilContext + '/proyectos/acciones'
+        : '{{ route('proyectos-institucionales.acciones-de-perfil', $perfil->id) }}';
+
     $('#pei_profile_id').select2({
-        placeholder: 'Buscar acción del PEI... (opcional al crear)',
+        placeholder: perfilContext ? 'Buscar acción del plan...' : 'Buscar acción del PEI... (opcional al crear)',
         allowClear: true,
         ajax: {
-            url: '{{ route('proyectos-institucionales.pei-acciones') }}',
+            url: accionesUrl,
             dataType: 'json', delay: 250,
             processResults: function(data) { return { results: data }; },
             cache: true
@@ -157,7 +184,45 @@ $(function() {
         }
     });
 
-    // ── Selector raíz → hija (reutilizable) ──────────────────────────────────
+    // ── Selectores de dependencia ─────────────────────────────────────────
+    @isset($perfil)
+    // Con contexto de perfil: cargar descendientes directo desde la dependency del perfil
+    var depRaizId = '{{ $perfil->dependency_id }}';
+    var depUrl    = '{{ url('admin/globales/get-dependencies') }}/' + depRaizId;
+
+    $('#dep_solicitante').select2({
+        placeholder: 'Buscar dependencia solicitante...',
+        allowClear: true,
+        ajax: {
+            url: depUrl,
+            dataType: 'json', delay: 250,
+            processResults: function(data) {
+                var results = [];
+                if (Array.isArray(data)) {
+                    data.forEach(function(i) { results.push({ id: i.id, text: i.dependency }); });
+                }
+                return { results: results };
+            }, cache: true
+        }
+    });
+
+    $('#dep_ejecutora').select2({
+        placeholder: 'Buscar dependencia ejecutora...',
+        allowClear: true,
+        ajax: {
+            url: depUrl,
+            dataType: 'json', delay: 250,
+            processResults: function(data) {
+                var results = [];
+                if (Array.isArray(data)) {
+                    data.forEach(function(i) { results.push({ id: i.id, text: i.dependency }); });
+                }
+                return { results: results };
+            }, cache: true
+        }
+    });
+    @else
+    // Sin contexto: selector de dos pasos (raíz → hija)
     function cargarHijos(raizId, raizNombre, $hija, nombreHija) {
         $hija.empty().append('<option value="">2. Elegir ' + nombreHija + '...</option>');
         $hija.prop('disabled', false);
@@ -178,7 +243,6 @@ $(function() {
         });
     }
 
-    // Inicializar selector de raíz solicitante
     $('#raiz_solicitante').select2({
         placeholder: '1. Elegir organigrama raíz...',
         allowClear: true,
@@ -191,30 +255,23 @@ $(function() {
         }
     });
 
-    // Al elegir raíz solicitante → sincronizar ejecutora automáticamente
     $('#raiz_solicitante').on('change', function() {
         var raizId     = $(this).val();
         var raizNombre = $(this).find('option:selected').text();
 
-        // Resetear solicitante
         $('#dep_solicitante').empty().append('<option value="">2. Elegir dependencia...</option>').prop('disabled', true);
-
-        // Resetear ejecutora
         $('#raiz_ejecutora').empty().append('<option value="">— Igual que la raíz solicitante —</option>').prop('disabled', true);
         $('#dep_ejecutora').empty().append('<option value="">2. Elegir dependencia...</option>').prop('disabled', true);
 
         if (!raizId) return;
 
-        // Cargar hijos para solicitante
         cargarHijos(raizId, raizNombre, $('#dep_solicitante'), 'dependencia solicitante');
 
-        // Sincronizar raíz ejecutora con la misma raíz
         var optEjec = new Option(raizNombre, raizId, true, true);
         $('#raiz_ejecutora').empty().append(optEjec).prop('disabled', false);
-
-        // Cargar hijos para ejecutora (misma raíz)
         cargarHijos(raizId, raizNombre, $('#dep_ejecutora'), 'dependencia ejecutora');
     });
+    @endisset
 
     // Analistas
     $('#analista_id').select2({
