@@ -38,7 +38,7 @@
                 <div class="d-flex align-items-center">
                     <button class="btn btn-link text-white text-left p-0 font-weight-bold w-100"
                             type="button" data-toggle="collapse"
-                            data-target="#collapse-{{ $axi->id }}"
+                            data-target="#col{{ str_replace('-', '', $axi->id) }}"
                             aria-expanded="false"
                             style="font-size:.95rem; text-decoration:none; white-space:normal; word-break:break-word;">
                         <i class="fa fa-bullseye mr-2"></i>
@@ -174,7 +174,7 @@
             </div>{{-- /card-header objetivo --}}
 
             {{-- Body Objetivo --}}
-            <div id="collapse-{{ $axi->id }}" class="collapse">
+            <div id="col{{ str_replace('-', '', $axi->id) }}" class="collapse">
                 <div class="card-body p-3">
 
                     @foreach ($axi->children->sortBy('order_item') as $goal)
@@ -186,7 +186,7 @@
                             <div class="d-flex align-items-center">
                                 <button class="btn btn-link text-dark text-left p-0 font-weight-bold w-100"
                                         type="button" data-toggle="collapse"
-                                        data-target="#collapse-{{ $goal->id }}"
+                                        data-target="#col{{ str_replace('-', '', $goal->id) }}"
                                         aria-expanded="false"
                                         style="font-size:.88rem; text-decoration:none; white-space:normal; word-break:break-word;">
                                     <i class="fa fa-flag-checkered mr-2 text-primary"></i>
@@ -221,7 +221,7 @@
                         </div>{{-- /card-header meta --}}
 
                         {{-- Body Meta → Acciones --}}
-                        <div id="collapse-{{ $goal->id }}" class="collapse">
+                        <div id="col{{ str_replace('-', '', $goal->id) }}" class="collapse">
                             <div class="card-body p-2">
 
                                 @if($goal->children->count() === 0)
