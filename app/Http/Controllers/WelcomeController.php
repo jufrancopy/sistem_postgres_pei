@@ -66,20 +66,26 @@ class WelcomeController extends Controller
             $perfilFoda = FodaPerfil::find($config->foda_profile_id);
             if ($perfilFoda) {
                 $fodaPerfiles = 1;
-                $analisisQuery = FodaAnalisis::where('perfil_id', $config->foda_profile_id);
-                $fodaAnalisis      = (clone $analisisQuery)->count();
-                $fodaFortalezas    = (clone $analisisQuery)->where('tipo', 'fortaleza')->count();
-                $fodaDebilidades   = (clone $analisisQuery)->where('tipo', 'debilidad')->count();
-                $fodaOportunidades = (clone $analisisQuery)->where('tipo', 'oportunidad')->count();
-                $fodaAmenazas      = (clone $analisisQuery)->where('tipo', 'amenaza')->count();
+                $perfilIds = collect([$perfilFoda->id]);
+                if ($perfilFoda->group_id) {
+                    $groupPerfiles = FodaPerfil::where('group_id', $perfilFoda->group_id)->pluck('id');
+                    $perfilIds = $perfilIds->merge($groupPerfiles)->unique();
+                }
 
-                $crucesQuery = FodaCruceAmbiente::where('perfil_id', $config->foda_profile_id);
+                $analisisQuery = FodaAnalisis::whereIn('perfil_id', $perfilIds);
+                $fodaAnalisis      = (clone $analisisQuery)->count();
+                $fodaFortalezas    = (clone $analisisQuery)->whereIn('tipo', ['fortaleza', 'Fortaleza', 'FORTALEZA'])->count();
+                $fodaDebilidades   = (clone $analisisQuery)->whereIn('tipo', ['debilidad', 'Debilidad', 'DEBILIDAD'])->count();
+                $fodaOportunidades = (clone $analisisQuery)->whereIn('tipo', ['oportunidad', 'Oportunidad', 'OPORTUNIDAD'])->count();
+                $fodaAmenazas      = (clone $analisisQuery)->whereIn('tipo', ['amenaza', 'Amenaza', 'AMENAZA'])->count();
+
+                $crucesQuery = FodaCruceAmbiente::whereIn('perfil_id', $perfilIds);
                 if ($config->foda_analisis_id) {
                     $crucesQuery->where('analisis_id', $config->foda_analisis_id);
                 }
                 $fodaEstrategias = $crucesQuery->count();
 
-                $fodaIeaResumen = FodaAnalisis::where('perfil_id', $config->foda_profile_id)
+                $fodaIeaResumen = FodaAnalisis::whereIn('perfil_id', $perfilIds)
                     ->whereNotNull('iea_clasificacion')
                     ->selectRaw('iea_clasificacion, count(*) as total')
                     ->groupBy('iea_clasificacion')
@@ -88,10 +94,10 @@ class WelcomeController extends Controller
         } elseif ($config->show_foda) {
             $fodaPerfiles      = FodaPerfil::count();
             $fodaAnalisis      = FodaAnalisis::count();
-            $fodaFortalezas    = FodaAnalisis::where('tipo', 'fortaleza')->count();
-            $fodaDebilidades   = FodaAnalisis::where('tipo', 'debilidad')->count();
-            $fodaOportunidades = FodaAnalisis::where('tipo', 'oportunidad')->count();
-            $fodaAmenazas      = FodaAnalisis::where('tipo', 'amenaza')->count();
+            $fodaFortalezas    = FodaAnalisis::whereIn('tipo', ['fortaleza', 'Fortaleza', 'FORTALEZA'])->count();
+            $fodaDebilidades   = FodaAnalisis::whereIn('tipo', ['debilidad', 'Debilidad', 'DEBILIDAD'])->count();
+            $fodaOportunidades = FodaAnalisis::whereIn('tipo', ['oportunidad', 'Oportunidad', 'OPORTUNIDAD'])->count();
+            $fodaAmenazas      = FodaAnalisis::whereIn('tipo', ['amenaza', 'Amenaza', 'AMENAZA'])->count();
             $fodaEstrategias   = FodaCruceAmbiente::count();
             $fodaIeaResumen    = FodaAnalisis::whereNotNull('iea_clasificacion')
                 ->selectRaw('iea_clasificacion, count(*) as total')

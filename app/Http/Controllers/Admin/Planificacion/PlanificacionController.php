@@ -89,19 +89,25 @@ class PlanificacionController extends Controller
             if ($fodaProfile) {
                 $totalFodaPerfiles = 1;
                 $fodaConsolidados  = 1;
-                $totalAnalisis     = FodaAnalisis::where('perfil_id', $config->foda_profile_id)->count();
-                $analisisConIea    = FodaAnalisis::where('perfil_id', $config->foda_profile_id)
+                $perfilIds = collect([$fodaProfile->id]);
+                if ($fodaProfile->group_id) {
+                    $groupPerfiles = FodaPerfil::where('group_id', $fodaProfile->group_id)->pluck('id');
+                    $perfilIds = $perfilIds->merge($groupPerfiles)->unique();
+                }
+
+                $totalAnalisis     = FodaAnalisis::whereIn('perfil_id', $perfilIds)->count();
+                $analisisConIea    = FodaAnalisis::whereIn('perfil_id', $perfilIds)
                     ->whereNotNull('iea_valor')->count();
 
                 if ($config->foda_analisis_id) {
-                    $totalCruces   = FodaCruceAmbiente::where('perfil_id', $config->foda_profile_id)
+                    $totalCruces   = FodaCruceAmbiente::whereIn('perfil_id', $perfilIds)
                         ->where('analisis_id', $config->foda_analisis_id)->count();
-                    $crucesPorTipo = FodaCruceAmbiente::where('perfil_id', $config->foda_profile_id)
+                    $crucesPorTipo = FodaCruceAmbiente::whereIn('perfil_id', $perfilIds)
                         ->where('analisis_id', $config->foda_analisis_id)
                         ->selectRaw('tipo, COUNT(*) as total')->groupBy('tipo')->pluck('total','tipo');
                 } else {
-                    $totalCruces   = FodaCruceAmbiente::where('perfil_id', $config->foda_profile_id)->count();
-                    $crucesPorTipo = FodaCruceAmbiente::where('perfil_id', $config->foda_profile_id)
+                    $totalCruces   = FodaCruceAmbiente::whereIn('perfil_id', $perfilIds)->count();
+                    $crucesPorTipo = FodaCruceAmbiente::whereIn('perfil_id', $perfilIds)
                         ->selectRaw('tipo, COUNT(*) as total')->groupBy('tipo')->pluck('total','tipo');
                 }
             }
