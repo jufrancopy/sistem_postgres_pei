@@ -1887,6 +1887,7 @@
                                 $('#actionsBlock_' + accionId + ' .card-header')
                                     .css('border-left-color', colors[res.reporte.semaforo] || '#6c757d');
                             }
+                            recargarAcordeon();
                         },
                         error: function(xhr) {
                             var e = xhr.responseJSON?.errors;
@@ -1938,6 +1939,7 @@
                             success: function() {
                                 toastr.success('Reporte actualizado.');
                                 cargarHistorial(accionId);
+                                recargarAcordeon();
                             },
                             error: function() { toastr.error('Error al actualizar el reporte.'); }
                         });
@@ -1960,7 +1962,7 @@
                             type: 'DELETE',
                             success: function() {
                                 toastr.success('Reporte eliminado.');
-                                $('[data-id="' + id + '"].btnEliminarReporte').closest('.d-flex').remove();
+                                cargarHistorial(accionId);
                                 recargarAcordeon();
                             },
                             error: function() { toastr.error('Error al eliminar el reporte.'); }
