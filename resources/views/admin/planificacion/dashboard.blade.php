@@ -4,15 +4,8 @@
 @section('content')
 <div class="card">
     <div class="card-header card-header-info">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h4 class="card-title mb-0"><i class="fa fa-chess mr-2"></i>Panel de Planificación Estratégica</h4>
-                <p class="card-category mb-0">Estado del ciclo de planificación — MECIP 2015</p>
-            </div>
-            <a href="{{ route('home-config.edit') }}" class="btn btn-sm btn-outline-light">
-                <i class="fa fa-cog mr-1"></i>Configurar Dashboard
-            </a>
-        </div>
+        <h4 class="card-title"><i class="fa fa-chess mr-2"></i>Panel de Planificación Estratégica</h4>
+        <p class="card-category">Estado del ciclo de planificación — MECIP 2015</p>
     </div>
 
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-0">

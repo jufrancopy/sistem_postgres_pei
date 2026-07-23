@@ -15,9 +15,9 @@ class HomeController extends Controller
     {
         $user = Auth::user();
 
-        // Administrador → dashboard de planificación (acceso completo)
+        // Administrador → dashboard global
         if ($user->hasRole('Administrador')) {
-            return redirect()->route('planificacion-dashboard');
+            return redirect()->route('globales.dashboard');
         }
 
         // Analista de Monitoreo PEI → su dashboard de planes
@@ -35,7 +35,7 @@ class HomeController extends Controller
             return redirect()->route('globales.activities.mis-actividades');
         }
 
-        // Fallback → dashboard
-        return redirect()->route('planificacion-dashboard');
+        // Fallback → dashboard global
+        return redirect()->route('globales.dashboard');
     }
 }

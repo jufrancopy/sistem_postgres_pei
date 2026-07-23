@@ -4,8 +4,15 @@
 @section('content')
 <div class="card">
     <div class="card-header card-header-info">
-        <h4 class="card-title"><i class="fa fa-cogs mr-2"></i>Panel de Configuraciones Globales</h4>
-        <p class="card-category">Estado general del sistema SIPLAN — IPS</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="card-title mb-0"><i class="fa fa-cogs mr-2"></i>Panel de Configuraciones Globales</h4>
+                <p class="card-category mb-0">Estado general del sistema SIPLAN — IPS</p>
+            </div>
+            <a href="{{ route('home-config.edit') }}" class="btn btn-sm btn-outline-light">
+                <i class="fa fa-cog mr-1"></i>Configurar Dashboard
+            </a>
+        </div>
     </div>
 
     <div class="card-body">
@@ -191,7 +198,7 @@
                             $modulos = [
                                 ['url' => route('planificacion-dashboard'),          'icon' => 'fa-chess',          'color' => 'primary',   'label' => 'Planificación',     'sub' => 'FODA · PEI · Riesgos'],
                                 ['url' => route('siess.dashboard'),                  'icon' => 'fa-chart-bar',      'color' => 'info',      'label' => 'SIESS',             'sub' => 'Estadísticas · Res. 266/22'],
-                                ['url' => route('proyectos-institucionales.all'),  'icon' => 'fa-project-diagram','color' => 'success',   'label' => 'Proyectos',         'sub' => 'Seguimiento y Control'],
+                                ['url' => route('proyectos-dashboard'),  'icon' => 'fa-project-diagram','color' => 'success',   'label' => 'Proyectos',         'sub' => 'Seguimiento y Control'],
                                 ['url' => route('globales.organigramas.index'),      'icon' => 'fa-sitemap',        'color' => 'warning',   'label' => 'Organigramas',      'sub' => 'Red de Salud · Estructura'],
                                 ['url' => route('surveys.index'),                    'icon' => 'fa-poll',           'color' => 'danger',    'label' => 'Encuestas',         'sub' => 'Formularios · Respuestas'],
                                 ['url' => route('globales.activities.index'),        'icon' => 'fa-rocket',         'color' => 'secondary', 'label' => 'Actividades',       'sub' => 'Tareas · Evidencias'],
@@ -212,6 +219,122 @@
                                 </a>
                             </div>
                             @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── Configuración del Dashboard ── --}}
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+                        <h6 class="mb-0 font-weight-bold">
+                            <i class="fa fa-cog mr-2 text-primary"></i>Visibilidad de Módulos en el Sitio Público
+                        </h6>
+                        <small class="text-muted"><i class="fa fa-bolt mr-1 text-success"></i>Los cambios se aplican al instante</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+
+                            {{-- FODA --}}
+                            <div class="col-md-4 mb-3">
+                                <div class="card border h-100 {{ $config->show_foda ? 'border-success' : 'border-secondary' }}" id="card_foda" style="transition:border-color .2s">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center justify-content-between mb-3">
+                                            <div class="d-flex align-items-center" style="gap:.6rem">
+                                                <i class="fa fa-search fa-lg text-danger"></i>
+                                                <div>
+                                                    <div class="font-weight-bold">Módulo FODA</div>
+                                                    <small class="text-muted">Análisis estratégico</small>
+                                                </div>
+                                            </div>
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input cfg-toggle"
+                                                       id="sw_foda" data-campo="show_foda"
+                                                       {{ $config->show_foda ? 'checked' : '' }}>
+                                                <label class="custom-control-label" for="sw_foda"></label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label class="small font-weight-bold text-muted text-uppercase" style="font-size:.68rem">Perfil FODA a mostrar</label>
+                                            <select id="sel_foda_profile" class="form-control form-control-sm cfg-select" data-campo="foda_profile_id" style="width:100%">
+                                                <option value="">— Seleccionar perfil —</option>
+                                                @foreach($fodaPerfiles as $fp)
+                                                <option value="{{ $fp->id }}" {{ $config->foda_profile_id == $fp->id ? 'selected' : '' }}>
+                                                    {{ $fp->name }}
+                                                </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- PEI --}}
+                            <div class="col-md-4 mb-3">
+                                <div class="card border h-100 {{ $config->show_pei ? 'border-success' : 'border-secondary' }}" id="card_pei" style="transition:border-color .2s">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center justify-content-between mb-3">
+                                            <div class="d-flex align-items-center" style="gap:.6rem">
+                                                <i class="fa fa-chart-line fa-lg text-info"></i>
+                                                <div>
+                                                    <div class="font-weight-bold">Módulo PEI</div>
+                                                    <small class="text-muted">Plan Estratégico</small>
+                                                </div>
+                                            </div>
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input cfg-toggle"
+                                                       id="sw_pei" data-campo="show_pei"
+                                                       {{ $config->show_pei ? 'checked' : '' }}>
+                                                <label class="custom-control-label" for="sw_pei"></label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label class="small font-weight-bold text-muted text-uppercase" style="font-size:.68rem">Plan PEI a mostrar</label>
+                                            <select id="sel_pei_profile" class="form-control form-control-sm cfg-select" data-campo="pei_profile_id" style="width:100%">
+                                                <option value="">— Seleccionar plan —</option>
+                                                @foreach($peiPerfiles as $pp)
+                                                <option value="{{ $pp->id }}" {{ $config->pei_profile_id == $pp->id ? 'selected' : '' }}>
+                                                    {{ strip_tags($pp->name) }}
+                                                    @if($pp->year_start)({{ \Carbon\Carbon::parse($pp->year_start)->format('Y') }}–{{ \Carbon\Carbon::parse($pp->year_end)->format('Y') }})@endif
+                                                </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- RIISS --}}
+                            <div class="col-md-4 mb-3">
+                                <div class="card border h-100 {{ $config->show_riiss ? 'border-success' : 'border-secondary' }}" id="card_riiss" style="transition:border-color .2s">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center justify-content-between mb-3">
+                                            <div class="d-flex align-items-center" style="gap:.6rem">
+                                                <i class="fa fa-hospital fa-lg text-primary"></i>
+                                                <div>
+                                                    <div class="font-weight-bold">Módulo RIISS</div>
+                                                    <small class="text-muted">Red de Salud IPS</small>
+                                                </div>
+                                            </div>
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input cfg-toggle"
+                                                       id="sw_riiss" data-campo="show_riiss"
+                                                       {{ $config->show_riiss ? 'checked' : '' }}>
+                                                <label class="custom-control-label" for="sw_riiss"></label>
+                                            </div>
+                                        </div>
+                                        <div class="text-muted" style="font-size:.8rem">
+                                            <i class="fa fa-info-circle mr-1"></i>
+                                            Muestra las últimas evaluaciones de establecimientos de la RIISS.
+                                            No requiere selección adicional.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -261,6 +384,67 @@ $(function() {
         document.getElementById('chartTenencia').parentElement.innerHTML =
             '<p class="text-center text-muted py-4"><em>Sin establecimientos cargados</em></p>';
     }
+
+    // ── Toggles de módulos ────────────────────────────────────────────────────
+    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
+
+    // Select2 para FODA
+    $('#sel_foda_profile').select2({
+        placeholder: '— Seleccionar perfil —',
+        allowClear: true,
+        dropdownParent: $('#card_foda'),
+        width: '100%',
+    });
+
+    // Select2 para PEI
+    $('#sel_pei_profile').select2({
+        placeholder: '— Seleccionar plan —',
+        allowClear: true,
+        dropdownParent: $('#card_pei'),
+        width: '100%',
+    });
+
+    function guardarCampo(campo, valor) {
+        $.ajax({
+            url:  '{{ route("home-config.save") }}',
+            type: 'PATCH',
+            data: { campo: campo, valor: valor },
+            success: function(res) {
+                toastr.success('Configuración guardada');
+            },
+            error: function() {
+                toastr.error('Error al guardar la configuración.');
+            }
+        });
+    }
+
+    // Toggle ON/OFF
+    $('.cfg-toggle').on('change', function() {
+        var campo  = $(this).data('campo');
+        var activo = $(this).is(':checked');
+        var cardId = '#card_' + campo.replace('show_', '');
+
+        $(cardId).toggleClass('border-success', activo).toggleClass('border-secondary', !activo);
+
+        $.ajax({
+            url:  '{{ route("home-config.toggle") }}',
+            type: 'PATCH',
+            data: { campo: campo },
+            success: function() {
+                toastr.success(activo ? '✅ Módulo activado' : '⛔ Módulo desactivado');
+            },
+            error: function() { toastr.error('Error al actualizar.'); }
+        });
+    });
+
+    // Select2 — guardar al cambiar
+    $('#sel_foda_profile').on('select2:select select2:clear', function() {
+        guardarCampo('foda_profile_id', $(this).val() || null);
+    });
+
+    $('#sel_pei_profile').on('select2:select select2:clear', function() {
+        guardarCampo('pei_profile_id', $(this).val() || null);
+    });
 });
 </script>
 @stop

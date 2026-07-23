@@ -10,6 +10,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
 Use App\Models\User;
+use App\Models\HomeConfiguration;
 
 
 class GlobalesController extends Controller
@@ -52,6 +53,14 @@ class GlobalesController extends Controller
         // ── Roles y Permisos ──────────────────────────────────────────────────
         $totalRoles    = \Spatie\Permission\Models\Role::count();
         $totalPermisos = \Spatie\Permission\Models\Permission::count();
+
+        // ── Configuración del Dashboard ───────────────────────────────────────
+        $config = HomeConfiguration::firstOrNew([]);
+        if (!$config->exists) $config->save();
+
+        // Listas para selectores
+        $fodaPerfiles = \App\Admin\Planificacion\Foda\FodaPerfil::where('type', 'consolidado')->orderBy('name')->get(['id','name']);
+        $peiPerfiles  = \App\Admin\Planificacion\Pei\PeiProfile::whereIsRoot()->where('level','master')->whereNull('deleted_at')->orderByDesc('year_start')->get(['id','name','year_start','year_end']);
 
         return view('admin.globales.dashboard', get_defined_vars());
     }
