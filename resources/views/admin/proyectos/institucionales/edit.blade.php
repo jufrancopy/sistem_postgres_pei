@@ -124,12 +124,29 @@
 @section('scripts')
 <script>
 $(function() {
+    // Vinculación PEI — busca acciones en TODOS los planes (endpoint genérico)
     $('#pei_profile_id').select2({
-        placeholder: 'Buscar acción del PEI...', allowClear: true,
-        ajax: { url: '{{ route('proyectos-institucionales.acciones-de-perfil', $proyecto->pei_profile_id) }}', dataType: 'json', delay: 250,
-            processResults: function(d) { return { results: d }; }, cache: true }
+        placeholder: 'Buscar acción del PEI...',
+        allowClear: true,
+        minimumInputLength: 2,
+        ajax: {
+            url: '{{ route("proyectos-institucionales.pei-acciones") }}',
+            dataType: 'json',
+            delay: 300,
+            data: function(params) { return { q: params.term }; },
+            processResults: function(data) { return { results: data }; },
+            cache: true
+        },
+        templateResult: function(item) {
+            if (!item.id) return item.text;
+            return $('<div>' +
+                '<div style="font-size:.82rem;font-weight:600;line-height:1.3">' + item.text.split('[')[0] + '</div>' +
+                (item.text.includes('[') ? '<small style="color:#9ca3af">' + item.text.match(/\[(.+)\]/)?.[1] + '</small>' : '') +
+            '</div>');
+        }
     });
-    var depUrl = '{{ url("admin/globales/get-dependencies") }}/{{ $proyecto->peiProfile?->dependency_id }}';
+
+    var depUrl = '{{ url("admin/globales/get-dependencies") }}/{{ $proyecto->peiProfile?->dependency_id ?? "" }}';
 
     $('#dep_solicitante').select2({
         placeholder: 'Buscar dependencia solicitante...', allowClear: true,

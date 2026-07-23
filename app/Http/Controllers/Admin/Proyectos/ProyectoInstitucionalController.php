@@ -317,14 +317,21 @@ class ProyectoInstitucionalController extends Controller
     public function getPeiAcciones(Request $request)
     {
         $data = PeiProfile::where('level', 'action')
-            ->when($request->q, fn($q) => $q->where('name', 'like', '%'.$request->q.'%'))
-            ->with(['ancestors'])
-            ->limit(20)
+            ->when($request->q, fn($q) => $q->where('name', 'ilike', '%'.$request->q.'%'))
+            ->with(['parent.parent'])
+            ->limit(30)
             ->get()
-            ->map(fn($p) => [
-                'id'   => $p->id,
-                'text' => strip_tags($p->name) . ' [' . ($p->ancestors->last()?->name ? strip_tags($p->ancestors->last()->name) : 'PEI') . ']',
-            ]);
+            ->map(function($p) {
+                // Construir contexto: Eje > Objetivo > Acción
+                $partes = [];
+                if ($p->parent?->parent) $partes[] = strip_tags($p->parent->parent->name);
+                if ($p->parent)          $partes[] = strip_tags($p->parent->name);
+                $contexto = implode(' › ', $partes);
+                return [
+                    'id'   => $p->id,
+                    'text' => strip_tags($p->name) . ($contexto ? ' [' . \Illuminate\Support\Str::limit($contexto, 60) . ']' : ''),
+                ];
+            });
 
         return response()->json($data);
     }

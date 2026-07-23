@@ -205,6 +205,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{profileId}/proyectos/create',   'Admin\Proyectos\ProyectoInstitucionalController@createForPerfil')->name('proyectos-institucionales.create-for-perfil');
     Route::post('pei-profiles/{profileId}/proyectos',         'Admin\Proyectos\ProyectoInstitucionalController@store')->name('proyectos-institucionales.store');
     Route::get('pei-profiles/{profileId}/proyectos/acciones', 'Admin\Proyectos\ProyectoInstitucionalController@getAccionesDePerfil')->name('proyectos-institucionales.acciones-de-perfil');
+    Route::get('proyectos-institucionales-pei-acciones',    'Admin\Proyectos\ProyectoInstitucionalController@getPeiAcciones')->name('proyectos-institucionales.pei-acciones');
     Route::get('proyectos-institucionales/{id}',              'Admin\Proyectos\ProyectoInstitucionalController@show')->name('proyectos-institucionales.show');
     Route::get('proyectos-institucionales/{id}/edit',         'Admin\Proyectos\ProyectoInstitucionalController@edit')->name('proyectos-institucionales.edit');
     Route::put('proyectos-institucionales/{id}',              'Admin\Proyectos\ProyectoInstitucionalController@update')->name('proyectos-institucionales.update');
