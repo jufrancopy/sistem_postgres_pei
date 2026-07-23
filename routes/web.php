@@ -6,76 +6,15 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
 
-Route::get('/', function () {
-    // Actividades y tareas
-    $activities = \App\Admin\Globales\Activity::with(['tasks', 'responsibles'])->latest()->take(6)->get();
-    $totalTareas    = \App\Admin\Globales\ActivityTask::count();
-    $tareasEnCurso  = \App\Admin\Globales\ActivityTask::where('status', 1)->count();
-    $tareasHechas   = \App\Admin\Globales\ActivityTask::where('status', 2)->count();
-    $tareasVencidas = \App\Admin\Globales\ActivityTask::where('status', '!=', 2)
-        ->whereNotNull('fecha_vencimiento')
-        ->where('fecha_vencimiento', '<', now())
-        ->count();
-
-    // Evaluaciones RIISS
-    $evaluaciones    = \App\Models\Riiss\Evaluacion::with('establecimiento')->latest('fecha_evaluacion')->take(8)->get();
-    $evalTotal       = \App\Models\Riiss\Evaluacion::count();
-    $evalCompletadas = \App\Models\Riiss\Evaluacion::where('estado', 'completada')->count();
-    $evalEnCurso     = \App\Models\Riiss\Evaluacion::where('estado', 'en_curso')->count();
-
-    // RIISS — últimas evaluaciones con semáforo y establecimiento
-    $evalRecientes = \App\Models\Riiss\Evaluacion::with('establecimiento.complejidadTipo')
-        ->latest('fecha_evaluacion')->take(10)->get();
-
-    // Tipos de complejidad para la tabla de niveles
-    $complejidadTipos = \App\Models\Riiss\ComplejidadTipo::activos()->get();
-
-    // SIESS
-    $siessModulos    = \App\Models\Estadistica\SiessModulo::where('activo', true)->orderBy('orden')->get();
-    $siessAprobados  = \App\Models\Estadistica\SiessExtracto::aprobados()->count();
-    $siessPendientes = \App\Models\Estadistica\SiessExtracto::pendientes()->count();
-    $siessObjetados  = \App\Models\Estadistica\SiessExtracto::where('estado', 'objetado')->count();
-
-    // FODA
-    $fodaPerfiles    = \App\Admin\Planificacion\Foda\FodaPerfil::count();
-    $fodaAnalisis    = \App\Admin\Planificacion\Foda\FodaAnalisis::count();
-    $fodaFortalezas  = \App\Admin\Planificacion\Foda\FodaAnalisis::where('tipo', 'fortaleza')->count();
-    $fodaDebilidades = \App\Admin\Planificacion\Foda\FodaAnalisis::where('tipo', 'debilidad')->count();
-    $fodaOportunidades = \App\Admin\Planificacion\Foda\FodaAnalisis::where('tipo', 'oportunidad')->count();
-    $fodaAmenazas    = \App\Admin\Planificacion\Foda\FodaAnalisis::where('tipo', 'amenaza')->count();
-    $fodaEstrategias = \App\Admin\Planificacion\Foda\FodaCruceAmbiente::count();
-    $fodaIeaResumen  = \App\Admin\Planificacion\Foda\FodaAnalisis::whereNotNull('iea_clasificacion')
-        ->selectRaw('iea_clasificacion, count(*) as total')
-        ->groupBy('iea_clasificacion')
-        ->pluck('total', 'iea_clasificacion');
-
-    // PEI — solo raíces master
-    $peiPlanes    = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')->where('level', 'master')->count();
-    $peiAcciones  = \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->count();
-    $peiSemaforo  = \App\Admin\Planificacion\Pei\PeiProfile::whereNotNull('semaforo')
-        ->selectRaw('semaforo, count(*) as total')
-        ->groupBy('semaforo')->pluck('total', 'semaforo');
-    $peiRecientes = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')
-        ->where('level', 'master')->whereNull('deleted_at')
-        ->latest()->take(10)
-        ->get(['id', 'name', 'year_start', 'year_end', 'semaforo', 'public_token']);
-
-    return view('welcome', compact(
-        'activities', 'totalTareas', 'tareasEnCurso', 'tareasHechas', 'tareasVencidas',
-        'evaluaciones', 'evalTotal', 'evalCompletadas', 'evalEnCurso',
-        'evalRecientes', 'complejidadTipos',
-        'siessModulos', 'siessAprobados', 'siessPendientes', 'siessObjetados',
-        'fodaPerfiles', 'fodaAnalisis', 'fodaFortalezas', 'fodaDebilidades',
-        'fodaOportunidades', 'fodaAmenazas', 'fodaEstrategias', 'fodaIeaResumen',
-        'peiPlanes', 'peiAcciones', 'peiSemaforo', 'peiRecientes'
-    ));
-});
+Route::get('/', 'WelcomeController@index');
 
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home')->middleware('auth');
 Route::get('/home-config', 'Admin\HomeConfigController@edit')->name('home-config.edit');
 Route::put('/home-config', 'Admin\HomeConfigController@update')->name('home-config.update');
+Route::patch('/home-config/toggle', 'Admin\HomeConfigController@toggle')->name('home-config.toggle');
+Route::patch('/home-config/save',   'Admin\HomeConfigController@save')->name('home-config.save');
 
 // ── Vistas públicas PEI (sin autenticación) ───────────────────────────────────
 Route::get('/public/pei/{token}', 'Admin\Planificacion\PublicPeiController@show')->name('pei.public.show');

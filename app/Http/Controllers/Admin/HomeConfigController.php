@@ -52,4 +52,56 @@ class HomeConfigController extends Controller
         return redirect()->route('home')
             ->with('success', 'Configuración del dashboard actualizada correctamente.');
     }
+
+    public function save(Request $request)
+    {
+        $request->validate([
+            'campo' => 'required|in:foda_profile_id,foda_analisis_id,pei_profile_id',
+            'valor' => 'nullable|integer',
+        ]);
+
+        $rules = [
+            'foda_profile_id'  => 'nullable|exists:foda_perfiles,id',
+            'foda_analisis_id' => 'nullable|exists:foda_analisis,id',
+            'pei_profile_id'   => 'nullable|exists:pei_profiles,id',
+        ];
+
+        $request->validate([$request->campo => $rules[$request->campo]]);
+
+        $config = HomeConfiguration::firstOrNew([]);
+        if (!$config->exists) {
+            $config->save();
+        }
+
+        $campo = $request->campo;
+        $config->$campo = $request->valor ?: null;
+        $config->save();
+
+        return response()->json([
+            'ok'    => true,
+            'campo' => $campo,
+            'valor' => $config->$campo,
+        ]);
+    }
+
+    // ── Toggle individual via AJAX ────────────────────────────────────────────
+    public function toggle(Request $request)
+    {
+        $request->validate([
+            'campo' => 'required|in:show_foda,show_pei,show_riiss',
+        ]);
+
+        $config = HomeConfiguration::firstOrNew([]);
+        if (!$config->exists) $config->save();
+
+        $campo = $request->campo;
+        $config->$campo = !$config->$campo;
+        $config->save();
+
+        return response()->json([
+            'ok'    => true,
+            'campo' => $campo,
+            'valor' => $config->$campo,
+        ]);
+    }
 }

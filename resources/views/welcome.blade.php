@@ -406,14 +406,24 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 <main class="main-wrap">
 
 {{-- TABS --}}
+@php
+    $tabRiissActive = $config->show_riiss;
+    $tabPlanActive = !$tabRiissActive && ($config->show_pei || $config->show_foda);
+    $tabStatsActive = !$tabRiissActive && !($config->show_pei || $config->show_foda);
+@endphp
 <nav class="tabs-bar" role="tablist" aria-label="Secciones">
-    <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-riiss" data-dept="riiss"><i class="fa fa-hospital"></i> Red de Salud <span class="tab-count">{{ $evalTotal }}</span></button>
-    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-planificacion" data-dept="planificacion"><i class="fa fa-bullseye"></i> Planificación <span class="tab-count">{{ $peiPlanes }}</span></button>
-    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-estadisticas" data-dept="estadisticas"><i class="fa fa-chart-bar"></i> Estadísticas <span class="tab-count">{{ $siessModulos->count() }}</span></button>
+    @if($config->show_riiss)
+    <button class="tab-btn {{ $tabRiissActive ? 'active' : '' }}" role="tab" aria-selected="{{ $tabRiissActive ? 'true' : 'false' }}" aria-controls="panel-riiss" data-dept="riiss"><i class="fa fa-hospital"></i> Red de Salud <span class="tab-count">{{ $evalTotal }}</span></button>
+    @endif
+    @if($config->show_pei || $config->show_foda)
+    <button class="tab-btn {{ $tabPlanActive ? 'active' : '' }}" role="tab" aria-selected="{{ $tabPlanActive ? 'true' : 'false' }}" aria-controls="panel-planificacion" data-dept="planificacion"><i class="fa fa-bullseye"></i> Planificación <span class="tab-count">{{ $peiPlanes + $fodaAnalisis }}</span></button>
+    @endif
+    <button class="tab-btn {{ $tabStatsActive ? 'active' : '' }}" role="tab" aria-selected="{{ $tabStatsActive ? 'true' : 'false' }}" aria-controls="panel-estadisticas" data-dept="estadisticas"><i class="fa fa-chart-bar"></i> Estadísticas <span class="tab-count">{{ $siessModulos->count() }}</span></button>
 </nav>
 
 {{-- ═══════════════════════ RED DE SALUD ═══════════════════════ --}}
-<div class="tab-panel active" id="panel-riiss" role="tabpanel">
+@if($config->show_riiss)
+<div class="tab-panel {{ $tabRiissActive ? 'active' : '' }}" id="panel-riiss" role="tabpanel">
 
     <div class="kpi-strip">
         <div class="kpi-item ki-blue anim d1"><div class="kpi-icon"><i class="fa fa-clipboard-list"></i></div><div><div class="kpi-value">{{ $evalTotal }}</div><div class="kpi-label">Evaluaciones</div></div></div>
@@ -509,8 +519,11 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     </div>
 </div>
 
+@endif
+
 {{-- ═══════════════════════ PLANIFICACIÓN ═══════════════════════ --}}
-<div class="tab-panel" id="panel-planificacion" role="tabpanel">
+@if($config->show_pei || $config->show_foda)
+<div class="tab-panel {{ $tabPlanActive ? 'active' : '' }}" id="panel-planificacion" role="tabpanel">
 
     <div class="kpi-strip">
         <div class="kpi-item ki-violet anim d1"><div class="kpi-icon"><i class="fa fa-bullseye"></i></div><div><div class="kpi-value">{{ $peiPlanes }}</div><div class="kpi-label">Planes PEI</div></div></div>
@@ -521,6 +534,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 
     <div class="grid-2">
 
+        @if($config->show_pei)
         {{-- PEI — semáforo como barras --}}
         <div class="panel anim d5">
             <div class="panel-header">
@@ -562,7 +576,9 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
             </div>
             @endif
         </div>
+        @endif
 
+        @if($config->show_foda)
         {{-- FODA — nuevo layout con barras y meta --}}
         <div class="panel anim d6">
             <div class="panel-header">
@@ -581,12 +597,15 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                 <div class="foda-meta-row"><span class="fm-label">Estrategias de cruce</span><span class="fm-value" style="color:var(--violet)">{{ $fodaEstrategias }}</span></div>
             </div>
         </div>
+        @endif
 
     </div>
 </div>
 
+@endif
+
 {{-- ═══════════════════════ ESTADÍSTICAS ═══════════════════════ --}}
-<div class="tab-panel" id="panel-estadisticas" role="tabpanel">
+<div class="tab-panel {{ $tabStatsActive ? 'active' : '' }}" id="panel-estadisticas" role="tabpanel">
 
     <div class="kpi-strip">
         <div class="kpi-item ki-green anim d1"><div class="kpi-icon"><i class="fa fa-check-double"></i></div><div><div class="kpi-value">{{ $siessAprobados }}</div><div class="kpi-label">Aprobados</div></div></div>
