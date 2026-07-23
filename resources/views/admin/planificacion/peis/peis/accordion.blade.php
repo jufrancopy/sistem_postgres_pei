@@ -264,17 +264,12 @@
                                             };
                                             $pctPgn = $pgn->pct_ejecucion;
                                         }
-                                        // Último reporte de avance
-                                        $ultimoReporte = \App\Models\Planificacion\PeiAccionReporte::with('usuario')
+                                        $ultimosReportes = \App\Models\Planificacion\PeiAccionReporte::with('usuario')
                                             ->where('pei_profile_id', $action->id)
                                             ->orderByDesc('fecha_reporte')
-                                            ->first();
-                                        $rpColor = match($ultimoReporte->semaforo ?? 'sin-datos') {
-                                            'verde'    => ['bg'=>'#e8f5e9','border'=>'#a5d6a7','text'=>'#1b5e20','badge'=>'success'],
-                                            'amarillo' => ['bg'=>'#fffde7','border'=>'#fff176','text'=>'#f57f17','badge'=>'warning'],
-                                            'rojo'     => ['bg'=>'#ffebee','border'=>'#ef9a9a','text'=>'#b71c1c','badge'=>'danger'],
-                                            default    => ['bg'=>'#f5f5f5','border'=>'#e0e0e0','text'=>'#666','badge'=>'secondary'],
-                                        };
+                                            ->get();
+                                        $ultimoReporte = $ultimosReportes->first();
+                                        $rpColor = ['bg'=>'#f5f5f5','border'=>'#e0e0e0','text'=>'#666','badge'=>'secondary'];
                                     @endphp
 
                                     <div class="mb-2" id="actionsBlock_{{ $action->id }}">
@@ -549,30 +544,42 @@
                                             </div>
                                             @endif
 
-                                            {{-- Fila reporte: siempre visible --}}
-                                            <div style="border-top:1px solid #e9ecef;background:{{ $rpColor['bg'] }};font-size:.78rem">
-                                                <div class="d-flex align-items-center px-3 py-2" style="gap:.6rem;flex-wrap:wrap">
-                                                    <span class="text-muted text-uppercase" style="font-size:.6rem;letter-spacing:.04em;flex-shrink:0">
-                                                        <i class="fa fa-history mr-1"></i>Último reporte
+                                            {{-- Reportes: todos visibles --}}
+                                            <div style="border-top:1px solid #e9ecef;font-size:.78rem">
+                                                <div class="px-3 pt-2 pb-1">
+                                                    <span class="text-muted text-uppercase" style="font-size:.6rem;letter-spacing:.04em">
+                                                        <i class="fa fa-history mr-1"></i>Reportes de avance
                                                     </span>
-                                                    @if($ultimoReporte)
-                                                    <span class="badge badge-{{ $rpColor['badge'] }}" style="font-size:.68rem">{{ strtoupper($ultimoReporte->semaforo ?? 'sin datos') }}</span>
-                                                    <span style="color:{{ $rpColor['text'] }};font-weight:600">{{ $ultimoReporte->fecha_reporte->format('d/m/Y') }}</span>
-                                                    @if($ultimoReporte->valor_numerador !== null)
-                                                    <span class="badge badge-light border" style="font-size:.68rem">Valor: {{ $ultimoReporte->valor_numerador }}</span>
-                                                    @endif
-                                                    @if($ultimoReporte->pct_avance !== null)
-                                                    <span class="badge badge-{{ $rpColor['badge'] }}" style="font-size:.68rem">{{ $ultimoReporte->pct_avance }}%</span>
-                                                    @endif
-                                                    @if($ultimoReporte->descripcion_avance)
-                                                    <span class="text-muted" style="flex:1;font-style:italic;font-size:.75rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-                                                          title="{{ $ultimoReporte->descripcion_avance }}">"{{ \Illuminate\Support\Str::limit($ultimoReporte->descripcion_avance, 80) }}"</span>
-                                                    @endif
-                                                    <span class="text-muted ml-auto flex-shrink-0" style="font-size:.68rem"><i class="fa fa-user mr-1"></i>{{ $ultimoReporte->usuario?->name ?? '—' }}</span>
-                                                    @else
-                                                    <span class="text-muted" style="font-size:.75rem;font-style:italic"><i class="fa fa-exclamation-circle mr-1"></i>Sin reportes registrados aún</span>
-                                                    @endif
                                                 </div>
+                                                @forelse($ultimosReportes as $rp)
+                                                @php
+                                                    $rColor = match($rp->semaforo ?? 'sin-datos') {
+                                                        'verde'    => ['bg'=>'#e8f5e9','text'=>'#1b5e20','badge'=>'success'],
+                                                        'amarillo' => ['bg'=>'#fffde7','text'=>'#f57f17','badge'=>'warning'],
+                                                        'rojo'     => ['bg'=>'#ffebee','text'=>'#b71c1c','badge'=>'danger'],
+                                                        default    => ['bg'=>'#f5f5f5','text'=>'#666','badge'=>'secondary'],
+                                                    };
+                                                @endphp
+                                                <div class="d-flex align-items-center px-3 py-2" style="gap:.5rem;flex-wrap:wrap;background:{{ $rColor['bg'] }};border-top:1px solid #e9ecef">
+                                                    <span class="badge badge-{{ $rColor['badge'] }}" style="font-size:.65rem">{{ strtoupper($rp->semaforo ?? 'sin datos') }}</span>
+                                                    <span style="color:{{ $rColor['text'] }};font-weight:600;font-size:.75rem">{{ $rp->fecha_reporte->format('d/m/Y') }}</span>
+                                                    @if($rp->valor_numerador !== null)
+                                                    <span class="badge badge-light border" style="font-size:.65rem">Valor: {{ $rp->valor_numerador }}</span>
+                                                    @endif
+                                                    @if($rp->pct_avance !== null)
+                                                    <span class="badge badge-{{ $rColor['badge'] }}" style="font-size:.65rem">{{ $rp->pct_avance }}%</span>
+                                                    @endif
+                                                    @if($rp->descripcion_avance)
+                                                    <span class="text-muted" style="flex:1;font-style:italic;font-size:.73rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                                                          title="{{ $rp->descripcion_avance }}">"{{ \Illuminate\Support\Str::limit($rp->descripcion_avance, 80) }}"</span>
+                                                    @endif
+                                                    <span class="text-muted ml-auto flex-shrink-0" style="font-size:.65rem"><i class="fa fa-user mr-1"></i>{{ $rp->usuario?->name ?? '—' }}</span>
+                                                </div>
+                                                @empty
+                                                <div class="px-3 py-2" style="background:#f5f5f5;border-top:1px solid #e9ecef">
+                                                    <span class="text-muted" style="font-size:.75rem;font-style:italic"><i class="fa fa-exclamation-circle mr-1"></i>Sin reportes registrados aún</span>
+                                                </div>
+                                                @endforelse
                                             </div>
 
                                             </div>{{-- /card-body accion --}}
