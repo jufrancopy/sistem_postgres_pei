@@ -439,6 +439,7 @@
     </div>
 
 {{-- Modal QR Solicitud de Proyecto --}}
+<style>.swal-over-modal { z-index: 99999 !important; }</style>
 <div class="modal fade" id="modalQrSolicitud" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content">
@@ -1955,6 +1956,8 @@
                         icon: 'warning', showCancelButton: true,
                         confirmButtonColor: '#d33', cancelButtonColor: '#6c757d',
                         confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar',
+                        backdrop: false,
+                        customClass: { container: 'swal-over-modal' },
                     }).then(function(result) {
                         if (!result.isConfirmed) return;
                         $.ajax({
