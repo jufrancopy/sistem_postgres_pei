@@ -30,13 +30,23 @@ class HomeConfigController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'foda_profile_id' => 'nullable|exists:foda_perfiles,id',
-            'foda_analisis_id' => 'nullable|exists:foda_analisis,id',
-            'pei_profile_id' => 'nullable|exists:pei_profiles,id',
-            'show_foda' => 'boolean',
-            'show_pei' => 'boolean',
-            'show_riiss' => 'boolean',
+            'foda_profile_id'  => 'nullable',
+            'foda_analisis_id' => 'nullable',
+            'pei_profile_id'   => 'nullable',
+            'show_foda'        => 'boolean',
+            'show_pei'         => 'boolean',
+            'show_riiss'       => 'boolean',
         ]);
+
+        if ($request->filled('foda_profile_id') && !FodaPerfil::where('id', $request->foda_profile_id)->exists()) {
+            return back()->withErrors(['foda_profile_id' => 'Perfil FODA no válido.']);
+        }
+        if ($request->filled('foda_analisis_id') && !FodaAnalisis::where('id', $request->foda_analisis_id)->exists()) {
+            return back()->withErrors(['foda_analisis_id' => 'Análisis FODA no válido.']);
+        }
+        if ($request->filled('pei_profile_id') && !PeiProfile::where('id', $request->pei_profile_id)->exists()) {
+            return back()->withErrors(['pei_profile_id' => 'Perfil PEI no válido.']);
+        }
 
         $config = HomeConfiguration::firstOrNew([]);
         $config->fill($request->only([
@@ -57,24 +67,36 @@ class HomeConfigController extends Controller
     {
         $request->validate([
             'campo' => 'required|in:foda_profile_id,foda_analisis_id,pei_profile_id',
-            'valor' => 'nullable|integer',
+            'valor' => 'nullable',
         ]);
 
-        $rules = [
-            'foda_profile_id'  => 'nullable|exists:foda_perfiles,id',
-            'foda_analisis_id' => 'nullable|exists:foda_analisis,id',
-            'pei_profile_id'   => 'nullable|exists:pei_profiles,id',
-        ];
+        $campo = $request->campo;
+        $valor = $request->valor ?: null;
 
-        $request->validate([$request->campo => $rules[$request->campo]]);
+        if ($valor !== null) {
+            $exists = false;
+            if ($campo === 'foda_profile_id') {
+                $exists = FodaPerfil::where('id', $valor)->exists();
+            } elseif ($campo === 'foda_analisis_id') {
+                $exists = FodaAnalisis::where('id', $valor)->exists();
+            } elseif ($campo === 'pei_profile_id') {
+                $exists = PeiProfile::where('id', $valor)->exists();
+            }
+
+            if (!$exists) {
+                return response()->json([
+                    'message' => 'El valor seleccionado no es válido.',
+                    'errors'  => [$campo => ['El registro seleccionado no existe.']]
+                ], 422);
+            }
+        }
 
         $config = HomeConfiguration::firstOrNew([]);
         if (!$config->exists) {
             $config->save();
         }
 
-        $campo = $request->campo;
-        $config->$campo = $request->valor ?: null;
+        $config->$campo = $valor;
         $config->save();
 
         return response()->json([
