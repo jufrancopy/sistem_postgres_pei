@@ -15,7 +15,16 @@
                 {{ \App\Models\Proyectos\ProyectoInstitucional::estadoLabel($proyecto->estado) }}
             </span>
             @if($proyecto->peiProfile)
-            <span class="badge badge-success"><i class="fa fa-link mr-1"></i> Vinculado al PEI</span>
+            @php
+                $p = $proyecto->peiProfile;
+                $partes = [];
+                if ($p->parent?->parent) $partes[] = strip_tags($p->parent->parent->name);
+                if ($p->parent) $partes[] = strip_tags($p->parent->name);
+                $partes[] = strip_tags($p->name);
+            @endphp
+            <span class="ml-1" style="font-size:.8rem;opacity:.9">
+                <i class="fa fa-link mr-1"></i>{{ implode(' › ', $partes) }}
+            </span>
             @else
             <span class="badge badge-warning"><i class="fa fa-unlink mr-1"></i> Sin vincular al PEI</span>
             @endif

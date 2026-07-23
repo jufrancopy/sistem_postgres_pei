@@ -134,7 +134,7 @@ class ProyectoInstitucionalController extends Controller
     public function show($id)
     {
         $proyecto = ProyectoInstitucional::with([
-            'peiProfile', 'dependenciaSolicitante', 'dependenciaEjecutora',
+            'peiProfile.parent.parent', 'dependenciaSolicitante', 'dependenciaEjecutora',
             'analista', 'creadoPor', 'checklist', 'consultasGerencias.gerencia',
             'historial.usuario',
         ])->findOrFail($id);
