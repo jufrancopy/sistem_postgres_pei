@@ -10,6 +10,7 @@ use App\Admin\Planificacion\Foda\FodaPerfil;
 use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
 use App\Admin\Planificacion\Pei\PeiProfile;
+use App\Admin\Globales\Group;
 use App\Models\Proyectos\ProyectoInstitucional;
 use App\Models\HomeConfiguration;
 
@@ -91,7 +92,8 @@ class PlanificacionController extends Controller
                 $fodaConsolidados  = 1;
                 $perfilIds = collect([$fodaProfile->id]);
                 if ($fodaProfile->group_id) {
-                    $groupPerfiles = FodaPerfil::where('group_id', $fodaProfile->group_id)->pluck('id');
+                    $groupIds = Group::descendantsOf($fodaProfile->group_id)->pluck('id')->push($fodaProfile->group_id);
+                    $groupPerfiles = FodaPerfil::whereIn('group_id', $groupIds)->pluck('id');
                     $perfilIds = $perfilIds->merge($groupPerfiles)->unique();
                 }
 

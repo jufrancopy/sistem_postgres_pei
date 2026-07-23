@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Admin\Globales\Activity;
 use App\Admin\Globales\ActivityTask;
+use App\Admin\Globales\Group;
 use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
 use App\Admin\Planificacion\Foda\FodaPerfil;
@@ -68,7 +69,8 @@ class WelcomeController extends Controller
                 $fodaPerfiles = 1;
                 $perfilIds = collect([$perfilFoda->id]);
                 if ($perfilFoda->group_id) {
-                    $groupPerfiles = FodaPerfil::where('group_id', $perfilFoda->group_id)->pluck('id');
+                    $groupIds = Group::descendantsOf($perfilFoda->group_id)->pluck('id')->push($perfilFoda->group_id);
+                    $groupPerfiles = FodaPerfil::whereIn('group_id', $groupIds)->pluck('id');
                     $perfilIds = $perfilIds->merge($groupPerfiles)->unique();
                 }
 
