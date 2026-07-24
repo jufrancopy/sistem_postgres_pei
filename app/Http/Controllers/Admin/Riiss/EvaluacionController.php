@@ -270,6 +270,15 @@ class EvaluacionController extends Controller
 
         if ($respondidas >= $totalPreguntas) {
             $evaluacion->update(['estado' => 'completada']);
+            if (Auth::user()) {
+                app(\App\Services\GamificationService::class)->awardPoints(
+                    Auth::user(),
+                    'riiss_evaluacion',
+                    'Evaluación RIISS completada: ' . ($evaluacion->establecimiento?->nombre_oficial ?? 'Establecimiento'),
+                    50,
+                    $evaluacion
+                );
+            }
         } elseif ($respondidas > 0) {
             $evaluacion->update(['estado' => 'en_progreso']);
         }

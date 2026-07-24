@@ -521,6 +521,17 @@ class FodaAnalisisController extends Controller
             ]
         );
 
+        if (Auth::user()) {
+            app(\App\Services\GamificationService::class)->awardPoints(
+                Auth::user(),
+                'foda_analisis',
+                'Análisis FODA: ' . $analysis->tipo,
+                15,
+                $analysis,
+                $request->perfil_id
+            );
+        }
+
         return response()->json(['success' => 'Análisis creado satisfactoriamente']);
     }
     // $count = count($request->input('aspecto_id'));

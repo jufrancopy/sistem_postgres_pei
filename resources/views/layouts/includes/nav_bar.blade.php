@@ -53,24 +53,35 @@
           </div>
         </li>
 
-        <!-- Usuario -->
-        <div class="btn-group dropleft">
-          <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
-            {{ Auth::user()->name ?? 'Usuario' }}
-          </button>
-          <div class="dropdown-menu">
-            <a href="#" class="dropdown-item">Configurar</a>
-            <div class="dropdown-divider"></div>
-            <a href="{{ route('logout') }}"
-               onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-               class="dropdown-item">
-              <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none">
-                {{ csrf_field() }}
-              </form>
-              Salir
+        <!-- Usuario y Gamificación -->
+        @auth
+        @php
+            $userPts = app(\App\Services\GamificationService::class)->getUserTotalPoints(Auth::user());
+        @endphp
+        <div class="btn-group dropleft align-items-center">
+            <a href="{{ route('user.profile') }}" class="badge badge-pill badge-warning py-2 px-3 mr-2 font-weight-bold text-dark text-decoration-none shadow-sm" title="Tu reputación en el sistema">
+                ⭐ {{ number_format($userPts) }} pts
             </a>
-          </div>
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+                {{ Auth::user()->name ?? 'Usuario' }}
+            </button>
+            <div class="dropdown-menu">
+                <a href="{{ route('user.profile') }}" class="dropdown-item">
+                    <i class="fa fa-award text-warning mr-1"></i> Mi Perfil y Gamificación
+                </a>
+                <a href="#" class="dropdown-item">Configurar</a>
+                <div class="dropdown-divider"></div>
+                <a href="{{ route('logout') }}"
+                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                   class="dropdown-item">
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none">
+                        {{ csrf_field() }}
+                    </form>
+                    Salir
+                </a>
+            </div>
         </div>
+        @endauth
 
       </ul>
     </div>

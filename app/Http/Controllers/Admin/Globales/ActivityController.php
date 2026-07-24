@@ -125,6 +125,16 @@ class ActivityController extends Controller
             ]
         );
 
+        if ($task->wasRecentlyCreated && Auth::user()) {
+            app(\App\Services\GamificationService::class)->awardPoints(
+                Auth::user(),
+                'task_created',
+                'Creación de tarea: ' . \Illuminate\Support\Str::limit($task->title, 30),
+                15,
+                $task
+            );
+        }
+
         return response()->json(['success' => 'Tarea guardada', 'task' => $task->load('assignedTo')]);
     }
 
@@ -152,6 +162,16 @@ class ActivityController extends Controller
                 'completed_by'    => Auth::id(),
                 'completion_note' => $request->completion_note,
             ]);
+
+            if (Auth::user()) {
+                app(\App\Services\GamificationService::class)->awardPoints(
+                    Auth::user(),
+                    'task_completed',
+                    'Tarea completada: ' . \Illuminate\Support\Str::limit($task->title, 30),
+                    25,
+                    $task
+                );
+            }
         } else {
             // Si retrocede desde completado, limpia los campos
             $task->update([
@@ -304,6 +324,16 @@ class ActivityController extends Controller
         $comment->load('user');
 
         $this->notificarComentario($task, $comment);
+
+        if (Auth::user()) {
+            app(\App\Services\GamificationService::class)->awardPoints(
+                Auth::user(),
+                'comment_created',
+                'Comentario en tarea: ' . \Illuminate\Support\Str::limit($task->title, 30),
+                5,
+                $comment
+            );
+        }
 
         return response()->json([
             'ok'      => true,

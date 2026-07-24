@@ -431,6 +431,17 @@ class FodaCruceAmbienteController extends Controller
         $cruce->debilidades()->attach($request->debilidad_id);
         $cruce->amenazas()->attach($request->amenaza_id);
 
+        if (Auth::user()) {
+            app(\App\Services\GamificationService::class)->awardPoints(
+                Auth::user(),
+                'foda_cruce',
+                'Estrategia Cruce FODA: ' . $cruce->tipo,
+                30,
+                $cruce,
+                $cruce->perfil_id
+            );
+        }
+
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success'  => true,

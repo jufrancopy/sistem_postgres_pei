@@ -22,6 +22,9 @@ Route::get('/public/pei/{token}', 'Admin\Planificacion\PublicPeiController@show'
 Route::group(['middleware' => ['auth']], function () {
     Route::resource('products', 'Admin\ProductController');
 
+    // ── Perfil de Usuario y Gamificación ───────────────────────────────────────
+    Route::get('/perfil/{id?}', 'Admin\UserProfileController@show')->name('user.profile');
+
     // ── Mis Tareas (colaboradores) ────────────────────────────────────────────
     Route::get('mis-tareas/{activityId}', 'Admin\Globales\ActivityController@misTareas')->name('globales.mis-tareas');
     Route::get('mis-actividades', 'Admin\Globales\ActivityController@misActividades')->name('globales.activities.mis-actividades');
