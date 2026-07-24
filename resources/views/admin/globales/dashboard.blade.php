@@ -336,11 +336,82 @@
                             </div>
 
                         </div>
+
+                        {{-- ── Acceso Rápido QR al Sitio Público ── --}}
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="row align-items-center">
+                                <div class="col-lg-8 col-md-7 mb-3 mb-md-0">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-primary text-white p-3 rounded mr-3 d-none d-sm-block shadow-sm">
+                                            <i class="fa fa-qrcode fa-2x"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="font-weight-bold text-dark mb-1">
+                                                <i class="fa fa-globe text-primary mr-1"></i> Acceso Rápido al Sitio Público (Código QR)
+                                            </h6>
+                                            <p class="text-muted small mb-2">
+                                                Escanea este código QR desde cualquier dispositivo móvil o comparte el enlace directo para que los visitantes accedan rápidamente a la portada pública del sistema.
+                                            </p>
+                                            <div class="d-flex align-items-center flex-wrap" style="gap:.5rem">
+                                                <div class="input-group input-group-sm" style="max-width:380px">
+                                                    <input type="text" class="form-control bg-light font-weight-bold text-dark" id="public_site_url" value="{{ url('/') }}" readonly>
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-outline-primary" type="button" id="btn_copy_url" title="Copiar enlace">
+                                                            <i class="fa fa-copy mr-1"></i> Copiar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <a href="{{ url('/') }}" target="_blank" class="btn btn-sm btn-primary">
+                                                    <i class="fa fa-external-link-alt mr-1"></i> Abrir Portal
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-5 text-center border-left">
+                                    <div class="d-inline-block p-2 bg-white rounded border shadow-sm mb-2">
+                                        {!! QrCode::size(125)->margin(1)->generate(url('/')) !!}
+                                    </div>
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modalQrPublic">
+                                            <i class="fa fa-expand mr-1"></i> Ampliar QR
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
 
+    </div>
+</div>
+
+{{-- Modal Ampliar QR --}}
+<div class="modal fade" id="modalQrPublic" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header py-2 bg-primary text-white">
+                <h6 class="modal-title font-weight-bold mb-0">
+                    <i class="fa fa-qrcode mr-1"></i> QR - Sitio Público
+                </h6>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="p-3 bg-white d-inline-block rounded border shadow-sm mb-3">
+                    {!! QrCode::size(240)->margin(1)->generate(url('/')) !!}
+                </div>
+                <div class="text-dark font-weight-bold small mb-1">{{ url('/') }}</div>
+                <small class="text-muted">Escanea con la cámara de tu teléfono móvil</small>
+            </div>
+            <div class="modal-footer py-2 bg-light justify-content-center">
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
     </div>
 </div>
 @stop
@@ -444,6 +515,21 @@ $(function() {
 
     $('#sel_pei_profile').on('select2:select select2:clear', function() {
         guardarCampo('pei_profile_id', $(this).val() || null);
+    });
+
+    // Copiar URL del Sitio Público
+    $('#btn_copy_url').on('click', function() {
+        var urlInput = document.getElementById('public_site_url');
+        urlInput.select();
+        urlInput.setSelectionRange(0, 99999);
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(urlInput.value).then(function() {
+                toastr.success('Enlace copiado al portapapeles');
+            });
+        } else {
+            document.execCommand('copy');
+            toastr.success('Enlace copiado al portapapeles');
+        }
     });
 });
 </script>
