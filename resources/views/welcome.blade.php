@@ -672,7 +672,14 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                 <div class="panel-title font-weight-bold text-dark mb-1" style="font-size:1.1rem; color:#0f172a;">
                     <i class="fa fa-trophy text-warning mr-2"></i> Equipo de Trabajo — Colaboradores Destacados
                 </div>
-                <p class="text-muted small mb-0">Reconocimiento público a las personas que hacen posible el avance estratégico e institucional</p>
+                <p class="text-muted small mb-0">
+                    Reconocimiento público a las personas que hacen posible el avance estratégico e institucional
+                    @if(isset($peiSeleccionado) && $peiSeleccionado)
+                    <span class="badge ml-2 font-weight-normal" style="background-color:#e0f7fa; color:#00838f; border:1px solid #b2ebf2; font-size:11px;">
+                        📌 {{ strip_tags($peiSeleccionado->name) }}
+                    </span>
+                    @endif
+                </p>
             </div>
             <span class="badge badge-warning text-dark font-weight-bold px-3 py-2 mt-2 mt-sm-0" style="border-radius:12px; font-size:12px; background-color:#fff8e1; border:1px solid #ffe082;">
                 ⭐ Ranking de Reputación

@@ -112,6 +112,7 @@ class WelcomeController extends Controller
         $peiSemaforo  = collect();
         $peiRecientes = collect();
 
+        $peiSeleccionado = null;
         if ($config->show_pei && $config->pei_profile_id) {
             $peiSeleccionado = PeiProfile::find($config->pei_profile_id);
             if ($peiSeleccionado) {
@@ -143,12 +144,14 @@ class WelcomeController extends Controller
 
         // Top 5 Líderes de Gamificación y Reputación
         $gamificationService = app(\App\Services\GamificationService::class);
+        $activePeiId = ($config->show_pei && $config->pei_profile_id) ? $config->pei_profile_id : null;
+
         $topLeaderboard = \App\Models\User::with('group')
             ->get()
-            ->map(function($u) use ($gamificationService, $config) {
-                $points = $gamificationService->getUserTotalPoints($u, $config?->pei_profile_id);
+            ->map(function($u) use ($gamificationService, $activePeiId) {
+                $points = $gamificationService->getUserTotalPoints($u, $activePeiId);
                 $u->total_points = $points;
-                $u->gamification = $gamificationService->getUserGamificationSummary($u, $config?->pei_profile_id);
+                $u->gamification = $gamificationService->getUserGamificationSummary($u, $activePeiId);
                 return $u;
             })
             ->sortByDesc('total_points')
@@ -163,7 +166,7 @@ class WelcomeController extends Controller
             'siessModulos', 'siessAprobados', 'siessPendientes', 'siessObjetados',
             'fodaPerfiles', 'fodaAnalisis', 'fodaFortalezas', 'fodaDebilidades',
             'fodaOportunidades', 'fodaAmenazas', 'fodaEstrategias', 'fodaIeaResumen',
-            'peiPlanes', 'peiAcciones', 'peiSemaforo', 'peiRecientes', 'topLeaderboard'
+            'peiPlanes', 'peiAcciones', 'peiSemaforo', 'peiRecientes', 'peiSeleccionado', 'topLeaderboard'
         ));
     }
 }
