@@ -24,6 +24,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     // ── Perfil de Usuario y Gamificación ───────────────────────────────────────
     Route::get('/perfil/{id?}', 'Admin\UserProfileController@show')->name('user.profile');
+    Route::post('/perfil/avatar', 'Admin\UserProfileController@updateAvatar')->name('user.profile.avatar');
 
     // ── Mis Tareas (colaboradores) ────────────────────────────────────────────
     Route::get('mis-tareas/{activityId}', 'Admin\Globales\ActivityController@misTareas')->name('globales.mis-tareas');

@@ -62,8 +62,9 @@
             <a href="{{ route('user.profile') }}" class="badge badge-pill badge-warning py-2 px-3 mr-2 font-weight-bold text-dark text-decoration-none shadow-sm" title="Tu reputación en el sistema">
                 ⭐ {{ number_format($userPts) }} pts
             </a>
-            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
-                {{ Auth::user()->name ?? 'Usuario' }}
+            <button type="button" class="btn btn-success dropdown-toggle d-flex align-items-center" data-toggle="dropdown" style="gap:.4rem">
+                <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="rounded-circle border border-light" style="width: 24px; height: 24px; object-fit: cover;">
+                <span>{{ Auth::user()->name ?? 'Usuario' }}</span>
             </button>
             <div class="dropdown-menu">
                 <a href="{{ route('user.profile') }}" class="dropdown-item">

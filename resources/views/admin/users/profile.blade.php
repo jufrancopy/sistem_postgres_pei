@@ -11,12 +11,19 @@
             <div class="row align-items-center">
                 <div class="col-md-7 mb-3 mb-md-0">
                     <div class="d-flex align-items-center">
-                        <div class="position-relative mr-3">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center font-weight-bold shadow-lg"
-                                 style="width: 72px; height: 72px; font-size: 1.8rem; border: 3px solid rgba(255,255,255,0.2);">
-                                {{ strtoupper(substr($targetUser->name, 0, 2)) }}
-                            </div>
-                            <span class="position-absolute bottom-0 right-0 p-1 bg-success border border-light rounded-circle" title="Usuario Activo"></span>
+                        {{-- Avatar con botón overlay para cambiar la foto --}}
+                        <div class="position-relative mr-3" style="width: 80px; height: 80px;">
+                            <img id="user_avatar_img" src="{{ $targetUser->avatar_url }}" alt="{{ $targetUser->name }}"
+                                 class="rounded-circle shadow-lg border"
+                                 style="width: 80px; height: 80px; border: 3px solid rgba(255,255,255,0.3) !important; object-fit: cover;">
+                            
+                            @if(Auth::id() === $targetUser->id)
+                            <button type="button" class="btn btn-sm btn-light rounded-circle position-absolute bottom-0 right-0 p-0 shadow"
+                                    style="width: 28px; height: 28px; font-size: 12px; line-height: 28px; text-align: center; border: 1px solid #ccc;"
+                                    data-toggle="modal" data-target="#modalAvatar" title="Cambiar foto de perfil">
+                                <i class="fa fa-camera text-primary"></i>
+                            </button>
+                            @endif
                         </div>
                         <div>
                             <div class="d-flex align-items-center flex-wrap" style="gap: .5rem">
@@ -31,6 +38,11 @@
                                 <span class="ml-2"><i class="fa fa-sitemap mr-1"></i> {{ $targetUser->group->name }}</span>
                                 @endif
                             </div>
+                            @if(Auth::id() === $targetUser->id)
+                            <button type="button" class="btn btn-xs btn-outline-light mt-2 py-0 px-2" style="font-size:.72rem" data-toggle="modal" data-target="#modalAvatar">
+                                <i class="fa fa-upload mr-1"></i> Subir foto de perfil
+                            </button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -269,10 +281,9 @@
                                 <span class="font-weight-bold mr-2 text-center" style="width: 22px; color: {{ $rankColor }}">
                                     #{{ $index + 1 }}
                                 </span>
-                                <div class="rounded-circle bg-secondary text-white mr-2 d-flex align-items-center justify-content-center"
-                                     style="width: 32px; height: 32px; font-size: .75rem;">
-                                    {{ strtoupper(substr($u->name, 0, 2)) }}
-                                </div>
+                                <img src="{{ $u->avatar_url }}" alt="{{ $u->name }}"
+                                     class="rounded-circle mr-2 border shadow-sm"
+                                     style="width: 36px; height: 36px; object-fit: cover;">
                                 <div>
                                     <a href="{{ route('user.profile', $u->id) }}" class="text-dark {{ $isMe ? 'font-weight-bold text-primary' : '' }}" style="font-size: .82rem">
                                         {{ $u->name }}
@@ -296,4 +307,96 @@
     </div>
 
 </div>
+
+{{-- ── Modal Subir Foto de Perfil ── --}}
+@if(Auth::id() === $targetUser->id)
+<div class="modal fade" id="modalAvatar" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content border-0 shadow">
+            <form id="formAvatar" action="{{ route('user.profile.avatar') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header py-2 bg-primary text-white">
+                    <h6 class="modal-title font-weight-bold mb-0"><i class="fa fa-camera mr-1"></i> Cambiar Foto de Perfil</h6>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <div class="mb-3">
+                        <img id="avatar_preview" src="{{ $targetUser->avatar_url }}" class="rounded-circle border shadow-sm" style="width: 110px; height: 110px; object-fit: cover;">
+                    </div>
+                    <div class="custom-file mb-2 text-left">
+                        <input type="file" class="custom-file-input" id="avatar_input" name="avatar" accept="image/*" required>
+                        <label class="custom-file-label" for="avatar_input">Elegir foto...</label>
+                    </div>
+                    <small class="text-muted d-block" style="font-size: .75rem">Formatos permitidos: JPG, PNG, WEBP (máx. 3 MB)</small>
+                </div>
+                <div class="modal-footer py-2 bg-light justify-content-between">
+                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-primary" id="btn_save_avatar">
+                        <i class="fa fa-upload mr-1"></i> Guardar Foto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+@endsection
+
+@section('scripts')
+<script>
+$(function() {
+    // Vista previa de la foto seleccionada
+    $('#avatar_input').on('change', function() {
+        var file = this.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#avatar_preview').attr('src', e.target.result);
+            };
+            reader.readAsDataURL(file);
+            $(this).next('.custom-file-label').html(file.name);
+        }
+    });
+
+    // Envío del formulario por AJAX
+    $('#formAvatar').on('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+        var btn = $('#btn_save_avatar');
+
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
+
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(res) {
+                btn.prop('disabled', false).html('<i class="fa fa-upload mr-1"></i> Guardar Foto');
+                if (res.ok) {
+                    $('#modalAvatar').modal('hide');
+                    $('#user_avatar_img').attr('src', res.avatar_url);
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success(res.message);
+                    }
+                    setTimeout(function() { location.reload(); }, 600);
+                }
+            },
+            error: function(xhr) {
+                btn.prop('disabled', false).html('<i class="fa fa-upload mr-1"></i> Guardar Foto');
+                var msg = 'Error al subir la imagen.';
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    msg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                }
+                if (typeof toastr !== 'undefined') {
+                    toastr.error(msg);
+                } else {
+                    alert(msg);
+                }
+            }
+        });
+    });
+});
+</script>
 @endsection

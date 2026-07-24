@@ -21,8 +21,23 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'group_id'
+        'name', 'email', 'password', 'group_id', 'avatar'
     ];
+
+    /**
+     * Retorna la URL completa del avatar del usuario o un avatar por defecto
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->avatar) {
+            if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+                return $this->avatar;
+            }
+            return asset('storage/' . ltrim($this->avatar, '/'));
+        }
+        $name = urlencode($this->name ?? 'Usuario');
+        return "https://ui-avatars.com/api/?name={$name}&background=0f172a&color=ffffff&bold=true";
+    }
 
     /**
      * The attributes that should be hidden for arrays.

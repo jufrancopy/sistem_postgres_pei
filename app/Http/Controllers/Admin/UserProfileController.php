@@ -59,4 +59,41 @@ class UserProfileController extends Controller
             'leaderboard'
         ));
     }
+
+    /**
+     * Sube y actualiza la foto de perfil del usuario
+     */
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:3072',
+        ], [
+            'avatar.required' => 'Debe seleccionar una imagen.',
+            'avatar.image'    => 'El archivo debe ser una imagen válida.',
+            'avatar.mimes'    => 'La imagen debe ser de formato JPG, PNG, GIF o WEBP.',
+            'avatar.max'      => 'La imagen no debe superar los 3 MB.',
+        ]);
+
+        $user = Auth::user();
+
+        // Eliminar avatar anterior si existe
+        if ($user->avatar && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->avatar)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
+        }
+
+        // Guardar la nueva imagen en public/storage/avatars
+        $path = $request->file('avatar')->store('avatars', 'public');
+        $user->avatar = $path;
+        $user->save();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'ok'         => true,
+                'message'    => 'Foto de perfil actualizada con éxito',
+                'avatar_url' => $user->avatar_url,
+            ]);
+        }
+
+        return back()->with('success', 'Foto de perfil actualizada con éxito.');
+    }
 }
