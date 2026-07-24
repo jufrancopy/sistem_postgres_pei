@@ -419,6 +419,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     <button class="tab-btn {{ $tabPlanActive ? 'active' : '' }}" role="tab" aria-selected="{{ $tabPlanActive ? 'true' : 'false' }}" aria-controls="panel-planificacion" data-dept="planificacion"><i class="fa fa-bullseye"></i> Planificación <span class="tab-count">{{ $peiPlanes + $fodaAnalisis }}</span></button>
     @endif
     <button class="tab-btn {{ $tabStatsActive ? 'active' : '' }}" role="tab" aria-selected="{{ $tabStatsActive ? 'true' : 'false' }}" aria-controls="panel-estadisticas" data-dept="estadisticas"><i class="fa fa-chart-bar"></i> Estadísticas <span class="tab-count">{{ $siessModulos->count() }}</span></button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-equipo" data-dept="equipo"><i class="fa fa-users"></i> Equipo de Trabajo <span class="tab-count">{{ isset($topLeaderboard) ? $topLeaderboard->count() : 0 }}</span></button>
 </nav>
 
 {{-- ═══════════════════════ RED DE SALUD ═══════════════════════ --}}
@@ -517,43 +518,6 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         </div>
 
     </div>
-
-    {{-- ── 🏆 TOP 5 LÍDERES QUE HACEN ESTO POSIBLE ── --}}
-    @if(isset($topLeaderboard) && $topLeaderboard->count())
-    <div class="panel anim d7 my-4 text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 16px; padding: 22px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);">
-        <div class="panel-header mb-3 pb-2 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-            <div class="panel-title text-white font-weight-bold" style="font-size: 15px;">
-                <i class="fa fa-trophy text-warning mr-2"></i> Líderes que Hacen Esto Posible (Top 5 Colaboradores)
-            </div>
-            <span class="badge badge-warning text-dark font-weight-bold px-2 py-1" style="font-size: 11px; border-radius: 10px;">
-                ⭐ Ranking Institucional
-            </span>
-        </div>
-        <div class="row align-items-center justify-content-center">
-            @foreach($topLeaderboard as $index => $leader)
-            @php
-                $medal = match($index) {
-                    0 => '🥇',
-                    1 => '🥈',
-                    2 => '🥉',
-                    default => '#' . ($index + 1)
-                };
-            @endphp
-            <div class="col-md-2 col-6 text-center mb-3 mb-md-0">
-                <div class="p-3 rounded position-relative" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); transition: transform .2s, background .2s; border-radius: 12px;">
-                    <span class="position-absolute" style="top: 6px; left: 10px; font-size: 15px;">{{ $medal }}</span>
-                    <img src="{{ $leader->avatar_url }}" alt="{{ $leader->name }}" class="rounded-circle mb-2 shadow" style="width: 54px; height: 54px; object-fit: cover; border: 2px solid rgba(255,255,255,0.3);">
-                    <div class="font-weight-bold text-white text-truncate" style="font-size: 12px;" title="{{ $leader->name }}">{{ $leader->name }}</div>
-                    <small class="text-info d-block font-weight-bold" style="font-size: 10px;">{{ $leader->gamification['level_name'] }}</small>
-                    <span class="badge badge-pill badge-warning text-dark font-weight-bold mt-1" style="font-size: 10.5px;">
-                        ⭐ {{ number_format($leader->total_points) }} pts
-                    </span>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
 </div>
 
 @endif
@@ -678,6 +642,91 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     <div class="panel anim d5"><div class="empty"><i class="fa fa-chart-bar"></i><p>Sin módulos activos en este momento</p></div></div>
     @endif
 
+</div>
+
+{{-- ═══════════════════════ EQUIPO DE TRABAJO ═══════════════════════ --}}
+<div class="tab-panel" id="panel-equipo" role="tabpanel">
+
+    <div class="kpi-strip mb-4">
+        <div class="kpi-item ki-amber anim d1">
+            <div class="kpi-icon"><i class="fa fa-trophy"></i></div>
+            <div><div class="kpi-value">Top 5</div><div class="kpi-label">Líderes Institucionales</div></div>
+        </div>
+        <div class="kpi-item ki-blue anim d2">
+            <div class="kpi-icon"><i class="fa fa-users"></i></div>
+            <div><div class="kpi-value">{{ \App\Models\User::count() }}</div><div class="kpi-label">Usuarios Registrados</div></div>
+        </div>
+        <div class="kpi-item ki-violet anim d3">
+            <div class="kpi-icon"><i class="fa fa-award"></i></div>
+            <div><div class="kpi-value">{{ isset($topLeaderboard) ? number_format($topLeaderboard->sum('total_points')) : 0 }}</div><div class="kpi-label">Puntos Acumulados</div></div>
+        </div>
+        <div class="kpi-item ki-green anim d4">
+            <div class="kpi-icon"><i class="fa fa-chart-line"></i></div>
+            <div><div class="kpi-value">MECIP 2015</div><div class="kpi-label">Gestión Transparente</div></div>
+        </div>
+    </div>
+
+    <div class="panel bg-white p-4 shadow-sm" style="background:#ffffff; border-radius:16px; border:1px solid #e2e8f0;">
+        <div class="panel-header mb-4 pb-3 border-bottom d-flex justify-content-between align-items-center flex-wrap" style="border-bottom:1px solid #e2e8f0;">
+            <div>
+                <div class="panel-title font-weight-bold text-dark mb-1" style="font-size:1.1rem; color:#0f172a;">
+                    <i class="fa fa-trophy text-warning mr-2"></i> Equipo de Trabajo — Colaboradores Destacados
+                </div>
+                <p class="text-muted small mb-0">Reconocimiento público a las personas que hacen posible el avance estratégico e institucional</p>
+            </div>
+            <span class="badge badge-warning text-dark font-weight-bold px-3 py-2 mt-2 mt-sm-0" style="border-radius:12px; font-size:12px; background-color:#fff8e1; border:1px solid #ffe082;">
+                ⭐ Ranking de Reputación
+            </span>
+        </div>
+
+        @if(isset($topLeaderboard) && $topLeaderboard->count())
+        <div class="equipo-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 10px;">
+            @foreach($topLeaderboard as $index => $leader)
+            @php
+                $medal = match($index) {
+                    0 => '🥇',
+                    1 => '🥈',
+                    2 => '🥉',
+                    default => '#' . ($index + 1)
+                };
+                $badgeStyle = match($index) {
+                    0 => 'background:#fff8dc; border: 1px solid #ffd700; color: #b8860b;',
+                    1 => 'background:#f8fafc; border: 1px solid #cbd5e1; color: #475569;',
+                    2 => 'background:#fff5ee; border: 1px solid #cd7f32; color: #a0522d;',
+                    default => 'background:#f1f5f9; border: 1px solid #e2e8f0; color: #64748b;'
+                };
+            @endphp
+            <div class="equipo-card-item shadow-sm" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding: 24px 16px 18px; text-align:center; position:relative; transition:transform .2s, box-shadow .2s;">
+                <span class="position-absolute font-weight-bold" style="top:12px; left:14px; font-size:18px;">{{ $medal }}</span>
+                
+                <div class="my-2 d-flex justify-content-center">
+                    <img src="{{ $leader->avatar_url }}" alt="{{ $leader->name }}" class="rounded-circle shadow-sm" style="width:72px; height:72px; object-fit:cover; border:3px solid #00acc1; display:block;">
+                </div>
+
+                <h5 class="font-weight-bold mb-1 text-truncate" style="font-size:13.5px; color:#0f172a; margin-top:8px;" title="{{ $leader->name }}">{{ $leader->name }}</h5>
+
+                @if($leader->group)
+                <small class="text-muted d-block text-truncate mb-2" style="font-size:11px; line-height: 1.3;" title="{{ $leader->group->name }}">{{ $leader->group->name }}</small>
+                @else
+                <small class="text-muted d-block mb-2" style="font-size:11px;">IPS Paraguay</small>
+                @endif
+
+                <span class="badge font-weight-bold d-inline-block mb-3 py-1 px-2" style="font-size:10px; background-color:#e0f7fa; color:#00838f; border:1px solid #b2ebf2; border-radius:8px;">
+                    {{ $leader->gamification['level_name'] }}
+                </span>
+
+                <div class="pt-2 border-top" style="border-top:1px solid #f1f5f9;">
+                    <span class="badge badge-pill font-weight-bold py-1 px-3" style="font-size:11px; {{ $badgeStyle }}">
+                        ⭐ {{ number_format($leader->total_points) }} pts
+                    </span>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <div class="empty"><i class="fa fa-users"></i><p>No se encontraron datos de colaboradores</p></div>
+        @endif
+    </div>
 </div>
 
 </main>
