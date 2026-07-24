@@ -517,6 +517,43 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         </div>
 
     </div>
+
+    {{-- ── 🏆 TOP 5 LÍDERES QUE HACEN ESTO POSIBLE ── --}}
+    @if(isset($topLeaderboard) && $topLeaderboard->count())
+    <div class="panel anim d7 my-4 text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 16px; padding: 22px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);">
+        <div class="panel-header mb-3 pb-2 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div class="panel-title text-white font-weight-bold" style="font-size: 15px;">
+                <i class="fa fa-trophy text-warning mr-2"></i> Líderes que Hacen Esto Posible (Top 5 Colaboradores)
+            </div>
+            <span class="badge badge-warning text-dark font-weight-bold px-2 py-1" style="font-size: 11px; border-radius: 10px;">
+                ⭐ Ranking Institucional
+            </span>
+        </div>
+        <div class="row align-items-center justify-content-center">
+            @foreach($topLeaderboard as $index => $leader)
+            @php
+                $medal = match($index) {
+                    0 => '🥇',
+                    1 => '🥈',
+                    2 => '🥉',
+                    default => '#' . ($index + 1)
+                };
+            @endphp
+            <div class="col-md-2 col-6 text-center mb-3 mb-md-0">
+                <div class="p-3 rounded position-relative" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); transition: transform .2s, background .2s; border-radius: 12px;">
+                    <span class="position-absolute" style="top: 6px; left: 10px; font-size: 15px;">{{ $medal }}</span>
+                    <img src="{{ $leader->avatar_url }}" alt="{{ $leader->name }}" class="rounded-circle mb-2 shadow" style="width: 54px; height: 54px; object-fit: cover; border: 2px solid rgba(255,255,255,0.3);">
+                    <div class="font-weight-bold text-white text-truncate" style="font-size: 12px;" title="{{ $leader->name }}">{{ $leader->name }}</div>
+                    <small class="text-info d-block font-weight-bold" style="font-size: 10px;">{{ $leader->gamification['level_name'] }}</small>
+                    <span class="badge badge-pill badge-warning text-dark font-weight-bold mt-1" style="font-size: 10.5px;">
+                        ⭐ {{ number_format($leader->total_points) }} pts
+                    </span>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 </div>
 
 @endif

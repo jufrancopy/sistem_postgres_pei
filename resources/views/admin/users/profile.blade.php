@@ -1,100 +1,122 @@
 @extends('layouts.master')
 
-@section('title', 'Perfil de Usuario — Gamificación')
+@section('title', 'Perfil de Usuario y Gamificación')
 
 @section('content')
 <div class="container-fluid py-3">
 
-    {{-- ── Encabezado del Perfil y Banner de Gamificación ── --}}
-    <div class="card border-0 shadow-sm mb-4 text-white" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 12px; overflow: hidden;">
+    {{-- ── 1. Encabezado Unificado del Módulo (Estilo Cyan Card de Material Dashboard) ── --}}
+    <div class="card my-3" style="border: none; background: transparent; box-shadow: none;">
+        <div class="card-header card-header-info p-3" style="background: linear-gradient(60deg, #26c6da, #00acc1); border-radius: 6px; box-shadow: 0 4px 20px 0 rgba(0,0,0,.14), 0 7px 10px -5px rgba(0, 188, 212, .4);">
+            <h4 class="card-title text-white font-weight-bold mb-1" style="font-size: 1.3rem;">
+                <i class="fa fa-user-circle mr-2"></i>Perfil de Usuario & Gamificación
+            </h4>
+            <p class="card-category text-white-50 mb-0" style="font-size: .85rem;">
+                Gestión de datos personales, contraseña, nivel de reputación, insignias e historial de actividad
+            </p>
+        </div>
+    </div>
+
+    {{-- ── 2. Breadcrumbs Unificados ── --}}
+    <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ url('home') }}">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Perfil de Usuario</li>
+        </ol>
+    </nav>
+
+    {{-- ── 3. Banner Principal de Perfil (Alto Contraste y Colores Nítidos) ── --}}
+    <div class="card border mb-4 bg-white shadow-sm" style="border-radius: 12px; border-color: #cbd5e1 !important; background-color: #ffffff !important;">
         <div class="card-body p-4">
             <div class="row align-items-center">
                 <div class="col-md-7 mb-3 mb-md-0">
                     <div class="d-flex align-items-center">
-                        {{-- Avatar con botón overlay para cambiar la foto --}}
-                        <div class="position-relative mr-3" style="width: 80px; height: 80px;">
+                        {{-- Avatar con botón de cámara flotante --}}
+                        <div class="position-relative mr-3" style="width: 84px; height: 84px; flex-shrink: 0;">
                             <img id="user_avatar_img" src="{{ $targetUser->avatar_url }}" alt="{{ $targetUser->name }}"
-                                 class="rounded-circle shadow-lg border"
-                                 style="width: 80px; height: 80px; border: 3px solid rgba(255,255,255,0.3) !important; object-fit: cover;">
-                            
+                                 class="rounded-circle shadow"
+                                 style="width: 84px; height: 84px; border: 3px solid #00acc1 !important; object-fit: cover;">
+
                             @if(Auth::id() === $targetUser->id)
-                            <button type="button" class="btn btn-sm btn-light rounded-circle position-absolute bottom-0 right-0 p-0 shadow"
-                                    style="width: 28px; height: 28px; font-size: 12px; line-height: 28px; text-align: center; border: 1px solid #ccc;"
+                            <button type="button" class="btn btn-sm btn-info rounded-circle shadow position-absolute"
+                                    style="bottom: 0; right: 0; width: 32px; height: 32px; padding: 0; line-height: 30px; text-align: center; border: 2px solid #ffffff; z-index: 5; background-color: #00acc1 !important;"
                                     data-toggle="modal" data-target="#modalAvatar" title="Cambiar foto de perfil">
-                                <i class="fa fa-camera text-primary"></i>
+                                <i class="fa fa-camera text-white" style="font-size: 13px;"></i>
                             </button>
                             @endif
                         </div>
                         <div>
                             <div class="d-flex align-items-center flex-wrap" style="gap: .5rem">
-                                <h4 class="font-weight-bold mb-0 text-white">{{ $targetUser->name }}</h4>
-                                <span class="badge badge-pill badge-primary py-1 px-2 font-weight-normal" style="font-size: .75rem">
+                                <h4 class="font-weight-bold mb-0" style="color: #0f172a !important; font-size: 1.4rem;">{{ $targetUser->name }}</h4>
+                                <span class="badge badge-pill badge-info py-1 px-2 font-weight-bold text-white" style="font-size: .75rem; background-color: #00acc1 !important;">
                                     {{ $targetUser->roles->pluck('name')->implode(', ') ?: 'Usuario' }}
                                 </span>
                             </div>
-                            <div class="text-muted small mt-1">
-                                <i class="fa fa-envelope mr-1"></i> {{ $targetUser->email }}
+                            <div class="mt-1" style="color: #475569 !important; font-size: .9rem;">
+                                <span class="mr-3"><i class="fa fa-envelope text-info mr-1"></i> {{ $targetUser->email }}</span>
                                 @if($targetUser->group)
-                                <span class="ml-2"><i class="fa fa-sitemap mr-1"></i> {{ $targetUser->group->name }}</span>
+                                <span><i class="fa fa-sitemap text-info mr-1"></i> {{ $targetUser->group->name }}</span>
                                 @endif
                             </div>
                             @if(Auth::id() === $targetUser->id)
-                            <button type="button" class="btn btn-xs btn-outline-light mt-2 py-0 px-2" style="font-size:.72rem" data-toggle="modal" data-target="#modalAvatar">
-                                <i class="fa fa-upload mr-1"></i> Subir foto de perfil
-                            </button>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-info py-1 px-3 font-weight-bold" style="font-size:.78rem; text-transform: none; border-color: #00acc1; color: #00acc1;" data-toggle="modal" data-target="#modalAvatar">
+                                    <i class="fa fa-upload mr-1"></i> Cambiar Foto de Perfil
+                                </button>
+                            </div>
                             @endif
                         </div>
                     </div>
                 </div>
 
                 {{-- Resumen de Nivel y Puntos --}}
-                <div class="col-md-5 text-md-right border-left border-secondary pl-md-4">
-                    <div class="d-inline-block text-center p-2 rounded mr-3" style="background: rgba(255,255,255,0.05); min-width: 110px;">
-                        <small class="text-muted text-uppercase d-block font-weight-bold" style="font-size: .65rem">Reputación</small>
-                        <span class="h3 font-weight-bold text-warning mb-0">⭐ {{ number_format($gamification['total_points']) }}</span>
+                <div class="col-md-5 text-md-right border-left pl-md-4" style="border-color: #e2e8f0 !important;">
+                    <div class="d-inline-block text-center p-2 rounded mr-3" style="background: #fff8e1; border: 1px solid #ffe082; min-width: 110px;">
+                        <small class="text-uppercase d-block font-weight-bold" style="font-size: .65rem; color: #b8860b;">Reputación</small>
+                        <span class="h3 font-weight-bold text-dark mb-0">⭐ {{ number_format($gamification['total_points']) }}</span>
                         <small class="d-block text-muted" style="font-size: .65rem">puntos acumulados</small>
                     </div>
-                    <div class="d-inline-block text-center p-2 rounded" style="background: rgba(255,255,255,0.05); min-width: 130px;">
-                        <small class="text-muted text-uppercase d-block font-weight-bold" style="font-size: .65rem">Rango Actual</small>
-                        <span class="h5 font-weight-bold text-white mb-0">
+                    <div class="d-inline-block text-center p-2 rounded" style="background: #e0f7fa; border: 1px solid #b2ebf2; min-width: 130px;">
+                        <small class="text-uppercase d-block font-weight-bold" style="font-size: .65rem; color: #00838f;">Rango Actual</small>
+                        <span class="h5 font-weight-bold text-dark mb-0">
                             <i class="fa {{ $gamification['level_icon'] }} text-info mr-1"></i> {{ $gamification['level_name'] }}
                         </span>
-                        <small class="d-block text-info font-weight-bold" style="font-size: .65rem">{{ $gamification['level_badge'] }}</small>
+                        <small class="d-block font-weight-bold text-info" style="font-size: .65rem">{{ $gamification['level_badge'] }}</small>
                     </div>
                 </div>
             </div>
 
             {{-- Barra de Progreso de Nivel --}}
-            <div class="mt-4 pt-3 border-top border-secondary">
+            <div class="mt-4 pt-3 border-top" style="border-color: #e2e8f0 !important;">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <small class="text-muted">
-                        <strong class="text-white">Nivel {{ $gamification['level_number'] }}:</strong> {{ $gamification['level_name'] }}
+                    <small style="color: #334155 !important;">
+                        <strong style="color: #0f172a !important;">Nivel {{ $gamification['level_number'] }}:</strong> {{ $gamification['level_name'] }}
                     </small>
-                    <small class="text-muted">
-                        Próximo Nivel: <strong class="text-info">{{ $gamification['next_level_name'] }}</strong> ({{ $gamification['progress_pct'] }}%)
+                    <small style="color: #475569 !important;">
+                        Próximo Nivel: <strong class="text-info font-weight-bold">{{ $gamification['next_level_name'] }}</strong> ({{ $gamification['progress_pct'] }}%)
                     </small>
                 </div>
-                <div class="progress bg-secondary" style="height: 8px; border-radius: 4px;">
-                    <div class="progress-bar bg-gradient-info progress-bar-striped progress-bar-animated" role="progressbar"
-                         style="width: {{ $gamification['progress_pct'] }}%;"
+                <div class="progress bg-light" style="height: 10px; border-radius: 5px; border: 1px solid #e2e8f0;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                         style="width: {{ $gamification['progress_pct'] }}%; background-color: #00acc1 !important;"
                          aria-valuenow="{{ $gamification['progress_pct'] }}" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ── Filtro por Plan PEI Activo ── --}}
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body py-2 px-3 bg-white d-flex align-items-center justify-content-between flex-wrap">
+    {{-- ── 4. Filtro por Plan PEI con Select2 ── --}}
+    <div class="card border-0 shadow-sm mb-4 bg-white">
+        <div class="card-body py-2 px-3 d-flex align-items-center justify-content-between flex-wrap">
             <div class="d-flex align-items-center mr-3 my-1">
-                <i class="fa fa-filter text-primary mr-2"></i>
+                <i class="fa fa-filter text-info mr-2"></i>
                 <span class="font-weight-bold text-dark small">Contexto de Gamificación:</span>
                 <span class="badge badge-light border ml-2 text-dark font-weight-normal">
                     {{ $peiSeleccionado ? strip_tags($peiSeleccionado->name) : 'Consolidado Global (Todos los Planes PEI)' }}
                 </span>
             </div>
             <form method="GET" action="{{ route('user.profile', $targetUser->id) }}" class="form-inline my-1">
-                <select name="pei_id" class="form-control form-control-sm mr-2" onchange="this.form.submit()">
+                <select name="pei_id" id="select2_pei_id" class="form-control form-control-sm select2 mr-2" style="width: 280px;">
                     <option value="">— Todo el Historial Global —</option>
                     @foreach($peiPlanes as $p)
                     <option value="{{ $p->id }}" {{ request('pei_id') == $p->id || ($peiSeleccionado && $peiSeleccionado->id == $p->id && !request()->has('pei_id')) ? 'selected' : '' }}>
@@ -103,7 +125,7 @@
                     @endforeach
                 </select>
                 @if(request('pei_id'))
-                <a href="{{ route('user.profile', $targetUser->id) }}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+                <a href="{{ route('user.profile', $targetUser->id) }}" class="btn btn-sm btn-outline-secondary ml-2">Limpiar</a>
                 @endif
             </form>
         </div>
@@ -111,12 +133,117 @@
 
     <div class="row">
 
-        {{-- ── Columna Izquierda: Vitrina de Insignias y Desglose ── --}}
+        {{-- ── Columna Izquierda: Datos Personales, Cambio de Contraseña e Insignias ── --}}
         <div class="col-lg-8 mb-4">
 
-            {{-- Resumen de Insignias Estilo Stack Overflow --}}
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+            {{-- Formulario para Datos Personales (Nombre y Correo) --}}
+            @if(Auth::id() === $targetUser->id)
+            <div class="card border-0 shadow-sm mb-4 bg-white">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="mb-0 font-weight-bold text-dark">
+                        <i class="fa fa-user-edit text-info mr-2"></i>Datos Personales — Nombre y Correo
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    @if(session('success_details'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fa fa-check-circle mr-1"></i> {{ session('success_details') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('user.profile.details') }}">
+                        @csrf
+                        <div class="form-group row">
+                            <label for="name" class="col-md-4 col-form-label text-md-right font-weight-bold small text-dark">Nombre Completo:</label>
+                            <div class="col-md-7">
+                                <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $targetUser->name) }}" required style="color: #0f172a !important;">
+                                @error('name')
+                                <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="email" class="col-md-4 col-form-label text-md-right font-weight-bold small text-dark">Correo Electrónico:</label>
+                            <div class="col-md-7">
+                                <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $targetUser->email) }}" required style="color: #0f172a !important;">
+                                @error('email')
+                                <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row mb-0">
+                            <div class="col-md-7 offset-md-4">
+                                <button type="submit" class="btn btn-info font-weight-bold" style="background-color: #00acc1 !important; border-color: #00acc1 !important; text-transform: none;">
+                                    <i class="fa fa-save mr-1"></i> Guardar Datos Personales
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {{-- Formulario para Cambio de Contraseña --}}
+            <div class="card border-0 shadow-sm mb-4 bg-white">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="mb-0 font-weight-bold text-dark">
+                        <i class="fa fa-key text-info mr-2"></i>Seguridad de la Cuenta — Cambiar Contraseña
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    @if(session('success_password'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fa fa-check-circle mr-1"></i> {{ session('success_password') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('user.profile.password') }}">
+                        @csrf
+                        <div class="form-group row">
+                            <label for="old_password" class="col-md-4 col-form-label text-md-right font-weight-bold small text-dark">Contraseña Actual:</label>
+                            <div class="col-md-7">
+                                <input type="password" name="old_password" id="old_password" class="form-control @error('old_password') is-invalid @enderror" placeholder="Ingresa tu contraseña actual" required style="color: #0f172a !important;">
+                                @error('old_password')
+                                <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="password" class="col-md-4 col-form-label text-md-right font-weight-bold small text-dark">Nueva Contraseña:</label>
+                            <div class="col-md-7">
+                                <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" placeholder="Mínimo 8 caracteres" required style="color: #0f172a !important;">
+                                @error('password')
+                                <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="password_confirmation" class="col-md-4 col-form-label text-md-right font-weight-bold small text-dark">Confirmar Nueva Contraseña:</label>
+                            <div class="col-md-7">
+                                <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" placeholder="Repite la nueva contraseña" required style="color: #0f172a !important;">
+                            </div>
+                        </div>
+
+                        <div class="form-group row mb-0">
+                            <div class="col-md-7 offset-md-4">
+                                <button type="submit" class="btn btn-info font-weight-bold" style="background-color: #00acc1 !important; border-color: #00acc1 !important; text-transform: none;">
+                                    <i class="fa fa-lock mr-1"></i> Actualizar Contraseña
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            @endif
+
+            {{-- Vitrina de Insignias Estilo Stack Overflow --}}
+            <div class="card border-0 shadow-sm mb-4 bg-white">
+                <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
                     <h6 class="mb-0 font-weight-bold text-dark">
                         <i class="fa fa-award text-warning mr-2"></i>Vitrina de Insignias (Medallas de Honor)
                     </h6>
@@ -139,7 +266,7 @@
                             <div class="p-3 border rounded h-100 d-flex align-items-center {{ $b['unlocked'] ? 'bg-white shadow-sm' : 'bg-light opacity-60' }}"
                                  style="transition: all .2s; {{ !$b['unlocked'] ? 'filter: grayscale(80%); opacity: 0.6;' : '' }}">
                                 <div class="rounded-circle p-3 mr-3 text-center d-flex align-items-center justify-content-center shadow-sm"
-                                     style="width: 48px; height: 48px; background: {{ $b['color'] }}20; color: {{ $b['color'] }}; border: 2px solid {{ $b['color'] }};">
+                                     style="width: 48px; height: 48px; background: {{ $b['color'] }}20; color: {{ $b['color'] }}; border: 2px solid {{ $b['color'] }}; flex-shrink: 0;">
                                     <i class="fa {{ $b['icon'] }} fa-lg"></i>
                                 </div>
                                 <div class="flex-grow-1">
@@ -167,10 +294,10 @@
             </div>
 
             {{-- Historial Reciente de Puntos --}}
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3">
+            <div class="card border-0 shadow-sm bg-white">
+                <div class="card-header bg-white py-3 border-bottom">
                     <h6 class="mb-0 font-weight-bold text-dark">
-                        <i class="fa fa-history text-primary mr-2"></i>Historial Reciente de Actividad y Puntos
+                        <i class="fa fa-history text-info mr-2"></i>Historial Reciente de Actividad y Puntos
                     </h6>
                 </div>
                 <div class="card-body p-0">
@@ -217,8 +344,8 @@
         <div class="col-lg-4 mb-4">
 
             {{-- Tarjeta Desglose de Fuentes de Puntos --}}
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white py-3">
+            <div class="card border-0 shadow-sm mb-4 bg-white">
+                <div class="card-header bg-white py-3 border-bottom">
                     <h6 class="mb-0 font-weight-bold text-dark">
                         <i class="fa fa-chart-pie text-info mr-2"></i>Fuentes de Puntos Obtenidos
                     </h6>
@@ -257,8 +384,8 @@
             </div>
 
             {{-- Leaderboard / Tabla de Posiciones --}}
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+            <div class="card border-0 shadow-sm bg-white">
+                <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
                     <h6 class="mb-0 font-weight-bold text-dark">
                         <i class="fa fa-trophy text-warning mr-2"></i>Tabla de Posiciones (Top 10)
                     </h6>
@@ -276,16 +403,16 @@
                                 default => '#6b7280'
                             };
                         @endphp
-                        <li class="list-group-item d-flex align-items-center justify-content-between py-2 px-3 {{ $isMe ? 'bg-primary-50 border-left border-primary font-weight-bold' : '' }}">
+                        <li class="list-group-item d-flex align-items-center justify-content-between py-2 px-3 {{ $isMe ? 'bg-light border-left border-info font-weight-bold' : '' }}">
                             <div class="d-flex align-items-center">
                                 <span class="font-weight-bold mr-2 text-center" style="width: 22px; color: {{ $rankColor }}">
                                     #{{ $index + 1 }}
                                 </span>
                                 <img src="{{ $u->avatar_url }}" alt="{{ $u->name }}"
                                      class="rounded-circle mr-2 border shadow-sm"
-                                     style="width: 36px; height: 36px; object-fit: cover;">
+                                     style="width: 36px; height: 36px; object-fit: cover; flex-shrink: 0;">
                                 <div>
-                                    <a href="{{ route('user.profile', $u->id) }}" class="text-dark {{ $isMe ? 'font-weight-bold text-primary' : '' }}" style="font-size: .82rem">
+                                    <a href="{{ route('user.profile', $u->id) }}" class="text-dark {{ $isMe ? 'font-weight-bold text-info' : '' }}" style="font-size: .82rem">
                                         {{ $u->name }}
                                     </a>
                                     @if($u->group)
@@ -308,30 +435,36 @@
 
 </div>
 
-{{-- ── Modal Subir Foto de Perfil ── --}}
+{{-- ── 5. Modal Limpio y Estilizado para Subir Foto de Perfil ── --}}
 @if(Auth::id() === $targetUser->id)
-<div class="modal fade" id="modalAvatar" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="modalAvatar" tabindex="-1" role="dialog" aria-labelledby="modalAvatarTitle" aria-hidden="true" style="z-index: 1050;">
     <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
-        <div class="modal-content border-0 shadow">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 10px; overflow: hidden; background-color: #ffffff !important;">
             <form id="formAvatar" action="{{ route('user.profile.avatar') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="modal-header py-2 bg-primary text-white">
-                    <h6 class="modal-title font-weight-bold mb-0"><i class="fa fa-camera mr-1"></i> Cambiar Foto de Perfil</h6>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+                <div class="modal-header py-3 text-white" style="background-color: #00acc1 !important;">
+                    <h6 class="modal-title font-weight-bold mb-0 text-white" id="modalAvatarTitle">
+                        <i class="fa fa-camera mr-2"></i> Cambiar Foto de Perfil
+                    </h6>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 1;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-                <div class="modal-body text-center py-4">
+                <div class="modal-body text-center py-4 bg-white">
                     <div class="mb-3">
                         <img id="avatar_preview" src="{{ $targetUser->avatar_url }}" class="rounded-circle border shadow-sm" style="width: 110px; height: 110px; object-fit: cover;">
                     </div>
                     <div class="custom-file mb-2 text-left">
                         <input type="file" class="custom-file-input" id="avatar_input" name="avatar" accept="image/*" required>
-                        <label class="custom-file-label" for="avatar_input">Elegir foto...</label>
+                        <label class="custom-file-label" for="avatar_input" style="font-size: .85rem;">Seleccionar foto...</label>
                     </div>
-                    <small class="text-muted d-block" style="font-size: .75rem">Formatos permitidos: JPG, PNG, WEBP (máx. 3 MB)</small>
+                    <small class="text-muted d-block mt-2" style="font-size: .72rem">Formatos permitidos: JPG, PNG, WEBP (máx. 3 MB)</small>
                 </div>
-                <div class="modal-footer py-2 bg-light justify-content-between">
-                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-sm btn-primary" id="btn_save_avatar">
+                <div class="modal-footer py-2 bg-light d-flex justify-content-between align-items-center">
+                    <button type="button" class="btn btn-sm btn-secondary font-weight-bold px-3" data-dismiss="modal" style="text-transform: none; border-radius: 4px;">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-info font-weight-bold px-3 text-white" id="btn_save_avatar" style="text-transform: none; border-radius: 4px; background-color: #00acc1 !important; border-color: #00acc1 !important;">
                         <i class="fa fa-upload mr-1"></i> Guardar Foto
                     </button>
                 </div>
@@ -345,7 +478,18 @@
 @section('scripts')
 <script>
 $(function() {
-    // Vista previa de la foto seleccionada
+    // Inicializar Select2 en el selector PEI
+    if ($.fn.select2) {
+        $('#select2_pei_id').select2({
+            placeholder: '— Todo el Historial Global —',
+            allowClear: true,
+            width: '280px'
+        }).on('change', function() {
+            $(this).closest('form').submit();
+        });
+    }
+
+    // Vista previa de la foto seleccionada en el modal
     $('#avatar_input').on('change', function() {
         var file = this.files[0];
         if (file) {

@@ -141,6 +141,20 @@ class WelcomeController extends Controller
                 ->get(['id', 'name', 'year_start', 'year_end', 'semaforo', 'public_token']);
         }
 
+        // Top 5 Líderes de Gamificación y Reputación
+        $gamificationService = app(\App\Services\GamificationService::class);
+        $topLeaderboard = \App\Models\User::with('group')
+            ->get()
+            ->map(function($u) use ($gamificationService, $config) {
+                $points = $gamificationService->getUserTotalPoints($u, $config?->pei_profile_id);
+                $u->total_points = $points;
+                $u->gamification = $gamificationService->getUserGamificationSummary($u, $config?->pei_profile_id);
+                return $u;
+            })
+            ->sortByDesc('total_points')
+            ->take(5)
+            ->values();
+
         return view('welcome', compact(
             'config',
             'activities', 'totalTareas', 'tareasEnCurso', 'tareasHechas', 'tareasVencidas',
@@ -149,7 +163,7 @@ class WelcomeController extends Controller
             'siessModulos', 'siessAprobados', 'siessPendientes', 'siessObjetados',
             'fodaPerfiles', 'fodaAnalisis', 'fodaFortalezas', 'fodaDebilidades',
             'fodaOportunidades', 'fodaAmenazas', 'fodaEstrategias', 'fodaIeaResumen',
-            'peiPlanes', 'peiAcciones', 'peiSemaforo', 'peiRecientes'
+            'peiPlanes', 'peiAcciones', 'peiSemaforo', 'peiRecientes', 'topLeaderboard'
         ));
     }
 }

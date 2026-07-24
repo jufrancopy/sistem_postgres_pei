@@ -40,6 +40,12 @@
                     <p>Ver sitio público</p>
                 </a>
             </li>
+            <li class="nav-item {{ request()->is('perfil*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('user.profile') }}">
+                    <i class="material-icons">account_circle</i>
+                    <p>Mi Perfil y Insignias</p>
+                </a>
+            </li>
             <li class="nav-item ">
                 <a class="nav-link" href="{{ route('globales.dashboard') }}">
                     <i class="material-icons">settings_applications</i>

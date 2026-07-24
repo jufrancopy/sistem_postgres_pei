@@ -25,6 +25,9 @@ Route::group(['middleware' => ['auth']], function () {
     // ── Perfil de Usuario y Gamificación ───────────────────────────────────────
     Route::get('/perfil/{id?}', 'Admin\UserProfileController@show')->name('user.profile');
     Route::post('/perfil/avatar', 'Admin\UserProfileController@updateAvatar')->name('user.profile.avatar');
+    Route::post('/perfil/detalles', 'Admin\UserProfileController@updateDetails')->name('user.profile.details');
+    Route::post('/perfil/password', 'Admin\UserProfileController@updatePassword')->name('user.profile.password');
+    Route::get('/profile', function () { return redirect()->route('user.profile'); })->name('profile.edit');
 
     // ── Mis Tareas (colaboradores) ────────────────────────────────────────────
     Route::get('mis-tareas/{activityId}', 'Admin\Globales\ActivityController@misTareas')->name('globales.mis-tareas');
@@ -448,9 +451,9 @@ Route::group(['middleware' => 'auth'], function () {
 
 Route::group(['middleware' => 'auth'], function () {
     Route::resource('user', 'UserController', ['except' => ['show']]);
-    Route::get('profile', ['as' => 'profile.edit', 'uses' => 'ProfileController@edit']);
-    Route::put('profile', ['as' => 'profile.update', 'uses' => 'ProfileController@update']);
-    Route::put('profile/password', ['as' => 'profile.password', 'uses' => 'ProfileController@password']);
+    Route::get('profile', function () { return redirect()->route('user.profile'); })->name('profile.edit');
+    Route::post('profile', function () { return redirect()->route('user.profile'); })->name('profile.update');
+    Route::post('profile/password', function () { return redirect()->route('user.profile'); })->name('profile.password');
 
     // ── RIISS - Red Integrada e Integral de Servicios de Salud ───────────────
     Route::prefix('riiss')->name('riiss.')->middleware(['role:Administrador|Analista - RIISS'])->group(function () {

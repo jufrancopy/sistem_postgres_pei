@@ -96,4 +96,55 @@ class UserProfileController extends Controller
 
         return back()->with('success', 'Foto de perfil actualizada con éxito.');
     }
+
+    /**
+     * Actualiza la contraseña del usuario
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'old_password' => 'required',
+            'password'     => 'required|string|min:8|confirmed',
+        ], [
+            'old_password.required' => 'Debe ingresar su contraseña actual.',
+            'password.required'     => 'Debe ingresar una nueva contraseña.',
+            'password.min'          => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.confirmed'    => 'La confirmación de la contraseña no coincide.',
+        ]);
+
+        $user = Auth::user();
+
+        if (!\Illuminate\Support\Facades\Hash::check($request->old_password, $user->password)) {
+            return back()->withErrors(['old_password' => 'La contraseña actual no es correcta.']);
+        }
+
+        $user->password = \Illuminate\Support\Facades\Hash::make($request->password);
+        $user->save();
+
+        return back()->with('success_password', 'Contraseña actualizada con éxito.');
+    }
+
+    /**
+     * Actualiza los datos personales del usuario (nombre y correo electrónico)
+     */
+    public function updateDetails(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+        ], [
+            'name.required'  => 'El nombre es obligatorio.',
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email'    => 'Ingrese un correo electrónico válido.',
+            'email.unique'   => 'Este correo electrónico ya está registrado por otro usuario.',
+        ]);
+
+        $user->name  = $request->name;
+        $user->email = $request->email;
+        $user->save();
+
+        return back()->with('success_details', 'Datos personales actualizados con éxito.');
+    }
 }
