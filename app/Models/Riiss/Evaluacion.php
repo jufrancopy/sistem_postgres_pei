@@ -20,7 +20,7 @@ class Evaluacion extends Model
         'evaluadores', 'evaluador_telefono', 'evaluador_usuario_institucional',
         'estado', 'porcentaje_cumplimiento', 'clasificacion_resultado',
         'pct_habilitacion', 'clasificacion_habilitacion',
-        'observaciones_generales', 'metadata',
+        'observaciones_generales', 'metadata', 'pei_profile_id',
     ];
 
     protected $casts = [
@@ -30,6 +30,11 @@ class Evaluacion extends Model
         'metadata'                => 'array',
         'evaluadores'             => 'array',
     ];
+
+    public function peiProfile(): BelongsTo
+    {
+        return $this->belongsTo(\App\Admin\Planificacion\Pei\PeiProfile::class, 'pei_profile_id');
+    }
 
     public function establecimiento(): BelongsTo
     {

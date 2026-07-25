@@ -16,13 +16,18 @@ class Asignacion extends Model
     protected $fillable = [
         'id_establecimiento', 'evaluacion_id', 'asignado_por',
         'evaluador_id', 'fecha_limite', 'estado',
-        'instrucciones', 'notificado_at',
+        'instrucciones', 'notificado_at', 'pei_profile_id',
     ];
 
     protected $casts = [
         'fecha_limite'   => 'date',
         'notificado_at'  => 'datetime',
     ];
+
+    public function peiProfile(): BelongsTo
+    {
+        return $this->belongsTo(\App\Admin\Planificacion\Pei\PeiProfile::class, 'pei_profile_id');
+    }
 
     public function establecimiento(): BelongsTo
     {

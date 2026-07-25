@@ -73,6 +73,9 @@ class AsignacionController extends Controller
             ], 422);
         }
 
+        $config = \App\Models\HomeConfiguration::first();
+        $targetPeiId = $request->pei_profile_id ?: ($config?->pei_profile_id ?: '766eb883-fdd0-4723-8f75-cf689aa8f0fa');
+
         $asignacion = Asignacion::create([
             'id_establecimiento' => $validated['id_establecimiento'],
             'evaluador_id'       => $validated['evaluador_id'],
@@ -80,6 +83,7 @@ class AsignacionController extends Controller
             'fecha_limite'       => $validated['fecha_limite'] ?? null,
             'instrucciones'      => $validated['instrucciones'] ?? null,
             'estado'             => 'pendiente',
+            'pei_profile_id'     => $targetPeiId,
         ]);
 
         $asignacion->load(['establecimiento', 'evaluador', 'asignadoPor']);

@@ -43,11 +43,14 @@ class RecalculateGamificationPoints extends Command
         $users = User::all();
         $this->info('Procesando ' . $users->count() . ' usuarios...');
 
+        $config = \App\Models\HomeConfiguration::first();
+        $targetPeiId = $config?->pei_profile_id ?: '766eb883-fdd0-4723-8f75-cf689aa8f0fa';
+
         // 1. Tareas de Actividades Creadas y Completadas
         $this->info('Procesando tareas de actividades...');
         $tasks = ActivityTask::with('activity')->get();
         foreach ($tasks as $task) {
-            $peiProfileId = $task->activity?->pei_profile_id;
+            $peiProfileId = $task->activity?->pei_profile_id ?: $targetPeiId;
 
             // Tarea Creada
             if ($task->assigned_to) {
@@ -88,7 +91,7 @@ class RecalculateGamificationPoints extends Command
             $user = $users->firstWhere('id', $comment->user_id);
             if ($user) {
                 $taskTitle = $comment->task ? $comment->task->title : 'Tarea';
-                $peiProfileId = $comment->task?->activity?->pei_profile_id;
+                $peiProfileId = $comment->task?->activity?->pei_profile_id ?: $targetPeiId;
                 $gamificationService->awardPoints(
                     $user,
                     'comment_created',
@@ -112,7 +115,7 @@ class RecalculateGamificationPoints extends Command
                     'Análisis FODA: ' . ($foda->tipo ?? 'Aspecto'),
                     15,
                     $foda,
-                    $foda->perfil_id
+                    $foda->perfil_id ?: $targetPeiId
                 );
             }
         }
@@ -133,7 +136,7 @@ class RecalculateGamificationPoints extends Command
                     'Estrategia Cruce FODA: ' . ($cruce->tipo ?? 'Estrategia'),
                     30,
                     $cruce,
-                    $cruce->perfil_id
+                    $cruce->perfil_id ?: $targetPeiId
                 );
             }
         }
@@ -167,7 +170,8 @@ class RecalculateGamificationPoints extends Command
                     'riiss_evaluacion',
                     'Evaluación RIISS completada: ' . ($eval->establecimiento?->nombre_oficial ?? 'Establecimiento'),
                     50,
-                    $eval
+                    $eval,
+                    $eval->pei_profile_id ?: $targetPeiId
                 );
             }
         }

@@ -195,6 +195,9 @@ class EvaluacionController extends Controller
                 ->pluck('text')->implode(', ');
         }
 
+        $config = \App\Models\HomeConfiguration::first();
+        $validated['pei_profile_id'] = $request->pei_profile_id ?: ($config?->pei_profile_id ?: '766eb883-fdd0-4723-8f75-cf689aa8f0fa');
+
         $evaluacion = Evaluacion::create($validated);
 
         return response()->json([
@@ -271,12 +274,15 @@ class EvaluacionController extends Controller
         if ($respondidas >= $totalPreguntas) {
             $evaluacion->update(['estado' => 'completada']);
             if (Auth::user()) {
+                $config = \App\Models\HomeConfiguration::first();
+                $peiProfileId = $evaluacion->pei_profile_id ?: ($config?->pei_profile_id ?: '766eb883-fdd0-4723-8f75-cf689aa8f0fa');
                 app(\App\Services\GamificationService::class)->awardPoints(
                     Auth::user(),
                     'riiss_evaluacion',
                     'Evaluación RIISS completada: ' . ($evaluacion->establecimiento?->nombre_oficial ?? 'Establecimiento'),
                     50,
-                    $evaluacion
+                    $evaluacion,
+                    $peiProfileId
                 );
             }
         } elseif ($respondidas > 0) {
