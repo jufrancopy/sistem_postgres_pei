@@ -121,8 +121,11 @@ class RecalculateGamificationPoints extends Command
         $this->info('Procesando estrategias de cruce FODA...');
         $cruces = FodaCruceAmbiente::all();
         foreach ($cruces as $cruce) {
-            // Asignar al primer usuario analista si existe
-            $user = $users->first();
+            $user = $cruce->user_id ? $users->firstWhere('id', $cruce->user_id) : null;
+            if (!$user && $cruce->perfil_id) {
+                $perfil = FodaPerfil::find($cruce->perfil_id);
+                $user = $perfil ? $users->firstWhere('id', $perfil->user_id) : null;
+            }
             if ($user) {
                 $gamificationService->awardPoints(
                     $user,
@@ -137,14 +140,32 @@ class RecalculateGamificationPoints extends Command
 
         // 5. Evaluaciones RIISS
         $this->info('Procesando evaluaciones RIISS...');
-        $evaluaciones = Evaluacion::where('estado', 'completada')->get();
+        $evaluaciones = Evaluacion::with('establecimiento')->where('estado', 'completada')->get();
         foreach ($evaluaciones as $eval) {
-            $user = $users->first();
+            $user = null;
+            if ($eval->evaluador_usuario_institucional) {
+                $user = $users->firstWhere('email', $eval->evaluador_usuario_institucional);
+            }
+            if (!$user && $eval->evaluador_nombre) {
+                $user = $users->first(function($u) use ($eval) {
+                    return stripos($u->name, $eval->evaluador_nombre) !== false || stripos($eval->evaluador_nombre, $u->name) !== false;
+                });
+            }
+            if (!$user && is_array($eval->evaluadores)) {
+                foreach ($eval->evaluadores as $evItem) {
+                    $uItem = $users->firstWhere('email', $evItem) ?: $users->firstWhere('name', $evItem);
+                    if ($uItem) {
+                        $user = $uItem;
+                        break;
+                    }
+                }
+            }
+
             if ($user) {
                 $gamificationService->awardPoints(
                     $user,
                     'riiss_evaluacion',
-                    'Evaluación RIISS completada',
+                    'Evaluación RIISS completada: ' . ($eval->establecimiento?->nombre_oficial ?? 'Establecimiento'),
                     50,
                     $eval
                 );
