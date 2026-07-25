@@ -47,6 +47,8 @@ class RecalculateGamificationPoints extends Command
         $this->info('Procesando tareas de actividades...');
         $tasks = ActivityTask::with('activity')->get();
         foreach ($tasks as $task) {
+            $peiProfileId = $task->activity?->pei_profile_id;
+
             // Tarea Creada
             if ($task->assigned_to) {
                 $user = $users->firstWhere('id', $task->assigned_to);
@@ -56,7 +58,8 @@ class RecalculateGamificationPoints extends Command
                         'task_created',
                         'Creación de tarea: ' . \Illuminate\Support\Str::limit($task->title, 30),
                         15,
-                        $task
+                        $task,
+                        $peiProfileId
                     );
                 }
             }
@@ -71,7 +74,8 @@ class RecalculateGamificationPoints extends Command
                         'task_completed',
                         'Tarea completada: ' . \Illuminate\Support\Str::limit($task->title, 30),
                         25,
-                        $task
+                        $task,
+                        $peiProfileId
                     );
                 }
             }
@@ -79,17 +83,19 @@ class RecalculateGamificationPoints extends Command
 
         // 2. Comentarios en Tareas
         $this->info('Procesando comentarios...');
-        $comments = ActivityTaskComment::with('task')->get();
+        $comments = ActivityTaskComment::with('task.activity')->get();
         foreach ($comments as $comment) {
             $user = $users->firstWhere('id', $comment->user_id);
             if ($user) {
                 $taskTitle = $comment->task ? $comment->task->title : 'Tarea';
+                $peiProfileId = $comment->task?->activity?->pei_profile_id;
                 $gamificationService->awardPoints(
                     $user,
                     'comment_created',
                     'Comentario en tarea: ' . \Illuminate\Support\Str::limit($taskTitle, 30),
                     5,
-                    $comment
+                    $comment,
+                    $peiProfileId
                 );
             }
         }
