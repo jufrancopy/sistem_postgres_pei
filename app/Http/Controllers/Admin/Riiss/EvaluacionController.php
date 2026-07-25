@@ -165,6 +165,7 @@ class EvaluacionController extends Controller
         $validated = $request->validate([
             'id_establecimiento'              => 'required|string|exists:establecimientos,id_establecimiento',
             'fecha_evaluacion'                => 'required|date',
+            'pei_profile_id'                  => 'nullable|string',
             'evaluadores'                     => 'nullable|array',
             'evaluadores.*.id'                => 'required|integer',
             'evaluadores.*.text'              => 'required|string',

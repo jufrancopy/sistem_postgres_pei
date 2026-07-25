@@ -257,40 +257,16 @@
                 </a>
                 <div class="collapse {{ $enRiiss ? 'show' : '' }}" id="riissMenu">
                     <ul class="nav">
-                        <li class="nav-item {{ $isActive('riiss/establecimientos') }}">
-                            <a class="nav-link" href="{{ route('riiss.establecimientos.index') }}">
+                        <li class="nav-item {{ $path === 'riiss' ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('riiss.index') }}">
                                 <span class="sidebar-mini"><i class="fa fa-hospital" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Establecimientos</span>
+                                <span class="sidebar-normal">Centro RIISS</span>
                             </a>
                         </li>
-                        <li class="nav-item {{ $isActive('riiss/evaluaciones') }}">
-                            <a class="nav-link" href="{{ route('riiss.evaluaciones.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-clipboard-check" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Evaluaciones</span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ $isActive('riiss/asignaciones') }}">
-                            <a class="nav-link" href="{{ route('riiss.asignaciones.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-user-check" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Asignaciones</span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ $isActive('riiss/dashboard') }}">
-                            <a class="nav-link" href="{{ route('riiss.dashboard') }}">
-                                <span class="sidebar-mini"><i class="fa fa-chart-line" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Monitoreo</span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ $isActive('riiss/formularios*') }}">
-                            <a class="nav-link" href="{{ route('riiss.formularios.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-wpforms" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Formularios</span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ $isActive('riiss/complejidad*') }}">
-                            <a class="nav-link" href="{{ route('riiss.complejidad.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-layer-group" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Complejidad</span>
+                        <li class="nav-item {{ str_contains($path, 'riiss/configuracion') || str_contains($path, 'riiss/formularios') || str_contains($path, 'riiss/complejidad') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('riiss.configuracion') }}">
+                                <span class="sidebar-mini"><i class="fa fa-cog" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Configuración</span>
                             </a>
                         </li>
                     </ul>
@@ -424,39 +400,17 @@
         {{-- Sidebar exclusivo para Analista - RIISS --}}
         @role('Analista - RIISS')
             @php $enRiiss = str_contains($path, 'riiss'); @endphp
-            <li class="nav-item active">
-                <a class="nav-link" href="{{ route('riiss.establecimientos.index') }}">
-                    <i class="material-icons">dashboard</i>
-                    <p>Inicio RIISS</p>
+            <li class="nav-item {{ $path === 'riiss' ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('riiss.index') }}">
+                    <i class="material-icons">local_hospital</i>
+                    <p>Centro RIISS</p>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="collapse" href="#riissMenuAnalista" aria-expanded="{{ $enRiiss ? 'true' : 'false' }}">
-                    <i class="material-icons">local_hospital</i>
-                    <p>RIISS <b class="caret"></b></p>
+            <li class="nav-item {{ $isActive('riiss/mis-asignaciones') }}">
+                <a class="nav-link" href="{{ route('riiss.mis-asignaciones') }}">
+                    <i class="material-icons">assignment</i>
+                    <p>Mis Asignaciones</p>
                 </a>
-                <div class="collapse {{ $enRiiss ? 'show' : '' }}" id="riissMenuAnalista">
-                    <ul class="nav">
-                        <li class="nav-item {{ $isActive('riiss/establecimientos*') }}">
-                            <a class="nav-link" href="{{ route('riiss.establecimientos.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-hospital" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Establecimientos</span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ $isActive('riiss/mis-asignaciones') }}">
-                            <a class="nav-link" href="{{ route('riiss.mis-asignaciones') }}">
-                                <span class="sidebar-mini"><i class="fa fa-tasks" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Mis Asignaciones</span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ $isActive('riiss/evaluaciones*') }}">
-                            <a class="nav-link" href="{{ route('riiss.evaluaciones.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-clipboard-check" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Evaluaciones</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
             </li>
         @endrole
 

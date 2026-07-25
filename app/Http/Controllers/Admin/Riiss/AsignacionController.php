@@ -56,6 +56,7 @@ class AsignacionController extends Controller
         $validated = $request->validate([
             'id_establecimiento' => 'required|string|exists:establecimientos,id_establecimiento',
             'evaluador_id'       => 'required|integer|exists:users,id',
+            'pei_profile_id'     => 'nullable|string',
             'fecha_limite'       => 'nullable|date|after:today',
             'instrucciones'      => 'nullable|string|max:1000',
         ]);
@@ -145,6 +146,66 @@ class AsignacionController extends Controller
         $asignacion->update(['estado' => 'cancelada']);
         $asignacion->delete();
         return response()->json(['ok' => true, 'message' => 'Asignación cancelada.']);
+    }
+
+    /**
+     * GET /riiss/asignaciones/{asignacion}/edit
+     */
+    public function edit(Asignacion $asignacion): JsonResponse
+    {
+        $asignacion->load(['establecimiento', 'evaluador', 'peiProfile']);
+        return response()->json([
+            'ok'   => true,
+            'data' => [
+                'id'                 => $asignacion->id,
+                'id_establecimiento' => $asignacion->id_establecimiento,
+                'establecimiento'    => $asignacion->establecimiento ? [
+                    'id'   => $asignacion->establecimiento->id_establecimiento,
+                    'text' => $asignacion->establecimiento->nombre_oficial . ' (' . ($asignacion->establecimiento->tipologia_clasificacion ?? '') . ')',
+                ] : null,
+                'evaluador_id'       => $asignacion->evaluador_id,
+                'evaluador'          => $asignacion->evaluador ? [
+                    'id'   => $asignacion->evaluador->id,
+                    'text' => $asignacion->evaluador->name,
+                    'email'=> $asignacion->evaluador->email,
+                ] : null,
+                'pei_profile_id'     => $asignacion->pei_profile_id,
+                'pei_profile'        => $asignacion->peiProfile ? [
+                    'id'   => $asignacion->peiProfile->id,
+                    'text' => strip_tags($asignacion->peiProfile->name),
+                ] : null,
+                'fecha_limite'       => $asignacion->fecha_limite?->format('Y-m-d'),
+                'instrucciones'      => $asignacion->instrucciones,
+                'estado'             => $asignacion->estado,
+            ],
+        ]);
+    }
+
+    /**
+     * PUT /riiss/asignaciones/{asignacion}
+     */
+    public function update(Request $request, Asignacion $asignacion): JsonResponse
+    {
+        $validated = $request->validate([
+            'evaluador_id'   => 'required|integer|exists:users,id',
+            'pei_profile_id' => 'nullable|string',
+            'fecha_limite'   => 'nullable|date',
+            'instrucciones'  => 'nullable|string|max:1000',
+            'estado'         => 'nullable|string|in:pendiente,en_progreso,completada,cancelada',
+        ]);
+
+        $asignacion->update([
+            'evaluador_id'   => $validated['evaluador_id'],
+            'pei_profile_id' => $validated['pei_profile_id'] ?: null,
+            'fecha_limite'   => $validated['fecha_limite'] ?? null,
+            'instrucciones'  => $validated['instrucciones'] ?? null,
+            'estado'         => $validated['estado'] ?? $asignacion->estado,
+        ]);
+
+        return response()->json([
+            'ok'      => true,
+            'message' => 'Asignación actualizada correctamente',
+        ]);
     }
 
     /**

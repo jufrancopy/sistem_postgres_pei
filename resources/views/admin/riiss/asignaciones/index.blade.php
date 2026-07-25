@@ -56,7 +56,7 @@
             <h5 class="mb-0 font-weight-bold">
                 <i class="fa fa-list mr-2 text-danger"></i>Todas las asignaciones
             </h5>
-            <button class="btn btn-danger" data-toggle="modal" data-target="#modalNuevaAsignacion">
+            <button class="btn btn-danger" onclick="abrirModalNueva()">
                 <i class="fa fa-plus mr-1"></i>Nueva Asignación
             </button>
         </div>
@@ -143,7 +143,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header card-header-danger" style="background:linear-gradient(135deg,#c62828,#e91e63)">
-                <h5 class="modal-title text-white">
+                <h5 class="modal-title text-white" id="modalAsignacionTitulo">
                     <i class="fa fa-user-check mr-2"></i>Nueva Asignación
                 </h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
@@ -159,10 +159,14 @@
                         <select id="selEvaluador" class="form-control" style="width:100%"></select>
                         <small class="text-muted">El evaluador recibirá un email de notificación</small>
                     </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="small font-weight-bold"><i class="fa fa-bullseye text-info mr-1"></i> Plan PEI / Marco Estratégico Asociado</label>
+                        <select id="selPeiProfile" class="form-control" style="width:100%"></select>
+                        <small class="text-muted d-block mt-1">Asocia esta evaluación a un Plan PEI específico para el conteo de metas institucionales.</small>
+                    </div>
                     <div class="col-md-6 mb-3">
                         <label class="small font-weight-bold">Fecha límite</label>
-                        <input type="date" id="selFechaLimite" class="form-control"
-                               min="{{ date('Y-m-d', strtotime('+1 day')) }}">
+                        <input type="date" id="selFechaLimite" class="form-control">
                     </div>
                     <div class="col-md-12 mb-3">
                         <label class="small font-weight-bold">Instrucciones (opcional)</label>
@@ -174,7 +178,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button class="btn btn-danger" onclick="crearAsignacion()">
+                <button class="btn btn-danger" id="btnGuardarAsignacion" onclick="guardarAsignacion()">
                     <i class="fa fa-paper-plane mr-1"></i>Asignar y notificar
                 </button>
             </div>
@@ -227,10 +231,22 @@ $(document).ready(function() {
         }
     });
 
+    // Select2 Plan PEI en modal
+    $('#selPeiProfile').select2({
+        placeholder: '— Plan PEI 2024–2028 (Default) —', allowClear: true, width: '100%',
+        dropdownParent: $('#modalNuevaAsignacion'),
+        ajax: {
+            url: '{{ route("globales.get-pei-profiles") }}', dataType: 'json', delay: 250,
+            data: function(p) { return { q: p.term || '' }; },
+            processResults: function(d) { return { results: d }; }
+        }
+    });
+
     // Limpiar modal al abrir
     $('#modalNuevaAsignacion').on('show.bs.modal', function() {
         $('#selEstablecimiento').val(null).trigger('change');
         $('#selEvaluador').val(null).trigger('change');
+        $('#selPeiProfile').val(null).trigger('change');
         $('#selFechaLimite').val('');
         $('#selInstrucciones').val('');
         $('#msgAsignacion').html('');
@@ -293,6 +309,7 @@ function renderTabla(items) {
                 ? '<a href="/riiss/evaluaciones/' + a.evaluacion_id + '" class="circle-btn circle-btn-success btn-sm mr-1" title="Ver evaluación"><i class="fa fa-eye"></i></a>'
                 + '<button class="circle-btn circle-btn-primary btn-sm mr-1" onclick="verGap(' + a.evaluacion_id + ', \'' + a.id_establecimiento + '\')" title="Gap Analysis"><i class="fa fa-chart-bar"></i></button>'
                 : '<button class="circle-btn circle-btn-primary btn-sm mr-1" onclick="verGap(null, \'' + a.id_establecimiento + '\')" title="Ver cartera esperada"><i class="fa fa-chart-bar"></i></button>')
+            + '<button class="circle-btn circle-btn-warning btn-sm mr-1" onclick="editarAsignacion(' + a.id + ')" title="Editar asignación"><i class="fa fa-edit"></i></button>'
             + '<button class="circle-btn circle-btn-info btn-sm mr-1" onclick="renotificar(' + a.id + ')" title="Reenviar email"><i class="fa fa-envelope"></i></button>'
             + (a.estado !== 'cancelada' && a.estado !== 'completada'
                 ? '<button class="circle-btn circle-btn-danger btn-sm" onclick="cancelar(' + a.id + ')" title="Cancelar"><i class="fa fa-times"></i></button>'
@@ -313,7 +330,59 @@ function renderPaginacion(d) {
     $('#paginaBtns').html(btns);
 }
 
-function crearAsignacion() {
+var editAsignacionId = null;
+
+function abrirModalNueva() {
+    editAsignacionId = null;
+    $('#modalAsignacionTitulo').html('<i class="fa fa-user-check mr-2"></i>Nueva Asignación');
+    $('#btnGuardarAsignacion').html('<i class="fa fa-paper-plane mr-1"></i>Asignar y notificar');
+    $('#selEstablecimiento').prop('disabled', false).val(null).trigger('change');
+    $('#selEvaluador').val(null).trigger('change');
+    $('#selPeiProfile').val(null).trigger('change');
+    $('#selFechaLimite').val('');
+    $('#selInstrucciones').val('');
+    $('#msgAsignacion').html('');
+    $('#modalNuevaAsignacion').modal('show');
+}
+
+function editarAsignacion(id) {
+    editAsignacionId = id;
+    $('#modalAsignacionTitulo').html('<i class="fa fa-edit mr-2"></i>Editar Asignación');
+    $('#btnGuardarAsignacion').html('<i class="fa fa-save mr-1"></i>Guardar Cambios');
+    $('#msgAsignacion').html('<div class="text-center py-3"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i></div>');
+    $('#modalNuevaAsignacion').modal('show');
+
+    $.get('/riiss/asignaciones/' + id + '/edit', function(r) {
+        if (!r.ok) {
+            $('#msgAsignacion').html('<div class="alert alert-danger py-2">No se pudieron cargar los datos</div>');
+            return;
+        }
+        $('#msgAsignacion').html('');
+        var d = r.data;
+
+        // Establecimiento (bloqueado en edición)
+        if (d.establecimiento) {
+            $('#selEstablecimiento').html(new Option(d.establecimiento.text, d.id_establecimiento, true, true)).trigger('change').prop('disabled', true);
+        }
+        // Evaluador
+        if (d.evaluador) {
+            $('#selEvaluador').html(new Option(d.evaluador.text, d.evaluador_id, true, true)).trigger('change');
+        } else {
+            $('#selEvaluador').val(null).trigger('change');
+        }
+        // Plan PEI
+        if (d.pei_profile) {
+            $('#selPeiProfile').html(new Option(d.pei_profile.text, d.pei_profile_id, true, true)).trigger('change');
+        } else {
+            $('#selPeiProfile').val(null).trigger('change');
+        }
+        // Fecha e instrucciones
+        $('#selFechaLimite').val(d.fecha_limite || '');
+        $('#selInstrucciones').val(d.instrucciones || '');
+    });
+}
+
+function guardarAsignacion() {
     var estId = $('#selEstablecimiento').val();
     var evalId = $('#selEvaluador').val();
     if (!estId || !evalId) {
@@ -321,12 +390,17 @@ function crearAsignacion() {
         return;
     }
 
+    var isEdit = editAsignacionId !== null;
+    var url = isEdit ? '/riiss/asignaciones/' + editAsignacionId : STORE_URL;
+    var method = isEdit ? 'PUT' : 'POST';
+
     $.ajax({
-        url: STORE_URL, method: 'POST', contentType: 'application/json',
+        url: url, method: method, contentType: 'application/json',
         data: JSON.stringify({
             _token:              '{{ csrf_token() }}',
             id_establecimiento:  estId,
             evaluador_id:        evalId,
+            pei_profile_id:      $('#selPeiProfile').val() || null,
             fecha_limite:        $('#selFechaLimite').val() || null,
             instrucciones:       $('#selInstrucciones').val() || null,
         }),
@@ -334,13 +408,13 @@ function crearAsignacion() {
             if (r.ok) {
                 $('#modalNuevaAsignacion').modal('hide');
                 cargarAsignaciones();
-                mostrarToast('Asignación creada y evaluador notificado ✅', 'success');
+                mostrarToast(isEdit ? 'Asignación actualizada ✅' : 'Asignación creada y evaluador notificado ✅', 'success');
             } else {
                 $('#msgAsignacion').html('<div class="alert alert-danger py-2">' + r.message + '</div>');
             }
         },
         error: function(xhr) {
-            var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error al crear';
+            var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error al guardar';
             $('#msgAsignacion').html('<div class="alert alert-danger py-2">' + msg + '</div>');
         }
     });

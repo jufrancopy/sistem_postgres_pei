@@ -49,6 +49,11 @@ class Establecimiento extends Model
 
     // ─── RELATIONSHIPS ───────────────────────────────────────────
 
+    public function asignaciones(): HasMany
+    {
+        return $this->hasMany(Asignacion::class, 'id_establecimiento', 'id_establecimiento');
+    }
+
     public function evaluaciones(): HasMany
     {
         return $this->hasMany(Evaluacion::class, 'id_establecimiento');

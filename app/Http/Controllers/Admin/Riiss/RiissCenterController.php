@@ -1,0 +1,133 @@
+<?php
+
+namespace App\Http\Controllers\Admin\Riiss;
+
+use App\Http\Controllers\Controller;
+use App\Models\Riiss\Establecimiento;
+use App\Models\Riiss\Evaluacion;
+use App\Models\Riiss\Asignacion;
+use App\Models\HomeConfiguration;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Yajra\DataTables\Facades\DataTables;
+
+class RiissCenterController extends Controller
+{
+    /**
+     * GET /riiss
+     * Centro de Control Unificado RIISS.
+     */
+    public function index()
+    {
+        $config = HomeConfiguration::first();
+        $targetPeiId = $config?->pei_profile_id ?: '766eb883-fdd0-4723-8f75-cf689aa8f0fa';
+
+        return view('admin.riiss.index', compact('targetPeiId'));
+    }
+
+    /**
+     * GET /riiss/configuracion
+     * Espacio unificado para formularios dinámicos y criterios de complejidad.
+     */
+    public function configuracion()
+    {
+        return view('admin.riiss.configuracion');
+    }
+
+    /**
+     * GET /riiss/datos-unificados
+     * DataTable de Establecimientos, Asignaciones y Evaluaciones.
+     */
+    public function datosUnificados(Request $request)
+    {
+        $query = Establecimiento::query()->with([
+            'asignaciones' => fn($q) => $q->with(['evaluador', 'peiProfile'])->latest(),
+            'evaluaciones' => fn($q) => $q->latest()
+        ]);
+
+        if ($buscar = trim($request->get('buscar', ''))) {
+            $query->where(function($q) use ($buscar) {
+                $q->where('nombre_oficial', 'ILIKE', "%{$buscar}%")
+                  ->orWhere('id_establecimiento', 'ILIKE', "%{$buscar}%")
+                  ->orWhere('depto_nc', 'ILIKE', "%{$buscar}%")
+                  ->orWhere('dist_nc', 'ILIKE', "%{$buscar}%");
+            });
+        }
+
+        if ($tipologia = trim($request->get('tipologia', ''))) {
+            $query->where('tipologia_clasificacion', $tipologia);
+        }
+
+        if ($evaluadorId = $request->get('evaluador_id')) {
+            $query->whereHas('asignaciones', function($q) use ($evaluadorId) {
+                $q->where('evaluador_id', $evaluadorId);
+            });
+        }
+
+        if ($conAsignacion = $request->get('con_asignacion')) {
+            if ($conAsignacion === 'con') {
+                $query->whereHas('asignaciones');
+            } elseif ($conAsignacion === 'sin') {
+                $query->whereDoesntHave('asignaciones');
+            }
+        }
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->addColumn('establecimiento', function ($est) {
+                return '<strong>' . e($est->nombre_oficial) . '</strong><br><small class="text-muted">ID: ' . e($est->id_establecimiento) . '</small>';
+            })
+            ->addColumn('tipologia_ubicacion', function ($est) {
+                $dept = $est->depto_nc ?: $est->departamento ?: '—';
+                $dist = $est->dist_nc ?: '—';
+                return '<small>' . e($est->tipologia_clasificacion ?? '—') . '</small><br><small class="text-muted">' . e($dept) . ', ' . e($dist) . '</small>';
+            })
+            ->addColumn('evaluador', function ($est) {
+                $asig = $est->asignaciones->first();
+                if (!$asig || !$asig->evaluador) return '<small class="text-muted">—</small>';
+                return '<small>' . e($asig->evaluador->name) . '</small><br><small class="text-muted">' . e($asig->evaluador->email) . '</small>';
+            })
+            ->addColumn('pei_plan', function ($est) {
+                $asig = $est->asignaciones->first();
+                if (!$asig || !$asig->peiProfile) return '<small class="text-muted">—</small>';
+                return '<small class="text-info font-weight-bold"><i class="fa fa-bullseye mr-1"></i>' . e(strip_tags($asig->peiProfile->name)) . '</small>';
+            })
+            ->addColumn('fecha_limite', function ($est) {
+                $asig = $est->asignaciones->first();
+                return '<small>' . ($asig?->fecha_limite?->format('d/m/Y') ?? '—') . '</small>';
+            })
+            ->addColumn('estado_supervision', function ($est) {
+                $asig = $est->asignaciones->first();
+                $st = $asig?->estado ?? 'sin_asignar';
+                $lbl = str_replace('_', ' ', $st);
+                return '<span class="estado-badge estado-' . e($st) . '">' . e($lbl) . '</span>';
+            })
+            ->addColumn('cumplimiento', function ($est) {
+                $eval = $est->evaluaciones->first();
+                $pct = $eval?->porcentaje_cumplimiento ? (float)$eval->porcentaje_cumplimiento : 0;
+                return '<div style="height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;width:70px"><div style="height:100%;width:' . $pct . '%;background:#e91e63"></div></div><small>' . $pct . '%</small>';
+            })
+            ->addColumn('acciones', function ($est) {
+                $asig = $est->asignaciones->first();
+                $eval = $est->evaluaciones->first();
+                $asigIdStr = $asig ? $asig->id : 'null';
+                $evalIdStr = $eval ? $eval->id : 'null';
+                $nomEsc = addslashes($est->nombre_oficial);
+
+                $btn = '<button class="circle-btn ' . ($asig ? 'circle-btn-warning' : 'circle-btn-info') . ' btn-sm mr-1" onclick="abrirModalAsignacion(' . $asigIdStr . ', \'' . e($est->id_establecimiento) . '\', \'' . e($nomEsc) . '\')" title="' . ($asig ? 'Editar asignación' : 'Nueva Asignación') . '"><i class="fa ' . ($asig ? 'fa-pencil-alt' : 'fa-plus') . '"></i></button>';
+
+                if ($eval) {
+                    $btn .= '<a href="/riiss/evaluaciones/' . $eval->id . '" class="circle-btn circle-btn-success btn-sm mr-1" title="Ver evaluación"><i class="fa fa-eye"></i></a>';
+                } else {
+                    $btn .= '<a href="/riiss/evaluaciones/nueva/' . e($est->id_establecimiento) . '" class="circle-btn circle-btn-primary btn-sm mr-1" title="Nueva evaluación"><i class="fa fa-play"></i></a>';
+                }
+
+                $btn .= '<button class="circle-btn circle-btn-secondary btn-sm" onclick="verGap(' . $evalIdStr . ', \'' . e($est->id_establecimiento) . '\')" title="Gap Analysis"><i class="fa fa-chart-bar"></i></button>';
+
+                return $btn;
+            })
+            ->rawColumns(['establecimiento', 'tipologia_ubicacion', 'evaluador', 'pei_plan', 'fecha_limite', 'estado_supervision', 'cumplimiento', 'acciones'])
+            ->make(true);
+    }
+}

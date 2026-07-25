@@ -459,19 +459,31 @@ Route::group(['middleware' => 'auth'], function () {
     // ── RIISS - Red Integrada e Integral de Servicios de Salud ───────────────
     Route::prefix('riiss')->name('riiss.')->middleware(['role:Administrador|Analista - RIISS'])->group(function () {
 
-        // Dashboard de monitoreo
-        Route::get('dashboard', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'dashboard'])
-            ->name('dashboard');
+        // Centro de Control Unificado RIISS
+        Route::get('/', [\App\Http\Controllers\Admin\Riiss\RiissCenterController::class, 'index'])
+            ->name('index');
+        Route::get('configuracion', [\App\Http\Controllers\Admin\Riiss\RiissCenterController::class, 'configuracion'])
+            ->name('configuracion');
+        Route::get('datos-unificados', [\App\Http\Controllers\Admin\Riiss\RiissCenterController::class, 'datosUnificados'])
+            ->name('datos-unificados');
+
+        // Aliases / Redirecciones de rutas anteriores
+        Route::get('dashboard', function() { return redirect()->route('riiss.index'); })->name('dashboard');
+        Route::get('asignaciones', function() { return redirect()->route('riiss.index'); })->name('asignaciones.index');
+        Route::get('establecimientos', function() { return redirect()->route('riiss.index'); })->name('establecimientos.index');
+        Route::get('evaluaciones', function() { return redirect()->route('riiss.index'); })->name('evaluaciones.index');
+
+        // Endpoints de datos del Dashboard y Asignaciones
         Route::get('dashboard/datos', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'dashboardDatos'])
             ->name('dashboard.datos');
-
-        // Asignaciones (admin)
-        Route::get('asignaciones', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'index'])
-            ->name('asignaciones.index');
         Route::get('asignaciones/datos', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'datos'])
             ->name('asignaciones.datos');
         Route::post('asignaciones', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'store'])
             ->name('asignaciones.store');
+        Route::get('asignaciones/{asignacion}/edit', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'edit'])
+            ->name('asignaciones.edit');
+        Route::put('asignaciones/{asignacion}', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'update'])
+            ->name('asignaciones.update');
         Route::patch('asignaciones/{asignacion}/estado', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'actualizarEstado'])
             ->name('asignaciones.estado');
         Route::post('asignaciones/{asignacion}/renotificar', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'renotificar'])

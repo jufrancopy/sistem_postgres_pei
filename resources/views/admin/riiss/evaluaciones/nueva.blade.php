@@ -304,6 +304,11 @@
                         <select id="evalEvaluadores" class="form-control" multiple style="width:100%"></select>
                         <small class="text-muted">Uno o más evaluadores</small>
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="small font-weight-bold"><i class="fa fa-bullseye text-info mr-1"></i> Plan PEI / Marco Estratégico</label>
+                        <select id="evalPeiProfile" class="form-control" style="width:100%"></select>
+                        <small class="text-muted">Asocia esta evaluación a un Plan PEI específico</small>
+                    </div>
                     <div class="col-md-3 mb-3">
                         <label class="small font-weight-bold">Fecha de evaluación <span class="text-danger">*</span></label>
                         <input type="date" id="evalFecha" class="form-control" value="{{ date('Y-m-d') }}">
@@ -471,6 +476,17 @@ $(document).ready(function() {
         },
     });
 
+    // ── Select2 Plan PEI ───────────────────────────────────────────────
+    $('#evalPeiProfile').select2({
+        placeholder: '— Plan PEI 2024–2028 (Default) —', allowClear: true, width: '100%',
+        dropdownParent: $('#contenidoFormulario'),
+        ajax: {
+            url: '{{ route("globales.get-pei-profiles") }}', dataType: 'json', delay: 250,
+            data: function(p) { return { q: p.term || '' }; },
+            processResults: function(d) { return { results: d }; }
+        }
+    });
+
     // Evitar que BMD robe el foco del input de búsqueda inline
     $(document).on('focusin', '.select2-selection--multiple', function(e) {
         e.stopImmediatePropagation();
@@ -631,6 +647,7 @@ function crearEvaluacionYCargar() {
             id_establecimiento: EST_ID,
             fecha_evaluacion:   $('#evalFecha').val(),
             evaluadores:        [{ id: {{ auth()->id() ?? 0 }}, text: '{{ addslashes(auth()->user()?->name ?? "") }}' }],
+            pei_profile_id:     $('#evalPeiProfile').val() || null,
         }),
         success: function(r) {
             if (!r.ok) return;
