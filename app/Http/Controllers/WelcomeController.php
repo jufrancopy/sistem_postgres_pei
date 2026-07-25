@@ -25,11 +25,25 @@ class WelcomeController extends Controller
             'show_riiss' => true,
         ]);
 
-        $activities = Activity::with(['tasks', 'responsibles'])->latest()->take(6)->get();
-        $totalTareas    = ActivityTask::count();
-        $tareasEnCurso  = ActivityTask::where('status', 1)->count();
-        $tareasHechas   = ActivityTask::where('status', 2)->count();
-        $tareasVencidas = ActivityTask::where('status', '!=', 2)
+        $taskQuery = ActivityTask::query();
+        $actQuery  = Activity::with(['tasks', 'responsibles', 'peiProfile']);
+
+        if ($config->show_pei && $config->pei_profile_id) {
+            $peiProfile = PeiProfile::find($config->pei_profile_id);
+            if ($peiProfile) {
+                $peiProfileIds = $peiProfile->descendants()->pluck('id')->push($peiProfile->id);
+                $actQuery->whereIn('pei_profile_id', $peiProfileIds);
+                $taskQuery->whereHas('activity', function($q) use ($peiProfileIds) {
+                    $q->whereIn('pei_profile_id', $peiProfileIds);
+                });
+            }
+        }
+
+        $activities     = $actQuery->latest()->take(6)->get();
+        $totalTareas    = (clone $taskQuery)->count();
+        $tareasEnCurso  = (clone $taskQuery)->where('status', 1)->count();
+        $tareasHechas   = (clone $taskQuery)->where('status', 2)->count();
+        $tareasVencidas = (clone $taskQuery)->where('status', '!=', 2)
             ->whereNotNull('fecha_vencimiento')
             ->where('fecha_vencimiento', '<', now())
             ->count();

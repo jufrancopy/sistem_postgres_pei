@@ -44,6 +44,7 @@
                     <tr>
                         <th width="40">#</th>
                         <th>Nombre</th>
+                        <th>Plan PEI / Acción</th>
                         <th>Tipo</th>
                         <th>Fechas</th>
                         <th>Responsables</th>
@@ -83,6 +84,14 @@
                                 <option value="kanba">Kanban</option>
                             </select>
                         </div>
+
+                        {{-- Selector Select2 de Plan PEI / Acción --}}
+                        <div class="col-md-12 mb-3">
+                            <label class="small font-weight-bold"><i class="fa fa-bullseye text-info mr-1"></i> Plan PEI / Acción Asociada</label>
+                            <select name="pei_profile_id" id="pei_profile_id" class="form-control" style="width:100%"></select>
+                            <small class="text-muted d-block mt-1">Asociá esta actividad a un Plan PEI o Acción Estratégica específica para el conteo de metas en la vista pública.</small>
+                        </div>
+
                         <div class="col-md-12 mb-3">
                             <label class="small font-weight-bold">Descripción</label>
                             <textarea name="description" id="description" class="form-control" rows="2" placeholder="Descripción de la actividad..."></textarea>
@@ -142,6 +151,7 @@ $(function() {
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'name', name: 'name' },
+            { data: 'pei_profile', name: 'pei_profile', orderable: false },
             {
                 data: 'type', name: 'type',
                 render: function(data) {
@@ -173,8 +183,27 @@ $(function() {
 
     // ── Select2 helpers ───────────────────────────────────────────────────────
     var getUsersUrl = '{{ route("globales.get-users") }}';
+    var getPeiProfilesUrl = '{{ route("globales.get-pei-profiles") }}';
+
     function initTipoSelect() {
         $('#type').select2({ placeholder: 'Seleccioná el tipo', dropdownParent: $('#activityModal') });
+    }
+
+    function initPeiProfileSelect(selected) {
+        $('#pei_profile_id').empty().select2({
+            allowClear: true,
+            placeholder: '— Sin vincular a Plan PEI (Global) —',
+            dropdownParent: $('#activityModal'),
+            ajax: {
+                url: getPeiProfilesUrl, dataType: 'json', delay: 250,
+                processResults: function(data) {
+                    return { results: data };
+                }
+            }
+        });
+        if (selected && selected.id) {
+            $('#pei_profile_id').append(new Option(selected.text, selected.id, true, true)).trigger('change');
+        }
     }
 
     function initResponsablesSelect(selected) {
@@ -203,6 +232,7 @@ $(function() {
         $('#activity_id').val('');
         $('.errors').addClass('d-none').text('');
         initTipoSelect();
+        initPeiProfileSelect(null);
         initResponsablesSelect(null);
         $('#activityModal').modal('show');
     });
@@ -220,6 +250,7 @@ $(function() {
             $('.errors').addClass('d-none').text('');
             initTipoSelect();
             $('#type').val(data.activity.type).trigger('change');
+            initPeiProfileSelect(data.peiProfileSelected);
             initResponsablesSelect(data.responsiblesChecked);
             $('#activityModal').modal('show');
         });

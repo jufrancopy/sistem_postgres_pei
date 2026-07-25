@@ -40,12 +40,6 @@
                     <p>Ver sitio público</p>
                 </a>
             </li>
-            <li class="nav-item {{ request()->is('perfil*') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('user.profile') }}">
-                    <i class="material-icons">account_circle</i>
-                    <p>Mi Perfil y Insignias</p>
-                </a>
-            </li>
             <li class="nav-item ">
                 <a class="nav-link" href="{{ route('globales.dashboard') }}">
                     <i class="material-icons">settings_applications</i>
@@ -528,11 +522,11 @@
             @endif
         @endhasanyrole
 
-        {{-- Mi Perfil (visible para todos) --}}
-        <li class="nav-item">
-            <a class="nav-link" href="{{ route('profile.edit') }}">
-                <i class="material-icons">person</i>
-                <p>Mi Perfil</p>
+        {{-- Mi Perfil (único enlace visible para todos en la parte inferior) --}}
+        <li class="nav-item {{ request()->is('perfil*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('user.profile') }}">
+                <i class="material-icons">account_circle</i>
+                <p>Mi Perfil & Insignias</p>
             </a>
         </li>
     </ul>

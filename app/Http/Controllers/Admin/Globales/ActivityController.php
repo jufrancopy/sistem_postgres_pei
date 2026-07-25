@@ -21,9 +21,13 @@ class ActivityController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Activity::with('responsibles')->latest()->get();
+            $data = Activity::with(['responsibles', 'peiProfile'])->latest()->get();
             return DataTables::of($data)
                 ->addIndexColumn()
+                ->addColumn('pei_profile', function (Activity $a) {
+                    if (!$a->peiProfile) return '<span class="text-muted small">—</span>';
+                    return '<span class="badge badge-light text-dark font-weight-normal border"><i class="fa fa-bullseye text-info mr-1"></i>' . e(strip_tags($a->peiProfile->name)) . '</span>';
+                })
                 ->addColumn('responsibles', fn(Activity $a) => $a->responsibles->pluck('name')->implode(', '))
                 ->addColumn('action', function ($row) {
                     $btn  = '<a href="' . route('globales.activities.show', $row->id) . '" class="btn btn-info btn-circle" title="Ver Tablero"><i class="fas fa-columns"></i></a>';
@@ -31,17 +35,40 @@ class ActivityController extends Controller
                     $btn .= ' <a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-danger btn-circle deleteActivity"><i class="fa fa-trash"></i></a>';
                     return $btn;
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['pei_profile', 'action'])
                 ->make(true);
         }
 
         return view('admin.globales.activities.index');
     }
 
+    public function getPeiProfiles(Request $request)
+    {
+        $search = $request->get('q');
+        $query = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id');
+
+        if ($search) {
+            $query->where('name', 'ILIKE', "%{$search}%");
+        }
+
+        $profiles = $query->orderBy('name')->take(40)->get();
+
+        $results = $profiles->map(function ($p) {
+            $yearStr = $p->year_start ? ' (' . \Carbon\Carbon::parse($p->year_start)->format('Y') . ')' : '';
+            return [
+                'id'   => $p->id,
+                'text' => strip_tags($p->name) . $yearStr,
+            ];
+        });
+
+        return response()->json($results);
+    }
+
     public function show($id)
     {
         $activity = Activity::with([
             'responsibles',
+            'peiProfile',
             'tasks.assignedTo',
             'tasks.completedBy',
             'tasks.evidences',
@@ -57,11 +84,12 @@ class ActivityController extends Controller
         $activity = Activity::updateOrCreate(
             ['id' => $request->activity_id],
             [
-                'name'        => $request->name,
-                'type'        => $request->type,
-                'description' => $request->description,
-                'date_start'  => $request->date_start,
-                'date_end'    => $request->date_end,
+                'name'           => $request->name,
+                'type'           => $request->type,
+                'description'    => $request->description,
+                'date_start'     => $request->date_start,
+                'date_end'       => $request->date_end,
+                'pei_profile_id' => $request->pei_profile_id ?: null,
             ]
         );
 
@@ -75,11 +103,17 @@ class ActivityController extends Controller
 
     public function edit($id)
     {
-        $activity = Activity::with('responsibles')->findOrFail($id);
+        $activity = Activity::with(['responsibles', 'peiProfile'])->findOrFail($id);
         $responsiblesChecked = $activity->responsibles->map(fn($r) => ['id' => $r->id, 'text' => $r->name]);
+        $peiProfileSelected  = $activity->peiProfile ? [
+            'id'   => $activity->peiProfile->id,
+            'text' => strip_tags($activity->peiProfile->name) . ($activity->peiProfile->year_start ? ' (' . \Carbon\Carbon::parse($activity->peiProfile->year_start)->format('Y') . ')' : ''),
+        ] : null;
+
         return response()->json([
             'activity'            => $activity,
             'responsiblesChecked' => $responsiblesChecked,
+            'peiProfileSelected'  => $peiProfileSelected,
         ]);
     }
 
@@ -126,12 +160,14 @@ class ActivityController extends Controller
         );
 
         if ($task->wasRecentlyCreated && Auth::user()) {
+            $peiProfileId = $task->activity?->pei_profile_id;
             app(\App\Services\GamificationService::class)->awardPoints(
                 Auth::user(),
                 'task_created',
                 'Creación de tarea: ' . \Illuminate\Support\Str::limit($task->title, 30),
                 15,
-                $task
+                $task,
+                $peiProfileId
             );
         }
 
@@ -164,12 +200,14 @@ class ActivityController extends Controller
             ]);
 
             if (Auth::user()) {
+                $peiProfileId = $task->activity?->pei_profile_id;
                 app(\App\Services\GamificationService::class)->awardPoints(
                     Auth::user(),
                     'task_completed',
                     'Tarea completada: ' . \Illuminate\Support\Str::limit($task->title, 30),
                     25,
-                    $task
+                    $task,
+                    $peiProfileId
                 );
             }
         } else {
@@ -326,12 +364,14 @@ class ActivityController extends Controller
         $this->notificarComentario($task, $comment);
 
         if (Auth::user()) {
+            $peiProfileId = $task->activity?->pei_profile_id;
             app(\App\Services\GamificationService::class)->awardPoints(
                 Auth::user(),
                 'comment_created',
                 'Comentario en tarea: ' . \Illuminate\Support\Str::limit($task->title, 30),
                 5,
-                $comment
+                $comment,
+                $peiProfileId
             );
         }
 

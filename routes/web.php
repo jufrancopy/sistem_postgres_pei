@@ -256,6 +256,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-users', 'Admin\UserController@getUsers')->name('get-users');
         Route::get('get-user/{id}', 'Admin\UserController@getUser')->name('get-user');
         Route::get('get-users/{idGroup}', 'Admin\UserController@getUsersForGroup')->name('get-users-group');
+        Route::get('get-pei-profiles', 'Admin\Globales\ActivityController@getPeiProfiles')->name('get-pei-profiles');
     });
 
     //Rutas del Modulo Surveys
