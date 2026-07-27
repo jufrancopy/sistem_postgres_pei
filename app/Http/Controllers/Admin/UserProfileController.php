@@ -69,6 +69,8 @@ class UserProfileController extends Controller
     {
         $user = User::findOrFail($id);
         $selectedPeiId = $request->pei_id ?? HomeConfiguration::first()?->pei_profile_id;
+        $selectedPei = $selectedPeiId ? PeiProfile::find($selectedPeiId) : null;
+        $peiName = $selectedPei ? strip_tags($selectedPei->name) : null;
 
         $pointsQuery = GamificationPoint::where('user_id', $user->id);
         if ($selectedPeiId) {
@@ -84,6 +86,7 @@ class UserProfileController extends Controller
             'ok' => true,
             'user' => ['id' => $user->id, 'name' => $user->name],
             'selected_pei_id' => $selectedPeiId,
+            'pei_name' => $peiName,
             'points' => $points,
         ]);
     }

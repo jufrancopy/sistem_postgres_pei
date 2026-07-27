@@ -624,6 +624,14 @@ $(function() {
             .done(function(response) {
                 $('#modalPointsDetailLoading').addClass('d-none');
 
+                // Actualizar nombre del PEI si viene en la respuesta
+                if (response.pei_name) {
+                    $('#modalPointsDetailPei').html('<span class="badge badge-primary" style="background: linear-gradient(135deg, #667eea, #764ba2);">' + response.pei_name + '</span>');
+                } else if (response.selected_pei_id) {
+                    const peiLabel = peiNamesMap[response.selected_pei_id] || response.selected_pei_id;
+                    $('#modalPointsDetailPei').html('<span class="badge badge-primary" style="background: linear-gradient(135deg, #667eea, #764ba2);">' + peiLabel + '</span>');
+                }
+
                 if (!response.ok || !Array.isArray(response.points) || response.points.length === 0) {
                     $('#modalPointsDetailEmpty').removeClass('d-none');
                     return;
