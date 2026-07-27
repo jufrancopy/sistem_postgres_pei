@@ -89,6 +89,18 @@ class AsignacionController extends Controller
 
         $asignacion->load(['establecimiento', 'evaluador', 'asignadoPor']);
 
+        // Gamificación: Otorgar 50 puntos por asignación
+        if ($asignacion->evaluador) {
+            app(\App\Services\GamificationService::class)->awardPoints(
+                $asignacion->evaluador,
+                'riiss_asignacion',
+                'Asignación RIISS recibida: ' . ($asignacion->establecimiento?->nombre_oficial ?? 'Establecimiento'),
+                50,
+                $asignacion,
+                $targetPeiId
+            );
+        }
+
         // Enviar notificación por email
         try {
             $evaluador = User::find($validated['evaluador_id']);

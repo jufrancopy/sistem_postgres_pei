@@ -281,7 +281,7 @@ class EvaluacionController extends Controller
                     Auth::user(),
                     'riiss_evaluacion',
                     'Evaluación RIISS completada: ' . ($evaluacion->establecimiento?->nombre_oficial ?? 'Establecimiento'),
-                    50,
+                    100,
                     $evaluacion,
                     $peiProfileId
                 );

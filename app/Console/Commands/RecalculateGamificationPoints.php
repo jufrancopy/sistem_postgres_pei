@@ -141,6 +141,22 @@ class RecalculateGamificationPoints extends Command
             }
         }
 
+        // 4.5. Asignaciones RIISS
+        $this->info('Procesando asignaciones RIISS...');
+        $asignaciones = \App\Models\Riiss\Asignacion::with('establecimiento', 'evaluador')->get();
+        foreach ($asignaciones as $asignacion) {
+            if ($asignacion->evaluador) {
+                $gamificationService->awardPoints(
+                    $asignacion->evaluador,
+                    'riiss_asignacion',
+                    'Asignación RIISS recibida: ' . ($asignacion->establecimiento?->nombre_oficial ?? 'Establecimiento'),
+                    50,
+                    $asignacion,
+                    $asignacion->pei_profile_id ?: $targetPeiId
+                );
+            }
+        }
+
         // 5. Evaluaciones RIISS
         $this->info('Procesando evaluaciones RIISS...');
         $evaluaciones = Evaluacion::with('establecimiento')->where('estado', 'completada')->get();
@@ -169,7 +185,7 @@ class RecalculateGamificationPoints extends Command
                     $user,
                     'riiss_evaluacion',
                     'Evaluación RIISS completada: ' . ($eval->establecimiento?->nombre_oficial ?? 'Establecimiento'),
-                    50,
+                    100,
                     $eval,
                     $eval->pei_profile_id ?: $targetPeiId
                 );
