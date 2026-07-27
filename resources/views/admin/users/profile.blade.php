@@ -324,7 +324,7 @@
                                     </td>
                                     <td>
                                         <span class="font-weight-bold text-dark d-block">{{ $item->description }}</span>
-                                        <small class="text-muted text-uppercase" style="font-size: .68rem">{{ str_replace('_',' ', $item->action_type) }}</small>
+                                        <small class="text-muted text-uppercase" style="font-size: .68rem">{{ $item->getActionTypeLabel() }}</small>
                                     </td>
                                     <td class="text-success font-weight-bold">
                                         +{{ $item->points }} pts
