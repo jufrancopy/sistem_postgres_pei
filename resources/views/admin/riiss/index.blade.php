@@ -7,54 +7,97 @@
 .riiss-tabs .nav-link {
     font-weight: 600;
     color: #475569;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 10px 18px;
-    margin-right: 6px;
+    margin-right: 8px;
     transition: all .2s;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: #f8fbfe;
+    border: 1px solid #dbeaf4;
 }
 .riiss-tabs .nav-link.active {
-    background: linear-gradient(135deg, #c62828, #e91e63) !important;
+    background: linear-gradient(135deg, #00acc1, #26c6da) !important;
     color: #ffffff !important;
     border-color: transparent !important;
-    box-shadow: 0 4px 12px rgba(198, 40, 40, .25);
+    box-shadow: 0 8px 18px rgba(6, 78, 126, .15);
+}
+.riiss-tabs .nav-link.active i {
+    color: rgba(255,255,255,.85) !important;
 }
 .riiss-tabs .nav-link:hover:not(.active) {
-    background: #f1f5f9;
+    background: #e2f5fb;
     color: #0f172a;
+    border-color: #b8e2f5;
 }
 .eval-card {
-    border-radius: 16px !important;
-    border: 1px solid #e2e8f0 !important;
-    background: #ffffff !important;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;
-    transition: all .25s ease !important;
+    border-radius: 20px !important;
+    border: 1px solid #e8eff8 !important;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+    box-shadow: 0 18px 46px rgba(15, 23, 42, 0.06) !important;
+    overflow: hidden !important;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease !important;
+    position: relative;
 }
 .eval-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.08) !important;
-    border-color: #cbd5e1 !important;
+    transform: translateY(-5px);
+    box-shadow: 0 22px 56px rgba(15, 23, 42, 0.12) !important;
+    border-color: #d1dce6 !important;
+}
+.eval-card-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(180deg, #3b82f6 0%, #8b5cf6 100%);
+}
+.eval-card-body {
+    position: relative;
+    padding: 1.6rem 1.6rem 1.2rem !important;
+}
+.eval-card-info {
+    min-height: 150px;
+}
+.eval-card-meta {
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    padding: 0.9rem 1rem;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+.eval-card-progress {
+    height: 10px;
+    border-radius: 999px;
+    background-color: #e2e8f0;
+    overflow: hidden;
+    position: relative;
+}
+.eval-card-progress .progress-bar {
+    display: block;
+    width: 0;
+    height: 100%;
+    min-width: 4px;
+    border-radius: 999px;
+    transition: width .45s ease, background .45s ease;
+    box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.18);
 }
 .eval-btn-continue {
-    background: linear-gradient(135deg, #e91e63, #c62828) !important;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
     color: #ffffff !important;
     border: none !important;
-    border-radius: 10px !important;
+    border-radius: 999px !important;
     font-weight: 700 !important;
-    padding: 10px 14px !important;
-    font-size: .85rem !important;
+    padding: 11px 16px !important;
+    font-size: .88rem !important;
     transition: all .2s !important;
     text-transform: uppercase;
     letter-spacing: .5px;
     display: block;
 }
 .eval-btn-continue:hover {
-    opacity: .92;
-    color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(233,30,99,0.35) !important;
+    opacity: .95;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.24) !important;
 }
-.estado-badge { font-size:.72rem; padding:4px 10px; border-radius:20px; font-weight:700; letter-spacing:.3px; }
+.estado-badge { font-size:.72rem; padding:6px 11px; border-radius:22px; font-weight:700; letter-spacing:.35px; }
 .estado-pendiente   { background:#fef3c7; color:#92400e; }
 .estado-en_progreso { background:#dbeafe; color:#1e40af; }
 .estado-completada  { background:#d1fae5; color:#065f46; }
@@ -70,38 +113,68 @@
     height: 32px !important;
     padding: 0 !important;
     border-radius: 50% !important;
-    border: none;
+    border: 1px solid rgba(15, 23, 42, 0.08);
     cursor: pointer;
     font-size: .8rem;
     transition: opacity .15s, transform .1s;
 }
-.circle-btn:hover { opacity: .85; transform: scale(1.08); }
+.circle-btn:hover { opacity: .92; transform: scale(1.08); }
 .circle-btn-success { background:#d1fae5; color:#065f46; }
-.circle-btn-primary { background:#dbeafe; color:#1e40af; }
-.circle-btn-info    { background:#e0f2fe; color:#0369a1; }
-.circle-btn-danger  { background:#fee2e2; color:#991b1b; }
-.circle-btn-warning { background:#fef3c7; color:#92400e; }
+.circle-btn-primary { background:#93c5fd; color:#1d4ed8; }
+.circle-btn-info    { background:#bfdbfe; color:#0c4a6e; }
+.circle-btn-danger  { background:#fecaca; color:#991b1b; }
+.circle-btn-warning { background:#fde68a; color:#92400e; }
+.riiss-action-btn {
+    border-radius: 999px !important;
+    padding: 7px 12px !important;
+    font-size: .78rem !important;
+    font-weight: 700 !important;
+    letter-spacing: .3px;
+    border: 1px solid transparent !important;
+    transition: all .2s ease;
+    box-shadow: none !important;
+}
+.riiss-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12) !important;
+}
+.riiss-action-btn-view {
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd) !important;
+    color: #0369a1 !important;
+    border-color: #7dd3fc !important;
+}
+.riiss-action-btn-gap {
+    background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
+    color: #92400e !important;
+    border-color: #f59e0b !important;
+}
 </style>
 @endpush
 
 @section('content')
 <div class="card mb-3">
-    <div class="card-header card-header-danger py-3">
-        <div class="d-flex align-items-center justify-content-between">
+    <div class="card-header card-header-info py-3" style="background: linear-gradient(135deg, #00acc1, #26c6da); border-radius: 12px; box-shadow: 0 12px 26px rgba(0, 172, 193, 0.18);">
+        <div class="d-flex align-items-center justify-content-between flex-wrap">
             <div>
-                <h4 class="card-title mb-0">
+                <h4 class="card-title mb-0 text-white">
                     <i class="fa fa-hospital mr-2"></i>Centro de Control RIISS
                 </h4>
-                <p class="card-category mb-0">Red Integrada e Integral de Servicios de Salud — Gestión & Monitoreo</p>
+                <p class="card-category mb-0 text-white-75">Red Integrada e Integral de Servicios de Salud — Gestión & Monitoreo</p>
             </div>
-            <div class="text-right">
-                <button class="btn btn-light btn-sm text-danger font-weight-bold" onclick="abrirModalNuevaAsignacion()">
-                    <i class="fa fa-plus-circle mr-1"></i>Nueva Asignación
+            <div class="text-right mt-3 mt-md-0">
+                <button class="btn btn-white btn-sm font-weight-bold" onclick="abrirModalNuevaAsignacion()" style="color: #00acc1; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.95);">
+                    <i class="fa fa-plus-circle mr-1 text-info"></i> Nueva Asignación
                 </button>
             </div>
         </div>
     </div>
     
+    <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ route('riiss.index') }}">RIISS</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Centro RIISS</li>
+        </ol>
+    </nav>
     <div class="card-body pb-2">
         {{-- Pestañas de navegación principal --}}
         <ul class="nav nav-pills riiss-tabs border-0" id="riissMainTabs" role="tablist">
@@ -241,9 +314,17 @@
     {{-- TAB 3: Historial de Evaluaciones --}}
     <div class="tab-pane fade" id="tab-historial" role="tabpanel">
         <div class="card shadow-sm">
+            <div class="card-header bg-light py-3 d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="font-weight-bold mb-0 text-dark">
+                        <i class="fa fa-history mr-2 text-info"></i>Historial consolidado de evaluaciones
+                    </h6>
+                    <small class="text-muted">Tabla con búsqueda, orden y exportación</small>
+                </div>
+            </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-hover table-sm">
+                    <table class="table table-hover table-sm w-100" id="tablaHistorial">
                         <thead class="thead-light">
                             <tr>
                                 <th>Establecimiento</th>
@@ -254,9 +335,7 @@
                                 <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tbodyHistorial">
-                            <tr><td colspan="6" class="text-center py-4 text-muted">Cargando historial...</td></tr>
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
@@ -390,6 +469,7 @@ var BUSCAR_URL= '{{ route("riiss.establecimientos.buscar") }}';
 var TARGET_PEI= '{{ $targetPeiId }}';
 
 var editAsignacionId = null;
+var historialTable = null;
 
 $(document).ready(function() {
     // Select2 en modal asignaciones
@@ -505,6 +585,35 @@ $(document).ready(function() {
     $('#fBuscarUnificado').on('keyup change', function() { tablaUnificada.draw(); });
     $('#fTipologiaUnificada, #fConAsignacion, #fEvaluadorUnificado').on('change', function() { tablaUnificada.draw(); });
 
+    historialTable = $('#tablaHistorial').DataTable({
+        processing: true,
+        pageLength: 10,
+        order: [[2, 'desc']],
+        dom: 'Bfrtip',
+        buttons: [
+            { extend: 'excel', text: '<i class="fa fa-file-excel mr-1"></i>Excel', className: 'btn btn-sm btn-outline-success', title: 'RIISS - Historial de Evaluaciones' },
+            { extend: 'pdf', text: '<i class="fa fa-file-pdf mr-1"></i>PDF', className: 'btn btn-sm btn-outline-danger', title: 'RIISS - Historial de Evaluaciones' },
+            { extend: 'print', text: '<i class="fa fa-print mr-1"></i>Imprimir', className: 'btn btn-sm btn-outline-secondary' },
+        ],
+        language: {
+            emptyTable: 'Sin evaluaciones registradas',
+            info: 'Mostrando _START_ a _END_ de _TOTAL_ evaluaciones',
+            infoEmpty: '0 evaluaciones',
+            infoFiltered: '(filtrado de _MAX_ totales)',
+            search: 'Buscar:',
+            zeroRecords: 'No se encontraron evaluaciones',
+            paginate: { first: 'Primero', last: 'Último', next: 'Siguiente', previous: 'Anterior' }
+        },
+        columns: [
+            { data: 'establecimiento', orderable: false, searchable: true },
+            { data: 'evaluadores', orderable: false, searchable: false },
+            { data: 'fecha', orderable: true, searchable: false },
+            { data: 'estado', orderable: false, searchable: false },
+            { data: 'cumplimiento', orderable: false, searchable: false },
+            { data: 'acciones', orderable: false, searchable: false, className: 'text-center' }
+        ]
+    });
+
     // Cargar Monitoreo e Historial
     cargarDashboard();
     cargarHistorial();
@@ -532,40 +641,47 @@ function cargarDashboard() {
         evs.forEach(function(ev) {
             var pct = ev.progreso || ev.porcentaje_cumplimiento || 0;
             var estadoLabel = (ev.estado || '').replace(/_/g,' ');
-            var evalNombre = ev.evaluador && ev.evaluador !== '—' ? ev.evaluador : '';
+            var evalNombre = ev.evaluador && ev.evaluador !== '—' ? ev.evaluador : 'Sin evaluador asignado';
             
             var badgeClass = '';
-            if (ev.estado === 'pendiente') badgeClass = 'badge-warning text-dark';
-            else if (ev.estado === 'en_progreso') badgeClass = 'badge-info';
-            else badgeClass = 'badge-success';
+            if (ev.estado === 'pendiente') badgeClass = 'estado-pendiente';
+            else if (ev.estado === 'en_progreso') badgeClass = 'estado-en_progreso';
+            else badgeClass = 'estado-completada';
 
-            html += '<div class="col-md-6 col-lg-4 mb-4">'
-                + '<div class="card eval-card h-100 border-0 shadow-sm" style="border-radius:1rem; overflow:hidden;">'
-                + '<div class="card-body p-4 d-flex flex-column justify-content-between position-relative">'
-                + '<div class="position-absolute" style="top:0; left:0; width:100%; height:4px; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>'
+            html += '<div class="col-12 col-sm-6 col-lg-4 col-xl-3 mb-4">'
+                + '<div class="card eval-card h-100">'
+                + '<div class="eval-card-accent"></div>'
+                + '<div class="card-body eval-card-body d-flex flex-column justify-content-between">'
+                + '<div class="eval-card-info">'
+                + '<div class="d-flex align-items-start justify-content-between mb-3">'
                 + '<div>'
-                + '<div class="d-flex justify-content-between align-items-start mb-3 mt-1">'
-                + '<div class="d-flex align-items-center">'
-                + '<div class="bg-light rounded-circle d-flex align-items-center justify-content-center mr-3" style="width:45px; height:45px;">'
-                + '<i class="fa fa-hospital text-primary" style="font-size:1.2rem;"></i></div>'
-                + '<div><h6 class="font-weight-bold mb-0 text-dark" style="font-size:1.05rem; line-height:1.2">' + ev.establecimiento + '</h6>'
-                + '<small class="text-muted" style="font-weight:500; font-size:0.8rem;">' + ev.tipologia + '</small></div>'
-                + '</div></div>'
-                + '<div class="d-flex justify-content-between align-items-center mb-3">'
-                + '<span class="badge ' + badgeClass + ' px-3 py-2 text-capitalize" style="border-radius:20px; font-weight:600; font-size:0.75rem;">' + estadoLabel + '</span>'
+                + '<h5 class="font-weight-bold text-dark mb-1" style="font-size:1.05rem; line-height:1.2;">' + ev.establecimiento + '</h5>'
+                + '<small class="text-muted" style="font-size:0.82rem;">' + ev.tipologia + '</small>'
                 + '</div>'
-                + (evalNombre ? '<div class="d-flex align-items-center bg-light p-2 mb-3" style="border-radius:8px;"><div class="rounded-circle bg-white d-flex align-items-center justify-content-center shadow-sm mr-2" style="width:30px; height:30px;"><i class="fa fa-user text-info" style="font-size:0.8rem;"></i></div><span class="text-dark font-weight-bold" style="font-size:0.85rem;">' + evalNombre + '</span></div>' : '<div class="mb-3"></div>')
+                + '<span class="estado-badge ' + badgeClass + ' text-capitalize">' + estadoLabel + '</span>'
+                + '</div>'
+                + '<div class="eval-card-meta mb-3 d-flex align-items-center">'
+                + '<div class="rounded-circle bg-info d-flex align-items-center justify-content-center mr-3" style="width:38px; height:38px; color:#0369a1;">'
+                + '<i class="fa fa-user" style="font-size:0.9rem;"></i></div>'
+                + '<div>'
+                + '<div class="font-weight-bold text-dark" style="font-size:0.9rem;">' + evalNombre + '</div>'
+                + '<small class="text-muted" style="font-size:0.78rem; letter-spacing:0.3px;">Evaluador asignado</small>'
+                + '</div>'
                 + '</div>'
                 + '<div>'
-                + '<div class="d-flex justify-content-between text-xs font-weight-bold mb-2">'
-                + '<span class="text-muted text-uppercase" style="letter-spacing:0.5px;">Nivel de Avance</span>'
-                + '<span class="text-primary font-weight-bold" style="font-size:1rem;">' + pct + '%</span>'
+                + '<div class="d-flex justify-content-between align-items-center mb-2">'
+                + '<span class="text-uppercase text-muted small" style="letter-spacing:0.6px;">Nivel de avance</span>'
+                + '<span class="font-weight-bold text-primary" style="font-size:1rem;">' + pct + '%</span>'
                 + '</div>'
-                + '<div class="progress mb-4" style="height:8px; border-radius:10px; background-color:#e2e8f0;"><div class="progress-bar" style="width:' + pct + '%; background:linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius:10px;"></div></div>'
-                + '<a href="/riiss/evaluaciones/' + ev.id + '" class="btn btn-block btn-light text-primary font-weight-bold" style="border-radius:10px; transition:all 0.3s;" onmouseover="this.classList.add(\'bg-primary\', \'text-white\'); this.classList.remove(\'btn-light\', \'text-primary\')" onmouseout="this.classList.add(\'btn-light\', \'text-primary\'); this.classList.remove(\'bg-primary\', \'text-white\')">'
-                + 'Ingresar a Evaluación <i class="fa fa-arrow-right ml-2"></i></a>'
+                + '<div class="eval-card-progress mb-3"><div class="progress-bar" role="progressbar" style="width:' + Math.min(Math.max(pct, 0), 100) + '%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div></div>'
                 + '</div>'
-                + '</div></div></div>';
+                + '</div>'
+                + '<div class="mt-2">'
+                + '<a href="/riiss/evaluaciones/' + ev.id + '" class="eval-btn-continue text-center">Ingresar a Evaluación <i class="fa fa-arrow-right ml-2"></i></a>'
+                + '</div>'
+                + '</div>'
+                + '</div>'
+                + '</div>';
         });
         html += '</div>';
         $('#evalCards').html(html);
@@ -577,26 +693,32 @@ function cargarDashboard() {
 function cargarHistorial() {
     $.get(DASH_URL, function(r) {
         var evs = (r && r.evaluaciones) ? r.evaluaciones : [];
-        if (!evs.length) {
-            $('#tbodyHistorial').html('<tr><td colspan="6" class="text-center py-4 text-muted">Sin evaluaciones registradas</td></tr>');
-            return;
-        }
-        var html = '';
-        evs.forEach(function(ev) {
+        var rows = evs.map(function(ev) {
             var pct = ev.progreso || ev.porcentaje_cumplimiento || 0;
-            html += '<tr>'
-                + '<td><strong>' + ev.establecimiento + '</strong><br><small class="text-muted">' + ev.tipologia + '</small></td>'
-                + '<td><small>' + (ev.evaluador || '—') + '</small></td>'
-                + '<td><small>' + (ev.fecha || '—') + '</small></td>'
-                + '<td><span class="estado-badge estado-' + ev.estado + '">' + ev.estado.replace('_',' ') + '</span></td>'
-                + '<td><strong>' + pct + '%</strong></td>'
-                + '<td class="text-center">'
-                + '<a href="/riiss/evaluaciones/' + ev.id + '" class="btn btn-sm btn-outline-danger mr-1"><i class="fa fa-eye mr-1"></i>Ver</a>'
-                + '<button class="btn btn-sm btn-outline-primary" onclick="verGap(' + ev.id + ', \'' + ev.id_establecimiento + '\')"><i class="fa fa-chart-bar mr-1"></i>Gap</button>'
-                + '</td>'
-                + '</tr>';
+            var estadoKey = (ev.estado || 'sin_estado').replace(/ /g, '_');
+            var estadoLabel = (ev.estado || 'sin estado').replace(/_/g, ' ');
+            var establecimientoHtml = '<div class="font-weight-bold text-dark">' + (ev.establecimiento || '—') + '</div><small class="text-muted">' + (ev.tipologia || '') + '</small>';
+            var cumplimientoHtml = '<div class="d-flex align-items-center"><div class="progress mr-2" style="width:90px;height:6px"><div class="progress-bar bg-info" style="width:' + Math.min(Math.max(pct, 0), 100) + '%"></div></div><span class="font-weight-bold text-dark">' + pct + '%</span></div>';
+            var actionsHtml = '<div class="d-flex justify-content-center flex-wrap" style="gap:8px">'
+                + '<a href="/riiss/evaluaciones/' + ev.id + '" class="circle-btn circle-btn-success btn-sm" title="Ver evaluación"><i class="fa fa-eye"></i></a>'
+                + '<button type="button" class="circle-btn circle-btn-warning btn-sm" onclick="verGap(' + ev.id + ', \' ' + (ev.id_establecimiento || '') + '\')" title="Gap Analysis"><i class="fa fa-chart-bar"></i></button>'
+                + '</div>';
+
+            return {
+                establecimiento: establecimientoHtml,
+                evaluadores: '<small>' + (ev.evaluador || '—') + '</small>',
+                fecha: '<small>' + (ev.fecha || '—') + '</small>',
+                estado: '<span class="estado-badge estado-' + estadoKey + '">' + estadoLabel + '</span>',
+                cumplimiento: cumplimientoHtml,
+                acciones: actionsHtml
+            };
         });
-        $('#tbodyHistorial').html(html);
+
+        if (historialTable) {
+            historialTable.clear();
+            historialTable.rows.add(rows);
+            historialTable.draw();
+        }
     });
 }
 

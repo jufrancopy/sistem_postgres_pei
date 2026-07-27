@@ -115,8 +115,7 @@ class RiissCenterController extends Controller
                 $evalIdStr = $eval ? $eval->id : 'null';
                 $nomEsc = addslashes($est->nombre_oficial);
 
-                $btn = '<button class="circle-btn ' . ($asig ? 'circle-btn-warning' : 'circle-btn-info') . ' btn-sm mr-1" onclick="abrirModalAsignacion(' . $asigIdStr . ', \'' . e($est->id_establecimiento) . '\', \'' . e($nomEsc) . '\')" title="' . ($asig ? 'Editar asignación' : 'Nueva Asignación') . '"><i class="fa ' . ($asig ? 'fa-pencil-alt' : 'fa-plus') . '"></i></button>';
-
+                $btn = '<button class="circle-btn ' . ($asig ? 'circle-btn-warning' : 'circle-btn-info') . ' btn-sm mr-1" onclick="abrirModalAsignacion(' . $asigIdStr . ', \'' . e($est->id_establecimiento) . '\', \'' . e($nomEsc) . '\')" title="' . ($asig ? 'Editar asignación' : 'Nueva Asignación') . '"><i class="fa ' . ($asig ? 'fa-pencil-alt' : 'fa-plus') . '"></i></button>';                $btn .= '<button class="circle-btn circle-btn-info btn-sm mr-1" onclick="abrirEditarEstablecimiento(\'' . e($est->id_establecimiento) . '\')" title="Editar establecimiento"><i class="fa fa-edit"></i></button>';
                 if ($eval) {
                     $btn .= '<a href="/riiss/evaluaciones/' . $eval->id . '" class="circle-btn circle-btn-success btn-sm mr-1" title="Ver evaluación"><i class="fa fa-eye"></i></a>';
                 } else {

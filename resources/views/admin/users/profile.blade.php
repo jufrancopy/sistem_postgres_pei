@@ -30,60 +30,61 @@
         <div class="card-body p-4">
             <div class="row align-items-center">
                 <div class="col-md-7 mb-3 mb-md-0">
-                    <div class="d-flex align-items-center">
-                        {{-- Avatar con botón de cámara flotante --}}
-                        <div class="position-relative mr-3" style="width: 84px; height: 84px; flex-shrink: 0;">
-                            <img id="user_avatar_img" src="{{ $targetUser->avatar_url }}" alt="{{ $targetUser->name }}"
-                                 class="rounded-circle shadow"
-                                 style="width: 84px; height: 84px; border: 3px solid #00acc1 !important; object-fit: cover;">
+                            <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start text-center text-md-left">
+                                {{-- Avatar con botón de cámara flotante --}}
+                                <div class="position-relative mb-3 mb-md-0 mr-md-3 mx-md-0 mx-auto" style="width: 84px; height: 84px; flex-shrink: 0;">
+                                    <img id="user_avatar_img" src="{{ $targetUser->avatar_url }}" alt="{{ $targetUser->name }}"
+                                         class="rounded-circle shadow"
+                                         style="width: 84px; height: 84px; border: 3px solid #00acc1 !important; object-fit: cover;">
 
-                            @if(Auth::id() === $targetUser->id)
-                            <button type="button" class="btn btn-sm btn-info rounded-circle shadow position-absolute"
-                                    style="bottom: 0; right: 0; width: 32px; height: 32px; padding: 0; line-height: 30px; text-align: center; border: 2px solid #ffffff; z-index: 5; background-color: #00acc1 !important;"
-                                    data-toggle="modal" data-target="#modalAvatar" title="Cambiar foto de perfil">
-                                <i class="fa fa-camera text-white" style="font-size: 13px;"></i>
-                            </button>
-                            @endif
-                        </div>
-                        <div>
-                            <div class="d-flex align-items-center flex-wrap" style="gap: .5rem">
-                                <h4 class="font-weight-bold mb-0" style="color: #0f172a !important; font-size: 1.4rem;">{{ $targetUser->name }}</h4>
-                                <span class="badge badge-pill badge-info py-1 px-2 font-weight-bold text-white" style="font-size: .75rem; background-color: #00acc1 !important;">
-                                    {{ $targetUser->roles->pluck('name')->implode(', ') ?: 'Usuario' }}
-                                </span>
-                            </div>
-                            <div class="mt-1" style="color: #475569 !important; font-size: .9rem;">
-                                <span class="mr-3"><i class="fa fa-envelope text-info mr-1"></i> {{ $targetUser->email }}</span>
-                                @if($targetUser->group)
-                                <span><i class="fa fa-sitemap text-info mr-1"></i> {{ $targetUser->group->name }}</span>
-                                @endif
-                            </div>
-                            @if(Auth::id() === $targetUser->id)
-                            <div class="mt-2">
-                                <button type="button" class="btn btn-sm btn-outline-info py-1 px-3 font-weight-bold" style="font-size:.78rem; text-transform: none; border-color: #00acc1; color: #00acc1;" data-toggle="modal" data-target="#modalAvatar">
-                                    <i class="fa fa-upload mr-1"></i> Cambiar Foto de Perfil
-                                </button>
-                            </div>
-                            @endif
+                                    @if(Auth::id() === $targetUser->id)
+                                    <button type="button" class="btn btn-sm btn-info rounded-circle shadow position-absolute"
+                                            style="bottom: 0; right: 0; width: 32px; height: 32px; padding: 0; line-height: 30px; text-align: center; border: 2px solid #ffffff; z-index: 5; background-color: #00acc1 !important;"
+                                            data-toggle="modal" data-target="#modalAvatar" title="Cambiar foto de perfil">
+                                        <i class="fa fa-camera text-white" style="font-size: 13px;"></i>
+                                    </button>
+                                    @endif
+                                </div>
+                                <div class="w-100">
+                                    <div class="d-flex align-items-center justify-content-center justify-content-md-start flex-wrap" style="gap: .5rem">
+                                        <h4 class="font-weight-bold mb-0" style="color: #0f172a !important; font-size: 1.4rem;">{{ $targetUser->name }}</h4>
+                                        <span class="badge badge-pill badge-info py-1 px-2 font-weight-bold text-white" style="font-size: .75rem; background-color: #00acc1 !important;">
+                                            {{ $targetUser->roles->pluck('name')->implode(', ') ?: 'Usuario' }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-1" style="color: #475569 !important; font-size: .9rem;">
+                                        <div class="d-block mb-1"><i class="fa fa-envelope text-info mr-1"></i> {{ $targetUser->email }}</div>
+                                        @if($targetUser->group)
+                                        <div class="d-block"><i class="fa fa-sitemap text-info mr-1"></i> {{ $targetUser->group->name }}</div>
+                                        @endif
+                                    </div>
+                                    @if(Auth::id() === $targetUser->id)
+                                    <div class="mt-2 d-flex justify-content-center justify-content-md-start">
+                                        <button type="button" class="btn btn-sm btn-outline-info py-1 px-3 font-weight-bold w-100 w-sm-auto" style="font-size:.78rem; text-transform: none; border-color: #00acc1; color: #00acc1; max-width: 240px;" data-toggle="modal" data-target="#modalAvatar">
+                                            <i class="fa fa-upload mr-1"></i> Cambiar Foto de Perfil
+                                        </button>
+                                    </div>
+                                    @endif
                         </div>
                     </div>
                 </div>
 
                 {{-- Resumen de Nivel y Puntos --}}
                 <div class="col-md-5 text-md-right border-left pl-md-4" style="border-color: #e2e8f0 !important;">
-                    <div class="d-inline-block text-center p-2 rounded mr-3" style="background: #fff8e1; border: 1px solid #ffe082; min-width: 110px;">
-                        <small class="text-uppercase d-block font-weight-bold" style="font-size: .65rem; color: #b8860b;">Reputación</small>
-                        <span class="h3 font-weight-bold text-dark mb-0">⭐ {{ number_format($gamification['total_points']) }}</span>
-                        <small class="d-block text-muted" style="font-size: .65rem">puntos acumulados</small>
+                    <div class="card border-0 rounded mb-3" style="background: #fff4c7; border: 1px solid #ffd25d; width: 100%; box-shadow: 0 4px 15px rgba(255, 214, 46, .12);">
+                        <div class="card-body text-center py-3 px-3" style="background: linear-gradient(180deg, rgba(255,244,199,.95), rgba(255,238,166,.95));">
+                            <small class="text-uppercase d-block font-weight-bold mb-2" style="font-size: .65rem; color: #b8860b;">Reputación</small>
+                            <span class="h3 font-weight-bold text-dark mb-0">⭐ {{ number_format($gamification['total_points']) }}</span>
+                            <small class="d-block text-muted mt-1" style="font-size: .65rem">puntos acumulados</small>
+                        </div>
                     </div>
-                    <div class="d-inline-block text-center p-2 rounded" style="background: #e0f7fa; border: 1px solid #b2ebf2; min-width: 130px;">
-                        <small class="text-uppercase d-block font-weight-bold" style="font-size: .65rem; color: #00838f;">Rango Actual</small>
-                        <span class="h5 font-weight-bold text-dark mb-0">
-                            <i class="fa {{ $gamification['level_icon'] }} text-info mr-1"></i> {{ $gamification['level_name'] }}
-                        </span>
-                        <small class="d-block font-weight-bold text-info" style="font-size: .65rem">{{ $gamification['level_badge'] }}</small>
+                    <div class="card border-0 rounded" style="background: #c9eef8; border: 1px solid #64d4ed; width: 100%; box-shadow: 0 4px 15px rgba(33, 150, 243, .08);">
+                        <div class="card-body text-center py-3 px-3" style="background: linear-gradient(180deg, rgba(201,238,248,.96), rgba(181,231,245,.96));">
+                            <small class="text-uppercase d-block font-weight-bold mb-2" style="font-size: .65rem; color: #007a90;">Rango Actual</small>
+                            </span>
+                            <small class="d-block font-weight-bold text-info" style="font-size: .65rem">{{ $gamification['level_badge'] }}</small>
+                        </div>
                     </div>
-                </div>
             </div>
 
             {{-- Barra de Progreso de Nivel --}}
@@ -115,18 +116,22 @@
                     {{ $peiSeleccionado ? strip_tags($peiSeleccionado->name) : 'Consolidado Global (Todos los Planes PEI)' }}
                 </span>
             </div>
-            <form method="GET" action="{{ route('user.profile', $targetUser->id) }}" class="form-inline my-1">
-                <select name="pei_id" id="select2_pei_id" class="form-control form-control-sm select2 mr-2" style="width: 280px;">
-                    <option value="">— Todo el Historial Global —</option>
-                    @foreach($peiPlanes as $p)
-                    <option value="{{ $p->id }}" {{ request('pei_id') == $p->id || ($peiSeleccionado && $peiSeleccionado->id == $p->id && !request()->has('pei_id')) ? 'selected' : '' }}>
-                        PEI: {{ strip_tags($p->name) }} @if($p->year_start)({{ \Carbon\Carbon::parse($p->year_start)->format('Y') }})@endif
-                    </option>
-                    @endforeach
-                </select>
-                @if(request('pei_id'))
-                <a href="{{ route('user.profile', $targetUser->id) }}" class="btn btn-sm btn-outline-secondary ml-2">Limpiar</a>
-                @endif
+            <form method="GET" action="{{ route('user.profile', $targetUser->id) }}" class="form-inline my-1 w-100">
+                <div class="input-group input-group-sm w-100">
+                    <select name="pei_id" id="select2_pei_id" class="form-control form-control-sm select2" style="min-width: 220px; max-width: 100%; width: 100%;">
+                        <option value="">— Todo el Historial Global —</option>
+                        @foreach($peiPlanes as $p)
+                        <option value="{{ $p->id }}" {{ request('pei_id') == $p->id || ($peiSeleccionado && $peiSeleccionado->id == $p->id && !request()->has('pei_id')) ? 'selected' : '' }}>
+                            PEI: {{ strip_tags($p->name) }} @if($p->year_start)({{ \Carbon\Carbon::parse($p->year_start)->format('Y') }})@endif
+                        </option>
+                        @endforeach
+                    </select>
+                    @if(request('pei_id'))
+                    <div class="input-group-append ml-2 mt-2 mt-sm-0">
+                        <a href="{{ route('user.profile', $targetUser->id) }}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+                    </div>
+                    @endif
+                </div>
             </form>
         </div>
     </div>
@@ -243,11 +248,11 @@
 
             {{-- Vitrina de Insignias Estilo Stack Overflow --}}
             <div class="card border-0 shadow-sm mb-4 bg-white">
-                <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
-                    <h6 class="mb-0 font-weight-bold text-dark">
+                <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between flex-wrap border-bottom">
+                    <h6 class="mb-0 font-weight-bold text-dark mb-2 mb-md-0">
                         <i class="fa fa-award text-warning mr-2"></i>Vitrina de Insignias (Medallas de Honor)
                     </h6>
-                    <div class="d-flex" style="gap: .8rem">
+                    <div class="d-flex flex-wrap justify-content-end" style="gap: .5rem;">
                         <span class="badge p-2 font-weight-bold" style="background:#fff8dc; color:#b8860b; border:1px solid #ffd700">
                             🥇 {{ $gamification['badges_summary']['oro'] }} Oro
                         </span>
@@ -420,9 +425,14 @@
                                     @endif
                                 </div>
                             </div>
-                            <span class="badge badge-pill badge-warning text-dark font-weight-bold" style="font-size: .78rem">
-                                ⭐ {{ number_format($u->total_points) }}
-                            </span>
+                            <div class="d-flex align-items-center">
+                                <span class="badge badge-pill badge-warning text-dark font-weight-bold" style="font-size: .78rem; white-space: nowrap;">
+                                    ⭐ {{ number_format($u->total_points) }}
+                                </span>
+                                <button type="button" class="btn btn-circle btn-info ml-2 btn-show-user-points" data-user-id="{{ $u->id }}" data-user-name="{{ $u->name }}" title="Ver detalle de puntos" style="width: 34px; height: 34px; padding: 0; box-shadow: 0 2px 8px rgba(0, 172, 193, .24);">
+                                    <i class="fa fa-search text-white" style="font-size: .88rem;"></i>
+                                </button>
+                            </div>
                         </li>
                         @endforeach
                     </ul>
@@ -454,9 +464,12 @@
                     <div class="mb-3">
                         <img id="avatar_preview" src="{{ $targetUser->avatar_url }}" class="rounded-circle border shadow-sm" style="width: 110px; height: 110px; object-fit: cover;">
                     </div>
-                    <div class="custom-file mb-2 text-left">
-                        <input type="file" class="custom-file-input" id="avatar_input" name="avatar" accept="image/*" required>
-                        <label class="custom-file-label" for="avatar_input" style="font-size: .85rem;">Seleccionar foto...</label>
+                    <div class="form-group mb-2 text-left">
+                        <input type="file" id="avatar_input" name="avatar" accept="image/*" required class="d-none">
+                        <label for="avatar_input" class="btn btn-outline-info btn-block btn-sm font-weight-bold" style="text-transform: none; font-size: .95rem; border-color: #00acc1; color: #00acc1;">
+                            <i class="fa fa-image mr-1"></i> Seleccionar foto...
+                        </label>
+                        <div id="avatar_input_name" class="text-muted small mt-2" style="font-size: .82rem;">Ningún archivo seleccionado</div>
                     </div>
                     <small class="text-muted d-block mt-2" style="font-size: .72rem">Formatos permitidos: JPG, PNG, WEBP (máx. 3 MB)</small>
                 </div>
@@ -473,6 +486,62 @@
     </div>
 </div>
 @endif
+
+{{-- Modal detalle de puntos por usuario --}}
+<div class="modal fade" id="modalPointsDetail" tabindex="-1" role="dialog" aria-labelledby="modalPointsDetailTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 10px; overflow: hidden;">
+            <div class="modal-header py-3 bg-info text-white">
+                <h5 class="modal-title font-weight-bold" id="modalPointsDetailTitle">
+                    Detalle de Puntos
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="p-3 border-bottom bg-light">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <small class="text-muted">Usuario</small>
+                            <div id="modalPointsDetailUser" class="font-weight-bold"></div>
+                        </div>
+                        <div class="text-right">
+                            <small class="text-muted">PEI</small>
+                            <div id="modalPointsDetailPei" class="font-weight-bold"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <div id="modalPointsDetailLoading" class="text-center py-4">
+                        <i class="fa fa-spinner fa-spin fa-2x text-info"></i>
+                        <div class="mt-2 text-muted">Cargando historial de puntos...</div>
+                    </div>
+                    <div id="modalPointsDetailEmpty" class="text-center py-4 d-none text-muted">
+                        No se encontraron aportes con puntuación para este usuario.
+                    </div>
+                    <div id="modalPointsDetailTable" class="table-responsive d-none" style="max-height: 420px; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="width: 18%;">Fecha</th>
+                                    <th style="width: 20%;">Acción</th>
+                                    <th>Descripción</th>
+                                    <th style="width: 12%;" class="text-right">Puntos</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalPointsDetailBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer py-2 bg-white">
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
@@ -483,7 +552,7 @@ $(function() {
         $('#select2_pei_id').select2({
             placeholder: '— Todo el Historial Global —',
             allowClear: true,
-            width: '280px'
+            width: '100%'
         }).on('change', function() {
             $(this).closest('form').submit();
         });
@@ -498,8 +567,74 @@ $(function() {
                 $('#avatar_preview').attr('src', e.target.result);
             };
             reader.readAsDataURL(file);
-            $(this).next('.custom-file-label').html(file.name);
+            $('#avatar_input_name').text(file.name);
         }
+    });
+
+    const selectedPeiId = @json($selectedPeiId);
+    const pointsDetailUrlTemplate = '{{ route('user.profile.points', ['id' => '__ID__']) }}';
+
+    function resetPointsDetailModal() {
+        $('#modalPointsDetailUser').text('');
+        $('#modalPointsDetailPei').text(selectedPeiId ? selectedPeiId : 'Global');
+        $('#modalPointsDetailBody').empty();
+        $('#modalPointsDetailLoading').removeClass('d-none');
+        $('#modalPointsDetailEmpty').addClass('d-none');
+        $('#modalPointsDetailTable').addClass('d-none');
+    }
+
+    function formatDateTime(value) {
+        if (!value) {
+            return '-';
+        }
+        const date = new Date(value);
+        return date.toLocaleString('es-AR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    }
+
+    function loadPointsDetails(userId, userName) {
+        resetPointsDetailModal();
+        $('#modalPointsDetailUser').text(userName);
+        $('#modalPointsDetail').modal('show');
+
+        const url = pointsDetailUrlTemplate.replace('__ID__', userId) + (selectedPeiId ? '?pei_id=' + encodeURIComponent(selectedPeiId) : '');
+
+        $.getJSON(url)
+            .done(function(response) {
+                $('#modalPointsDetailLoading').addClass('d-none');
+
+                if (!response.ok || !Array.isArray(response.points) || response.points.length === 0) {
+                    $('#modalPointsDetailEmpty').removeClass('d-none');
+                    return;
+                }
+
+                response.points.forEach(function(item) {
+                    const row = `<tr>
+                        <td>${formatDateTime(item.created_at)}</td>
+                        <td class="text-capitalize">${item.action_type.replace(/_/g, ' ')}</td>
+                        <td>${item.description || '-'}</td>
+                        <td class="text-right font-weight-bold">${item.points > 0 ? '+' : ''}${item.points}</td>
+                    </tr>`;
+                    $('#modalPointsDetailBody').append(row);
+                });
+
+                $('#modalPointsDetailTable').removeClass('d-none');
+            })
+            .fail(function() {
+                $('#modalPointsDetailLoading').addClass('d-none');
+                $('#modalPointsDetailEmpty').removeClass('d-none').text('Error al cargar el detalle de puntos.');
+            });
+    }
+
+    $(document).on('click', '.btn-show-user-points', function() {
+        const userId = $(this).data('user-id');
+        const userName = $(this).data('user-name') || 'Usuario';
+        loadPointsDetails(userId, userName);
     });
 
     // Envío del formulario por AJAX

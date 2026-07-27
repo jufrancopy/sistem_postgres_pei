@@ -13,14 +13,14 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header card-header-danger">
-        <h4 class="card-title"><i class="fa fa-layer-group mr-2"></i>Grados de Complejidad</h4>
-        <p class="card-category">Configuración de los 6 grados de complejidad de la Red IPS</p>
+    <div class="card-header card-header-info" style="background: linear-gradient(135deg, #00acc1, #26c6da); border-radius: 12px; box-shadow: 0 12px 24px rgba(0, 172, 193, 0.16);">
+        <h4 class="card-title text-white"><i class="fa fa-layer-group mr-2"></i>Grados de Complejidad</h4>
+        <p class="card-category text-white-75">Configuración de los 6 grados de complejidad de la Red IPS</p>
     </div>
 
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-0">
         <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{{ route('riiss.establecimientos.index') }}">RIISS</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('riiss.index') }}">RIISS</a></li>
             <li class="breadcrumb-item active">Grados de Complejidad</li>
         </ol>
     </nav>
@@ -48,8 +48,9 @@
                                 <span class="ml-2 small text-muted">Nivel de Atención {{ $tipo->nivel_atencion }}</span>
                             </div>
                             <a href="{{ route('riiss.complejidad.edit', $tipo) }}"
-                               class="btn btn-sm btn-outline-danger">
-                                <i class="fa fa-edit mr-1"></i>Editar
+                               class="btn btn-sm btn-circle btn-info d-flex align-items-center justify-content-center"
+                               style="width: 38px; height: 38px; padding: 0; border-radius: 50%; background: linear-gradient(135deg, #00acc1, #26c6da); border-color: transparent; color: #fff;">
+                                <i class="fa fa-edit"></i>
                             </a>
                         </div>
 

@@ -3,36 +3,39 @@
 
 @push('styles')
 <style>
-.seccion-card { border:1px solid #e5e7eb; border-radius:10px; margin-bottom:12px; overflow:hidden; }
-.seccion-header { background:#f9fafb; padding:12px 16px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e5e7eb; }
-.seccion-header:hover { background:#f1f5f9; }
+.seccion-card { border:1px solid #e3f2fd; border-radius:10px; margin-bottom:12px; overflow:hidden; background:#ffffff; box-shadow:0 10px 30px rgba(14, 63, 99, 0.04); }
+.seccion-header { background:#f4fbff; padding:12px 16px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #dbeaf4; }
+.seccion-header:hover { background:#e6f7ff; }
 .seccion-body { display:none; padding:0; }
 .seccion-body.open { display:block; }
-.badge-requerida { background:#fee2e2; color:#991b1b; font-size:.7rem; padding:2px 8px; border-radius:10px; font-weight:600; }
-.badge-opcional { background:#f1f5f9; color:#64748b; font-size:.7rem; padding:2px 8px; border-radius:10px; font-weight:600; }
+.badge-requerida { background:#d1f5ff; color:#0c4a6e; font-size:.7rem; padding:2px 8px; border-radius:10px; font-weight:600; }
+.badge-opcional { background:#eff6ff; color:#334155; font-size:.7rem; padding:2px 8px; border-radius:10px; font-weight:600; }
 .badge-tipo { background:#dbeafe; color:#1e40af; font-size:.7rem; padding:2px 8px; border-radius:10px; }
 .badge-mapeada { background:#d1fae5; color:#065f46; font-size:.68rem; padding:2px 6px; border-radius:8px; }
 .badge-sin-mapeo { background:#fef9c3; color:#854d0e; font-size:.68rem; padding:2px 6px; border-radius:8px; }
-.tipologia-btn { border:2px solid #e5e7eb; border-radius:8px; padding:8px 14px; cursor:pointer; background:#fff; font-size:.82rem; transition:all .15s; }
-.tipologia-btn:hover { border-color:#dc2626; }
-.tipologia-btn.active { border-color:#dc2626; background:#fff1f2; color:#dc2626; font-weight:600; }
-.pregunta-row { padding:10px 16px; border-bottom:1px solid #f1f5f9; display:flex; align-items:flex-start; gap:12px; }
+.tipologia-btn { border:2px solid #dbeaf4; border-radius:8px; padding:8px 14px; cursor:pointer; background:#ffffff; font-size:.82rem; transition:all .15s; }
+.tipologia-btn:hover { border-color:#00acc1; color:#0f172a; background:#f0fbff; }
+.tipologia-btn.active { border-color:#00acc1; background:linear-gradient(135deg, #e0f7ff, #d1f2ff); color:#0369a1; font-weight:700; }
+.pregunta-row { padding:10px 16px; border-bottom:1px solid #eaf4fb; display:flex; align-items:flex-start; gap:12px; }
 .pregunta-row:last-child { border-bottom:none; }
-.pregunta-row:hover { background:#fafafa; }
+.pregunta-row:hover { background:#f8fbff; }
 .mapeo-edit { display:none; padding:8px 16px 12px 44px; background:#f8fafc; border-top:1px solid #e5e7eb; }
+.riiss-action-btn { background: linear-gradient(135deg, #00acc1, #26c6da); color: #ffffff !important; border-radius: 10px; border: none; box-shadow: 0 8px 18px rgba(6, 78, 126, 0.12); transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease; }
+.riiss-action-btn:hover, .riiss-action-btn:focus { transform: translateY(-1px); box-shadow: 0 12px 22px rgba(6, 78, 126, 0.18); opacity: .95; }
+.btn-circle { border-radius: 50% !important; padding: 0 !important; width: 38px !important; height: 38px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; }
 </style>
 @endpush
 
 @section('content')
 <div class="card">
-    <div class="card-header card-header-danger">
-        <h4 class="card-title"><i class="fa fa-wpforms mr-2"></i>Formularios RIISS por Nivel y Tipología</h4>
-        <p class="card-category">Gestión de secciones y mapeo de preguntas a la cartera de servicios</p>
+    <div class="card-header card-header-info" style="background: linear-gradient(135deg, #00acc1, #26c6da); border-radius: 12px; box-shadow: 0 12px 26px rgba(0, 172, 193, 0.16);">
+        <h4 class="card-title text-white"><i class="fa fa-wpforms mr-2"></i>Formularios RIISS por Nivel y Tipología</h4>
+        <p class="card-category text-white-75">Gestión de secciones y mapeo de preguntas a la cartera de servicios</p>
     </div>
 
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-0">
         <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{{ route('riiss.establecimientos.index') }}">RIISS</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('riiss.index') }}">RIISS</a></li>
             <li class="breadcrumb-item active">Formularios por Nivel</li>
         </ol>
     </nav>
@@ -44,7 +47,7 @@
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h6 class="font-weight-bold mb-0"><i class="fa fa-filter mr-1"></i>Filtrar por tipología</h6>
                 <div id="btnEditarTipologia" style="display:none">
-                    <a id="linkEditarTipologia" href="#" class="btn btn-sm btn-outline-danger">
+                    <a id="linkEditarTipologia" href="#" class="btn btn-sm riiss-action-btn">
                         <i class="fa fa-edit mr-1"></i>Editar reglas de esta tipología
                     </a>
                 </div>
@@ -104,7 +107,7 @@
 <div class="modal fade" id="modalMapeo" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header card-header-danger" style="background:linear-gradient(135deg,#c62828,#e91e63)">
+            <div class="modal-header card-header-info" style="background: linear-gradient(135deg, #00acc1, #26c6da);">
                 <h5 class="modal-title text-white"><i class="fa fa-link mr-2"></i>Mapear pregunta a cartera</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
@@ -198,7 +201,7 @@ function renderSecciones(secciones) {
         html +=   '<div class="d-flex align-items-center" style="gap:8px">';
         html +=     '<small class="text-muted">' + s.total_preguntas + ' pregunta' + (s.total_preguntas !== 1 ? 's' : '') + '</small>';
         html +=     '<small class="text-success">' + mapeadasEnSec + ' mapeadas</small>';
-        html +=     '<a href="/riiss/formularios/secciones/' + s.id + '" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.75rem" onclick="event.stopPropagation()"><i class="fa fa-edit mr-1"></i>Editar</a>';
+        html +=     '<a href="/riiss/formularios/secciones/' + s.id + '" class="btn btn-sm btn-circle riiss-action-btn" style="font-size:.75rem; width:38px; height:38px;" onclick="event.stopPropagation()"><i class="fa fa-edit"></i></a>';
         html +=   '</div>';
         html += '</div>';
         html += '<div class="seccion-body">';

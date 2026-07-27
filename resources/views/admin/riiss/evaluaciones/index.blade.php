@@ -36,7 +36,7 @@
     <nav class="bg-light rounded px-3 py-2 mb-0">
         <ol class="breadcrumb mb-0 small">
             <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Inicio</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('riiss.establecimientos.index') }}">RIISS</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('riiss.index') }}">RIISS</a></li>
             <li class="breadcrumb-item active">Evaluaciones</li>
         </ol>
     </nav>

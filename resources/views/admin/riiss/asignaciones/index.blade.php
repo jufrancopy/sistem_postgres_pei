@@ -19,17 +19,17 @@
     height: 32px !important;
     padding: 0 !important;
     border-radius: 50% !important;
-    border: none;
+    border: 1px solid rgba(15, 23, 42, 0.08);
     cursor: pointer;
     font-size: .8rem;
     transition: opacity .15s, transform .1s;
 }
-.circle-btn:hover { opacity: .85; transform: scale(1.08); }
+.circle-btn:hover { opacity: .92; transform: scale(1.08); }
 .circle-btn-success { background:#d1fae5; color:#065f46; }
-.circle-btn-primary { background:#dbeafe; color:#1e40af; }
-.circle-btn-info    { background:#e0f2fe; color:#0369a1; }
-.circle-btn-danger  { background:#fee2e2; color:#991b1b; }
-.circle-btn-warning { background:#fef3c7; color:#92400e; }
+.circle-btn-primary { background:#93c5fd; color:#1d4ed8; }
+.circle-btn-info    { background:#bfdbfe; color:#0c4a6e; }
+.circle-btn-danger  { background:#fecaca; color:#991b1b; }
+.circle-btn-warning { background:#fde68a; color:#92400e; }
 </style>
 @endpush
 
@@ -44,7 +44,7 @@
 
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-0">
         <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{{ route('riiss.establecimientos.index') }}">RIISS</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('riiss.index') }}">RIISS</a></li>
             <li class="breadcrumb-item active">Asignaciones</li>
         </ol>
     </nav>

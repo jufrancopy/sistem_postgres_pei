@@ -227,7 +227,7 @@
     </div>
     <nav class="bg-light px-3 py-2">
         <ol class="breadcrumb mb-0 small">
-            <li class="breadcrumb-item"><a href="{{ route('riiss.establecimientos.index') }}">Establecimientos</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('riiss.index') }}">RIISS</a></li>
             <li class="breadcrumb-item active">Evaluación</li>
         </ol>
     </nav>
@@ -1051,7 +1051,7 @@ function mostrarResultado(data) {
         + '</div>' + acciones
         + '<div class="mt-4">'
         + '<a href="/riiss/evaluaciones/' + evaluacionId + '" class="btn btn-dark mr-2"><i class="fa fa-chart-bar mr-1"></i>Ver detalle</a>'
-        + '<a href="{{ route("riiss.establecimientos.index") }}" class="btn btn-outline-secondary"><i class="fa fa-arrow-left mr-1"></i>Volver</a>'
+        + '<a href="{{ route("riiss.index") }}" class="btn btn-outline-secondary"><i class="fa fa-arrow-left mr-1"></i>Volver</a>'
         + '</div></div>';
 
     $('#panelResultado').html(html).show();

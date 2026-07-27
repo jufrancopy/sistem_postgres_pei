@@ -681,9 +681,14 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                     @endif
                 </p>
             </div>
-            <span class="badge badge-warning text-dark font-weight-bold px-3 py-2 mt-2 mt-sm-0" style="border-radius:12px; font-size:12px; background-color:#fff8e1; border:1px solid #ffe082;">
-                ⭐ Ranking de Reputación
-            </span>
+            <div class="d-flex align-items-center mt-2 mt-sm-0">
+                <a href="#" onclick="abrirGuiaPuntos(); return false;" class="text-info font-weight-bold mr-3" style="font-size: 12px; text-decoration: underline;">
+                    ¿Cómo se calculan los puntos?
+                </a>
+                <span class="badge badge-warning text-dark font-weight-bold px-3 py-2" style="border-radius:12px; font-size:12px; background-color:#fff8e1; border:1px solid #ffe082;">
+                    ⭐ Ranking de Reputación
+                </span>
+            </div>
         </div>
 
         @if(isset($topLeaderboard) && $topLeaderboard->count())
@@ -706,8 +711,8 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
             <div class="equipo-card-item shadow-sm" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding: 24px 16px 18px; text-align:center; position:relative; transition:transform .2s, box-shadow .2s;">
                 <span class="position-absolute font-weight-bold" style="top:12px; left:14px; font-size:18px;">{{ $medal }}</span>
                 
-                <div class="my-2 d-flex justify-content-center">
-                    <img src="{{ $leader->avatar_url }}" alt="{{ $leader->name }}" class="rounded-circle shadow-sm" style="width:72px; height:72px; object-fit:cover; border:3px solid #00acc1; display:block;">
+                <div class="my-2">
+                    <img src="{{ $leader->avatar_url }}" alt="{{ $leader->name }}" class="shadow-sm" style="width:72px; height:72px; border-radius:50%; object-fit:cover; border:3px solid #00acc1; display:block; margin: 0 auto;">
                 </div>
 
                 <h5 class="font-weight-bold mb-1 text-truncate" style="font-size:13.5px; color:#0f172a; margin-top:8px;" title="{{ $leader->name }}">{{ $leader->name }}</h5>
@@ -785,7 +790,37 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     </div>
 </footer>
 
-{{-- MODAL --}}
+{{-- MODAL GUIA DE PUNTOS --}}
+<div id="modalGuiaPuntos" class="modal-bg" role="dialog" aria-modal="true" aria-label="Guía de Puntos">
+    <div class="modal-card" style="max-width:500px">
+        <div class="modal-top" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            <div style="position:relative;z-index:1">
+                <div style="font-size:16px;font-weight:700;color:#fff"><i class="fa fa-info-circle" style="margin-right:6px"></i>Sistema de Puntuación</div>
+            </div>
+            <button class="modal-x" onclick="cerrarGuiaPuntos()" aria-label="Cerrar">✕</button>
+        </div>
+        <div class="modal-content" style="padding:1.5rem; color:#334155; font-size:14px; line-height:1.6; text-align:left;">
+            <p style="margin-bottom:1rem;">El <strong>Ranking de Reputación</strong> reconoce el esfuerzo y compromiso de nuestro equipo. Los puntos se obtienen así:</p>
+            
+            <h6 style="font-weight:700; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:5px; margin-bottom:10px;">Módulo RIISS</h6>
+            <ul style="padding-left:1.5rem; margin-bottom:1rem; list-style-type:none; margin-left:0; padding-left:0;">
+                <li style="margin-bottom:0.5rem;"><strong>🏥 Asignación de Establecimiento <span style="color:#059669; font-weight:bold;">(+50 pts)</span>:</strong> Por recibir la responsabilidad de evaluar en campo.</li>
+                <li style="margin-bottom:0;"><strong>✅ Evaluación Terminada <span style="color:#059669; font-weight:bold;">(+100 pts)</span>:</strong> Al completar al 100% el formulario de un establecimiento.</li>
+            </ul>
+
+            <h6 style="font-weight:700; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:5px; margin-bottom:10px;">Módulo PEI (Planificación Estratégica y Operativa)</h6>
+            <ul style="padding-left:1.5rem; margin-bottom:0; list-style-type:none; margin-left:0; padding-left:0;">
+                <li style="margin-bottom:0.5rem;"><strong>📝 Análisis FODA <span style="color:#059669; font-weight:bold;">(+15 pts)</span>:</strong> Por aportar una fortaleza, debilidad u oportunidad.</li>
+                <li style="margin-bottom:0.5rem;"><strong>🎯 Estrategia (Cruce FODA) <span style="color:#059669; font-weight:bold;">(+30 pts)</span>:</strong> Por formular una nueva estrategia de contingencia o ataque.</li>
+                <li style="margin-bottom:0.5rem;"><strong>💡 Creación de Tarea <span style="color:#059669; font-weight:bold;">(+15 pts)</span>:</strong> Al cargar una nueva tarea al plan operativo.</li>
+                <li style="margin-bottom:0.5rem;"><strong>⚙️ Tareas Completadas <span style="color:#059669; font-weight:bold;">(+25 pts)</span>:</strong> Al finalizar y reportar tareas asignadas en el plan operativo.</li>
+                <li style="margin-bottom:0;"><strong>💬 Participación <span style="color:#059669; font-weight:bold;">(+5 pts)</span>:</strong> Al comentar o dar seguimiento a las tareas del equipo.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{{-- MODAL MATRIZ --}}
 <div id="modalMatriz" class="modal-bg" role="dialog" aria-modal="true" aria-label="Matriz de Servicios">
     <div class="modal-card">
         <div class="modal-top">
@@ -804,6 +839,20 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 <script>
 (function(){
     'use strict';
+
+    /* ═══ MODAL GUIA PUNTOS ═══ */
+    var modalGuia = document.getElementById('modalGuiaPuntos');
+    window.abrirGuiaPuntos = function() {
+        modalGuia.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    };
+    window.cerrarGuiaPuntos = function() {
+        modalGuia.classList.remove('open');
+        document.body.style.overflow = '';
+    };
+    if (modalGuia) {
+        modalGuia.addEventListener('click', function(e){ if (e.target === modalGuia) window.cerrarGuiaPuntos(); });
+    }
 
     /* ═══ TABS ═══ */
     var tabs = document.querySelectorAll('.tab-btn');

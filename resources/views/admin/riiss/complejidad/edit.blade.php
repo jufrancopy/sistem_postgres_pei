@@ -24,7 +24,7 @@
 {{-- Breadcrumb --}}
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb mb-0 small">
-        <li class="breadcrumb-item"><a href="{{ route('riiss.establecimientos.index') }}">RIISS</a></li>
+        <li class="breadcrumb-item"><a href="{{ route('riiss.index') }}">RIISS</a></li>
         <li class="breadcrumb-item"><a href="{{ route('riiss.complejidad.index') }}">Grados de Complejidad</a></li>
         <li class="breadcrumb-item active">Editar Grado {{ $tipo->grado }}</li>
     </ol>

@@ -24,6 +24,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     // ── Perfil de Usuario y Gamificación ───────────────────────────────────────
     Route::get('/perfil/{id?}', 'Admin\UserProfileController@show')->name('user.profile');
+    Route::get('/perfil/{id}/puntos', 'Admin\UserProfileController@pointsDetails')->name('user.profile.points');
     Route::post('/perfil/avatar', 'Admin\UserProfileController@updateAvatar')->name('user.profile.avatar');
     Route::post('/perfil/detalles', 'Admin\UserProfileController@updateDetails')->name('user.profile.details');
     Route::post('/perfil/password', 'Admin\UserProfileController@updatePassword')->name('user.profile.password');

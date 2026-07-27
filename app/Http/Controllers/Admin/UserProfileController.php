@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Admin\Planificacion\Pei\PeiProfile;
 use App\Models\HomeConfiguration;
+use App\Models\Gamification\GamificationPoint;
 use App\Services\GamificationService;
 
 class UserProfileController extends Controller
@@ -54,10 +55,37 @@ class UserProfileController extends Controller
             'targetUser',
             'config',
             'peiSeleccionado',
+            'selectedPeiId',
             'peiPlanes',
             'gamification',
             'leaderboard'
         ));
+    }
+
+    /**
+     * Devuelve el detalle de puntos de un usuario para el modal de la tabla de posiciones
+     */
+    public function pointsDetails(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $selectedPeiId = $request->pei_id ?? HomeConfiguration::first()?->pei_profile_id;
+
+        $pointsQuery = GamificationPoint::where('user_id', $user->id);
+        if ($selectedPeiId) {
+            $pointsQuery->where(function($q) use ($selectedPeiId) {
+                $q->where('pei_profile_id', $selectedPeiId)
+                    ->orWhereNull('pei_profile_id');
+            });
+        }
+
+        $points = $pointsQuery->orderByDesc('created_at')->get();
+
+        return response()->json([
+            'ok' => true,
+            'user' => ['id' => $user->id, 'name' => $user->name],
+            'selected_pei_id' => $selectedPeiId,
+            'points' => $points,
+        ]);
     }
 
     /**

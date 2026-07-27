@@ -27,7 +27,7 @@
 
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-0">
         <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{{ route('riiss.establecimientos.index') }}">RIISS</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('riiss.index') }}">RIISS</a></li>
             <li class="breadcrumb-item"><a href="{{ route('riiss.formularios.index') }}">Formularios</a></li>
             <li class="breadcrumb-item active">{{ $seccion->seccion }}</li>
         </ol>

@@ -6,39 +6,68 @@
 .riiss-tabs .nav-link {
     font-weight: 600;
     color: #475569;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 10px 18px;
-    margin-right: 6px;
+    margin-right: 8px;
     transition: all .2s;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: #f8fbfe;
+    border: 1px solid #dbeaf4;
 }
 .riiss-tabs .nav-link.active {
-    background: linear-gradient(135deg, #1e293b, #334155) !important;
+    background: linear-gradient(135deg, #00acc1, #26c6da) !important;
     color: #ffffff !important;
     border-color: transparent !important;
-    box-shadow: 0 4px 12px rgba(30, 41, 59, .25);
+    box-shadow: 0 8px 18px rgba(6, 78, 126, .15);
+}
+.riiss-tabs .nav-link.active i {
+    color: rgba(255,255,255,.85) !important;
+}
+.riiss-tabs .nav-link:hover:not(.active) {
+    background: #e2f5fb;
+    color: #0f172a;
+    border-color: #b8e2f5;
+}
+.riiss-action-btn {
+    background: linear-gradient(135deg, #00acc1, #26c6da);
+    color: #ffffff !important;
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 8px 18px rgba(6, 78, 126, 0.12);
+    transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+}
+.riiss-action-btn:hover,
+.riiss-action-btn:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 22px rgba(6, 78, 126, 0.18);
+    opacity: .95;
 }
 </style>
 @endpush
 
 @section('content')
 <div class="card mb-3">
-    <div class="card-header card-header-info py-3" style="background:linear-gradient(135deg,#0f172a,#1e293b)">
-        <div class="d-flex align-items-center justify-content-between">
+    <div class="card-header card-header-info py-3" style="background: linear-gradient(135deg, #00acc1, #26c6da); border-radius: 12px; box-shadow: 0 12px 26px rgba(0, 172, 193, 0.18);">
+        <div class="d-flex align-items-center justify-content-between flex-wrap">
             <div>
                 <h4 class="card-title mb-0 text-white">
                     <i class="fa fa-cog mr-2"></i>Configuración del Módulo RIISS
                 </h4>
-                <p class="card-category mb-0 text-white-50">Administración técnica de formularios, reglas por tipología y complejidad</p>
+                <p class="card-category mb-0 text-white-75">Administración técnica de formularios, reglas por tipología y complejidad</p>
             </div>
-            <div>
-                <a href="{{ route('riiss.index') }}" class="btn btn-outline-light btn-sm font-weight-bold">
-                    <i class="fa fa-arrow-left mr-1"></i>Volver al Centro RIISS
+            <div class="mt-3 mt-md-0">
+                <a href="{{ route('riiss.index') }}" class="btn btn-white btn-sm font-weight-bold" style="color: #00acc1; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.95);">
+                    <i class="fa fa-arrow-left mr-1 text-info"></i>Volver al Centro RIISS
                 </a>
             </div>
         </div>
     </div>
+
+    <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ route('riiss.index') }}">RIISS</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Configuración RIISS</li>
+        </ol>
+    </nav>
     
     <div class="card-body pb-2">
         <ul class="nav nav-pills riiss-tabs border-0" id="riissConfigTabs" role="tablist">
@@ -64,7 +93,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="font-weight-bold mb-0">Gestión de Tipologías y Preguntas</h5>
-                    <a href="{{ route('riiss.formularios.index') }}" class="btn btn-sm btn-info">
+                    <a href="{{ route('riiss.formularios.index') }}" class="btn btn-sm riiss-action-btn">
                         <i class="fa fa-external-link-alt mr-1"></i>Abrir Editor de Formularios
                     </a>
                 </div>
@@ -81,7 +110,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="font-weight-bold mb-0">Matriz de Complejidad Hospitalaria</h5>
-                    <a href="{{ route('riiss.complejidad.index') }}" class="btn btn-sm btn-dark">
+                    <a href="{{ route('riiss.complejidad.index') }}" class="btn btn-sm riiss-action-btn">
                         <i class="fa fa-external-link-alt mr-1"></i>Abrir Matriz de Complejidad
                     </a>
                 </div>

@@ -32,7 +32,7 @@
 
     <nav class="bg-light px-3 py-2">
         <ol class="breadcrumb mb-0 small">
-            <li class="breadcrumb-item"><a href="{{ route('riiss.establecimientos.index') }}">Establecimientos</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('riiss.index') }}">RIISS</a></li>
             <li class="breadcrumb-item"><a href="{{ route('riiss.evaluaciones.index') }}">Evaluaciones</a></li>
             <li class="breadcrumb-item active">#{{ $evaluacion->id }}</li>
         </ol>

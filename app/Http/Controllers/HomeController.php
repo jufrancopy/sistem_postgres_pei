@@ -25,9 +25,9 @@ class HomeController extends Controller
             return redirect()->route('pei.monitoreo.dashboard');
         }
 
-        // Analista RIISS → módulo de establecimientos
+        // Analista RIISS → módulo RIISS unificado
         if ($user->hasRole('Analista - RIISS')) {
-            return redirect()->route('riiss.establecimientos.index');
+            return redirect()->route('riiss.index');
         }
 
         // Gestor o Colaborador de Actividades → sus actividades
