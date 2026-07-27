@@ -700,8 +700,9 @@ function cargarHistorial() {
             var establecimientoHtml = '<div class="font-weight-bold text-dark">' + (ev.establecimiento || '—') + '</div><small class="text-muted">' + (ev.tipologia || '') + '</small>';
             var cumplimientoHtml = '<div class="d-flex align-items-center"><div class="progress mr-2" style="width:90px;height:6px"><div class="progress-bar bg-info" style="width:' + Math.min(Math.max(pct, 0), 100) + '%"></div></div><span class="font-weight-bold text-dark">' + pct + '%</span></div>';
             var actionsHtml = '<div class="d-flex justify-content-center flex-nowrap" style="gap:8px; white-space:nowrap">'
+                + '<a href="/riiss/evaluaciones/nueva/' + encodeURIComponent(ev.id_establecimiento || '') + '?evaluacion=' + ev.id + '" class="circle-btn circle-btn-primary btn-sm mr-1" title="Revisar evaluación"><i class="fa fa-play"></i></a>'
                 + '<a href="/riiss/evaluaciones/' + ev.id + '" class="circle-btn circle-btn-success btn-sm" title="Ver evaluación"><i class="fa fa-eye"></i></a>'
-                + '<button type="button" class="circle-btn circle-btn-warning btn-sm" onclick="verGap(' + ev.id + ', \' ' + (ev.id_establecimiento || '') + '\')" title="Gap Analysis"><i class="fa fa-chart-bar"></i></button>'
+                + '<button type="button" class="circle-btn circle-btn-warning btn-sm" onclick="verGap(' + ev.id + ', \'' + (ev.id_establecimiento || '') + '\')" title="Gap Analysis"><i class="fa fa-chart-bar"></i></button>'
                 + '</div>';
 
             return {
@@ -813,8 +814,8 @@ function verGap(evaluacionId, idEstablecimiento) {
     $('#modalGap').modal('show');
 
     var url = evaluacionId
-        ? '/riiss/evaluaciones/' + evaluacionId + '/gap-analysis'
-        : '/riiss/evaluaciones/requisitos/' + idEstablecimiento;
+        ? '{{ url('riiss/evaluaciones') }}/' + evaluacionId + '/gap'
+        : '{{ url('riiss/evaluaciones/requisitos') }}/' + idEstablecimiento;
 
     $.get(url, function(r) {
         if (!r.ok) return;

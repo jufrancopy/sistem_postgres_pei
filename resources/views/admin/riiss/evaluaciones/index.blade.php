@@ -28,7 +28,7 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header card-header-danger">
+    <div class="card-header card-header-info">
         <h4 class="card-title"><i class="fa fa-clipboard-check mr-2"></i>Evaluaciones de Establecimientos</h4>
         <p class="card-category">Historial de evaluaciones de cartera de servicios</p>
     </div>
@@ -123,6 +123,9 @@
                             @endif
                         </td>
                         <td class="text-center">
+                            <a href="{{ route('riiss.evaluaciones.nueva', $ev->id_establecimiento) }}?evaluacion={{ $ev->id }}" class="btn btn-primary btn-circle btn-sm mr-1" title="Revisar evaluación">
+                                <i class="fa fa-play"></i>
+                            </a>
                             <a href="{{ route('riiss.evaluaciones.show', $ev) }}" class="btn btn-info btn-circle btn-sm mr-1">
                                 <i class="fa fa-eye"></i>
                             </a>
