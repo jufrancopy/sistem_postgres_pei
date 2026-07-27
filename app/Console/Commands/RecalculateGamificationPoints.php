@@ -14,7 +14,6 @@ use App\Admin\Globales\ActivityTask;
 use App\Admin\Globales\ActivityTaskComment;
 use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
-use App\Admin\Planificacion\Foda\FodaPerfil;
 use App\Models\Riiss\Evaluacion;
 
 class RecalculateGamificationPoints extends Command
@@ -252,19 +251,16 @@ class RecalculateGamificationPoints extends Command
     protected function collectFodaCruces(): void
     {
         $this->info('Recopilando estrategias de cruce FODA...');
+        $skipped = 0;
 
-        $perfilUserMap = FodaPerfil::query()
-            ->whereNotNull('user_id')
-            ->pluck('user_id', 'id');
-
-        foreach (FodaCruceAmbiente::cursor() as $cruce) {
-            $userId = $cruce->user_id ?: ($cruce->perfil_id ? $perfilUserMap->get($cruce->perfil_id) : null);
-            if (!$userId) {
+        foreach (FodaCruceAmbiente::whereNotNull('user_id')->cursor() as $cruce) {
+            if (!$this->usersById->has($cruce->user_id)) {
+                $skipped++;
                 continue;
             }
 
             $this->queuePoint(
-                $userId,
+                $cruce->user_id,
                 'foda_cruce',
                 'Estrategia Cruce FODA: ' . ($cruce->tipo ?? 'Estrategia'),
                 30,
@@ -272,6 +268,10 @@ class RecalculateGamificationPoints extends Command
                 $cruce->id,
                 $cruce->perfil_id ?: $this->defaultPeiId
             );
+        }
+
+        if ($skipped > 0) {
+            $this->comment("  ↳ {$skipped} cruces omitidos (user_id inexistente o fuera del alcance).");
         }
     }
 
