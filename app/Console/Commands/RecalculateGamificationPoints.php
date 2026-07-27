@@ -3,8 +3,12 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\Gamification\UserLogin;
+use App\Models\Gamification\GamificationPoint;
 use App\Services\GamificationService;
 use App\Admin\Globales\ActivityTask;
 use App\Admin\Globales\ActivityTaskComment;
@@ -12,7 +16,6 @@ use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
 use App\Admin\Planificacion\Foda\FodaPerfil;
 use App\Models\Riiss\Evaluacion;
-use Illuminate\Support\Str;
 
 class RecalculateGamificationPoints extends Command
 {
@@ -22,31 +25,47 @@ class RecalculateGamificationPoints extends Command
 
     protected $description = 'Recalcula de forma retroactiva los puntos de gamificación e insignias basándose en datos históricos verificables.';
 
+    /** @var Collection<int, User> */
+    protected Collection $usersById;
+
+    protected ?string $defaultPeiId = null;
+
+    /** @var array<int, array<string, mixed>> */
+    protected array $pendingRows = [];
+
+    /** @var array<string, true> */
+    protected array $dedupeKeys = [];
+
     public function handle(GamificationService $gamificationService): int
     {
+        $started = microtime(true);
         $this->info('Iniciando recálculo de puntos de gamificación...');
 
+        $userFilter = $this->option('user');
         $usersQuery = User::query();
-        if ($userFilter = $this->option('user')) {
+        if ($userFilter) {
             $usersQuery->where(function ($q) use ($userFilter) {
                 $q->where('id', $userFilter)->orWhere('email', $userFilter);
             });
         }
         $users = $usersQuery->get();
+        $this->usersById = $users->keyBy('id');
 
         if ($users->isEmpty()) {
             $this->error('No se encontraron usuarios para procesar.');
             return Command::FAILURE;
         }
 
+        $this->defaultPeiId = $gamificationService->resolvePeiProfileId(null);
+
         if ($this->option('reset')) {
             $this->warn('Reseteando historial de puntos e insignias...');
             if ($userFilter) {
                 $userIds = $users->pluck('id');
-                \App\Models\Gamification\GamificationPoint::whereIn('user_id', $userIds)->delete();
+                GamificationPoint::whereIn('user_id', $userIds)->delete();
                 \App\Models\Gamification\GamificationBadge::whereIn('user_id', $userIds)->delete();
             } else {
-                \App\Models\Gamification\GamificationPoint::truncate();
+                GamificationPoint::truncate();
                 \App\Models\Gamification\GamificationBadge::truncate();
             }
         } else {
@@ -54,189 +73,254 @@ class RecalculateGamificationPoints extends Command
                 $userFilter ? (int) $users->first()->id : null
             );
             if ($removed > 0) {
-                $this->warn("Se eliminaron {$removed} registros de puntos huérfanos (referencia inexistente).");
+                $this->warn("Se eliminaron {$removed} registros de puntos huérfanos.");
             }
+
+            $this->backfillTaskCreators();
         }
 
         $this->info('Procesando ' . $users->count() . ' usuario(s)...');
 
-        // 1. Accesos diarios registrados
-        $this->info('Procesando accesos diarios...');
-        $loginsQuery = UserLogin::query();
-        if ($userFilter) {
-            $loginsQuery->whereIn('user_id', $users->pluck('id'));
+        $this->collectDailyLogins($userFilter);
+        $this->collectTasks();
+        $this->collectComments();
+        $this->collectFodaAnalisis();
+        $this->collectFodaCruces();
+        $this->collectRiissAsignaciones();
+        $this->collectRiissEvaluaciones($gamificationService);
+
+        $this->info('Insertando ' . count($this->pendingRows) . ' registros de puntos...');
+        $inserted = $gamificationService->insertPointsBatch($this->pendingRows);
+        $this->info("  ↳ {$inserted} filas insertadas.");
+
+        $this->info('Evaluando insignias finales...');
+        $bar = $this->output->createProgressBar($users->count());
+        $bar->start();
+        foreach ($users as $user) {
+            $gamificationService->evaluateBadgesFast($user, $this->defaultPeiId);
+            $bar->advance();
         }
-        foreach ($loginsQuery->orderBy('login_date')->get() as $login) {
-            $user = $users->firstWhere('id', $login->user_id);
-            if ($user) {
-                $gamificationService->awardPoints(
-                    $user,
-                    'daily_login',
-                    'Acceso diario al sistema',
-                    5
-                );
+        $bar->finish();
+        $this->newLine(2);
+
+        $elapsed = round(microtime(true) - $started, 1);
+        $this->info("¡Recálculo completado en {$elapsed}s!");
+
+        return Command::SUCCESS;
+    }
+
+    protected function backfillTaskCreators(): void
+    {
+        DB::table('activity_tasks as t')
+            ->join('gamification_points as gp', function ($join) {
+                $join->on(DB::raw('gp.reference_id'), '=', DB::raw('t.id::text'))
+                    ->where('gp.reference_type', ActivityTask::class)
+                    ->where('gp.action_type', 'task_created');
+            })
+            ->whereNull('t.created_by')
+            ->update(['t.created_by' => DB::raw('gp.user_id')]);
+    }
+
+    protected function queuePoint(
+        int $userId,
+        string $actionType,
+        string $description,
+        int $points,
+        ?string $referenceType = null,
+        $referenceId = null,
+        ?string $peiProfileId = null
+    ): void {
+        if (!$this->usersById->has($userId)) {
+            return;
+        }
+
+        if ($referenceType && $referenceId !== null) {
+            $key = "{$userId}|{$actionType}|{$referenceType}|{$referenceId}";
+            if (isset($this->dedupeKeys[$key])) {
+                return;
             }
+            $this->dedupeKeys[$key] = true;
         }
 
-        // 2. Tareas — solo acciones verificables por campo de auditoría
-        $this->info('Procesando tareas de actividades...');
+        $this->pendingRows[] = [
+            'user_id'        => $userId,
+            'pei_profile_id' => $peiProfileId ?: $this->defaultPeiId,
+            'points'         => $points,
+            'action_type'    => $actionType,
+            'description'    => $description,
+            'reference_type' => $referenceType,
+            'reference_id'   => $referenceId !== null ? (string) $referenceId : null,
+        ];
+    }
 
-        // Backfill: inferir creador desde puntos históricos correctos (live awards)
-        \App\Models\Gamification\GamificationPoint::query()
-            ->where('action_type', 'task_created')
-            ->where('reference_type', ActivityTask::class)
-            ->each(function ($point) {
-                $task = ActivityTask::find($point->reference_id);
-                if ($task && !$task->created_by) {
-                    $task->update(['created_by' => $point->user_id]);
-                }
-            });
+    protected function collectDailyLogins(?string $userFilter): void
+    {
+        $this->info('Recopilando accesos diarios...');
+        $query = UserLogin::query()->orderBy('login_date');
+        if ($userFilter) {
+            $query->whereIn('user_id', $this->usersById->keys());
+        }
 
-        $tasks = ActivityTask::with('activity')->get();
+        foreach ($query->cursor() as $login) {
+            $this->queuePoint(
+                $login->user_id,
+                'daily_login',
+                'Acceso diario al sistema',
+                5
+            );
+        }
+    }
+
+    protected function collectTasks(): void
+    {
+        $this->info('Recopilando tareas de actividades...');
         $skippedCreated = 0;
 
-        foreach ($tasks as $task) {
-            $peiProfileId = $gamificationService->resolvePeiProfileId($task->activity?->pei_profile_id);
+        foreach (ActivityTask::with('activity:id,pei_profile_id')->cursor() as $task) {
+            $peiProfileId = $task->activity?->pei_profile_id ?: $this->defaultPeiId;
 
             if ($task->created_by) {
-                $creator = $users->firstWhere('id', $task->created_by);
-                if ($creator) {
-                    $gamificationService->awardPoints(
-                        $creator,
-                        'task_created',
-                        'Creación de tarea: ' . Str::limit($task->title, 30),
-                        15,
-                        $task,
-                        $peiProfileId
-                    );
-                }
+                $this->queuePoint(
+                    $task->created_by,
+                    'task_created',
+                    'Creación de tarea: ' . Str::limit($task->title, 30),
+                    15,
+                    ActivityTask::class,
+                    $task->id,
+                    $peiProfileId
+                );
             } else {
                 $skippedCreated++;
             }
 
             if ((int) $task->status === 2 && $task->completed_by) {
-                $completer = $users->firstWhere('id', $task->completed_by);
-                if ($completer) {
-                    $gamificationService->awardPoints(
-                        $completer,
-                        'task_completed',
-                        'Tarea completada: ' . Str::limit($task->title, 30),
-                        25,
-                        $task,
-                        $peiProfileId
-                    );
-                }
+                $this->queuePoint(
+                    $task->completed_by,
+                    'task_completed',
+                    'Tarea completada: ' . Str::limit($task->title, 30),
+                    25,
+                    ActivityTask::class,
+                    $task->id,
+                    $peiProfileId
+                );
             }
         }
 
         if ($skippedCreated > 0) {
-            $this->comment("  ↳ {$skippedCreated} tareas sin created_by omitidas para 'task_created' (datos históricos).");
+            $this->comment("  ↳ {$skippedCreated} tareas sin created_by omitidas.");
         }
+    }
 
-        // 3. Comentarios en tareas
-        $this->info('Procesando comentarios...');
-        foreach (ActivityTaskComment::with('task.activity')->get() as $comment) {
-            $user = $users->firstWhere('id', $comment->user_id);
-            if (!$user || !$comment->task) {
+    protected function collectComments(): void
+    {
+        $this->info('Recopilando comentarios...');
+
+        foreach (ActivityTaskComment::with('task.activity:id,pei_profile_id')->cursor() as $comment) {
+            if (!$comment->task) {
                 continue;
             }
 
-            $peiProfileId = $gamificationService->resolvePeiProfileId($comment->task->activity?->pei_profile_id);
-            $gamificationService->awardPoints(
-                $user,
+            $this->queuePoint(
+                $comment->user_id,
                 'comment_created',
                 'Comentario en tarea: ' . Str::limit($comment->task->title, 30),
                 5,
-                $comment,
-                $peiProfileId
+                ActivityTaskComment::class,
+                $comment->id,
+                $comment->task->activity?->pei_profile_id ?: $this->defaultPeiId
             );
         }
+    }
 
-        // 4. Análisis FODA
-        $this->info('Procesando análisis FODA...');
-        foreach (FodaAnalisis::whereNotNull('user_id')->get() as $foda) {
-            $user = $users->firstWhere('id', $foda->user_id);
-            if ($user) {
-                $gamificationService->awardPoints(
-                    $user,
-                    'foda_analisis',
-                    'Análisis FODA: ' . ($foda->tipo ?? 'Aspecto'),
-                    15,
-                    $foda,
-                    $gamificationService->resolvePeiProfileId($foda->perfil_id)
-                );
-            }
+    protected function collectFodaAnalisis(): void
+    {
+        $this->info('Recopilando análisis FODA...');
+
+        foreach (FodaAnalisis::whereNotNull('user_id')->cursor() as $foda) {
+            $this->queuePoint(
+                $foda->user_id,
+                'foda_analisis',
+                'Análisis FODA: ' . ($foda->tipo ?? 'Aspecto'),
+                15,
+                FodaAnalisis::class,
+                $foda->id,
+                $foda->perfil_id ?: $this->defaultPeiId
+            );
         }
+    }
 
-        // 5. Estrategias de cruce FODA
-        $this->info('Procesando estrategias de cruce FODA...');
-        foreach (FodaCruceAmbiente::all() as $cruce) {
-            $user = $cruce->user_id ? $users->firstWhere('id', $cruce->user_id) : null;
-            if (!$user && $cruce->perfil_id) {
-                $perfil = FodaPerfil::find($cruce->perfil_id);
-                $user = $perfil?->user_id ? $users->firstWhere('id', $perfil->user_id) : null;
-            }
-            if ($user) {
-                $gamificationService->awardPoints(
-                    $user,
-                    'foda_cruce',
-                    'Estrategia Cruce FODA: ' . ($cruce->tipo ?? 'Estrategia'),
-                    30,
-                    $cruce,
-                    $gamificationService->resolvePeiProfileId($cruce->perfil_id)
-                );
-            }
-        }
+    protected function collectFodaCruces(): void
+    {
+        $this->info('Recopilando estrategias de cruce FODA...');
 
-        // 6. Asignaciones RIISS
-        $this->info('Procesando asignaciones RIISS...');
-        foreach (\App\Models\Riiss\Asignacion::with('establecimiento', 'evaluador')->get() as $asignacion) {
-            if (!$asignacion->evaluador || !$users->contains('id', $asignacion->evaluador->id)) {
+        $perfilUserMap = FodaPerfil::query()
+            ->whereNotNull('user_id')
+            ->pluck('user_id', 'id');
+
+        foreach (FodaCruceAmbiente::cursor() as $cruce) {
+            $userId = $cruce->user_id ?: ($cruce->perfil_id ? $perfilUserMap->get($cruce->perfil_id) : null);
+            if (!$userId) {
                 continue;
             }
 
-            $gamificationService->awardPoints(
-                $asignacion->evaluador,
+            $this->queuePoint(
+                $userId,
+                'foda_cruce',
+                'Estrategia Cruce FODA: ' . ($cruce->tipo ?? 'Estrategia'),
+                30,
+                FodaCruceAmbiente::class,
+                $cruce->id,
+                $cruce->perfil_id ?: $this->defaultPeiId
+            );
+        }
+    }
+
+    protected function collectRiissAsignaciones(): void
+    {
+        $this->info('Recopilando asignaciones RIISS...');
+
+        foreach (\App\Models\Riiss\Asignacion::with('establecimiento:id_establecimiento,nombre_oficial')->cursor() as $asignacion) {
+            if (!$asignacion->evaluador_id || !$this->usersById->has($asignacion->evaluador_id)) {
+                continue;
+            }
+
+            $this->queuePoint(
+                $asignacion->evaluador_id,
                 'riiss_asignacion',
                 'Asignación RIISS recibida: ' . ($asignacion->establecimiento?->nombre_oficial ?? 'Establecimiento'),
                 50,
-                $asignacion,
-                $gamificationService->resolvePeiProfileId($asignacion->pei_profile_id)
+                \App\Models\Riiss\Asignacion::class,
+                $asignacion->id,
+                $asignacion->pei_profile_id ?: $this->defaultPeiId
             );
         }
+    }
 
-        // 7. Evaluaciones RIISS completadas — solo match exacto por email
-        $this->info('Procesando evaluaciones RIISS...');
+    protected function collectRiissEvaluaciones(GamificationService $gamificationService): void
+    {
+        $this->info('Recopilando evaluaciones RIISS...');
         $skippedEval = 0;
-        foreach (Evaluacion::with('establecimiento')->where('estado', 'completada')->get() as $eval) {
-            $user = $gamificationService->resolveEvaluacionUser($eval, $users);
+
+        foreach (Evaluacion::with('establecimiento:id_establecimiento,nombre_oficial')->where('estado', 'completada')->cursor() as $eval) {
+            $user = $gamificationService->resolveEvaluacionUser($eval, $this->usersById->values());
             if (!$user) {
                 $skippedEval++;
                 continue;
             }
 
-            $gamificationService->awardPoints(
-                $user,
+            $this->queuePoint(
+                $user->id,
                 'riiss_evaluacion',
                 'Evaluación RIISS completada: ' . ($eval->establecimiento?->nombre_oficial ?? 'Establecimiento'),
                 100,
-                $eval,
-                $gamificationService->resolvePeiProfileId($eval->pei_profile_id)
+                Evaluacion::class,
+                $eval->id,
+                $eval->pei_profile_id ?: $this->defaultPeiId
             );
         }
 
         if ($skippedEval > 0) {
-            $this->comment("  ↳ {$skippedEval} evaluaciones omitidas por evaluador no identificable (sin email exacto).");
+            $this->comment("  ↳ {$skippedEval} evaluaciones omitidas (evaluador no identificable).");
         }
-
-        $this->info('Evaluando insignias finales...');
-        foreach ($users as $user) {
-            $gamificationService->evaluateBadges($user);
-        }
-
-        $this->info('¡Recálculo completado con éxito!');
-        $this->line('Ejecutá con --reset para reconstruir todo el historial desde cero.');
-
-        return Command::SUCCESS;
     }
 }

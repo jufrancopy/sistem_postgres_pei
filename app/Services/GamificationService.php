@@ -37,7 +37,8 @@ class GamificationService
         string $description,
         int $points,
         $referenceModel = null,
-        ?string $peiProfileId = null
+        ?string $peiProfileId = null,
+        bool $evaluateBadges = true
     ): ?GamificationPoint {
         if ($points <= 0) {
             return null;
@@ -74,10 +75,114 @@ class GamificationService
             'reference_id'   => $refId,
         ]);
 
-        // Evaluar insignias a desbloquear
-        $this->evaluateBadges($user, $peiProfileId);
+        if ($evaluateBadges) {
+            $this->evaluateBadges($user, $peiProfileId);
+        }
 
         return $record;
+    }
+
+    /**
+     * Inserta puntos en lote (recálculo masivo). No evalúa insignias por fila.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     */
+    public function insertPointsBatch(array $rows): int
+    {
+        if ($rows === []) {
+            return 0;
+        }
+
+        $now = now()->toDateTimeString();
+        $prepared = [];
+
+        foreach ($rows as $row) {
+            $prepared[] = [
+                'user_id'        => $row['user_id'],
+                'pei_profile_id' => $row['pei_profile_id'] ?? null,
+                'points'         => $row['points'],
+                'action_type'    => $row['action_type'],
+                'description'    => $row['description'],
+                'reference_type' => $row['reference_type'] ?? null,
+                'reference_id'   => isset($row['reference_id']) ? (string) $row['reference_id'] : null,
+                'created_at'     => $now,
+                'updated_at'     => $now,
+            ];
+        }
+
+        $inserted = 0;
+        foreach (array_chunk($prepared, 500) as $chunk) {
+            GamificationPoint::insert($chunk);
+            $inserted += count($chunk);
+        }
+
+        return $inserted;
+    }
+
+    /**
+     * Evalúa insignias usando agregados SQL (rápido post-recálculo).
+     */
+    public function evaluateBadgesFast(User $user, ?string $peiProfileId = null): void
+    {
+        $catalog = GamificationBadge::getCatalog();
+        $userPoints = (int) GamificationPoint::where('user_id', $user->id)->sum('points');
+
+        $counts = GamificationPoint::where('user_id', $user->id)
+            ->selectRaw('action_type, COUNT(*) as total')
+            ->groupBy('action_type')
+            ->pluck('total', 'action_type');
+
+        $commentsCount  = (int) ($counts['comment_created'] ?? 0);
+        $fodaCount      = (int) ($counts['foda_analisis'] ?? 0);
+        $cruceCount     = (int) ($counts['foda_cruce'] ?? 0);
+        $tasksCompleted = (int) ($counts['task_completed'] ?? 0);
+        $riissCount     = (int) ($counts['riiss_evaluacion'] ?? 0);
+        $loginsCount    = UserLogin::where('user_id', $user->id)->count();
+
+        $badgeConditions = [
+            'primer_paso'            => $commentsCount >= 1,
+            'diagnostico_inicial'    => $fodaCount >= 1,
+            'evaluador_novato'       => $riissCount >= 1,
+            'ingreso_diario'         => $loginsCount >= 1,
+            'tactico_eficiente'      => $tasksCompleted >= 10,
+            'analista_foda'          => $fodaCount >= 15,
+            'formulador_estrategico' => $cruceCount >= 5,
+            'evaluador_experto'      => $riissCount >= 10,
+            'comunicador'            => $commentsCount >= 20,
+            'arquitecto_estrategico' => ($cruceCount >= 15 && $fodaCount >= 30),
+            'guardian_ejecucion'     => $tasksCompleted >= 50,
+            'inspector_salud'        => $riissCount >= 25,
+            'leyenda_estrategica'    => $userPoints >= 1000,
+        ];
+
+        $existingBadges = GamificationBadge::where('user_id', $user->id)
+            ->pluck('badge_key')
+            ->all();
+
+        $badgesToInsert = [];
+        $unlockedAt = Carbon::now()->toDateTimeString();
+
+        foreach ($badgeConditions as $badgeKey => $conditionMet) {
+            if (!$conditionMet || !isset($catalog[$badgeKey]) || in_array($badgeKey, $existingBadges, true)) {
+                continue;
+            }
+
+            $badgesToInsert[] = [
+                'user_id'        => $user->id,
+                'pei_profile_id' => $peiProfileId,
+                'badge_key'      => $badgeKey,
+                'unlocked_at'    => $unlockedAt,
+                'created_at'     => $unlockedAt,
+                'updated_at'     => $unlockedAt,
+            ];
+            $existingBadges[] = $badgeKey;
+        }
+
+        if ($badgesToInsert !== []) {
+            foreach (array_chunk($badgesToInsert, 100) as $chunk) {
+                GamificationBadge::insert($chunk);
+            }
+        }
     }
 
     /**
