@@ -644,7 +644,7 @@ $(function() {
                     const row = `<tr style="border-bottom: 1px solid rgba(0,0,0,0.05); transition: background 0.2s;">
                         <td style="padding: 12px 8px; font-size: 0.85rem;">${formatDateTime(item.created_at)}</td>
                         <td style="padding: 12px 8px; font-size: 0.85rem;">
-                            <span class="badge" style="background: rgba(102, 126, 234, 0.1); color: #667eea; font-weight: 600; font-size: 0.75rem; text-transform: capitalize;">${item.action_type.replace(/_/g, ' ')}</span>
+                            <span class="badge" style="background: rgba(102, 126, 234, 0.1); color: #667eea; font-weight: 600; font-size: 0.75rem;">${item.action_type_label}</span>
                         </td>
                         <td style="padding: 12px 8px; font-size: 0.85rem;">${item.description || '-'}</td>
                         <td style="padding: 12px 8px; text-align: right; font-weight: 700; font-size: 0.95rem; color: ${pointsColor};">

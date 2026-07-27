@@ -80,7 +80,18 @@ class UserProfileController extends Controller
             });
         }
 
-        $points = $pointsQuery->orderByDesc('created_at')->get();
+        $points = $pointsQuery->orderByDesc('created_at')->get()->map(function($point) {
+            return [
+                'id' => $point->id,
+                'created_at' => $point->created_at,
+                'action_type' => $point->action_type,
+                'action_type_label' => $point->getActionTypeLabel(),
+                'description' => $point->description,
+                'points' => $point->points,
+                'reference_type' => $point->reference_type,
+                'reference_id' => $point->reference_id,
+            ];
+        });
 
         return response()->json([
             'ok' => true,

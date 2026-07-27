@@ -34,4 +34,19 @@ class GamificationPoint extends Model
     {
         return $this->morphTo();
     }
+
+    public function getActionTypeLabel()
+    {
+        $labels = [
+            'task_created'       => 'Tarea creada',
+            'task_completed'     => 'Tarea completada',
+            'comment_created'    => 'Comentario creado',
+            'foda_analisis'      => 'Análisis FODA',
+            'foda_cruce'         => 'Cruce FODA',
+            'riiss_asignacion'   => 'Asignación RIISS',
+            'riiss_evaluacion'   => 'Evaluación RIISS',
+            'riiss_cumplimiento' => 'Cumplimiento RIISS',
+        ];
+        return $labels[$this->action_type] ?? ucfirst(str_replace('_', ' ', $this->action_type));
+    }
 }
