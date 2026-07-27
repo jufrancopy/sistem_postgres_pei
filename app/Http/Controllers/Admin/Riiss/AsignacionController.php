@@ -36,9 +36,7 @@ class AsignacionController extends Controller
         if ($request->filled('evaluador'))  $query->where('evaluador_id', $request->evaluador);
         if ($request->filled('buscar')) {
             $b = $request->buscar;
-            $query->whereHas('establecimiento', fn($q) =>
-                $q->where('nombre_oficial', 'ILIKE', "%{$b}%")
-            );
+            $query->where('id_establecimiento', $b);
         }
 
         $items = $query->paginate(20);

@@ -14,7 +14,7 @@ class ActivityTask extends Model
 
     protected $fillable = [
         'activity_id', 'title', 'details', 'etiqueta', 'color',
-        'fecha_inicio', 'fecha_vencimiento', 'assigned_to', 'status',
+        'fecha_inicio', 'fecha_vencimiento', 'assigned_to', 'created_by', 'status',
         'completed_at', 'completed_by', 'completion_note', 'schedule_item_id',
         'es_reunion',
     ];
@@ -38,6 +38,11 @@ class ActivityTask extends Model
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function activity()

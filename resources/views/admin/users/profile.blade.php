@@ -75,7 +75,13 @@
                         <div class="card-body text-center py-3 px-3" style="background: linear-gradient(180deg, rgba(255,244,199,.95), rgba(255,238,166,.95));">
                             <small class="text-uppercase d-block font-weight-bold mb-2" style="font-size: .65rem; color: #b8860b;">Reputación</small>
                             <span class="h3 font-weight-bold text-dark mb-0">⭐ {{ number_format($gamification['total_points']) }}</span>
-                            <small class="d-block text-muted mt-1" style="font-size: .65rem">puntos acumulados</small>
+                            <small class="d-block text-muted mt-1" style="font-size: .65rem">puntos acumulados (válidos)</small>
+                            @if(($gamification['orphaned_count'] ?? 0) > 0)
+                            <small class="d-block text-warning mt-1" style="font-size: .62rem">
+                                <i class="fa fa-exclamation-triangle"></i>
+                                {{ $gamification['orphaned_count'] }} registro(s) excluido(s) por referencia inválida
+                            </small>
+                            @endif
                         </div>
                     </div>
                     <div class="card border-0 rounded" style="background: #c9eef8; border: 1px solid #64d4ed; width: 100%; box-shadow: 0 4px 15px rgba(33, 150, 243, .08);">
@@ -318,15 +324,21 @@
                             </thead>
                             <tbody>
                                 @foreach($gamification['recent_history'] as $item)
-                                <tr>
+                                @php $validRef = $item->isReferenceValid(); @endphp
+                                <tr class="{{ $validRef ? '' : 'bg-light text-muted' }}">
                                     <td class="text-muted" style="width: 140px">
                                         {{ $item->created_at->format('d/m/Y H:i') }}
                                     </td>
                                     <td>
-                                        <span class="font-weight-bold text-dark d-block">{{ $item->description }}</span>
-                                        <small class="text-muted text-uppercase" style="font-size: .68rem">{{ $item->getActionTypeLabel() }}</small>
+                                        <span class="font-weight-bold d-block {{ $validRef ? 'text-dark' : 'text-muted' }}" style="{{ $validRef ? '' : 'text-decoration: line-through;' }}">{{ $item->description }}</span>
+                                        <small class="text-uppercase" style="font-size: .68rem">
+                                            {{ $item->getActionTypeLabel() }}
+                                            @unless($validRef)
+                                            <span class="badge badge-warning ml-1" style="font-size: .6rem">Referencia inválida</span>
+                                            @endunless
+                                        </small>
                                     </td>
-                                    <td class="text-success font-weight-bold">
+                                    <td class="font-weight-bold {{ $validRef ? 'text-success' : 'text-muted' }}" style="{{ $validRef ? '' : 'text-decoration: line-through;' }}">
                                         +{{ $item->points }} pts
                                     </td>
                                 </tr>
@@ -365,6 +377,8 @@
                             'riiss_evaluacion'=> ['label' => 'Evaluaciones RIISS',   'pts' => '+50 pts', 'icon' => 'fa-hospital',       'color' => 'danger'],
                             'comment_created' => ['label' => 'Comentarios',          'pts' => '+5 pts',  'icon' => 'fa-comment',        'color' => 'secondary'],
                             'daily_login'     => ['label' => 'Accesos Diarios',      'pts' => '+5 pts',  'icon' => 'fa-key',            'color' => 'dark'],
+                            'login_streak'    => ['label' => 'Racha de Accesos',     'pts' => '+20 pts', 'icon' => 'fa-fire',           'color' => 'warning'],
+                            'riiss_asignacion'=> ['label' => 'Asignaciones RIISS',   'pts' => '+50 pts', 'icon' => 'fa-clipboard-list', 'color' => 'info'],
                         ];
                     @endphp
 
@@ -639,15 +653,20 @@ $(function() {
 
                 response.points.forEach(function(item) {
                     const isPositive = item.points > 0;
-                    const pointsColor = isPositive ? '#667eea' : '#f56565';
+                    const isValid = item.reference_valid !== false;
+                    const pointsColor = !isValid ? '#a0aec0' : (isPositive ? '#667eea' : '#f56565');
                     const pointsIcon = isPositive ? 'fa-arrow-up' : 'fa-arrow-down';
-                    const row = `<tr style="border-bottom: 1px solid rgba(0,0,0,0.05); transition: background 0.2s;">
+                    const rowStyle = isValid ? '' : 'opacity: 0.65; background: #fafafa;';
+                    const descStyle = isValid ? '' : 'text-decoration: line-through;';
+                    const invalidBadge = isValid ? '' : '<span class="badge badge-warning ml-1" style="font-size: 0.65rem;">Referencia inválida</span>';
+                    const row = `<tr style="border-bottom: 1px solid rgba(0,0,0,0.05); transition: background 0.2s; ${rowStyle}">
                         <td style="padding: 12px 8px; font-size: 0.85rem;">${formatDateTime(item.created_at)}</td>
                         <td style="padding: 12px 8px; font-size: 0.85rem;">
                             <span class="badge" style="background: rgba(102, 126, 234, 0.1); color: #667eea; font-weight: 600; font-size: 0.75rem;">${item.action_type_label}</span>
+                            ${invalidBadge}
                         </td>
-                        <td style="padding: 12px 8px; font-size: 0.85rem;">${item.description || '-'}</td>
-                        <td style="padding: 12px 8px; text-align: right; font-weight: 700; font-size: 0.95rem; color: ${pointsColor};">
+                        <td style="padding: 12px 8px; font-size: 0.85rem; ${descStyle}">${item.description || '-'}</td>
+                        <td style="padding: 12px 8px; text-align: right; font-weight: 700; font-size: 0.95rem; color: ${pointsColor}; ${descStyle}">
                             <i class="fa ${pointsIcon} mr-1" style="font-size: 0.8rem; opacity: 0.7;"></i>${isPositive ? '+' : ''}${item.points}
                         </td>
                     </tr>`;

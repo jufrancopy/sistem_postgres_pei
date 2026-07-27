@@ -47,6 +47,30 @@ class EvaluacionController extends Controller
     }
 
     /**
+     * GET /riiss/evaluaciones/establecimientos
+     * Búsqueda de establecimientos para Select2.
+     */
+    public function buscarEstablecimientos(Request $request): JsonResponse
+    {
+        $q = $request->get('q', '');
+
+        $establecimientos = Establecimiento::select('id_establecimiento', 'nombre_oficial', 'tipologia_clasificacion')
+            ->when($q, fn($query) =>
+                $query->where('nombre_oficial', 'ILIKE', "%{$q}%")
+                      ->orWhere('id_establecimiento', 'ILIKE', "%{$q}%")
+            )
+            ->orderBy('nombre_oficial')
+            ->limit(30)
+            ->get()
+            ->map(fn($e) => [
+                'id'   => $e->id_establecimiento,
+                'text' => $e->nombre_oficial . ' (' . ($e->tipologia_clasificacion ?? 'N/A') . ')',
+            ]);
+
+        return response()->json(['results' => $establecimientos]);
+    }
+
+    /**
      * GET /riiss/dashboard
      */
     public function dashboard()

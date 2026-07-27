@@ -46,7 +46,26 @@ class GamificationPoint extends Model
             'riiss_asignacion'   => 'Asignación RIISS',
             'riiss_evaluacion'   => 'Evaluación RIISS',
             'riiss_cumplimiento' => 'Cumplimiento RIISS',
+            'daily_login'        => 'Acceso diario',
+            'login_streak'       => 'Racha de accesos',
         ];
         return $labels[$this->action_type] ?? ucfirst(str_replace('_', ' ', $this->action_type));
+    }
+
+    public function isReferenceValid(): bool
+    {
+        if (!$this->reference_type || !$this->reference_id) {
+            return true;
+        }
+
+        if (!class_exists($this->reference_type)) {
+            return false;
+        }
+
+        $model = app($this->reference_type);
+
+        return $model->newQuery()
+            ->where($model->getKeyName(), $this->reference_id)
+            ->exists();
     }
 }

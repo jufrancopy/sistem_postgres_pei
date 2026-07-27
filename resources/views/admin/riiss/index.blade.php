@@ -262,7 +262,7 @@
                 {{-- Filtros --}}
                 <div class="row mb-3 align-items-center">
                     <div class="col-md-3 mb-2">
-                        <input type="text" id="fBuscarUnificado" class="form-control" placeholder="Buscar establecimiento, departamento...">
+                        <input id="fBuscarUnificado" type="text" class="form-control" style="width:100%" placeholder="Buscar establecimiento...">
                     </div>
                     <div class="col-md-3 mb-2">
                         <select id="fTipologiaUnificada" class="form-control" style="width:100%">

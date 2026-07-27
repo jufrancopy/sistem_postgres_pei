@@ -143,20 +143,26 @@ class ActivityController extends Controller
     {
         $request->validate(['title' => 'required'], ['title.required' => 'El título es requerido']);
 
+        $payload = [
+            'activity_id'       => $activityId,
+            'title'             => $request->title,
+            'details'           => $request->details,
+            'etiqueta'          => $request->etiqueta,
+            'color'             => $request->color ?? '#6b7280',
+            'fecha_inicio'     => $request->fecha_inicio ?: null,
+            'fecha_vencimiento' => $request->fecha_vencimiento ?: null,
+            'assigned_to'       => $request->assigned_to,
+            'status'            => $request->status ?? 0,
+            'es_reunion'        => $request->boolean('es_reunion'),
+        ];
+
+        if (!$request->task_id) {
+            $payload['created_by'] = Auth::id();
+        }
+
         $task = ActivityTask::updateOrCreate(
             ['id' => $request->task_id ?: null],
-            [
-                'activity_id'       => $activityId,
-                'title'             => $request->title,
-                'details'           => $request->details,
-                'etiqueta'          => $request->etiqueta,
-                'color'             => $request->color ?? '#6b7280',
-                'fecha_inicio'     => $request->fecha_inicio ?: null,
-                'fecha_vencimiento' => $request->fecha_vencimiento ?: null,
-                'assigned_to'       => $request->assigned_to,
-                'status'            => $request->status ?? 0,
-                'es_reunion'        => $request->boolean('es_reunion'),
-            ]
+            $payload
         );
 
         if ($task->wasRecentlyCreated && Auth::user()) {

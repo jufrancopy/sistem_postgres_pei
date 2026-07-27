@@ -81,6 +81,87 @@ class GamificationService
     }
 
     /**
+     * Verifica si el registro referenciado aún existe en la base de datos.
+     */
+    public function referenceExists(?string $referenceType, ?string $referenceId): bool
+    {
+        if (!$referenceType || !$referenceId || !class_exists($referenceType)) {
+            return true;
+        }
+
+        $model = app($referenceType);
+
+        return $model->newQuery()
+            ->where($model->getKeyName(), $referenceId)
+            ->exists();
+    }
+
+    /**
+     * Elimina puntos cuyo registro de referencia ya no existe (tareas borradas, etc.).
+     */
+    public function purgeOrphanedPoints(?int $userId = null): int
+    {
+        $query = GamificationPoint::query()
+            ->whereNotNull('reference_type')
+            ->whereNotNull('reference_id');
+
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+
+        $removed = 0;
+        foreach ($query->get() as $point) {
+            if (!$this->referenceExists($point->reference_type, $point->reference_id)) {
+                $point->delete();
+                $removed++;
+            }
+        }
+
+        return $removed;
+    }
+
+    /**
+     * Resuelve el usuario evaluador de una evaluación RIISS sin coincidencias ambiguas por nombre.
+     */
+    public function resolveEvaluacionUser(Evaluacion $eval, $users = null): ?User
+    {
+        $users = $users ?? User::all();
+
+        if ($eval->evaluador_usuario_institucional) {
+            $byEmail = $users->firstWhere('email', $eval->evaluador_usuario_institucional);
+            if ($byEmail) {
+                return $byEmail;
+            }
+        }
+
+        if (is_array($eval->evaluadores)) {
+            foreach ($eval->evaluadores as $evItem) {
+                if (!is_string($evItem) || !str_contains($evItem, '@')) {
+                    continue;
+                }
+                $byEmail = $users->firstWhere('email', $evItem);
+                if ($byEmail) {
+                    return $byEmail;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Resuelve el PEI asociado a una acción de gamificación.
+     */
+    public function resolvePeiProfileId(?string $peiProfileId = null): ?string
+    {
+        if ($peiProfileId) {
+            return $peiProfileId;
+        }
+
+        return HomeConfiguration::first()?->pei_profile_id;
+    }
+
+    /**
      * Registra el ingreso diario del usuario y otorga puntos
      */
     public function recordDailyLogin(User $user, ?string $ipAddress = null): void
@@ -107,7 +188,14 @@ class GamificationService
                 ->count();
 
             if ($consecutiveLogins >= 5) {
-                $this->awardPoints($user, 'login_streak', 'Bonificación: Racha de 5 días de acceso continuo', 20);
+                $alreadyAwarded = GamificationPoint::where('user_id', $user->id)
+                    ->where('action_type', 'login_streak')
+                    ->whereDate('created_at', $today)
+                    ->exists();
+
+                if (!$alreadyAwarded) {
+                    $this->awardPoints($user, 'login_streak', 'Bonificación: Racha de 5 días de acceso continuo', 20);
+                }
             }
         }
     }
@@ -120,12 +208,12 @@ class GamificationService
         $catalog = GamificationBadge::getCatalog();
         $userPoints = $this->getUserTotalPoints($user, $peiProfileId);
 
-        // Conteos de acciones del usuario
-        $commentsCount   = GamificationPoint::where('user_id', $user->id)->where('action_type', 'comment_created')->count();
-        $fodaCount       = GamificationPoint::where('user_id', $user->id)->where('action_type', 'foda_analisis')->count();
-        $cruceCount      = GamificationPoint::where('user_id', $user->id)->where('action_type', 'foda_cruce')->count();
-        $tasksCompleted  = GamificationPoint::where('user_id', $user->id)->where('action_type', 'task_completed')->count();
-        $riissCount      = GamificationPoint::where('user_id', $user->id)->where('action_type', 'riiss_evaluacion')->count();
+        // Conteos de acciones del usuario (solo referencias válidas)
+        $commentsCount   = $this->countValidActions($user, 'comment_created');
+        $fodaCount       = $this->countValidActions($user, 'foda_analisis');
+        $cruceCount      = $this->countValidActions($user, 'foda_cruce');
+        $tasksCompleted  = $this->countValidActions($user, 'task_completed');
+        $riissCount      = $this->countValidActions($user, 'riiss_evaluacion');
         $loginsCount     = UserLogin::where('user_id', $user->id)->count();
 
         $badgeConditions = [
@@ -167,17 +255,55 @@ class GamificationService
     }
 
     /**
-     * Obtiene los puntos totales del usuario (filtrado por PEI o global)
+     * Cuenta acciones de un tipo solo cuando la referencia sigue existiendo.
      */
-    public function getUserTotalPoints(User $user, ?string $peiProfileId = null): int
+    public function countValidActions(User $user, string $actionType): int
+    {
+        return GamificationPoint::where('user_id', $user->id)
+            ->where('action_type', $actionType)
+            ->get()
+            ->filter(fn (GamificationPoint $point) => $this->referenceExists(
+                $point->reference_type,
+                $point->reference_id
+            ))
+            ->count();
+    }
+
+    /**
+     * Query base de puntos del usuario, opcionalmente filtrado por PEI.
+     */
+    protected function pointsQuery(User $user, ?string $peiProfileId = null)
     {
         $query = GamificationPoint::where('user_id', $user->id);
+
         if ($peiProfileId) {
-            $query->where(function($q) use ($peiProfileId) {
+            $query->where(function ($q) use ($peiProfileId) {
                 $q->where('pei_profile_id', $peiProfileId)->orWhereNull('pei_profile_id');
             });
         }
-        return (int)$query->sum('points');
+
+        return $query;
+    }
+
+    /**
+     * Puntos con referencia verificada (excluye huérfanos).
+     */
+    public function getValidPointsForUser(User $user, ?string $peiProfileId = null): \Illuminate\Support\Collection
+    {
+        return $this->pointsQuery($user, $peiProfileId)
+            ->get()
+            ->filter(fn (GamificationPoint $point) => $this->referenceExists(
+                $point->reference_type,
+                $point->reference_id
+            ));
+    }
+
+    /**
+     * Obtiene los puntos totales del usuario (filtrado por PEI, sin huérfanos).
+     */
+    public function getUserTotalPoints(User $user, ?string $peiProfileId = null): int
+    {
+        return (int) $this->getValidPointsForUser($user, $peiProfileId)->sum('points');
     }
 
     /**
@@ -238,27 +364,30 @@ class GamificationService
             ]);
         }
 
-        // Desglose de puntos por categoría
-        $pointsQuery = GamificationPoint::where('user_id', $user->id);
-        if ($peiProfileId) {
-            $pointsQuery->where(function($q) use ($peiProfileId) {
-                $q->where('pei_profile_id', $peiProfileId)->orWhereNull('pei_profile_id');
-            });
-        }
-        $byAction = (clone $pointsQuery)
-            ->selectRaw('action_type, SUM(points) as total, COUNT(*) as count')
-            ->groupBy('action_type')
-            ->get()
-            ->keyBy('action_type');
+        // Desglose de puntos por categoría (solo referencias válidas)
+        $allPoints = $this->pointsQuery($user, $peiProfileId)->get();
+        $validPoints = $allPoints->filter(fn (GamificationPoint $point) => $this->referenceExists(
+            $point->reference_type,
+            $point->reference_id
+        ));
+        $orphanedCount = $allPoints->count() - $validPoints->count();
 
-        // Historial reciente de transacciones de puntos
-        $recentHistory = (clone $pointsQuery)
+        $byAction = $validPoints
+            ->groupBy('action_type')
+            ->map(fn ($group) => (object) [
+                'total' => $group->sum('points'),
+                'count' => $group->count(),
+            ]);
+
+        // Historial reciente (incluye inválidos marcados para auditoría)
+        $recentHistory = $this->pointsQuery($user, $peiProfileId)
             ->latest()
             ->take(10)
             ->get();
 
         return [
             'total_points'    => $totalPoints,
+            'orphaned_count'  => $orphanedCount,
             'level_number'    => $currentLevelNum,
             'level_name'      => $currentLevel['name'],
             'level_icon'      => $currentLevel['icon'],

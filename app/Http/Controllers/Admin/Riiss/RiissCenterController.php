@@ -46,14 +46,7 @@ class RiissCenterController extends Controller
             'evaluaciones' => fn($q) => $q->latest()
         ]);
 
-        if ($buscar = trim($request->get('buscar', ''))) {
-            $query->where(function($q) use ($buscar) {
-                $q->where('nombre_oficial', 'ILIKE', "%{$buscar}%")
-                  ->orWhere('id_establecimiento', 'ILIKE', "%{$buscar}%")
-                  ->orWhere('depto_nc', 'ILIKE', "%{$buscar}%")
-                  ->orWhere('dist_nc', 'ILIKE', "%{$buscar}%");
-            });
-        }
+        $buscar = trim($request->get('buscar', ''));
 
         if ($tipologia = trim($request->get('tipologia', ''))) {
             $query->where('tipologia_clasificacion', $tipologia);
@@ -74,14 +67,26 @@ class RiissCenterController extends Controller
         }
 
         return DataTables::of($query)
+            // Aplicar filtrado manual para la búsqueda global para evitar que Yajra
+            // construya cláusulas usando nombres de columna enviados por el cliente
+            // que podrían no existir (p. ej. `depto_nc`). Esto fuerza el uso de
+            // solo las columnas que sabemos existen en la tabla `establecimientos`.
+            ->filter(function ($q) use ($buscar) {
+                if ($buscar !== '') {
+                    $q->where(function($sq) use ($buscar) {
+                        $sq->where('nombre_oficial', 'ILIKE', "%{$buscar}%")
+                           ->orWhere('id_establecimiento', 'ILIKE', "%{$buscar}%")
+                           ->orWhere('departamento', 'ILIKE', "%{$buscar}%");
+                    });
+                }
+            }, true)
             ->addIndexColumn()
             ->addColumn('establecimiento', function ($est) {
                 return '<strong>' . e($est->nombre_oficial) . '</strong><br><small class="text-muted">ID: ' . e($est->id_establecimiento) . '</small>';
             })
             ->addColumn('tipologia_ubicacion', function ($est) {
-                $dept = $est->depto_nc ?: $est->departamento ?: '—';
-                $dist = $est->dist_nc ?: '—';
-                return '<small>' . e($est->tipologia_clasificacion ?? '—') . '</small><br><small class="text-muted">' . e($dept) . ', ' . e($dist) . '</small>';
+                $dept = $est->departamento ?: '—';
+                return '<small>' . e($est->tipologia_clasificacion ?? '—') . '</small><br><small class="text-muted">' . e($dept) . '</small>';
             })
             ->addColumn('evaluador', function ($est) {
                 $asig = $est->asignaciones->first();
@@ -128,5 +133,30 @@ class RiissCenterController extends Controller
             })
             ->rawColumns(['establecimiento', 'tipologia_ubicacion', 'evaluador', 'pei_plan', 'fecha_limite', 'estado_supervision', 'cumplimiento', 'acciones'])
             ->make(true);
+    }
+
+    public function buscarEstablecimientos(Request $request)
+    {
+        $search = trim($request->get('q', ''));
+        $query = Establecimiento::query();
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nombre_oficial', 'ILIKE', "%{$search}%")
+                  ->orWhere('id_establecimiento', 'ILIKE', "%{$search}%")
+                  ->orWhere('departamento', 'ILIKE', "%{$search}%");
+            });
+        }
+
+        $establecimientos = $query->orderBy('nombre_oficial')->limit(20)->get();
+
+        $results = $establecimientos->map(function($est) {
+            return [
+                'id' => $est->id_establecimiento,
+                'text' => $est->nombre_oficial . ' (' . ($est->departamento ?: 'N/A') . ')',
+            ];
+        });
+
+        return response()->json(['results' => $results]);
     }
 }

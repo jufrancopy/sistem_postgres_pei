@@ -467,6 +467,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('configuracion');
         Route::get('datos-unificados', [\App\Http\Controllers\Admin\Riiss\RiissCenterController::class, 'datosUnificados'])
             ->name('datos-unificados');
+        Route::get('buscar-establecimientos', [\App\Http\Controllers\Admin\Riiss\RiissCenterController::class, 'buscarEstablecimientos'])
+            ->name('buscar-establecimientos');
 
         // Aliases / Redirecciones de rutas anteriores
         Route::get('dashboard', function() { return redirect()->route('riiss.index'); })->name('dashboard');
