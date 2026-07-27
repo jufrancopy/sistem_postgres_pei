@@ -490,44 +490,50 @@
 {{-- Modal detalle de puntos por usuario --}}
 <div class="modal fade" id="modalPointsDetail" tabindex="-1" role="dialog" aria-labelledby="modalPointsDetailTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 10px; overflow: hidden;">
-            <div class="modal-header py-3 bg-info text-white">
-                <h5 class="modal-title font-weight-bold" id="modalPointsDetailTitle">
-                    Detalle de Puntos
-                </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header py-4 text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                <div class="w-100">
+                    <h5 class="modal-title font-weight-bold d-flex align-items-center" id="modalPointsDetailTitle" style="font-size: 1.3rem;">
+                        <i class="fa fa-star mr-2" style="font-size: 1.2rem;"></i>
+                        Historial de Puntos
+                    </h5>
+                    <small class="text-white" style="opacity: 0.9; margin-top: 4px; display: block;">Seguimiento de tu actividad y progresión</small>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.8;">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body p-0">
-                <div class="p-3 border-bottom bg-light">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <small class="text-muted">Usuario</small>
-                            <div id="modalPointsDetailUser" class="font-weight-bold"></div>
+                <div class="p-4" style="background: linear-gradient(to bottom, #f8f9ff, #ffffff);">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted font-weight-bold" style="font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;">Usuario</small>
+                            <div id="modalPointsDetailUser" class="font-weight-bold text-dark" style="font-size: 1.1rem; margin-top: 4px;"></div>
                         </div>
-                        <div class="text-right">
-                            <small class="text-muted">PEI</small>
-                            <div id="modalPointsDetailPei" class="font-weight-bold"></div>
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted font-weight-bold" style="font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;">Plan PEI</small>
+                            <div id="modalPointsDetailPei" class="font-weight-bold text-dark" style="font-size: 1.1rem; margin-top: 4px;"><span class="badge badge-info">Global</span></div>
                         </div>
                     </div>
                 </div>
-                <div class="p-3">
-                    <div id="modalPointsDetailLoading" class="text-center py-4">
-                        <i class="fa fa-spinner fa-spin fa-2x text-info"></i>
-                        <div class="mt-2 text-muted">Cargando historial de puntos...</div>
+                <div style="border-top: 1px solid rgba(0,0,0,0.08);">
+                <div class="p-4">
+                    <div id="modalPointsDetailLoading" class="text-center py-5">
+                        <i class="fa fa-spinner fa-spin fa-2x" style="color: #667eea;"></i>
+                        <div class="mt-3 text-muted" style="font-size: 0.95rem;">Cargando historial de puntos...</div>
                     </div>
-                    <div id="modalPointsDetailEmpty" class="text-center py-4 d-none text-muted">
-                        No se encontraron aportes con puntuación para este usuario.
+                    <div id="modalPointsDetailEmpty" class="text-center py-5 d-none">
+                        <i class="fa fa-inbox fa-2x text-muted" style="opacity: 0.4; margin-bottom: 12px;"></i>
+                        <div class="text-muted" style="font-size: 0.95rem;">No se encontraron aportes con puntuación para este usuario.</div>
                     </div>
                     <div id="modalPointsDetailTable" class="table-responsive d-none" style="max-height: 420px; overflow-y: auto;">
                         <table class="table table-sm table-hover mb-0">
-                            <thead class="thead-light">
+                            <thead style="background: #f8f9ff; border-bottom: 2px solid #667eea;">
                                 <tr>
-                                    <th style="width: 18%;">Fecha</th>
-                                    <th style="width: 20%;">Acción</th>
-                                    <th>Descripción</th>
-                                    <th style="width: 12%;" class="text-right">Puntos</th>
+                                    <th style="width: 18%; padding: 12px 8px; color: #667eea; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Fecha</th>
+                                    <th style="width: 20%; padding: 12px 8px; color: #667eea; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Acción</th>
+                                    <th style="padding: 12px 8px; color: #667eea; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Descripción</th>
+                                    <th style="width: 12%; padding: 12px 8px; color: #667eea; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Puntos</th>
                                 </tr>
                             </thead>
                             <tbody id="modalPointsDetailBody"></tbody>
@@ -535,8 +541,8 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer py-2 bg-white">
-                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
+            <div class="modal-footer py-3" style="background: #f8f9ff; border-top: 1px solid rgba(102, 126, 234, 0.1);">
+                <button type="button" class="btn btn-sm" style="background: #667eea; color: white; border: none; border-radius: 6px;" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -572,11 +578,21 @@ $(function() {
     });
 
     const selectedPeiId = @json($selectedPeiId);
+    const peiNamesMap = {
+        @foreach($peiPlanes as $p)
+            '{{ $p->id }}': '{{ strip_tags($p->name) }}{{ $p->year_start ? " (" . \Carbon\Carbon::parse($p->year_start)->format('Y') . ")" : "" }}',
+        @endforeach
+    };
     const pointsDetailUrlTemplate = '{{ route('user.profile.points', ['id' => '__ID__']) }}';
 
     function resetPointsDetailModal() {
         $('#modalPointsDetailUser').text('');
-        $('#modalPointsDetailPei').text(selectedPeiId ? selectedPeiId : 'Global');
+        const peiLabel = selectedPeiId 
+            ? (peiNamesMap[selectedPeiId] || selectedPeiId) 
+            : 'Global';
+        $('#modalPointsDetailPei').html(selectedPeiId 
+            ? '<span class="badge badge-primary" style="background: linear-gradient(135deg, #667eea, #764ba2);">' + peiLabel + '</span>'
+            : '<span class="badge badge-info">Global</span>');
         $('#modalPointsDetailBody').empty();
         $('#modalPointsDetailLoading').removeClass('d-none');
         $('#modalPointsDetailEmpty').addClass('d-none');
@@ -614,11 +630,18 @@ $(function() {
                 }
 
                 response.points.forEach(function(item) {
-                    const row = `<tr>
-                        <td>${formatDateTime(item.created_at)}</td>
-                        <td class="text-capitalize">${item.action_type.replace(/_/g, ' ')}</td>
-                        <td>${item.description || '-'}</td>
-                        <td class="text-right font-weight-bold">${item.points > 0 ? '+' : ''}${item.points}</td>
+                    const isPositive = item.points > 0;
+                    const pointsColor = isPositive ? '#667eea' : '#f56565';
+                    const pointsIcon = isPositive ? 'fa-arrow-up' : 'fa-arrow-down';
+                    const row = `<tr style="border-bottom: 1px solid rgba(0,0,0,0.05); transition: background 0.2s;">
+                        <td style="padding: 12px 8px; font-size: 0.85rem;">${formatDateTime(item.created_at)}</td>
+                        <td style="padding: 12px 8px; font-size: 0.85rem;">
+                            <span class="badge" style="background: rgba(102, 126, 234, 0.1); color: #667eea; font-weight: 600; font-size: 0.75rem; text-transform: capitalize;">${item.action_type.replace(/_/g, ' ')}</span>
+                        </td>
+                        <td style="padding: 12px 8px; font-size: 0.85rem;">${item.description || '-'}</td>
+                        <td style="padding: 12px 8px; text-align: right; font-weight: 700; font-size: 0.95rem; color: ${pointsColor};">
+                            <i class="fa ${pointsIcon} mr-1" style="font-size: 0.8rem; opacity: 0.7;"></i>${isPositive ? '+' : ''}${item.points}
+                        </td>
                     </tr>`;
                     $('#modalPointsDetailBody').append(row);
                 });
