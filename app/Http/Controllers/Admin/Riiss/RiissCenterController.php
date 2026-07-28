@@ -120,15 +120,16 @@ class RiissCenterController extends Controller
                 $evalIdStr = $eval ? $eval->id : 'null';
                 $nomEsc = addslashes($est->nombre_oficial);
 
-                $btn = '<button class="circle-btn ' . ($asig ? 'circle-btn-warning' : 'circle-btn-info') . ' btn-sm mr-1" onclick="abrirModalAsignacion(' . $asigIdStr . ', \'' . e($est->id_establecimiento) . '\', \'' . e($nomEsc) . '\')" title="' . ($asig ? 'Editar asignación' : 'Nueva Asignación') . '"><i class="fa ' . ($asig ? 'fa-pencil-alt' : 'fa-plus') . '"></i></button>';                $btn .= '<button class="circle-btn circle-btn-info btn-sm mr-1" onclick="abrirEditarEstablecimiento(\'' . e($est->id_establecimiento) . '\')" title="Editar establecimiento"><i class="fa fa-edit"></i></button>';
+                $btn = '<div class="dt-body-center">';
+                $btn .= '<button class="circle-btn ' . ($asig ? 'circle-btn-warning' : 'circle-btn-info') . ' btn-sm" onclick="abrirModalAsignacion(' . $asigIdStr . ', \'' . e($est->id_establecimiento) . '\', \'' . e($nomEsc) . '\')" title="' . ($asig ? 'Editar asignación' : 'Nueva Asignación') . '"><i class="fa ' . ($asig ? 'fa-pencil-alt' : 'fa-plus') . '"></i></button>';
+                $btn .= '<button class="circle-btn circle-btn-info btn-sm" onclick="abrirEditarEstablecimiento(\'' . e($est->id_establecimiento) . '\')" title="Editar establecimiento"><i class="fa fa-edit"></i></button>';
                 if ($eval) {
-                    $btn .= '<a href="/riiss/evaluaciones/nueva/' . e($est->id_establecimiento) . '?evaluacion=' . $eval->id . '" class="circle-btn circle-btn-primary btn-sm mr-1" title="Continuar evaluación"><i class="fa fa-play"></i></a>';
-                    $btn .= '<a href="/riiss/evaluaciones/' . $eval->id . '" class="circle-btn circle-btn-success btn-sm mr-1" title="Ver evaluación"><i class="fa fa-eye"></i></a>';
+                    $btn .= '<a href="/riiss/evaluaciones/nueva/' . e($est->id_establecimiento) . '?evaluacion=' . $eval->id . '" class="circle-btn circle-btn-primary btn-sm" title="Continuar evaluación"><i class="fa fa-play"></i></a>';
+                    $btn .= '<a href="/riiss/evaluaciones/' . $eval->id . '" class="circle-btn circle-btn-success btn-sm" title="Ver evaluación"><i class="fa fa-eye"></i></a>';
                 } else {
-                    $btn .= '<a href="/riiss/evaluaciones/nueva/' . e($est->id_establecimiento) . '" class="circle-btn circle-btn-primary btn-sm mr-1" title="Nueva evaluación"><i class="fa fa-play"></i></a>';
+                    $btn .= '<a href="/riiss/evaluaciones/nueva/' . e($est->id_establecimiento) . '" class="circle-btn circle-btn-primary btn-sm" title="Nueva evaluación"><i class="fa fa-play"></i></a>';
                 }
-
-                $btn .= '<button class="circle-btn circle-btn-secondary btn-sm" onclick="verGap(' . $evalIdStr . ', \'' . e($est->id_establecimiento) . '\')" title="Gap Analysis"><i class="fa fa-chart-bar"></i></button>';
+                $btn .= '</div>';
 
                 return $btn;
             })

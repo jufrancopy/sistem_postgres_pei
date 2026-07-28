@@ -1,12 +1,68 @@
 @extends('layouts.master')
 @section('title', 'Centro de Control RIISS')
+
 @push('styles')
 <link href="{{ asset('css/select2.css') }}" rel="stylesheet"/>
 <style>
 .riiss-tabs .nav-link {
     font-weight: 600;
+    color: #475569;
+    border-radius: 12px;
+    padding: 10px 18px;
+    margin-right: 8px;
+    transition: all .2s;
+    background: #f8fbfe;
+    border: 1px solid #dbeaf4;
 }
-.eval-card-accent { box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06); }
+.riiss-tabs .nav-link.active {
+    background: linear-gradient(135deg, #00acc1, #26c6da) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    box-shadow: 0 8px 18px rgba(6, 78, 126, .15);
+}
+.riiss-tabs .nav-link.active i {
+    color: rgba(255,255,255,.85) !important;
+}
+.riiss-tabs .nav-link:hover:not(.active) {
+    background: #e2f5fb;
+    color: #0f172a;
+    border-color: #b8e2f5;
+}
+.eval-card {
+    border-radius: 20px !important;
+    border: 1px solid #e8eff8 !important;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+    box-shadow: 0 18px 46px rgba(15, 23, 42, 0.06) !important;
+    overflow: hidden !important;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease !important;
+    position: relative;
+}
+.eval-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 22px 56px rgba(15, 23, 42, 0.12) !important;
+    border-color: #d1dce6 !important;
+}
+.eval-card-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(180deg, #3b82f6 0%, #8b5cf6 100%);
+}
+.eval-card-body {
+    position: relative;
+    padding: 1.6rem 1.6rem 1.2rem !important;
+}
+.eval-card-info {
+    min-height: 150px;
+}
+.eval-card-meta {
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    padding: 0.9rem 1rem;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
 .eval-card-progress {
     height: 10px;
     border-radius: 999px;
@@ -61,8 +117,6 @@
     cursor: pointer;
     font-size: .8rem;
     transition: opacity .15s, transform .1s;
-    margin-right: 0.5rem;
-    flex-shrink: 0;
 }
 .circle-btn:hover { opacity: .92; transform: scale(1.08); }
 .circle-btn-success { background:#d1fae5; color:#065f46; }
@@ -70,87 +124,6 @@
 .circle-btn-info    { background:#bfdbfe; color:#0c4a6e; }
 .circle-btn-danger  { background:#fecaca; color:#991b1b; }
 .circle-btn-warning { background:#fde68a; color:#92400e; }
-/* Mobile responsiveness for action buttons */
-@media (max-width: 576px) {
-    .circle-btn {
-        width: 28px !important;
-        height: 28px !important;
-        font-size: .7rem !important;
-        margin-right: 0.25rem;
-    }
-    .circle-btn:hover { transform: scale(1.06); }
-}
-@media (max-width: 768px) {
-    .circle-btn {
-        margin-right: 0.35rem;
-    }
-}
-/* Action buttons container responsiveness */
-.dt-body-center {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex-wrap: nowrap !important;
-    gap: 0.25rem !important;
-    min-width: 0;
-}
-@media (max-width: 576px) {
-    .dt-body-center {
-        gap: 0.1rem !important;
-    }
-}
-/* DataTables modal responsiveness */
-#modalGap .dataTables_wrapper {
-    font-size: 0.875rem;
-}
-#tablaGapServicios {
-    width: 100% !important;
-    margin-bottom: 1rem;
-}
-#tablaGapServicios thead th {
-    vertical-align: middle;
-    padding: 10px 8px !important;
-}
-#tablaGapServicios tbody td {
-    padding: 8px;
-    vertical-align: middle;
-}
-#tablaGapServicios tbody td:nth-child(n+2):nth-child(-n+4) {
-    text-align: center;
-}
-@media (max-width: 768px) {
-    #tablaGapServicios {
-        font-size: 0.8rem;
-    }
-    #tablaGapServicios thead th {
-        padding: 6px 4px !important;
-        font-size: 0.75rem;
-    }
-    #tablaGapServicios tbody td {
-        padding: 6px 4px;
-    }
-}
-.dataTables_filter {
-    margin-bottom: 1rem;
-}
-.dataTables_filter input {
-    margin-left: 0.5rem;
-    padding: 6px 12px;
-    border: 1px solid #cbd5e0;
-    border-radius: 4px;
-}
-/* Modal GAP personalizado - más ancho */
-.modal-gap-wide {
-    max-width: 1200px !important;
-    width: 95% !important;
-}
-@media (max-width: 768px) {
-    .modal-gap-wide {
-        max-width: calc(100% - 2rem) !important;
-        width: 100% !important;
-    }
-}
-}
 .riiss-action-btn {
     border-radius: 999px !important;
     padding: 7px 12px !important;
@@ -467,7 +440,7 @@
 
 {{-- Modal Gap Analysis --}}
 <div class="modal fade" id="modalGap" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-gap-wide">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header" style="background:linear-gradient(135deg,#1e40af,#3b82f6)">
                 <h5 class="modal-title text-white">
@@ -484,117 +457,6 @@
         </div>
     </div>
 </div>
-
-{{-- Modal reutilizable: Editar establecimiento (usado también en /riiss) --}}
-<div class="modal fade" id="modalEditEst" tabindex="-1" style="display: none;" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#c62828,#e91e63)">
-                <h5 class="modal-title text-white"><i class="fa fa-edit mr-2"></i>Editar establecimiento</h5>
-                <button type="button" class="close text-white" data-dismiss="modal"><span>×</span></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="editEstId" value="">
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label class="small font-weight-bold">Nombre oficial</label>
-                        <span class="bmd-form-group"><input type="text" id="editNombre" class="form-control"></span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="small font-weight-bold">Complejidad</label>
-                        <select id="editComplejidad" class="form-control">
-                            <option value="1">No Hospitalaria de Baja Complejidad</option>
-                            <option value="2">No Hospitalaria de Mediana Complejidad</option>
-                            <option value="3">Hospitalaria de Baja Complejidad</option>
-                            <option value="4">Hospitalaria de Mediana Complejidad</option>
-                            <option value="5">Hospitalaria de Alta Complejidad</option>
-                            <option value="6">Hospitalaria Especializada de Alta Complejidad</option>
-                        </select>
-                        <small class="text-muted">Al cambiar esto se recalculan nivel, grado y requisitos automáticamente</small>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="small font-weight-bold">Tipología</label>
-                        <select id="editTipologia" class="form-control">
-                            <option>PUESTO SANITARIO</option>
-                            <option>UNIDAD SANITARIA</option>
-                            <option>CLINICA PERIFERICA</option>
-                            <option>CENTROS</option>
-                            <option>HOSPITAL REGIONAL</option>
-                            <option>HOSPITAL</option>
-                            <option>HOSPITAL ESPECIALIZADO</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="small font-weight-bold">Departamento</label>
-                        <span class="bmd-form-group"><input type="text" id="editDepartamento" class="form-control"></span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="small font-weight-bold">Microred</label>
-                        <span class="bmd-form-group"><input type="text" id="editMicrored" class="form-control"></span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="small font-weight-bold">Prestador</label>
-                        <span class="bmd-form-group"><input type="text" id="editPrestador" class="form-control"></span>
-                    </div>
-                    <div class="col-md-12 mb-3">
-                        <label class="small font-weight-bold">Servicios disponibles</label>
-                        <div class="d-flex flex-wrap" style="gap:12px">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="editInternacion">
-                                <label class="custom-control-label small" for="editInternacion">Internación</label>
-                            </div>
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="editQuirofano">
-                                <label class="custom-control-label small" for="editQuirofano">Quirófano</label>
-                            </div>
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="editUti">
-                                <label class="custom-control-label small" for="editUti">UTI</label>
-                            </div>
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="editUrgencias">
-                                <label class="custom-control-label small" for="editUrgencias">Urgencias</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-12">
-                        <label class="small font-weight-bold">Observación</label>
-                        <span class="bmd-form-group"><textarea id="editObservacion" class="form-control" rows="2"></textarea></span>
-                    </div>
-                </div>
-                <div id="editEstMsg" class="mt-2"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button class="btn btn-danger" onclick="guardarEstablecimiento()"><i class="fa fa-save mr-1"></i>Guardar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- Modal detalle (misma que en establecimientos/index) --}}
-<div class="modal fade" id="modalEst" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#c62828,#e91e63)">
-                <h5 class="modal-title text-white">
-                    <i class="fa fa-hospital mr-2"></i><span id="modalEstNombre">—</span>
-                </h5>
-                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
-            </div>
-            <div class="modal-body" id="modalEstBody">
-                <div class="text-center py-4"><div class="spinner-border text-danger"></div></div>
-            </div>
-            <div class="modal-footer">
-                <a href="#" id="btnIniciarEval" class="btn btn-danger">
-                    <i class="fa fa-clipboard-check mr-1"></i>Iniciar evaluación ahora
-                </a>
-                <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 @endsection
 
 @section('scripts')
@@ -752,16 +614,81 @@ $(document).ready(function() {
         ]
     });
 
-    if (historialTable && historialTable.buttons) {
-        historialTable.buttons().container().addClass('mb-3').prependTo('#tablaHistorial_wrapper');
-    }
-
     // Cargar Monitoreo e Historial
     cargarDashboard();
     cargarHistorial();
 
     setInterval(cargarDashboard, 30000);
 });
+
+function cargarDashboard() {
+    $.get(DASH_URL, function(r) {
+        if (!r || !r.ok) return;
+        var res = r.resumen || {};
+        var evs = r.evaluaciones || [];
+
+        $('#kpi-total').text(res.total || 0);
+        $('#kpi-progreso').text(res.en_progreso || 0);
+        $('#kpi-completadas').text(res.completadas || 0);
+        $('#kpi-promedio').text((res.promedio_pct || 0) + '%');
+
+        if (!evs.length) {
+            $('#evalCards').html('<div class="text-center py-4 text-muted">Sin evaluaciones registradas</div>');
+            return;
+        }
+
+        var html = '<div class="row">';
+        evs.forEach(function(ev) {
+            var pct = ev.progreso || ev.porcentaje_cumplimiento || 0;
+            var estadoLabel = (ev.estado || '').replace(/_/g,' ');
+            var evalNombre = ev.evaluador && ev.evaluador !== '—' ? ev.evaluador : 'Sin evaluador asignado';
+            
+            var badgeClass = '';
+            if (ev.estado === 'pendiente') badgeClass = 'estado-pendiente';
+            else if (ev.estado === 'en_progreso') badgeClass = 'estado-en_progreso';
+            else badgeClass = 'estado-completada';
+
+            html += '<div class="col-12 col-sm-6 col-lg-4 col-xl-3 mb-4">'
+                + '<div class="card eval-card h-100">'
+                + '<div class="eval-card-accent"></div>'
+                + '<div class="card-body eval-card-body d-flex flex-column justify-content-between">'
+                + '<div class="eval-card-info">'
+                + '<div class="d-flex align-items-start justify-content-between mb-3">'
+                + '<div>'
+                + '<h5 class="font-weight-bold text-dark mb-1" style="font-size:1.05rem; line-height:1.2;">' + ev.establecimiento + '</h5>'
+                + '<small class="text-muted" style="font-size:0.82rem;">' + ev.tipologia + '</small>'
+                + '</div>'
+                + '<span class="estado-badge ' + badgeClass + ' text-capitalize">' + estadoLabel + '</span>'
+                + '</div>'
+                + '<div class="eval-card-meta mb-3 d-flex align-items-center">'
+                + '<div class="rounded-circle bg-info d-flex align-items-center justify-content-center mr-3" style="width:38px; height:38px; color:#0369a1;">'
+                + '<i class="fa fa-user" style="font-size:0.9rem;"></i></div>'
+                + '<div>'
+                + '<div class="font-weight-bold text-dark" style="font-size:0.9rem;">' + evalNombre + '</div>'
+                + '<small class="text-muted" style="font-size:0.78rem; letter-spacing:0.3px;">Evaluador asignado</small>'
+                + '</div>'
+                + '</div>'
+                + '<div>'
+                + '<div class="d-flex justify-content-between align-items-center mb-2">'
+                + '<span class="text-uppercase text-muted small" style="letter-spacing:0.6px;">Nivel de avance</span>'
+                + '<span class="font-weight-bold text-primary" style="font-size:1rem;">' + pct + '%</span>'
+                + '</div>'
+                + '<div class="eval-card-progress mb-3"><div class="progress-bar" role="progressbar" style="width:' + Math.min(Math.max(pct, 0), 100) + '%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div></div>'
+                + '</div>'
+                + '</div>'
+                + '<div class="mt-2 d-flex justify-content-center">'
+                + '<button type="button" class="circle-btn circle-btn-primary btn-sm" onclick="verDetalleRiiss(\'' + encodeURIComponent(ev.id_establecimiento || '') + '\',' + ev.id + ', \'' + (ev.establecimiento || '').replace(/\\/g,'\\\\').replace(/'/g,'\\\'') + '\', \'' + (ev.estado || '').replace(/\\/g,'\\\\').replace(/'/g,'\\\'') + '\', ' + (ev.progreso || 0) + ', \'' + (ev.evaluador || '').replace(/\\/g,'\\\\').replace(/'/g,'\\\'') + '\', \'' + (ev.fecha || '').replace(/\\/g,'\\\\').replace(/'/g,'\\\'') + '\')" title="Ver detalle de evaluación"><i class="fa fa-eye"></i></button>'
+                + '</div>'
+                + '</div>'
+                + '</div>'
+                + '</div>';
+        });
+        html += '</div>';
+        $('#evalCards').html(html);
+    });
+}
+
+
 
 function cargarHistorial() {
     $.get(DASH_URL, function(r) {
@@ -796,431 +723,16 @@ function cargarHistorial() {
     });
 }
 
-function cargarDashboard() {
-    $.get(DASH_URL, function(r) {
-        if (!r || !r.ok) return;
-        var res = r.resumen || {};
-        var evs = r.evaluaciones || [];
-
-        $('#kpi-total').text(res.total || 0);
-        $('#kpi-progreso').text(res.en_progreso || 0);
-        $('#kpi-completadas').text(res.completadas || 0);
-        $('#kpi-promedio').text((res.promedio_pct || 0) + '%');
-
-        if (!evs.length) {
-            $('#evalCards').html('<div class="text-center py-4 text-muted">Sin evaluaciones registradas</div>');
-            return;
-        }
-
-        
-        var html = '<div class="row">';
-        evs.forEach(function(ev) {
-            var pct = ev.progreso || ev.porcentaje_cumplimiento || 0;
-            var estadoLabel = (ev.estado || '').replace(/_/g,' ');
-            var evalNombre = ev.evaluador && ev.evaluador !== '—' ? ev.evaluador : 'Sin evaluador asignado';
-            var badgeClass = '';
-            if (ev.estado === 'pendiente') badgeClass = 'estado-pendiente';
-            else if (ev.estado === 'en_progreso') badgeClass = 'estado-en_progreso';
-            else badgeClass = 'estado-completada';
-
-            var nombreEsc = addslashes(ev.establecimiento || '');
-
-            html += `
-            <div class="col-12 col-sm-6 col-lg-4 col-xl-3 mb-4">
-                <div class="card eval-card h-100">
-                    <div class="eval-card-accent"></div>
-                    <div class="card-body eval-card-body d-flex flex-column justify-content-between">
-                        <div class="eval-card-info">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div>
-                                    <h5 class="font-weight-bold text-dark mb-1" style="font-size:1.05rem; line-height:1.2;">${ev.establecimiento}</h5>
-                                    <small class="text-muted" style="font-size:0.82rem;">${ev.tipologia || ''}</small>
-                                </div>
-                                <span class="estado-badge ${badgeClass} text-capitalize">${estadoLabel}</span>
-                            </div>
-                            <div class="eval-card-meta mb-3 d-flex align-items-center">
-                                <div class="rounded-circle bg-info d-flex align-items-center justify-content-center mr-3" style="width:38px; height:38px; color:#0369a1;">
-                                    <i class="fa fa-user" style="font-size:0.9rem;"></i>
-                                </div>
-                                <div>
-                                    <div class="font-weight-bold text-dark" style="font-size:0.9rem;">${evalNombre}</div>
-                                    <small class="text-muted" style="font-size:0.78rem; letter-spacing:0.3px;">Evaluador asignado</small>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="text-uppercase text-muted small" style="letter-spacing:0.6px;">Nivel de avance</span>
-                                    <span class="font-weight-bold text-primary" style="font-size:1rem;">${pct}%</span>
-                                </div>
-                                <div class="eval-card-progress mb-3"><div class="progress-bar" role="progressbar" style="width:${Math.min(Math.max(pct,0),100)}%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div></div>
-                            </div>
-                        </div>
-                        <div class="mt-2 d-flex justify-content-between align-items-center" style="gap:8px">
-                            <div>
-                                <a href="/riiss/evaluaciones/${ev.id}" class="circle-btn circle-btn-primary" title="Ingresar a Evaluación"><i class="fa fa-arrow-right"></i></a>
-                            </div>
-                            <div>
-                                <button type="button" class="riiss-action-btn riiss-action-btn-view" onclick="verDetalle('${ev.id_establecimiento || ''}', '${nombreEsc}', '${ev.id || ''}')" title="Ver detalle"><i class="fa fa-edit mr-1"></i>Detalle</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        });
-        html += '</div>';
-        $('#evalCards').html(html);
-    });
-}
-
-function guardarAsignacion() {
-    var estId = $('#selEstablecimiento').val();
-    var evalId = $('#selEvaluador').val();
-    if (!estId || !evalId) {
-        $('#msgAsignacion').html('<div class="alert alert-warning py-2">Seleccioná establecimiento y evaluador</div>');
-        return;
-    }
-
-    var isEdit = editAsignacionId !== null;
-    var url = isEdit ? '/riiss/asignaciones/' + editAsignacionId : STORE_URL;
-    var method = isEdit ? 'PUT' : 'POST';
-
-    $.ajax({
-        url: url, method: method, contentType: 'application/json',
-        data: JSON.stringify({
-            _token:              '{{ csrf_token() }}',
-            id_establecimiento:  estId,
-            evaluador_id:        evalId,
-            pei_profile_id:      $('#selPeiProfile').val() || TARGET_PEI,
-            fecha_limite:        $('#selFechaLimite').val() || null,
-            instrucciones:       $('#selInstrucciones').val() || null,
-        }),
-        success: function(r) {
-            if (r.ok) {
-                $('#modalAsignacionUnificada').modal('hide');
-                if (window.tablaUnificada) window.tablaUnificada.draw(false);
-                mostrarToast(isEdit ? 'Asignación actualizada ✅' : 'Asignación creada y evaluador notificado ✅', 'success');
-            } else {
-                $('#msgAsignacion').html('<div class="alert alert-danger py-2">' + r.message + '</div>');
-            }
-        },
-        error: function(xhr) {
-            var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error al guardar';
-            $('#msgAsignacion').html('<div class="alert alert-danger py-2">' + msg + '</div>');
-        }
-    });
-}
-
-function verGap(evaluacionId, idEstablecimiento) {
-    $('#modalGapBody').html('<div class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i></div>');
-    $('#modalGap').modal('show');
-
-    var url = evaluacionId
-        ? '{{ url('riiss/evaluaciones') }}/' + evaluacionId + '/gap'
-        : '{{ url('riiss/evaluaciones/requisitos') }}/' + idEstablecimiento;
-
-    $.get(url, function(r) {
-        if (!r.ok) return;
-        renderGapModal(r.data);
-    });
-}
-
-function renderGapModal(data) {
-    if (!data) {
-        $('#modalGapBody').html('<div class="alert alert-info">Sin datos disponibles</div>');
-        return;
-    }
-
-    var html = '';
-    
-    // Sección Cartera de Servicios
-    var cartera = data.cartera || {};
-    var carteraResumen = cartera.resumen || {};
-    var carteraPorGrupo = cartera.por_grupo || [];
-    var carteraAcciones = cartera.acciones_criticas || [];
-
-    // Encabezado con color
-    html += '<div style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 20px; margin: -15px -15px 20px -15px; border-radius: 8px 8px 0 0;">';
-    html += '<div class="row">';
-    html += '<div class="col-md-6"><h6 style="font-weight: bold; margin: 0; font-size: 1rem;"><i class="fa fa-hospital mr-2"></i>COMPARACIÓN: EVALUACIÓN VS CARTERA DE SERVICIOS</h6></div>';
-    html += '</div>';
-    html += '</div>';
-
-    // Tabla principal con información del establecimiento y resultado
-    html += '<table class="table table-bordered table-sm mb-4" style="margin-top: 0;">';
-    html += '<tbody>';
-    
-    if (data.establecimiento) {
-        var est = data.establecimiento;
-        html += '<tr style="background: #f8f9fa;">';
-        html += '<td class="font-weight-bold text-dark" width="30%">Establecimiento</td>';
-        html += '<td>' + (est.nombre_oficial || est.nombre || '—') + '</td>';
-        html += '</tr>';
-    }
-    
-    if (data.declara_ser) {
-        var decl = data.declara_ser;
-        html += '<tr>';
-        html += '<td class="font-weight-bold text-dark" width="30%">Tipo / Nivel</td>';
-        html += '<td>' + (decl.tipologia || '—') + ' | Nivel: ' + (decl.nivel || '—') + ' | Grado: ' + (decl.grado || '—') + '</td>';
-        html += '</tr>';
-        
-        html += '<tr style="background: #f8f9fa;">';
-        html += '<td class="font-weight-bold text-dark">Complejidad</td>';
-        html += '<td><span class="badge badge-info">' + (decl.complejidad || '—') + '</span></td>';
-        html += '</tr>';
-    }
-    
-    html += '<tr>';
-    html += '<td class="font-weight-bold text-dark">% Cumplimiento</td>';
-    html += '<td><div style="font-size: 1.3rem; font-weight: bold; color: #8b5cf6;">' + (cartera.porcentaje || 0) + '%</div></td>';
-    html += '</tr>';
-    
-    html += '<tr style="background: #f8f9fa;">';
-    html += '<td class="font-weight-bold text-dark">Clasificación</td>';
-    html += '<td>';
-    html += '<span class="badge ' + 
-            (cartera.clasificacion === 'CUMPLE' ? 'badge-success' : cartera.clasificacion === 'PARCIALMENTE_CUMPLE' ? 'badge-warning' : 'badge-danger') + 
-            '" style="font-size: 1rem; padding: 8px 12px;">' + (cartera.clasificacion || '—').replace(/_/g, ' ') + '</span>';
-    html += '</td>';
-    html += '</tr>';
-    
-    html += '</tbody>';
-    html += '</table>';
-    
-    // Indicadores principales
-    html += '<div class="row text-center mb-4" style="padding: 20px; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 8px; border: 2px solid #0284c7;">';
-    html += '<div class="col-3">';
-    html += '<div style="font-size: 2rem; font-weight: bold; color: #10b981;">' + (carteraResumen.cumple || 0) + '</div>';
-    html += '<small class="text-dark font-weight-bold">Cumplen</small>';
-    html += '</div>';
-    html += '<div class="col-3">';
-    html += '<div style="font-size: 2rem; font-weight: bold; color: #ef4444;">' + (carteraResumen.no_cumple || 0) + '</div>';
-    html += '<small class="text-dark font-weight-bold">No cumplen</small>';
-    html += '</div>';
-    html += '<div class="col-3">';
-    html += '<div style="font-size: 2rem; font-weight: bold; color: #f59e0b;">' + (carteraResumen.no_verificable || 0) + '</div>';
-    html += '<small class="text-dark font-weight-bold">No verificables</small>';
-    html += '</div>';
-    html += '<div class="col-3">';
-    html += '<div style="font-size: 2rem; font-weight: bold; color: #6b7280;">' + (carteraResumen.total || 0) + '</div>';
-    html += '<small class="text-dark font-weight-bold">Total</small>';
-    html += '</div>';
-    html += '</div>';
-    
-    // Sección: Por Grupo/Tipo de Prestación en tabla
-    if (carteraPorGrupo && carteraPorGrupo.length > 0) {
-        html += '<h6 style="font-weight: bold; color: #0891b2; margin-bottom: 15px; margin-top: 20px; font-size: 1rem; border-bottom: 3px solid #06b6d4; padding-bottom: 8px;"><i class="fa fa-list-ul mr-2"></i>DESGLOSE POR TIPO DE SERVICIO</h6>';
-        
-        html += '<div style="overflow-x: auto;">';
-        html += '<table class="table table-hover table-sm table-bordered" id="tablaGapServicios">';
-        html += '<thead style="background: #0891b2; color: white;">';
-        html += '<tr>';
-        html += '<th>Tipo de Servicio</th>';
-        html += '<th class="text-center">Cumplen</th>';
-        html += '<th class="text-center">No Cumplen</th>';
-        html += '<th class="text-center">No Verificables</th>';
-        html += '<th class="text-center">Total</th>';
-        html += '<th>Detalles</th>';
-        html += '</tr>';
-        html += '</thead>';
-        html += '<tbody>';
-        
-        carteraPorGrupo.forEach(function(grupo, idx) {
-            var rowColor = idx % 2 === 0 ? '#ffffff' : '#f8f9fa';
-            
-            html += '<tr style="background: ' + rowColor + ';">';
-            html += '<td class="font-weight-bold text-dark">' + (grupo.grupo || 'General') + '</td>';
-            html += '<td class="text-center"><span class="badge badge-success" style="font-size: 0.9rem;">' + (grupo.cumple || 0) + '</span></td>';
-            html += '<td class="text-center"><span class="badge badge-danger" style="font-size: 0.9rem;">' + (grupo.no_cumple || 0) + '</span></td>';
-            html += '<td class="text-center"><span class="badge badge-warning" style="font-size: 0.9rem;">' + (grupo.no_verificable || 0) + '</span></td>';
-            html += '<td class="text-center"><span class="badge badge-secondary" style="font-size: 0.9rem;">' + (grupo.total || 0) + '</span></td>';
-            
-            html += '<td>';
-            if (grupo.items && grupo.items.length > 0) {
-                var cumpleItems = grupo.items.filter(i => i.estado === 'cumple');
-                var noCumpleItems = grupo.items.filter(i => i.estado === 'no_cumple');
-                
-                if (cumpleItems.length > 0) {
-                    html += '<small class="d-block mb-2"><strong style="color: #10b981;">✓ Cumplen:</strong> ' + cumpleItems.map(i => i.servicio).join(', ') + '</small>';
-                }
-                if (noCumpleItems.length > 0) {
-                    html += '<small class="d-block" style="color: #dc2626;"><strong>✗ No cumplen:</strong> ' + noCumpleItems.map(i => i.servicio).join(', ') + '</small>';
-                }
-            }
-            html += '</td>';
-            html += '</tr>';
-        });
-        
-        html += '</tbody>';
-        html += '</table>';
-        html += '</div>';
-    }
-    
-    // Sección: Acciones críticas
-    if (carteraAcciones && carteraAcciones.length > 0) {
-        html += '<div class="alert alert-danger mt-4" style="border-left: 5px solid #dc3545; background: #fee2e2; border-radius: 8px;">';
-        html += '<h6 class="font-weight-bold mb-3" style="color: #991b1b; font-size: 1rem;"><i class="fa fa-exclamation-triangle mr-2"></i>⚠️ ACCIONES CRÍTICAS RECOMENDADAS</h6>';
-        
-        html += '<table class="table table-sm table-borderless" style="margin-bottom: 0; color: #7f1d1d;">';
-        carteraAcciones.forEach(function(accion, idx) {
-            html += '<tr>';
-            html += '<td width="30" class="text-center"><span class="badge badge-danger">●</span></td>';
-            html += '<td>';
-            html += '<strong>' + (accion.servicio || '—') + ':</strong> ' + (accion.accion || 'Revisar y mejorar');
-            html += '</td>';
-            html += '</tr>';
-        });
-        html += '</table>';
-        html += '</div>';
-    }
-    
-    html += '<div class="alert alert-info mt-3" style="background: #dbeafe; border-left: 4px solid #0284c7; color: #0c4a6e; border-radius: 6px;">';
-    html += '<i class="fa fa-info-circle mr-2"></i><small><strong>Nota:</strong> Este análisis compara lo que el establecimiento debe tener según su nivel/grado versus lo que efectivamente cuenta según la evaluación realizada.</small>';
-    html += '</div>';
-    
-    $('#modalGapBody').html(html);
-    
-    // Inicializar DataTables para la tabla de servicios
-    setTimeout(function() {
-        if ($.fn.dataTable.isDataTable('#tablaGapServicios')) {
-            $('#tablaGapServicios').DataTable().destroy();
-        }
-        
-        $('#tablaGapServicios').DataTable({
-            responsive: true,
-            pageLength: 10,
-            language: {
-                search: "Buscar:",
-                info: "Mostrando _START_ a _END_ de _TOTAL_ servicios",
-                infoEmpty: "0 servicios",
-                infoFiltered: "(filtrado de _MAX_ totales)",
-                paginate: { first: "Primero", last: "Último", next: "Siguiente", previous: "Anterior" },
-                zeroRecords: "No se encontraron servicios"
-            },
-            columnDefs: [
-                { targets: [1, 2, 3, 4], orderable: true },
-                { targets: 5, orderable: false }
-            ],
-            order: [[0, 'asc']]
-        });
-    }, 100);
-}
-
-
-function abrirEditarEstablecimiento(id) {
-    $('#editEstId').val(id);
-    $('#msgEditEst').html('<div class="text-center py-3"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i></div>');
-    $('#modalEditarEstablecimiento').modal('show');
-
-    $.get('/riiss/establecimientos/' + id, function(r) {
-        if (!r || !r.ok || !r.data) {
-            $('#msgEditEst').html('<div class="alert alert-danger py-2">No se pudieron cargar los datos</div>');
-            return;
-        }
-        $('#msgEditEst').html('');
-        var d = r.data;
-        $('#editEstCodigo').val(d.id_establecimiento);
-        $('#editEstNombre').val(d.nombre_oficial || '');
-        $('#editEstTipologia').val(d.tipologia_clasificacion || d.tipo_est || '');
-        $('#editEstDepto').val(d.departamento || d.depto_nc || '');
-        $('#editEstObservacion').val(d.observacion || '');
-    });
-}
-
-function guardarEdicionEstablecimiento() {
-    var id = $('#editEstId').val();
-    $.ajax({
-        url: '/riiss/establecimientos/' + id,
-        method: 'PATCH',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            _token: '{{ csrf_token() }}',
-            nombre_oficial: $('#editEstNombre').val(),
-            tipologia_clasificacion: $('#editEstTipologia').val(),
-            departamento: $('#editEstDepto').val(),
-            observacion: $('#editEstObservacion').val()
-        }),
-        success: function(r) {
-            if (r && r.ok) {
-                $('#modalEditarEstablecimiento').modal('hide');
-                if (window.tablaUnificada) window.tablaUnificada.draw(false);
-                mostrarToast('Establecimiento actualizado ✅', 'success');
-            } else {
-                $('#msgEditEst').html('<div class="alert alert-danger py-2">' + (r.message || 'Error al guardar') + '</div>');
-            }
-        },
-        error: function(xhr) {
-            var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error al guardar';
-            $('#msgEditEst').html('<div class="alert alert-danger py-2">' + msg + '</div>');
-        }
-    });
-}
-
-// Delegador para abrir el modal desde las tarjetas (global)
-function abrirModalEditEstFromCard(id) {
-    abrirEditarEstablecimiento(id);
-}
-
-function addslashes(str) {
-    return (str + '').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
-}
-
-// ── Modal detalle (versión riiss) ─────────────────────────────────────────────
-function verDetalle(id, nombre, evaluacionId) {
-    $('#modalEstNombre').text(nombre || '—');
-    $('#modalEstBody').html('<div class="text-center py-4"><div class="spinner-border text-danger"></div></div>');
-    if (evaluacionId && evaluacionId !== '') {
-        $('#btnIniciarEval').attr('href', `/riiss/evaluaciones/nueva/${id}?evaluacion=${evaluacionId}`).removeClass('btn-danger').addClass('btn-info').html('<i class="fa fa-eye mr-1"></i>Ver evaluación');
-    } else {
-        $('#btnIniciarEval').attr('href', `/riiss/evaluaciones/nueva/${id}`).removeClass('btn-info').addClass('btn-danger').html('<i class="fa fa-clipboard-check mr-1"></i>Iniciar evaluación ahora');
-    }
-    $('#modalEst').modal('show');
-
-    $.get(`/riiss/establecimientos/${id}`, function(r) {
-        if (!r.ok) return;
-        const e   = r.data;
-        const req = r.cartera_requisitos || {};
-        const infra = (req.infraestructura_requerida) ? req.infraestructura_requerida : {};
-
-        const infraHtml = Object.entries(infra).map(([k, v]) => {
-            const labels = { internacion:'Internación', urgencias:'Urgencias', quirofano:'Quirófano',
-                             uti:'UTI', laboratorio:'Laboratorio', imagenes:'Imágenes',
-                             farmacia:'Farmacia', vacunatorio:'Vacunatorio' };
-            return `<span class="badge badge-${v?'success':'light'} mr-1 mb-1" style="${!v?'color:#94a3b8':''}">${v?'✅':'⬜'} ${labels[k]||k}</span>`;
-        }).join('');
-
-        const porTipoHtml = (req.por_tipo_prestacion ? Object.entries(req.por_tipo_prestacion).map(([k,v]) =>
-            `<div class="d-flex justify-content-between small py-1 border-bottom"><span class="text-muted">${k}</span><strong>${v} servicios</strong></div>`
-        ).join('') : '');
-
-        $('#modalEstBody').html(`
-        <div class="row">
-            <div class="col-md-5">
-                <h6 class="font-weight-bold text-danger mb-3">Datos del establecimiento</h6>
-                <table class="table table-sm table-borderless mb-0">
-                    <tr><th class="text-muted small py-1" style="width:40%">ID</th><td class="small">${e.id_establecimiento}</td></tr>
-                    <tr><th class="text-muted small py-1">Tipo</th><td class="small">${e.tipo_est_label}</td></tr>
-                    <tr><th class="text-muted small py-1">Tipología</th><td class="small">${e.tipologia_clasificacion}</td></tr>
-                    <tr><th class="text-muted small py-1">Complejidad</th><td><span class="badge" style="background:${e.complejidad_color};color:#fff;font-size:.7rem">${e.complejidad}</span></td></tr>
-                    <tr><th class="text-muted small py-1">Nivel / Grado</th><td class="small">${e.nivel_atencion??'—'} / ${e.grado_complejidad??'—'}</td></tr>
-                    <tr><th class="text-muted small py-1">Departamento</th><td class="small">${e.departamento}</td></tr>
-                    <tr><th class="text-muted small py-1">Microred</th><td class="small">${e.microred??'—'}</td></tr>
-                    <tr><th class="text-muted small py-1">Prestador</th><td class="small">${e.prestador}</td></tr>
-                </table>
-            </div>
-            <div class="col-md-7">
-                <h6 class="font-weight-bold text-danger mb-2">Debe tener según su nivel</h6>
-                <div class="mb-3">
-                    <span class="badge badge-danger mr-1">${(req.totales||{}).servicios_requeridos || 0} servicios obligatorios</span>
-                    <span class="badge badge-secondary">${(req.totales||{}).servicios_opcionales || 0} opcionales</span>
-                </div>
-                <div class="mb-3">${infraHtml}</div>
-                <h6 class="font-weight-bold text-muted small mb-1">Por tipo de prestación</h6>
-                ${porTipoHtml}
-                <div class="alert alert-info mt-3 py-2 small mb-0"><i class="fa fa-info-circle mr-1"></i>Al evaluar, el sistema verificará si el establecimiento cuenta con estos servicios.</div>
-            </div>
-        </div>`);
-    });
+function abrirModalNuevaAsignacion() {
+    editAsignacionId = null;
+    $('#modalAsignacionTitulo').html('<i class="fa fa-user-check mr-2"></i>Nueva Asignación');
+    $('#selEstablecimiento').prop('disabled', false).val(null).trigger('change');
+    $('#selEvaluador').val(null).trigger('change');
+    $('#selPeiProfile').val(null).trigger('change');
+    $('#selFechaLimite').val('');
+    $('#selInstrucciones').val('');
+    $('#msgAsignacion').html('');
+    $('#modalAsignacionUnificada').modal('show');
 }
 
 function abrirModalAsignacion(asigId, estId, estNombre) {
@@ -1295,6 +807,169 @@ function guardarAsignacion() {
             $('#msgAsignacion').html('<div class="alert alert-danger py-2">' + msg + '</div>');
         }
     });
+}
+
+function verGap(evaluacionId, idEstablecimiento) {
+    $('#modalGapBody').html('<div class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i></div>');
+    $('#modalGap').modal('show');
+
+    var url = evaluacionId
+        ? '{{ url('riiss/evaluaciones') }}/' + evaluacionId + '/gap'
+        : '{{ url('riiss/evaluaciones/requisitos') }}/' + idEstablecimiento;
+
+    $.get(url, function(r) {
+        if (!r.ok) return;
+        renderGapModal(r.data);
+    });
+}
+
+function verDetalleRiiss(idEstablecimiento, evaluacionId, nombre, estado, progreso, evaluador, fecha) {
+    $('#modalEstNombre').text(nombre || 'Detalle del establecimiento');
+    $('#modalEstBody').html('<div class="text-center py-4"><div class="spinner-border text-danger"></div></div>');
+    $('#btnIniciarEval').attr('href', evaluacionId
+        ? '/riiss/evaluaciones/nueva/' + encodeURIComponent(idEstablecimiento) + '?evaluacion=' + evaluacionId
+        : '/riiss/evaluaciones/nueva/' + encodeURIComponent(idEstablecimiento)
+    );
+    $('#modalEst').modal('show');
+
+    $.get('/riiss/establecimientos/' + encodeURIComponent(idEstablecimiento), function(r) {
+        if (!r || !r.ok) {
+            $('#modalEstBody').html('<div class="alert alert-danger">No se pudieron cargar los datos del establecimiento.</div>');
+            return;
+        }
+
+        var e = r.data;
+        var req = r.cartera_requisitos || {};
+        var infra = req.infraestructura_requerida || {};
+
+        var infraHtml = Object.entries(infra).map(function(item) {
+            var k = item[0];
+            var v = item[1];
+            var labels = {
+                internacion: 'Internación',
+                urgencias: 'Urgencias',
+                quirofano: 'Quirófano',
+                uti: 'UTI',
+                laboratorio: 'Laboratorio',
+                imagenes: 'Imágenes',
+                farmacia: 'Farmacia',
+                vacunatorio: 'Vacunatorio'
+            };
+            return '<span class="badge badge-' + (v ? 'success' : 'light') + ' mr-1 mb-1" style="' + (v ? '' : 'color:#94a3b8;') + '">' + (v ? '✅' : '⬜') + ' ' + (labels[k] || k) + '</span>';
+        }).join('');
+
+        var porTipoHtml = Object.entries(req.por_tipo_prestacion || {}).map(function(item) {
+            return '<div class="d-flex justify-content-between small py-1 border-bottom">'
+                 + '<span class="text-muted">' + item[0] + '</span>'
+                 + '<strong>' + item[1] + ' servicios</strong>'
+                 + '</div>';
+        }).join('');
+
+        $('#modalEstBody').html(
+            '<div class="row">'
+          + '  <div class="col-md-5">'
+          + '    <h6 class="font-weight-bold text-danger mb-3">Datos del establecimiento</h6>'
+          + '    <table class="table table-sm table-borderless mb-0">'
+          + '      <tr><th class="text-muted small py-1" style="width:40%">ID</th><td class="small">' + (e.id_establecimiento || '—') + '</td></tr>'
+          + '      <tr><th class="text-muted small py-1">Tipo</th><td class="small">' + (e.tipo_est_label || '—') + '</td></tr>'
+          + '      <tr><th class="text-muted small py-1">Tipología</th><td class="small">' + (e.tipologia_clasificacion || '—') + '</td></tr>'
+          + '      <tr><th class="text-muted small py-1">Complejidad</th><td>'
+          + '          <span class="badge" style="background:' + (e.complejidad_color || '#6b7280') + ';color:#fff;font-size:.7rem">' + (e.complejidad || '—') + '</span>'
+          + '      </td></tr>'
+          + '      <tr><th class="text-muted small py-1">Nivel / Grado</th><td class="small">' + (e.nivel_atencion || '—') + ' / ' + (e.grado_complejidad || '—') + '</td></tr>'
+          + '      <tr><th class="text-muted small py-1">Departamento</th><td class="small">' + (e.departamento || '—') + '</td></tr>'
+          + '      <tr><th class="text-muted small py-1">Microred</th><td class="small">' + (e.microred || '—') + '</td></tr>'
+          + '      <tr><th class="text-muted small py-1">Prestador</th><td class="small">' + (e.prestador || '—') + '</td></tr>'
+          + '    </table>'
+          + '  </div>'
+          + '  <div class="col-md-7">'
+          + '    <h6 class="font-weight-bold text-danger mb-2">Resumen de evaluación</h6>'
+          + '    <div class="mb-3">'
+          + '      <div class="small text-muted">Estado</div>'
+          + '      <strong>' + (estado || '—').toString().replace(/_/g, ' ') + '</strong>'
+          + '    </div>'
+          + '    <div class="mb-3">'
+          + '      <div class="small text-muted">Evaluador</div>'
+          + '      <strong>' + (evaluador || '—') + '</strong>'
+          + '    </div>'
+          + '    <div class="mb-3">'
+          + '      <div class="small text-muted">Fecha</div>'
+          + '      <strong>' + (fecha || '—') + '</strong>'
+          + '    </div>'
+          + '    <div class="mb-3">'
+          + '      <div class="small text-muted">Avance</div>'
+          + '      <strong>' + (progreso || 0) + '%</strong>'
+          + '      <div class="progress mt-2" style="height:8px">'
+          + '        <div class="progress-bar bg-info" role="progressbar" style="width:' + Math.min(Math.max(progreso || 0, 0), 100) + '%"></div>'
+          + '      </div>'
+          + '    </div>'
+          + '    <h6 class="font-weight-bold text-muted small mb-1">Debe tener según su nivel</h6>'
+          + '    <div class="mb-3">'
+          + '      <span class="badge badge-danger mr-1">' + ((req.totales && req.totales.servicios_requeridos) || 0) + ' servicios obligatorios</span>'
+          + '      <span class="badge badge-secondary">' + ((req.totales && req.totales.servicios_opcionales) || 0) + ' opcionales</span>'
+          + '    </div>'
+          + '    <div class="mb-3">' + infraHtml + '</div>'
+          + '    <div class="mb-3">' + porTipoHtml + '</div>'
+          + '    <div class="alert alert-info mt-3 py-2 small mb-0">'
+          + '      <i class="fa fa-info-circle mr-1"></i> Al evaluar, el sistema verificará si el establecimiento cuenta con estos servicios.'
+          + '    </div>'
+          + '  </div>'
+          + '</div>'
+        );
+    });
+}
+
+function abrirEditarEstablecimiento(id) {
+    $('#editEstId').val(id);
+    $('#msgEditEst').html('<div class="text-center py-3"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i></div>');
+    $('#modalEditarEstablecimiento').modal('show');
+
+    $.get('/riiss/establecimientos/' + id, function(r) {
+        if (!r || !r.ok || !r.data) {
+            $('#msgEditEst').html('<div class="alert alert-danger py-2">No se pudieron cargar los datos</div>');
+            return;
+        }
+        $('#msgEditEst').html('');
+        var d = r.data;
+        $('#editEstCodigo').val(d.id_establecimiento);
+        $('#editEstNombre').val(d.nombre_oficial || '');
+        $('#editEstTipologia').val(d.tipologia_clasificacion || d.tipo_est || '');
+        $('#editEstDepto').val(d.departamento || d.depto_nc || '');
+        $('#editEstObservacion').val(d.observacion || '');
+    });
+}
+
+function guardarEdicionEstablecimiento() {
+    var id = $('#editEstId').val();
+    $.ajax({
+        url: '/riiss/establecimientos/' + id,
+        method: 'PATCH',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            _token: '{{ csrf_token() }}',
+            nombre_oficial: $('#editEstNombre').val(),
+            tipologia_clasificacion: $('#editEstTipologia').val(),
+            departamento: $('#editEstDepto').val(),
+            observacion: $('#editEstObservacion').val()
+        }),
+        success: function(r) {
+            if (r && r.ok) {
+                $('#modalEditarEstablecimiento').modal('hide');
+                if (window.tablaUnificada) window.tablaUnificada.draw(false);
+                mostrarToast('Establecimiento actualizado ✅', 'success');
+            } else {
+                $('#msgEditEst').html('<div class="alert alert-danger py-2">' + (r.message || 'Error al guardar') + '</div>');
+            }
+        },
+        error: function(xhr) {
+            var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error al guardar';
+            $('#msgEditEst').html('<div class="alert alert-danger py-2">' + msg + '</div>');
+        }
+    });
+}
+
+function addslashes(str) {
+    return (str + '').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
 }
 </script>
 @endsection
