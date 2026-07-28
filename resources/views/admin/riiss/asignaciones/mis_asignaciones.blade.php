@@ -97,10 +97,10 @@
                             <i class="fa fa-eye mr-1"></i>Ver evaluación
                         </a>
                         @endif
-                        <a href="{{ url('riiss/evaluaciones/nueva/' . $a['id_establecimiento']) }}"
-                           class="btn btn-sm btn-danger">
-                            <i class="fa fa-clipboard-check mr-1"></i>
-                            {{ $a['evaluacion_id'] ? 'Continuar' : 'Iniciar evaluación' }}
+                        <a href="{{ url('riiss/evaluaciones/nueva/' . $a['id_establecimiento']) }}{{ $a['evaluacion_id'] ? '?evaluacion=' . $a['evaluacion_id'] : '' }}"
+                           class="btn btn-sm btn-primary">
+                            <i class="fa fa-play mr-1"></i>
+                            {{ $a['evaluacion_id'] ? 'Continuar evaluación' : 'Iniciar evaluación' }}
                         </a>
                     </div>
                 </div>

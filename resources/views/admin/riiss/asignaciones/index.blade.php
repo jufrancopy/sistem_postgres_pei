@@ -306,7 +306,8 @@ function renderTabla(items) {
             + '<td>' + notifHtml + '</td>'
             + '<td class="text-center">'
             + (a.evaluacion_id
-                ? '<a href="/riiss/evaluaciones/' + a.evaluacion_id + '" class="circle-btn circle-btn-success btn-sm mr-1" title="Ver evaluación"><i class="fa fa-eye"></i></a>'
+                ? '<a href="/riiss/evaluaciones/nueva/' + a.id_establecimiento + '?evaluacion=' + a.evaluacion_id + '" class="circle-btn circle-btn-primary btn-sm mr-1" title="Continuar evaluación"><i class="fa fa-play"></i></a>'
+                + '<a href="/riiss/evaluaciones/' + a.evaluacion_id + '" class="circle-btn circle-btn-success btn-sm mr-1" title="Ver evaluación"><i class="fa fa-eye"></i></a>'
                 + '<button class="circle-btn circle-btn-primary btn-sm mr-1" onclick="verGap(' + a.evaluacion_id + ', \'' + a.id_establecimiento + '\')" title="Gap Analysis"><i class="fa fa-chart-bar"></i></button>'
                 : '<button class="circle-btn circle-btn-primary btn-sm mr-1" onclick="verGap(null, \'' + a.id_establecimiento + '\')" title="Ver cartera esperada"><i class="fa fa-chart-bar"></i></button>')
             + '<button class="circle-btn circle-btn-warning btn-sm mr-1" onclick="editarAsignacion(' + a.id + ')" title="Editar asignación"><i class="fa fa-edit"></i></button>'

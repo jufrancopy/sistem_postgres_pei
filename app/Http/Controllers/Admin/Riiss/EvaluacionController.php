@@ -100,6 +100,7 @@ class EvaluacionController extends Controller
 
                 return [
                     'id'                      => $ev->id,
+                    'id_establecimiento'      => $ev->id_establecimiento,
                     'establecimiento'         => $ev->establecimiento->nombre_oficial ?? '—',
                     'tipologia'               => $ev->establecimiento->tipologia_clasificacion ?? '—',
                     'complejidad'             => $ev->establecimiento->complejidad ?? '—',
