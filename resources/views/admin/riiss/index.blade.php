@@ -676,8 +676,8 @@ function cargarDashboard() {
                 + '<div class="eval-card-progress mb-3"><div class="progress-bar" role="progressbar" style="width:' + Math.min(Math.max(pct, 0), 100) + '%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div></div>'
                 + '</div>'
                 + '</div>'
-                + '<div class="mt-2">'
-                + '<a href="/riiss/evaluaciones/' + ev.id + '" class="eval-btn-continue text-center">Ingresar a Evaluación <i class="fa fa-arrow-right ml-2"></i></a>'
+                + '<div class="mt-2 d-flex justify-content-center">'
+                + '<button type="button" class="circle-btn circle-btn-primary btn-sm" onclick="verDetalleRiiss(\'' + encodeURIComponent(ev.id_establecimiento || '') + '\',' + ev.id + ', \'' + (ev.establecimiento || '').replace(/\\/g,'\\\\').replace(/'/g,'\\\'') + '\', \'' + (ev.estado || '').replace(/\\/g,'\\\\').replace(/'/g,'\\\'') + '\', ' + (ev.progreso || 0) + ', \'' + (ev.evaluador || '').replace(/\\/g,'\\\\').replace(/'/g,'\\\'') + '\', \'' + (ev.fecha || '').replace(/\\/g,'\\\\').replace(/'/g,'\\\'') + '\')" title="Ver detalle de evaluación"><i class="fa fa-eye"></i></button>'
                 + '</div>'
                 + '</div>'
                 + '</div>'
@@ -820,6 +820,102 @@ function verGap(evaluacionId, idEstablecimiento) {
     $.get(url, function(r) {
         if (!r.ok) return;
         renderGapModal(r.data);
+    });
+}
+
+function verDetalleRiiss(idEstablecimiento, evaluacionId, nombre, estado, progreso, evaluador, fecha) {
+    $('#modalEstNombre').text(nombre || 'Detalle del establecimiento');
+    $('#modalEstBody').html('<div class="text-center py-4"><div class="spinner-border text-danger"></div></div>');
+    $('#btnIniciarEval').attr('href', evaluacionId
+        ? '/riiss/evaluaciones/nueva/' + encodeURIComponent(idEstablecimiento) + '?evaluacion=' + evaluacionId
+        : '/riiss/evaluaciones/nueva/' + encodeURIComponent(idEstablecimiento)
+    );
+    $('#modalEst').modal('show');
+
+    $.get('/riiss/establecimientos/' + encodeURIComponent(idEstablecimiento), function(r) {
+        if (!r || !r.ok) {
+            $('#modalEstBody').html('<div class="alert alert-danger">No se pudieron cargar los datos del establecimiento.</div>');
+            return;
+        }
+
+        var e = r.data;
+        var req = r.cartera_requisitos || {};
+        var infra = req.infraestructura_requerida || {};
+
+        var infraHtml = Object.entries(infra).map(function(item) {
+            var k = item[0];
+            var v = item[1];
+            var labels = {
+                internacion: 'Internación',
+                urgencias: 'Urgencias',
+                quirofano: 'Quirófano',
+                uti: 'UTI',
+                laboratorio: 'Laboratorio',
+                imagenes: 'Imágenes',
+                farmacia: 'Farmacia',
+                vacunatorio: 'Vacunatorio'
+            };
+            return '<span class="badge badge-' + (v ? 'success' : 'light') + ' mr-1 mb-1" style="' + (v ? '' : 'color:#94a3b8;') + '">' + (v ? '✅' : '⬜') + ' ' + (labels[k] || k) + '</span>';
+        }).join('');
+
+        var porTipoHtml = Object.entries(req.por_tipo_prestacion || {}).map(function(item) {
+            return '<div class="d-flex justify-content-between small py-1 border-bottom">'
+                 + '<span class="text-muted">' + item[0] + '</span>'
+                 + '<strong>' + item[1] + ' servicios</strong>'
+                 + '</div>';
+        }).join('');
+
+        $('#modalEstBody').html(
+            '<div class="row">'
+          + '  <div class="col-md-5">'
+          + '    <h6 class="font-weight-bold text-danger mb-3">Datos del establecimiento</h6>'
+          + '    <table class="table table-sm table-borderless mb-0">'
+          + '      <tr><th class="text-muted small py-1" style="width:40%">ID</th><td class="small">' + (e.id_establecimiento || '—') + '</td></tr>'
+          + '      <tr><th class="text-muted small py-1">Tipo</th><td class="small">' + (e.tipo_est_label || '—') + '</td></tr>'
+          + '      <tr><th class="text-muted small py-1">Tipología</th><td class="small">' + (e.tipologia_clasificacion || '—') + '</td></tr>'
+          + '      <tr><th class="text-muted small py-1">Complejidad</th><td>'
+          + '          <span class="badge" style="background:' + (e.complejidad_color || '#6b7280') + ';color:#fff;font-size:.7rem">' + (e.complejidad || '—') + '</span>'
+          + '      </td></tr>'
+          + '      <tr><th class="text-muted small py-1">Nivel / Grado</th><td class="small">' + (e.nivel_atencion || '—') + ' / ' + (e.grado_complejidad || '—') + '</td></tr>'
+          + '      <tr><th class="text-muted small py-1">Departamento</th><td class="small">' + (e.departamento || '—') + '</td></tr>'
+          + '      <tr><th class="text-muted small py-1">Microred</th><td class="small">' + (e.microred || '—') + '</td></tr>'
+          + '      <tr><th class="text-muted small py-1">Prestador</th><td class="small">' + (e.prestador || '—') + '</td></tr>'
+          + '    </table>'
+          + '  </div>'
+          + '  <div class="col-md-7">'
+          + '    <h6 class="font-weight-bold text-danger mb-2">Resumen de evaluación</h6>'
+          + '    <div class="mb-3">'
+          + '      <div class="small text-muted">Estado</div>'
+          + '      <strong>' + (estado || '—').toString().replace(/_/g, ' ') + '</strong>'
+          + '    </div>'
+          + '    <div class="mb-3">'
+          + '      <div class="small text-muted">Evaluador</div>'
+          + '      <strong>' + (evaluador || '—') + '</strong>'
+          + '    </div>'
+          + '    <div class="mb-3">'
+          + '      <div class="small text-muted">Fecha</div>'
+          + '      <strong>' + (fecha || '—') + '</strong>'
+          + '    </div>'
+          + '    <div class="mb-3">'
+          + '      <div class="small text-muted">Avance</div>'
+          + '      <strong>' + (progreso || 0) + '%</strong>'
+          + '      <div class="progress mt-2" style="height:8px">'
+          + '        <div class="progress-bar bg-info" role="progressbar" style="width:' + Math.min(Math.max(progreso || 0, 0), 100) + '%"></div>'
+          + '      </div>'
+          + '    </div>'
+          + '    <h6 class="font-weight-bold text-muted small mb-1">Debe tener según su nivel</h6>'
+          + '    <div class="mb-3">'
+          + '      <span class="badge badge-danger mr-1">' + ((req.totales && req.totales.servicios_requeridos) || 0) + ' servicios obligatorios</span>'
+          + '      <span class="badge badge-secondary">' + ((req.totales && req.totales.servicios_opcionales) || 0) + ' opcionales</span>'
+          + '    </div>'
+          + '    <div class="mb-3">' + infraHtml + '</div>'
+          + '    <div class="mb-3">' + porTipoHtml + '</div>'
+          + '    <div class="alert alert-info mt-3 py-2 small mb-0">'
+          + '      <i class="fa fa-info-circle mr-1"></i> Al evaluar, el sistema verificará si el establecimiento cuenta con estos servicios.'
+          + '    </div>'
+          + '  </div>'
+          + '</div>'
+        );
     });
 }
 
