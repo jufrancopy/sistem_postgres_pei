@@ -66,6 +66,18 @@
             </button>
         </div>
 
+        <!-- Origin Filter Bar -->
+        <div class="d-flex align-items-center justify-content-between px-3 py-1.5" style="font-size: 10.5px; background: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.08); color: #94a3b8;">
+            <div>
+                <i class="fas fa-layer-group text-warning mr-1"></i> Origen:
+            </div>
+            <div class="d-flex" style="gap: 4px;">
+                <button type="button" class="btn btn-xs font-weight-bold btn-origin-filter active" data-origin="all" style="font-size: 10px; padding: 1px 8px; border-radius: 12px; background: #38bdf8; color: #0f172a; border: none;">Todos</button>
+                <button type="button" class="btn btn-xs font-weight-bold btn-origin-filter text-white-50" data-origin="PEI" style="font-size: 10px; padding: 1px 8px; border-radius: 12px; background: rgba(255,255,255,0.1); border: none;">🎯 PEI</button>
+                <button type="button" class="btn btn-xs font-weight-bold btn-origin-filter text-white-50" data-origin="Actividades" style="font-size: 10px; padding: 1px 8px; border-radius: 12px; background: rgba(255,255,255,0.1); border: none;">📋 Actividades</button>
+            </div>
+        </div>
+
         <!-- Participants Panel (Hidden by default) -->
         <div id="peiChatParticipantsPanel" class="pei-chat-participants-panel" style="display: none;">
             <div class="p-2 bg-light border-bottom font-weight-bold text-xs text-uppercase text-secondary">
@@ -857,6 +869,23 @@
                 .catch(err => console.error('Error fetching chat messages:', err));
             }
 
+            let activeOriginFilter = 'all';
+
+            document.querySelectorAll('.btn-origin-filter').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.btn-origin-filter').forEach(b => {
+                        b.style.background = 'rgba(255,255,255,0.1)';
+                        b.style.color = 'rgba(255,255,255,0.7)';
+                        b.classList.remove('active');
+                    });
+                    this.style.background = '#38bdf8';
+                    this.style.color = '#0f172a';
+                    this.classList.add('active');
+                    activeOriginFilter = this.dataset.origin;
+                    renderFilteredMessages();
+                });
+            });
+
             function renderFilteredMessages() {
                 messagesList.innerHTML = '';
                 let toRender = [];
@@ -885,6 +914,15 @@
                         messagesList.innerHTML = `<div class="text-center text-muted py-5"><i class="fas fa-lock fa-2x text-warning mb-2" style="opacity:0.6;"></i><div class="small">Sin mensajes privados con <strong>${activeRecipientName || 'el usuario'}</strong>.</div><div class="text-xs mt-1">Escribe abajo para enviar un mensaje privado.</div></div>`;
                         return;
                     }
+                }
+
+                if (activeOriginFilter !== 'all') {
+                    toRender = toRender.filter(m => m.origin_module === activeOriginFilter);
+                }
+
+                if (toRender.length === 0) {
+                    messagesList.innerHTML = `<div class="text-center text-muted py-5"><i class="fas fa-filter fa-2x text-info mb-2" style="opacity:0.5;"></i><div class="small">Sin mensajes para el origen <strong>${activeOriginFilter}</strong>.</div></div>`;
+                    return;
                 }
 
                 toRender.forEach(msg => renderSingleMessageBubble(msg));
@@ -941,6 +979,19 @@
 
                 html += `</div>`;
                 html += `<div class="msg-meta">${msg.time_ago}</div>`;
+
+                if (msg.origin_module) {
+                    const isAct = msg.origin_module === 'Actividades';
+                    const icon = isAct ? 'fa-tasks' : 'fa-bullseye';
+                    const badgeStyle = isAct ? 'background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;' : 'background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;';
+                    const linkUrl = msg.origin_url || '#';
+                    
+                    html += `<div class="msg-origin-badge mt-1 text-xs" style="font-size: 9.5px;">
+                                <a href="${linkUrl}" target="_blank" class="d-inline-flex align-items-center rounded-pill px-2 py-0.5" style="${badgeStyle} text-decoration:none;" title="Ir a la pantalla de origen del emisor">
+                                    <i class="fas ${icon} mr-1"></i> Desde: ${msg.origin_module} ${msg.origin_title ? '— ' + msg.origin_title : ''} <i class="fas fa-external-link-alt ml-1" style="font-size:8px;"></i>
+                                </a>
+                             </div>`;
+                }
 
                 container.innerHTML = html;
                 messagesList.appendChild(container);
@@ -1027,6 +1078,19 @@
                     formData.append('reference_title', currentContext.title);
                     formData.append('reference_url', currentContext.url);
                 }
+
+                let originMod = 'PEI';
+                if (window.location.href.includes('/activities')) {
+                    originMod = 'Actividades';
+                } else if (window.location.href.includes('/indicadores')) {
+                    originMod = 'Indicadores';
+                } else if (window.location.href.includes('/proyectos')) {
+                    originMod = 'Proyectos';
+                }
+
+                formData.append('origin_module', originMod);
+                formData.append('origin_title', document.title ? document.title.split('-')[0].trim() : originMod);
+                formData.append('origin_url', window.location.href);
 
                 for (let i = 0; i < files.length; i++) {
                     formData.append('files[]', files[i]);

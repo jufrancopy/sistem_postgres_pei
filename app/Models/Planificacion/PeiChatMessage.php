@@ -27,6 +27,9 @@ class PeiChatMessage extends Model
         'reference_id',
         'reference_title',
         'reference_url',
+        'origin_module',
+        'origin_title',
+        'origin_url',
     ];
 
     protected $casts = [
