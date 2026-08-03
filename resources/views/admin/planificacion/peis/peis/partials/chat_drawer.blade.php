@@ -353,24 +353,26 @@
                     return;
                 }
 
-                const u = currentParticipants.find(p => p.id == userId);
-                if (!u) {
-                    const opt = privateUserSelect.options[privateUserSelect.selectedIndex];
-                    const name = (opt && opt.value) ? opt.text.split('(')[0].trim() : 'Usuario';
-                    document.getElementById('contactNameHeading').textContent = name;
-                    document.getElementById('contactAvatarCircle').textContent = name.substring(0, 2).toUpperCase();
-                    document.getElementById('contactRoleText').textContent = 'Integrante del Equipo';
-                    document.getElementById('contactPointsBadge').textContent = '⭐ 0 pts';
-                    document.getElementById('contactLevelBadge').textContent = 'Colaborador';
-                    widget.style.setProperty('display', 'flex', 'important');
-                    return;
-                }
+                let u = currentParticipants.find(p => String(p.id) === String(userId));
 
-                document.getElementById('contactNameHeading').textContent = u.name;
-                document.getElementById('contactAvatarCircle').textContent = u.initials || u.name.substring(0, 2).toUpperCase();
-                document.getElementById('contactRoleText').textContent = u.role || 'Integrante';
-                document.getElementById('contactPointsBadge').textContent = `⭐ ${u.points || 0} pts`;
-                document.getElementById('contactLevelBadge').textContent = u.level_badge || u.level_name || 'Bronce I';
+                const nameHeading = document.getElementById('contactNameHeading');
+                const avatarCircle = document.getElementById('contactAvatarCircle');
+                const roleText = document.getElementById('contactRoleText');
+                const pointsBadge = document.getElementById('contactPointsBadge');
+                const levelBadge = document.getElementById('contactLevelBadge');
+
+                const displayName = (u && u.name) ? u.name : (activeRecipientName || 'Usuario');
+                const displayInitials = (u && u.initials) ? u.initials : (displayName ? displayName.substring(0, 2).toUpperCase() : 'US');
+                const displayRole = (u && u.role) ? u.role : 'Integrante del Equipo';
+                const displayPoints = (u && u.points !== undefined) ? u.points : 0;
+                const displayLevel = (u && (u.level_badge || u.level_name)) ? (u.level_badge || u.level_name) : 'Colaborador';
+
+                nameHeading.textContent = displayName;
+                avatarCircle.textContent = displayInitials;
+                roleText.textContent = displayRole;
+                pointsBadge.textContent = `⭐ ${displayPoints} pts`;
+                levelBadge.textContent = displayLevel;
+
                 widget.style.setProperty('display', 'flex', 'important');
             }
 
@@ -407,10 +409,13 @@
                     } else if (privateUserSelect.value) {
                         activeRecipientId = privateUserSelect.value;
                     } else if (allLoadedMessages.length > 0) {
-                        // Auto-seleccionar el último contacto de mensaje privado si no hay selección
-                        const lastPrivateMsg = allLoadedMessages.slice().reverse().find(m => m.is_private);
+                        const currentUserId = "{{ auth()->id() }}";
+                        const lastPrivateMsg = allLoadedMessages.slice().reverse().find(m => {
+                            if (!m.is_private) return false;
+                            return m.recipient_id == currentUserId || m.user_id == currentUserId;
+                        });
                         if (lastPrivateMsg) {
-                            const targetId = lastPrivateMsg.is_mine ? lastPrivateMsg.recipient_id : lastPrivateMsg.user_id;
+                            const targetId = (lastPrivateMsg.user_id == currentUserId) ? lastPrivateMsg.recipient_id : lastPrivateMsg.user_id;
                             if (targetId) {
                                 activeRecipientId = String(targetId);
                                 privateUserSelect.value = activeRecipientId;
@@ -420,9 +425,11 @@
 
                     if (activeRecipientId) {
                         const opt = privateUserSelect.options[privateUserSelect.selectedIndex];
-                        activeRecipientName = opt ? opt.text.split('(')[0].trim() : 'Usuario';
+                        if (opt && opt.value) {
+                            activeRecipientName = opt.text.split('(')[0].trim();
+                        }
                         updateContactProfileWidget(activeRecipientId);
-                        input.placeholder = `Escribir mensaje privado a ${activeRecipientName}...`;
+                        input.placeholder = `Escribir mensaje privado a ${activeRecipientName || 'Usuario'}...`;
                     } else {
                         updateContactProfileWidget(null);
                         input.placeholder = 'Selecciona un integrante para chatear en privado...';
@@ -436,9 +443,8 @@
                 activeRecipientName = name;
                 participantsPanel.style.display = 'none';
                 
-                // Asegurar valor en dropdown
                 privateUserSelect.value = activeRecipientId;
-                
+                updateContactProfileWidget(activeRecipientId);
                 switchChannelMode('private');
             };
 
@@ -557,7 +563,7 @@
                     });
 
                     if (toRender.length === 0) {
-                        messagesList.innerHTML = `<div class="text-center text-muted py-5"><i class="fas fa-lock fa-2x text-warning mb-2" style="opacity:0.6;"></i><div class="small">Sin mensajes privados con <strong>${activeRecipientName}</strong>.</div><div class="text-xs mt-1">Escribe abajo para enviar un mensaje privado.</div></div>`;
+                        messagesList.innerHTML = `<div class="text-center text-muted py-5"><i class="fas fa-lock fa-2x text-warning mb-2" style="opacity:0.6;"></i><div class="small">Sin mensajes privados con <strong>${activeRecipientName || 'el usuario'}</strong>.</div><div class="text-xs mt-1">Escribe abajo para enviar un mensaje privado.</div></div>`;
                         return;
                     }
                 }
@@ -717,12 +723,12 @@
             // Initial load
             fetchMessages();
 
-            // Poll every 4s
-            setInterval(() => fetchMessages(true), 4000);
+            // Ultra-responsive polling every 1.5s
+            setInterval(() => fetchMessages(true), 1500);
 
             let lastUnreadCount = 0;
 
-            // Unread badge poll
+            // Unread badge poll every 2s
             function updateUnreadBadge() {
                 fetch(`{{ url('pei-profiles') }}/${peiProfileId}/chat/unread`)
                     .then(res => res.json())
@@ -755,7 +761,7 @@
 
             function startPolling() {
                 if (!pollInterval) {
-                    pollInterval = setInterval(() => fetchMessages(true), 3000);
+                    pollInterval = setInterval(() => fetchMessages(true), 1500);
                 }
             }
 
@@ -766,9 +772,9 @@
                 }
             }
 
-            // Initial unread check
+            // Initial unread check and frequent poll every 2s
             updateUnreadBadge();
-            setInterval(updateUnreadBadge, 15000);
+            setInterval(updateUnreadBadge, 2000);
         });
     </script>
 @endif

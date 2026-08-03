@@ -300,11 +300,19 @@ class PeiChatController extends Controller
             return response()->json(['success' => false]);
         }
 
-        $latestMessage = PeiChatMessage::where('pei_profile_id', $peiProfileId)->latest('id')->first();
-        if ($latestMessage) {
+        $latestVisibleMessage = PeiChatMessage::where('pei_profile_id', $peiProfileId)
+            ->where(function ($q) use ($user) {
+                $q->whereNull('recipient_id')
+                  ->orWhere('user_id', $user->id)
+                  ->orWhere('recipient_id', $user->id);
+            })
+            ->latest('id')
+            ->first();
+
+        if ($latestVisibleMessage) {
             PeiChatRead::updateOrCreate(
                 ['pei_profile_id' => $peiProfileId, 'user_id' => $user->id],
-                ['last_read_message_id' => $latestMessage->id]
+                ['last_read_message_id' => $latestVisibleMessage->id]
             );
         }
 
