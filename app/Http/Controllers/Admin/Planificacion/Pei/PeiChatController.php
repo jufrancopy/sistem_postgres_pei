@@ -116,6 +116,10 @@ class PeiChatController extends Controller
                 'message' => e($msg->message),
                 'attachments' => $msg->attachments ?? [],
                 'is_system' => $msg->is_system,
+                'reference_type' => $msg->reference_type,
+                'reference_id' => $msg->reference_id,
+                'reference_title' => $msg->reference_title,
+                'reference_url' => $msg->reference_url,
                 'created_at' => $msg->created_at->format('Y-m-d H:i:s'),
                 'time_ago' => $msg->created_at->diffForHumans(),
                 'parent' => $msg->parent ? [
@@ -215,6 +219,10 @@ class PeiChatController extends Controller
             'message' => $request->message,
             'attachments' => $attachments,
             'is_system' => false,
+            'reference_type' => $request->reference_type,
+            'reference_id' => $request->reference_id,
+            'reference_title' => $request->reference_title,
+            'reference_url' => $request->reference_url,
         ]);
 
         $msg->load(['user:id,name', 'recipient:id,name', 'parent.user:id,name']);
@@ -238,6 +246,10 @@ class PeiChatController extends Controller
             'message' => e($msg->message),
             'attachments' => $msg->attachments ?? [],
             'is_system' => false,
+            'reference_type' => $msg->reference_type,
+            'reference_id' => $msg->reference_id,
+            'reference_title' => $msg->reference_title,
+            'reference_url' => $msg->reference_url,
             'created_at' => $msg->created_at->format('Y-m-d H:i:s'),
             'time_ago' => 'Hace un momento',
             'parent' => $msg->parent ? [

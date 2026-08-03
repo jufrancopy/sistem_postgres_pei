@@ -23,6 +23,10 @@ class PeiChatMessage extends Model
         'message',
         'attachments',
         'is_system',
+        'reference_type',
+        'reference_id',
+        'reference_title',
+        'reference_url',
     ];
 
     protected $casts = [

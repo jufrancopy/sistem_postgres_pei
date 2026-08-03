@@ -37,7 +37,7 @@
 @endphp
 
 {{-- ── CARD ── --}}
-<div class="task-card {{ $isDone ? 'completed-card' : '' }} {{ $vencColor === '#ef4444' ? 'task-vencida' : '' }}"
+<div id="task-{{ $task->id }}" class="task-card {{ $isDone ? 'completed-card' : '' }} {{ $vencColor === '#ef4444' ? 'task-vencida' : '' }}"
      data-id="{{ $task->id }}"
      data-fecha-inicio="{{ $task->fecha_inicio?->format('Y-m-d') }}"
      style="border-left-color:{{ $cardColor }};{{ $vencColor === '#ef4444' && !$isDone ? 'box-shadow:0 0 0 2px #ef444430;' : '' }}">
@@ -102,6 +102,14 @@
 
     {{-- ── Barra de acciones ── --}}
     <div class="task-action-bar">
+
+        {{-- Consultar en Chat --}}
+        <button type="button" class="tac-btn tac-blue"
+                onclick="event.stopPropagation(); openChatWithContext('ActivityTask', '{{ $task->id }}', 'Tarea: {{ e($task->title) }}', '{{ url()->current() }}#task-{{ $task->id }}')"
+                title="Consultar sobre esta tarea en el Chat">
+            <i class="fa fa-comment-dots"></i>
+            <span>Consultar</span>
+        </button>
 
         {{-- Mover --}}
         @if($puedeMover)

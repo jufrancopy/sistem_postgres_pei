@@ -176,6 +176,19 @@
             <div id="peiChatMessagesList" class="d-flex flex-column"></div>
         </div>
 
+        <!-- Context Reference Active Banner -->
+        <div id="peiChatContextBanner" class="p-2 border-top border-bottom bg-white" style="display: none; border-left: 4px solid #4f46e5 !important; font-size: 11px; background: #eef2ff !important;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-truncate mr-2">
+                    <span class="font-weight-bold" style="color: #4338ca;"><i class="fas fa-bookmark mr-1"></i> Consulta Vinculada:</span>
+                    <span id="peiChatContextTitle" class="text-dark font-weight-bold ml-1"></span>
+                </div>
+                <button type="button" class="btn btn-xs text-danger p-0" id="clearPeiChatContext" title="Quitar referencia">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
         <!-- Reply Preview Bar -->
         <div id="peiChatReplyBar" class="pei-chat-reply-bar" style="display: none;">
             <div class="d-flex justify-content-between align-items-center">
@@ -393,6 +406,56 @@
             let lastMessageTime = null;
             let currentReplyId = null;
             let pollInterval = null;
+            let currentContext = null;
+
+            window.openChatWithContext = function(type, id, title, url) {
+                currentContext = { type, id, title, url: url || window.location.href };
+                const banner = document.getElementById('peiChatContextBanner');
+                const titleEl = document.getElementById('peiChatContextTitle');
+                if (banner && titleEl) {
+                    titleEl.textContent = title;
+                    banner.style.display = 'block';
+                }
+                drawer.classList.add('open');
+                fetchMessages();
+                markRead();
+                startPolling();
+            };
+
+            window.handleContextNavigation = function(event, url) {
+                if (!url || url === '#') return;
+                try {
+                    const targetUrlObj = new URL(url, window.location.origin);
+                    const currentUrlObj = new URL(window.location.href);
+
+                    if (targetUrlObj.pathname === currentUrlObj.pathname && targetUrlObj.hash) {
+                        event.preventDefault();
+                        const elementId = targetUrlObj.hash.substring(1);
+                        const targetEl = document.getElementById(elementId);
+
+                        if (targetEl) {
+                            drawer.classList.remove('open');
+                            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            targetEl.style.transition = 'all 0.5s ease';
+                            targetEl.style.boxShadow = '0 0 20px rgba(245, 158, 11, 0.8)';
+                            targetEl.style.borderRadius = '8px';
+                            setTimeout(() => {
+                                targetEl.style.boxShadow = 'none';
+                            }, 3000);
+                        } else {
+                            window.location.href = url;
+                        }
+                    }
+                } catch(e) {}
+            };
+
+            const clearContextBtn = document.getElementById('clearPeiChatContext');
+            if (clearContextBtn) {
+                clearContextBtn.addEventListener('click', function() {
+                    currentContext = null;
+                    document.getElementById('peiChatContextBanner').style.display = 'none';
+                });
+            }
 
             // Tabs Switch
             tabChannelGroup.addEventListener('click', function() {
@@ -838,6 +901,20 @@
                     html += `<div class="msg-reply-ref"><strong>${msg.parent.user_name}</strong>: ${msg.parent.message}</div>`;
                 }
 
+                if (msg.reference_title) {
+                    const refUrl = msg.reference_url || '#';
+                    html += `<div class="msg-reference-badge p-2 mb-2 rounded" style="background: rgba(79, 70, 229, 0.09); border: 1px solid rgba(79, 70, 229, 0.25);">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="text-truncate mr-2 font-weight-bold" style="font-size: 11px; color: #3730a3;">
+                                        <i class="fas fa-bookmark mr-1"></i> ${msg.reference_title}
+                                    </div>
+                                    <a href="${refUrl}" class="btn btn-xs font-weight-bold ml-1 rounded-pill px-2" style="font-size: 10px; background: #4f46e5; color: #fff; text-decoration: none; flex-shrink: 0;" onclick="handleContextNavigation(event, '${refUrl}')">
+                                        <i class="fas fa-external-link-alt mr-1"></i> Ir al elemento
+                                    </a>
+                                </div>
+                             </div>`;
+                }
+
                 html += `<div class="msg-bubble">${msg.message}`;
 
                 if (msg.attachments && msg.attachments.length > 0) {
@@ -932,6 +1009,13 @@
                     formData.append('recipient_id', activeRecipientId);
                 }
 
+                if (currentContext) {
+                    formData.append('reference_type', currentContext.type);
+                    formData.append('reference_id', currentContext.id);
+                    formData.append('reference_title', currentContext.title);
+                    formData.append('reference_url', currentContext.url);
+                }
+
                 for (let i = 0; i < files.length; i++) {
                     formData.append('files[]', files[i]);
                 }
@@ -953,6 +1037,10 @@
                     input.value = '';
                     fileInput.value = '';
                     currentReplyId = null;
+                    currentContext = null;
+                    const contextBanner = document.getElementById('peiChatContextBanner');
+                    if (contextBanner) contextBanner.style.display = 'none';
+
                     if (data.message) {
                         allLoadedMessages.push(data.message);
                         renderFilteredMessages();
