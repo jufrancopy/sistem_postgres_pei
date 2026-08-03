@@ -38,6 +38,9 @@
             </div>
             @if($peiActual)
             <div class="col-lg-5 col-md-12 text-left text-lg-right d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end">
+                <button type="button" id="btnEjecutarDiagnostico" class="btn btn-sm btn-outline-danger mr-1 mb-1 font-weight-bold" title="Ejecutar respaldo DB y enviar reporte a jucfra23@gmail.com">
+                    <i class="fa fa-heartbeat mr-1"></i> Respaldo & Diagnóstico
+                </button>
                 <a href="{{ route('pei-profiles.proceso', $peiActual->id) }}" class="btn btn-sm btn-outline-info mr-1 mb-1">
                     <i class="fa fa-tasks mr-1"></i> Proceso
                 </a>
@@ -317,6 +320,35 @@ $(function() {
     // Select2 Plan Estratégico
     $('#selectPei').select2({ width: '100%', minimumResultsForSearch: 5 })
         .on('select2:select', function() { $('#formSelectorPei').submit(); });
+
+    // Botón Diagnóstico y Respaldo DB a demanda
+    $('#btnEjecutarDiagnostico').on('click', function() {
+        var btn = $(this);
+        var originalHtml = btn.html();
+
+        if (confirm('¿Deseas generar un respaldo de la base de datos PostgreSQL y enviar el reporte de salud a jucfra23@gmail.com?')) {
+            btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Procesando...');
+
+            $.ajax({
+                url: '{{ route('planificacion-dashboard.ejecutar-diagnostico') }}',
+                type: 'POST',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function(res) {
+                    btn.prop('disabled', false).html(originalHtml);
+                    if (res.success) {
+                        alert(res.message);
+                    } else {
+                        alert('Atención: ' + res.message);
+                    }
+                },
+                error: function(xhr) {
+                    btn.prop('disabled', false).html(originalHtml);
+                    var msg = xhr.responseJSON ? xhr.responseJSON.message : 'No se pudo ejecutar el proceso.';
+                    alert('Error: ' + msg);
+                }
+            });
+        }
+    });
 
     // Semáforo
     new Chart(document.getElementById('chartSemaforo'), {

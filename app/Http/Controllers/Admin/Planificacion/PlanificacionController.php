@@ -151,4 +151,26 @@ class PlanificacionController extends Controller
             'proyectosSinPei', 'proyectosPorEstado', 'config'
         ));
     }
+
+    /**
+     * Ejecuta manualmente el respaldo de PostgreSQL y envío de reporte por correo a jucfra23@gmail.com
+     */
+    public function ejecutarDiagnostico(Request $request)
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('siplan:health-and-backup');
+            $output = \Illuminate\Support\Facades\Artisan::output();
+
+            return response()->json([
+                'success' => true,
+                'message' => '¡Diagnóstico y Respaldo de Base de Datos ejecutados con éxito! El reporte ha sido enviado a jucfra23@gmail.com.',
+                'output'  => $output
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al ejecutar el diagnóstico: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

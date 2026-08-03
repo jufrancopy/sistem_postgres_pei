@@ -36,6 +36,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     //Rutas del Dpto. Planificacion
     Route::get('planificacion-dashboard', 'Admin\Planificacion\PlanificacionController@dashboard')->name('planificacion-dashboard');
+    Route::post('planificacion-dashboard/ejecutar-diagnostico', 'Admin\Planificacion\PlanificacionController@ejecutarDiagnostico')->name('planificacion-dashboard.ejecutar-diagnostico');
 
     // ── Plan Maestro ─────────────────────────────────────────────────────────
     Route::get('plan-maestro', 'Admin\PlanMaestro\PlanMaestroController@index')->name('plan-maestro.index');
