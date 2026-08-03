@@ -135,4 +135,10 @@ class RoleController extends Controller
     {
         return redirect()->route('globales.roles.index');
     }
+
+    // ── Guía Institucional de Roles y Permisos ────────────────────────────────
+    public function guide()
+    {
+        return view('admin.roles.guide');
+    }
 }

@@ -17,11 +17,17 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header d-flex align-items-center justify-content-between">
                         <div class="success"></div>
-                        <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)"
-                            id="createNewProfile">
-                            Nuevo Perfil</a>
+                        <div>
+                            <a class="btn btn-outline-info mb-2 mr-2 font-weight-bold" href="{{ route('globales.roles.guide') }}" title="Ver guía de permisos y roles">
+                                <i class="fa fa-book-open mr-1"></i> Guía de Roles y Permisos
+                            </a>
+                            <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)"
+                                id="createNewProfile">
+                                <i class="fa fa-plus mr-1"></i> Nuevo Perfil
+                            </a>
+                        </div>
                     </div>
 
                     <div class="card-body">

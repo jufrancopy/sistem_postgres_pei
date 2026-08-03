@@ -8,11 +8,16 @@
             <h4 class="card-title mb-0"><i class="fa fa-shield-alt mr-2"></i>Roles y Permisos</h4>
             <small class="text-white" style="opacity:.8">Gestión de roles del sistema</small>
         </div>
-        @can('role-create')
-        <button class="btn btn-sm btn-light ml-auto" id="btnNuevoRol">
-            <i class="fa fa-plus mr-1"></i> Nuevo Rol
-        </button>
-        @endcan
+        <div class="ml-auto d-flex" style="gap:.5rem">
+            <a href="{{ route('globales.roles.guide') }}" class="btn btn-sm btn-outline-light font-weight-bold" title="Ver manual explicativo de roles">
+                <i class="fa fa-book-open mr-1"></i> Guía de Roles y Permisos
+            </a>
+            @can('role-create')
+            <button class="btn btn-sm btn-light" id="btnNuevoRol">
+                <i class="fa fa-plus mr-1"></i> Nuevo Rol
+            </button>
+            @endcan
+        </div>
     </div>
 
     <div class="card-body p-0">
