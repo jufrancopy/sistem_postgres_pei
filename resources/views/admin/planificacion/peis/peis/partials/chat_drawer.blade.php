@@ -335,11 +335,19 @@
                     tabChannelPrivate.classList.remove('text-white-50');
                     tabChannelPrivate.classList.add('text-warning', 'font-weight-bold');
 
-                    tabChannelGroup.style.borderBottom = 'none';
-                    tabChannelGroup.classList.remove('text-white', 'font-weight-bold');
-                    tabChannelGroup.classList.add('text-white-50');
-
                     privateContactBar.style.display = 'flex';
+
+                    // Si no hay destinatario seleccionado, auto-seleccionar el último que envió un mensaje privado
+                    if (!privateUserSelect.value && allLoadedMessages.length > 0) {
+                        const lastPrivateMsg = allLoadedMessages.slice().reverse().find(m => m.is_private);
+                        if (lastPrivateMsg) {
+                            const targetId = lastPrivateMsg.is_mine ? lastPrivateMsg.recipient_id : lastPrivateMsg.user_id;
+                            if (targetId) {
+                                privateUserSelect.value = targetId;
+                            }
+                        }
+                    }
+
                     if (privateUserSelect.value) {
                         activeRecipientId = privateUserSelect.value;
                         const opt = privateUserSelect.options[privateUserSelect.selectedIndex];
@@ -429,6 +437,14 @@
                             hasNewOtherMessage = true;
                         }
 
+                        // Verificar si hay mensajes privados no leídos/recibidos de otros
+                        const unreadPrivateCount = allLoadedMessages.filter(m => m.is_private && !m.is_mine).length;
+                        if (unreadPrivateCount > 0) {
+                            tabChannelPrivate.innerHTML = `<i class="fas fa-user-lock mr-1"></i> Mensaje Privado <span class="badge badge-warning text-dark font-weight-bold ml-1">🔴 ${unreadPrivateCount}</span>`;
+                        } else {
+                            tabChannelPrivate.innerHTML = `<i class="fas fa-user-lock mr-1"></i> Mensaje Privado`;
+                        }
+
                         renderFilteredMessages();
 
                         if (isPolling && hasNewOtherMessage) {
@@ -483,7 +499,9 @@
 
                 let html = '';
                 if (!msg.is_mine) {
-                    html += `<div class="msg-sender-name">${msg.user_name}`;
+                    const escapedSender = msg.user_name.replace(/'/g, "\\'");
+                    html += `<div class="msg-sender-name" style="cursor:pointer;" title="Clic para abrir chat privado" onclick="setPrivateRecipient('${msg.user_id}', '${escapedSender}')">
+                                ${msg.user_name} <i class="fas fa-comment-dots text-muted ml-1" style="font-size:10px;"></i>`;
                     if (msg.is_private) {
                         html += ` <span class="badge badge-warning text-dark ml-1" style="font-size:9px;"><i class="fas fa-lock mr-1"></i>Privado</span>`;
                     }
