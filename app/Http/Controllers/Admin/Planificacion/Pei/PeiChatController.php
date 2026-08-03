@@ -160,15 +160,6 @@ class PeiChatController extends Controller
             }
         }
 
-        // Update read receipt
-        $latestMessage = $messages->last();
-        if ($latestMessage) {
-            PeiChatRead::updateOrCreate(
-                ['pei_profile_id' => $peiProfileId, 'user_id' => $user->id],
-                ['last_read_message_id' => $latestMessage['id']]
-            );
-        }
-
         return response()->json([
             'messages' => $messages,
             'participants' => $participantsData,
@@ -295,5 +286,28 @@ class PeiChatController extends Controller
         return response()->json([
             'unread' => $query->count(),
         ]);
+    }
+
+    /**
+     * Mark messages as read for a PEI Profile.
+     */
+    public function markRead($peiProfileId)
+    {
+        $user = auth()->user();
+        $peiProfile = PeiProfile::find($peiProfileId);
+
+        if (!$peiProfile || !$this->checkUserAccess($peiProfile, $user)) {
+            return response()->json(['success' => false]);
+        }
+
+        $latestMessage = PeiChatMessage::where('pei_profile_id', $peiProfileId)->latest('id')->first();
+        if ($latestMessage) {
+            PeiChatRead::updateOrCreate(
+                ['pei_profile_id' => $peiProfileId, 'user_id' => $user->id],
+                ['last_read_message_id' => $latestMessage->id]
+            );
+        }
+
+        return response()->json(['success' => true]);
     }
 }

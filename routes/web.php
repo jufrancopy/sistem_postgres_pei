@@ -76,11 +76,13 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{profileId}/chat/messages', 'Admin\Planificacion\Pei\PeiChatController@getMessages')->name('pei-chat.messages');
     Route::post('pei-profiles/{profileId}/chat/messages', 'Admin\Planificacion\Pei\PeiChatController@storeMessage')->name('pei-chat.store');
     Route::get('pei-profiles/{profileId}/chat/unread', 'Admin\Planificacion\Pei\PeiChatController@getUnreadCount')->name('pei-chat.unread');
+    Route::post('pei-profiles/{profileId}/chat/read', 'Admin\Planificacion\Pei\PeiChatController@markRead')->name('pei-chat.read');
 
     // Alias con prefijo legacy/admin para compatibilidad total
     Route::get('admin/planificacion/pei-profiles/{profileId}/chat/messages', 'Admin\Planificacion\Pei\PeiChatController@getMessages');
     Route::post('admin/planificacion/pei-profiles/{profileId}/chat/messages', 'Admin\Planificacion\Pei\PeiChatController@storeMessage');
     Route::get('admin/planificacion/pei-profiles/{profileId}/chat/unread', 'Admin\Planificacion\Pei\PeiChatController@getUnreadCount');
+    Route::post('admin/planificacion/pei-profiles/{profileId}/chat/read', 'Admin\Planificacion\Pei\PeiChatController@markRead');
 
     // Relevamientos
     Route::get('proyectos-epc-relevamientos/{estandarId}', 'Admin\Proyectos\EPC\RelevamientoController@getFormulario')->name('proyectos-epc-relevamientos-form-dependencia');

@@ -720,6 +720,8 @@
             // Poll every 4s
             setInterval(() => fetchMessages(true), 4000);
 
+            let lastUnreadCount = 0;
+
             // Unread badge poll
             function updateUnreadBadge() {
                 fetch(`{{ url('pei-profiles') }}/${peiProfileId}/chat/unread`)
@@ -728,14 +730,27 @@
                         if (data.unread > 0) {
                             unreadBadge.textContent = data.unread;
                             unreadBadge.style.display = 'inline-block';
+                            if (data.unread > lastUnreadCount) {
+                                playMessageChime();
+                            }
+                            lastUnreadCount = data.unread;
                         } else {
                             unreadBadge.style.display = 'none';
+                            lastUnreadCount = 0;
                         }
                     });
             }
 
             function markRead() {
                 unreadBadge.style.display = 'none';
+                lastUnreadCount = 0;
+                fetch(`{{ url('pei-profiles') }}/${peiProfileId}/chat/read`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }).catch(err => console.error('Error marking read:', err));
             }
 
             function startPolling() {
