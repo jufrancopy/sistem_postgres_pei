@@ -15,6 +15,7 @@
 #evalTabs .nav-link.active { color:#1a237e !important; font-weight:600; }
 #evalTabs .nav-link:hover { color:#1a237e !important; }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 @endpush
 
 @section('content')
@@ -87,6 +88,9 @@
                             <tr><th class="text-muted small py-1">Nivel</th><td class="small">{{ $est->nivel_atencion }} / Grado {{ $est->grado_complejidad }}</td></tr>
                             <tr><th class="text-muted small py-1">Departamento</th><td class="small">{{ $est->departamento }}</td></tr>
                         </table>
+                        <button class="btn btn-sm btn-outline-info btn-block mt-3" onclick="abrirModalDetalles()">
+                            <i class="fa fa-info-circle mr-1"></i> Ver Detalles y Mapa
+                        </button>
                     </div>
                 </div>
             </div>
@@ -670,4 +674,102 @@ function mostrarToast(msg, tipo) {
     setTimeout(() => toast.fadeOut(400, () => toast.remove()), 3000);
 }
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+var map = null;
+var marker = null;
+
+function abrirModalDetalles() {
+    $('#modalDetallesEst').modal('show');
+    
+    // Inicializar o refrescar el mapa al abrir el modal (setTimeout para asegurar que el DOM esté visible)
+    setTimeout(function() {
+        var lat = {{ $est->latitude ?? 'null' }};
+        var lng = {{ $est->longitude ?? 'null' }};
+        
+        if (lat !== null && lng !== null) {
+            if (!map) {
+                map = L.map('mapaEstablecimiento').setView([lat, lng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+                marker = L.marker([lat, lng]).addTo(map);
+            } else {
+                map.invalidateSize();
+                map.setView([lat, lng], 15);
+                marker.setLatLng([lat, lng]);
+            }
+        } else {
+            $('#mapaEstablecimiento').html('<div class="alert alert-warning m-3 text-center">No hay coordenadas registradas para este establecimiento.</div>');
+        }
+    }, 300);
+}
+</script>
+
+<!-- Modal Detalles Establecimiento -->
+<div class="modal fade" id="modalDetallesEst" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header card-header-info">
+                <h5 class="modal-title text-white">Detalles del Establecimiento</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="row m-0">
+                    <div class="col-md-6 p-4 border-right">
+                        <h6 class="font-weight-bold mb-3">Información General</h6>
+                        <ul class="list-unstyled small mb-4">
+                            <li><strong>Nombre:</strong> {{ $est->nombre_oficial }}</li>
+                            <li><strong>Tipología:</strong> {{ $est->tipologia_clasificacion }}</li>
+                            <li><strong>Condición:</strong> <span class="badge badge-info">{{ $est->condicion_inmueble ?? 'NO ESPECIFICADA' }}</span></li>
+                            @if($est->superficie_terreno)
+                                <li><strong>Sup. Terreno:</strong> {{ $est->superficie_terreno }} m²</li>
+                            @endif
+                            @if($est->superficie_construida)
+                                <li><strong>Sup. Construida:</strong> {{ $est->superficie_construida }} m²</li>
+                            @endif
+                        </ul>
+                        
+                        @if($est->condicion_inmueble == 'ALQUILADO')
+                        <h6 class="font-weight-bold mb-2 border-bottom pb-1">Datos de Alquiler</h6>
+                        <ul class="list-unstyled small">
+                            <li><strong>Propietario:</strong> {{ $est->propietario }}</li>
+                            <li><strong>Contrato:</strong> {{ $est->nro_contrato_alquiler }}</li>
+                            <li><strong>Canon:</strong> {{ $est->canon_mensual ? '$'.number_format($est->canon_mensual, 2) : '-' }}</li>
+                        </ul>
+                        @endif
+
+                        @if($est->condicion_inmueble == 'CONVENIO')
+                        <h6 class="font-weight-bold mb-2 border-bottom pb-1">Datos de Convenio</h6>
+                        <ul class="list-unstyled small">
+                            <li><strong>Nro Resolución:</strong> {{ $est->nro_resolucion_convenio }}</li>
+                            <li><strong>Vigencia:</strong> {{ $est->vigencia_convenio_desde }} al {{ $est->vigencia_convenio_hasta }}</li>
+                            <li><strong>Descripción:</strong> {{ $est->descripcion_convenio }}</li>
+                        </ul>
+                        @endif
+                        
+                        @if($est->inmuebleContratos && $est->inmuebleContratos->count() > 0)
+                        <h6 class="font-weight-bold mt-3 border-bottom pb-1">Contratos Adicionales</h6>
+                        <ul class="list-unstyled small">
+                            @foreach($est->inmuebleContratos as $contrato)
+                                <li class="mb-1">
+                                    <span class="badge badge-secondary">{{ $contrato->tipo_contrato }}</span>
+                                    {{ $contrato->descripcion }}
+                                </li>
+                            @endforeach
+                        </ul>
+                        @endif
+                    </div>
+                    <div class="col-md-6 p-0 bg-light position-relative" style="min-height: 400px;">
+                        <!-- Contenedor del Mapa -->
+                        <div id="mapaEstablecimiento" style="width: 100%; height: 100%; position: absolute; top:0; left:0;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

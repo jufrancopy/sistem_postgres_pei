@@ -1,0 +1,234 @@
+<?php
+
+namespace App\Http\Controllers\Admin\Planificacion\Pei;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use App\Admin\Planificacion\Pei\PeiProfile;
+use App\Admin\Globales\Group;
+use App\Models\Planificacion\PeiChatMessage;
+use App\Models\Planificacion\PeiChatRead;
+use App\Models\User;
+
+class PeiChatController extends Controller
+{
+    /**
+     * Check if user has access to the PEI Profile's chat.
+     */
+    protected function checkUserAccess(PeiProfile $peiProfile, User $user): bool
+    {
+        // Administradores always have access
+        if ($user->hasRole('Administrador')) {
+            return true;
+        }
+
+        // PEI creator has access
+        if ($peiProfile->user_id == $user->id) {
+            return true;
+        }
+
+        // If PEI profile is linked to a root group
+        if ($peiProfile->group_id) {
+            $group = Group::find($peiProfile->group_id);
+            if ($group) {
+                // Get root group + all child/descendant team IDs
+                $groupIds = $group->descendantsAndSelf()->pluck('id')->toArray();
+
+                $isMember = DB::table('groups_has_members')
+                    ->whereIn('group_id', $groupIds)
+                    ->where('user_id', $user->id)
+                    ->exists();
+
+                if ($isMember) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Fetch messages and chat metadata for a PEI Profile.
+     */
+    public function getMessages(Request $request, $peiProfileId)
+    {
+        $user = auth()->user();
+        $peiProfile = PeiProfile::findOrFail($peiProfileId);
+
+        if (!$this->checkUserAccess($peiProfile, $user)) {
+            return response()->json(['error' => 'No tienes permiso para acceder al chat de este PEI.'], 403);
+        }
+
+        $query = PeiChatMessage::where('pei_profile_id', $peiProfileId)
+            ->with(['user:id,name,email', 'parent.user:id,name'])
+            ->orderBy('created_at', 'asc');
+
+        if ($request->has('since')) {
+            $query->where('created_at', '>', $request->since);
+        }
+
+        $messages = $query->get()->map(function ($msg) use ($user) {
+            return [
+                'id' => $msg->id,
+                'pei_profile_id' => $msg->pei_profile_id,
+                'user_id' => $msg->user_id,
+                'user_name' => $msg->user ? $msg->user->name : 'Usuario Desconocido',
+                'user_initials' => $msg->user ? mb_substr($msg->user->name, 0, 2) : 'US',
+                'is_mine' => $msg->user_id === $user->id,
+                'message' => e($msg->message),
+                'attachments' => $msg->attachments ?? [],
+                'is_system' => $msg->is_system,
+                'created_at' => $msg->created_at->format('Y-m-d H:i:s'),
+                'time_ago' => $msg->created_at->diffForHumans(),
+                'parent' => $msg->parent ? [
+                    'id' => $msg->parent->id,
+                    'user_name' => $msg->parent->user ? $msg->parent->user->name : 'Usuario',
+                    'message' => Str::limit($msg->parent->message, 40),
+                ] : null,
+            ];
+        });
+
+        // Get group participants info
+        $participants = [];
+        if ($peiProfile->group_id) {
+            $group = Group::find($peiProfile->group_id);
+            if ($group) {
+                $groupIds = $group->descendantsAndSelf()->pluck('id')->toArray();
+                $participants = User::whereIn('id', function ($q) use ($groupIds) {
+                    $q->select('user_id')->from('groups_has_members')->whereIn('group_id', $groupIds);
+                })->select('id', 'name', 'email')->get();
+            }
+        }
+
+        // Update read receipt
+        $latestMessage = $messages->last();
+        if ($latestMessage) {
+            PeiChatRead::updateOrCreate(
+                ['pei_profile_id' => $peiProfileId, 'user_id' => $user->id],
+                ['last_read_message_id' => $latestMessage['id']]
+            );
+        }
+
+        return response()->json([
+            'messages' => $messages,
+            'participants' => $participants,
+            'pei_name' => $peiProfile->name,
+        ]);
+    }
+
+    /**
+     * Store a new chat message.
+     */
+    public function storeMessage(Request $request, $peiProfileId)
+    {
+        $user = auth()->user();
+        $peiProfile = PeiProfile::findOrFail($peiProfileId);
+
+        if (!$this->checkUserAccess($peiProfile, $user)) {
+            return response()->json(['error' => 'Acceso denegado.'], 403);
+        }
+
+        $request->validate([
+            'message' => 'nullable|string|max:5000',
+            'parent_id' => 'nullable|uuid|exists:pei_chat_messages,id',
+            'files.*' => 'nullable|file|max:10240', // 10MB limit per file
+        ]);
+
+        if (empty(trim($request->message)) && !$request->hasFile('files')) {
+            return response()->json(['error' => 'El mensaje no puede estar vacío.'], 422);
+        }
+
+        $attachments = [];
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $ext = $file->getClientOriginalExtension();
+                $path = $file->store("public/pei_chat_attachments/{$peiProfileId}");
+                $url = Storage::url($path);
+
+                $attachments[] = [
+                    'name' => $originalName,
+                    'url' => $url,
+                    'ext' => strtolower($ext),
+                    'size' => number_format($file->getSize() / 1024, 1) . ' KB',
+                ];
+            }
+        }
+
+        $msg = PeiChatMessage::create([
+            'pei_profile_id' => $peiProfileId,
+            'user_id' => $user->id,
+            'parent_id' => $request->parent_id,
+            'message' => $request->message,
+            'attachments' => $attachments,
+            'is_system' => false,
+        ]);
+
+        $msg->load(['user:id,name', 'parent.user:id,name']);
+
+        // Mark as read for sender
+        PeiChatRead::updateOrCreate(
+            ['pei_profile_id' => $peiProfileId, 'user_id' => $user->id],
+            ['last_read_message_id' => $msg->id]
+        );
+
+        $payload = [
+            'id' => $msg->id,
+            'pei_profile_id' => $msg->pei_profile_id,
+            'user_id' => $msg->user_id,
+            'user_name' => $user->name,
+            'user_initials' => mb_substr($user->name, 0, 2),
+            'is_mine' => true,
+            'message' => e($msg->message),
+            'attachments' => $msg->attachments ?? [],
+            'is_system' => false,
+            'created_at' => $msg->created_at->format('Y-m-d H:i:s'),
+            'time_ago' => 'Hace un momento',
+            'parent' => $msg->parent ? [
+                'id' => $msg->parent->id,
+                'user_name' => $msg->parent->user ? $msg->parent->user->name : 'Usuario',
+                'message' => Str::limit($msg->parent->message, 40),
+            ] : null,
+        ];
+
+        return response()->json([
+            'success' => true,
+            'message' => $payload,
+        ]);
+    }
+
+    /**
+     * Get unread message count for a PEI Profile.
+     */
+    public function getUnreadCount($peiProfileId)
+    {
+        $user = auth()->user();
+        $peiProfile = PeiProfile::find($peiProfileId);
+
+        if (!$peiProfile || !$this->checkUserAccess($peiProfile, $user)) {
+            return response()->json(['unread' => 0]);
+        }
+
+        $read = PeiChatRead::where('pei_profile_id', $peiProfileId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        $query = PeiChatMessage::where('pei_profile_id', $peiProfileId)
+            ->where('user_id', '!=', $user->id);
+
+        if ($read && $read->last_read_message_id) {
+            $lastRead = PeiChatMessage::find($read->last_read_message_id);
+            if ($lastRead) {
+                $query->where('created_at', '>', $lastRead->created_at);
+            }
+        }
+
+        return response()->json([
+            'unread' => $query->count(),
+        ]);
+    }
+}

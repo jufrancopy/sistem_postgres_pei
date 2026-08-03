@@ -12,6 +12,7 @@ class Patrimony extends Model
     protected $table = "patrimonies";
 
     protected $fillable = [
+        'dependency_id',
         'type',
         'quantity_account_current',
         'detail_location',

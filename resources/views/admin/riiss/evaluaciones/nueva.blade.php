@@ -332,6 +332,24 @@
         {{-- Secciones del formulario --}}
         <div id="seccionesFormulario"></div>
 
+        {{-- Observaciones Generales --}}
+        <div class="card shadow-sm mb-4" id="panelObservaciones" style="display:none">
+            <div class="card-header bg-light py-2 border-bottom">
+                <h6 class="mb-0 font-weight-bold text-uppercase" style="font-size:0.85rem">
+                    <i class="fa fa-comment-dots mr-1 text-info"></i>Sugerencias u Observaciones Generales
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-2">Utilizá este espacio libre para registrar observaciones, sugerencias o contexto adicional de la visita.</p>
+                <textarea id="evalObservaciones" class="form-control"></textarea>
+                <div class="mt-3 text-right">
+                    <button class="btn btn-sm btn-info" id="btnGuardarObs" onclick="guardarObservaciones()">
+                        <i class="fa fa-save mr-1"></i>Guardar Observaciones
+                    </button>
+                </div>
+            </div>
+        </div>
+
         {{-- Botones --}}
         <div id="botonesAccion" class="card shadow-sm mb-4" style="display:none">
             <div class="card-body d-flex justify-content-between align-items-center">
@@ -630,6 +648,15 @@ function recuperarEvaluacionExistente(id) {
         // Cargar formulario y DESPUÉS aplicar las respuestas visualmente
         cargarFormulario(function() {
             aplicarRespuestasVisuales(ev.respuestas || []);
+            
+            // Cargar observaciones guardadas
+            if (ev.observaciones_generales) {
+                if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalObservaciones) {
+                    CKEDITOR.instances.evalObservaciones.setData(ev.observaciones_generales);
+                } else {
+                    $('#evalObservaciones').val(ev.observaciones_generales);
+                }
+            }
         });
     });
 }
@@ -677,6 +704,7 @@ function actualizarDatosVisita() {
     const evalData   = $('#evalEvaluadores').select2('data');
     const evaluadores = evalData.map(function(e) { return { id: e.id, text: e.text }; });
     const ubicacion  = typeof evalGetLocalidad === 'function' ? evalGetLocalidad() : null;
+    const obs        = typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalObservaciones ? CKEDITOR.instances.evalObservaciones.getData() : $('#evalObservaciones').val();
 
     $.ajax({
         url: '/riiss/evaluaciones/' + evaluacionId + '/datos-visita',
@@ -687,6 +715,7 @@ function actualizarDatosVisita() {
             fecha_evaluacion:   $('#evalFecha').val(),
             evaluadores:        evaluadores,
             evaluador_telefono: $('#evalTelefono').val(),
+            observaciones_generales: obs,
             metadata: {
                 ubicacion:    ubicacion,
                 email:        $('#estEmail').val(),
@@ -698,6 +727,44 @@ function actualizarDatosVisita() {
         success: function() { mostrarToast('Datos guardados', 'success'); },
     });
 }
+
+function guardarObservaciones() {
+    if (!evaluacionId) return;
+    var btn = $('#btnGuardarObs');
+    btn.html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
+    
+    var obs = typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalObservaciones ? CKEDITOR.instances.evalObservaciones.getData() : $('#evalObservaciones').val();
+    
+    $.ajax({
+        url: '/riiss/evaluaciones/' + evaluacionId + '/datos-visita',
+        method: 'PATCH',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            _token: '{{ csrf_token() }}',
+            observaciones_generales: obs
+        }),
+        success: function() { 
+            btn.html('<i class="fa fa-save mr-1"></i>Guardar Observaciones');
+            mostrarToast('Observaciones guardadas con éxito', 'success'); 
+        },
+        error: function() {
+            btn.html('<i class="fa fa-save mr-1"></i>Guardar Observaciones');
+            mostrarToast('Error al guardar observaciones', 'error');
+        }
+    });
+}
+
+// Autoguardado al salir de la página
+window.addEventListener('beforeunload', function() {
+    if (evaluacionId && $('#evalObservaciones').length) {
+        var obs = typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalObservaciones ? CKEDITOR.instances.evalObservaciones.getData() : $('#evalObservaciones').val();
+        navigator.sendBeacon('/riiss/evaluaciones/' + evaluacionId + '/datos-visita', new Blob([JSON.stringify({
+            _token: '{{ csrf_token() }}',
+            _method: 'PATCH',
+            observaciones_generales: obs
+        })], {type: 'application/json'}));
+    }
+});
 </script>
 @endsection
 
@@ -714,8 +781,24 @@ function cargarFormulario(callback) {
         renderSidebar(formulario.secciones);
         renderSecciones(formulario.secciones);
         $('#botonesAccion').show();
+        $('#panelObservaciones').show();
         actualizarProgreso();
         initBuscadorPreguntas();
+
+        // Inicializar CKEditor para observaciones si está disponible
+        if (typeof CKEDITOR !== 'undefined') {
+            CKEDITOR.replace('evalObservaciones', {
+                height: 150,
+                toolbarGroups: [
+                    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+                    { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align' ] },
+                    { name: 'links' },
+                    { name: 'styles' },
+                    { name: 'colors' }
+                ],
+                removeButtons: 'Underline,Subscript,Superscript,Strike,Styles'
+            });
+        }
 
         // Ejecutar callback después de renderizar (para aplicar respuestas guardadas)
         if (typeof callback === 'function') {

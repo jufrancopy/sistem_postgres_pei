@@ -758,7 +758,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                 <p class="footer-desc">Plataforma de monitoreo estratégico institucional para el <strong style="color:rgba(255,255,255,.8)">Instituto de Previsión Social del Paraguay</strong>. Datos en tiempo real.</p>
             </div>
             <div>
-                <div class="ai-label">Desarrollado con asistencia de IA</div>
+                <div class="ai-label">Impulsado con asistencia de IA</div>
                 <div class="ai-list">
                     <a class="ai-chip" href="https://kiro.dev" target="_blank" rel="noopener">
                         <svg width="14" height="14" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#F59E0B"/><path d="M12 36L24 12L36 36H28L24 27L20 36H12Z" fill="white"/></svg>

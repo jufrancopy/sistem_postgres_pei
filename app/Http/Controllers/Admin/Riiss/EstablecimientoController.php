@@ -104,9 +104,59 @@ class EstablecimientoController extends Controller
             'tiene_uti_req'           => 'nullable|boolean',
             'tiene_urgencias_req'     => 'nullable|boolean',
             'observacion'             => 'nullable|string|max:1000',
+            
+            // Nuevos campos
+            'latitude'                => 'nullable|numeric',
+            'longitude'               => 'nullable|numeric',
+            'condicion_inmueble'      => 'nullable|string|in:CONVENIO,ALQUILADO,PROPIO',
+            
+            'superficie_terreno'      => 'nullable|numeric',
+            'superficie_construida'   => 'nullable|numeric',
+            'plano_file'              => 'nullable|file|mimes:pdf|max:10240', // Hasta 10MB
+            
+            'nro_llamado'             => 'nullable|string|max:100',
+            'nro_contrato_alquiler'   => 'nullable|string|max:100',
+            'propietario'             => 'nullable|string|max:150',
+            'vigencia_desde'          => 'nullable|date',
+            'vigencia_hasta'          => 'nullable|date',
+            'canon_mensual'           => 'nullable|numeric',
+            'fecha_pago_alquiler'     => 'nullable|string|max:50',
+            
+            'nro_resolucion_convenio' => 'nullable|string|max:100',
+            'vigencia_convenio_desde' => 'nullable|date',
+            'vigencia_convenio_hasta' => 'nullable|date',
+            'descripcion_convenio'    => 'nullable|string',
+            'locales_convenio'        => 'nullable|string',
+            'archivo_convenio_file'   => 'nullable|file|mimes:pdf|max:10240',
+            
+            'contratos'               => 'nullable|array',
+            'contratos.*.tipo_contrato' => 'required_with:contratos|string|in:AMPLIACION,MANTENIMIENTO',
+            'contratos.*.nro_contrato'  => 'nullable|string|max:100',
+            'contratos.*.descripcion'   => 'nullable|string',
+            'contratos.*.costo_total'   => 'nullable|numeric',
+            'contratos.*.porcentaje_avance' => 'nullable|integer',
         ]);
 
+        if ($request->hasFile('plano_file')) {
+            $path = $request->file('plano_file')->store('planos', 'public');
+            $validated['plano_url'] = $path;
+        }
+
+        if ($request->hasFile('archivo_convenio_file')) {
+            $pathConv = $request->file('archivo_convenio_file')->store('convenios', 'public');
+            $validated['archivo_convenio_url'] = $pathConv;
+        }
+
         $est->update($validated);
+
+        if ($request->has('contratos')) {
+            $est->inmuebleContratos()->delete();
+            if (is_array($request->contratos)) {
+                foreach ($request->contratos as $contrato) {
+                    $est->inmuebleContratos()->create($contrato);
+                }
+            }
+        }
 
         // Si cambió la complejidad, recalcular derivados
         if (isset($validated['complejidad_tipo_id'])) {
@@ -127,7 +177,7 @@ class EstablecimientoController extends Controller
     public function show(string $id): JsonResponse
     {
         $est = Establecimiento::where('id_establecimiento', $id)
-            ->with('ultimaEvaluacion', 'homologaciones')
+            ->with(['ultimaEvaluacion', 'homologaciones', 'inmuebleContratos'])
             ->firstOrFail();
 
         return response()->json([

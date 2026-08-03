@@ -71,6 +71,11 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/matriz/pdf',    'Admin\Planificacion\Pei\PeiController@matrizPdf')->name('pei-profiles.matriz.pdf');
     Route::get('pei-profiles/{idProfile}/dashboard', 'Admin\Planificacion\Pei\PeiController@dashboard')->name('pei-profiles.dashboard');
 
+    // Chat PEI
+    Route::get('pei-profiles/{profileId}/chat/messages', 'Admin\Planificacion\Pei\PeiChatController@getMessages')->name('pei-chat.messages');
+    Route::post('pei-profiles/{profileId}/chat/messages', 'Admin\Planificacion\Pei\PeiChatController@storeMessage')->name('pei-chat.store');
+    Route::get('pei-profiles/{profileId}/chat/unread', 'Admin\Planificacion\Pei\PeiChatController@getUnreadCount')->name('pei-chat.unread');
+
     // Relevamientos
     Route::get('proyectos-epc-relevamientos/{estandarId}', 'Admin\Proyectos\EPC\RelevamientoController@getFormulario')->name('proyectos-epc-relevamientos-form-dependencia');
 
@@ -519,6 +524,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('formularios.secciones.update');
         Route::post('formularios/secciones/{seccion}/preguntas', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'storePregunta'])
             ->name('formularios.secciones.preguntas.store');
+        Route::post('formularios/secciones', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'storeSeccion'])
+            ->name('formularios.secciones.store');
 
         // Mis asignaciones (evaluador)
         Route::get('mis-asignaciones', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'misAsignaciones'])
@@ -607,3 +614,4 @@ Route::post('pei-profiles/{profileId}/solicitar-proyecto',
 Route::get('pei-profiles/{profileId}/proyectos/acciones-publico',
     [\App\Http\Controllers\Admin\Proyectos\ProyectoInstitucionalController::class, 'getAccionesDePerfil'])
     ->name('proyectos.solicitar.acciones');
+Route::get('/debug-patrimonies', function() { return Illuminate\Support\Facades\Schema::getColumnListing('patrimonies'); });

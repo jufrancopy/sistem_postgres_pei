@@ -75,22 +75,33 @@ class PatrimonyProfileController extends Controller
         $dependecyId = $patrimonyProfile->dependency_id;
 
         if ($request->ajax()) {
-            $data = Patrimony::where('dependency_id', $dependecyId)->get();
+            $query = Patrimony::where('dependency_id', $dependecyId);
+            
+            if ($request->has('type')) {
+                $query->where('type', $request->type);
+            }
+
+            $data = $query->get();
+            
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-
                     $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editPatrimony"><i class="far fa-edit"></i></a>';
-
                     $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Show" class="btn btn-info btn-circle showDetailPatrimony"><i class="fa fa-eye" aria-hidden="true"></i></a>';
-
                     $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deletePatrimony"><i class="fa fa-trash" aria-hidden="true"></i></a>';
-
                     return $btn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
         }
+
+        // Métricas para las tarjetas de resumen
+        $totalPatrimonies = Patrimony::where('dependency_id', $dependecyId)->count();
+        $totalInmuebles = Patrimony::where('dependency_id', $dependecyId)->where('type', 'Inmueble')->count();
+        $totalEquipos = Patrimony::where('dependency_id', $dependecyId)->where('type', 'Equipo')->count();
+        $totalMobiliarios = Patrimony::where('dependency_id', $dependecyId)->where('type', 'Mobiliario')->count();
+        $totalVehiculos = Patrimony::where('dependency_id', $dependecyId)->where('type', 'Vehículo')->count();
+        $totalMantenimiento = Patrimony::where('dependency_id', $dependecyId)->where('estate_status', 'En Mantenimiento')->count();
 
         $departments = DB::table('localities')
             ->select(DB::raw('count(*) as states, desc_dpto'))

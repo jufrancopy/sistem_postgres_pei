@@ -306,4 +306,5 @@ $(function () {
     });
 });
 </script>
+@include('admin.planificacion.peis.peis.partials.chat_drawer')
 @stop

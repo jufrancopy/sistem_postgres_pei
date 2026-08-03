@@ -19,30 +19,32 @@
 
         {{-- ── Selector de Plan Estratégico ── --}}
         <div class="row mb-4 align-items-center">
-            <div class="col-md-6">
-                <form method="GET" id="formSelectorPei" class="d-flex align-items-center">
-                    <label class="font-weight-bold mr-3 mb-0 text-nowrap">
+            <div class="col-lg-7 col-md-12 mb-3 mb-lg-0">
+                <form method="GET" id="formSelectorPei" class="d-flex flex-column flex-sm-row align-items-sm-center w-100">
+                    <label class="font-weight-bold mr-sm-3 mb-2 mb-sm-0 text-nowrap">
                         <i class="fa fa-file-alt mr-1 text-info"></i> Plan Estratégico:
                     </label>
-                    <select name="pei_id" id="selectPei" class="form-control select2" style="max-width:400px">
-                        @foreach($peisCorporativos as $pei)
-                        <option value="{{ $pei->id }}" {{ $pei->id == $peiSeleccionadoId ? 'selected' : '' }}>
-                            {{ strip_tags($pei->name) }}
-                            ({{ \Carbon\Carbon::parse($pei->year_start)->format('Y') }}–{{ \Carbon\Carbon::parse($pei->year_end)->format('Y') }})
-                        </option>
-                        @endforeach
-                    </select>
+                    <div class="flex-grow-1 w-100" style="min-width: 0;">
+                        <select name="pei_id" id="selectPei" class="form-control select2 w-100" style="width: 100% !important;">
+                            @foreach($peisCorporativos as $pei)
+                            <option value="{{ $pei->id }}" {{ $pei->id == $peiSeleccionadoId ? 'selected' : '' }}>
+                                {{ strip_tags($pei->name) }}
+                                ({{ \Carbon\Carbon::parse($pei->year_start)->format('Y') }}–{{ \Carbon\Carbon::parse($pei->year_end)->format('Y') }})
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </form>
             </div>
             @if($peiActual)
-            <div class="col-md-6 text-right">
-                <a href="{{ route('pei-profiles.proceso', $peiActual->id) }}" class="btn btn-sm btn-outline-info mr-1">
+            <div class="col-lg-5 col-md-12 text-left text-lg-right d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end">
+                <a href="{{ route('pei-profiles.proceso', $peiActual->id) }}" class="btn btn-sm btn-outline-info mr-1 mb-1">
                     <i class="fa fa-tasks mr-1"></i> Proceso
                 </a>
-                <a href="{{ route('pei-profiles.show', $peiActual->id) }}" class="btn btn-sm btn-outline-primary mr-1">
+                <a href="{{ route('pei-profiles.show', $peiActual->id) }}" class="btn btn-sm btn-outline-primary mr-1 mb-1">
                     <i class="fa fa-sitemap mr-1"></i> Árbol del Plan
                 </a>
-                <a href="{{ route('pei-profiles.dashboard', $peiActual->id) }}" class="btn btn-sm btn-dark">
+                <a href="{{ route('pei-profiles.dashboard', $peiActual->id) }}" class="btn btn-sm btn-dark mb-1">
                     <i class="fa fa-chart-bar mr-1"></i> Tablero
                 </a>
             </div>
@@ -284,6 +286,28 @@
 
     </div>
 </div>
+
+<style>
+    .select2-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
+    }
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        border-radius: 6px !important;
+        display: flex !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+    .select2-container .select2-selection__rendered {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        width: 100% !important;
+        padding-right: 25px !important;
+    }
+</style>
 @stop
 
 @section('scripts')
@@ -291,7 +315,7 @@
 <script>
 $(function() {
     // Select2 Plan Estratégico
-    $('#selectPei').select2({ width: '400px', minimumResultsForSearch: 5 })
+    $('#selectPei').select2({ width: '100%', minimumResultsForSearch: 5 })
         .on('select2:select', function() { $('#formSelectorPei').submit(); });
 
     // Semáforo

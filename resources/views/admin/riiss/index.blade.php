@@ -404,6 +404,145 @@
                         <label class="small font-weight-bold">Observación / Notas</label>
                         <textarea id="editEstObservacion" class="form-control" rows="3"></textarea>
                     </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="small font-weight-bold">Latitud</label>
+                        <input type="number" step="any" id="editEstLat" class="form-control">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="small font-weight-bold">Longitud</label>
+                        <input type="number" step="any" id="editEstLng" class="form-control">
+                    </div>
+                    
+                    <div class="col-md-12 mt-3 mb-2">
+                        <h6 class="font-weight-bold border-bottom pb-2 text-primary">Información del Inmueble</h6>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="small font-weight-bold">Condición del Inmueble</label>
+                        <select id="editEstCondicion" class="form-control" onchange="toggleCondicionInmueble()">
+                            <option value="">Seleccione...</option>
+                            <option value="CONVENIO">CONVENIO</option>
+                            <option value="ALQUILADO">ALQUILADO</option>
+                            <option value="PROPIO">PROPIO</option>
+                        </select>
+                    </div>
+
+                    <!-- Campos PROPIO -->
+                    <div id="seccionPropio" class="col-12" style="display:none;">
+                        <div class="row bg-light p-3 rounded mb-3 mx-1 border">
+                            <div class="col-md-4 mb-3">
+                                <label class="small font-weight-bold">Superficie Terreno (m²)</label>
+                                <input type="number" step="0.01" id="editEstSupTerreno" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="small font-weight-bold">Sup. Construida (m²)</label>
+                                <input type="number" step="0.01" id="editEstSupConstruida" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="small font-weight-bold">Plano (PDF)</label>
+                                <input type="file" id="editEstPlanoFile" class="form-control-file" accept=".pdf">
+                                <small id="planoLink" class="d-block mt-1"></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campos CONVENIO -->
+                    <div id="seccionConvenio" class="col-12" style="display:none;">
+                        <div class="row bg-light p-3 rounded mb-3 mx-1 border">
+                            <div class="col-md-12 mb-3">
+                                <label class="small font-weight-bold">Nro. de Resolución de Convenio</label>
+                                <input type="text" id="editEstNroResolucionConv" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="small font-weight-bold">Vigencia Desde</label>
+                                <input type="date" id="editEstVigConvDesde" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="small font-weight-bold">Vigencia Hasta</label>
+                                <input type="date" id="editEstVigConvHasta" class="form-control">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="small font-weight-bold">Descripción del Convenio</label>
+                                <textarea id="editEstDescConv" class="form-control" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="small font-weight-bold">Áreas/Locales cubiertas (Contexto)</label>
+                                <textarea id="editEstLocalesConv" class="form-control" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="small font-weight-bold">Documento del Convenio (PDF)</label>
+                                <input type="file" id="editEstConvenioFile" class="form-control-file" accept=".pdf">
+                                <small id="convenioLink" class="d-block mt-1"></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campos ALQUILADO -->
+                    <div id="seccionAlquilado" class="col-12" style="display:none;">
+                        <div class="row bg-light p-3 rounded mb-3 mx-1 border">
+                            <div class="col-md-6 mb-3">
+                                <label class="small font-weight-bold">Superficie Terreno (m²)</label>
+                                <input type="number" step="0.01" id="editEstSupTerrenoAlq" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="small font-weight-bold">Sup. Construida (m²)</label>
+                                <input type="number" step="0.01" id="editEstSupConstruidaAlq" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="small font-weight-bold">Nro. de Llamado</label>
+                                <input type="text" id="editEstNroLlamado" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="small font-weight-bold">Nro. de Contrato</label>
+                                <input type="text" id="editEstNroContrato" class="form-control">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="small font-weight-bold">Propietario</label>
+                                <input type="text" id="editEstPropietario" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="small font-weight-bold">Vigencia Desde</label>
+                                <input type="date" id="editEstVigDesde" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="small font-weight-bold">Vigencia Hasta</label>
+                                <input type="date" id="editEstVigHasta" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="small font-weight-bold">Canon Mensual</label>
+                                <input type="number" step="0.01" id="editEstCanon" class="form-control">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="small font-weight-bold">Días de Pago de Alquiler</label>
+                                <input type="text" id="editEstFechaPago" class="form-control" placeholder="Ej: 1 al 10 de cada mes">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contratos de Ampliación y Mantenimiento -->
+                    <div class="col-md-12 mt-3 mb-2">
+                        <h6 class="font-weight-bold border-bottom pb-2 text-primary">Contratos (Ampliación / Mantenimiento)</h6>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="agregarFilaContrato()">
+                            <i class="fa fa-plus"></i> Agregar Contrato
+                        </button>
+                        <div class="table-responsive mt-2">
+                            <table class="table table-sm table-bordered" id="tablaContratos">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th style="width:20%">Tipo</th>
+                                        <th style="width:20%">Nro. Contrato</th>
+                                        <th style="width:25%">Descripción</th>
+                                        <th style="width:25%">Costo / % Avance</th>
+                                        <th style="width:10%">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
                 <div id="msgEditEst"></div>
             </div>
@@ -1124,22 +1263,152 @@ function abrirEditarEstablecimiento(id) {
         $('#editEstTipologia').val(d.tipologia_clasificacion || d.tipo_est || '');
         $('#editEstDepto').val(d.departamento || d.depto_nc || '');
         $('#editEstObservacion').val(d.observacion || '');
+        
+        // Cargar nuevos campos
+        $('#editEstLat').val(d.latitude || '');
+        $('#editEstLng').val(d.longitude || '');
+        $('#editEstCondicion').val(d.condicion_inmueble || '');
+        toggleCondicionInmueble();
+        
+        $('#editEstSupTerreno').val(d.superficie_terreno || '');
+        $('#editEstSupConstruida').val(d.superficie_construida || '');
+        if (d.plano_url) {
+            $('#planoLink').html('<a href="/storage/' + d.plano_url + '" target="_blank">Ver plano actual</a>');
+        } else {
+            $('#planoLink').html('');
+        }
+        $('#editEstPlanoFile').val('');
+        
+        // CONVENIO
+        $('#editEstNroResolucionConv').val(d.nro_resolucion_convenio || '');
+        $('#editEstVigConvDesde').val(d.vigencia_convenio_desde || '');
+        $('#editEstVigConvHasta').val(d.vigencia_convenio_hasta || '');
+        $('#editEstDescConv').val(d.descripcion_convenio || '');
+        $('#editEstLocalesConv').val(d.locales_convenio || '');
+        if (d.archivo_convenio_url) {
+            $('#convenioLink').html('<a href="/storage/' + d.archivo_convenio_url + '" target="_blank">Ver documento convenio</a>');
+        } else {
+            $('#convenioLink').html('');
+        }
+        $('#editEstConvenioFile').val('');
+        
+        // ALQUILADO
+        $('#editEstSupTerrenoAlq').val(d.superficie_terreno || '');
+        $('#editEstSupConstruidaAlq').val(d.superficie_construida || '');
+        $('#editEstNroLlamado').val(d.nro_llamado || '');
+        $('#editEstNroContrato').val(d.nro_contrato_alquiler || '');
+        $('#editEstPropietario').val(d.propietario || '');
+        $('#editEstVigDesde').val(d.vigencia_desde || '');
+        $('#editEstVigHasta').val(d.vigencia_hasta || '');
+        $('#editEstCanon').val(d.canon_mensual || '');
+        $('#editEstFechaPago').val(d.fecha_pago_alquiler || '');
+        
+        $('#tablaContratos tbody').empty();
+        if (d.inmueble_contratos && d.inmueble_contratos.length > 0) {
+            d.inmueble_contratos.forEach(function(c) {
+                agregarFilaContrato(c);
+            });
+        }
     });
+}
+
+function toggleCondicionInmueble() {
+    var val = $('#editEstCondicion').val();
+    $('#seccionPropio').hide();
+    $('#seccionAlquilado').hide();
+    $('#seccionConvenio').hide();
+    if (val === 'PROPIO') $('#seccionPropio').show();
+    if (val === 'ALQUILADO') $('#seccionAlquilado').show();
+    if (val === 'CONVENIO') $('#seccionConvenio').show();
+}
+
+function agregarFilaContrato(c = {}) {
+    var tr = $('<tr>').addClass('fila-contrato');
+    
+    var selTipo = $('<select>').addClass('form-control form-control-sm c-tipo').append(
+        $('<option>').val('AMPLIACION').text('AMPLIACIÓN'),
+        $('<option>').val('MANTENIMIENTO').text('MANTENIMIENTO')
+    ).val(c.tipo_contrato || 'AMPLIACION');
+    
+    var inpNro = $('<input>').attr('type', 'text').addClass('form-control form-control-sm c-nro').val(c.nro_contrato || '');
+    var inpDesc = $('<input>').attr('type', 'text').addClass('form-control form-control-sm c-desc').val(c.descripcion || '');
+    
+    var inpCosto = $('<input>').attr('type', 'number').attr('step', '0.01').attr('placeholder', 'Costo $').addClass('form-control form-control-sm c-costo mb-1').val(c.costo_total || '');
+    var inpAvance = $('<input>').attr('type', 'number').attr('placeholder', '% Avance').addClass('form-control form-control-sm c-avance').val(c.porcentaje_avance || '');
+    var divCosto = $('<div>').append(inpCosto, inpAvance);
+
+    var btnDel = $('<button>').attr('type', 'button').addClass('btn btn-sm btn-danger').html('<i class="fa fa-trash"></i>').click(function() {
+        $(this).closest('tr').remove();
+    });
+
+    tr.append(
+        $('<td>').append(selTipo),
+        $('<td>').append(inpNro),
+        $('<td>').append(inpDesc),
+        $('<td>').append(divCosto),
+        $('<td>').addClass('text-center').append(btnDel)
+    );
+    $('#tablaContratos tbody').append(tr);
 }
 
 function guardarEdicionEstablecimiento() {
     var id = $('#editEstId').val();
+    
+    var formData = new FormData();
+    formData.append('_method', 'PATCH');
+    formData.append('_token', '{{ csrf_token() }}');
+    
+    formData.append('nombre_oficial', $('#editEstNombre').val());
+    formData.append('tipologia_clasificacion', $('#editEstTipologia').val());
+    formData.append('departamento', $('#editEstDepto').val());
+    formData.append('observacion', $('#editEstObservacion').val());
+    
+    formData.append('latitude', $('#editEstLat').val());
+    formData.append('longitude', $('#editEstLng').val());
+    formData.append('condicion_inmueble', $('#editEstCondicion').val());
+    
+    if ($('#editEstCondicion').val() === 'PROPIO') {
+        formData.append('superficie_terreno', $('#editEstSupTerreno').val());
+        formData.append('superficie_construida', $('#editEstSupConstruida').val());
+        var file = $('#editEstPlanoFile')[0].files[0];
+        if (file) formData.append('plano_file', file);
+    } else if ($('#editEstCondicion').val() === 'ALQUILADO') {
+        formData.append('superficie_terreno', $('#editEstSupTerrenoAlq').val());
+        formData.append('superficie_construida', $('#editEstSupConstruidaAlq').val());
+        formData.append('nro_llamado', $('#editEstNroLlamado').val());
+        formData.append('nro_contrato_alquiler', $('#editEstNroContrato').val());
+        formData.append('propietario', $('#editEstPropietario').val());
+        formData.append('vigencia_desde', $('#editEstVigDesde').val());
+        formData.append('vigencia_hasta', $('#editEstVigHasta').val());
+        formData.append('canon_mensual', $('#editEstCanon').val());
+        formData.append('fecha_pago_alquiler', $('#editEstFechaPago').val());
+    } else if ($('#editEstCondicion').val() === 'CONVENIO') {
+        formData.append('nro_resolucion_convenio', $('#editEstNroResolucionConv').val());
+        formData.append('vigencia_convenio_desde', $('#editEstVigConvDesde').val());
+        formData.append('vigencia_convenio_hasta', $('#editEstVigConvHasta').val());
+        formData.append('descripcion_convenio', $('#editEstDescConv').val());
+        formData.append('locales_convenio', $('#editEstLocalesConv').val());
+        var cfile = $('#editEstConvenioFile')[0].files[0];
+        if (cfile) formData.append('archivo_convenio_file', cfile);
+    }
+    
+    // Contratos
+    var idx = 0;
+    $('#tablaContratos tbody tr').each(function() {
+        formData.append('contratos[' + idx + '][tipo_contrato]', $(this).find('.c-tipo').val());
+        formData.append('contratos[' + idx + '][nro_contrato]', $(this).find('.c-nro').val());
+        formData.append('contratos[' + idx + '][descripcion]', $(this).find('.c-desc').val());
+        formData.append('contratos[' + idx + '][costo_total]', $(this).find('.c-costo').val() || '');
+        formData.append('contratos[' + idx + '][porcentaje_avance]', $(this).find('.c-avance').val() || '');
+        idx++;
+    });
+
     $.ajax({
         url: '/riiss/establecimientos/' + id,
-        method: 'PATCH',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            _token: '{{ csrf_token() }}',
-            nombre_oficial: $('#editEstNombre').val(),
-            tipologia_clasificacion: $('#editEstTipologia').val(),
-            departamento: $('#editEstDepto').val(),
-            observacion: $('#editEstObservacion').val()
-        }),
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
         success: function(r) {
             if (r && r.ok) {
                 $('#modalEditarEstablecimiento').modal('hide');

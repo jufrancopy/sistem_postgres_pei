@@ -71,6 +71,7 @@ class PatrimonyController extends Controller
         $patrimony = Patrimony::updateOrCreate(
             ['id' => $request->patrimony_id],
             [
+                'dependency_id' => $request->dependency_id,
                 'type' => $request->type,
                 'quantity_account_current' => $request->quantityAccountCurrent,
                 'detail_location' => $request->detailLocation,

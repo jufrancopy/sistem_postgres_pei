@@ -42,17 +42,22 @@
 
     <div class="card-body">
 
-        {{-- Selector de tipología --}}
+        {{-- Selector de tipología y acciones principales --}}
         <div class="mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
                 <h6 class="font-weight-bold mb-0"><i class="fa fa-filter mr-1"></i>Filtrar por tipología</h6>
-                <div id="btnEditarTipologia" style="display:none">
-                    <a id="linkEditarTipologia" href="#" class="btn btn-sm riiss-action-btn">
-                        <i class="fa fa-edit mr-1"></i>Editar reglas de esta tipología
-                    </a>
+                <div class="d-flex" style="gap:10px">
+                    <button class="btn btn-sm btn-info" onclick="$('#modalNuevaSeccion').modal('show')">
+                        <i class="fa fa-plus mr-1"></i>Crear Nueva Sección
+                    </button>
+                    <div id="btnEditarTipologia" style="display:none">
+                        <a id="linkEditarTipologia" href="#" class="btn btn-sm riiss-action-btn">
+                            <i class="fa fa-cogs mr-1"></i>Configurar Módulos para esta Tipología
+                        </a>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex flex-wrap" style="gap:8px" id="tipologiaBtns">
+            <div class="d-flex flex-wrap mt-2" style="gap:8px" id="tipologiaBtns">
                 <button class="tipologia-btn active" onclick="seleccionarTipologia('')">
                     <i class="fa fa-th mr-1"></i>Todas
                 </button>
@@ -126,6 +131,37 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 <button class="btn btn-danger" onclick="guardarMapeo()"><i class="fa fa-save mr-1"></i>Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Nueva Sección --}}
+<div class="modal fade" id="modalNuevaSeccion" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info">
+                <h5 class="modal-title text-white"><i class="fa fa-plus-circle mr-2"></i>Crear Nueva Sección</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="small font-weight-bold">Nombre de la Sección (Grupo) *</label>
+                    <input type="text" id="nuevaSecNombre" class="form-control" placeholder="Ej: Internaciones">
+                </div>
+                <div class="form-group">
+                    <label class="small font-weight-bold">Sub-sección (Opcional)</label>
+                    <input type="text" id="nuevaSecSub" class="form-control" placeholder="Ej: Sala de Partos">
+                </div>
+                <div class="form-group">
+                    <label class="small font-weight-bold">Orden visual</label>
+                    <input type="number" id="nuevaSecOrden" class="form-control" placeholder="Dejar vacío para enviar al final">
+                </div>
+                <div id="nuevaSecMsg"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button class="btn btn-info" onclick="crearSeccion()"><i class="fa fa-save mr-1"></i>Crear Sección</button>
             </div>
         </div>
     </div>
@@ -279,6 +315,38 @@ function guardarMapeo() {
         },
         error: function() {
             $('#mapeoMsg').html('<div class="alert alert-danger py-2">Error al guardar.</div>');
+        }
+    });
+}
+
+function crearSeccion() {
+    var data = {
+        _token: '{{ csrf_token() }}',
+        seccion: $('#nuevaSecNombre').val(),
+        sub_seccion: $('#nuevaSecSub').val(),
+        orden: $('#nuevaSecOrden').val()
+    };
+    if (!data.seccion) {
+        $('#nuevaSecMsg').html('<div class="alert alert-danger small p-2">El nombre de la sección es obligatorio.</div>');
+        return;
+    }
+    
+    $.ajax({
+        url: '{{ route("riiss.formularios.secciones.store") }}',
+        method: 'POST',
+        data: data,
+        success: function(r) {
+            if (r.ok) {
+                $('#modalNuevaSeccion').modal('hide');
+                $('#nuevaSecNombre, #nuevaSecSub, #nuevaSecOrden').val('');
+                cargarSecciones();
+                // Mostrar un toast de éxito si existe la función, si no alert
+                if (typeof mostrarToast === 'function') mostrarToast('Sección creada con éxito', 'success');
+                else alert('Sección creada exitosamente.');
+            }
+        },
+        error: function(xhr) {
+            $('#nuevaSecMsg').html('<div class="alert alert-danger small p-2">Error al crear la sección. ' + (xhr.responseJSON?.message || '') + '</div>');
         }
     });
 }

@@ -2514,4 +2514,5 @@ $(document).on('click', '.btnNotificarAccion', function() {
 });
 // ══ FIN NOTIFICACIONES ════════════════════════════════════════════════════════
 </script>
+@include('admin.planificacion.peis.peis.partials.chat_drawer')
 @stop

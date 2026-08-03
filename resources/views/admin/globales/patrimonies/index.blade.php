@@ -13,383 +13,293 @@
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}"><i class="fas fa-home"></i>
                         Dashboard</a></li>
-                <li class="breadcrumb-item" aria-current="page"><i class="fas fa-landmark"><a
-                            href="{{ route('globales.patrimony-profiles.index') }}"></i>
-                    Patrimonios</li></a>
-                <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-landmark"></i>
-                    {{ $patrimonyProfile->dependency->dependency }}</li>
+                <li class="breadcrumb-item"><a href="{{ route('globales.patrimony-profiles.index') }}"><i class="fas fa-landmark"></i> Patrimonios</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-building"></i> {{ $patrimonyProfile->dependency->dependency }}</li>
             </ol>
         </nav>
 
-
-        <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4 d-flex justify-content-between align-items-center">
-            <ul class="nav nav-pills mb-0" id="pills-tab" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="pills-realSstates-tab" data-toggle="pill" href="#pills-realSstates"
-                        role="tab" aria-controls="pills-realSstates" aria-selected="true">Inmuebles</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="pills-maps-tab" data-toggle="pill" href="#pills-maps" role="tab"
-                        aria-controls="pills-maps" aria-selected="false">Mapa</a>
-                </li>
-            </ul>
-
-            @hasanyrole('Administrador')
-                <a class="btn btn-success btn-circle" data-group-id="null" href="javascript:void(0)" id="createNewPatrimony">
-                    <i class="fa fa-plus"></i>
-                </a>
-            @endhasanyrole
-        </nav>
-
-        <div class="tab-content" id="pills-tabContent">
-            <div class="tab-pane fade show active" id="pills-realSstates" role="tabpanel"
-                aria-labelledby="pills-realSstates-tab">
-                <div class="container">
-                    <!-- Tarjetas de Resumen -->
-                    <div class="row mb-4">
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Total Patrimonios</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">1,248</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-landmark fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
+        <div class="container-fluid px-4">
+            <!-- Tarjetas de Resumen -->
+            <div class="row mb-4">
+                <!-- Total Patrimonios -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Total Patrimonios</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">1,248</div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-success shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Inmuebles</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">342</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-building fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-info shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                Equipos Médicos</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">576</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-procedures fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-warning shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                En Mantenimiento</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">89</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-tools fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-landmark fa-2x text-gray-300"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Pestañas de Navegación -->
-                    {{-- <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="pills-summary-tab" data-bs-toggle="pill"
-                                data-bs-target="#pills-summary" type="button" role="tab" aria-controls="pills-summary"
-                                aria-selected="true">
-                                <i class="fas fa-chart-pie me-2"></i>Resumen
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="pills-realStates-tab" data-bs-toggle="pill"
-                                data-bs-target="#pills-realStates" type="button" role="tab"
-                                aria-controls="pills-realStates" aria-selected="false">
-                                <i class="fas fa-building me-2"></i>Inmuebles
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="pills-equipment-tab" data-bs-toggle="pill"
-                                data-bs-target="#pills-equipment" type="button" role="tab"
-                                aria-controls="pills-equipment" aria-selected="false">
-                                <i class="fas fa-laptop-medical me-2"></i>Equipos
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="pills-maps-tab" data-bs-toggle="pill"
-                                data-bs-target="#pills-maps" type="button" role="tab" aria-controls="pills-maps"
-                                aria-selected="false">
-                                <i class="fas fa-map-marked-alt me-2"></i>Mapa
-                            </button>
-                        </li>
-                    </ul> --}}
-
-                    <!-- Contenido de las pestañas -->
-                    <div class="tab-content" id="pills-tabContent">
-                        <!-- Pestaña de Resumen -->
-                        <div class="tab-pane fade show active" id="pills-summary" role="tabpanel"
-                            aria-labelledby="pills-summary-tab">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <div class="card shadow mb-4">
-                                        <div
-                                            class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                            <h6 class="m-0 font-weight-bold text-primary">
-                                                <i class="fas fa-chart-line me-2"></i>Distribución de Patrimonios
-                                            </h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="chart-pie pt-4 pb-2">
-                                                <canvas id="patrimonyPieChart"></canvas>
-                                            </div>
-                                            <div class="mt-4 text-center small">
-                                                <span class="mr-2">
-                                                    <i class="fas fa-circle text-primary"></i> Inmuebles
-                                                </span>
-                                                <span class="mr-2">
-                                                    <i class="fas fa-circle text-success"></i> Equipos Médicos
-                                                </span>
-                                                <span class="mr-2">
-                                                    <i class="fas fa-circle text-info"></i> Mobiliario
-                                                </span>
-                                                <span class="mr-2">
-                                                    <i class="fas fa-circle text-warning"></i> Vehículos
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
+                <!-- Inmuebles Card -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Inmuebles</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $inmueblesCount ?? 0 }}</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="card shadow mb-4">
-                                        <div
-                                            class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                            <h6 class="m-0 font-weight-bold text-primary">
-                                                <i class="fas fa-bell me-2"></i>Alertas Recientes
-                                            </h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="alert alert-warning" role="alert">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                                <strong>5 inmuebles</strong> con contratos próximos a vencer
-                                            </div>
-                                            <div class="alert alert-danger" role="alert">
-                                                <i class="fas fa-tools me-2"></i>
-                                                <strong>12 equipos</strong> requieren mantenimiento urgente
-                                            </div>
-                                            <div class="alert alert-info" role="alert">
-                                                <i class="fas fa-file-alt me-2"></i>
-                                                <strong>3 documentos</strong> de propiedad próximos a expirar
-                                            </div>
-                                        </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-building fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Equipos/Vehículos Card -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Equipos y Vehículos</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $equiposCount ?? 0 }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-laptop-medical fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mantenimiento Card -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        En Mantenimiento</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">12</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-tools fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- End of row -->
+
+            <!-- Pestañas de Navegación -->
+            <ul class="nav nav-pills mb-4" id="main-patrimony-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="pills-summary-tab" data-toggle="pill" href="#pills-summary" role="tab" aria-controls="pills-summary" aria-selected="true">
+                        <i class="fas fa-chart-pie mr-2"></i>Resumen
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-realStates-tab" data-toggle="pill" href="#pills-realStates" role="tab" aria-controls="pills-realStates" aria-selected="false">
+                        <i class="fas fa-building mr-2"></i>Inmuebles
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-equipment-tab" data-toggle="pill" href="#pills-equipment" role="tab" aria-controls="pills-equipment" aria-selected="false">
+                        <i class="fas fa-laptop-medical mr-2"></i>Equipos y Vehículos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-maps-tab" data-toggle="pill" href="#pills-maps" role="tab" aria-controls="pills-maps" aria-selected="false">
+                        <i class="fas fa-map-marked-alt mr-2"></i>Mapas
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Contenido de las pestañas -->
+            <div class="tab-content" id="pills-tabContent">
+                <!-- Pestaña de Resumen -->
+                <div class="tab-pane fade show active" id="pills-summary" role="tabpanel" aria-labelledby="pills-summary-tab">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">
+                                        <i class="fas fa-chart-line mr-2"></i>Distribución de Patrimonios
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-pie pt-4 pb-2">
+                                        <canvas id="patrimonyPieChart"></canvas>
+                                    </div>
+                                    <div class="mt-4 text-center small">
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle text-primary"></i> Inmuebles
+                                        </span>
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle text-success"></i> Equipos Médicos
+                                        </span>
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle text-info"></i> Mobiliario
+                                        </span>
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle text-warning"></i> Vehículos
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Pestaña de Inmuebles -->
-                        <div class="tab-pane fade" id="pills-realStates" role="tabpanel"
-                            aria-labelledby="pills-realStates-tab">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="card shadow">
-                                        <div
-                                            class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                            <h6 class="m-0 font-weight-bold text-primary">
-                                                <i class="fas fa-building me-2"></i>Listado de Inmuebles
-                                            </h6>
-                                            <a href="#" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-plus me-1"></i> Nuevo Inmueble
-                                            </a>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered" id="realStatesTable" width="100%"
-                                                    cellspacing="0">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Código</th>
-                                                            <th>Nombre</th>
-                                                            <th>Ubicación</th>
-                                                            <th>Área (m²)</th>
-                                                            <th>Valor</th>
-                                                            <th>Estado</th>
-                                                            <th>Acciones</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>INM-001</td>
-                                                            <td>Hospital Central</td>
-                                                            <td>Asunción</td>
-                                                            <td>5,200</td>
-                                                            <td>Gs. 12,500,000,000</td>
-                                                            <td><span class="badge bg-success">Operativo</span></td>
-                                                            <td>
-                                                                <a href="#" class="btn btn-sm btn-info"
-                                                                    title="Ver detalles">
-                                                                    <i class="fas fa-eye"></i>
-                                                                </a>
-                                                                <a href="#" class="btn btn-sm btn-warning"
-                                                                    title="Editar">
-                                                                    <i class="fas fa-edit"></i>
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                        <!-- Más filas... -->
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
+                        <div class="col-md-4">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">
+                                        <i class="fas fa-bell mr-2"></i>Alertas Recientes
+                                    </h6>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Pestaña de Equipos -->
-                        <div class="tab-pane fade" id="pills-equipment" role="tabpanel"
-                            aria-labelledby="pills-equipment-tab">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="card shadow">
-                                        <div
-                                            class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                            <h6 class="m-0 font-weight-bold text-primary">
-                                                <i class="fas fa-laptop-medical me-2"></i>Inventario de Equipos
-                                            </h6>
-                                            <div class="dropdown no-arrow">
-                                                <a class="dropdown-toggle btn btn-sm btn-primary" href="#"
-                                                    role="button" id="dropdownMenuLink" data-bs-toggle="dropdown"
-                                                    aria-expanded="false">
-                                                    <i class="fas fa-plus me-1"></i> Nuevo Equipo
-                                                </a>
-                                                <ul class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                                    aria-labelledby="dropdownMenuLink">
-                                                    <li><a class="dropdown-item" href="#"><i
-                                                                class="fas fa-desktop me-2"></i>Equipo Informático</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i
-                                                                class="fas fa-procedures me-2"></i>Equipo Médico</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i
-                                                                class="fas fa-ambulance me-2"></i>Vehículo</a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered" id="equipmentTable" width="100%"
-                                                    cellspacing="0">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Código</th>
-                                                            <th>Tipo</th>
-                                                            <th>Marca/Modelo</th>
-                                                            <th>Ubicación</th>
-                                                            <th>Estado</th>
-                                                            <th>Último Mant.</th>
-                                                            <th>Acciones</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>EQM-045</td>
-                                                            <td>Resonador Magnético</td>
-                                                            <td>Siemens Magnetom 1.5T</td>
-                                                            <td>Imagenología - Piso 2</td>
-                                                            <td><span class="badge bg-success">Operativo</span></td>
-                                                            <td>15/03/2023</td>
-                                                            <td>
-                                                                <a href="#" class="btn btn-sm btn-info"
-                                                                    title="Ver detalles">
-                                                                    <i class="fas fa-eye"></i>
-                                                                </a>
-                                                                <a href="#" class="btn btn-sm btn-warning"
-                                                                    title="Editar">
-                                                                    <i class="fas fa-edit"></i>
-                                                                </a>
-                                                                <a href="#" class="btn btn-sm btn-danger"
-                                                                    title="Dar de baja">
-                                                                    <i class="fas fa-trash"></i>
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                        <!-- Más filas... -->
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
+                                <div class="card-body">
+                                    <div class="alert alert-warning" role="alert">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                                        <strong>5 inmuebles</strong> con contratos próximos a vencer
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Pestaña de Mapa -->
-                        <div class="tab-pane fade" id="pills-maps" role="tabpanel" aria-labelledby="pills-maps-tab">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="card shadow">
-                                        <div
-                                            class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                            <h6 class="m-0 font-weight-bold text-primary">
-                                                <i class="fas fa-map-marked-alt me-2"></i>Ubicación de Inmuebles
-                                            </h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div id="mapPais" style="height: 500px; border-radius: 8px;"></div>
-                                            <div class="mt-3">
-                                                <div class="d-flex flex-wrap">
-                                                    <div class="me-4 mb-2">
-                                                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
-                                                        <span>Hospitales</span>
-                                                    </div>
-                                                    <div class="me-4 mb-2">
-                                                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
-                                                        <span>Centros de Salud</span>
-                                                    </div>
-                                                    <div class="me-4 mb-2">
-                                                        <i class="fas fa-map-marker-alt text-success me-2"></i>
-                                                        <span>Oficinas Administrativas</span>
-                                                    </div>
-                                                    <div class="me-4 mb-2">
-                                                        <i class="fas fa-map-marker-alt text-warning me-2"></i>
-                                                        <span>Almacenes</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div class="alert alert-danger" role="alert">
+                                        <i class="fas fa-tools mr-2"></i>
+                                        <strong>12 equipos</strong> requieren mantenimiento urgente
+                                    </div>
+                                    <div class="alert alert-info" role="alert">
+                                        <i class="fas fa-file-alt mr-2"></i>
+                                        <strong>3 documentos</strong> de propiedad próximos a expirar
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Pestaña de Inmuebles -->
+                <div class="tab-pane fade" id="pills-realStates" role="tabpanel" aria-labelledby="pills-realStates-tab">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card shadow">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">
+                                        <i class="fas fa-building mr-2"></i>Listado de Inmuebles
+                                    </h6>
+                                    @hasanyrole('Administrador')
+                                    <a href="javascript:void(0)" class="btn btn-sm btn-primary" id="createNewPatrimony">
+                                        <i class="fas fa-plus mr-1"></i> Nuevo Inmueble
+                                    </a>
+                                    @endhasanyrole
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="realStatesTable" width="100%" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Registro/Chapa</th>
+                                                    <th>Nombre/Descripción</th>
+                                                    <th>Departamento</th>
+                                                    <th>Ubicación</th>
+                                                    <th>Valor Estimado</th>
+                                                    <th>Estado</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pestaña de Equipos -->
+                <div class="tab-pane fade" id="pills-equipment" role="tabpanel" aria-labelledby="pills-equipment-tab">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card shadow">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">
+                                        <i class="fas fa-car mr-2"></i>Inventario de Equipos y Vehículos
+                                    </h6>
+                                    @hasanyrole('Administrador')
+                                    <a href="javascript:void(0)" class="btn btn-sm btn-primary" id="createNewPatrimony2">
+                                        <i class="fas fa-plus mr-1"></i> Agregar Bien
+                                    </a>
+                                    @endhasanyrole
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="equipmentTable" width="100%" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Registro/Chapa</th>
+                                                    <th>Nombre/Descripción</th>
+                                                    <th>Departamento</th>
+                                                    <th>Ubicación</th>
+                                                    <th>Valor Estimado</th>
+                                                    <th>Estado</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pestaña de Mapa -->
+                <div class="tab-pane fade" id="pills-maps" role="tabpanel" aria-labelledby="pills-maps-tab">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card shadow">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">
+                                        <i class="fas fa-map-marked-alt mr-2"></i>Ubicación de Inmuebles
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="mapPais" style="height: 500px; border-radius: 8px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- End tab-content -->
+        </div>
+
+        <!-- Modales de Formulario y Detalle -->
+        <div class="modal fade" id="patrimonyModal" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="card-header card-header-info">
+                        <h4 class="modal-title" id="modalHeading">Nuevo Patrimonio</h4>
+                    </div>
+                    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                        <form id="patrimonyForm" name="patrimonyForm" class="form-horizontal">
+                            <div class="alert alert-danger errors" role="alert" style="display:none;"></div>
+                            @include('admin.globales.patrimonies.partials.form')
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="tab-pane fade" id="pills-maps" role="tabpanel" aria-labelledby="pills-maps-tab">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div id="mapPais" style="height: 400px;"></div>
+        </div>
+
+        <div class="modal fade" id="patrimonyDetailModal" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="card-header card-header-info">
+                        <h4 class="modal-title" id="modalDetailHeading">Detalle de Patrimonio</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="map" id="map" style="height: 300px;"></div>
                     </div>
                 </div>
             </div>
@@ -499,10 +409,10 @@
         });
         // Improved block by ChatGPT
         $('#showDetailPatrimony').click(function() {
-            initializeDetailPatrimony()
+            initializeDetailPatrimony();
         });
 
-        $('#createNewPatrimony').click(function() {
+        $('body').on('click', '#createNewPatrimony, #createNewPatrimony2', function() {
             initializeForm();
             setupSelect2();
             setupEventListeners();
@@ -651,7 +561,7 @@
 
                 // Inicializa los selectores de dependencia y grupo raíz
                 initializeSelect2($("#group_roots"), 'Seleccione Grupo Raíz de trabajo',
-                    '{{ route('globales.get-root-groups') }}');
+                    "{{ route('globales.get-root-groups') }}");
 
 
                 var profileType = data.profile.type;
@@ -701,7 +611,7 @@
                 $('#dependencies').select2({
                     placeholder: 'Seleccione la dependencia',
                     ajax: {
-                        url: '{{ route('globales.get-dependencies') }}',
+                        url: "{{ route('globales.get-dependencies') }}",
                         dataType: 'json',
                         delay: 250,
                         processResults: function(data) {
@@ -728,7 +638,7 @@
                 $('#group_roots').on('change', function() {
                     var groupRootID = $(this).val();
                     //Buscamos los grupos asociados al Grupo Raíz o Evento
-                    var url = 'admin/globales/get-groups/' + groupRootID;
+                    var url = "{{ route('globales.get-groups', ':id') }}".replace(':id', groupRootID);
 
                     // Reinicializar el selector de grupos
                     initializeSelect2($("#groups"), 'Seleccione el Grupo', url);
@@ -750,7 +660,7 @@
                 });
 
                 //Analysts
-                var url = '{{ route('globales.get-users') }}';
+                var url = "{{ route('globales.get-users') }}";
                 var analysts = $('#analysts').select2({
                     placeholder: 'Seleccione Analistas',
                     ajax: {
@@ -841,8 +751,51 @@
 
         // Inicialización de DataTables
         $(document).ready(function() {
-            $('#realStatesTable').DataTable();
-            $('#equipmentTable').DataTable();
+            // Inmuebles Table
+            $('#realStatesTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('globales.patrimonies.detail-profile', $patrimonyProfile->id) }}",
+                    data: function (d) {
+                        d.type = 'BIEN DE RENTA';
+                        d.dependency_id = "{{ $patrimonyProfile->dependency_id ?? '' }}";
+                    }
+                },
+                columns: [
+                    { data: 'quantity_account_current', name: 'quantity_account_current', render: function(data) { return data ? data : '-'; } },
+                    { data: 'description', name: 'description', render: function(data) { return data ? data : '-'; } },
+                    { data: 'department', name: 'department', render: function(data) { return data ? data : '-'; } },
+                    { data: 'detail_location', name: 'detail_location', render: function(data) { return data ? data : '-'; } },
+                    { data: 'estate_quantity', name: 'estate_quantity', render: function(data) { return data ? data : '-'; } },
+                    { data: 'estate_status', name: 'estate_status', render: function(data) { return data ? '<span class="badge badge-info">' + data + '</span>' : '-'; } },
+                    { data: 'action', name: 'action', orderable: false, searchable: false }
+                ],
+                language: { url: 'https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json' }
+            });
+            
+            // Equipos y Vehículos Table
+            $('#equipmentTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('globales.patrimonies.detail-profile', $patrimonyProfile->id) }}",
+                    data: function (d) {
+                        d.type = 'BIEN DE USO';
+                        d.dependency_id = "{{ $patrimonyProfile->dependency_id ?? '' }}";
+                    }
+                },
+                columns: [
+                    { data: 'quantity_account_current', name: 'quantity_account_current', render: function(data) { return data ? data : '-'; } },
+                    { data: 'description', name: 'description', render: function(data) { return data ? data : '-'; } },
+                    { data: 'department', name: 'department', render: function(data) { return data ? data : '-'; } },
+                    { data: 'detail_location', name: 'detail_location', render: function(data) { return data ? data : '-'; } },
+                    { data: 'estate_quantity', name: 'estate_quantity', render: function(data) { return data ? data : '-'; } },
+                    { data: 'estate_status', name: 'estate_status', render: function(data) { return data ? '<span class="badge badge-info">' + data + '</span>' : '-'; } },
+                    { data: 'action', name: 'action', orderable: false, searchable: false }
+                ],
+                language: { url: 'https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json' }
+            });
         });
 
         let map;

@@ -39,6 +39,30 @@ class FormularioController extends Controller
     }
 
     /**
+     * POST /riiss/formularios/secciones
+     * Crear una nueva sección.
+     */
+    public function storeSeccion(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'seccion'     => 'required|string|max:200',
+            'sub_seccion' => 'nullable|string|max:200',
+            'orden'       => 'nullable|integer',
+        ]);
+
+        $orden = $validated['orden'] ?? (FormularioSeccion::max('orden') + 1);
+
+        $seccion = FormularioSeccion::create([
+            'seccion'     => $validated['seccion'],
+            'sub_seccion' => $validated['sub_seccion'] ?? '',
+            'orden'       => $orden,
+            'slug'        => \Illuminate\Support\Str::slug($validated['seccion'] . '-' . ($validated['sub_seccion'] ?? '')),
+        ]);
+
+        return response()->json(['ok' => true, 'data' => $seccion, 'message' => 'Sección creada.']);
+    }
+
+    /**
      * POST /riiss/formularios/secciones/{seccion}/preguntas
      * Agregar pregunta a una sección.
      */
@@ -186,8 +210,8 @@ class FormularioController extends Controller
                 ->update(['tipologia_clasificacion' => $nuevo]);
             Establecimiento::where('tipologia_clasificacion', $tipologia)
                 ->update(['tipologia_clasificacion' => $nuevo]);
-            CarteraServicio::where('tipologia_clasificacion', $tipologia)
-                ->update(['tipologia_clasificacion' => $nuevo]);
+            CarteraServicio::where('tipo_establecimiento', $tipologia)
+                ->update(['tipo_establecimiento' => $nuevo]);
         });
 
         return response()->json(['ok' => true, 'message' => "Tipología renombrada a '{$nuevo}' en todas las tablas."]);

@@ -29,6 +29,11 @@ class Establecimiento extends Model
         'activo', 'codigo_ine',
         'nivel_atencion', 'grado_complejidad', 'es_hospitalario',
         'tiene_internacion', 'tiene_quirofano_req', 'tiene_uti_req', 'tiene_urgencias_req',
+        'condicion_inmueble', 'superficie_terreno', 'superficie_construida', 'plano_url',
+        'nro_llamado', 'nro_contrato_alquiler', 'propietario', 'vigencia_desde',
+        'vigencia_hasta', 'canon_mensual', 'fecha_pago_alquiler',
+        'nro_resolucion_convenio', 'vigencia_convenio_desde', 'vigencia_convenio_hasta',
+        'descripcion_convenio', 'locales_convenio', 'archivo_convenio_url',
     ];
 
     protected $casts = [
@@ -57,6 +62,11 @@ class Establecimiento extends Model
     public function evaluaciones(): HasMany
     {
         return $this->hasMany(Evaluacion::class, 'id_establecimiento');
+    }
+
+    public function inmuebleContratos(): HasMany
+    {
+        return $this->hasMany(InmuebleContrato::class, 'id_establecimiento', 'id_establecimiento');
     }
 
     public function complejidadTipo(): BelongsTo

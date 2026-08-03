@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends(request()->has('iframe') ? 'layouts.iframe' : 'layouts.master')
 @section('title', 'Sección: ' . $seccion->getNombreCompletoAttribute())
 
 @push('styles')
@@ -15,14 +15,24 @@
 .btn-icon:hover { background:#f1f5f9; }
 .btn-icon.danger:hover { background:#fee2e2; border-color:#fca5a5; color:#dc2626; }
 .drag-handle { cursor:grab; color:#cbd5e1; padding:0 4px; }
+@if(request()->has('iframe'))
+    .sidebar, .navbar, .breadcrumb, footer, #mainCardHeader { display: none !important; }
+    .main-panel { width: 100% !important; margin: 0 !important; height: 100vh !important; }
+    .wrapper { height: 100vh !important; }
+    .content { padding: 0 !important; margin: 0 !important; }
+    .container-fluid { padding: 0 !important; }
+    main.py-4 { padding-top: 0 !important; padding-bottom: 0 !important; margin: 0 !important; }
+    .card { box-shadow: none !important; margin: 0 !important; border-radius: 0 !important; }
+    body { background-color: white !important; }
+@endif
 </style>
 @endpush
 
 @section('content')
 <div class="card">
-    <div class="card-header card-header-danger">
-        <h4 class="card-title"><i class="fa fa-wpforms mr-2"></i>{{ $seccion->getNombreCompletoAttribute() }}</h4>
-        <p class="card-category">Gestión de preguntas de la sección</p>
+    <div class="card-header card-header-info" id="mainCardHeader" style="background: linear-gradient(135deg, #00acc1, #26c6da); border-radius: 12px; box-shadow: 0 12px 26px rgba(0, 172, 193, 0.16);">
+        <h4 class="card-title text-white"><i class="fa fa-wpforms mr-2"></i>{{ $seccion->getNombreCompletoAttribute() }}</h4>
+        <p class="card-category text-white-75">Gestión de preguntas de la sección</p>
     </div>
 
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-0">
@@ -36,16 +46,16 @@
     <div class="card-body">
 
         {{-- Header de sección --}}
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+            <div class="mb-3 mb-md-0">
                 <h5 class="mb-1 font-weight-bold">{{ $seccion->getNombreCompletoAttribute() }}</h5>
                 <small class="text-muted">{{ $seccion->preguntas->count() }} preguntas · {{ $seccion->preguntas->where('activa', true)->count() }} activas</small>
             </div>
-            <div style="gap:8px" class="d-flex">
-                <button class="btn btn-outline-secondary btn-sm" onclick="abrirEditarSeccion()">
+            <div style="gap:8px" class="d-flex flex-wrap">
+                <button class="btn btn-outline-secondary btn-sm m-0" onclick="abrirEditarSeccion()">
                     <i class="fa fa-edit mr-1"></i>Editar sección
                 </button>
-                <button class="btn btn-danger btn-sm" onclick="abrirNuevaPregunta()">
+                <button class="btn btn-info btn-sm m-0" onclick="abrirNuevaPregunta()">
                     <i class="fa fa-plus mr-1"></i>Nueva pregunta
                 </button>
             </div>
@@ -107,12 +117,12 @@
     </div>
 </div>
 
-{{-- Modal editar sección --}}
-<div class="modal fade" id="modalSeccion" tabindex="-1">
+{{-- Modal Editar Sección --}}
+<div class="modal fade" id="modalEditarSeccion" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header card-header-danger" style="background:linear-gradient(135deg,#c62828,#e91e63)">
-                <h5 class="modal-title text-white"><i class="fa fa-edit mr-2"></i>Editar sección</h5>
+            <div class="modal-header card-header-info" style="background: linear-gradient(135deg, #00acc1, #26c6da);">
+                <h5 class="modal-title text-white"><i class="fa fa-edit mr-2"></i>Editar Sección</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
@@ -128,18 +138,18 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button class="btn btn-danger" onclick="guardarSeccion()"><i class="fa fa-save mr-1"></i>Guardar</button>
+                <button class="btn btn-info" onclick="guardarSeccion()"><i class="fa fa-save mr-1"></i>Guardar</button>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Modal nueva / editar pregunta --}}
+{{-- Modal Pregunta --}}
 <div class="modal fade" id="modalPregunta" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header card-header-danger" style="background:linear-gradient(135deg,#c62828,#e91e63)">
-                <h5 class="modal-title text-white" id="modalPreguntaTitulo"><i class="fa fa-plus mr-2"></i>Nueva pregunta</h5>
+            <div class="modal-header card-header-info" style="background: linear-gradient(135deg, #00acc1, #26c6da);">
+                <h5 class="modal-title text-white" id="modalPreguntaTitle"><i class="fa fa-plus-circle mr-2"></i>Nueva Pregunta</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
@@ -173,7 +183,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button class="btn btn-danger" onclick="guardarPregunta()"><i class="fa fa-save mr-1"></i>Guardar</button>
+                <button class="btn btn-info" onclick="guardarPregunta()"><i class="fa fa-save mr-1"></i>Guardar</button>
             </div>
         </div>
     </div>
@@ -183,7 +193,7 @@
 <div class="modal fade" id="modalMapeo" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#1e40af,#3b82f6)">
+            <div class="modal-header card-header-info" style="background: linear-gradient(135deg, #00acc1, #26c6da);">
                 <h5 class="modal-title text-white"><i class="fa fa-link mr-2"></i>Mapear a cartera de servicios</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
@@ -202,7 +212,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button class="btn btn-primary" onclick="guardarMapeo()"><i class="fa fa-save mr-1"></i>Guardar mapeo</button>
+                <button class="btn btn-info" onclick="guardarMapeo()"><i class="fa fa-save mr-1"></i>Guardar mapeo</button>
             </div>
         </div>
     </div>
@@ -224,14 +234,14 @@ function toggleInactivas(mostrar) {
 }
 
 // ── Sección ──────────────────────────────────────────
-function abrirEditarSeccion() { $('#modalSeccion').modal('show'); }
+function abrirEditarSeccion() { $('#modalEditarSeccion').modal('show'); }
 
 function guardarSeccion() {
     $.ajax({
         url: SECCION_URL, method: 'POST', contentType: 'application/json',
         data: JSON.stringify({ _token: CSRF, _method: 'PATCH', seccion: $('#secNombre').val(), sub_seccion: $('#secSubNombre').val() }),
         success: function(r) {
-            if (r.ok) { $('#modalSeccion').modal('hide'); location.reload(); }
+            if (r.ok) { $('#modalEditarSeccion').modal('hide'); location.reload(); }
             else $('#secMsg').html('<div class="alert alert-danger py-2">' + r.message + '</div>');
         }
     });
@@ -240,7 +250,7 @@ function guardarSeccion() {
 // ── Preguntas ─────────────────────────────────────────
 function abrirNuevaPregunta() {
     preguntaEditId = null;
-    $('#modalPreguntaTitulo').html('<i class="fa fa-plus mr-2"></i>Nueva pregunta');
+    $('#modalPreguntaTitle').html('<i class="fa fa-plus-circle mr-2"></i>Nueva Pregunta');
     $('#preguntaTexto').val('');
     $('#preguntaTipo').val('si_no');
     $('#preguntaOrden').val('');
@@ -250,7 +260,7 @@ function abrirNuevaPregunta() {
 
 function abrirEditar(id, texto, tipo, orden) {
     preguntaEditId = id;
-    $('#modalPreguntaTitulo').html('<i class="fa fa-edit mr-2"></i>Editar pregunta');
+    $('#modalPreguntaTitle').html('<i class="fa fa-edit mr-2"></i>Editar Pregunta');
     $('#preguntaTexto').val(texto);
     $('#preguntaTipo').val(tipo);
     $('#preguntaOrden').val(orden);

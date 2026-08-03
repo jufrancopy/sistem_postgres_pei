@@ -121,7 +121,7 @@ class GroupController extends Controller
 
     public function edit($id)
     {
-        $group = Group::with('members')->find($id);
+        $group = Group::with('members')->findOrFail($id);
 
         $membersChecked = [];
 
