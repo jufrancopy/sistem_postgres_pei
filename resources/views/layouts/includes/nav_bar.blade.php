@@ -1,7 +1,9 @@
-<nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top">
+<nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top" style="box-shadow: none !important;">
   <div class="container-fluid">
     <div class="navbar-wrapper">
-      <a class="navbar-brand d-none d-lg-block" href="javascript:void(0)">@yield('header_title', '')</a>
+      <a class="navbar-brand font-weight-bold text-muted d-none d-lg-inline-block" href="javascript:void(0)" style="font-size: .85rem; letter-spacing: .05em; text-transform: uppercase;">
+        <i class="fa fa-shield-alt text-info mr-1"></i> SIPLAN IPS
+      </a>
     </div>
 
     <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
