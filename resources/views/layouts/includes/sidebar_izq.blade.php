@@ -340,61 +340,12 @@
 
         {{-- Sidebar exclusivo para Analista de Monitoreo PEI --}}
         @role('Analista de Monitoreo PEI')
-        @php
-            $userId = Auth::id();
-            $orgId  = \App\Admin\Globales\Organigrama::where('user_id', $userId)->value('id');
-            $peisMisAcciones = collect();
-            if ($orgId) {
-                // IDs de perfiles donde este usuario es responsable
-                $profileIds = \DB::table('planificacion.peis_profiles_has_responsibles')
-                    ->where('responsible_id', $orgId)
-                    ->pluck('profile_id');
-
-                // Buscar los master raíz que contienen esos perfiles
-                $masterIds = \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $profileIds)
-                    ->get()
-                    ->map(function($p) {
-                        // Subir al ancestro master
-                        return \App\Admin\Planificacion\Pei\PeiProfile::where('_lft', '<=', $p->_lft)
-                            ->where('_rgt', '>=', $p->_rgt)
-                            ->where('level', 'master')
-                            ->value('id');
-                    })
-                    ->filter()
-                    ->unique()
-                    ->values();
-
-                $peisMisAcciones = \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $masterIds)
-                    ->orderBy('year_start', 'desc')
-                    ->get(['id', 'name', 'year_start', 'year_end']);
-            }
-            $enMonitoreo = str_contains($path, 'mis-acciones');
-        @endphp
-            <li class="nav-item active">
+            <li class="nav-item {{ request()->is('pei-monitoreo*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('pei.monitoreo.dashboard') }}">
                     <i class="material-icons">track_changes</i>
                     <p>Mis Acciones PEI</p>
                 </a>
             </li>
-            @foreach($peisMisAcciones as $peiItem)
-            <li class="nav-item {{ $isActive('pei-profiles/'.$peiItem->id.'/mis-acciones') }}">
-                <a class="nav-link" href="{{ route('pei.reportes.mis-acciones', $peiItem->id) }}">
-                    <span class="sidebar-mini">
-                        <span style="width:22px;height:22px;border-radius:5px;background:rgba(255,193,7,.25);display:inline-flex;align-items:center;justify-content:center">
-                            <i class="fa fa-file-alt" style="font-size:.7rem;color:#ffc107"></i>
-                        </span>
-                    </span>
-                    <span class="sidebar-normal" style="line-height:1.3">
-                        <span style="display:block;font-size:.78rem;color:#ffd54f;font-weight:600">
-                            {{ \Illuminate\Support\Str::limit(strip_tags($peiItem->name), 28) }}
-                        </span>
-                        <small style="font-size:.65rem;color:rgba(255,255,255,.45)">
-                            {{ \Carbon\Carbon::parse($peiItem->year_start)->format('Y') }}–{{ \Carbon\Carbon::parse($peiItem->year_end)->format('Y') }}
-                        </small>
-                    </span>
-                </a>
-            </li>
-            @endforeach
         @endrole
 
         {{-- Sidebar exclusivo para Analista - RIISS --}}

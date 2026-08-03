@@ -29,7 +29,70 @@ class PeiController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = PeiProfile::where('parent_id', null)->latest()->get();
+            $user = auth()->user();
+            $query = PeiProfile::whereNull('parent_id');
+
+            if (!$user->hasRole('Administrador')) {
+                $userId = $user->id;
+
+                // 1. IDs asignados como Analista
+                $analystPeiIds = \DB::table('planificacion.peis_profiles_has_analysts')
+                    ->where('analyst_id', $userId)
+                    ->pluck('pei_profile_id')
+                    ->toArray();
+
+                // 2. IDs donde es responsable de acciones
+                $orgId = \App\Admin\Globales\Organigrama::where('user_id', $userId)->value('id');
+                $responsibleActionIds = $orgId ? \DB::table('planificacion.peis_profiles_has_responsibles')
+                    ->where('responsible_id', $orgId)
+                    ->pluck('profile_id')
+                    ->toArray() : [];
+
+                $masterIdsFromActions = [];
+                if (!empty($responsibleActionIds)) {
+                    $masterIdsFromActions = PeiProfile::whereIn('id', $responsibleActionIds)
+                        ->get()
+                        ->map(function($p) {
+                            return PeiProfile::where('_lft', '<=', $p->_lft)
+                                ->where('_rgt', '>=', $p->_rgt)
+                                ->where('level', 'master')
+                                ->value('id');
+                        })
+                        ->filter()
+                        ->unique()
+                        ->toArray();
+                }
+
+                // 3. IDs vinculados por Actividades
+                $activityPeiIds = \App\Admin\Globales\Activity::whereHas('responsibles', fn($q) => $q->where('user_id', $userId))
+                    ->whereNotNull('pei_profile_id')
+                    ->pluck('pei_profile_id')
+                    ->toArray();
+
+                // 4. Grupos de los que forma parte
+                $userGroupIds = \DB::table('groups_has_members')
+                    ->where('user_id', $userId)
+                    ->pluck('group_id')
+                    ->toArray();
+
+                $allowedMasterIds = array_unique(array_merge(
+                    $analystPeiIds,
+                    $masterIdsFromActions,
+                    $activityPeiIds
+                ));
+
+                $query->where(function($q) use ($userId, $allowedMasterIds, $userGroupIds) {
+                    $q->where('user_id', $userId);
+                    if (!empty($allowedMasterIds)) {
+                        $q->orWhereIn('id', $allowedMasterIds);
+                    }
+                    if (!empty($userGroupIds)) {
+                        $q->orWhereIn('group_id', $userGroupIds);
+                    }
+                });
+            }
+
+            $data = $query->latest()->get();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {

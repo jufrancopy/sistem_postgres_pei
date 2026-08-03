@@ -53,6 +53,26 @@ class PeiChatController extends Controller
             }
         }
 
+        // Acceso por Actividades asociadas a este PEI (Responsables o Grupos de Trabajo de la Actividad)
+        $activities = \App\Admin\Globales\Activity::where('pei_profile_id', $peiProfile->id)->get();
+        foreach ($activities as $act) {
+            // Es responsable directo de la actividad
+            if ($act->responsibles->contains('id', $user->id)) {
+                return true;
+            }
+            // Pertenece al Grupo de Trabajo (padre o hijo) asignado a la actividad
+            if ($act->group_id) {
+                $actGroupIds = Group::descendantsAndSelf($act->group_id)->pluck('id')->toArray();
+                $isActGroupMember = DB::table('groups_has_members')
+                    ->whereIn('group_id', $actGroupIds)
+                    ->where('user_id', $user->id)
+                    ->exists();
+                if ($isActGroupMember) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 

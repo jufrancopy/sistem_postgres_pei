@@ -10,7 +10,7 @@ class Activity extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name', 'type', 'description', 'date_start', 'date_end', 'pei_profile_id'];
+    protected $fillable = ['name', 'type', 'description', 'date_start', 'date_end', 'pei_profile_id', 'group_id'];
 
     public function responsibles()
     {
@@ -25,5 +25,10 @@ class Activity extends Model
     public function peiProfile()
     {
         return $this->belongsTo(\App\Admin\Planificacion\Pei\PeiProfile::class, 'pei_profile_id');
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(Group::class, 'group_id');
     }
 }

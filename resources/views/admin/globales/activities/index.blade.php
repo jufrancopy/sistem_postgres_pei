@@ -45,6 +45,7 @@
                         <th width="40">#</th>
                         <th>Nombre</th>
                         <th>Plan PEI / Acción</th>
+                        <th>Grupo</th>
                         <th>Tipo</th>
                         <th>Fechas</th>
                         <th>Responsables</th>
@@ -90,6 +91,20 @@
                             <label class="small font-weight-bold"><i class="fa fa-bullseye text-info mr-1"></i> Plan PEI / Acción Asociada</label>
                             <select name="pei_profile_id" id="pei_profile_id" class="form-control" style="width:100%"></select>
                             <small class="text-muted d-block mt-1">Asociá esta actividad a un Plan PEI o Acción Estratégica específica para el conteo de metas en la vista pública.</small>
+                        </div>
+
+                        {{-- Selector de Grupo de Trabajo --}}
+                        <div class="col-md-12 mb-3">
+                            <label class="small font-weight-bold"><i class="fa fa-users text-warning mr-1"></i> Grupo de Trabajo Asociado</label>
+                            <select name="group_id" id="group_id" class="form-control" style="width:100%">
+                                <option value="">— Sin Grupo de Trabajo —</option>
+                                @if(isset($groups))
+                                    @foreach($groups as $g)
+                                        <option value="{{ $g->id }}">{{ $g->name }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            <small class="text-muted d-block mt-1">Los integrantes de este grupo (y subgrupos hijos) tendrán acceso automático al Chat del Plan PEI vinculado.</small>
                         </div>
 
                         <div class="col-md-12 mb-3">
@@ -152,6 +167,7 @@ $(function() {
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'name', name: 'name' },
             { data: 'pei_profile', name: 'pei_profile', orderable: false },
+            { data: 'group', name: 'group', orderable: false },
             {
                 data: 'type', name: 'type',
                 render: function(data) {
@@ -187,6 +203,7 @@ $(function() {
 
     function initTipoSelect() {
         $('#type').select2({ placeholder: 'Seleccioná el tipo', dropdownParent: $('#activityModal') });
+        $('#group_id').select2({ placeholder: '— Sin Grupo de Trabajo —', allowClear: true, dropdownParent: $('#activityModal') });
     }
 
     function initPeiProfileSelect(selected) {
@@ -232,6 +249,7 @@ $(function() {
         $('#activity_id').val('');
         $('.errors').addClass('d-none').text('');
         initTipoSelect();
+        $('#group_id').val('').trigger('change');
         initPeiProfileSelect(null);
         initResponsablesSelect(null);
         $('#activityModal').modal('show');
@@ -250,6 +268,7 @@ $(function() {
             $('.errors').addClass('d-none').text('');
             initTipoSelect();
             $('#type').val(data.activity.type).trigger('change');
+            $('#group_id').val(data.activity.group_id || '').trigger('change');
             initPeiProfileSelect(data.peiProfileSelected);
             initResponsablesSelect(data.responsiblesChecked);
             $('#activityModal').modal('show');

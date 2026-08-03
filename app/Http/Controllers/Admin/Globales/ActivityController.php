@@ -21,12 +21,16 @@ class ActivityController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Activity::with(['responsibles', 'peiProfile'])->latest()->get();
+            $data = Activity::with(['responsibles', 'peiProfile', 'group'])->latest()->get();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('pei_profile', function (Activity $a) {
                     if (!$a->peiProfile) return '<span class="text-muted small">—</span>';
                     return '<span class="badge badge-light text-dark font-weight-normal border"><i class="fa fa-bullseye text-info mr-1"></i>' . e(strip_tags($a->peiProfile->name)) . '</span>';
+                })
+                ->addColumn('group', function (Activity $a) {
+                    if (!$a->group) return '<span class="text-muted small">—</span>';
+                    return '<span class="badge badge-warning text-dark font-weight-normal border"><i class="fa fa-users mr-1"></i>' . e($a->group->name) . '</span>';
                 })
                 ->addColumn('responsibles', fn(Activity $a) => $a->responsibles->pluck('name')->implode(', '))
                 ->addColumn('action', function ($row) {
@@ -35,11 +39,12 @@ class ActivityController extends Controller
                     $btn .= ' <a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-danger btn-circle deleteActivity"><i class="fa fa-trash"></i></a>';
                     return $btn;
                 })
-                ->rawColumns(['pei_profile', 'action'])
+                ->rawColumns(['pei_profile', 'group', 'action'])
                 ->make(true);
         }
 
-        return view('admin.globales.activities.index');
+        $groups = \App\Admin\Globales\Group::orderBy('name')->get();
+        return view('admin.globales.activities.index', compact('groups'));
     }
 
     public function getPeiProfiles(Request $request)
@@ -69,6 +74,7 @@ class ActivityController extends Controller
         $activity = Activity::with([
             'responsibles',
             'peiProfile',
+            'group',
             'tasks.assignedTo',
             'tasks.completedBy',
             'tasks.evidences',
@@ -90,6 +96,7 @@ class ActivityController extends Controller
                 'date_start'     => $request->date_start,
                 'date_end'       => $request->date_end,
                 'pei_profile_id' => $request->pei_profile_id ?: null,
+                'group_id'       => $request->group_id ?: null,
             ]
         );
 
@@ -103,7 +110,7 @@ class ActivityController extends Controller
 
     public function edit($id)
     {
-        $activity = Activity::with(['responsibles', 'peiProfile'])->findOrFail($id);
+        $activity = Activity::with(['responsibles', 'peiProfile', 'group'])->findOrFail($id);
         $responsiblesChecked = $activity->responsibles->map(fn($r) => ['id' => $r->id, 'text' => $r->name]);
         $peiProfileSelected  = $activity->peiProfile ? [
             'id'   => $activity->peiProfile->id,
