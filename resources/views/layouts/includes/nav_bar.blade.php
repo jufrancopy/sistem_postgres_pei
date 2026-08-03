@@ -27,8 +27,8 @@
 
         {{-- ── Notificaciones SIESS ── --}}
         <li class="nav-item dropdown">
-          <a class="nav-link p-2 d-flex align-items-center justify-content-center" href="#" id="siessNotifBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones SIESS">
-            <i class="material-icons" style="font-size: 1.35rem; color: #475569;">notifications</i>
+          <a class="nav-link p-1 d-flex align-items-center justify-content-center position-relative" href="#" id="siessNotifBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones SIESS" style="width: 42px; height: 42px;">
+            <i class="material-icons">notifications</i>
             <span id="siessNotifBadge" class="notification bg-danger" style="display:none">0</span>
             <p class="d-lg-none mb-0 ml-2 font-weight-bold">Notificaciones</p>
           </a>
@@ -50,23 +50,20 @@
 
         {{-- ── Puntos de Gamificación (Escritorio) ── --}}
         <li class="nav-item d-none d-lg-flex align-items-center mr-1">
-            <a href="{{ route('user.profile') }}" class="badge badge-pill py-2 px-3 font-weight-bold text-dark text-decoration-none shadow-sm" title="Tu reputación en el sistema" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); font-size: 0.82rem; border: 1px solid rgba(0,0,0,0.05);">
+            <a href="{{ route('user.profile') }}" class="navbar-gamif-badge" title="Tu reputación en el sistema">
                 ⭐ {{ number_format($userPts) }} pts
             </a>
         </li>
 
-        {{-- ── Menú de Usuario (Cápsula Elegante) ── --}}
+        {{-- ── Menú de Usuario (Cápsula Premium) ── --}}
         <li class="nav-item dropdown">
-          <a class="nav-link p-0 d-flex align-items-center" href="#" id="navbarDropdownUser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <div class="btn btn-outline-secondary border shadow-xs d-flex align-items-center py-1 px-3" style="border-radius: 50px; background: #ffffff; border-color: #cbd5e1 !important; color: #0f172a;">
-                <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="rounded-circle border border-success mr-2 shadow-xs" style="width: 26px; height: 26px; object-fit: cover;">
-                <span class="font-weight-bold d-none d-lg-inline text-dark mr-1" style="font-size: 0.85rem;">{{ Auth::user()->name ?? 'Usuario' }}</span>
-                <i class="fa fa-chevron-down text-muted small d-none d-lg-inline" style="font-size: 0.65rem;"></i>
-                
-                <p class="d-lg-none mb-0 font-weight-bold text-dark">
+          <a class="nav-link p-0 d-flex align-items-center navbar-user-pill" href="#" id="navbarDropdownUser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}">
+                <span class="pill-name d-none d-lg-inline">{{ Auth::user()->name ?? 'Usuario' }}</span>
+                <i class="fa fa-chevron-down pill-chevron d-none d-lg-inline"></i>
+                <p class="d-lg-none mb-0 font-weight-bold text-white" style="margin:0;">
                     {{ Auth::user()->name }} <span class="badge badge-warning ml-1">⭐ {{ number_format($userPts) }} pts</span>
                 </p>
-            </div>
           </a>
           <div class="dropdown-menu dropdown-menu-right shadow-lg border-0 mt-2" aria-labelledby="navbarDropdownUser" style="border-radius: 12px; min-width: 230px; padding: 8px 0; border: 1px solid #e2e8f0;">
             <div class="dropdown-header text-uppercase font-weight-bold text-xs text-muted px-3 py-2 border-bottom mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">

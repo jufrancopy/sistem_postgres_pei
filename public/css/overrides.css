@@ -1,9 +1,10 @@
-/* Overrides to fix gray background on forms */
+/* ─── General Background Fixes ─────────────────────────────── */
 body {
-  background-color: #ffffff !important;
+  background-color: #f1f5f9 !important;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
 }
 .main-panel, .content, .container-fluid {
-  background-color: #ffffff !important;
+  background-color: #f1f5f9 !important;
 }
 .card, .card-body {
   background-color: #ffffff !important;
@@ -16,7 +17,152 @@ body {
   background-color: inherit !important;
 }
 
-/* Fix: ocultar el input inline de Select2 múltiple (el cuadradito) */
+/* ─── PREMIUM TOP NAVBAR ────────────────────────────────────── */
+.main-panel > .navbar {
+  background: linear-gradient(135deg, #0d1b2a 0%, #0f3460 45%, #16213e 100%) !important;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.28) !important;
+  border-bottom: 1px solid rgba(99,179,237,0.18) !important;
+  min-height: 64px !important;
+  transition: all 0.3s ease !important;
+}
+.main-panel > .navbar.headroom--scrolled,
+.main-panel > .navbar.navbar-scroll {
+  background: linear-gradient(135deg, #0d1b2a 0%, #0f3460 45%, #16213e 100%) !important;
+  box-shadow: 0 6px 40px rgba(0,0,0,0.38) !important;
+}
+
+/* Brand / title */
+.main-panel > .navbar .navbar-brand {
+  color: #f0f9ff !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2px !important;
+  opacity: 0.92 !important;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.4) !important;
+}
+
+/* Hamburger bars */
+.main-panel > .navbar .navbar-toggler .navbar-toggler-icon,
+.main-panel > .navbar .navbar-toggler .icon-bar {
+  background-color: #e2e8f0 !important;
+}
+
+/* Nav-link general */
+.main-panel > .navbar .navbar-nav .nav-link,
+.main-panel > .navbar .navbar-nav .nav-link i,
+.main-panel > .navbar .navbar-nav .nav-link p {
+  color: #e2e8f0 !important;
+}
+
+/* ── Notification bell icon ── */
+#siessNotifBtn .material-icons {
+  color: #93c5fd !important;
+  font-size: 1.4rem !important;
+  filter: drop-shadow(0 0 6px rgba(147,197,253,0.4)) !important;
+  transition: all 0.25s ease !important;
+}
+#siessNotifBtn:hover .material-icons {
+  color: #60a5fa !important;
+  filter: drop-shadow(0 0 10px rgba(96,165,250,0.65)) !important;
+  transform: rotate(-12deg) scale(1.1);
+}
+
+/* ── Gamification badge ── */
+.navbar-gamif-badge {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #f97316 100%) !important;
+  color: #431407 !important;
+  font-size: 0.79rem !important;
+  font-weight: 800 !important;
+  padding: 5px 14px !important;
+  border-radius: 50px !important;
+  box-shadow: 0 3px 14px rgba(245,158,11,0.45), inset 0 1px 0 rgba(255,255,255,0.25) !important;
+  letter-spacing: 0.3px !important;
+  text-decoration: none !important;
+  border: 1.5px solid rgba(255,255,255,0.25) !important;
+  transition: all 0.25s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+.navbar-gamif-badge:hover {
+  transform: translateY(-1px) scale(1.04) !important;
+  box-shadow: 0 6px 20px rgba(245,158,11,0.55) !important;
+  text-decoration: none !important;
+  color: #431407 !important;
+}
+
+/* ── User pill capsule ── */
+.navbar-user-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: rgba(255,255,255,0.10) !important;
+  border: 1px solid rgba(255,255,255,0.22) !important;
+  border-radius: 50px !important;
+  padding: 5px 14px 5px 6px !important;
+  cursor: pointer !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  transition: all 0.25s ease !important;
+  text-decoration: none !important;
+}
+.navbar-user-pill:hover {
+  background: rgba(255,255,255,0.18) !important;
+  border-color: rgba(255,255,255,0.38) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.3) !important;
+  text-decoration: none !important;
+}
+.navbar-user-pill img {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 2px solid rgba(255,255,255,0.5) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+.navbar-user-pill .pill-name {
+  color: #f1f5f9 !important;
+  font-size: 0.84rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2px !important;
+}
+.navbar-user-pill .pill-chevron {
+  color: rgba(241,245,249,0.55) !important;
+  font-size: 0.6rem !important;
+  transition: transform 0.2s ease !important;
+}
+.navbar-user-pill:hover .pill-chevron {
+  transform: rotate(180deg) !important;
+}
+
+/* ── Dropdown menus ── */
+.main-panel > .navbar .dropdown-menu {
+  border-radius: 14px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08) !important;
+  overflow: hidden !important;
+  padding: 6px 0 !important;
+  animation: dropDown 0.18s ease !important;
+}
+@keyframes dropDown {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Accent glow line at bottom of navbar ── */
+.main-panel > .navbar::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 1.5px !important;
+  background: linear-gradient(90deg, transparent 0%, #38bdf8 30%, #818cf8 70%, transparent 100%) !important;
+  opacity: 0.7 !important;
+}
+
+/* ─── Fix: ocultar el input inline de Select2 múltiple ─────── */
 .select2-selection--multiple .select2-search--inline .select2-search__field {
   border: none !important;
   border-bottom: none !important;
@@ -25,7 +171,7 @@ body {
   outline: none !important;
 }
 
-/* Fix: z-index select2 dentro de modales */
+/* ─── Fix: z-index select2 dentro de modales ───────────────── */
 .modal .select2-container {
   z-index: 9999;
 }
