@@ -440,6 +440,10 @@
                     titleEl.textContent = title;
                     banner.style.display = 'block';
                 }
+
+                switchChannelMode('group');
+                if (input) input.placeholder = 'Escribir consulta al grupo...';
+
                 drawer.classList.add('open');
                 fetchMessages();
                 markRead();
