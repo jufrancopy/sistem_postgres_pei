@@ -137,6 +137,7 @@ class GamificationService
         $cruceCount     = (int) ($counts['foda_cruce'] ?? 0);
         $tasksCompleted = (int) ($counts['task_completed'] ?? 0);
         $riissCount     = (int) ($counts['riiss_evaluacion'] ?? 0);
+        $chatCount      = (int) (($counts['chat_message'] ?? 0) + ($counts['chat_context_query'] ?? 0));
         $loginsCount    = UserLogin::where('user_id', $user->id)->count();
 
         $badgeConditions = [
@@ -144,11 +145,13 @@ class GamificationService
             'diagnostico_inicial'    => $fodaCount >= 1,
             'evaluador_novato'       => $riissCount >= 1,
             'ingreso_diario'         => $loginsCount >= 1,
+            'colaborador_chat'       => $chatCount >= 1,
             'tactico_eficiente'      => $tasksCompleted >= 10,
             'analista_foda'          => $fodaCount >= 15,
             'formulador_estrategico' => $cruceCount >= 5,
             'evaluador_experto'      => $riissCount >= 10,
             'comunicador'            => $commentsCount >= 20,
+            'master_chat'            => $chatCount >= 15,
             'arquitecto_estrategico' => ($cruceCount >= 15 && $fodaCount >= 30),
             'guardian_ejecucion'     => $tasksCompleted >= 50,
             'inspector_salud'        => $riissCount >= 25,
@@ -319,6 +322,7 @@ class GamificationService
         $cruceCount      = $this->countValidActions($user, 'foda_cruce');
         $tasksCompleted  = $this->countValidActions($user, 'task_completed');
         $riissCount      = $this->countValidActions($user, 'riiss_evaluacion');
+        $chatCount       = $this->countValidActions($user, 'chat_message') + $this->countValidActions($user, 'chat_context_query');
         $loginsCount     = UserLogin::where('user_id', $user->id)->count();
 
         $badgeConditions = [
@@ -326,11 +330,13 @@ class GamificationService
             'diagnostico_inicial'    => $fodaCount >= 1,
             'evaluador_novato'       => $riissCount >= 1,
             'ingreso_diario'         => $loginsCount >= 1,
+            'colaborador_chat'       => $chatCount >= 1,
             'tactico_eficiente'      => $tasksCompleted >= 10,
             'analista_foda'          => $fodaCount >= 15,
             'formulador_estrategico' => $cruceCount >= 5,
             'evaluador_experto'      => $riissCount >= 10,
             'comunicador'            => $commentsCount >= 20,
+            'master_chat'            => $chatCount >= 15,
             'arquitecto_estrategico' => ($cruceCount >= 15 && $fodaCount >= 30),
             'guardian_ejecucion'     => $tasksCompleted >= 50,
             'inspector_salud'        => $riissCount >= 25,

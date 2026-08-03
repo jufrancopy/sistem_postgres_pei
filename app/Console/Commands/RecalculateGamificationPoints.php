@@ -87,6 +87,7 @@ class RecalculateGamificationPoints extends Command
         $this->collectFodaCruces();
         $this->collectRiissAsignaciones();
         $this->collectRiissEvaluaciones($gamificationService);
+        $this->collectChatMessages();
 
         $this->info('Insertando ' . count($this->pendingRows) . ' registros de puntos...');
         $inserted = $gamificationService->insertPointsBatch($this->pendingRows);
@@ -110,14 +111,15 @@ class RecalculateGamificationPoints extends Command
 
     protected function backfillTaskCreators(): void
     {
-        DB::table('activity_tasks as t')
-            ->join('gamification_points as gp', function ($join) {
-                $join->on(DB::raw('gp.reference_id'), '=', DB::raw('t.id::text'))
-                    ->where('gp.reference_type', ActivityTask::class)
-                    ->where('gp.action_type', 'task_created');
-            })
-            ->whereNull('t.created_by')
-            ->update(['t.created_by' => DB::raw('gp.user_id')]);
+        DB::statement("
+            UPDATE activity_tasks t
+            SET created_by = gp.user_id
+            FROM gamification_points gp
+            WHERE gp.reference_id = t.id::text
+              AND gp.reference_type = 'App\\\\Admin\\\\Globales\\\\ActivityTask'
+              AND gp.action_type = 'task_created'
+              AND t.created_by IS NULL
+        ");
     }
 
     protected function queuePoint(
@@ -321,6 +323,45 @@ class RecalculateGamificationPoints extends Command
 
         if ($skippedEval > 0) {
             $this->comment("  ↳ {$skippedEval} evaluaciones omitidas (evaluador no identificable).");
+        }
+    }
+
+    protected function collectChatMessages(): void
+    {
+        $this->info('Recopilando interacción en el chat...');
+
+        $userDailyCounts = [];
+
+        foreach (\App\Models\Planificacion\PeiChatMessage::where('is_system', false)->cursor() as $msg) {
+            $peiProfileId = $msg->pei_profile_id ?: $this->defaultPeiId;
+
+            if ($msg->reference_title) {
+                $this->queuePoint(
+                    $msg->user_id,
+                    'chat_context_query',
+                    'Consulta vinculada sobre: ' . Str::limit($msg->reference_title, 30),
+                    10,
+                    \App\Models\Planificacion\PeiChatMessage::class,
+                    $msg->id,
+                    $peiProfileId
+                );
+            } else {
+                $dateKey = $msg->created_at->format('Y-m-d');
+                $userKey = "{$msg->user_id}|{$dateKey}";
+                $userDailyCounts[$userKey] = ($userDailyCounts[$userKey] ?? 0) + 1;
+
+                if ($userDailyCounts[$userKey] <= 5) {
+                    $this->queuePoint(
+                        $msg->user_id,
+                        'chat_message',
+                        'Aporte en el chat de equipo PEI',
+                        3,
+                        \App\Models\Planificacion\PeiChatMessage::class,
+                        $msg->id,
+                        $peiProfileId
+                    );
+                }
+            }
         }
     }
 }

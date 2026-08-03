@@ -70,6 +70,14 @@ class GamificationBadge extends Model
                 'color'       => '#cd7f32',
                 'description' => 'Ingresaste al sistema activamente.',
             ],
+            'colaborador_chat' => [
+                'name'        => 'Colaborador de Chat',
+                'category'    => 'Chat PEI',
+                'tier'        => 'bronce',
+                'icon'        => 'fa-comments',
+                'color'       => '#cd7f32',
+                'description' => 'Participaste en el chat de equipo o realizaste consultas contextuales.',
+            ],
 
             // PLATA
             'tactico_eficiente' => [
@@ -111,6 +119,14 @@ class GamificationBadge extends Model
                 'icon'        => 'fa-comments',
                 'color'       => '#a0a0a0',
                 'description' => 'Realizaste 20 comentarios constructivos en tareas.',
+            ],
+            'master_chat' => [
+                'name'        => 'Facilitador de Chat',
+                'category'    => 'Chat PEI',
+                'tier'        => 'plata',
+                'icon'        => 'fa-comment-dots',
+                'color'       => '#a0a0a0',
+                'description' => 'Realizaste 15 o más consultas contextuales y aportes en el chat.',
             ],
 
             // ORO

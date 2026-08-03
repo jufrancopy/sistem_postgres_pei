@@ -239,6 +239,34 @@ class PeiChatController extends Controller
             ['last_read_message_id' => $msg->id]
         );
 
+        // Otorgar Puntos de Gamificación por uso del chat
+        $gamificationService = app(\App\Services\GamificationService::class);
+        if ($msg->reference_title) {
+            $gamificationService->awardPoints(
+                $user,
+                'chat_context_query',
+                'Consulta vinculada sobre: ' . \Illuminate\Support\Str::limit($msg->reference_title, 40),
+                10,
+                $msg,
+                $peiProfileId
+            );
+        } else {
+            $todayPointsCount = \App\Models\Gamification\GamificationPoint::where('user_id', $user->id)
+                ->where('action_type', 'chat_message')
+                ->whereDate('created_at', now()->today())
+                ->count();
+            if ($todayPointsCount < 5) {
+                $gamificationService->awardPoints(
+                    $user,
+                    'chat_message',
+                    'Aporte en el chat de equipo PEI',
+                    3,
+                    $msg,
+                    $peiProfileId
+                );
+            }
+        }
+
         $payload = [
             'id' => $msg->id,
             'pei_profile_id' => $msg->pei_profile_id,
