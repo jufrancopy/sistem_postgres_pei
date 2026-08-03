@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\SiessGenerarPeriodosCommand::class,
+        \App\Console\Commands\DailyHealthAndBackupCommand::class,
     ];
 
     /**
@@ -24,6 +25,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        // SIPLAN: Respaldo diario de base de datos PostgreSQL y Reporte por Correo a jucfra23@gmail.com
+        $schedule->command('siplan:health-and-backup')
+                 ->dailyAt('07:30')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/siplan_health.log'));
+
         // SIESS: Silencio administrativo — Art. 8 Res. 266/2022
         $schedule->job(new \App\Jobs\SiessAprobarPorSilencioJob)
                  ->dailyAt('07:00')
