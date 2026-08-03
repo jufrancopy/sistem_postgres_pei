@@ -30,7 +30,7 @@ class PeiController extends Controller
     {
         if ($request->ajax()) {
             $user = auth()->user();
-            $query = PeiProfile::whereNull('parent_id');
+            $query = PeiProfile::whereNull('parent_id')->where('level', 'master');
 
             if (!$user->hasRole('Administrador')) {
                 $userId = $user->id;
