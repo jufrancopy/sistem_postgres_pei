@@ -1,19 +1,24 @@
-<nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top">
-  <div class="container-fluid">
-    <div class="navbar-wrapper">
-      <a class="navbar-brand d-none d-lg-block" href="javascript:void(0)">@yield('title', 'Sistema PEI')</a>
+<nav class="navbar navbar-expand-lg fixed-top shadow-sm py-2" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid #e2e8f0; z-index: 1030;">
+  <div class="container-fluid px-3">
+    
+    <!-- Título de Sección / Marca -->
+    <div class="navbar-wrapper d-flex align-items-center">
+      <h4 class="font-weight-bold text-dark mb-0 d-none d-lg-block" style="font-size: 1.1rem; letter-spacing: -0.3px; color: #1e293b;">
+        @yield('title', 'Sistema PEI — Planificación Estratégica')
+      </h4>
     </div>
 
-    <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+    <!-- Botón Hamburguesa Móvil -->
+    <button class="navbar-toggler border-0 p-2" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
       <span class="sr-only">Toggle navigation</span>
-      <span class="navbar-toggler-icon icon-bar"></span>
-      <span class="navbar-toggler-icon icon-bar"></span>
-      <span class="navbar-toggler-icon icon-bar"></span>
+      <span class="navbar-toggler-icon icon-bar bg-dark mb-1"></span>
+      <span class="navbar-toggler-icon icon-bar bg-dark mb-1"></span>
+      <span class="navbar-toggler-icon icon-bar bg-dark"></span>
     </button>
 
     <div class="collapse navbar-collapse justify-content-end">
       <form class="navbar-form"></form>
-      <ul class="navbar-nav">
+      <ul class="navbar-nav align-items-center" style="gap: 0.6rem;">
 
         @auth
         @php
@@ -22,56 +27,65 @@
 
         {{-- ── Notificaciones SIESS ── --}}
         <li class="nav-item dropdown">
-          <a class="nav-link" href="#" id="siessNotifBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones SIESS">
-            <i class="material-icons">notifications</i>
-            <span id="siessNotifBadge" class="notification bg-danger" style="display:none">0</span>
-            <p class="d-lg-none mb-0">Notificaciones</p>
+          <a class="nav-link p-1 d-flex align-items-center justify-content-center" href="#" id="siessNotifBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones SIESS">
+            <div class="icon-circle bg-light border text-dark d-flex align-items-center justify-content-center shadow-xs" style="width: 38px; height: 38px; border-radius: 50%; transition: all 0.2s ease;">
+                <i class="material-icons" style="font-size: 1.25rem; color: #475569;">notifications</i>
+                <span id="siessNotifBadge" class="badge badge-danger badge-pill position-absolute" style="top: 2px; right: 2px; font-size: 0.55rem; display: none;">0</span>
+            </div>
+            <p class="d-lg-none mb-0 ml-2 font-weight-bold text-dark">Notificaciones</p>
           </a>
-          <div class="dropdown-menu dropdown-menu-right shadow-lg border-0" id="siessNotifMenu" style="width:340px; max-height:420px; overflow-y:auto; padding:0; border-radius:10px;">
-            <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light">
-              <strong style="font-size:.85rem"><i class="fa fa-bell mr-1 text-primary"></i> Notificaciones SIESS</strong>
-              <a href="javascript:void(0)" id="btnLeerTodas" class="text-muted" style="font-size:.75rem">Marcar leídas</a>
+          <div class="dropdown-menu dropdown-menu-right shadow-lg border-0 mt-2" id="siessNotifMenu" style="width:350px; max-height:420px; overflow-y:auto; padding:0; border-radius:14px; border: 1px solid #e2e8f0;">
+            <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom" style="background: #f8fafc;">
+              <strong style="font-size:.85rem; color:#1e293b;"><i class="fa fa-bell mr-1 text-primary"></i> Notificaciones SIESS</strong>
+              <a href="javascript:void(0)" id="btnLeerTodas" class="text-muted small" style="font-size:.75rem">Marcar leídas</a>
             </div>
             <div id="siessNotifLista">
-              <div class="text-center text-muted py-3" style="font-size:.8rem">
+              <div class="text-center text-muted py-4" style="font-size:.8rem">
                 <i class="fa fa-spinner fa-spin mr-1"></i> Cargando...
               </div>
             </div>
             <div class="border-top text-center py-2 bg-light">
-              <a href="{{ route('siess.extractos.index') }}" class="font-weight-bold" style="font-size:.8rem">Ver extractos</a>
+              <a href="{{ route('siess.extractos.index') }}" class="font-weight-bold text-primary" style="font-size:.8rem">Ver todos los extractos</a>
             </div>
           </div>
         </li>
 
         {{-- ── Puntos de Gamificación (Escritorio) ── --}}
-        <li class="nav-item d-none d-lg-flex align-items-center mr-2">
-            <a href="{{ route('user.profile') }}" class="badge badge-pill badge-warning py-2 px-3 font-weight-bold text-dark text-decoration-none shadow-sm" style="font-size: 0.8rem;">
+        <li class="nav-item d-none d-lg-flex align-items-center">
+            <a href="{{ route('user.profile') }}" class="badge badge-pill py-2 px-3 font-weight-bold text-decoration-none shadow-sm transition-all" title="Tu reputación en el sistema" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #4a1500; font-size: 0.82rem; border: 1px solid rgba(255,255,255,0.4);">
                 ⭐ {{ number_format($userPts) }} pts
             </a>
         </li>
 
-        {{-- ── Menú de Usuario (Material Pattern) ── --}}
+        {{-- ── Menú de Usuario (Cápsula de Lujo) ── --}}
         <li class="nav-item dropdown">
-          <a class="nav-link d-flex align-items-center" href="#" id="navbarDropdownUser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="rounded-circle border border-light mr-2" style="width: 28px; height: 28px; object-fit: cover;">
-            <span class="font-weight-bold d-none d-lg-inline">{{ Auth::user()->name ?? 'Usuario' }}</span>
-            <p class="d-lg-none mb-0 font-weight-bold">
-                {{ Auth::user()->name }} <span class="badge badge-warning ml-1">⭐ {{ number_format($userPts) }} pts</span>
-            </p>
+          <a class="nav-link p-0 d-flex align-items-center" href="#" id="navbarDropdownUser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <div class="btn btn-outline-light text-dark border shadow-xs d-flex align-items-center py-1 px-3" style="border-radius: 50px; background: #ffffff; border-color: #cbd5e1 !important; transition: all 0.2s ease;">
+                <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="rounded-circle border border-success mr-2 shadow-xs" style="width: 28px; height: 28px; object-fit: cover;">
+                <span class="font-weight-bold d-none d-lg-inline text-dark mr-2" style="font-size: 0.85rem; color: #0f172a;">{{ Auth::user()->name ?? 'Usuario' }}</span>
+                <i class="fa fa-chevron-down text-muted small d-none d-lg-inline" style="font-size: 0.65rem;"></i>
+                
+                <p class="d-lg-none mb-0 font-weight-bold text-dark">
+                    {{ Auth::user()->name }} <span class="badge badge-warning ml-1">⭐ {{ number_format($userPts) }} pts</span>
+                </p>
+            </div>
           </a>
-          <div class="dropdown-menu dropdown-menu-right shadow-lg border-0" aria-labelledby="navbarDropdownUser" style="border-radius: 10px; min-width: 220px; padding: 6px 0;">
-            <div class="dropdown-header text-uppercase font-weight-bold text-xs text-muted px-3 py-2 border-bottom mb-1" style="font-size: 0.7rem;">
+          <div class="dropdown-menu dropdown-menu-right shadow-lg border-0 mt-2" aria-labelledby="navbarDropdownUser" style="border-radius: 14px; min-width: 230px; padding: 8px 0; border: 1px solid #e2e8f0;">
+            <div class="dropdown-header text-uppercase font-weight-bold text-xs text-muted px-3 py-2 border-bottom mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
                 {{ Auth::user()->email }}
             </div>
-            <a href="{{ route('user.profile') }}" class="dropdown-item px-3 py-2">
-                <i class="fa fa-award text-warning mr-2" style="width: 18px;"></i> Mi Perfil y Gamificación
+            <a href="{{ route('user.profile') }}" class="dropdown-item px-3 py-2 d-flex align-items-center" style="font-size: 0.85rem; color: #334155;">
+                <i class="fa fa-award text-warning mr-2" style="width: 18px;"></i>
+                <span>Mi Perfil y Gamificación</span>
             </a>
-            <a href="#" class="dropdown-item px-3 py-2">
-                <i class="fa fa-cog text-secondary mr-2" style="width: 18px;"></i> Configurar
+            <a href="#" class="dropdown-item px-3 py-2 d-flex align-items-center" style="font-size: 0.85rem; color: #334155;">
+                <i class="fa fa-cog text-secondary mr-2" style="width: 18px;"></i>
+                <span>Configurar</span>
             </a>
             <div class="dropdown-divider my-1"></div>
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="dropdown-item px-3 py-2 text-danger font-weight-bold">
-                <i class="fa fa-sign-out-alt text-danger mr-2" style="width: 18px;"></i> Salir del Sistema
+            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="dropdown-item px-3 py-2 d-flex align-items-center text-danger font-weight-bold" style="font-size: 0.85rem;">
+                <i class="fa fa-sign-out-alt text-danger mr-2" style="width: 18px;"></i>
+                <span>Salir del Sistema</span>
             </a>
             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none">
                 {{ csrf_field() }}
@@ -81,21 +95,33 @@
 
         {{-- ── Botón Directo Cerrar Sesión (Móvil) ── --}}
         <li class="nav-item d-lg-none mt-2 border-top pt-2">
-          <a class="nav-link text-danger font-weight-bold" href="{{ route('logout') }}"
+          <a class="nav-link text-danger font-weight-bold d-flex align-items-center" href="{{ route('logout') }}"
              onclick="event.preventDefault(); document.getElementById('logout-form-mobile-direct').submit();">
-            <i class="material-icons text-danger">exit_to_app</i>
+            <i class="material-icons text-danger mr-2">exit_to_app</i>
             <p class="text-danger font-weight-bold mb-0">Cerrar Sesión</p>
           </a>
           <form id="logout-form-mobile-direct" action="{{ route('logout') }}" method="POST" style="display:none">
               {{ csrf_field() }}
           </form>
         </li>
+
         @endauth
 
       </ul>
     </div>
   </div>
 </nav>
+
+<style>
+    .navbar .icon-circle:hover {
+        background-color: #e2e8f0 !important;
+        transform: translateY(-1px);
+    }
+    .navbar .btn-outline-light:hover {
+        background-color: #f8fafc !important;
+        border-color: #94a3b8 !important;
+    }
+</style>
 
 @auth
 <script>
