@@ -20,22 +20,27 @@ class PeiChatController extends Controller
      */
     protected function checkUserAccess(PeiProfile $peiProfile, User $user): bool
     {
-        // Administradores always have access
-        if ($user->hasRole('Administrador')) {
+        // Administradores y Analistas de cualquier tipo tienen acceso siempre
+        if ($user->hasAnyRole(['Administrador', 'Analista PEI', 'Analista de Planificación', 'Analista de Monitoreo PEI', 'Analista'])) {
             return true;
         }
 
-        // PEI creator has access
+        // Creador del PEI tiene acceso
         if ($peiProfile->user_id == $user->id) {
             return true;
         }
 
-        // If PEI profile is linked to a root group
+        // Analistas asignados al PEI tienen acceso
+        if ($peiProfile->analysts && $peiProfile->analysts->contains('id', $user->id)) {
+            return true;
+        }
+
+        // Si el PEI está vinculado a un grupo
         if ($peiProfile->group_id) {
             $group = Group::find($peiProfile->group_id);
             if ($group) {
-                // Get root group + all child/descendant team IDs
-                $groupIds = $group->descendantsAndSelf()->pluck('id')->toArray();
+                // Obtener grupo raíz + grupos descendientes usando la sintaxis estática de NestedSet
+                $groupIds = Group::descendantsAndSelf($group->id)->pluck('id')->toArray();
 
                 $isMember = DB::table('groups_has_members')
                     ->whereIn('group_id', $groupIds)
@@ -97,7 +102,7 @@ class PeiChatController extends Controller
         if ($peiProfile->group_id) {
             $group = Group::find($peiProfile->group_id);
             if ($group) {
-                $groupIds = $group->descendantsAndSelf()->pluck('id')->toArray();
+                $groupIds = Group::descendantsAndSelf($group->id)->pluck('id')->toArray();
                 $participants = User::whereIn('id', function ($q) use ($groupIds) {
                     $q->select('user_id')->from('groups_has_members')->whereIn('group_id', $groupIds);
                 })->select('id', 'name', 'email')->get();
