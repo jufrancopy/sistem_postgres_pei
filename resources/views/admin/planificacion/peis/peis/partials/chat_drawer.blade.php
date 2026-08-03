@@ -44,6 +44,16 @@
             </div>
         </div>
 
+        <!-- Channel Switcher Tabs -->
+        <div class="d-flex border-bottom" style="font-size: 12px; background: #1e2746;">
+            <button type="button" id="tabChannelGroup" class="btn btn-link text-white flex-fill py-2 px-1 text-center font-weight-bold rounded-0" style="border-bottom: 3px solid #4e73df; text-decoration: none; font-size:12px;">
+                <i class="fas fa-globe mr-1"></i> Canal del Grupo
+            </button>
+            <button type="button" id="tabChannelPrivate" class="btn btn-link text-white-50 flex-fill py-2 px-1 text-center rounded-0" style="text-decoration: none; font-size:12px;">
+                <i class="fas fa-user-lock mr-1"></i> Mensaje Privado
+            </button>
+        </div>
+
         <!-- Participants Panel (Hidden by default) -->
         <div id="peiChatParticipantsPanel" class="pei-chat-participants-panel" style="display: none;">
             <div class="p-2 bg-light border-bottom font-weight-bold text-xs text-uppercase text-secondary">
@@ -52,6 +62,14 @@
             <div id="peiChatParticipantsList" class="p-2" style="max-height: 150px; overflow-y: auto;">
                 <div class="text-muted text-center small py-2">Cargando miembros...</div>
             </div>
+        </div>
+
+        <!-- Private Contact Bar (Visible in Private Tab) -->
+        <div id="privateContactBar" class="bg-warning text-dark p-2 text-xs d-flex align-items-center justify-content-between" style="display: none;">
+            <span class="font-weight-bold"><i class="fas fa-lock mr-1"></i> Chat privado con:</span>
+            <select id="privateUserSelect" class="form-control form-control-sm border-0 font-weight-bold text-dark" style="max-width: 65%; height: 26px; padding: 2px 6px; background: rgba(255,255,255,0.9); font-size:11px;">
+                <option value="">-- Seleccionar Integrante --</option>
+            </select>
         </div>
 
         <!-- Messages Container -->
@@ -81,14 +99,6 @@
             <div id="peiChatAttachmentList" class="d-flex flex-wrap gap-1 p-2"></div>
         </div>
 
-        <!-- Private Recipient Bar -->
-        <div id="peiChatPrivateBar" class="bg-warning text-dark px-3 py-1 text-xs d-flex justify-content-between align-items-center" style="display: none;">
-            <span><i class="fas fa-lock mr-1"></i> Mensaje privado para: <strong id="peiChatRecipientName"></strong></span>
-            <button type="button" class="btn btn-link btn-xs text-dark p-0" id="clearPeiChatRecipient" title="Volver al canal público">
-                <i class="fas fa-times-circle"></i>
-            </button>
-        </div>
-
         <!-- Input Footer -->
         <div class="pei-chat-footer">
             <form id="peiChatForm" class="d-flex align-items-center" enctype="multipart/form-data">
@@ -98,7 +108,7 @@
                 </label>
 
                 <textarea id="peiChatMessageInput" class="form-control form-control-sm border-0 bg-light rounded-lg mr-2" 
-                          placeholder="Escribe un mensaje al equipo..." rows="1" style="resize: none;"></textarea>
+                          placeholder="Escribir mensaje al grupo..." rows="1" style="resize: none;"></textarea>
 
                 <button type="submit" class="btn btn-primary btn-circle btn-sm shadow-sm" id="sendPeiChatBtn">
                     <i class="fas fa-paper-plane"></i>
@@ -141,7 +151,7 @@
             position: fixed;
             top: 0;
             right: -420px;
-            width: 380px;
+            width: 400px;
             height: 100vh;
             background: #ffffff;
             box-shadow: -5px 0 25px rgba(0, 0, 0, 0.15);
@@ -270,37 +280,86 @@
             const participantsPanel = document.getElementById('peiChatParticipantsPanel');
             const participantsList = document.getElementById('peiChatParticipantsList');
 
+            const tabChannelGroup = document.getElementById('tabChannelGroup');
+            const tabChannelPrivate = document.getElementById('tabChannelPrivate');
+            const privateContactBar = document.getElementById('privateContactBar');
+            const privateUserSelect = document.getElementById('privateUserSelect');
+
+            let currentChannelMode = 'group'; // 'group' or 'private'
+            let activeRecipientId = null;
+            let activeRecipientName = null;
+            let allLoadedMessages = [];
+            let currentParticipants = [];
+
             let lastMessageTime = null;
             let currentReplyId = null;
             let pollInterval = null;
-            let activeRecipientId = null;
-            let activeRecipientName = null;
 
-            const privateBar = document.getElementById('peiChatPrivateBar');
-            const recipientNameSpan = document.getElementById('peiChatRecipientName');
-            const clearRecipientBtn = document.getElementById('clearPeiChatRecipient');
+            // Tabs Switch
+            tabChannelGroup.addEventListener('click', function() {
+                switchChannelMode('group');
+            });
 
-            if (clearRecipientBtn) {
-                clearRecipientBtn.addEventListener('click', function () {
-                    clearPrivateRecipient();
-                });
+            tabChannelPrivate.addEventListener('click', function() {
+                switchChannelMode('private');
+            });
+
+            privateUserSelect.addEventListener('change', function() {
+                activeRecipientId = this.value || null;
+                const opt = this.options[this.selectedIndex];
+                activeRecipientName = opt ? opt.text : null;
+                if (activeRecipientId) {
+                    input.placeholder = `Escribir mensaje privado a ${activeRecipientName}...`;
+                } else {
+                    input.placeholder = 'Selecciona un integrante para chatear en privado...';
+                }
+                renderFilteredMessages();
+            });
+
+            function switchChannelMode(mode) {
+                currentChannelMode = mode;
+                if (mode === 'group') {
+                    tabChannelGroup.style.borderBottom = '3px solid #4e73df';
+                    tabChannelGroup.classList.remove('text-white-50');
+                    tabChannelGroup.classList.add('text-white', 'font-weight-bold');
+
+                    tabChannelPrivate.style.borderBottom = 'none';
+                    tabChannelPrivate.classList.remove('text-warning', 'font-weight-bold');
+                    tabChannelPrivate.classList.add('text-white-50');
+
+                    privateContactBar.style.display = 'none';
+                    activeRecipientId = null;
+                    input.placeholder = 'Escribir mensaje al grupo...';
+                } else {
+                    tabChannelPrivate.style.borderBottom = '3px solid #ffc107';
+                    tabChannelPrivate.classList.remove('text-white-50');
+                    tabChannelPrivate.classList.add('text-warning', 'font-weight-bold');
+
+                    tabChannelGroup.style.borderBottom = 'none';
+                    tabChannelGroup.classList.remove('text-white', 'font-weight-bold');
+                    tabChannelGroup.classList.add('text-white-50');
+
+                    privateContactBar.style.display = 'flex';
+                    if (privateUserSelect.value) {
+                        activeRecipientId = privateUserSelect.value;
+                        const opt = privateUserSelect.options[privateUserSelect.selectedIndex];
+                        activeRecipientName = opt ? opt.text : '';
+                        input.placeholder = `Escribir mensaje privado a ${activeRecipientName}...`;
+                    } else {
+                        activeRecipientId = null;
+                        input.placeholder = 'Selecciona un integrante para chatear en privado...';
+                    }
+                }
+                renderFilteredMessages();
             }
 
             window.setPrivateRecipient = function(id, name) {
+                privateUserSelect.value = id;
                 activeRecipientId = id;
                 activeRecipientName = name;
-                recipientNameSpan.textContent = name;
-                privateBar.style.display = 'flex';
-                input.placeholder = `Escribir mensaje privado a ${name}...`;
                 participantsPanel.style.display = 'none';
+                switchChannelMode('private');
             };
-
-            function clearPrivateRecipient() {
-                activeRecipientId = null;
-                activeRecipientName = null;
-                privateBar.style.display = 'none';
-                input.placeholder = 'Escribe un mensaje al equipo...';
-            }
 
             // Toggle drawer
             trigger.addEventListener('click', function () {
@@ -334,8 +393,8 @@
                     const gain = ctx.createGain();
 
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // Re (D5)
-                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // La (A5)
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
 
                     gain.gain.setValueAtTime(0.2, ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
@@ -351,9 +410,6 @@
             // Fetch messages from server
             function fetchMessages(isPolling = false) {
                 let url = `{{ url('pei-profiles') }}/${peiProfileId}/chat/messages`;
-                if (isPolling && lastMessageTime) {
-                    url += `?since=${encodeURIComponent(lastMessageTime)}`;
-                }
 
                 fetch(url, {
                     headers: {
@@ -366,18 +422,14 @@
                     loading.style.display = 'none';
                     let hasNewOtherMessage = false;
 
-                    if (data.messages && data.messages.length > 0) {
-                        data.messages.forEach(msg => {
-                            // Check if message already rendered
-                            if (!document.getElementById(`msg-${msg.id}`)) {
-                                renderMessage(msg);
-                                lastMessageTime = msg.created_at;
-                                if (!msg.is_mine) {
-                                    hasNewOtherMessage = true;
-                                }
-                            }
-                        });
-                        scrollToBottom();
+                    if (data.messages) {
+                        const prevLength = allLoadedMessages.length;
+                        allLoadedMessages = data.messages;
+                        if (allLoadedMessages.length > prevLength) {
+                            hasNewOtherMessage = true;
+                        }
+
+                        renderFilteredMessages();
 
                         if (isPolling && hasNewOtherMessage) {
                             playMessageChime();
@@ -391,7 +443,40 @@
                 .catch(err => console.error('Error fetching chat messages:', err));
             }
 
-            function renderMessage(msg) {
+            function renderFilteredMessages() {
+                messagesList.innerHTML = '';
+                let toRender = [];
+
+                if (currentChannelMode === 'group') {
+                    toRender = allLoadedMessages.filter(m => !m.is_private);
+                    if (toRender.length === 0) {
+                        messagesList.innerHTML = '<div class="text-center text-muted py-5"><i class="fas fa-globe fa-2x text-primary mb-2" style="opacity:0.4;"></i><div class="small font-weight-bold">Canal General del Grupo</div><div class="text-xs mt-1">Mensajes compartidos para todos los miembros.</div></div>';
+                        return;
+                    }
+                } else {
+                    if (!activeRecipientId) {
+                        messagesList.innerHTML = '<div class="text-center text-muted py-5"><i class="fas fa-user-lock fa-2x text-warning mb-2" style="opacity:0.6;"></i><div class="small font-weight-bold">Ventana de Chat Privado 1 a 1</div><div class="text-xs mt-1">Selecciona a un integrante arriba para abrir la conversación.</div></div>';
+                        return;
+                    }
+
+                    toRender = allLoadedMessages.filter(m => {
+                        if (!m.is_private) return false;
+                        if (m.is_mine && m.recipient_id == activeRecipientId) return true;
+                        if (!m.is_mine && m.user_id == activeRecipientId) return true;
+                        return false;
+                    });
+
+                    if (toRender.length === 0) {
+                        messagesList.innerHTML = `<div class="text-center text-muted py-5"><i class="fas fa-lock fa-2x text-warning mb-2" style="opacity:0.6;"></i><div class="small">Sin mensajes privados con <strong>${activeRecipientName}</strong>.</div><div class="text-xs mt-1">Escribe abajo para enviar un mensaje privado.</div></div>`;
+                        return;
+                    }
+                }
+
+                toRender.forEach(msg => renderSingleMessageBubble(msg));
+                scrollToBottom();
+            }
+
+            function renderSingleMessageBubble(msg) {
                 const container = document.createElement('div');
                 container.id = `msg-${msg.id}`;
                 container.className = `msg-bubble-container ${msg.is_mine ? 'mine' : 'other'}`;
@@ -431,18 +516,28 @@
             }
 
             function renderParticipants(list) {
+                currentParticipants = list;
                 if (!list || list.length === 0) {
                     participantsList.innerHTML = '<div class="text-muted text-center small py-2">Sin otros miembros</div>';
+                    privateUserSelect.innerHTML = '<option value="">-- Sin otros miembros --</option>';
                     return;
                 }
-                let html = '<div class="text-muted text-xs mb-2 font-weight-bold">Integrantes (Clic para mensaje privado):</div>';
+
+                const currVal = privateUserSelect.value;
+                let selectHtml = '<option value="">-- Seleccionar Integrante --</option>';
                 list.forEach(u => {
-                    const isSel = activeRecipientId === u.id;
+                    selectHtml += `<option value="${u.id}" ${u.id == currVal ? 'selected' : ''}>${u.name}</option>`;
+                });
+                privateUserSelect.innerHTML = selectHtml;
+
+                let html = '<div class="text-muted text-xs mb-2 font-weight-bold">Integrantes del Grupo:</div>';
+                list.forEach(u => {
+                    const isSel = activeRecipientId == u.id;
                     const escapedName = u.name.replace(/'/g, "\\'");
                     html += `<div class="d-flex justify-content-between align-items-center mb-1 text-xs p-2 rounded border ${isSel ? 'bg-warning text-dark font-weight-bold border-warning' : 'bg-light'}" style="cursor:pointer;" onclick="setPrivateRecipient('${u.id}', '${escapedName}')">
                                 <span><i class="fas fa-user-circle ${isSel ? 'text-dark' : 'text-primary'} mr-1"></i> ${u.name}</span>
                                 <span class="badge ${isSel ? 'badge-dark' : 'badge-primary'}" style="font-size:9px;">
-                                    ${isSel ? 'Activo' : 'Privado'}
+                                    ${isSel ? 'Abierto' : 'Chat Privado'}
                                 </span>
                              </div>`;
                 });
@@ -475,7 +570,7 @@
                 if (currentReplyId) {
                     formData.append('parent_id', currentReplyId);
                 }
-                if (activeRecipientId) {
+                if (currentChannelMode === 'private' && activeRecipientId) {
                     formData.append('recipient_id', activeRecipientId);
                 }
 
@@ -500,11 +595,9 @@
                     input.value = '';
                     fileInput.value = '';
                     currentReplyId = null;
-                    cancelReply();
                     if (data.message) {
-                        renderMessage(data.message);
-                        lastMessageTime = data.message.created_at;
-                        scrollToBottom();
+                        allLoadedMessages.push(data.message);
+                        renderFilteredMessages();
                     }
                 })
                 .catch(err => {
@@ -551,8 +644,8 @@
             }
 
             // Initial unread check
-            checkUnread();
-            setInterval(checkUnread, 15000);
+            updateUnreadBadge();
+            setInterval(updateUnreadBadge, 15000);
         });
     </script>
 @endif
