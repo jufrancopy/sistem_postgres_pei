@@ -290,6 +290,64 @@
     </div>
 </div>
 
+<!-- Modal Diagnóstico y Respaldo DB -->
+<div class="modal fade" id="modalDiagnostico" tabindex="-1" role="dialog" aria-labelledby="modalDiagnosticoTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white p-3" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                <h5 class="modal-title font-weight-bold text-white d-flex align-items-center mb-0" id="modalDiagnosticoTitle">
+                    <i class="fa fa-heartbeat text-danger mr-2"></i> Diagnóstico de Salud & Respaldo PostgreSQL
+                </h5>
+                <button type="button" class="close text-white opacity-75" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                
+                <!-- Loading State -->
+                <div id="diagnosticoLoading" class="text-center py-4">
+                    <div class="spinner-border text-danger mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="sr-only">Procesando...</span>
+                    </div>
+                    <h5 class="font-weight-bold text-dark mb-1">Ejecutando Diagnóstico del Servidor</h5>
+                    <p class="text-muted small mb-0">Generando copia comprimida de PostgreSQL y enviando reporte a <strong>jucfra23@gmail.com</strong>...</p>
+                </div>
+
+                <!-- Results Content -->
+                <div id="diagnosticoResultado" style="display: none;">
+                    <div class="alert alert-success d-flex align-items-center border-0 shadow-sm mb-4" style="border-radius: 10px; background: #e6f4ea; color: #137333;">
+                        <i class="fa fa-check-circle fa-2x mr-3"></i>
+                        <div>
+                            <div class="font-weight-bold" style="font-size: 0.95rem;">¡Proceso completado con éxito!</div>
+                            <div style="font-size: 0.82rem;">El reporte de salud fue enviado correctamente a <strong>jucfra23@gmail.com</strong>.</div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 bg-light p-3 mb-3" style="border-radius: 10px;">
+                        <h6 class="font-weight-bold text-uppercase text-muted small mb-2"><i class="fa fa-terminal mr-1"></i> Resumen de Ejecución en Vivo</h6>
+                        <pre id="diagnosticoOutputText" class="mb-0 bg-dark text-success p-3 rounded small" style="max-height: 250px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; border-radius: 8px;"></pre>
+                    </div>
+                </div>
+
+                <!-- Error State -->
+                <div id="diagnosticoError" style="display: none;">
+                    <div class="alert alert-danger d-flex align-items-center border-0 shadow-sm" style="border-radius: 10px;">
+                        <i class="fa fa-exclamation-triangle fa-2x mr-3"></i>
+                        <div>
+                            <div class="font-weight-bold">Error en la ejecución</div>
+                            <div id="diagnosticoErrorMessage" style="font-size: 0.85rem;"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-light border-0 p-3">
+                <button type="button" class="btn btn-secondary px-4 font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .select2-container {
         width: 100% !important;
@@ -326,28 +384,38 @@ $(function() {
         var btn = $(this);
         var originalHtml = btn.html();
 
-        if (confirm('¿Deseas generar un respaldo de la base de datos PostgreSQL y enviar el reporte de salud a jucfra23@gmail.com?')) {
-            btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Procesando...');
+        // Configurar modal en modo carga
+        $('#diagnosticoLoading').show();
+        $('#diagnosticoResultado').hide();
+        $('#diagnosticoError').hide();
+        $('#modalDiagnostico').modal('show');
 
-            $.ajax({
-                url: '{{ route('planificacion-dashboard.ejecutar-diagnostico') }}',
-                type: 'POST',
-                data: { _token: '{{ csrf_token() }}' },
-                success: function(res) {
-                    btn.prop('disabled', false).html(originalHtml);
-                    if (res.success) {
-                        alert(res.message);
-                    } else {
-                        alert('Atención: ' + res.message);
-                    }
-                },
-                error: function(xhr) {
-                    btn.prop('disabled', false).html(originalHtml);
-                    var msg = xhr.responseJSON ? xhr.responseJSON.message : 'No se pudo ejecutar el proceso.';
-                    alert('Error: ' + msg);
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Ejecutando...');
+
+        $.ajax({
+            url: '{{ route('planificacion-dashboard.ejecutar-diagnostico') }}',
+            type: 'POST',
+            data: { _token: '{{ csrf_token() }}' },
+            success: function(res) {
+                btn.prop('disabled', false).html(originalHtml);
+                $('#diagnosticoLoading').hide();
+
+                if (res.success) {
+                    $('#diagnosticoOutputText').text(res.output || 'Respaldo de PostgreSQL generado con éxito. Reporte enviado por correo.');
+                    $('#diagnosticoResultado').fadeIn();
+                } else {
+                    $('#diagnosticoErrorMessage').text(res.message);
+                    $('#diagnosticoError').fadeIn();
                 }
-            });
-        }
+            },
+            error: function(xhr) {
+                btn.prop('disabled', false).html(originalHtml);
+                $('#diagnosticoLoading').hide();
+                var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Ocurrió un error inesperado en la servidor.';
+                $('#diagnosticoErrorMessage').text(msg);
+                $('#diagnosticoError').fadeIn();
+            }
+        });
     });
 
     // Semáforo
