@@ -22,9 +22,10 @@ class PlanificacionController extends Controller
         $config = HomeConfiguration::firstOrNew([]);
         $config->save();
 
-        // ── Solo PEIs raíz (master) — todos los planes estratégicos disponibles ──
+        // ── Solo PEIs corporativos (planes estratégicos institucionales) ──────────
         $peisCorporativos = PeiProfile::whereNull('parent_id')
             ->where('level', 'master')
+            ->where('type', 'corporative')
             ->orderByDesc('year_start')
             ->get();
 

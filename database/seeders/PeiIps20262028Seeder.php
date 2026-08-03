@@ -41,6 +41,7 @@ class PeiIps20262028Seeder extends Seeder
                     'goal'   => 'Objetivo Específico',
                     'action' => 'Acción Estratégica',
                 ]),
+                'type'         => 'corporative',
                 'group_id'     => 50,
             ]
         );
@@ -72,6 +73,7 @@ class PeiIps20262028Seeder extends Seeder
                     'goal'   => 'Objetivo Específico',
                     'action' => 'Acción Estratégica',
                 ]),
+                'type'         => 'corporative',
                 'group_id'     => 50,
             ]
         );
