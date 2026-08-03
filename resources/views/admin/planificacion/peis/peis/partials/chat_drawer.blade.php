@@ -76,28 +76,91 @@
             </div>
 
             <!-- Profile Info Widget -->
-            <div id="contactProfileWidget" class="d-flex align-items-center mt-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); display: none !important;">
-                <div id="contactAvatarCircle" class="mr-2 d-flex align-items-center justify-content-center font-weight-bold text-white shadow-sm" style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); font-size: 15px; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0;">
-                    --
-                </div>
-                <div style="flex:1; min-width:0;" class="ml-2">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <h6 id="contactNameHeading" class="mb-0 font-weight-bold text-white text-truncate" style="font-size: 13px;">
-                            Seleccionar Integrante
-                        </h6>
-                        <span id="contactPointsBadge" class="badge badge-warning text-dark font-weight-bold ml-1" style="font-size: 10px; border-radius: 10px; padding: 3px 7px;">
-                            ⭐ 0 pts
-                        </span>
+            <div id="contactProfileWidget" class="d-flex align-items-center mt-2 p-2 rounded justify-content-between" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); display: none !important;">
+                <div class="d-flex align-items-center" style="min-width: 0;">
+                    <div id="contactAvatarCircle" class="mr-2 d-flex align-items-center justify-content-center font-weight-bold text-white shadow-sm" style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); font-size: 15px; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0;">
+                        --
                     </div>
-                    <div class="d-flex align-items-center mt-1 text-white-50" style="font-size: 10.5px;">
-                        <span id="contactRoleText" class="text-truncate mr-2" style="max-width: 130px; color: #cbd5e1;">
-                            Integrante
-                        </span>
-                        <span id="contactLevelBadge" class="badge text-white font-weight-normal px-2 py-0" style="font-size: 9.5px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);">
-                            Aprendiz
-                        </span>
+                    <div style="flex:1; min-width:0;" class="ml-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h6 id="contactNameHeading" class="mb-0 font-weight-bold text-white text-truncate" style="font-size: 13px;">
+                                Seleccionar Integrante
+                            </h6>
+                            <span id="contactPointsBadge" class="badge badge-warning text-dark font-weight-bold ml-1" style="font-size: 10px; border-radius: 10px; padding: 3px 7px;">
+                                ⭐ 0 pts
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center mt-1 text-white-50" style="font-size: 10.5px;">
+                            <span id="contactRoleText" class="text-truncate mr-2" style="max-width: 120px; color: #cbd5e1;">
+                                Integrante
+                            </span>
+                            <span id="contactLevelBadge" class="badge text-white font-weight-normal px-2 py-0" style="font-size: 9.5px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);">
+                                Aprendiz
+                            </span>
+                        </div>
                     </div>
                 </div>
+                <button type="button" class="btn btn-warning btn-sm font-weight-bold ml-2 shadow-sm rounded-pill" id="btnOpenDonateModal" title="Regalar puntos de reputación" style="font-size: 11px; padding: 4px 10px; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: #fff;">
+                    <i class="fas fa-gift mr-1"></i> Donar
+                </button>
+            </div>
+        </div>
+
+        <!-- Celebration Overlay Layer -->
+        <div id="peiChatCelebrationArea" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 1090; overflow:hidden;"></div>
+
+        <!-- Point Donation Popover Panel -->
+        <div id="peiDonatePopover" class="shadow-lg border rounded p-3 bg-white" style="display: none; position: absolute; top: 120px; left: 15px; right: 15px; z-index: 1085; background: #ffffff;">
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                <span class="font-weight-bold text-dark text-xs"><i class="fas fa-gift text-warning mr-1"></i> Regalar Puntos de Reputación</span>
+                <button type="button" class="btn btn-xs text-secondary" id="btnCloseDonatePopover"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="text-muted text-xs mb-2">Selecciona la cantidad de puntos que deseas descontar de tu saldo para transferir a <strong id="donateRecipientLabel" class="text-dark"></strong>:</p>
+            <div class="d-flex justify-content-around mb-3">
+                <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold btn-donate-amount" data-amount="5">⭐ 5 pts</button>
+                <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold btn-donate-amount" data-amount="10">⭐ 10 pts</button>
+                <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold btn-donate-amount" data-amount="25">⭐ 25 pts</button>
+                <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold btn-donate-amount" data-amount="50">⭐ 50 pts</button>
+            </div>
+            <div class="form-group mb-2">
+                <input type="number" id="customDonateInput" class="form-control form-control-sm text-center font-weight-bold text-dark" placeholder="O escribe otra cantidad (ej. 15)" min="1" max="500">
+            </div>
+            <button type="button" class="btn btn-warning btn-block btn-sm font-weight-bold text-dark shadow-sm" id="btnSubmitDonate">
+                <i class="fas fa-paper-plane mr-1"></i> Confirmar Donación
+            </button>
+        </div>
+
+        <!-- Emoji Picker Panel -->
+        <div id="peiEmojiPicker" class="shadow-lg border rounded p-2 bg-white" style="display: none; position: absolute; bottom: 65px; left: 15px; right: 15px; z-index: 1080; max-height: 180px; overflow-y: auto;">
+            <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom">
+                <span class="text-xs font-weight-bold text-secondary">Emoticones Rápidos</span>
+                <button type="button" class="btn btn-xs text-muted p-0" id="btnCloseEmojiPicker"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="d-flex flex-wrap gap-1" id="peiEmojiGrid" style="font-size: 20px; cursor: pointer;">
+                <span class="emoji-item p-1">👍</span>
+                <span class="emoji-item p-1">❤️</span>
+                <span class="emoji-item p-1">🚀</span>
+                <span class="emoji-item p-1">🎉</span>
+                <span class="emoji-item p-1">🔥</span>
+                <span class="emoji-item p-1">⭐</span>
+                <span class="emoji-item p-1">💡</span>
+                <span class="emoji-item p-1">👏</span>
+                <span class="emoji-item p-1">😂</span>
+                <span class="emoji-item p-1">🙏</span>
+                <span class="emoji-item p-1">💯</span>
+                <span class="emoji-item p-1">🎯</span>
+                <span class="emoji-item p-1">💪</span>
+                <span class="emoji-item p-1">✅</span>
+                <span class="emoji-item p-1">💬</span>
+                <span class="emoji-item p-1">🏆</span>
+                <span class="emoji-item p-1">🙌</span>
+                <span class="emoji-item p-1">🤝</span>
+                <span class="emoji-item p-1">🎁</span>
+                <span class="emoji-item p-1">✨</span>
+                <span class="emoji-item p-1">🥳</span>
+                <span class="emoji-item p-1">👑</span>
+                <span class="emoji-item p-1">💎</span>
+                <span class="emoji-item p-1">🤩</span>
             </div>
         </div>
 
@@ -131,10 +194,14 @@
         <!-- Input Footer -->
         <div class="pei-chat-footer">
             <form id="peiChatForm" class="d-flex align-items-center" enctype="multipart/form-data">
-                <label for="peiChatFileInput" class="btn btn-light btn-circle btn-sm mb-0 mr-2 text-secondary" title="Adjuntar Archivo">
+                <label for="peiChatFileInput" class="btn btn-light btn-circle btn-sm mb-0 mr-1 text-secondary" title="Adjuntar Archivo">
                     <i class="fas fa-paperclip"></i>
                     <input type="file" id="peiChatFileInput" multiple hidden>
                 </label>
+
+                <button type="button" class="btn btn-light btn-circle btn-sm mb-0 mr-2 text-warning" id="btnToggleEmojiPicker" title="Insertar Emoticones">
+                    <i class="far fa-smile fa-lg"></i>
+                </button>
 
                 <textarea id="peiChatMessageInput" class="form-control form-control-sm border-0 bg-light rounded-lg mr-2" 
                           placeholder="Escribir mensaje al grupo..." rows="1" style="resize: none;"></textarea>
@@ -470,6 +537,174 @@
                 }
             });
 
+            // Audio de celebración para donaciones (Web Audio API - Tono triple estilo Mario Coin)
+            function playCoinChime() {
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioCtx) return;
+                    const ctx = new AudioCtx();
+                    
+                    const notes = [987.77, 1318.51, 1567.98];
+                    notes.forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.08));
+                        
+                        gain.gain.setValueAtTime(0.25, ctx.currentTime + (idx * 0.08));
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (idx * 0.08) + 0.25);
+                        
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        
+                        osc.start(ctx.currentTime + (idx * 0.08));
+                        osc.stop(ctx.currentTime + (idx * 0.08) + 0.25);
+                    });
+                } catch (e) {}
+            }
+
+            // Animación de partículas doradas y confeti de estrellas
+            function triggerCoinBurstAnimation() {
+                const container = document.getElementById('peiChatCelebrationArea');
+                if (!container) return;
+                
+                const particleCount = 28;
+                const symbols = ['⭐', '💰', '✨', '🎁', '🌟'];
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'gold-particle';
+                    p.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                    
+                    const startX = 180 + (Math.random() * 40 - 20);
+                    const startY = 300 + (Math.random() * 40 - 20);
+                    const dx = (Math.random() - 0.5) * 260;
+                    const dy = -(120 + Math.random() * 220);
+                    const endx = dx + (Math.random() - 0.5) * 80;
+                    
+                    p.style.left = startX + 'px';
+                    p.style.top = startY + 'px';
+                    p.style.setProperty('--dx', dx + 'px');
+                    p.style.setProperty('--dy', dy + 'px');
+                    p.style.setProperty('--endx', endx + 'px');
+                    p.style.animationDelay = (Math.random() * 0.2) + 's';
+                    
+                    container.appendChild(p);
+                    setTimeout(() => p.remove(), 1800);
+                }
+            }
+
+            // Emoji Picker Handlers
+            const emojiBtn = document.getElementById('btnToggleEmojiPicker');
+            const emojiPicker = document.getElementById('peiEmojiPicker');
+            const emojiClose = document.getElementById('btnCloseEmojiPicker');
+            const emojiGrid = document.getElementById('peiEmojiGrid');
+
+            if (emojiBtn && emojiPicker) {
+                emojiBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    emojiPicker.style.display = (emojiPicker.style.display === 'none') ? 'block' : 'none';
+                });
+
+                if (emojiClose) {
+                    emojiClose.addEventListener('click', function() {
+                        emojiPicker.style.display = 'none';
+                    });
+                }
+
+                if (emojiGrid) {
+                    emojiGrid.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('emoji-item')) {
+                            const emoji = e.target.textContent;
+                            input.value += emoji;
+                            input.focus();
+                            emojiPicker.style.display = 'none';
+                        }
+                    });
+                }
+            }
+
+            // Point Donation Handlers
+            const btnOpenDonateModal = document.getElementById('btnOpenDonateModal');
+            const donatePopover = document.getElementById('peiDonatePopover');
+            const btnCloseDonatePopover = document.getElementById('btnCloseDonatePopover');
+            const donateRecipientLabel = document.getElementById('donateRecipientLabel');
+            const customDonateInput = document.getElementById('customDonateInput');
+            const btnSubmitDonate = document.getElementById('btnSubmitDonate');
+
+            let selectedDonateAmount = 10;
+
+            if (btnOpenDonateModal && donatePopover) {
+                btnOpenDonateModal.addEventListener('click', function() {
+                    if (!activeRecipientId) return;
+                    donateRecipientLabel.textContent = activeRecipientName || 'Integrante';
+                    donatePopover.style.display = 'block';
+                });
+
+                if (btnCloseDonatePopover) {
+                    btnCloseDonatePopover.addEventListener('click', function() {
+                        donatePopover.style.display = 'none';
+                    });
+                }
+
+                document.querySelectorAll('.btn-donate-amount').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        document.querySelectorAll('.btn-donate-amount').forEach(b => b.classList.remove('active', 'btn-warning', 'text-dark'));
+                        this.classList.add('active', 'btn-warning', 'text-dark');
+                        selectedDonateAmount = parseInt(this.dataset.amount);
+                        customDonateInput.value = '';
+                    });
+                });
+
+                if (btnSubmitDonate) {
+                    btnSubmitDonate.addEventListener('click', function() {
+                        const customVal = parseInt(customDonateInput.value);
+                        const amount = (customVal && customVal > 0) ? customVal : selectedDonateAmount;
+
+                        if (!activeRecipientId) return;
+                        if (amount <= 0) return;
+
+                        btnSubmitDonate.disabled = true;
+                        btnSubmitDonate.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Donando...';
+
+                        fetch(`{{ url('pei-profiles') }}/${peiProfileId}/chat/donate`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({
+                                recipient_id: activeRecipientId,
+                                points: amount
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            btnSubmitDonate.disabled = false;
+                            btnSubmitDonate.innerHTML = '<i class="fas fa-paper-plane mr-1"></i> Confirmar Donación';
+                            if (data.error) {
+                                alert(data.error);
+                                return;
+                            }
+                            donatePopover.style.display = 'none';
+                            playCoinChime();
+                            triggerCoinBurstAnimation();
+                            if (data.message) {
+                                allLoadedMessages.push(data.message);
+                                renderFilteredMessages();
+                            }
+                            fetchMessages();
+                        })
+                        .catch(err => {
+                            btnSubmitDonate.disabled = false;
+                            btnSubmitDonate.innerHTML = '<i class="fas fa-paper-plane mr-1"></i> Confirmar Donación';
+                            console.error('Error procesando donación:', err);
+                        });
+                    });
+                }
+            }
+
             // Sonido de notificación sintetizado (Web Audio API)
             function playMessageChime() {
                 try {
@@ -527,7 +762,13 @@
                         renderFilteredMessages();
 
                         if (isPolling && hasNewOtherMessage) {
-                            playMessageChime();
+                            const latestNewMsg = allLoadedMessages[allLoadedMessages.length - 1];
+                            if (latestNewMsg && (latestNewMsg.is_donation || (latestNewMsg.message && latestNewMsg.message.includes('🎁')))) {
+                                playCoinChime();
+                                triggerCoinBurstAnimation();
+                            } else {
+                                playMessageChime();
+                            }
                         }
                     }
 

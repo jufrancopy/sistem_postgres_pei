@@ -318,4 +318,70 @@ class PeiChatController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    /**
+     * Donate points to another team member via chat.
+     */
+    public function donatePoints(Request $request, $peiProfileId)
+    {
+        $request->validate([
+            'recipient_id' => 'required|exists:users,id',
+            'points'       => 'required|integer|min:1|max:500',
+        ]);
+
+        $donor = auth()->user();
+        $peiProfile = PeiProfile::findOrFail($peiProfileId);
+
+        if (!$this->checkUserAccess($peiProfile, $donor)) {
+            return response()->json(['error' => 'No tienes acceso a este chat.'], 403);
+        }
+
+        $recipient = User::findOrFail($request->recipient_id);
+        if ($donor->id === $recipient->id) {
+            return response()->json(['error' => 'No puedes donarte puntos a ti mismo.'], 422);
+        }
+
+        $gamificationService = app(\App\Services\GamificationService::class);
+        $donorBalance = $gamificationService->getUserTotalPoints($donor, $peiProfileId);
+
+        if ($donorBalance < $request->points) {
+            return response()->json(['error' => "No tienes suficientes puntos. Tu saldo actual es de {$donorBalance} pts."], 422);
+        }
+
+        $success = $gamificationService->transferPoints($donor, $recipient, (int)$request->points, $peiProfileId);
+        if (!$success) {
+            return response()->json(['error' => 'Error al procesar la donación de puntos.'], 500);
+        }
+
+        // System broadcast message in chat
+        $msgText = "🎁 ¡Le ha donado {$request->points} pts de reputación a {$recipient->name}! 🎉";
+        $msg = PeiChatMessage::create([
+            'pei_profile_id' => $peiProfileId,
+            'user_id' => $donor->id,
+            'recipient_id' => $recipient->id,
+            'message' => $msgText,
+            'is_system' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'donor_balance' => $gamificationService->getUserTotalPoints($donor, $peiProfileId),
+            'recipient_balance' => $gamificationService->getUserTotalPoints($recipient, $peiProfileId),
+            'message' => [
+                'id' => $msg->id,
+                'user_id' => $donor->id,
+                'recipient_id' => $recipient->id,
+                'recipient_name' => $recipient->name,
+                'is_private' => true,
+                'is_donation' => true,
+                'donation_points' => (int)$request->points,
+                'donor_name' => $donor->name,
+                'user_name' => $donor->name,
+                'is_mine' => true,
+                'message' => e($msgText),
+                'created_at' => $msg->created_at->format('Y-m-d H:i:s'),
+                'time_ago' => 'Hace un momento',
+            ]
+        ]);
+    }
 }

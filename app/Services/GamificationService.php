@@ -504,4 +504,53 @@ class GamificationService
             'recent_history'  => $recentHistory,
         ];
     }
+
+    /**
+     * Transfiere puntos de reputación entre dos usuarios.
+     */
+    public function transferPoints(User $donor, User $recipient, int $points, ?string $peiProfileId = null): bool
+    {
+        if ($points <= 0 || $donor->id === $recipient->id) {
+            return false;
+        }
+
+        if (!$peiProfileId) {
+            $config = HomeConfiguration::first();
+            $peiProfileId = $config?->pei_profile_id;
+        }
+
+        $donorBalance = $this->getUserTotalPoints($donor, $peiProfileId);
+        if ($donorBalance < $points) {
+            return false;
+        }
+
+        DB::transaction(function () use ($donor, $recipient, $points, $peiProfileId) {
+            // Descuenta puntos al donante
+            GamificationPoint::create([
+                'user_id'        => $donor->id,
+                'pei_profile_id' => $peiProfileId,
+                'points'         => -$points,
+                'action_type'    => 'donacion_enviada',
+                'description'    => "Regalo de {$points} pts enviado a {$recipient->name}",
+                'reference_type' => User::class,
+                'reference_id'   => (string)$recipient->id,
+            ]);
+
+            // Suma puntos al destinatario
+            GamificationPoint::create([
+                'user_id'        => $recipient->id,
+                'pei_profile_id' => $peiProfileId,
+                'points'         => $points,
+                'action_type'    => 'donacion_recibida',
+                'description'    => "Regalo de {$points} pts recibido de {$donor->name}",
+                'reference_type' => User::class,
+                'reference_id'   => (string)$donor->id,
+            ]);
+
+            $this->evaluateBadges($donor, $peiProfileId);
+            $this->evaluateBadges($recipient, $peiProfileId);
+        });
+
+        return true;
+    }
 }
