@@ -580,15 +580,39 @@ class ActivityController extends Controller
 
     /**
      * GET /mis-actividades
-     * Lista de actividades donde el analista es responsable.
+     * Lista de actividades donde el analista es responsable o pertenece al Grupo de Trabajo.
      */
     public function misActividades()
     {
         $userId = Auth::id();
-        $actividades = Activity::with(['responsibles', 'tasks'])
-            ->where(function($q) use ($userId) {
+
+        // Grupos de los que forma parte el usuario (incluyendo jerarquía)
+        $userGroupIds = \DB::table('groups_has_members')
+            ->where('user_id', $userId)
+            ->pluck('group_id')
+            ->toArray();
+
+        $allGroupIds = [];
+        if (!empty($userGroupIds)) {
+            foreach ($userGroupIds as $gId) {
+                $grp = \App\Admin\Globales\Group::find($gId);
+                if ($grp) {
+                    $root = method_exists($grp, 'getRoot') ? $grp->getRoot() : $grp;
+                    $desc = \App\Admin\Globales\Group::descendantsAndSelf($root->id)->pluck('id')->toArray();
+                    $allGroupIds = array_merge($allGroupIds, $desc);
+                }
+            }
+            $allGroupIds = array_unique($allGroupIds);
+        }
+
+        $actividades = Activity::with(['responsibles', 'tasks', 'group'])
+            ->where(function($q) use ($userId, $allGroupIds) {
                 $q->whereHas('responsibles', fn($q) => $q->where('users.id', $userId))
                   ->orWhereHas('tasks', fn($q) => $q->where('assigned_to', $userId));
+
+                if (!empty($allGroupIds)) {
+                    $q->orWhereIn('group_id', $allGroupIds);
+                }
             })
             ->latest()->get();
 
