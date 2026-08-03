@@ -203,10 +203,27 @@ class DailyHealthAndBackupCommand extends Command
         $dbUser = $dbConfig['username'];
         $dbPass = $dbConfig['password'] ?? '';
 
+        // Buscar la ruta ejecutable de pg_dump en Linux y macOS (Postgres.app / Homebrew / Apt)
+        $pgDumpBinary = 'pg_dump';
+        $possiblePaths = [
+            '/usr/bin/pg_dump',
+            '/usr/local/bin/pg_dump',
+            '/opt/homebrew/bin/pg_dump',
+            '/Applications/Postgres.app/Contents/Versions/latest/bin/pg_dump',
+        ];
+
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path) && is_executable($path)) {
+                $pgDumpBinary = $path;
+                break;
+            }
+        }
+
         // Comando pg_dump comprimido
         $cmd = sprintf(
-            'PGPASSWORD=%s pg_dump -h %s -p %s -U %s %s | gzip > %s 2>&1',
+            'PGPASSWORD=%s %s -h %s -p %s -U %s %s | gzip > %s 2>&1',
             escapeshellarg($dbPass),
+            escapeshellarg($pgDumpBinary),
             escapeshellarg($dbHost),
             escapeshellarg($dbPort),
             escapeshellarg($dbUser),
