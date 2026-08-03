@@ -39,8 +39,9 @@ class PeiChatController extends Controller
         if ($peiProfile->group_id) {
             $group = Group::find($peiProfile->group_id);
             if ($group) {
-                // Obtener grupo raíz + grupos descendientes usando la sintaxis estática de NestedSet
-                $groupIds = Group::descendantsAndSelf($group->id)->pluck('id')->toArray();
+                // Obtener el grupo raíz de la jerarquía para incluir ancestros y descendientes
+                $rootGroup = method_exists($group, 'getRoot') ? $group->getRoot() : $group;
+                $groupIds = Group::descendantsAndSelf($rootGroup->id)->pluck('id')->toArray();
 
                 $isMember = DB::table('groups_has_members')
                     ->whereIn('group_id', $groupIds)
