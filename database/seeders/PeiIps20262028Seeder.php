@@ -44,13 +44,6 @@ class PeiIps20262028Seeder extends Seeder
 
         $this->command->info('   Master creado/actualizado con nivel_label MEF: ' . $master->name);
 
-        // 2. Limpiar descendientes anteriores para permitir recarga limpia
-        $existingChildren = PeiProfile::where('parent_id', $master->id)->pluck('id');
-        if ($existingChildren->isNotEmpty()) {
-            PeiProfile::whereIn('parent_id', $existingChildren)->delete(); // Eliminar acciones/goals
-            PeiProfile::whereIn('id', $existingChildren)->delete();        // Eliminar ejes
-        }
-
         // Obtener IDs de Marcos Referenciales clave
         $marcoPndSalud  = DB::table('planificacion.marcos_referenciales')->where('nombre', 'like', '%PND OE 1.2%')->value('id');
         $marcoPndPens   = DB::table('planificacion.marcos_referenciales')->where('nombre', 'like', '%PND OE 1.4%')->value('id');
