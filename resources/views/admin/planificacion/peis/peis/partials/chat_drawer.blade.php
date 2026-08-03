@@ -281,6 +281,30 @@
                 }
             });
 
+            // Sonido de notificación sintetizado (Web Audio API)
+            function playMessageChime() {
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioCtx) return;
+                    const ctx = new AudioCtx();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // Re (D5)
+                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // La (A5)
+
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.35);
+                } catch (e) {}
+            }
+
             // Fetch messages from server
             function fetchMessages(isPolling = false) {
                 let url = `{{ url('pei-profiles') }}/${peiProfileId}/chat/messages`;
@@ -297,15 +321,24 @@
                 .then(res => res.json())
                 .then(data => {
                     loading.style.display = 'none';
+                    let hasNewOtherMessage = false;
+
                     if (data.messages && data.messages.length > 0) {
                         data.messages.forEach(msg => {
                             // Check if message already rendered
                             if (!document.getElementById(`msg-${msg.id}`)) {
                                 renderMessage(msg);
                                 lastMessageTime = msg.created_at;
+                                if (!msg.is_mine) {
+                                    hasNewOtherMessage = true;
+                                }
                             }
                         });
                         scrollToBottom();
+
+                        if (isPolling && hasNewOtherMessage) {
+                            playMessageChime();
+                        }
                     }
 
                     if (data.participants) {
@@ -367,6 +400,14 @@
                 const body = document.getElementById('peiChatMessagesBody');
                 body.scrollTop = body.scrollHeight;
             }
+
+            // Enviar mensaje con tecla Enter (Shift+Enter para salto de línea)
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+            });
 
             // Send message
             form.addEventListener('submit', function (e) {
