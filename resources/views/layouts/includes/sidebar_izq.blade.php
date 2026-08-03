@@ -305,8 +305,8 @@
             </li>
         @endhasanyrole
 
-        {{-- Sidebar exclusivo para Analista PEI --}}
-        @role('Analista PEI')
+        {{-- Sidebar exclusivo para Analista PEI / Analista de Planificación --}}
+        @hasanyrole('Analista PEI|Analista de Planificación|Analista|Analista de Monitoreo PEI')
             @php $enPgnAnalista = str_contains($path, 'pgn') || str_contains($path, 'pei-'); @endphp
             <li class="nav-item active">
                 <a class="nav-link" href="{{ route('planificacion-dashboard') }}">
@@ -336,7 +336,7 @@
                     </ul>
                 </div>
             </li>
-        @endrole
+        @endhasanyrole
 
         {{-- Sidebar exclusivo para Analista de Monitoreo PEI --}}
         @role('Analista de Monitoreo PEI')
