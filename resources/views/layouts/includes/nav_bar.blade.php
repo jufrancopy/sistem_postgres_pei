@@ -22,7 +22,7 @@
 
         {{-- ── Notificaciones SIESS ── --}}
         <li class="nav-item dropdown">
-          <a class="nav-link p-1 position-relative d-flex align-items-center justify-content-center" href="#" id="siessNotifBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones SIESS" style="width:42px;height:42px;">
+          <a class="nav-link" href="#" id="siessNotifBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones SIESS">
             <i class="material-icons">notifications</i>
             <span id="siessNotifBadge" class="notification bg-danger" style="display:none">0</span>
             <p class="d-lg-none mb-0">Notificaciones</p>
@@ -44,21 +44,20 @@
         </li>
 
         {{-- ── Puntos de Gamificación (Escritorio) ── --}}
-        <li class="nav-item d-none d-lg-flex align-items-center">
-            <a href="{{ route('user.profile') }}" class="navbar-gamif-badge" title="Tu reputación en el sistema">
+        <li class="nav-item d-none d-lg-flex align-items-center mr-2">
+            <a href="{{ route('user.profile') }}" class="badge badge-pill badge-warning py-2 px-3 font-weight-bold text-dark text-decoration-none shadow-sm" style="font-size: 0.8rem;">
                 ⭐ {{ number_format($userPts) }} pts
             </a>
         </li>
 
-        {{-- ── Menú de Usuario ── --}}
+        {{-- ── Menú de Usuario (Material Pattern) ── --}}
         <li class="nav-item dropdown">
-          <a href="#" id="navbarDropdownUser" class="nav-link p-0 navbar-user-pill" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}">
-              <span class="pill-name d-none d-lg-inline">{{ Auth::user()->name ?? 'Usuario' }}</span>
-              <i class="fa fa-chevron-down pill-chevron d-none d-lg-inline"></i>
-              <p class="d-lg-none mb-0 font-weight-bold text-white" style="font-size:0.85rem;margin:0;">
-                  {{ Auth::user()->name }} <span class="badge badge-warning ml-1">⭐ {{ number_format($userPts) }} pts</span>
-              </p>
+          <a class="nav-link d-flex align-items-center" href="#" id="navbarDropdownUser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="rounded-circle border border-light mr-2" style="width: 28px; height: 28px; object-fit: cover;">
+            <span class="font-weight-bold d-none d-lg-inline">{{ Auth::user()->name ?? 'Usuario' }}</span>
+            <p class="d-lg-none mb-0 font-weight-bold">
+                {{ Auth::user()->name }} <span class="badge badge-warning ml-1">⭐ {{ number_format($userPts) }} pts</span>
+            </p>
           </a>
           <div class="dropdown-menu dropdown-menu-right shadow-lg border-0" aria-labelledby="navbarDropdownUser" style="border-radius: 10px; min-width: 220px; padding: 6px 0;">
             <div class="dropdown-header text-uppercase font-weight-bold text-xs text-muted px-3 py-2 border-bottom mb-1" style="font-size: 0.7rem;">
