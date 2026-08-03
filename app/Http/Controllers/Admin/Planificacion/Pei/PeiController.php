@@ -64,7 +64,7 @@ class PeiController extends Controller
                 }
 
                 // 3. IDs vinculados por Actividades
-                $activityPeiIds = \App\Admin\Globales\Activity::whereHas('responsibles', fn($q) => $q->where('user_id', $userId))
+                $activityPeiIds = \App\Admin\Globales\Activity::whereHas('responsibles', fn($q) => $q->where('users.id', $userId))
                     ->whereNotNull('pei_profile_id')
                     ->pluck('pei_profile_id')
                     ->toArray();
