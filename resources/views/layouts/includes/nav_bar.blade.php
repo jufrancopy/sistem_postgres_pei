@@ -1,10 +1,6 @@
-<nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top" style="box-shadow: none !important;">
+<nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top" style="box-shadow: none !important; background: transparent !important;">
   <div class="container-fluid">
-    <div class="navbar-wrapper">
-      <a class="navbar-brand font-weight-bold text-muted d-none d-lg-inline-block" href="javascript:void(0)" style="font-size: .85rem; letter-spacing: .05em; text-transform: uppercase;">
-        <i class="fa fa-shield-alt text-info mr-1"></i> SIPLAN IPS
-      </a>
-    </div>
+    <div class="navbar-wrapper"></div>
 
     <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
       <span class="sr-only">Toggle navigation</span>
