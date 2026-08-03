@@ -259,7 +259,11 @@ class PeiChatController extends Controller
             ->first();
 
         $query = PeiChatMessage::where('pei_profile_id', $peiProfileId)
-            ->where('user_id', '!=', $user->id);
+            ->where('user_id', '!=', $user->id)
+            ->where(function ($q) use ($user) {
+                $q->whereNull('recipient_id')
+                  ->orWhere('recipient_id', $user->id);
+            });
 
         if ($read && $read->last_read_message_id) {
             $lastRead = PeiChatMessage::find($read->last_read_message_id);
