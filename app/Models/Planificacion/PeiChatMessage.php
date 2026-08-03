@@ -18,6 +18,7 @@ class PeiChatMessage extends Model
     protected $fillable = [
         'pei_profile_id',
         'user_id',
+        'recipient_id',
         'parent_id',
         'message',
         'attachments',
@@ -37,6 +38,11 @@ class PeiChatMessage extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function recipient()
+    {
+        return $this->belongsTo(User::class, 'recipient_id');
     }
 
     public function parent()

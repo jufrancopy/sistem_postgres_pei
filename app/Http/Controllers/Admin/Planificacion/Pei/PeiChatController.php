@@ -69,7 +69,12 @@ class PeiChatController extends Controller
         }
 
         $query = PeiChatMessage::where('pei_profile_id', $peiProfileId)
-            ->with(['user:id,name,email', 'parent.user:id,name'])
+            ->where(function ($q) use ($user) {
+                $q->whereNull('recipient_id')
+                  ->orWhere('user_id', $user->id)
+                  ->orWhere('recipient_id', $user->id);
+            })
+            ->with(['user:id,name,email', 'recipient:id,name', 'parent.user:id,name'])
             ->orderBy('created_at', 'asc');
 
         if ($request->has('since')) {
@@ -81,6 +86,9 @@ class PeiChatController extends Controller
                 'id' => $msg->id,
                 'pei_profile_id' => $msg->pei_profile_id,
                 'user_id' => $msg->user_id,
+                'recipient_id' => $msg->recipient_id,
+                'recipient_name' => $msg->recipient ? $msg->recipient->name : null,
+                'is_private' => !is_null($msg->recipient_id),
                 'user_name' => $msg->user ? $msg->user->name : 'Usuario Desconocido',
                 'user_initials' => $msg->user ? mb_substr($msg->user->name, 0, 2) : 'US',
                 'is_mine' => $msg->user_id === $user->id,
@@ -105,7 +113,9 @@ class PeiChatController extends Controller
                 $groupIds = Group::descendantsAndSelf($group->id)->pluck('id')->toArray();
                 $participants = User::whereIn('id', function ($q) use ($groupIds) {
                     $q->select('user_id')->from('groups_has_members')->whereIn('group_id', $groupIds);
-                })->select('id', 'name', 'email')->get();
+                })
+                ->where('id', '!=', $user->id)
+                ->select('id', 'name', 'email')->get();
             }
         }
 
@@ -139,6 +149,7 @@ class PeiChatController extends Controller
 
         $request->validate([
             'message' => 'nullable|string|max:5000',
+            'recipient_id' => 'nullable|exists:users,id',
             'parent_id' => 'nullable|uuid|exists:pei_chat_messages,id',
             'files.*' => 'nullable|file|max:10240', // 10MB limit per file
         ]);
@@ -167,13 +178,14 @@ class PeiChatController extends Controller
         $msg = PeiChatMessage::create([
             'pei_profile_id' => $peiProfileId,
             'user_id' => $user->id,
+            'recipient_id' => $request->recipient_id ?: null,
             'parent_id' => $request->parent_id,
             'message' => $request->message,
             'attachments' => $attachments,
             'is_system' => false,
         ]);
 
-        $msg->load(['user:id,name', 'parent.user:id,name']);
+        $msg->load(['user:id,name', 'recipient:id,name', 'parent.user:id,name']);
 
         // Mark as read for sender
         PeiChatRead::updateOrCreate(
@@ -185,6 +197,9 @@ class PeiChatController extends Controller
             'id' => $msg->id,
             'pei_profile_id' => $msg->pei_profile_id,
             'user_id' => $msg->user_id,
+            'recipient_id' => $msg->recipient_id,
+            'recipient_name' => $msg->recipient ? $msg->recipient->name : null,
+            'is_private' => !is_null($msg->recipient_id),
             'user_name' => $user->name,
             'user_initials' => mb_substr($user->name, 0, 2),
             'is_mine' => true,

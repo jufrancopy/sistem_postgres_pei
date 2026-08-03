@@ -74,6 +74,14 @@
             <div id="peiChatAttachmentList" class="d-flex flex-wrap gap-1 p-2"></div>
         </div>
 
+        <!-- Private Recipient Bar -->
+        <div id="peiChatPrivateBar" class="bg-warning text-dark px-3 py-1 text-xs d-flex justify-content-between align-items-center" style="display: none;">
+            <span><i class="fas fa-lock mr-1"></i> Mensaje privado para: <strong id="peiChatRecipientName"></strong></span>
+            <button type="button" class="btn btn-link btn-xs text-dark p-0" id="clearPeiChatRecipient" title="Volver al canal público">
+                <i class="fas fa-times-circle"></i>
+            </button>
+        </div>
+
         <!-- Input Footer -->
         <div class="pei-chat-footer">
             <form id="peiChatForm" class="d-flex align-items-center" enctype="multipart/form-data">
@@ -258,6 +266,34 @@
             let lastMessageTime = null;
             let currentReplyId = null;
             let pollInterval = null;
+            let activeRecipientId = null;
+            let activeRecipientName = null;
+
+            const privateBar = document.getElementById('peiChatPrivateBar');
+            const recipientNameSpan = document.getElementById('peiChatRecipientName');
+            const clearRecipientBtn = document.getElementById('clearPeiChatRecipient');
+
+            if (clearRecipientBtn) {
+                clearRecipientBtn.addEventListener('click', function () {
+                    clearPrivateRecipient();
+                });
+            }
+
+            window.setPrivateRecipient = function(id, name) {
+                activeRecipientId = id;
+                activeRecipientName = name;
+                recipientNameSpan.textContent = name;
+                privateBar.style.display = 'flex';
+                input.placeholder = `Escribir mensaje privado a ${name}...`;
+                participantsPanel.style.display = 'none';
+            };
+
+            function clearPrivateRecipient() {
+                activeRecipientId = null;
+                activeRecipientName = null;
+                privateBar.style.display = 'none';
+                input.placeholder = 'Escribe un mensaje al equipo...';
+            }
 
             // Toggle drawer
             trigger.addEventListener('click', function () {
@@ -355,7 +391,13 @@
 
                 let html = '';
                 if (!msg.is_mine) {
-                    html += `<div class="msg-sender-name">${msg.user_name}</div>`;
+                    html += `<div class="msg-sender-name">${msg.user_name}`;
+                    if (msg.is_private) {
+                        html += ` <span class="badge badge-warning text-dark ml-1" style="font-size:9px;"><i class="fas fa-lock mr-1"></i>Privado</span>`;
+                    }
+                    html += `</div>`;
+                } else if (msg.is_private) {
+                    html += `<div class="text-right text-xs font-weight-bold text-warning mb-1" style="font-size:10px;"><i class="fas fa-lock mr-1"></i>Privado para ${msg.recipient_name || 'Usuario'}</div>`;
                 }
 
                 if (msg.parent) {
@@ -386,11 +428,15 @@
                     participantsList.innerHTML = '<div class="text-muted text-center small py-2">Sin otros miembros</div>';
                     return;
                 }
-                let html = '';
+                let html = '<div class="text-muted text-xs mb-2 font-weight-bold">Integrantes (Clic para mensaje privado):</div>';
                 list.forEach(u => {
-                    html += `<div class="d-flex align-items-center mb-1 text-xs">
-                                <i class="fas fa-user-circle text-primary mr-2"></i>
-                                <span>${u.name}</span>
+                    const isSel = activeRecipientId === u.id;
+                    const escapedName = u.name.replace(/'/g, "\\'");
+                    html += `<div class="d-flex justify-content-between align-items-center mb-1 text-xs p-2 rounded border ${isSel ? 'bg-warning text-dark font-weight-bold border-warning' : 'bg-light'}" style="cursor:pointer;" onclick="setPrivateRecipient('${u.id}', '${escapedName}')">
+                                <span><i class="fas fa-user-circle ${isSel ? 'text-dark' : 'text-primary'} mr-1"></i> ${u.name}</span>
+                                <span class="badge ${isSel ? 'badge-dark' : 'badge-primary'}" style="font-size:9px;">
+                                    ${isSel ? 'Activo' : 'Privado'}
+                                </span>
                              </div>`;
                 });
                 participantsList.innerHTML = html;
@@ -421,6 +467,9 @@
                 formData.append('message', text);
                 if (currentReplyId) {
                     formData.append('parent_id', currentReplyId);
+                }
+                if (activeRecipientId) {
+                    formData.append('recipient_id', activeRecipientId);
                 }
 
                 for (let i = 0; i < files.length; i++) {
