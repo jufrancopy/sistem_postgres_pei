@@ -14,51 +14,49 @@ class IndicadoresIps20232028Seeder extends Seeder
 {
     const LETRAS = 'IPS23';
 
-    private function getPerfilId(): string
+    private function getPerfilIds(): array
     {
-        $perfil = \DB::table('planificacion.pei_profiles')
+        return \DB::table('planificacion.pei_profiles')
             ->where('level', 'master')
-            ->where('name', 'like', '%Plan Estratégico Institucional%2023%')
+            ->whereIn('id', ['ce99f883-fdd0-4723-8f75-cf689aa8f0fa', '766eb883-fdd0-4723-8f75-cf689aa8f0fa'])
             ->whereNull('deleted_at')
-            ->whereNull('parent_id')
-            ->first();
-
-        if (!$perfil) {
-            throw new \Exception('No se encontró el perfil PEI IPS 2023-2028. Ejecutá PeiIps20232028Seeder primero.');
-        }
-        return $perfil->id;
+            ->pluck('id')
+            ->toArray();
     }
 
     public function run(): void
     {
-        $ahora    = now();
-        $perfilId = $this->getPerfilId();
-        $this->command->info('Sembrando indicadores para: ' . $perfilId);
+        $ahora     = now();
+        $perfilIds = $this->getPerfilIds();
 
-        $indicadores = $this->getIndicadores();
+        foreach ($perfilIds as $perfilId) {
+            $this->command->info('Sembrando indicadores para: ' . $perfilId);
 
-        $count = 0;
-        foreach ($indicadores as $d) {
-            $metas = $d['metas'] ?? [];
-            unset($d['metas']);
-            Indicador::firstOrCreate(
-                [
-                    'pei_profile_id' => $perfilId,
-                    'codigo_letras'  => $d['codigo_letras'],
-                    'codigo_numeros' => $d['codigo_numeros'],
-                ],
-                array_merge($d, [
-                    'pei_profile_id' => $perfilId,
-                    'metas'          => $metas,
-                    'created_at'     => $ahora,
-                    'updated_at'     => $ahora,
-                ])
-            );
-            $count++;
+            $indicadores = $this->getIndicadores();
+
+            $count = 0;
+            foreach ($indicadores as $d) {
+                $metas = $d['metas'] ?? [];
+                unset($d['metas']);
+                Indicador::firstOrCreate(
+                    [
+                        'pei_profile_id' => $perfilId,
+                        'codigo_letras'  => $d['codigo_letras'],
+                        'codigo_numeros' => $d['codigo_numeros'],
+                    ],
+                    array_merge($d, [
+                        'pei_profile_id' => $perfilId,
+                        'metas'          => $metas,
+                        'created_at'     => $ahora,
+                        'updated_at'     => $ahora,
+                    ])
+                );
+                $count++;
+            }
+
+            $this->command->info("✅ {$count} indicadores IPS sembrados para {$perfilId}.");
+            $this->vincularIndicadores($perfilId);
         }
-
-        $this->command->info("✅ {$count} indicadores IPS 2023-2028 sembrados.");
-        $this->vincularIndicadores($perfilId);
     }
 
     private function vincularIndicadores(string $perfilId): void

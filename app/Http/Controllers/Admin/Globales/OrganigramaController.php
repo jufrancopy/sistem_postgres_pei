@@ -46,15 +46,18 @@ class OrganigramaController extends Controller
 
     public function getDependencies(Request $request)
     {
-        $data = [];
+        $query = Organigrama::select("id", "dependency")
+            ->whereNull('parent_id');
 
-        if ($request->has('q')) {
+        if ($request->filled('q')) {
             $search = $request->q;
-            $data = Organigrama::select("id", "dependency")
-                ->where('dependency', 'LIKE', "%$search%")
-                ->where('parent_id', null)
-                ->get();
+            $query->where(function($q) use ($search) {
+                $q->where('dependency', 'ILIKE', "%{$search}%")
+                  ->orWhere('dependency', 'LIKE', "%{$search}%");
+            });
         }
+
+        $data = $query->orderBy('dependency')->limit(50)->get();
         return response()->json($data);
     }
 
