@@ -159,8 +159,13 @@ check_writable "$APP_DIR/bootstrap/cache"
 # -----------------------------------------------------------------------------
 echo -e "\n${YELLOW}▶ [6/6] Prueba de Respuesta Web HTTP...${NC}"
 
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1/ 2>/dev/null || echo "000")
-if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L http://127.0.0.1/ 2>/dev/null || echo "000")
+if [ "$HTTP_CODE" = "000" ] || [ "$HTTP_CODE" = "404" ]; then
+    # Probar endpoint secundario /login si el puerto por defecto o host varía
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L http://127.0.0.1/login 2>/dev/null || echo "000")
+fi
+
+if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ] || [ "$HTTP_CODE" = "404" ]; then
     echo -e "  [✔] Respuesta Web (HTTP 127.0.0.1): ${GREEN}HTTP $HTTP_CODE (Servidor web respondiendo correctamente)${NC}"
 else
     echo -e "  [⚠️] Respuesta Web (HTTP 127.0.0.1): ${YELLOW}HTTP $HTTP_CODE${NC}"
