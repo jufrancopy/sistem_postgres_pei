@@ -64,12 +64,41 @@
             </div>
         </div>
 
-        <!-- Private Contact Bar (Visible in Private Tab) -->
-        <div id="privateContactBar" class="bg-warning text-dark p-2 text-xs d-flex align-items-center justify-content-between" style="display: none;">
-            <span class="font-weight-bold"><i class="fas fa-lock mr-1"></i> Chat privado con:</span>
-            <select id="privateUserSelect" class="form-control form-control-sm border-0 font-weight-bold text-dark" style="max-width: 65%; height: 26px; padding: 2px 6px; background: rgba(255,255,255,0.9); font-size:11px;">
-                <option value="">-- Seleccionar Integrante --</option>
-            </select>
+        <!-- Modern Contact Profile Header Card (Visible in Private Tab) -->
+        <div id="privateContactBar" class="p-3 border-bottom shadow-sm" style="display: none; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white;">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-xs font-weight-bold text-warning text-uppercase" style="letter-spacing:0.5px;">
+                    <i class="fas fa-user-lock mr-1"></i> Chat Privado Directo
+                </span>
+                <select id="privateUserSelect" class="form-control form-control-sm border-0 font-weight-bold" style="max-width: 55%; height: 26px; padding: 2px 8px; background: rgba(255,255,255,0.92); font-size:11px; border-radius: 12px; color: #0f172a;">
+                    <option value="">-- Elegir contacto --</option>
+                </select>
+            </div>
+
+            <!-- Profile Info Widget -->
+            <div id="contactProfileWidget" class="d-flex align-items-center mt-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); display: none !important;">
+                <div id="contactAvatarCircle" class="mr-2 d-flex align-items-center justify-content-center font-weight-bold text-white shadow-sm" style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); font-size: 15px; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0;">
+                    --
+                </div>
+                <div style="flex:1; min-width:0;" class="ml-2">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h6 id="contactNameHeading" class="mb-0 font-weight-bold text-white text-truncate" style="font-size: 13px;">
+                            Seleccionar Integrante
+                        </h6>
+                        <span id="contactPointsBadge" class="badge badge-warning text-dark font-weight-bold ml-1" style="font-size: 10px; border-radius: 10px; padding: 3px 7px;">
+                            ⭐ 0 pts
+                        </span>
+                    </div>
+                    <div class="d-flex align-items-center mt-1 text-white-50" style="font-size: 10.5px;">
+                        <span id="contactRoleText" class="text-truncate mr-2" style="max-width: 130px; color: #cbd5e1;">
+                            Integrante
+                        </span>
+                        <span id="contactLevelBadge" class="badge text-white font-weight-normal px-2 py-0" style="font-size: 9.5px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);">
+                            Aprendiz
+                        </span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Messages Container -->
@@ -308,6 +337,7 @@
                 activeRecipientId = this.value || null;
                 const opt = this.options[this.selectedIndex];
                 activeRecipientName = opt ? opt.text : null;
+                updateContactProfileWidget(activeRecipientId);
                 if (activeRecipientId) {
                     input.placeholder = `Escribir mensaje privado a ${activeRecipientName}...`;
                 } else {
@@ -315,6 +345,34 @@
                 }
                 renderFilteredMessages();
             });
+
+            function updateContactProfileWidget(userId) {
+                const widget = document.getElementById('contactProfileWidget');
+                if (!userId) {
+                    widget.style.setProperty('display', 'none', 'important');
+                    return;
+                }
+
+                const u = currentParticipants.find(p => p.id == userId);
+                if (!u) {
+                    const opt = privateUserSelect.options[privateUserSelect.selectedIndex];
+                    const name = opt ? opt.text : 'Usuario';
+                    document.getElementById('contactNameHeading').textContent = name;
+                    document.getElementById('contactAvatarCircle').textContent = name.substring(0, 2).toUpperCase();
+                    document.getElementById('contactRoleText').textContent = 'Integrante del Equipo';
+                    document.getElementById('contactPointsBadge').textContent = '⭐ 0 pts';
+                    document.getElementById('contactLevelBadge').textContent = 'Colaborador';
+                    widget.style.setProperty('display', 'flex', 'important');
+                    return;
+                }
+
+                document.getElementById('contactNameHeading').textContent = u.name;
+                document.getElementById('contactAvatarCircle').textContent = u.initials || u.name.substring(0, 2).toUpperCase();
+                document.getElementById('contactRoleText').textContent = u.role || 'Integrante';
+                document.getElementById('contactPointsBadge').textContent = `⭐ ${u.points || 0} pts`;
+                document.getElementById('contactLevelBadge').textContent = u.level_badge || u.level_name || 'Bronce I';
+                widget.style.setProperty('display', 'flex', 'important');
+            }
 
             function switchChannelMode(mode) {
                 currentChannelMode = mode;
@@ -335,7 +393,11 @@
                     tabChannelPrivate.classList.remove('text-white-50');
                     tabChannelPrivate.classList.add('text-warning', 'font-weight-bold');
 
-                    privateContactBar.style.display = 'flex';
+                    tabChannelGroup.style.borderBottom = 'none';
+                    tabChannelGroup.classList.remove('text-white', 'font-weight-bold');
+                    tabChannelGroup.classList.add('text-white-50');
+
+                    privateContactBar.style.display = 'block';
 
                     // Si no hay destinatario seleccionado, auto-seleccionar el último que envió un mensaje privado
                     if (!privateUserSelect.value && allLoadedMessages.length > 0) {
@@ -352,9 +414,11 @@
                         activeRecipientId = privateUserSelect.value;
                         const opt = privateUserSelect.options[privateUserSelect.selectedIndex];
                         activeRecipientName = opt ? opt.text : '';
+                        updateContactProfileWidget(activeRecipientId);
                         input.placeholder = `Escribir mensaje privado a ${activeRecipientName}...`;
                     } else {
                         activeRecipientId = null;
+                        updateContactProfileWidget(null);
                         input.placeholder = 'Selecciona un integrante para chatear en privado...';
                     }
                 }
@@ -544,19 +608,35 @@
                 const currVal = privateUserSelect.value;
                 let selectHtml = '<option value="">-- Seleccionar Integrante --</option>';
                 list.forEach(u => {
-                    selectHtml += `<option value="${u.id}" ${u.id == currVal ? 'selected' : ''}>${u.name}</option>`;
+                    selectHtml += `<option value="${u.id}" ${u.id == currVal ? 'selected' : ''}>${u.name} (${u.role || 'Integrante'})</option>`;
                 });
                 privateUserSelect.innerHTML = selectHtml;
 
-                let html = '<div class="text-muted text-xs mb-2 font-weight-bold">Integrantes del Grupo:</div>';
+                if (activeRecipientId) {
+                    updateContactProfileWidget(activeRecipientId);
+                }
+
+                let html = '<div class="text-muted text-xs mb-2 font-weight-bold">Integrantes del Equipo:</div>';
                 list.forEach(u => {
                     const isSel = activeRecipientId == u.id;
                     const escapedName = u.name.replace(/'/g, "\\'");
-                    html += `<div class="d-flex justify-content-between align-items-center mb-1 text-xs p-2 rounded border ${isSel ? 'bg-warning text-dark font-weight-bold border-warning' : 'bg-light'}" style="cursor:pointer;" onclick="setPrivateRecipient('${u.id}', '${escapedName}')">
-                                <span><i class="fas fa-user-circle ${isSel ? 'text-dark' : 'text-primary'} mr-1"></i> ${u.name}</span>
-                                <span class="badge ${isSel ? 'badge-dark' : 'badge-primary'}" style="font-size:9px;">
-                                    ${isSel ? 'Abierto' : 'Chat Privado'}
-                                </span>
+                    const initials = u.initials || u.name.substring(0, 2).toUpperCase();
+                    const points = u.points || 0;
+                    const role = u.role || 'Integrante';
+
+                    html += `<div class="d-flex align-items-center justify-content-between mb-1.5 p-2 rounded border ${isSel ? 'bg-warning text-dark font-weight-bold border-warning' : 'bg-white shadow-sm'}" style="cursor:pointer;" onclick="setPrivateRecipient('${u.id}', '${escapedName}')">
+                                <div class="d-flex align-items-center" style="min-width: 0;">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center mr-2 font-weight-bold text-white shadow-sm" style="width:32px; height:32px; font-size:11px; background: linear-gradient(135deg, #4f46e5, #7c3aed); flex-shrink: 0;">
+                                        ${initials}
+                                    </div>
+                                    <div style="min-width:0;">
+                                        <div class="font-weight-bold text-xs text-truncate" style="max-width:140px;">${u.name}</div>
+                                        <div class="text-muted text-truncate" style="font-size:9.5px; max-width:140px;">${role}</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="badge badge-warning text-dark font-weight-bold" style="font-size:9.5px; border-radius: 8px;">⭐ ${points} pts</span>
+                                </div>
                              </div>`;
                 });
                 participantsList.innerHTML = html;

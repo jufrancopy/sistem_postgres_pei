@@ -127,7 +127,7 @@ class PeiChatController extends Controller
         });
 
         // Get group participants info
-        $participants = [];
+        $participantsData = [];
         if ($peiProfile->group_id) {
             $group = Group::find($peiProfile->group_id);
             if ($group) {
@@ -136,7 +136,27 @@ class PeiChatController extends Controller
                     $q->select('user_id')->from('groups_has_members')->whereIn('group_id', $groupIds);
                 })
                 ->where('id', '!=', $user->id)
+                ->with('roles:id,name')
                 ->select('id', 'name', 'email')->get();
+
+                $gamificationService = app(\App\Services\GamificationService::class);
+                $participantsData = $participants->map(function ($u) use ($gamificationService, $peiProfileId) {
+                    $rolesStr = $u->roles ? $u->roles->pluck('name')->implode(', ') : '';
+                    if (!$rolesStr) $rolesStr = 'Integrante del Equipo';
+
+                    $points = $gamificationService->getUserTotalPoints($u, $peiProfileId);
+                    $summary = $gamificationService->getUserGamificationSummary($u, $peiProfileId);
+
+                    return [
+                        'id'          => $u->id,
+                        'name'        => $u->name,
+                        'initials'    => mb_substr($u->name, 0, 2),
+                        'role'        => $rolesStr,
+                        'points'      => $points,
+                        'level_badge' => $summary['level_badge'] ?? ('⭐ ' . $points . ' pts'),
+                        'level_name'  => $summary['level_name'] ?? 'Colaborador',
+                    ];
+                });
             }
         }
 
@@ -151,7 +171,7 @@ class PeiChatController extends Controller
 
         return response()->json([
             'messages' => $messages,
-            'participants' => $participants,
+            'participants' => $participantsData,
             'pei_name' => $peiProfile->name,
         ]);
     }
