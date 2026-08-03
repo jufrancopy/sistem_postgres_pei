@@ -20,8 +20,8 @@ class PeiChatController extends Controller
      */
     protected function checkUserAccess(PeiProfile $peiProfile, User $user): bool
     {
-        // Administradores y Analistas de cualquier tipo tienen acceso siempre
-        if ($user->hasAnyRole(['Administrador', 'Analista PEI', 'Analista de Planificación', 'Analista de Monitoreo PEI', 'Analista'])) {
+        // Administradores, Analistas, Gestores y Colaboradores de Actividades tienen acceso
+        if ($user->hasAnyRole(['Administrador', 'Analista PEI', 'Analista de Planificación', 'Analista de Monitoreo PEI', 'Analista', 'Gestor de Actividades', 'Colaborador de Actividades'])) {
             return true;
         }
 
