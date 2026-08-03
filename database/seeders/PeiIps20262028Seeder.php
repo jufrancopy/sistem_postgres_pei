@@ -16,12 +16,12 @@ class PeiIps20262028Seeder extends Seeder
     public function run(): void
     {
         $this->now = Carbon::now();
-        $this->command->info('── Iniciando construcción del PEI IPS 2026–2028 Reestructurado (ID: ' . $this->targetUuid . ')...');
+        $this->command->info('── Construyendo PEI IPS 2026–2028 (ID: ' . $this->targetUuid . ') con 6 Objetivos Estratégicos y rótulo MEF...');
 
         // Garantizar existencia de marcos referenciales
         $this->call(MarcoReferencialSeeder::class);
 
-        // 1. Crear o actualizar el perfil Master
+        // 1. Crear o actualizar el perfil Master con nivel_label MEF
         $master = PeiProfile::updateOrCreate(
             ['id' => $this->targetUuid],
             [
@@ -35,14 +35,14 @@ class PeiIps20262028Seeder extends Seeder
                 'values'       => '<p><strong>Solidaridad</strong> · <strong>Transparencia</strong> · <strong>Excelencia</strong> · <strong>Oportunidad</strong> · <strong>Calidez Humana</strong> · <strong>Eficiencia</strong></p>',
                 'nivel_label'  => json_encode([
                     'axi'    => 'Objetivo Estratégico',
-                    'goal'   => 'Meta Anual / Resultado',
+                    'goal'   => 'Objetivo Específico',
                     'action' => 'Acción Estratégica',
                 ]),
                 'group_id'     => 50,
             ]
         );
 
-        $this->command->info('   Master creado/actualizado: ' . $master->name);
+        $this->command->info('   Master creado/actualizado con nivel_label MEF: ' . $master->name);
 
         // 2. Limpiar descendientes anteriores para permitir recarga limpia
         $existingChildren = PeiProfile::where('parent_id', $master->id)->pluck('id');
@@ -59,181 +59,202 @@ class PeiIps20262028Seeder extends Seeder
         $marcoOdsTrabajo= DB::table('planificacion.marcos_referenciales')->where('nombre', 'like', '%ODS 8%')->value('id');
         $marcoOdsInst   = DB::table('planificacion.marcos_referenciales')->where('nombre', 'like', '%ODS 16%')->value('id');
 
-        // ── OE 1 (Misional 1 - Salud) ──────────────────────────────────────────────────────────
+        // ── OE 1 (Misional - Salud Preventiva y Asistencial) ──────────────────────────────────
         $oe1 = PeiProfile::create([
             'id'                  => (string) Str::uuid(),
             'parent_id'           => $master->id,
-            'name'                => 'OE 1. Servicios de Salud Misionales: Cobertura Universal, Oportunidad y Calidez Asistencial',
+            'name'                => 'OE 1. Estructurar y fortalecer la Red Integrada e Integral de Servicios de Salud (RIISS) con enfoque preventivo',
             'level'               => 'axi',
             'order_item'          => 1,
             'bsc_perspectiva'     => 'clientes',
-            'resultado_intermedio'=> 'Atención médica integral en la Red de Salud con tiempo de espera reducido y 98% de disponibilidad continua en medicamentos esenciales.',
-            'ri_recursos_gs'      => 450000000000,
+            'resultado_intermedio'=> 'Atención médica preventiva e integral por líneas de cuidado con enfoque por ciclo de vida.',
+            'ri_recursos_gs'      => 400000000000,
             'ri_programa'         => 'Programa 1: Prestaciones Sanitarias y Salud Integral IPS',
         ]);
+        if ($marcoPndSalud) DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe1->id, 'marco_id' => $marcoPndSalud]);
+        if ($marcoOdsSalud) DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe1->id, 'marco_id' => $marcoOdsSalud]);
 
-        if ($marcoPndSalud)   DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe1->id, 'marco_id' => $marcoPndSalud]);
-        if ($marcoOdsSalud)   DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe1->id, 'marco_id' => $marcoOdsSalud]);
-
-        // Meta 1.1
         $m11 = PeiProfile::create([
             'id'          => (string) Str::uuid(),
             'parent_id'   => $oe1->id,
-            'name'        => 'Meta 1.1 - Reducción del tiempo de espera en citas médicas y cirugías programadas a menos de 15 días.',
+            'name'        => 'Objetivo Específico 1.1 - Garantizar el acceso oportuno y la promoción de la salud por líneas de cuidado prioritarias.',
             'level'       => 'goal',
             'order_item'  => 1,
         ]);
         PeiProfile::create([
             'id'          => (string) Str::uuid(),
             'parent_id'   => $m11->id,
-            'name'        => 'Implementación del Expediente Clínico Electrónico e Historia Clínica Unificada en la Red Asistencial Nacional.',
+            'name'        => 'Implementación de programas de atención primaria y promoción de la salud por ciclo de vida.',
             'level'       => 'action',
             'order_item'  => 1,
-            'indicator'   => 'Porcentaje de establecimientos de salud con expediente clínico electrónico activo',
-            'baseline'    => '45%',
-            'target'      => '100%',
-        ]);
-        PeiProfile::create([
-            'id'          => (string) Str::uuid(),
-            'parent_id'   => $m11->id,
-            'name'        => 'Optimización del sistema de agendamiento omnicanal (App Mi IPS, Call Center y Kioscos Digitales).',
-            'level'       => 'action',
-            'order_item'  => 2,
-            'indicator'   => 'Tiempo promedio de confirmación de cita médica por usuario',
-            'baseline'    => '45 minutos',
-            'target'      => '< 5 minutos',
+            'indicator'   => 'Porcentaje de cobertura en programas preventivos de salud',
+            'baseline'    => '40%',
+            'target'      => '85%',
         ]);
 
-        // Meta 1.2
-        $m12 = PeiProfile::create([
-            'id'          => (string) Str::uuid(),
-            'parent_id'   => $oe1->id,
-            'name'        => 'Meta 1.2 - Garantía del 98% de disponibilidad continua en el stock de medicamentos e insumos médicos esenciales.',
-            'level'       => 'goal',
-            'order_item'  => 2,
-        ]);
-        PeiProfile::create([
-            'id'          => (string) Str::uuid(),
-            'parent_id'   => $m12->id,
-            'name'        => 'Automatización de inventarios e Inteligencia Logística en el Parque Central y Farmacias del IPS.',
-            'level'       => 'action',
-            'order_item'  => 1,
-            'indicator'   => 'Nivel de abastecimiento de medicamentos del Cuadro Básico Institucional',
-            'baseline'    => '78%',
-            'target'      => '98%',
-        ]);
-
-        // ── OE 2 (Misional 2 - Previsión Social) ───────────────────────────────────────────────
+        // ── OE 2 (Misional - Sostenibilidad del Sistema Sanitarias) ───────────────────────────
         $oe2 = PeiProfile::create([
             'id'                  => (string) Str::uuid(),
             'parent_id'           => $master->id,
-            'name'                => 'OE 2. Previsión Social Misional: Protección Social y Sostenibilidad Financiera del Fondo de Jubilaciones',
+            'name'                => 'OE 2. Garantizar la calidad, oportunidad y sostenibilidad de los servicios de salud y medicamentos',
             'level'               => 'axi',
             'order_item'          => 2,
-            'bsc_perspectiva'     => 'financiera',
-            'resultado_intermedio'=> 'Sostenibilidad financiera del sistema previsional con crecimiento del 10% en cotizantes formales y liquidez de reserva asegurada.',
-            'ri_recursos_gs'      => 320000000000,
-            'ri_programa'         => 'Programa 2: Prestaciones Económicas y Fondo de Pensiones IPS',
+            'bsc_perspectiva'     => 'procesos',
+            'resultado_intermedio'=> 'Disponibilidad del 98% en stock de medicamentos esenciales y reducción del tiempo de espera asistencial.',
+            'ri_recursos_gs'      => 350000000000,
+            'ri_programa'         => 'Programa 1: Prestaciones Sanitarias e Insumos Médicos',
         ]);
+        if ($marcoPndSalud) DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe2->id, 'marco_id' => $marcoPndSalud]);
 
-        if ($marcoPndPens)    DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe2->id, 'marco_id' => $marcoPndPens]);
-        if ($marcoOdsTrabajo) DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe2->id, 'marco_id' => $marcoOdsTrabajo]);
-
-        // Meta 2.1
         $m21 = PeiProfile::create([
             'id'          => (string) Str::uuid(),
             'parent_id'   => $oe2->id,
-            'name'        => 'Meta 2.1 - Sostenibilidad actuarial y financiera del Fondo de Reserva de Jubilaciones y Pensiones.',
+            'name'        => 'Objetivo Específico 2.1 - Asegurar la logística eficiente y el stock continuo de medicamentos del Cuadro Básico.',
             'level'       => 'goal',
             'order_item'  => 1,
         ]);
         PeiProfile::create([
             'id'          => (string) Str::uuid(),
             'parent_id'   => $m21->id,
-            'name'        => 'Estrategia de inversión financiera rentabilizada en instrumentos seguros con rendimiento real superior a la inflación.',
+            'name'        => 'Automatización e inteligencia de inventarios en el Parque Logístico Central y farmacias de la Red.',
             'level'       => 'action',
             'order_item'  => 1,
-            'indicator'   => 'Rentabilidad real anual de las inversiones del Fondo de Reserva',
-            'baseline'    => '4.2%',
-            'target'      => '6.5%',
+            'indicator'   => 'Disponibilidad continua de medicamentos esenciales en farmacias',
+            'baseline'    => '78%',
+            'target'      => '98%',
         ]);
 
-        // Meta 2.2
-        $m22 = PeiProfile::create([
-            'id'          => (string) Str::uuid(),
-            'parent_id'   => $oe2->id,
-            'name'        => 'Meta 2.2 - Ampliación de la cobertura contributiva y reducción de la mora patronal.',
-            'level'       => 'goal',
-            'order_item'  => 2,
-        ]);
-        PeiProfile::create([
-            'id'          => (string) Str::uuid(),
-            'parent_id'   => $m22->id,
-            'name'        => 'Fiscalización integrada contra la evasión patronal y digitalización del trámite de jubilación en < 30 días.',
-            'level'       => 'action',
-            'order_item'  => 1,
-            'indicator'   => 'Tiempo promedio de resolución y concesión de beneficios jubilatorios',
-            'baseline'    => '90 días',
-            'target'      => '< 30 días',
-        ]);
-
-        // ── OE 3 (Fortalecimiento Institucional) ──────────────────────────────────────────────
+        // ── OE 3 (Misional - Previsión Social & Jubilaciones) ──────────────────────────────────
         $oe3 = PeiProfile::create([
             'id'                  => (string) Str::uuid(),
             'parent_id'           => $master->id,
-            'name'                => 'OE 3. Fortalecimiento Institucional: Gobernanza Transparente, Transformación Digital y Talento Humano',
+            'name'                => 'OE 3. Garantizar la sostenibilidad del Fondo de Reserva de Jubilaciones y la oportunidad en prestaciones económicas',
             'level'               => 'axi',
             'order_item'          => 3,
-            'bsc_perspectiva'     => 'aprendizaje',
-            'resultado_intermedio'=> 'Transformación digital del 100% de trámites internos, certificación MECIP e índice de satisfacción del personal > 85%.',
-            'ri_recursos_gs'      => 180000000000,
-            'ri_programa'         => 'Programa 3: Gestión Administrativa y Transformación Institucional',
+            'bsc_perspectiva'     => 'financiera',
+            'resultado_intermedio'=> 'Rendimiento real positivo en inversiones previsionales y liquidación de jubilaciones en menos de 30 días.',
+            'ri_recursos_gs'      => 300000000000,
+            'ri_programa'         => 'Programa 2: Prestaciones Económicas y Pensiones IPS',
         ]);
+        if ($marcoPndPens)    DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe3->id, 'marco_id' => $marcoPndPens]);
+        if ($marcoOdsTrabajo) DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe3->id, 'marco_id' => $marcoOdsTrabajo]);
 
-        if ($marcoPndGob)  DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe3->id, 'marco_id' => $marcoPndGob]);
-        if ($marcoOdsInst) DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe3->id, 'marco_id' => $marcoOdsInst]);
-
-        // Meta 3.1
         $m31 = PeiProfile::create([
             'id'          => (string) Str::uuid(),
             'parent_id'   => $oe3->id,
-            'name'        => 'Meta 3.1 - Digitalización del 100% de trámites administrativos e implementación del modelo MECIP.',
+            'name'        => 'Objetivo Específico 3.1 - Optimizar la rentabilidad de las reservas financieras e inmobiliarias y digitalizar trámites jubilatorios.',
             'level'       => 'goal',
             'order_item'  => 1,
         ]);
         PeiProfile::create([
             'id'          => (string) Str::uuid(),
             'parent_id'   => $m31->id,
-            'name'        => 'Implementación del Portal Institucional de Transparencia, Rendición de Cuentas y Datos Abiertos.',
+            'name'        => 'Plataforma digital de concesión y liquidación automática de haberes previsionales.',
             'level'       => 'action',
             'order_item'  => 1,
-            'indicator'   => 'Calificación del Índice de Transparencia Institucional (Portal de la Función Pública)',
-            'baseline'    => '82/100',
-            'target'      => '100/100',
+            'indicator'   => 'Tiempo promedio de resolución de trámites de jubilación',
+            'baseline'    => '90 días',
+            'target'      => '< 30 días',
         ]);
 
-        // Meta 3.2
-        $m32 = PeiProfile::create([
+        // ── OE 4 (Misional - Cobertura Contributiva) ──────────────────────────────────────────
+        $oe4 = PeiProfile::create([
+            'id'                  => (string) Str::uuid(),
+            'parent_id'           => $master->id,
+            'name'                => 'OE 4. Ampliar la cobertura contributiva formal y fortalecer el control de la mora patronal',
+            'level'               => 'axi',
+            'order_item'          => 4,
+            'bsc_perspectiva'     => 'financiera',
+            'resultado_intermedio'=> 'Incremento del 10% en cotizantes formales y recuperación eficiente de la cartera morosa.',
+            'ri_recursos_gs'      => 120000000000,
+            'ri_programa'         => 'Programa 2: Fiscalización y Cobranzas Previsionales',
+        ]);
+
+        $m41 = PeiProfile::create([
             'id'          => (string) Str::uuid(),
-            'parent_id'   => $oe3->id,
-            'name'        => 'Meta 3.2 - Desarrollo del talento humano institucional y capacitación asistencial continua.',
+            'parent_id'   => $oe4->id,
+            'name'        => 'Objetivo Específico 4.1 - Intensificar la fiscalización de patronales en mora y promover la bancarización.',
             'level'       => 'goal',
-            'order_item'  => 2,
+            'order_item'  => 1,
         ]);
         PeiProfile::create([
             'id'          => (string) Str::uuid(),
-            'parent_id'   => $m32->id,
-            'name'        => 'Plan de Carrera, Evaluación del Desempeño y Capacitación Continua para Servidores del IPS.',
+            'parent_id'   => $m41->id,
+            'name'        => 'Plan de auditoría integrada contra la evasión patronal y cobranza digital.',
             'level'       => 'action',
             'order_item'  => 1,
-            'indicator'   => 'Porcentaje del personal capacitado y evaluado en estándares de calidad asistencial y ética',
-            'baseline'    => '35%',
-            'target'      => '90%',
+            'indicator'   => 'Porcentaje de recuperación de morosidad contributiva',
+            'baseline'    => '45%',
+            'target'      => '80%',
+        ]);
+
+        // ── OE 5 (Fortalecimiento - Salud Digital & Transformación) ───────────────────────────
+        $oe5 = PeiProfile::create([
+            'id'                  => (string) Str::uuid(),
+            'parent_id'           => $master->id,
+            'name'                => 'OE 5. Innovar en tecnologías de la información, ciberseguridad y Salud Digital en las RIISS',
+            'level'               => 'axi',
+            'order_item'          => 5,
+            'bsc_perspectiva'     => 'aprendizaje',
+            'resultado_intermedio'=> 'Digitalización del 100% de trámites asistenciales y agendamiento omnicanal accesible.',
+            'ri_recursos_gs'      => 150000000000,
+            'ri_programa'         => 'Programa 3: Transformación Digital e Innovación Tecnológica',
+        ]);
+
+        $m51 = PeiProfile::create([
+            'id'          => (string) Str::uuid(),
+            'parent_id'   => $oe5->id,
+            'name'        => 'Objetivo Específico 5.1 - Desplegar el Expediente Electrónico y agendamiento multicanal en toda la Red.',
+            'level'       => 'goal',
+            'order_item'  => 1,
+        ]);
+        PeiProfile::create([
+            'id'          => (string) Str::uuid(),
+            'parent_id'   => $m51->id,
+            'name'        => 'Optimización del sistema de agendamiento omnicanal (App Mi IPS, Call Center, Web).',
+            'level'       => 'action',
+            'order_item'  => 1,
+            'indicator'   => 'Tiempo promedio de agendamiento de citas médicas',
+            'baseline'    => '45 min',
+            'target'      => '< 5 min',
+        ]);
+
+        // ── OE 6 (Fortalecimiento - Gobernanza MECIP & Talento Humano) ────────────────────────
+        $oe6 = PeiProfile::create([
+            'id'                  => (string) Str::uuid(),
+            'parent_id'           => $master->id,
+            'name'                => 'OE 6. Fortalecer la gobernanza transparente, el modelo MECIP y el desarrollo integral del talento humano',
+            'level'               => 'axi',
+            'order_item'          => 6,
+            'bsc_perspectiva'     => 'aprendizaje',
+            'resultado_intermedio'=> 'Certificación MECIP, índice de transparencia 100/100 y capacitación asistencial continua.',
+            'ri_recursos_gs'      => 130000000000,
+            'ri_programa'         => 'Programa 3: Gestión Institucional y Desarrollo del Talento Humano',
+        ]);
+        if ($marcoPndGob)  DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe6->id, 'marco_id' => $marcoPndGob]);
+        if ($marcoOdsInst) DB::table('planificacion.pei_profile_marcos')->insert(['pei_profile_id' => $oe6->id, 'marco_id' => $marcoOdsInst]);
+
+        $m61 = PeiProfile::create([
+            'id'          => (string) Str::uuid(),
+            'parent_id'   => $oe6->id,
+            'name'        => 'Objetivo Específico 6.1 - Institucionalizar el control interno MECIP y capacitar al personal sanitario y administrativo.',
+            'level'       => 'goal',
+            'order_item'  => 1,
+        ]);
+        PeiProfile::create([
+            'id'          => (string) Str::uuid(),
+            'parent_id'   => $m61->id,
+            'name'        => 'Portal Abierto de Transparencia, Rendición de Cuentas y Datos Abiertos al Asegurado.',
+            'level'       => 'action',
+            'order_item'  => 1,
+            'indicator'   => 'Calificación del Índice de Transparencia Institucional',
+            'baseline'    => '82/100',
+            'target'      => '100/100',
         ]);
 
         // 3. Reconstruir la jerarquía interna de la gema NestedSet
         PeiProfile::fixTree();
 
-        $this->command->info('✅ PEI IPS 2026–2028 (ID: ' . $this->targetUuid . ') reconstruido exitosamente con 3 Objetivos Estratégicos.');
+        $this->command->info('✅ PEI IPS 2026–2028 (ID: ' . $this->targetUuid . ') reconstruido exitosamente con 6 Objetivos Estratégicos y rótulo MEF.');
     }
 }
