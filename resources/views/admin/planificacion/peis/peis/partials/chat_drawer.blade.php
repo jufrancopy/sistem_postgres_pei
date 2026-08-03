@@ -283,7 +283,7 @@
 
             // Fetch messages from server
             function fetchMessages(isPolling = false) {
-                let url = `/admin/planificacion/pei-profiles/${peiProfileId}/chat/messages`;
+                let url = `{{ url('pei-profiles') }}/${peiProfileId}/chat/messages`;
                 if (isPolling && lastMessageTime) {
                     url += `?since=${encodeURIComponent(lastMessageTime)}`;
                 }
@@ -389,7 +389,7 @@
                 const sendBtn = document.getElementById('sendPeiChatBtn');
                 sendBtn.disabled = true;
 
-                fetch(`/admin/planificacion/pei-profiles/${peiProfileId}/chat/messages`, {
+                fetch(`{{ url('pei-profiles') }}/${peiProfileId}/chat/messages`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -400,24 +400,31 @@
                 .then(res => res.json())
                 .then(data => {
                     sendBtn.disabled = false;
-                    if (data.success && data.message) {
-                        input.value = '';
-                        fileInput.value = '';
-                        document.getElementById('peiChatAttachmentPreview').style.display = 'none';
+                    input.value = '';
+                    fileInput.value = '';
+                    currentReplyId = null;
+                    cancelReply();
+                    if (data.message) {
                         renderMessage(data.message);
-                        scrollToBottom();
                         lastMessageTime = data.message.created_at;
+                        scrollToBottom();
                     }
                 })
                 .catch(err => {
                     sendBtn.disabled = false;
-                    console.error('Error sending message:', err);
+                    console.error('Error enviando mensaje:', err);
                 });
             });
 
-            // Unread count check
-            function checkUnread() {
-                fetch(`/admin/planificacion/pei-profiles/${peiProfileId}/chat/unread`)
+            // Initial load
+            fetchMessages();
+
+            // Poll every 4s
+            setInterval(() => fetchMessages(true), 4000);
+
+            // Unread badge poll
+            function updateUnreadBadge() {
+                fetch(`{{ url('pei-profiles') }}/${peiProfileId}/chat/unread`)
                     .then(res => res.json())
                     .then(data => {
                         if (data.unread > 0) {
