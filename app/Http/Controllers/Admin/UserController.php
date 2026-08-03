@@ -18,7 +18,7 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth', 'role:Administrador'])->except(['getUsers', 'getUser', 'getUsersForGroup']);
+        $this->middleware(['auth', 'role:Administrador|Coordinador de Planificación'])->except(['getUsers', 'getUser', 'getUsersForGroup']);
     }
 
     public function index(Request $request)
@@ -31,7 +31,9 @@ class UserController extends Controller
 
                     $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editUser"><i class="far fa-edit"></i></a>';
 
-                    $btn = $btn . ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteUser"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+                    if (auth()->user()->hasRole('Administrador')) {
+                        $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteUser"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+                    }
 
                     return $btn;
                 })
@@ -201,6 +203,10 @@ class UserController extends Controller
 
     public function destroy(Request $request, $id)
     {
+        if (!auth()->user()->hasRole('Administrador')) {
+            return response()->json(['error' => 'Solo el Administrador puede eliminar usuarios.'], 403);
+        }
+
         $user = User::find($id)->delete();
 
         return response()->json([$user]);

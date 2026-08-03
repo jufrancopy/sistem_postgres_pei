@@ -3,34 +3,33 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Carbon\Carbon;
-
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
-use Illuminate\Support\Facades\DB;
-
-
 class RolesTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
     {
-        $adminRole = Role::firstOrCreate([
-            'name' => 'Administrador',
-            'guard_name' => 'web',
-        ]);
+        $roles = [
+            'Administrador',
+            'Coordinador de Planificación',
+            'Analista de Planificación',
+            'Analista',
+            'Gestor de Actividades',
+            'Colaborador de Actividades',
+            'Analista de Monitoreo PEI',
+            'Analista - RIISS',
+            'Participantes',
+        ];
 
-        $analistaRole = Role::firstOrCreate([
-            'name' => 'Analista RIISS',
-            'guard_name' => 'web',
-        ]);
+        foreach ($roles as $r) {
+            Role::firstOrCreate(['name' => $r, 'guard_name' => 'web']);
+        }
 
-        $permissions = Permission::all();
-        $adminRole->syncPermissions($permissions);
+        $adminRole = Role::where('name', 'Administrador')->first();
+        if ($adminRole) {
+            $permissions = Permission::all();
+            $adminRole->syncPermissions($permissions);
+        }
     }
 }

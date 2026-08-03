@@ -126,6 +126,29 @@
             </div>
         </div>
 
+        {{-- Rol Intermedio: Coordinador de Planificación --}}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="role-card" style="border-top: 4px solid #3b82f6;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge badge-primary px-3 py-1 font-weight-bold" style="border-radius: 8px;">⭐ ROL INTERMEDIO</span>
+                    <span class="badge-no-delete"><i class="fa fa-ban mr-1"></i> NO Elimina</span>
+                </div>
+                <h4 class="font-weight-bold text-dark mb-2">Coordinador de Planificación</h4>
+                <p class="text-muted small mb-3">Administrador delegado para la gestión de usuarios, roles y asignación a planes y tareas.</p>
+                <div class="bg-light p-3 rounded mb-3">
+                    <div class="font-weight-bold text-dark mb-1 small"><i class="fa fa-check-circle text-success mr-1"></i> Capacidades Principales:</div>
+                    <ul class="pl-3 mb-0 small text-secondary">
+                        <li>Crear y editar nuevos usuarios en el sistema.</li>
+                        <li>Asignar roles y permisos a los funcionarios.</li>
+                        <li>Asociar analistas a PEIs y asignar colaboradores a tareas.</li>
+                        <li><strong class="text-danger">NO PUEDE ELIMINAR</strong> usuarios ni perfiles de PEI.</li>
+                    </ul>
+                </div>
+                <div class="text-xs text-uppercase font-weight-bold text-muted">¿Cuándo asignar?</div>
+                <div class="small font-weight-bold text-dark">A coordinadores que deben gestionar su equipo sin otorgarles permisos de borrado.</div>
+            </div>
+        </div>
+
         {{-- Rol 2: Analista de Planificación --}}
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="role-card">
