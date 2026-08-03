@@ -195,6 +195,10 @@ class IndicadorController extends Controller
     // DELETE /pei-profiles/{profileId}/indicadores/{id}
     public function destroy(string $profileId, int $id)
     {
+        if (!auth()->user()->hasRole('Administrador')) {
+            return response()->json(['error' => 'Solo el Administrador tiene permisos para eliminar indicadores.'], 403);
+        }
+
         $indicador = Indicador::where('pei_profile_id', $profileId)->findOrFail($id);
         $indicador->delete();
         return response()->json(['ok' => true]);

@@ -93,10 +93,12 @@
                        title="Agregar {{ $niveles['goal'] ?? 'Meta' }}">
                         <i class="fa fa-plus" style="font-size:.75rem"></i>
                     </a>
+                    @role('Administrador')
                     <a class="btn btn-sm btn-danger py-0 px-2 deleteItem" data-id="{{ $axi->id }}"
                        href="javascript:void(0)" id="deleteProfile" title="Eliminar">
                         <i class="fa fa-trash" style="font-size:.75rem"></i>
                     </a>
+                    @endrole
                 </div>
                 {{-- Resultado Intermedio Institucional --}}
                 @if($axi->resultado_intermedio)
@@ -212,11 +214,13 @@
                                    title="Agregar {{ $niveles['action'] ?? 'Acción' }}">
                                     <i class="fa fa-plus" style="font-size:.7rem"></i>
                                 </a>
-                                <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
-                                   data-id="{{ $goal->id }}" href="javascript:void(0)"
-                                   id="deleteProfile" title="Eliminar">
-                                    <i class="fa fa-trash" style="font-size:.7rem"></i>
-                                </a>
+                                 @role('Administrador')
+                                 <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
+                                    data-id="{{ $goal->id }}" href="javascript:void(0)"
+                                    id="deleteProfile" title="Eliminar">
+                                     <i class="fa fa-trash" style="font-size:.7rem"></i>
+                                 </a>
+                                 @endrole
                             </div>
                         </div>{{-- /card-header meta --}}
 

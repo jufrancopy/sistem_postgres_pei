@@ -115,11 +115,13 @@
                                     data-id="{{ $ind->id }}" title="Editar">
                                 <i class="fa fa-edit" style="font-size:.72rem"></i>
                             </button>
+                            @role('Administrador')
                             <button class="btn btn-sm btn-outline-danger py-0 px-2 btnEliminarIndicador"
                                     data-id="{{ $ind->id }}"
                                     data-nombre="{{ $ind->nombre }}" title="Eliminar">
                                 <i class="fa fa-trash" style="font-size:.72rem"></i>
                             </button>
+                            @endrole
                         </td>
                     </tr>
                     @endforeach
