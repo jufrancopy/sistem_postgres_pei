@@ -356,7 +356,7 @@
                 const u = currentParticipants.find(p => p.id == userId);
                 if (!u) {
                     const opt = privateUserSelect.options[privateUserSelect.selectedIndex];
-                    const name = opt ? opt.text : 'Usuario';
+                    const name = (opt && opt.value) ? opt.text.split('(')[0].trim() : 'Usuario';
                     document.getElementById('contactNameHeading').textContent = name;
                     document.getElementById('contactAvatarCircle').textContent = name.substring(0, 2).toUpperCase();
                     document.getElementById('contactRoleText').textContent = 'Integrante del Equipo';
@@ -387,6 +387,8 @@
 
                     privateContactBar.style.display = 'none';
                     activeRecipientId = null;
+                    activeRecipientName = null;
+                    privateUserSelect.value = '';
                     input.placeholder = 'Escribir mensaje al grupo...';
                 } else {
                     tabChannelPrivate.style.borderBottom = '3px solid #ffc107';
@@ -399,25 +401,29 @@
 
                     privateContactBar.style.display = 'block';
 
-                    // Si no hay destinatario seleccionado, auto-seleccionar el último que envió un mensaje privado
-                    if (!privateUserSelect.value && allLoadedMessages.length > 0) {
+                    // Si hay un destinatario activo, asegurar la selección en el dropdown
+                    if (activeRecipientId) {
+                        privateUserSelect.value = String(activeRecipientId);
+                    } else if (privateUserSelect.value) {
+                        activeRecipientId = privateUserSelect.value;
+                    } else if (allLoadedMessages.length > 0) {
+                        // Auto-seleccionar el último contacto de mensaje privado si no hay selección
                         const lastPrivateMsg = allLoadedMessages.slice().reverse().find(m => m.is_private);
                         if (lastPrivateMsg) {
                             const targetId = lastPrivateMsg.is_mine ? lastPrivateMsg.recipient_id : lastPrivateMsg.user_id;
                             if (targetId) {
-                                privateUserSelect.value = targetId;
+                                activeRecipientId = String(targetId);
+                                privateUserSelect.value = activeRecipientId;
                             }
                         }
                     }
 
-                    if (privateUserSelect.value) {
-                        activeRecipientId = privateUserSelect.value;
+                    if (activeRecipientId) {
                         const opt = privateUserSelect.options[privateUserSelect.selectedIndex];
-                        activeRecipientName = opt ? opt.text : '';
+                        activeRecipientName = opt ? opt.text.split('(')[0].trim() : 'Usuario';
                         updateContactProfileWidget(activeRecipientId);
                         input.placeholder = `Escribir mensaje privado a ${activeRecipientName}...`;
                     } else {
-                        activeRecipientId = null;
                         updateContactProfileWidget(null);
                         input.placeholder = 'Selecciona un integrante para chatear en privado...';
                     }
@@ -426,10 +432,13 @@
             }
 
             window.setPrivateRecipient = function(id, name) {
-                privateUserSelect.value = id;
-                activeRecipientId = id;
+                activeRecipientId = String(id);
                 activeRecipientName = name;
                 participantsPanel.style.display = 'none';
+                
+                // Asegurar valor en dropdown
+                privateUserSelect.value = activeRecipientId;
+                
                 switchChannelMode('private');
             };
 
