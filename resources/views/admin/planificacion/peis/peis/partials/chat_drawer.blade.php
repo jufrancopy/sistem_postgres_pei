@@ -110,28 +110,31 @@
         <div id="peiChatCelebrationArea" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 1090; overflow:hidden;"></div>
 
         <!-- Point Donation Popover Panel -->
-        <div id="peiDonatePopover" class="shadow-lg border rounded p-3 bg-white" style="display: none; position: absolute; top: 120px; left: 15px; right: 15px; z-index: 1085; background: #ffffff;">
+        <div id="peiDonatePopover" class="shadow-lg border rounded-lg p-3" style="display: none; position: absolute; top: 110px; left: 12px; right: 12px; z-index: 1085; background: #ffffff; border-radius: 16px !important; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.22) !important; border: 1px solid #e2e8f0;">
             <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
                 <span class="font-weight-bold text-dark text-xs"><i class="fas fa-gift text-warning mr-1"></i> Regalar Puntos de Reputación</span>
-                <button type="button" class="btn btn-xs text-secondary" id="btnCloseDonatePopover"><i class="fas fa-times"></i></button>
+                <button type="button" class="btn btn-sm text-secondary p-0 d-flex align-items-center justify-content-center" id="btnCloseDonatePopover" style="width: 26px; height: 26px; border-radius: 50%; background: #f1f5f9; border: none;"><i class="fas fa-times" style="font-size: 12px;"></i></button>
             </div>
-            <p class="text-muted text-xs mb-2">Selecciona la cantidad de puntos que deseas descontar de tu saldo para transferir a <strong id="donateRecipientLabel" class="text-dark"></strong>:</p>
-            <div class="d-flex justify-content-around mb-3">
-                <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold btn-donate-amount" data-amount="5">⭐ 5 pts</button>
-                <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold btn-donate-amount" data-amount="10">⭐ 10 pts</button>
-                <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold btn-donate-amount" data-amount="25">⭐ 25 pts</button>
-                <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold btn-donate-amount" data-amount="50">⭐ 50 pts</button>
+            <p class="text-muted text-xs mb-2">Selecciona la cantidad de puntos a transferir a <strong id="donateRecipientLabel" class="text-dark"></strong>:</p>
+            
+            <!-- Grid 2x2 para mobile sin desbordamiento -->
+            <div class="mb-3" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold btn-donate-amount py-2 text-truncate" data-amount="5" style="border-radius: 10px; border-width: 1.5px; font-size: 11px;">⭐ 5 PTS</button>
+                <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold btn-donate-amount py-2 text-truncate" data-amount="10" style="border-radius: 10px; border-width: 1.5px; font-size: 11px;">⭐ 10 PTS</button>
+                <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold btn-donate-amount py-2 text-truncate" data-amount="25" style="border-radius: 10px; border-width: 1.5px; font-size: 11px;">⭐ 25 PTS</button>
+                <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold btn-donate-amount py-2 text-truncate" data-amount="50" style="border-radius: 10px; border-width: 1.5px; font-size: 11px;">⭐ 50 PTS</button>
             </div>
+
             <div class="form-group mb-2">
-                <input type="number" id="customDonateInput" class="form-control form-control-sm text-center font-weight-bold text-dark" placeholder="O escribe otra cantidad (ej. 15)" min="1" max="500">
+                <input type="number" id="customDonateInput" class="form-control form-control-sm text-center font-weight-bold text-dark rounded-pill" placeholder="O escribe otra cantidad (ej. 15)" min="1" max="500" style="background: #f8fafc; border: 1px solid #cbd5e1;">
             </div>
-            <button type="button" class="btn btn-warning btn-block btn-sm font-weight-bold text-dark shadow-sm" id="btnSubmitDonate">
+            <button type="button" class="btn btn-warning btn-block btn-sm font-weight-bold text-dark shadow-sm rounded-pill py-2" id="btnSubmitDonate" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: #fff !important;">
                 <i class="fas fa-paper-plane mr-1"></i> Confirmar Donación
             </button>
         </div>
 
         <!-- Emoji Picker Panel -->
-        <div id="peiEmojiPicker" class="shadow-lg border rounded p-2 bg-white" style="display: none; position: absolute; bottom: 65px; left: 15px; right: 15px; z-index: 1080; max-height: 180px; overflow-y: auto;">
+        <div id="peiEmojiPicker" class="shadow-lg border rounded-lg p-2 bg-white" style="display: none; position: absolute; bottom: 65px; left: 12px; right: 12px; z-index: 1080; max-height: 180px; overflow-y: auto; border-radius: 14px !important; box-shadow: 0 15px 30px rgba(0,0,0,0.15) !important;">
             <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom">
                 <span class="text-xs font-weight-bold text-secondary">Emoticones Rápidos</span>
                 <button type="button" class="btn btn-xs text-muted p-0" id="btnCloseEmojiPicker"><i class="fas fa-times"></i></button>
@@ -192,22 +195,22 @@
         </div>
 
         <!-- Input Footer -->
-        <div class="pei-chat-footer">
+        <div class="pei-chat-footer" style="background: #ffffff; padding: 10px 14px; border-top: 1px solid #e2e8f0;">
             <form id="peiChatForm" class="d-flex align-items-center" enctype="multipart/form-data">
-                <label for="peiChatFileInput" class="btn btn-light btn-circle btn-sm mb-0 mr-1 text-secondary" title="Adjuntar Archivo">
-                    <i class="fas fa-paperclip"></i>
+                <label for="peiChatFileInput" class="btn btn-sm mb-0 mr-1 text-slate d-flex align-items-center justify-content-center" title="Adjuntar Archivo" style="width: 36px; height: 36px; border-radius: 50%; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; cursor: pointer; transition: all 0.2s ease;">
+                    <i class="fas fa-paperclip" style="font-size: 14px;"></i>
                     <input type="file" id="peiChatFileInput" multiple hidden>
                 </label>
 
-                <button type="button" class="btn btn-light btn-circle btn-sm mb-0 mr-2 text-warning" id="btnToggleEmojiPicker" title="Insertar Emoticones">
-                    <i class="far fa-smile fa-lg"></i>
+                <button type="button" class="btn btn-sm mb-0 mr-2 text-warning d-flex align-items-center justify-content-center" id="btnToggleEmojiPicker" title="Insertar Emoticones" style="width: 36px; height: 36px; border-radius: 50%; background: #fef3c7; color: #d97706; border: 1px solid #fde68a; cursor: pointer; transition: all 0.2s ease;">
+                    <i class="far fa-smile" style="font-size: 16px;"></i>
                 </button>
 
-                <textarea id="peiChatMessageInput" class="form-control form-control-sm border-0 bg-light rounded-lg mr-2" 
-                          placeholder="Escribir mensaje al grupo..." rows="1" style="resize: none;"></textarea>
+                <textarea id="peiChatMessageInput" class="form-control form-control-sm border-0 mr-2" 
+                          placeholder="Escribir mensaje al grupo..." rows="1" style="resize: none; background: #f8fafc; border: 1px solid #cbd5e1 !important; border-radius: 20px; padding: 8px 14px; font-size: 13px; color: #1e293b;"></textarea>
 
-                <button type="submit" class="btn btn-primary btn-circle btn-sm shadow-sm" id="sendPeiChatBtn">
-                    <i class="fas fa-paper-plane"></i>
+                <button type="submit" class="btn btn-sm shadow-sm d-flex align-items-center justify-content-center" id="sendPeiChatBtn" style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #ffffff; border: none; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35); flex-shrink: 0;">
+                    <i class="fas fa-paper-plane" style="font-size: 13px;"></i>
                 </button>
             </form>
         </div>
