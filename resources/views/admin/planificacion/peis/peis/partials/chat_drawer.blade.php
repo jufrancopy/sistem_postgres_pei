@@ -1,8 +1,20 @@
 <!-- Modern PEI Team Chat Drawer -->
 @php
-    $targetProfile = $profile ?? ($peiProfile ?? ($activity->peiProfile ?? null));
+    $targetProfile = $profile ?? ($peiProfile ?? ($pei ?? ($activity->peiProfile ?? null)));
+    if (!$targetProfile && isset($profileId)) {
+        $targetProfile = \App\Admin\Planificacion\Pei\PeiProfile::find($profileId);
+    }
+    if (!$targetProfile && isset($peiProfileId)) {
+        $targetProfile = \App\Admin\Planificacion\Pei\PeiProfile::find($peiProfileId);
+    }
     if (!$targetProfile && isset($activity) && !empty($activity->pei_profile_id)) {
         $targetProfile = \App\Admin\Planificacion\Pei\PeiProfile::find($activity->pei_profile_id);
+    }
+    if (!$targetProfile) {
+        $config = \App\Models\HomeConfiguration::first();
+        if ($config && $config->pei_profile_id) {
+            $targetProfile = \App\Admin\Planificacion\Pei\PeiProfile::find($config->pei_profile_id);
+        }
     }
 @endphp
 

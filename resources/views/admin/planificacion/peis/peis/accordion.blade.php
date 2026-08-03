@@ -28,7 +28,7 @@
         $totalAcciones  = $axi->descendants()->where('level','action')->count();
     @endphp
 
-    <div class="mb-2">
+    <div class="mb-2" id="axi-{{ $axi->id }}">
         <div class="card shadow-sm border-0">
 
             {{-- Header Objetivo --}}
@@ -48,6 +48,11 @@
                 </div>
                 {{-- Fila 2: botones --}}
                 <div class="d-flex align-items-center mt-1 flex-wrap" style="gap:.3rem">
+                    <button type="button" class="btn btn-sm btn-outline-light py-0 px-2"
+                            onclick="event.stopPropagation(); openChatWithContext('PeiObjective', '{{ $axi->id }}', 'Objetivo: {{ e(strip_tags($axi->name)) }}', '{{ url()->current() }}#axi-{{ $axi->id }}')"
+                            title="Consultar sobre este objetivo en el chat">
+                        <i class="fa fa-comment-dots mr-1" style="font-size:.75rem"></i> Consultar
+                    </button>
                     <span class="badge badge-light text-dark" title="{{ $totalAcciones }} acción(es)">
                         <i class="fa fa-rocket mr-1"></i>{{ $totalAcciones }}
                     </span>
@@ -180,7 +185,7 @@
                 <div class="card-body p-3">
 
                     @foreach ($axi->children->sortBy('order_item') as $goal)
-                    <div class="card mb-3 border-left border-primary" style="border-left-width:4px !important">
+                    <div class="card mb-3 border-left border-primary" id="goal-{{ $goal->id }}" style="border-left-width:4px !important">
 
                         {{-- Header Meta --}}
                         <div class="card-header bg-light py-2 px-3">
@@ -198,6 +203,11 @@
                             </div>
                             {{-- Fila 2: botones --}}
                             <div class="d-flex align-items-center mt-1 flex-wrap" style="gap:.3rem">
+                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2"
+                                        onclick="event.stopPropagation(); openChatWithContext('PeiGoal', '{{ $goal->id }}', 'Meta: {{ e(strip_tags($goal->name)) }}', '{{ url()->current() }}#goal-{{ $goal->id }}')"
+                                        title="Consultar sobre esta meta en el chat">
+                                    <i class="fa fa-comment-dots mr-1" style="font-size:.7rem"></i> Consultar
+                                </button>
                                 <button class="btn btn-sm btn-outline-secondary py-0 px-1 btnReordenar" data-id="{{ $goal->id }}" data-dir="up" title="Subir">
                                     <i class="fa fa-arrow-up" style="font-size:.65rem"></i>
                                 </button>
@@ -296,6 +306,12 @@
                                                         </div>
                                                     </div>
                                                     <div class="d-flex flex-shrink-0" style="gap:.3rem">
+                                                        <button type="button" class="btn btn-sm btn-outline-info py-0 px-2"
+                                                                onclick="event.stopPropagation(); openChatWithContext('PeiAction', '{{ $action->id }}', 'Acción: {{ e(strip_tags($action->name)) }}', '{{ url()->current() }}#actionsBlock_{{ $action->id }}')"
+                                                                title="Consultar sobre esta acción en el chat"
+                                                                style="font-size:.7rem">
+                                                            <i class="fa fa-comment-dots mr-1"></i> Consultar
+                                                        </button>
                                                         <button class="btn btn-sm btn-outline-secondary py-0 px-1 btnReordenar" data-id="{{ $action->id }}" data-dir="up" title="Subir">
                                                             <i class="fa fa-arrow-up" style="font-size:.65rem"></i>
                                                         </button>
