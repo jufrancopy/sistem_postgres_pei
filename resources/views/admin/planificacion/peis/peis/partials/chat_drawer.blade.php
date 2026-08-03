@@ -1,7 +1,14 @@
 <!-- Modern PEI Team Chat Drawer -->
-@if(isset($profile) && $profile->id)
+@php
+    $targetProfile = $profile ?? ($peiProfile ?? ($activity->peiProfile ?? null));
+    if (!$targetProfile && isset($activity) && !empty($activity->pei_profile_id)) {
+        $targetProfile = \App\Admin\Planificacion\Pei\PeiProfile::find($activity->pei_profile_id);
+    }
+@endphp
+
+@if(isset($targetProfile) && $targetProfile && $targetProfile->id)
     @php
-        $chatPeiProfileId = $profile->id;
+        $chatPeiProfileId = $targetProfile->id;
     @endphp
 
     <!-- Floating Chat Trigger Button -->
@@ -20,7 +27,7 @@
                 </div>
                 <div>
                     <h6 class="mb-0 font-weight-bold text-white text-truncate" style="max-width: 220px;">
-                        {{ $profile->name }}
+                        {!! strip_tags($targetProfile->name) !!}
                     </h6>
                     <small class="text-white-50" id="peiChatPresenceText">
                         <i class="fas fa-circle text-success mr-1" style="font-size: 8px;"></i> Chat de Equipo

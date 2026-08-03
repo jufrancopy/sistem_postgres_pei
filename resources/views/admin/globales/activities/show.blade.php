@@ -418,6 +418,7 @@
 @include('admin.globales.activities.partials.modal_detalle_tarea')
 @include('admin.globales.activities.partials.modal_reuniones')
 
+@include('admin.planificacion.peis.peis.partials.chat_drawer')
 @endsection
 
 @push('scripts')
