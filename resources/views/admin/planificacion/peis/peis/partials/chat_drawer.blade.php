@@ -510,8 +510,8 @@
                             hasNewOtherMessage = true;
                         }
 
-                        // Verificar si hay mensajes privados no leídos/recibidos de otros
-                        const unreadPrivateCount = allLoadedMessages.filter(m => m.is_private && !m.is_mine).length;
+                        const currentUserId = "{{ auth()->id() }}";
+                        const unreadPrivateCount = allLoadedMessages.filter(m => m.is_private && m.recipient_id == currentUserId).length;
                         if (unreadPrivateCount > 0) {
                             tabChannelPrivate.innerHTML = `<i class="fas fa-user-lock mr-1"></i> Mensaje Privado <span class="badge badge-warning text-dark font-weight-bold ml-1">🔴 ${unreadPrivateCount}</span>`;
                         } else {
@@ -548,11 +548,12 @@
                         return;
                     }
 
+                    const currentUserId = "{{ auth()->id() }}";
                     toRender = allLoadedMessages.filter(m => {
                         if (!m.is_private) return false;
-                        if (m.is_mine && m.recipient_id == activeRecipientId) return true;
-                        if (!m.is_mine && m.user_id == activeRecipientId) return true;
-                        return false;
+                        const iSentToThem = (m.user_id == currentUserId && m.recipient_id == activeRecipientId);
+                        const theySentToMe = (m.user_id == activeRecipientId && m.recipient_id == currentUserId);
+                        return iSentToThem || theySentToMe;
                     });
 
                     if (toRender.length === 0) {
