@@ -157,7 +157,13 @@ class PlanificacionController extends Controller
      */
     public function guardarPeiSeleccionado(Request $request)
     {
-        $request->validate(['pei_id' => 'required|uuid|exists:pei_profiles,id']);
+        $request->validate(['pei_id' => 'required|string']);
+
+        // Verificar que el PEI existe usando el modelo (evita problemas de schema en PostgreSQL)
+        $pei = PeiProfile::find($request->pei_id);
+        if (!$pei) {
+            return response()->json(['success' => false, 'message' => 'Plan Estratégico no encontrado.'], 422);
+        }
 
         $config = HomeConfiguration::firstOrNew([]);
         $config->pei_profile_id = $request->pei_id;
