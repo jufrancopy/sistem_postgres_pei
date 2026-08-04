@@ -53,6 +53,18 @@ class GamificationService
         $refType = $referenceModel ? get_class($referenceModel) : null;
         $refId   = $referenceModel ? (string)$referenceModel->id : null;
 
+        // Evitar otorgar más de 1 acceso diario por usuario por día calendario
+        if ($actionType === 'daily_login') {
+            $today = Carbon::today()->toDateString();
+            $existsToday = GamificationPoint::where('user_id', $user->id)
+                ->where('action_type', 'daily_login')
+                ->whereDate('created_at', $today)
+                ->exists();
+            if ($existsToday) {
+                return null;
+            }
+        }
+
         // Evitar duplicar puntos por la misma referencia exacta si aplica
         if ($refType && $refId) {
             $exists = GamificationPoint::where('user_id', $user->id)
@@ -105,8 +117,8 @@ class GamificationService
                 'description'    => $row['description'],
                 'reference_type' => $row['reference_type'] ?? null,
                 'reference_id'   => isset($row['reference_id']) ? (string) $row['reference_id'] : null,
-                'created_at'     => $now,
-                'updated_at'     => $now,
+                'created_at'     => $row['created_at'] ?? $now,
+                'updated_at'     => $row['updated_at'] ?? $now,
             ];
         }
 

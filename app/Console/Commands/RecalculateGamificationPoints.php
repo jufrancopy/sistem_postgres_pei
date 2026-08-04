@@ -129,21 +129,29 @@ class RecalculateGamificationPoints extends Command
         int $points,
         ?string $referenceType = null,
         $referenceId = null,
-        ?string $peiProfileId = null
+        ?string $peiProfileId = null,
+        ?string $createdAt = null
     ): void {
         if (!$this->usersById->has($userId)) {
             return;
         }
 
+        $dedupeKey = null;
         if ($referenceType && $referenceId !== null) {
-            $key = "{$userId}|{$actionType}|{$referenceType}|{$referenceId}";
-            if (isset($this->dedupeKeys[$key])) {
-                return;
-            }
-            $this->dedupeKeys[$key] = true;
+            $dedupeKey = "{$userId}|{$actionType}|{$referenceType}|{$referenceId}";
+        } elseif ($actionType === 'daily_login' && $createdAt) {
+            $dateStr = substr($createdAt, 0, 10);
+            $dedupeKey = "{$userId}|daily_login|{$dateStr}";
         }
 
-        $this->pendingRows[] = [
+        if ($dedupeKey) {
+            if (isset($this->dedupeKeys[$dedupeKey])) {
+                return;
+            }
+            $this->dedupeKeys[$dedupeKey] = true;
+        }
+
+        $row = [
             'user_id'        => $userId,
             'pei_profile_id' => $peiProfileId ?: $this->defaultPeiId,
             'points'         => $points,
@@ -152,6 +160,13 @@ class RecalculateGamificationPoints extends Command
             'reference_type' => $referenceType,
             'reference_id'   => $referenceId !== null ? (string) $referenceId : null,
         ];
+
+        if ($createdAt) {
+            $row['created_at'] = $createdAt;
+            $row['updated_at'] = $createdAt;
+        }
+
+        $this->pendingRows[] = $row;
     }
 
     protected function collectDailyLogins(?string $userFilter): void
@@ -163,11 +178,17 @@ class RecalculateGamificationPoints extends Command
         }
 
         foreach ($query->cursor() as $login) {
+            $loginDate = \Carbon\Carbon::parse($login->login_date)->setTime(8, 0, 0)->toDateTimeString();
+
             $this->queuePoint(
                 $login->user_id,
                 'daily_login',
                 'Acceso diario al sistema',
-                5
+                5,
+                null,
+                null,
+                null,
+                $loginDate
             );
         }
     }
