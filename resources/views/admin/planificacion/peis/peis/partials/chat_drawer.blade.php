@@ -201,13 +201,13 @@
         </div>
 
         <!-- Context Reference Active Banner -->
-        <div id="peiChatContextBanner" class="p-2 border-top border-bottom bg-white" style="display: none; border-left: 4px solid #4f46e5 !important; font-size: 11px; background: #eef2ff !important;">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="text-truncate mr-2">
+        <div id="peiChatContextBanner" class="p-2 border-top border-bottom bg-white" style="display: none; border-left: 4px solid #4f46e5 !important; font-size: 11px; background: #eef2ff !important; overflow: hidden;">
+            <div class="d-flex justify-content-between align-items-center" style="min-width: 0;">
+                <div class="text-truncate mr-2" style="min-width: 0; flex: 1;">
                     <span class="font-weight-bold" style="color: #4338ca;"><i class="fas fa-bookmark mr-1"></i> Consulta Vinculada:</span>
                     <span id="peiChatContextTitle" class="text-dark font-weight-bold ml-1"></span>
                 </div>
-                <button type="button" class="btn btn-xs text-danger p-0" id="clearPeiChatContext" title="Quitar referencia">
+                <button type="button" class="btn btn-xs text-danger p-0" id="clearPeiChatContext" title="Quitar referencia" style="flex-shrink: 0;">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -396,6 +396,21 @@
         .msg-bubble-container.other .msg-attachment-item {
             background: #eaecf4;
             color: #4e73df;
+        }
+        .msg-reference-badge {
+            max-width: 85% !important;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+            border: 1px solid rgba(79, 70, 229, 0.25);
+        }
+        .msg-bubble-container.mine .msg-reference-badge {
+            background: #eef2ff;
+            border-radius: 12px 12px 2px 12px;
+        }
+        .msg-bubble-container.other .msg-reference-badge {
+            background: #f8fafc;
+            border-radius: 12px 12px 12px 2px;
         }
     </style>
 
@@ -957,9 +972,9 @@
 
                 if (msg.reference_title) {
                     const refUrl = msg.reference_url || '#';
-                    html += `<div class="msg-reference-badge p-2 mb-2 rounded" style="background: rgba(79, 70, 229, 0.09); border: 1px solid rgba(79, 70, 229, 0.25);">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="text-truncate mr-2 font-weight-bold" style="font-size: 11px; color: #3730a3;">
+                    html += `<div class="msg-reference-badge p-2 mb-1">
+                                <div class="d-flex align-items-center justify-content-between" style="min-width: 0;">
+                                    <div class="text-truncate mr-2 font-weight-bold" style="font-size: 11px; color: #3730a3; min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                         <i class="fas fa-bookmark mr-1"></i> ${msg.reference_title}
                                     </div>
                                     <a href="${refUrl}" class="btn btn-xs font-weight-bold ml-1 rounded-pill px-2" style="font-size: 10px; background: #4f46e5; color: #fff; text-decoration: none; flex-shrink: 0;" onclick="handleContextNavigation(event, '${refUrl}')">
