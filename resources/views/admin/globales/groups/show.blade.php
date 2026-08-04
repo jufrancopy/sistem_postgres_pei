@@ -366,7 +366,9 @@
                                 }
                             });
                         }
-                    })
+                    });
+                });
+
                 // ── Abrir modal de Creación Rápida ──
                 $('#btnOpenQuickUserModal').click(function() {
                     $('#quickUserForm').trigger('reset');
