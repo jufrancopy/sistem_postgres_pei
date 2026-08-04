@@ -18,6 +18,14 @@
             $userPts = app(\App\Services\GamificationService::class)->getUserTotalPoints(Auth::user());
         @endphp
 
+        {{-- ── Inspiración Diaria / Código de Ética ── --}}
+        <li class="nav-item d-flex align-items-center mr-1">
+          <a class="nav-link btn btn-link p-1 text-warning" href="javascript:void(0)" id="btnOpenReflexion" title="Inspiración Diaria & Código de Ética IPS" style="font-size:1.1rem;">
+            <i class="fa fa-lightbulb"></i>
+            <p class="d-lg-none mb-0">Reflexión del Día</p>
+          </a>
+        </li>
+
         {{-- ── Notificaciones SIESS ── --}}
         <li class="nav-item dropdown">
           <a class="nav-link" href="#" id="siessNotifBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones SIESS">

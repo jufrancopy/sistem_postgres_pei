@@ -54,6 +54,8 @@
                     <!-- Inicio Pie -->
                     @include('layouts.includes.pie')
                     <!-- Fin Pie -->
+
+                    @include('layouts.includes.reflexion_modal')
 </body>
 
 </html>

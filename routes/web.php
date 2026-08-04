@@ -275,8 +275,11 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-group/{idSelection}', 'Admin\Globales\GroupController@dataGroup')->name('get-group');
         Route::get('get-users', 'Admin\UserController@getUsers')->name('get-users');
         Route::get('get-user/{id}', 'Admin\UserController@getUser')->name('get-user');
-        Route::get('get-users/{idGroup}', 'Admin\UserController@getUsersForGroup')->name('get-users-group');
         Route::get('get-pei-profiles', 'Admin\Globales\ActivityController@getPeiProfiles')->name('get-pei-profiles');
+
+        // ── Reflexión Diaria y Código de Ética ────────────────────────────────
+        Route::get('reflexion-diaria', 'Admin\ReflexionController@obtenerReflexionDiaria')->name('reflexion.diaria');
+        Route::post('reflexion-ia', 'Admin\ReflexionController@generarConGroq')->name('reflexion.ia');
     });
 
     //Rutas del Modulo Surveys
