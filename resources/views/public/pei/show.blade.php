@@ -161,8 +161,41 @@ body{background:#f0f2f8;font-family:'Inter',sans-serif;color:#1e293b;min-height:
 @media(max-width:400px){
     .hero-title{font-size:1rem}
     .hero-stat .stat-num{font-size:1.1rem}
-    .pub-tab{padding:.6rem .65rem;font-size:.7rem}
+    .pub-tab{padding:.6rem .65px;font-size:.7rem}
 }
+
+/* ── PRINT (BSC para imprimir) ── */
+@media print{
+    .no-print{display:none !important}
+    body{background:#fff;color:#000;font-size:10pt}
+    .pub-nav,.pub-footer,.hero-stats,.hero-badge{display:none !important}
+    .hero{background:#1e3a8a !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:1rem 0}
+    .hero-title{font-size:14pt;color:#fff !important}
+    .hero-meta{color:rgba(255,255,255,.8) !important;font-size:9pt}
+    .pub-content{padding:.5rem 0;max-width:100%}
+    /* Mostrar solo tab BSC al imprimir */
+    .tab-section{display:none !important}
+    #tab-bsc{display:block !important}
+    .bsc-grid{grid-template-columns:repeat(2,1fr);gap:.75rem;break-inside:avoid}
+    .bsc-perspectiva{break-inside:avoid;box-shadow:none;border:1px solid #e2e8f0}
+    .bsc-persp-header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .bsc-eje-item{padding:.5rem .75rem}
+    .bsc-eje-name{font-size:9pt}
+    .bsc-acciones-list{margin-top:.3rem}
+    .bsc-accion-row{font-size:8pt;padding:.15rem 0}
+    .bsc-obj-label{font-size:8.5pt}
+    .sem-bar{display:none}
+    /* Forzar colores de semaforo en impresion */
+    .sem-pill-verde{background:#dcfce7 !important;color:#15803d !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .sem-pill-amarillo{background:#fef9c3 !important;color:#a16207 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .sem-pill-rojo{background:#fee2e2 !important;color:#b91c1c !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .sdot-verde{background:#22c55e !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .sdot-amarillo{background:#eab308 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .sdot-rojo{background:#ef4444 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    /* Footer de impresion */
+    .print-footer{display:block !important}
+}
+.print-footer{display:none;text-align:center;font-size:8pt;color:#64748b;margin-top:1rem;border-top:1px solid #e2e8f0;padding-top:.5rem}
 </style>
 </head>
 <body>
@@ -254,29 +287,68 @@ $gPct      = $gTotal > 0 ? round(($gVerde / $gTotal) * 100) : 0;
 
 {{-- ── TAB BSC ──────────────────────────────────────────────────────────────── --}}
 @if(in_array('bsc', $tabsHabilitadas))
+@php
+    $bscLevelView = $niveles['bsc_level'] ?? 'axi';
+    // Label del item agrupado según nivel
+    $itemLabelBsc = match($bscLevelView) {
+        'goal'  => $niveles['goal']   ?? 'Objetivo Específico',
+        'both'  => $niveles['axi']    ?? 'Eje Estratégico',
+        'none'  => '',
+        default => $niveles['axi']    ?? 'Eje Estratégico',
+    };
+@endphp
 <div class="tab-section {{ $firstTab === 'bsc' ? 'active' : '' }}" id="tab-bsc">
+
+{{-- Toolbar: botón imprimir (oculto en print) --}}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem" class="no-print">
+    <div style="font-size:.78rem;color:#64748b">
+        @if($bscLevelView === 'none')
+            <span style="color:#94a3b8"><i class="fa fa-info-circle"></i> La perspectiva BSC está desactivada para este plan.</span>
+        @elseif($bscLevelView === 'goal')
+            <span><i class="fa fa-layer-group" style="color:#1e3a8a"></i> Agrupado por <strong>{{ $niveles['goal'] ?? 'Objetivo Específico' }}</strong> (Nivel 2)</span>
+        @elseif($bscLevelView === 'both')
+            <span><i class="fa fa-layer-group" style="color:#1e3a8a"></i> Agrupado por <strong>{{ $niveles['axi'] ?? 'Eje' }}</strong> (Nivel 1 y 2)</span>
+        @else
+            <span><i class="fa fa-layer-group" style="color:#1e3a8a"></i> Agrupado por <strong>{{ $niveles['axi'] ?? 'Eje Estratégico' }}</strong> (Nivel 1)</span>
+        @endif
+    </div>
+    @if($bscLevelView !== 'none')
+    <button onclick="window.print()" style="display:inline-flex;align-items:center;gap:.4rem;background:#1e3a8a;color:#fff;border:none;border-radius:.5rem;padding:.45rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#1e40af'" onmouseout="this.style.background='#1e3a8a'">
+        <i class="fa fa-print"></i> Imprimir BSC
+    </button>
+    @endif
+</div>
+
+@if($bscLevelView === 'none' || $perspectivas->isEmpty())
+{{-- Sin datos / desactivado --}}
+<div style="background:#fff;border-radius:1rem;padding:3rem;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.07)">
+    <i class="fa fa-chart-bar" style="font-size:2.5rem;color:#cbd5e1;margin-bottom:1rem;display:block"></i>
+    <p style="color:#64748b;font-size:.9rem;margin:0">
+        @if($bscLevelView === 'none')
+            El Balanced Scorecard está desactivado para este plan estratégico.
+        @else
+            No hay perspectivas BSC asignadas. Verifique que los elementos del plan tengan perspectiva BSC configurada.
+        @endif
+    </p>
+</div>
+@else
 <div class="bsc-grid">
 @foreach($perspectivas as $key => $persp)
 <div class="bsc-perspectiva">
     <div class="bsc-persp-header" style="background:{{ $persp['color'] }}">
         <h3><i class="fa {{ $persp['icon'] }}"></i> {{ $persp['label'] }}</h3>
         <div class="bsc-persp-badges">
-            @php 
-                $totEjes = $persp['ejes']->count(); 
-                $totAcc = $persp['ejes']->sum('total'); 
-                $itemLabel = ($niveles['bsc_level'] ?? 'axi') === 'goal' ? ($niveles['goal'] ?? 'Objetivo Específico') : ($niveles['axi'] ?? 'Objetivo Estratégico');
+            @php
+                $totEjes = $persp['ejes']->count();
+                $totAcc  = $persp['ejes']->sum('total');
             @endphp
-            <span class="bsc-persp-badge">
-                {{ $totEjes }} {{ $itemLabel }}{{ $totEjes == 1 ? '' : 's' }}
-            </span>
-            <span class="bsc-persp-badge">
-                {{ $totAcc }} {{ $niveles['action'] ?? 'Acción' }}{{ $totAcc == 1 ? '' : 'es' }}
-            </span>
+            <span class="bsc-persp-badge">{{ $totEjes }} {{ $itemLabelBsc }}{{ $totEjes == 1 ? '' : 's' }}</span>
+            <span class="bsc-persp-badge">{{ $totAcc }} {{ $niveles['action'] ?? 'Acción' }}{{ $totAcc == 1 ? '' : 'es' }}</span>
         </div>
     </div>
     @foreach($persp['ejes'] as $eje)
     @php
-        $ejePct = $eje['total'] > 0 ? round(($eje['verde'] / $eje['total']) * 100) : 0;
+        $ejePct   = $eje['total'] > 0 ? round(($eje['verde'] / $eje['total']) * 100) : 0;
         $ejeColor = $eje['semaforo'] === 'verde' ? '#22c55e' : ($eje['semaforo'] === 'amarillo' ? '#eab308' : ($eje['semaforo'] === 'rojo' ? '#ef4444' : '#cbd5e1'));
     @endphp
     <div class="bsc-eje-item">
@@ -320,6 +392,15 @@ $gPct      = $gTotal > 0 ? round(($gVerde / $gTotal) * 100) : 0;
 </div>
 @endforeach
 </div>
+@endif
+
+{{-- Footer de impresion (visible solo al imprimir) --}}
+<div class="print-footer">
+    {{ strip_tags($profile->name) }} &nbsp;·&nbsp;
+    SIPLAN — Sistema de Planificación Estratégica Institucional &nbsp;·&nbsp;
+    Generado el {{ \Carbon\Carbon::now()->format('d/m/Y H:i') }}
+</div>
+
 </div>
 
 @endif

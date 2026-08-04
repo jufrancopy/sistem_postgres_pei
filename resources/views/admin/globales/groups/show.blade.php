@@ -60,29 +60,83 @@
                                             {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
                                         </div>
 
-                                        <div class="form-group">
-                                            {!! Form::label('members', 'Miembros:') !!}
-                                            {!! Form::select('user_id[]', [], null, [
-                                                'class' => 'form-control',
-                                                'style' => 'width:100%',
-                                                'id' => 'members',
-                                                'multiple',
-                                            ]) !!}
-                                        </div>
+                                         <div class="form-group">
+                                             <div class="d-flex align-items-center justify-content-between mb-1">
+                                                 {!! Form::label('members', 'Miembros:', ['class' => 'control-label font-weight-bold mb-0']) !!}
+                                                 <button type="button" class="btn btn-sm btn-outline-success py-0 px-2" id="btnOpenQuickUserModal" style="font-size:.75rem">
+                                                     <i class="fa fa-user-plus mr-1"></i> + Crear Nuevo Usuario
+                                                 </button>
+                                             </div>
+                                             {!! Form::select('user_id[]', [], null, [
+                                                 'class' => 'form-control',
+                                                 'style' => 'width:100%',
+                                                 'id' => 'members',
+                                                 'multiple',
+                                             ]) !!}
+                                         </div>
 
-                                        <div class="col-sm-offset-2 col-sm-10">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-dismiss="modal">Cerrar</button>
-                                            <button type="submit" class="btn btn-success" id="saveBtn"
-                                                value="create">Guardar
-                                                cambios
-                                            </button>
-                                        </div>
+                                         <div class="col-sm-offset-2 col-sm-10">
+                                             <button type="button" class="btn btn-secondary"
+                                                 data-dismiss="modal">Cerrar</button>
+                                             <button type="submit" class="btn btn-success" id="saveBtn"
+                                                 value="create">Guardar
+                                                 cambios
+                                             </button>
+                                         </div>
 
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+                                     </form>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+
+                     {{-- Modal de Creación Rápida "In-Situ" de Usuario --}}
+                     <div class="modal fade" id="quickUserModal" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+                         <div class="modal-dialog modal-dialog-centered">
+                             <div class="modal-content border-0 shadow">
+                                 <div class="modal-header bg-success text-white py-2">
+                                     <h5 class="modal-title font-weight-bold" style="font-size:1rem;">
+                                         <i class="fa fa-user-plus mr-2"></i>Crear Nuevo Usuario In-Situ
+                                     </h5>
+                                     <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                                 </div>
+                                 <div class="modal-body">
+                                     <form id="quickUserForm">
+                                         <div class="form-group mb-3">
+                                             <label class="font-weight-bold small">Nombre y Apellido <span class="text-danger">*</span></label>
+                                             <input type="text" name="name" id="quick_user_name" class="form-control" placeholder="Ej: Maria Gonzalez" required>
+                                         </div>
+                                         <div class="form-group mb-3">
+                                             <label class="font-weight-bold small">Correo Electrónico <span class="text-danger">*</span></label>
+                                             <input type="email" name="email" id="quick_user_email" class="form-control" placeholder="ejemplo@institucion.gov.py" required>
+                                         </div>
+                                         <div class="form-group mb-3">
+                                             <label class="font-weight-bold small">Rol Principal <span class="text-danger">*</span></label>
+                                             <select name="roles[]" id="quick_user_role" class="form-control" style="width:100%">
+                                                 <option value="Analista de Planificación">Analista de Planificación</option>
+                                                 <option value="Participantes" selected>Participantes / Miembro</option>
+                                                 <option value="Coordinador de Planificación">Coordinador de Planificación</option>
+                                                 <option value="Gestor de Actividades">Gestor de Actividades</option>
+                                                 <option value="Colaborador de Actividades">Colaborador de Actividades</option>
+                                                 <option value="Analista de Monitoreo PEI">Analista de Monitoreo PEI</option>
+                                             </select>
+                                         </div>
+                                         <div class="form-group mb-3">
+                                             <label class="font-weight-bold small">Contraseña Inicial</label>
+                                             <input type="password" name="password" id="quick_user_password" class="form-control" value="12345678" placeholder="Contraseña">
+                                             <small class="text-muted">Por defecto: <code>12345678</code> (el usuario podrá cambiarla).</small>
+                                         </div>
+                                         <div class="text-right">
+                                             <button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal">Cancelar</button>
+                                             <button type="submit" class="btn btn-sm btn-success px-3" id="saveQuickUserBtn">
+                                                 <i class="fa fa-save mr-1"></i> Guardar y Seleccionar
+                                             </button>
+                                         </div>
+                                     </form>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
                     </div>
                 </div>
             </div>
@@ -313,6 +367,51 @@
                             });
                         }
                     })
+                // ── Abrir modal de Creación Rápida ──
+                $('#btnOpenQuickUserModal').click(function() {
+                    $('#quickUserForm').trigger('reset');
+                    $('#quick_user_password').val('12345678');
+                    $('#quickUserModal').modal('show');
+                });
+
+                // ── Submit de Creación Rápida de Usuario ──
+                $('#quickUserForm').on('submit', function(e) {
+                    e.preventDefault();
+                    var $btn = $('#saveQuickUserBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
+
+                    $.ajax({
+                        url: "{{ route('users.store') }}",
+                        type: "POST",
+                        data: $(this).serialize(),
+                        dataType: 'json',
+                        success: function(res) {
+                            $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar y Seleccionar');
+                            if (res.user) {
+                                var newOption = new Option(res.user.name + ' (' + res.user.email + ')', res.user.id, true, true);
+                                $('#members').append(newOption).trigger('change');
+                                $('#quickUserModal').modal('hide');
+                                if (typeof toastr !== 'undefined') {
+                                    toastr.success('Usuario ' + res.user.name + ' creado y agregado al grupo.');
+                                } else {
+                                    alert('Usuario ' + res.user.name + ' creado y agregado al grupo.');
+                                }
+                            }
+                        },
+                        error: function(xhr) {
+                            $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar y Seleccionar');
+                            var errs = xhr.responseJSON?.errors;
+                            if (errs) {
+                                $.each(errs, function(k, v) {
+                                    if (typeof toastr !== 'undefined') toastr.error(v);
+                                    else alert(v);
+                                });
+                            } else {
+                                var msg = xhr.responseJSON?.message || 'Error al crear usuario.';
+                                if (typeof toastr !== 'undefined') toastr.error(msg);
+                                else alert(msg);
+                            }
+                        }
+                    });
                 });
             });
         </script>

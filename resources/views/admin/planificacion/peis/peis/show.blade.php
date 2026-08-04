@@ -709,6 +709,7 @@
                     $('#year_end').val(data.profile.year_end);
                     $('#type').val(data.profile.type);
                     $('#level').val(data.profile.level);
+                    $('#nivel_label').val(data.profile.nivel_label);
                     $('#group_id').val(data.profile.group_id);
                     $('#values').val(data.profile.values);
                     $('#vision').val(data.profile.vision);
@@ -758,6 +759,7 @@
                     $('#vision_year_end').val(data.profile.year_end);
                     $('#vision_type').val(data.profile.type);
                     $('#vision_level').val(data.profile.level);
+                    $('#vision_nivel_label').val(data.profile.nivel_label);
                     $('#vision_group_id').val(data.profile.group_id);
                     $('#vision_values').val(data.profile.values);
                     $('#vision_mision').val(data.profile.mision);
@@ -807,6 +809,7 @@
                     $('#values_year_end').val(data.profile.year_end);
                     $('#values_type').val(data.profile.type);
                     $('#values_level').val(data.profile.level);
+                    $('#values_nivel_label').val(data.profile.nivel_label);
                     $('#values_group_id').val(data.profile.group_id);
                     $('#values_mision').val(data.profile.mision);
                     $('#values_vision').val(data.profile.vision);
@@ -1040,7 +1043,105 @@
                 }); // cierre del $.get de createAxis
             }); // cierre del on('click', '#createAxis')
 
+            // ── Submit del form de Misión ─────────────────────────────────────
+            $('#misionForm').on('submit', function(e) {
+                e.preventDefault();
+                var $btn = $('#saveBtnMision').prop('disabled', true)
+                    .html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
+
+                // Sincronizar contenido del CKEditor al textarea antes de serializar
+                if (misionEditor) {
+                    $('#mision').val(misionEditor.getData());
+                }
+
+                $.ajax({
+                    data: $(this).serialize(),
+                    url: "{{ route('pei-profiles.store') }}",
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function(res) {
+                        toastr.success(res.success || 'Misión guardada correctamente.');
+                        $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i>Guardar cambios');
+                        $('#ajaxMisionModal').modal('hide');
+                        // Actualizar el contenido de la tarjeta de Misión sin recargar la página
+                        $('.mision .card-body .mision').html(res.profile.mision);
+                        recargarAcordeon();
+                    },
+                    error: function(xhr) {
+                        var e = xhr.responseJSON?.errors;
+                        if (e) $.each(e, function(k,v) { toastr.error(v); });
+                        else toastr.error(xhr.responseJSON?.message || 'Error al guardar la Misión.');
+                        $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i>Guardar cambios');
+                    }
+                });
+            });
+
+            // ── Submit del form de Visión ─────────────────────────────────────
+            $('#visionForm').on('submit', function(e) {
+                e.preventDefault();
+                var $btn = $('#saveBtnVision').prop('disabled', true)
+                    .html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
+
+                if (visionEditor) {
+                    $('#vision').val(visionEditor.getData());
+                }
+
+                $.ajax({
+                    data: $(this).serialize(),
+                    url: "{{ route('pei-profiles.store') }}",
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function(res) {
+                        toastr.success(res.success || 'Visión guardada correctamente.');
+                        $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i>Guardar cambios');
+                        $('#ajaxVisionModal').modal('hide');
+                        // Actualizar el contenido de la tarjeta de Visión sin recargar la página
+                        $('.vision .card-body .vision').html(res.profile.vision);
+                        recargarAcordeon();
+                    },
+                    error: function(xhr) {
+                        var e = xhr.responseJSON?.errors;
+                        if (e) $.each(e, function(k,v) { toastr.error(v); });
+                        else toastr.error(xhr.responseJSON?.message || 'Error al guardar la Visión.');
+                        $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i>Guardar cambios');
+                    }
+                });
+            });
+
+            // ── Submit del form de Valores ────────────────────────────────────
+            $('#valuesForm').on('submit', function(e) {
+                e.preventDefault();
+                var $btn = $('#saveBtnValues').prop('disabled', true)
+                    .html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
+
+                if (valuesEditor) {
+                    $('#values').val(valuesEditor.getData());
+                }
+
+                $.ajax({
+                    data: $(this).serialize(),
+                    url: "{{ route('pei-profiles.store') }}",
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function(res) {
+                        toastr.success(res.success || 'Valores guardados correctamente.');
+                        $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i>Guardar cambios');
+                        $('#ajaxValuesModal').modal('hide');
+                        // Actualizar el contenido de la tarjeta de Valores sin recargar la página
+                        $('.values .card-body .values').html(res.profile.values);
+                        recargarAcordeon();
+                    },
+                    error: function(xhr) {
+                        var e = xhr.responseJSON?.errors;
+                        if (e) $.each(e, function(k,v) { toastr.error(v); });
+                        else toastr.error(xhr.responseJSON?.message || 'Error al guardar los Valores.');
+                        $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i>Guardar cambios');
+                    }
+                });
+            });
+
             // ── Submit del form de Acciones ───────────────────────────────────
+
             $('#actionsForm').on('submit', function(e) {
                 e.preventDefault();
                 var $btn = $('#saveBtnActions').prop('disabled', true)

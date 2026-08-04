@@ -21,10 +21,11 @@ class PublicPeiController extends Controller
             ])
             ->firstOrFail();
 
-        $nivelesDefault = ['master'=>'PEI','axi'=>'Eje Estratégico','goal'=>'Objetivo','action'=>'Acción'];
+        $nivelesDefault = ['master'=>'PEI','axi'=>'Eje Estratégico','goal'=>'Objetivo','action'=>'Acción','bsc_level'=>'axi'];
         $niveles = $nivelesDefault;
         if ($profile->nivel_label) {
             $decoded = json_decode($profile->nivel_label, true);
+            // El decoded sobreescribe los defaults; bsc_level del JSON tiene precedencia
             if (is_array($decoded)) $niveles = array_merge($nivelesDefault, $decoded);
         }
 
@@ -43,12 +44,19 @@ class PublicPeiController extends Controller
 
         $bscLevel = $niveles['bsc_level'] ?? 'axi';
 
-        if ($bscLevel === 'goal') {
+        // ── Función auxiliar para agregar un eje/objetivo a una perspectiva ──
+        $pushToPersp = function(string $key, array $data) use (&$perspectivas) {
+            if (!$perspectivas->has($key)) $key = 'sin_bsc';
+            $perspectivas[$key]['ejes']->push($data);
+        };
+
+        if ($bscLevel === 'none') {
+            // BSC desactivado: no se agrupa, se deja vacío
+        } elseif ($bscLevel === 'goal') {
             // BSC en Nivel 2 (Objetivo Específico / Meta)
             foreach ($profile->children->sortBy('order_item') as $axi) {
                 foreach ($axi->children->sortBy('order_item') as $goal) {
                     $key = $goal->bsc_perspectiva ?? 'sin_bsc';
-                    if (!$perspectivas->has($key)) $key = 'sin_bsc';
 
                     $acciones = $goal->children;
                     $total    = $acciones->count();
@@ -62,7 +70,7 @@ class PublicPeiController extends Controller
                         $sem = $pct >= 75 ? 'verde' : ($pct >= 50 ? 'amarillo' : 'rojo');
                     }
 
-                    $perspectivas[$key]['ejes']->push([
+                    $pushToPersp($key, [
                         'id'       => $goal->id,
                         'name'     => strip_tags($goal->name),
                         'axi_name' => strip_tags($axi->name),
@@ -85,11 +93,11 @@ class PublicPeiController extends Controller
                     ]);
                 }
             }
-        } else {
-            // Nivel 1 clásico (axi)
+        } elseif ($bscLevel === 'both') {
+            // BSC en ambos niveles: agrupa en Nivel 1 (axi) tomando perspectiva del axi,
+            // y si el axi no tiene perspectiva, intenta con los hijos (goal)
             foreach ($profile->children->sortBy('order_item') as $axi) {
                 $key = $axi->bsc_perspectiva ?? 'sin_bsc';
-                if (!$perspectivas->has($key)) $key = 'sin_bsc';
 
                 $acciones = $axi->descendants()->where('level','action')->get();
                 $total    = $acciones->count();
@@ -103,7 +111,44 @@ class PublicPeiController extends Controller
                     $sem = $pct >= 75 ? 'verde' : ($pct >= 50 ? 'amarillo' : 'rojo');
                 }
 
-                $perspectivas[$key]['ejes']->push([
+                $pushToPersp($key, [
+                    'id'       => $axi->id,
+                    'name'     => strip_tags($axi->name),
+                    'axi_name' => null,
+                    'semaforo' => $sem,
+                    'verde'    => $verde,
+                    'amarillo' => $amarillo,
+                    'rojo'     => $rojo,
+                    'total'    => $total,
+                    'ri'       => $axi->resultado_intermedio,
+                    'objetivos'=> $axi->children->map(fn($g) => [
+                        'name'    => strip_tags($g->name),
+                        'acciones'=> $g->children->map(fn($a) => [
+                            'name'     => strip_tags($a->name),
+                            'semaforo' => $a->semaforo ?? 'sin-datos',
+                            'indicador'=> $a->indicador ? $a->indicador->nombre : null,
+                        ])->values(),
+                    ])->values(),
+                ]);
+            }
+        } else {
+            // Nivel 1 clásico (axi) — Lee bsc_perspectiva directamente del nodo axi
+            foreach ($profile->children->sortBy('order_item') as $axi) {
+                $key = $axi->bsc_perspectiva ?? 'sin_bsc';
+
+                $acciones = $axi->descendants()->where('level','action')->get();
+                $total    = $acciones->count();
+                $verde    = $acciones->where('semaforo','verde')->count();
+                $amarillo = $acciones->where('semaforo','amarillo')->count();
+                $rojo     = $acciones->where('semaforo','rojo')->count();
+
+                $sem = 'sin-datos';
+                if ($total > 0) {
+                    $pct = ($verde + $amarillo * 0.5) / $total * 100;
+                    $sem = $pct >= 75 ? 'verde' : ($pct >= 50 ? 'amarillo' : 'rojo');
+                }
+
+                $pushToPersp($key, [
                     'id'       => $axi->id,
                     'name'     => strip_tags($axi->name),
                     'axi_name' => null,

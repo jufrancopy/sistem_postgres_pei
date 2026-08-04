@@ -161,12 +161,12 @@ class UserController extends Controller
 
         $user->syncRoles($roles);
 
-        // Devolver una respuesta JSON con el mensaje de éxito o error. 
+        // Devolver una respuesta JSON con el mensaje de éxito o error y el objeto de usuario. 
         if ($user) {
             if ($user->wasRecentlyCreated) {
-                return response()->json(['success' => 'Usuario creado correctamente.']);
+                return response()->json(['success' => 'Usuario creado correctamente.', 'user' => $user]);
             } else {
-                return response()->json(['success' => 'Usuario actualizado correctamente.']);
+                return response()->json(['success' => 'Usuario actualizado correctamente.', 'user' => $user]);
             }
         } else {
             return response()->json(['error' => 'Ha ocurrido un error al guardar el usuario.'], 500);

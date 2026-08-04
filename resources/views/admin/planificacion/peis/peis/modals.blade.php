@@ -17,6 +17,7 @@
                     {{ Form::hidden('group_id', null, ['id' => 'group_id']) }}
                     {{ Form::hidden('type', null, ['id' => 'type']) }}
                     {{ Form::hidden('level', null, ['id' => 'level']) }}
+                    {{ Form::hidden('nivel_label', null, ['id' => 'nivel_label']) }}
                     {{ Form::hidden('vision', null, ['class' => 'form-control', 'id' => 'vision']) }}
                     {{ Form::hidden('values', null, ['class' => 'form-control', 'id' => 'values']) }}
                     {{ Form::hidden('period', null, ['class' => 'form-control', 'id' => 'period']) }}
@@ -73,7 +74,8 @@
                     {{ Form::hidden('year_end', null, ['id' => 'vision_year_end']) }}
                     {{ Form::hidden('group_id', null, ['id' => 'vision_group_id']) }}
                     {{ Form::hidden('type', null, ['id' => 'vision_type']) }}
-                    {{ Form::hidden('level', 'missionary', ['id' => 'vision_level']) }}
+                    {{ Form::hidden('level', null, ['id' => 'vision_level']) }}
+                    {{ Form::hidden('nivel_label', null, ['id' => 'vision_nivel_label']) }}
                     {{ Form::hidden('mision', null, ['id' => 'vision_mision']) }}
                     {{ Form::hidden('values', null, ['class' => 'form-control', 'id' => 'vision_values']) }}
                     {{ Form::hidden('period', null, ['class' => 'form-control', 'id' => 'vision_period']) }}
@@ -132,8 +134,9 @@
                     {{ Form::hidden('group_id', null, ['id' => 'values_group_id']) }}
                     {{ Form::hidden('mision', null, ['id' => 'values_mision']) }}
                     {{ Form::hidden('vision', null, ['id' => 'values_vision']) }}
-                    {{ Form::hidden('type', 'institucional', ['id' => 'values_type']) }}
+                    {{ Form::hidden('type', null, ['id' => 'values_type']) }}
                     {{ Form::hidden('level', null, ['id' => 'values_level']) }}
+                    {{ Form::hidden('nivel_label', null, ['id' => 'values_nivel_label']) }}
                     {{ Form::hidden('period', null, ['class' => 'form-control', 'id' => 'values_period']) }}
                     {{ Form::hidden('numerator', null, ['class' => 'form-control', 'id' => 'values_numerator']) }}
                     {{ Form::hidden('operator', null, ['class' => 'form-control', 'id' => 'values_numerator']) }}

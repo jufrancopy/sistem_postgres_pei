@@ -26,8 +26,8 @@
 <div class="sidebar-wrapper">
 
     <ul class="nav">
-        {{-- Menu para Administrador (todo) --}}
-        @role('Administrador')
+        {{-- Menu para Administrador y Coordinador de Planificación (todo) --}}
+        @hasanyrole('Administrador|Coordinador de Planificación')
             <li class="nav-item active  ">
                 <a class="nav-link" href="{{ url('home') }}">
                     <i class="material-icons">dashboard</i>
