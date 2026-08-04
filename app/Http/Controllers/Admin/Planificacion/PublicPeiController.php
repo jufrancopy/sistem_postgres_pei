@@ -41,40 +41,88 @@ class PublicPeiController extends Controller
             $k => array_merge($v, ['label' => $bscLabels[$k] ?? 'Sin perspectiva', 'ejes' => collect()])
         ]);
 
-        foreach ($profile->children->sortBy('order_item') as $axi) {
-            $key = $axi->bsc_perspectiva ?? 'sin_bsc';
-            if (!$perspectivas->has($key)) $key = 'sin_bsc';
+        $bscLevel = $niveles['bsc_level'] ?? 'axi';
 
-            $acciones = $axi->descendants()->where('level','action')->get();
-            $total    = $acciones->count();
-            $verde    = $acciones->where('semaforo','verde')->count();
-            $amarillo = $acciones->where('semaforo','amarillo')->count();
-            $rojo     = $acciones->where('semaforo','rojo')->count();
+        if ($bscLevel === 'goal') {
+            // BSC en Nivel 2 (Objetivo Específico / Meta)
+            foreach ($profile->children->sortBy('order_item') as $axi) {
+                foreach ($axi->children->sortBy('order_item') as $goal) {
+                    $key = $goal->bsc_perspectiva ?? 'sin_bsc';
+                    if (!$perspectivas->has($key)) $key = 'sin_bsc';
 
-            $sem = 'sin-datos';
-            if ($total > 0) {
-                $pct = ($verde + $amarillo * 0.5) / $total * 100;
-                $sem = $pct >= 75 ? 'verde' : ($pct >= 50 ? 'amarillo' : 'rojo');
+                    $acciones = $goal->children;
+                    $total    = $acciones->count();
+                    $verde    = $acciones->where('semaforo','verde')->count();
+                    $amarillo = $acciones->where('semaforo','amarillo')->count();
+                    $rojo     = $acciones->where('semaforo','rojo')->count();
+
+                    $sem = 'sin-datos';
+                    if ($total > 0) {
+                        $pct = ($verde + $amarillo * 0.5) / $total * 100;
+                        $sem = $pct >= 75 ? 'verde' : ($pct >= 50 ? 'amarillo' : 'rojo');
+                    }
+
+                    $perspectivas[$key]['ejes']->push([
+                        'id'       => $goal->id,
+                        'name'     => strip_tags($goal->name),
+                        'axi_name' => strip_tags($axi->name),
+                        'semaforo' => $sem,
+                        'verde'    => $verde,
+                        'amarillo' => $amarillo,
+                        'rojo'     => $rojo,
+                        'total'    => $total,
+                        'ri'       => null,
+                        'objetivos'=> [
+                            [
+                                'name'    => strip_tags($goal->name),
+                                'acciones'=> $acciones->map(fn($a) => [
+                                    'name'     => strip_tags($a->name),
+                                    'semaforo' => $a->semaforo ?? 'sin-datos',
+                                    'indicador'=> $a->indicador ? $a->indicador->nombre : null,
+                                ])->values(),
+                            ]
+                        ],
+                    ]);
+                }
             }
+        } else {
+            // Nivel 1 clásico (axi)
+            foreach ($profile->children->sortBy('order_item') as $axi) {
+                $key = $axi->bsc_perspectiva ?? 'sin_bsc';
+                if (!$perspectivas->has($key)) $key = 'sin_bsc';
 
-            $perspectivas[$key]['ejes']->push([
-                'id'       => $axi->id,
-                'name'     => strip_tags($axi->name),
-                'semaforo' => $sem,
-                'verde'    => $verde,
-                'amarillo' => $amarillo,
-                'rojo'     => $rojo,
-                'total'    => $total,
-                'ri'       => $axi->resultado_intermedio,
-                'objetivos'=> $axi->children->map(fn($g) => [
-                    'name'    => strip_tags($g->name),
-                    'acciones'=> $g->children->map(fn($a) => [
-                        'name'     => strip_tags($a->name),
-                        'semaforo' => $a->semaforo ?? 'sin-datos',
-                        'indicador'=> $a->indicador ? $a->indicador->nombre : null,
+                $acciones = $axi->descendants()->where('level','action')->get();
+                $total    = $acciones->count();
+                $verde    = $acciones->where('semaforo','verde')->count();
+                $amarillo = $acciones->where('semaforo','amarillo')->count();
+                $rojo     = $acciones->where('semaforo','rojo')->count();
+
+                $sem = 'sin-datos';
+                if ($total > 0) {
+                    $pct = ($verde + $amarillo * 0.5) / $total * 100;
+                    $sem = $pct >= 75 ? 'verde' : ($pct >= 50 ? 'amarillo' : 'rojo');
+                }
+
+                $perspectivas[$key]['ejes']->push([
+                    'id'       => $axi->id,
+                    'name'     => strip_tags($axi->name),
+                    'axi_name' => null,
+                    'semaforo' => $sem,
+                    'verde'    => $verde,
+                    'amarillo' => $amarillo,
+                    'rojo'     => $rojo,
+                    'total'    => $total,
+                    'ri'       => $axi->resultado_intermedio,
+                    'objetivos'=> $axi->children->map(fn($g) => [
+                        'name'    => strip_tags($g->name),
+                        'acciones'=> $g->children->map(fn($a) => [
+                            'name'     => strip_tags($a->name),
+                            'semaforo' => $a->semaforo ?? 'sin-datos',
+                            'indicador'=> $a->indicador ? $a->indicador->nombre : null,
+                        ])->values(),
                     ])->values(),
-                ])->values(),
-            ]);
+                ]);
+            }
         }
 
         $perspectivas = $perspectivas->filter(fn($p) => $p['ejes']->count() > 0);

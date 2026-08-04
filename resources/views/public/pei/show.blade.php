@@ -261,9 +261,13 @@ $gPct      = $gTotal > 0 ? round(($gVerde / $gTotal) * 100) : 0;
     <div class="bsc-persp-header" style="background:{{ $persp['color'] }}">
         <h3><i class="fa {{ $persp['icon'] }}"></i> {{ $persp['label'] }}</h3>
         <div class="bsc-persp-badges">
-            @php $totEjes = $persp['ejes']->count(); $totAcc = $persp['ejes']->sum('total'); @endphp
+            @php 
+                $totEjes = $persp['ejes']->count(); 
+                $totAcc = $persp['ejes']->sum('total'); 
+                $itemLabel = ($niveles['bsc_level'] ?? 'axi') === 'goal' ? ($niveles['goal'] ?? 'Objetivo Específico') : ($niveles['axi'] ?? 'Objetivo Estratégico');
+            @endphp
             <span class="bsc-persp-badge">
-                {{ $totEjes }} {{ $niveles['axi'] ?? 'Objetivo' }}{{ $totEjes == 1 ? '' : 's' }}
+                {{ $totEjes }} {{ $itemLabel }}{{ $totEjes == 1 ? '' : 's' }}
             </span>
             <span class="bsc-persp-badge">
                 {{ $totAcc }} {{ $niveles['action'] ?? 'Acción' }}{{ $totAcc == 1 ? '' : 'es' }}
@@ -277,6 +281,9 @@ $gPct      = $gTotal > 0 ? round(($gVerde / $gTotal) * 100) : 0;
     @endphp
     <div class="bsc-eje-item">
         <div class="bsc-eje-name">{{ $eje['name'] }}</div>
+        @if(!empty($eje['axi_name']))
+        <div class="bsc-eje-ri" style="font-style:normal"><i class="fa fa-bullseye" style="font-size:.65rem;margin-right:.2rem"></i>{{ $eje['axi_name'] }}</div>
+        @endif
         @if($eje['ri'])
         <div class="bsc-eje-ri"><i class="fa fa-flag" style="font-size:.65rem;margin-right:.2rem"></i>{{ $eje['ri'] }}</div>
         @endif
