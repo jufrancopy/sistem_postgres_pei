@@ -1242,6 +1242,39 @@
                 });
             });
 
+            // ── Submit del form de Metas / Objetivos Específicos (Nivel 2) ──
+            $('#goalsForm').on('submit', function(e) {
+                e.preventDefault();
+                var $btn = $('#saveBtnGoals').prop('disabled', true)
+                    .html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
+
+                var formData = new FormData(this);
+                formData.append('name', goalsEditor.getData());
+                formData.append('bsc_perspectiva', $('#goals_bsc_perspectiva').val() || '');
+
+                $.ajax({
+                    data: formData,
+                    url: "{{ route('pei-profiles.store') }}",
+                    type: 'POST',
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    success: function(res) {
+                        toastr.success(res.success || 'Guardado correctamente.');
+                        $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i>Guardar cambios');
+                        $('#goalsForm').trigger('reset');
+                        $('#ajaxGoalsModal').modal('hide');
+                        recargarAcordeon();
+                    },
+                    error: function(xhr) {
+                        var e = xhr.responseJSON?.errors;
+                        if (e) $.each(e, (k,v) => toastr.error(v));
+                        else toastr.error(xhr.responseJSON?.message || 'Error al guardar.');
+                        $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i>Guardar cambios');
+                    }
+                });
+            });
+
             $('body').on('click', '#createActions', function() {
                 var profileID = $(this).data('id');
                 var typeBtn = $(this).data('type');
