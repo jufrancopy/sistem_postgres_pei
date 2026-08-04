@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\DataTables;
 
 class RoleController extends Controller
 {
@@ -18,6 +19,37 @@ class RoleController extends Controller
     // ── Listado principal ────────────────────────────────────────────────────
     public function index(Request $request)
     {
+        if ($request->ajax()) {
+            $data = Role::with('permissions')->orderBy('id', 'DESC')->get();
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('name', function($row) {
+                    return '<div class="d-flex align-items-center" style="gap:.5rem">' .
+                           '<span class="role-icon d-flex align-items-center justify-content-center" style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1a237e,#283593);flex-shrink:0"><i class="fa fa-user-tag text-white" style="font-size:.7rem"></i></span>' .
+                           '<span class="fw-bold" style="font-size:.88rem">' . e($row->name) . '</span>' .
+                           '</div>';
+                })
+                ->addColumn('permisos', function ($row) {
+                    $permCount = $row->permissions->count();
+                    $colorBadge = $permCount > 10 ? 'danger' : ($permCount > 5 ? 'warning' : ($permCount > 0 ? 'success' : 'secondary'));
+                    return '<button class="btn btn-sm btn-link p-0 btnVerPermisos" data-id="' . $row->id . '" data-nombre="' . e($row->name) . '" title="Ver permisos">' .
+                           '<span class="badge badge-' . $colorBadge . '">' . $permCount . ' ' . ($permCount == 1 ? 'permiso' : 'permisos') . '</span>' .
+                           '</button>';
+                })
+                ->addColumn('action', function ($row) {
+                    $btn = '';
+                    if (auth()->user()->can('role-edit')) {
+                        $btn .= '<button class="btn btn-sm btn-outline-primary py-0 px-2 mr-1 btnEditarRol" data-id="' . $row->id . '" title="Editar"><i class="fa fa-edit" style="font-size:.75rem"></i></button>';
+                    }
+                    if (auth()->user()->can('role-delete')) {
+                        $btn .= ' <button class="btn btn-sm btn-outline-danger py-0 px-2 btnEliminarRol" data-id="' . $row->id . '" data-nombre="' . e($row->name) . '" title="Eliminar"><i class="fa fa-trash" style="font-size:.75rem"></i></button>';
+                    }
+                    return $btn;
+                })
+                ->rawColumns(['name', 'action', 'permisos'])
+                ->make(true);
+        }
+
         $roles       = Role::with('permissions')->orderBy('id', 'DESC')->paginate(20);
         $permissions = Permission::orderBy('name')->get();
 

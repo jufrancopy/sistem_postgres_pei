@@ -2,101 +2,117 @@
 @section('title', 'Roles y Permisos')
 
 @section('content')
-<div class="card">
-    <div class="card-header card-header-info d-flex align-items-center">
-        <div>
-            <h4 class="card-title mb-0"><i class="fa fa-shield-alt mr-2"></i>Roles y Permisos</h4>
-            <small class="text-white" style="opacity:.8">Gestión de roles del sistema</small>
-        </div>
-        <div class="ml-auto d-flex" style="gap:.5rem">
-            <a href="{{ route('globales.roles.guide') }}" class="btn btn-sm btn-outline-light font-weight-bold" title="Ver manual explicativo de roles">
-                <i class="fa fa-book-open mr-1"></i> Guía de Roles y Permisos
-            </a>
-            @can('role-create')
-            <button class="btn btn-sm btn-light" id="btnNuevoRol">
-                <i class="fa fa-plus mr-1"></i> Nuevo Rol
-            </button>
-            @endcan
-        </div>
-    </div>
-
-    <div class="card-body p-0">
-
-        {{-- Buscador --}}
-        <div class="px-3 pt-3 pb-2 d-flex align-items-center" style="gap:.5rem">
-            <div class="input-group input-group-sm" style="max-width:280px">
-                <div class="input-group-prepend">
-                    <span class="input-group-text"><i class="fa fa-search"></i></span>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0 fw-bold text-dark">
+                                <i class="fa fa-shield-alt text-primary me-2"></i>Roles y Permisos
+                            </h5>
+                            <small class="text-muted">Gestión de roles del sistema</small>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('globales.roles.guide') }}" class="btn btn-sm btn-outline-secondary" title="Ver manual explicativo de roles">
+                                <i class="fa fa-book-open me-1"></i> Guía
+                            </a>
+                            @can('role-create')
+                            <button class="btn btn-sm btn-primary" id="btnNuevoRol">
+                                <i class="fa fa-plus me-1"></i> Nuevo Rol
+                            </button>
+                            @endcan
+                        </div>
+                    </div>
                 </div>
-                <input type="text" id="buscarRol" class="form-control" placeholder="Buscar rol…">
-            </div>
-            <small class="text-muted ml-2">
-                <span id="totalRoles">{{ $roles->total() }}</span> roles registrados
-            </small>
-        </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover table-sm mb-0" id="tablaRoles">
-                <thead class="thead-light">
-                    <tr>
-                        <th style="width:50px" class="text-center">#</th>
-                        <th>Nombre del Rol</th>
-                        <th class="text-center" style="width:100px">Permisos</th>
-                        <th class="text-center" style="width:130px">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($roles as $key => $role)
-                    @php
-                        $permCount = $role->permissions->count();
-                        $colorBadge = $permCount > 10 ? 'danger' : ($permCount > 5 ? 'warning' : ($permCount > 0 ? 'success' : 'secondary'));
-                    @endphp
-                    <tr id="row-{{ $role->id }}">
-                        <td class="text-center text-muted" style="font-size:.8rem">{{ $loop->iteration + ($roles->currentPage()-1)*$roles->perPage() }}</td>
-                        <td>
-                            <div class="d-flex align-items-center" style="gap:.5rem">
-                                <span class="role-icon d-flex align-items-center justify-content-center"
-                                      style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1a237e,#283593);flex-shrink:0">
-                                    <i class="fa fa-user-tag text-white" style="font-size:.7rem"></i>
-                                </span>
-                                <span class="font-weight-bold" style="font-size:.88rem">{{ $role->name }}</span>
+                <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-0">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Roles</li>
+                    </ol>
+                </nav>
+
+                <div class="card-body p-0">
+                    {{-- Buscador --}}
+                    <div class="px-3 pt-3 pb-2 d-flex align-items-center" style="gap:.5rem">
+                        <div class="input-group input-group-sm" style="max-width:280px">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-search"></i></span>
                             </div>
-                        </td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-link p-0 btnVerPermisos"
-                                    data-id="{{ $role->id }}"
-                                    data-nombre="{{ $role->name }}"
-                                    title="Ver permisos">
-                                <span class="badge badge-{{ $colorBadge }}">
-                                    {{ $permCount }} {{ $permCount == 1 ? 'permiso' : 'permisos' }}
-                                </span>
-                            </button>
-                        </td>
-                        <td class="text-center" style="white-space:nowrap">
-                            @can('role-edit')
-                            <button class="btn btn-sm btn-outline-primary py-0 px-2 btnEditarRol"
-                                    data-id="{{ $role->id }}"
-                                    title="Editar">
-                                <i class="fa fa-edit" style="font-size:.75rem"></i>
-                            </button>
-                            @endcan
-                            @can('role-delete')
-                            <button class="btn btn-sm btn-outline-danger py-0 px-2 btnEliminarRol"
-                                    data-id="{{ $role->id }}"
-                                    data-nombre="{{ $role->name }}"
-                                    title="Eliminar">
-                                <i class="fa fa-trash" style="font-size:.75rem"></i>
-                            </button>
-                            @endcan
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                            <input type="text" id="buscarRol" class="form-control" placeholder="Buscar rol…">
+                        </div>
+                        <small class="text-muted ml-2">
+                            <span id="totalRoles">{{ $roles->total() }}</span> roles registrados
+                        </small>
+                    </div>
 
-        <div class="px-3 py-2 d-flex justify-content-end">
-            {{ $roles->links() }}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="tablaRoles">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width: 50px;">ID</th>
+                                    <th>Nombre del Rol</th>
+                                    <th class="text-center" style="width: 100px;">Permisos</th>
+                                    <th class="text-center" style="width: 150px;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($roles as $key => $role)
+                                @php
+                                    $permCount = $role->permissions->count();
+                                    $colorBadge = $permCount > 10 ? 'danger' : ($permCount > 5 ? 'warning' : ($permCount > 0 ? 'success' : 'secondary'));
+                                @endphp
+                                <tr id="row-{{ $role->id }}">
+                                    <td class="text-center text-muted" style="font-size:.8rem">{{ $loop->iteration + ($roles->currentPage()-1)*$roles->perPage() }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center" style="gap:.5rem">
+                                            <span class="role-icon d-flex align-items-center justify-content-center"
+                                                  style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1a237e,#283593);flex-shrink:0">
+                                                <i class="fa fa-user-tag text-white" style="font-size:.7rem"></i>
+                                            </span>
+                                            <span class="fw-bold" style="font-size:.88rem">{{ $role->name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-link p-0 btnVerPermisos"
+                                                data-id="{{ $role->id }}"
+                                                data-nombre="{{ $role->name }}"
+                                                title="Ver permisos">
+                                            <span class="badge badge-{{ $colorBadge }}">
+                                                {{ $permCount }} {{ $permCount == 1 ? 'permiso' : 'permisos' }}
+                                            </span>
+                                        </button>
+                                    </td>
+                                    <td class="text-center" style="white-space:nowrap">
+                                        @can('role-edit')
+                                        <button class="btn btn-sm btn-outline-primary py-0 px-2 btnEditarRol"
+                                                data-id="{{ $role->id }}"
+                                                title="Editar">
+                                            <i class="fa fa-edit" style="font-size:.75rem"></i>
+                                        </button>
+                                        @endcan
+                                        @can('role-delete')
+                                        <button class="btn btn-sm btn-outline-danger py-0 px-2 btnEliminarRol"
+                                                data-id="{{ $role->id }}"
+                                                data-nombre="{{ $role->name }}"
+                                                title="Eliminar">
+                                            <i class="fa fa-trash" style="font-size:.75rem"></i>
+                                        </button>
+                                        @endcan
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="px-3 py-2 d-flex justify-content-end">
+                        {{ $roles->links() }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -104,18 +120,18 @@
 {{-- ══ Modal Crear / Editar Rol ═══════════════════════════════════════════ --}}
 <div class="modal fade" id="modalRol" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
-                <h5 class="modal-title text-white mb-0" id="modalRolTitulo">
-                    <i class="fa fa-shield-alt mr-2"></i> Nuevo Rol
+        <div class="modal-content shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold mb-0" id="modalRolTitulo">
+                    <i class="fa fa-shield-alt me-2"></i> Nuevo Rol
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="rol_id">
 
                 <div class="form-group">
-                    <label class="font-weight-bold">
+                    <label class="fw-bold">
                         Nombre del Rol <span class="text-danger">*</span>
                     </label>
                     <input type="text" id="rol_nombre" class="form-control"
@@ -123,14 +139,14 @@
                 </div>
 
                 <div class="form-group mb-0">
-                    <label class="font-weight-bold d-flex align-items-center justify-content-between">
+                    <label class="fw-bold d-flex align-items-center justify-content-between">
                         <span>Permisos</span>
                         <div style="gap:.4rem" class="d-flex">
                             <button type="button" class="btn btn-xs btn-outline-success" id="btnSelTodos" style="font-size:.72rem;padding:2px 8px">
-                                <i class="fa fa-check-square mr-1"></i>Todos
+                                <i class="fa fa-check-square me-1"></i>Todos
                             </button>
                             <button type="button" class="btn btn-xs btn-outline-secondary" id="btnDeselTodos" style="font-size:.72rem;padding:2px 8px">
-                                <i class="fa fa-square mr-1"></i>Ninguno
+                                <i class="fa fa-square me-1"></i>Ninguno
                             </button>
                         </div>
                     </label>
@@ -230,15 +246,15 @@
                         @endforeach
                     </div>
                     <small class="text-muted mt-1 d-block">
-                        <i class="fa fa-info-circle mr-1"></i>
+                        <i class="fa fa-info-circle me-1"></i>
                         <span id="permisosSelCount">0</span> permisos seleccionados — clic para activar/desactivar
                     </small>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-success" id="btnGuardarRol">
-                    <i class="fa fa-save mr-1"></i> Guardar
+                    <i class="fa fa-save me-1"></i> Guardar
                 </button>
             </div>
         </div>
@@ -248,12 +264,12 @@
 {{-- ══ Modal Ver Permisos ══════════════════════════════════════════════════ --}}
 <div class="modal fade" id="modalVerPermisos" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-md">
-        <div class="modal-content">
+        <div class="modal-content shadow">
             <div class="modal-header py-2" style="background:#f5f5f5;border-bottom:1px solid #e0e0e0">
                 <h6 class="modal-title mb-0 font-weight-bold" id="modalVerPermisosTitulo">
-                    <i class="fa fa-list mr-1 text-primary"></i> Permisos del Rol
+                    <i class="fa fa-list me-1 text-primary"></i> Permisos del Rol
                 </h6>
-                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                <button type="button" class="close" data-bs-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body" id="modalVerPermisosBody">
                 <div class="text-center py-3">
@@ -261,10 +277,10 @@
                 </div>
             </div>
             <div class="modal-footer py-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
                 @can('role-edit')
                 <button type="button" class="btn btn-sm btn-primary" id="btnEditarDesdeVer">
-                    <i class="fa fa-edit mr-1"></i> Editar este rol
+                    <i class="fa fa-edit me-1"></i> Editar este rol
                 </button>
                 @endcan
             </div>
@@ -280,6 +296,69 @@ $(function() {
     $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
 
     var _rolIdViendo = null;
+
+    // ── Inicializar DataTables ───────────────────────────────────────────────
+    var table = $('#tablaRoles').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+        dom: "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
+             "<'row'<'col-12'tr>>" +
+             "<'row align-items-center'<'col-md-6'i><'col-md-6'p>>",
+        language: {
+            "decimal": "",
+            "emptyTable": "No hay roles registrados",
+            "info": "Mostrando <strong>_START_</strong> a <strong>_END_</strong> de <strong>_TOTAL_</strong> roles",
+            "infoEmpty": "Mostrando 0 a 0 de 0 roles",
+            "infoFiltered": "(filtrado de <strong>_MAX_</strong> total)",
+            "infoPostFix": "",
+            "thousands": ",",
+            "lengthMenu": "Mostrar <strong>_MENU_</strong> roles",
+            "loadingRecords": "Cargando...",
+            "processing": "Procesando...",
+            "search": "Buscar:",
+            "zeroRecords": "No se encontraron roles",
+            "paginate": {
+                "first": "«",
+                "last": "»",
+                "next": "›",
+                "previous": "‹"
+            }
+        },
+        ajax: "{{ route('globales.roles.index') }}",
+        columns: [
+            {
+                data: 'DT_RowIndex',
+                name: 'DT_RowIndex',
+                className: 'text-center'
+            },
+            {
+                data: 'name',
+                name: 'name',
+                render: function(data, type, row) {
+                    return '<div class="d-flex align-items-center" style="gap:.5rem">' +
+                           '<span class="role-icon d-flex align-items-center justify-content-center"' +
+                           'style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1a237e,#283593);flex-shrink:0">' +
+                           '<i class="fa fa-user-tag text-white" style="font-size:.7rem"></i>' +
+                           '</span>' +
+                           '<span class="fw-bold" style="font-size:.88rem">' + data + '</span>' +
+                           '</div>';
+                }
+            },
+            {
+                data: 'permisos',
+                name: 'permisos',
+                className: 'text-center'
+            },
+            {
+                data: 'action',
+                name: 'action',
+                orderable: false,
+                searchable: false,
+                className: 'text-center'
+            }
+        ]
+    });
 
     // ── Contador de permisos seleccionados ──────────────────────────────────
     function actualizarContador() {
@@ -342,7 +421,7 @@ $(function() {
         $('.perm-check').prop('checked', false);
         $('.perm-pill').removeClass('activo');
         actualizarContador();
-        $('#modalRolTitulo').html('<i class="fa fa-shield-alt mr-2"></i> Nuevo Rol');
+        $('#modalRolTitulo').html('<i class="fa fa-shield-alt me-2"></i> Nuevo Rol');
         $('#modalRol').modal('show');
     });
 
@@ -366,7 +445,7 @@ $(function() {
                 $('.perm-pill[data-perm-id="' + pid + '"]').addClass('activo');
             });
             actualizarContador();
-            $('#modalRolTitulo').html('<i class="fa fa-edit mr-2"></i> Editar: <strong>' + data.role.name + '</strong>');
+            $('#modalRolTitulo').html('<i class="fa fa-edit me-2"></i> Editar: <strong>' + data.role.name + '</strong>');
             $('#modalRol').modal('show');
         });
     }
@@ -415,7 +494,7 @@ $(function() {
         var nombre = $(this).data('nombre');
         _rolIdViendo = id;
         $('#modalVerPermisosTitulo').html(
-            '<i class="fa fa-shield-alt mr-1 text-primary"></i> ' + nombre
+            '<i class="fa fa-shield-alt me-1 text-primary"></i> ' + nombre
         );
         $('#modalVerPermisosBody').html(
             '<div class="text-center py-3"><i class="fa fa-spinner fa-spin text-muted"></i></div>'
@@ -438,7 +517,7 @@ $(function() {
             $.each(grupos, function(grupo, perms) {
                 var $grupo = $('<div class="mb-3">').appendTo($body);
                 $('<div>').append(
-                    $('<span class="badge badge-secondary mr-2" style="font-size:.7rem;text-transform:uppercase">').text(grupo)
+                    $('<span class="badge badge-secondary me-2" style="font-size:.7rem;text-transform:uppercase">').text(grupo)
                 ).appendTo($grupo);
                 var $tags = $('<div class="d-flex flex-wrap mt-1" style="gap:.3rem">').appendTo($grupo);
                 perms.forEach(function(p) {

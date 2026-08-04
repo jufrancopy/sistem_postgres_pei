@@ -2,34 +2,37 @@
 @section('title', 'Grupos')
 
 @section('content')
-    <div class="card">
-        <div class="card-header card-header-info">
-            <h4 class="card-title ">Nuevo Grupo</h4>
-        </div>
-        <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Lista de Grupos</li>
-            </ol>
-        </nav>
-
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="success"></div>
-                        <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)" id="createNewGroup">
-                            Nuevo Grupo</a>
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 fw-bold text-dark">
+                                <i class="fa fa-users text-primary me-2"></i>Grupos de Trabajo
+                            </h5>
+                            <a class="btn btn-primary btn-sm" data-group-id="null" href="javascript:void(0)" id="createNewGroup">
+                                <i class="fa fa-plus me-1"></i>Nuevo Grupo
+                            </a>
+                        </div>
                     </div>
+                    
+                    <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-0">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Grupos</li>
+                        </ol>
+                    </nav>
 
-                    <div class="card-body">
+                    <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-bordered data-table display nowrap" id="data-table">
-                                <thead>
+                            <table class="table table-hover align-middle" id="data-table">
+                                <thead class="table-light">
                                     <tr>
-                                        <th>ID</th>
+                                        <th class="text-center" style="width: 60px;">ID</th>
                                         <th>Nombre</th>
-                                        <th width="280px">Acciones</th>
+                                        <th class="text-center" style="width: 120px;">Estado</th>
+                                        <th class="text-center" style="width: 180px;">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -37,206 +40,225 @@
                             </table>
                         </div>
                     </div>
-
-                    <div class="modal fade" id="ajaxModal" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="card-header card-header-info">
-                                    <h4 class="modal-title" id="modalHeading"></h4>
-                                </div>
-                                <div class="modal-body">
-                                    <form id="groupForm" name="groupForm" class="form-horizontal">
-
-                                        {{ Form::hidden('group_id', null, ['id' => 'group_id']) }}
-                                        {{ Form::hidden('parent_id', null, ['id' => 'parent_id']) }}
-
-                                        <div class="form-group">
-                                            {{ Form::label('name', 'Nombre:', ['class' => 'control-label']) }}
-                                            {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name']) }}
-                                        </div>
-
-
-                                        <div class="col-sm-offset-2 col-sm-10">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-dismiss="modal">Cerrar</button>
-                                            <button type="submit" class="btn btn-success" id="saveBtn"
-                                                value="create">Guardar
-                                                cambios
-                                            </button>
-                                        </div>
-
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
-    @stop
+    </div>
 
-    @section('scripts')
-        {{-- My custom scripts --}}
-        <script type="text/javascript">
-            $(function() {
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    <!-- Modal -->
+    <div class="modal fade" id="ajaxModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="modalHeading">
+                        <i class="fa fa-users me-2"></i>Nuevo Grupo
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="groupForm" name="groupForm" class="row g-3">
+                        {{ Form::hidden('group_id', null, ['id' => 'group_id']) }}
+                        {{ Form::hidden('parent_id', null, ['id' => 'parent_id']) }}
+
+                        <div class="col-12">
+                            <label for="name" class="form-label fw-bold">
+                                <i class="fa fa-tag text-primary me-1"></i>Nombre del Grupo
+                            </label>
+                            {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name', 'placeholder' => 'Ej: Comité de Planificación', 'required']) }}
+                            <div class="form-text">Nombre descriptivo del grupo de trabajo</div>
+                        </div>
+
+                        <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                <i class="fa fa-times me-1"></i>Cerrar
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="saveBtn" value="create">
+                                <i class="fa fa-save me-1"></i>Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+@stop
+
+@section('scripts')
+    <script type="text/javascript">
+        $(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            var table = $('.data-table').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                dom: "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
+                     "<'row'<'col-12'tr>>" +
+                     "<'row align-items-center'<'col-md-6'i><'col-md-6'p>>" +
+                     "<'row mt-3'<'col-12'B>>",
+                buttons: [
+                    {
+                        extend: 'copy',
+                        text: '<i class="fa fa-copy"></i> Copiar',
+                        className: 'btn btn-outline-secondary btn-sm me-1',
+                        titleAttr: 'Copiar al portapapeles'
+                    },
+                    {
+                        extend: 'excel',
+                        text: '<i class="fa fa-file-excel"></i> Excel',
+                        className: 'btn btn-outline-success btn-sm me-1',
+                        titleAttr: 'Exportar a Excel'
+                    },
+                    {
+                        extend: 'csv',
+                        text: '<i class="fas fa-file-csv"></i> CSV',
+                        className: 'btn btn-outline-info btn-sm me-1',
+                        titleAttr: 'Exportar a CSV'
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="fa fa-file-pdf"></i> PDF',
+                        className: 'btn btn-outline-danger btn-sm me-1',
+                        titleAttr: 'Exportar a PDF'
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fa fa-print"></i> Imprimir',
+                        className: 'btn btn-outline-secondary btn-sm',
+                        titleAttr: 'Imprimir tabla'
                     }
-                });
-
-                var table = $('.data-table').DataTable({
-                    processing: true,
-                    serverSide: true,
-                    dom: 'Bfrtip',
-                    buttons: [{
-                            extend: 'copy',
-                            text: '<i class="fa fa-copy"></i>',
-                            titleAttr: 'Copy'
-                        },
-                        {
-                            extend: 'excel',
-                            text: '<i class="fa fa-file-excel"></i>',
-                            titleAttr: 'Excel'
-                        },
-                        {
-                            extend: 'csv',
-                            text: '<i class="fas fa-file-csv"></i>',
-                            titleAttr: 'CSV'
-                        },
-                        {
-                            extend: 'pdf',
-                            text: '<i class="fa fa-file-pdf"></i>',
-                            titleAttr: 'PDF'
-                        },
-                        {
-                            extend: 'print',
-                            text: '<i class="fa fa-print"></i>',
-                            titleAttr: 'Imprimir'
-                        }
-                    ],
-                    language: {
-                        "decimal": "",
-                        "emptyTable": "No hay información",
-                        "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
-                        "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
-                        "infoFiltered": "(Filtrado de _MAX_ total entradas)",
-                        "infoPostFix": "",
-                        "thousands": ",",
-                        "lengthMenu": "Mostrar _MENU_ Entradas",
-                        "loadingRecords": "Cargando...",
-                        "processing": "Procesando...",
-                        "search": "Buscar:",
-                        "zeroRecords": "Sin resultados encontrados",
-                        "paginate": {
-                            "first": "Primero",
-                            "last": "Ultimo",
-                            "next": "Siguiente",
-                            "previous": "Anterior"
+                ],
+                language: {
+                    "decimal": "",
+                    "emptyTable": "No hay información disponible",
+                    "info": "Mostrando <strong>_START_</strong> a <strong>_END_</strong> de <strong>_TOTAL_</strong> grupos",
+                    "infoEmpty": "Mostrando 0 a 0 de 0 grupos",
+                    "infoFiltered": "(filtrado de <strong>_MAX_</strong> total)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar <strong>_MENU_</strong> grupos",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "No se encontraron grupos",
+                    "paginate": {
+                        "first": "«",
+                        "last": "»",
+                        "next": "›",
+                        "previous": "‹"
+                    }
+                },
+                ajax: "{{ route('globales.groups.index') }}",
+                columns: [
+                    {
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        className: 'text-center'
+                    },
+                    {
+                        data: 'name',
+                        name: 'name',
+                        render: function(data, type, row) {
+                            return '<div class="fw-bold text-dark">' + data + '</div>' +
+                                   '<small class="text-muted">ID: ' + row.id + '</small>';
                         }
                     },
-                    ajax: "{{ route('globales.groups.index') }}",
-                    columns: [{
-                        data: 'DT_RowIndex',
-                        name: 'DT_RowIndex'
-                    }, {
-                        data: 'name',
-                        name: 'name'
-                    }, {
+                    {
+                        data: 'status',
+                        name: 'status',
+                        className: 'text-center',
+                        render: function(data) {
+                            return '<span class="badge bg-success">Activo</span>';
+                        }
+                    },
+                    {
                         data: 'action',
                         name: 'action',
                         orderable: false,
-                        searchable: false
-                    }, ]
-                });
+                        searchable: false,
+                        className: 'text-center'
+                    }
+                ]
+            });
 
-                $('#createNewGroup').click(function() {
-                    $('#saveBtn').val("create-user");
-                    $('#group_id').val('');
-                    $('#groupForm').trigger("reset");
-                    $('#modalHeading').html("Nuevo Grupo");
+            $('#createNewGroup').click(function() {
+                $('#saveBtn').val("create-user");
+                $('#group_id').val('');
+                $('#groupForm').trigger("reset");
+                $('#modalHeading').html('<i class="fa fa-users me-2"></i>Nuevo Grupo');
+                $('#ajaxModal').modal('show');
+            });
+
+            $('body').on('click', '.editGroup', function() {
+                var groupID = $(this).data('id');
+                $.get("{{ route('globales.groups.index') }}" + '/' + groupID + '/edit', function(data) {
+                    $('#modalHeading').html('<i class="fa fa-edit me-2"></i>Editar Grupo');
+                    $('#saveBtn').val("edit-user");
                     $('#ajaxModal').modal('show');
-                });
-
-                $('body').on('click', '.editGroup', function() {
-                    var groupID = $(this).data('id');
-                    $.get("{{ route('globales.groups.index') }}" + '/' + groupID + '/edit', function(data) {
-                        $('#modalHeading').html("Editar Grupo");
-                        $('#saveBtn').val("edit-user");
-                        $('#ajaxModal').modal('show');
-                        $('#groupForm').trigger("reset");
-                        $('.errors').removeClass("alert alert-danger")
-                        $('#group_id').val(data.group.id);
-                        $('#name').val(data.group.name);
-                    });
-                });
-
-                $('#saveBtn').click(function(e) {
-                    e.preventDefault();
-                    $(this).html('Enviando..');
-                    $.ajax({
-                        data: $('#groupForm').serialize(),
-                        url: "{{ route('globales.groups.store') }}",
-                        type: "POST",
-                        dataType: 'json',
-                        success: function(data) {
-                            if (data) {
-                                $(".success").text(data.success).addClass('alert alert-success');
-                                setTimeout(function() {
-                                    $(".success").hide().html('');
-                                }, 5000);
-                            }
-                            $('#groupForm').trigger("reset");
-                            $('#ajaxModal').modal('hide');
-                            table.draw();
-                        },
-
-                        error: function(data) {
-                            var obj = data.responseJSON.errors;
-                            $.each(obj, function(key, value) {
-                                // Alert Toastr
-                                toastr.options = {
-                                    closeButton: true,
-                                    progressBar: true,
-                                };
-                                toastr.error("Atención: " + value);
-                            });
-                            $('#saveBtn').html('Guardar Cambios');
-                        }
-
-                    });
-                });
-
-                $('body').on('click', '.deleteGroup', function() {
-                    Swal.fire({
-                        title: 'Estás seguro de eliminarlo?',
-                        text: "Si lo haces, no podras revertirlo!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Estoy seguro!'
-                    }).then((isConfirm) => {
-                        if (isConfirm.value) {
-                            Swal.fire(
-                                'Borrado!',
-                                'El registro ha sido eliminado correctamente.',
-                                'success'
-                            )
-                            var cicle_id = $(this).data("id");
-                            $.ajax({
-                                type: "DELETE",
-                                url: "{{ route('globales.groups.store') }}" + '/' + cicle_id,
-                                success: function(data) {
-                                    table.draw();
-                                },
-                                error: function(data) {
-                                    console.log('Error:', data);
-                                }
-                            });
-                        }
-                    })
+                    $('#groupForm').trigger("reset");
+                    $('#group_id').val(data.group.id);
+                    $('#name').val(data.group.name);
                 });
             });
-        </script>
-    @stop
+
+            $('#saveBtn').click(function(e) {
+                e.preventDefault();
+                $(this).html('<i class="fa fa-spinner fa-spin"></i> Enviando...');
+                
+                $.ajax({
+                    data: $('#groupForm').serialize(),
+                    url: "{{ route('globales.groups.store') }}",
+                    type: "POST",
+                    dataType: 'json',
+                    success: function(data) {
+                        $('#groupForm').trigger("reset");
+                        $('#ajaxModal').modal('hide');
+                        table.draw();
+                        toastr.success(data.success || 'Grupo guardado correctamente.');
+                        $('#saveBtn').html('<i class="fa fa-save me-1"></i>Guardar Cambios');
+                    },
+                    error: function(data) {
+                        var obj = data.responseJSON.errors;
+                        $.each(obj, function(key, value) {
+                            toastr.error("Atención: " + value);
+                        });
+                        $('#saveBtn').html('<i class="fa fa-save me-1"></i>Guardar Cambios');
+                    }
+                });
+            });
+
+            $('body').on('click', '.deleteGroup', function() {
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "Esta acción no se puede deshacer",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var groupId = $(this).data("id");
+                        $.ajax({
+                            type: "DELETE",
+                            url: "{{ route('globales.groups.store') }}" + '/' + groupId,
+                            success: function(data) {
+                                table.draw();
+                                toastr.success('Grupo eliminado correctamente.');
+                            },
+                            error: function(data) {
+                                console.log('Error:', data);
+                                toastr.error('Error al eliminar el grupo.');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+@stop
