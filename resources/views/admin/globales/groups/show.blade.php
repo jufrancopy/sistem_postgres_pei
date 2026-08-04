@@ -380,7 +380,7 @@
                     var $btn = $('#saveQuickUserBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
 
                     $.ajax({
-                        url: "{{ route('users.store') }}",
+                        url: "{{ route('globales.users.store') }}",
                         type: "POST",
                         data: $(this).serialize(),
                         dataType: 'json',
