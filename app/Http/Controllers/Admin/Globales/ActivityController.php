@@ -50,7 +50,9 @@ class ActivityController extends Controller
     public function getPeiProfiles(Request $request)
     {
         $search = $request->get('q');
-        $query = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id');
+        $query = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')
+            ->where('level', 'master')
+            ->where('type', 'corporative');
 
         if ($search) {
             $query->where('name', 'ILIKE', "%{$search}%");
