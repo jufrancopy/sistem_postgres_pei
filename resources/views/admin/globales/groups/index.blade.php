@@ -5,29 +5,27 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0 fw-bold text-dark">
-                                <i class="fa fa-users text-primary me-2"></i>Grupos de Trabajo
-                            </h5>
-                            <a class="btn btn-primary btn-sm" data-group-id="null" href="javascript:void(0)" id="createNewGroup">
-                                <i class="fa fa-plus me-1"></i>Nuevo Grupo
-                            </a>
-                        </div>
+                <div class="card shadow-sm border-0">
+                    <div class="card-header text-white d-flex justify-content-between align-items-center" style="background:linear-gradient(135deg,#1a237e,#283593);border-radius:.5rem .5rem 0 0;">
+                        <h4 class="card-title text-white mb-0 font-weight-bold">
+                            <i class="fa fa-users mr-2"></i>Grupos de Trabajo
+                        </h4>
+                        <a class="btn btn-success font-weight-bold" data-group-id="null" href="javascript:void(0)" id="createNewGroup">
+                            <i class="fa fa-plus mr-1"></i>Nuevo Grupo
+                        </a>
                     </div>
                     
-                    <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-0">
+                    <nav aria-label="breadcrumb" class="bg-light p-3 mb-0">
                         <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Grupos</li>
                         </ol>
                     </nav>
 
-                    <div class="card-body p-0">
+                    <div class="card-body p-3">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle" id="data-table">
-                                <thead class="table-light">
+                            <table class="table table-bordered table-striped data-table display nowrap w-100" id="data-table">
+                                <thead class="thead-light">
                                     <tr>
                                         <th class="text-center" style="width: 60px;">ID</th>
                                         <th>Nombre</th>
@@ -48,12 +46,14 @@
     <!-- Modal -->
     <div class="modal fade" id="ajaxModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content shadow">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold" id="modalHeading">
-                        <i class="fa fa-users me-2"></i>Nuevo Grupo
+            <div class="modal-content shadow border-0">
+                <div class="modal-header text-white" style="background:linear-gradient(135deg,#1a237e,#283593)">
+                    <h5 class="modal-title font-weight-bold text-white mb-0" id="modalHeading">
+                        <i class="fa fa-users mr-2"></i>Nuevo Grupo
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="close text-white" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
                 </div>
                 <div class="modal-body">
                     <form id="groupForm" name="groupForm" class="row g-3">
@@ -61,19 +61,19 @@
                         {{ Form::hidden('parent_id', null, ['id' => 'parent_id']) }}
 
                         <div class="col-12">
-                            <label for="name" class="form-label fw-bold">
-                                <i class="fa fa-tag text-primary me-1"></i>Nombre del Grupo
+                            <label for="name" class="control-label font-weight-bold">
+                                <i class="fa fa-tag text-primary mr-1"></i>Nombre del Grupo <span class="text-danger">*</span>
                             </label>
                             {{ Form::text('name', null, ['class' => 'form-control', 'id' => 'name', 'placeholder' => 'Ej: Comité de Planificación', 'required']) }}
-                            <div class="form-text">Nombre descriptivo del grupo de trabajo</div>
+                            <small class="form-text text-muted">Nombre descriptivo del grupo de trabajo</small>
                         </div>
 
-                        <div class="col-12 d-flex justify-content-end gap-2 mt-3">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                <i class="fa fa-times me-1"></i>Cerrar
+                        <div class="col-12 text-right mt-3">
+                            <button type="button" class="btn btn-outline-secondary mr-1" data-dismiss="modal" data-bs-dismiss="modal">
+                                <i class="fa fa-times mr-1"></i>Cerrar
                             </button>
-                            <button type="submit" class="btn btn-primary" id="saveBtn" value="create">
-                                <i class="fa fa-save me-1"></i>Guardar Cambios
+                            <button type="submit" class="btn btn-success" id="saveBtn" value="create">
+                                <i class="fa fa-save mr-1"></i>Guardar Cambios
                             </button>
                         </div>
                     </form>

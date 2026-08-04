@@ -2,31 +2,28 @@
 @section('title', 'Grupos de Trabajo')
 
 @section('content')
-    <div class="card">
-        <div class="card-header card-header-info">
-            <h4 class="card-title ">Grupos de Trabajo - {{ $group->name }}</h4>
+    <div class="card border-0 shadow-sm">
+        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background:linear-gradient(135deg,#1a237e,#283593);border-radius:.5rem .5rem 0 0;">
+            <h4 class="card-title text-white font-weight-bold mb-0">
+                <i class="fa fa-users mr-2"></i>Grupos de Trabajo - {{ $group->name }}
+            </h4>
+            <a class="btn btn-success font-weight-bold" data-group-id="{{ $group->id }}" href="javascript:void(0)" id="createNewGroup">
+                <i class="fa fa-plus mr-1"></i>Nuevo Grupo
+            </a>
         </div>
 
-        <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
+        <nav aria-label="breadcrumb" class="bg-light p-3 mb-0">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('globales.groups.index') }}">Eventos</a>
-                </li>
+                <li class="breadcrumb-item"><a href="{{ route('globales.groups.index') }}">Eventos</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Lista de Grupos</li>
             </ol>
         </nav>
 
         <div class="row">
             <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="success"></div>
-                        <a class="btn btn-success mb-2" data-group-id="{{ $group->id }}" href="javascript:void(0)"
-                            id="createNewGroup">
-                            Nuevo Grupo</a>
-                    </div>
-
-                    <div class="card-body">
+                <div class="card border-0 shadow-none">
+                    <div class="card-body p-3">
                         <div class="table-responsive">
                             <table class="table table-bordered data-table display nowrap" id="data-table">
                                 <thead>
