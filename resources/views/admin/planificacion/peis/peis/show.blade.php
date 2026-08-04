@@ -964,20 +964,27 @@
                         }
                     });
 
-                    // ── Perspectiva BSC ──
-                    var $bscSelect = $('#axis_bsc_perspectiva');
-                    if ($bscSelect.hasClass('select2-hidden-accessible')) {
-                        $bscSelect.select2('destroy');
+                    // ── Perspectiva BSC (según bsc_level del plan) ──
+                    var bscLevel = @json($niveles['bsc_level'] ?? 'axi');
+                    if (bscLevel === 'goal' || bscLevel === 'none') {
+                        $('#axis_bsc_block').hide();
+                        $('#axis_bsc_perspectiva').val('');
+                    } else {
+                        $('#axis_bsc_block').show();
+                        var $bscSelect = $('#axis_bsc_perspectiva');
+                        if ($bscSelect.hasClass('select2-hidden-accessible')) {
+                            $bscSelect.select2('destroy');
+                        }
+                        $bscSelect.select2({
+                            dropdownParent: $('#ajaxAxisModal'),
+                            placeholder: '— Sin perspectiva BSC —',
+                            allowClear: true,
+                        });
+                        var bscVal = (typeBtn === 'edit' && data.profile.bsc_perspectiva)
+                            ? data.profile.bsc_perspectiva
+                            : '';
+                        $bscSelect.val(bscVal).trigger('change');
                     }
-                    $bscSelect.select2({
-                        dropdownParent: $('#ajaxAxisModal'),
-                        placeholder: '— Sin perspectiva BSC —',
-                        allowClear: true,
-                    });
-                    var bscVal = (typeBtn === 'edit' && data.profile.bsc_perspectiva)
-                        ? data.profile.bsc_perspectiva
-                        : '';
-                    $bscSelect.val(bscVal).trigger('change');
 
                     // ── Resultado Intermedio Institucional ──
                     var riVal = (typeBtn === 'edit' && data.profile.resultado_intermedio)
@@ -1219,6 +1226,19 @@
                     $('#goals_type').val(data.profile.type);
                     $('#goals_group_id').val(data.profile.group_id);
                     $('#goals_dependency').val(data.profile.dependency_id);
+
+                    // ── Perspectiva BSC (si el plan lo aplica en Nivel 2 o en Ambos) ──
+                    var bscLevel = @json($niveles['bsc_level'] ?? 'axi');
+                    if (bscLevel === 'goal' || bscLevel === 'both') {
+                        $('#goals_bsc_block').show();
+                        var bscGoalVal = (typeBtn === 'edit' && data.profile.bsc_perspectiva)
+                            ? data.profile.bsc_perspectiva
+                            : '';
+                        $('#goals_bsc_perspectiva').val(bscGoalVal);
+                    } else {
+                        $('#goals_bsc_block').hide();
+                        $('#goals_bsc_perspectiva').val('');
+                    }
                 });
             });
 

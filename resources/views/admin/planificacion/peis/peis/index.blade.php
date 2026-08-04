@@ -207,6 +207,24 @@
                                             </div>
                                         </div>
 
+                                        {{-- ── Nivel de Aplicación BSC ── --}}
+                                        <div class="form-group">
+                                            {{ Form::label('bsc_level', 'Nivel de Aplicación del Balanced Scorecard (BSC):') }}
+                                            {!! Form::select('bsc_level', [
+                                                'axi'  => 'Nivel 1 — Objetivo Estratégico / Eje',
+                                                'goal' => 'Nivel 2 — Objetivo Específico / Meta',
+                                                'both' => 'Ambos Niveles (Nivel 1 y Nivel 2)',
+                                                'none' => 'Desactivado (Sin Perspectiva BSC)',
+                                            ], 'axi', [
+                                                'id'    => 'bsc_level',
+                                                'style' => 'width:100%',
+                                                'class' => 'form-control',
+                                            ]) !!}
+                                            <small class="form-text text-muted">
+                                                Define en qué nivel de la estructura jerárquica se habilitará el selector de las 4 Perspectivas BSC.
+                                            </small>
+                                        </div>
+
                                         {{-- Campo oculto que guarda el JSON final --}}
                                         {{ Form::hidden('nivel_label', null, ['id' => 'nivel_label']) }}
 
@@ -739,6 +757,11 @@
                     if (data.profile.nivel_label) {
                         try {
                             var savedLabels = JSON.parse(data.profile.nivel_label);
+                            if (savedLabels.bsc_level) {
+                                $('#bsc_level').val(savedLabels.bsc_level).trigger('change');
+                            } else {
+                                $('#bsc_level').val('axi').trigger('change');
+                            }
                             // Detectar si coincide con algún modelo predefinido
                             var modelos = {
                                 'MECIP': { axi: 'Objetivo Estratégico', goal: 'Meta',     action: 'Acción' },
@@ -765,7 +788,11 @@
                                 $('#custom_niveles').show();
                             }
                             $('#nivel_label').val(data.profile.nivel_label);
-                        } catch(e) {}
+                        } catch(e) {
+                            $('#bsc_level').val('axi').trigger('change');
+                        }
+                    } else {
+                        $('#bsc_level').val('axi').trigger('change');
                     }
 
                     // Listener para mostrar/ocultar campos personalizados en edición
@@ -799,7 +826,10 @@
                     };
                 } else if (modelos[modeloSel]) {
                     labels = Object.assign({ master: 'PEI' }, modelos[modeloSel]);
+                } else {
+                    labels = { master: 'PEI', axi: 'Nivel 1', goal: 'Nivel 2', action: 'Acción' };
                 }
+                labels.bsc_level = $('#bsc_level').val() || 'axi';
                 if (labels) {
                     $('#nivel_label').val(JSON.stringify(labels));
                 }

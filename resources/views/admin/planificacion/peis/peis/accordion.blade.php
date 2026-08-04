@@ -203,6 +203,14 @@
                             </div>
                             {{-- Fila 2: botones --}}
                             <div class="d-flex align-items-center mt-1 flex-wrap" style="gap:.3rem">
+                                @if($goal->bsc_perspectiva && isset($bscLabels[$goal->bsc_perspectiva]))
+                                <span class="badge {{ $bscColores[$goal->bsc_perspectiva]['badge'] ?? 'badge-secondary' }} mr-1"
+                                      style="font-size:.65rem"
+                                      title="Perspectiva BSC">
+                                    <i class="fa {{ $bscColores[$goal->bsc_perspectiva]['icon'] ?? 'fa-chart-bar' }} mr-1"></i>
+                                    {{ $bscLabels[$goal->bsc_perspectiva] }}
+                                </span>
+                                @endif
                                 <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2"
                                         onclick="event.stopPropagation(); openChatWithContext('PeiGoal', '{{ $goal->id }}', 'Meta: {{ e(strip_tags($goal->name)) }}', '{{ url()->current() }}#goal-{{ $goal->id }}')"
                                         title="Consultar sobre esta meta en el chat">

@@ -313,7 +313,7 @@
                     </div>
 
                     {{-- ── Perspectiva BSC (opcional) ── --}}
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-3" id="axis_bsc_block">
                         <label class="control-label font-weight-bold">
                             <i class="fa fa-chart-bar mr-1 text-primary"></i> Perspectiva BSC
                             <span class="badge badge-light border ml-1" style="font-size:.68rem; font-weight:400">opcional</span>
@@ -386,6 +386,24 @@
                             'class' => 'form-control',
                             'id' => 'goals_order_item',
                         ]) }}
+                    </div>
+
+                    {{-- ── Perspectiva BSC (opcional en Nivel 2) ── --}}
+                    <div class="form-group mb-3" id="goals_bsc_block" style="display:none;">
+                        <label class="control-label font-weight-bold">
+                            <i class="fa fa-chart-bar mr-1 text-primary"></i> Perspectiva BSC
+                            <span class="badge badge-light border ml-1" style="font-size:.68rem; font-weight:400">opcional</span>
+                        </label>
+                        <small class="form-text text-muted mb-1">
+                            Si el plan usa el modelo Balanced Scorecard a este nivel, clasificá este objetivo en su perspectiva correspondiente.
+                        </small>
+                        <select id="goals_bsc_perspectiva" name="bsc_perspectiva" class="form-control" style="width:100%">
+                            <option value="">— Sin perspectiva BSC —</option>
+                            <option value="financiera">💰 Perspectiva Financiera</option>
+                            <option value="clientes">👥 Perspectiva de Clientes / Usuarios</option>
+                            <option value="procesos">⚙️ Perspectiva de Procesos Internos</option>
+                            <option value="aprendizaje">📚 Perspectiva de Aprendizaje y Crecimiento</option>
+                        </select>
                     </div>
 
                     <div class="col-sm-offset-2 col-sm-10 mt-3">
