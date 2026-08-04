@@ -20,7 +20,7 @@
         {{-- ── Selector de Plan Estratégico ── --}}
         <div class="row mb-4 align-items-center">
             <div class="col-lg-7 col-md-12 mb-3 mb-lg-0">
-                <form method="GET" id="formSelectorPei" class="d-flex flex-column flex-sm-row align-items-sm-center w-100">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center w-100">
                     <label class="font-weight-bold mr-sm-3 mb-2 mb-sm-0 text-nowrap">
                         <i class="fa fa-file-alt mr-1 text-info"></i> Plan Estratégico:
                     </label>
@@ -34,7 +34,10 @@
                             @endforeach
                         </select>
                     </div>
-                </form>
+                    <button type="button" id="btnGuardarPei" class="btn btn-success btn-sm ml-sm-2 mt-2 mt-sm-0 text-nowrap" title="Guardar plan seleccionado">
+                        <i class="fa fa-save mr-1"></i> Guardar
+                    </button>
+                </div>
             </div>
             @if($peiActual)
             <div class="col-lg-5 col-md-12 text-left text-lg-right d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end">
@@ -375,29 +378,33 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
 $(function() {
-    // Select2 Plan Estratégico — guarda la selección en BD y recarga el dashboard
+    // Select2 Plan Estratégico
+    $('#selectPei').select2({ width: '100%', minimumResultsForSearch: 5 });
+
+    // Botón Guardar Plan Estratégico
     var urlGuardarPei = '{{ route('planificacion-dashboard.guardar-pei') }}';
     var urlDashboard  = '{{ route('planificacion-dashboard') }}';
 
-    $('#selectPei').select2({ width: '100%', minimumResultsForSearch: 5 })
-        .on('select2:select', function() {
-            var peiId = $(this).val();
+    $('#btnGuardarPei').on('click', function() {
+        var btn   = $(this);
+        var peiId = $('#selectPei').val();
+        if (!peiId) return;
 
-            // Guardar en BD para que persista entre sesiones
-            $.ajax({
-                url: urlGuardarPei,
-                type: 'POST',
-                data: { _token: '{{ csrf_token() }}', pei_id: peiId },
-                success: function() {
-                    // Redirigir con el pei_id en la URL para que la vista cargue los datos correctos
-                    window.location.href = urlDashboard + '?pei_id=' + peiId;
-                },
-                error: function() {
-                    // Si falla el guardado, igual navegamos (degradación elegante)
-                    window.location.href = urlDashboard + '?pei_id=' + peiId;
-                }
-            });
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
+
+        $.ajax({
+            url: urlGuardarPei,
+            type: 'POST',
+            data: { _token: '{{ csrf_token() }}', pei_id: peiId },
+            success: function() {
+                window.location.href = urlDashboard + '?pei_id=' + peiId;
+            },
+            error: function() {
+                btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar');
+                alert('No se pudo guardar la selección. Intenta nuevamente.');
+            }
         });
+    });
 
     // Botón Diagnóstico y Respaldo DB a demanda
     $('#btnEjecutarDiagnostico').on('click', function() {
