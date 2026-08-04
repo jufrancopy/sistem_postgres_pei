@@ -28,6 +28,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/perfil/avatar', 'Admin\UserProfileController@updateAvatar')->name('user.profile.avatar');
     Route::post('/perfil/detalles', 'Admin\UserProfileController@updateDetails')->name('user.profile.details');
     Route::post('/perfil/password', 'Admin\UserProfileController@updatePassword')->name('user.profile.password');
+    Route::post('/gamification/recalculate', 'Admin\GamificationAdminController@recalculate')->name('gamification.recalculate');
     Route::get('/profile', function () { return redirect()->route('user.profile'); })->name('profile.edit');
 
     // ── Mis Tareas (colaboradores) ────────────────────────────────────────────

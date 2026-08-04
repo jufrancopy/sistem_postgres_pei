@@ -122,6 +122,11 @@
                     {{ $peiSeleccionado ? strip_tags($peiSeleccionado->name) : 'Consolidado Global (Todos los Planes PEI)' }}
                 </span>
             </div>
+            @if(auth()->user()->hasRole('Administrador'))
+            <button type="button" id="btnRecalcularGamificacion" class="btn btn-sm btn-outline-warning mb-2 mb-sm-0 mr-sm-2 font-weight-bold" title="Recalcular retroactivamente todos los puntos e insignias de los equipos de trabajo">
+                <i class="fa fa-sync-alt mr-1"></i> Recalcular Puntos Equipos
+            </button>
+            @endif
             <form method="GET" action="{{ route('user.profile', $targetUser->id) }}" class="form-inline my-1 w-100">
                 <div class="input-group input-group-sm w-100">
                     <select name="pei_id" id="select2_pei_id" class="form-control form-control-sm select2" style="min-width: 220px; max-width: 100%; width: 100%;">
@@ -577,6 +582,37 @@ $(function() {
             $(this).closest('form').submit();
         });
     }
+
+    // Handler para Recalcular Puntos de Equipos (Administrador)
+    $('#btnRecalcularGamificacion').on('click', function() {
+        if (!confirm('¿Deseas recalcular retroactivamente todos los puntos e insignias de tus equipos de trabajo? Este proceso recalculará los puntos en base a datos históricos y PEIs activos.')) {
+            return;
+        }
+
+        var btn = $(this);
+        var originalHtml = btn.html();
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Recalculando...');
+
+        $.ajax({
+            url: '{{ route("gamification.recalculate") }}',
+            type: 'POST',
+            data: { _token: '{{ csrf_token() }}' },
+            success: function(res) {
+                btn.prop('disabled', false).html(originalHtml);
+                if (res.success) {
+                    alert(res.message);
+                    window.location.reload();
+                } else {
+                    alert('Atención: ' + res.message);
+                }
+            },
+            error: function(xhr) {
+                btn.prop('disabled', false).html(originalHtml);
+                var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error en la solicitud.';
+                alert('Error: ' + msg);
+            }
+        });
+    });
 
     // Vista previa de la foto seleccionada en el modal
     $('#avatar_input').on('change', function() {

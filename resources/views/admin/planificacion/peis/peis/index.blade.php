@@ -27,6 +27,11 @@
                             </select>
                         </div>
                         <div>
+                            @if(auth()->user()->hasRole('Administrador'))
+                            <button type="button" id="btnRecalcularGamificacionPei" class="btn btn-outline-warning mb-2 mr-2 font-weight-bold" title="Recalcular retroactivamente todos los puntos e insignias de gamificación">
+                                <i class="fa fa-sync-alt mr-1"></i> Recalcular Puntos
+                            </button>
+                            @endif
                             <a class="btn btn-outline-info mb-2 mr-2 font-weight-bold" href="{{ route('globales.roles.guide') }}" title="Ver guía de permisos y roles">
                                 <i class="fa fa-book-open mr-1"></i> Guía de Roles y Permisos
                             </a>
@@ -345,7 +350,36 @@
                 table.draw();
             });
 
-            // Handler para alternar estado Activo / Inactivo vía AJAX
+            // Handler para Recalcular Puntos de Equipos (Administrador)
+            $('#btnRecalcularGamificacionPei').on('click', function() {
+                if (!confirm('¿Deseas recalcular retroactivamente todos los puntos e insignias de tus equipos de trabajo en base a los PEIs activos y tareas históricas?')) {
+                    return;
+                }
+
+                var btn = $(this);
+                var originalHtml = btn.html();
+                btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Recalculando...');
+
+                $.ajax({
+                    url: '{{ route("gamification.recalculate") }}',
+                    type: 'POST',
+                    data: { _token: '{{ csrf_token() }}' },
+                    success: function(res) {
+                        btn.prop('disabled', false).html(originalHtml);
+                        if (res.success) {
+                            alert(res.message);
+                            table.draw(false);
+                        } else {
+                            alert('Atención: ' + res.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        btn.prop('disabled', false).html(originalHtml);
+                        var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error en la solicitud.';
+                        alert('Error: ' + msg);
+                    }
+                });
+            });
             $('body').on('click', '.toggleStatus', function() {
                 var id = $(this).data('id');
                 var btn = $(this);
