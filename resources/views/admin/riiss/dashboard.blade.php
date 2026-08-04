@@ -19,7 +19,7 @@
 
 @section('content')
 <div class="card mb-3">
-    <div class="card-header card-header-danger py-3">
+    <div class="card-header card-header-info py-3">
         <div class="d-flex align-items-center justify-content-between">
             <div>
                 <h4 class="card-title mb-0">

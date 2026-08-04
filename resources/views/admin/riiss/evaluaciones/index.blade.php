@@ -153,7 +153,7 @@
 <div class="modal fade" id="modalBuscarEst" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#c62828,#e91e63)">
+            <div class="modal-header card-header-info" style="background:linear-gradient(135deg,#00acc1,#26c6da)">
                 <h5 class="modal-title text-white">
                     <i class="fa fa-plus mr-2"></i>Nueva Evaluación — Seleccioná el establecimiento
                 </h5>

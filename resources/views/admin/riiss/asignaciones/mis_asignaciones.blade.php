@@ -17,7 +17,7 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header card-header-danger">
+    <div class="card-header card-header-info">
         <h4 class="card-title">
             <i class="fa fa-tasks mr-2"></i>Mis Asignaciones
         </h4>

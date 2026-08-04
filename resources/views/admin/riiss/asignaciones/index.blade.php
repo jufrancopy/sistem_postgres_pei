@@ -35,7 +35,7 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header card-header-danger">
+    <div class="card-header card-header-info">
         <h4 class="card-title">
             <i class="fa fa-user-check mr-2"></i>Asignaciones de Evaluación
         </h4>
@@ -142,7 +142,7 @@
 <div class="modal fade" id="modalNuevaAsignacion" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header card-header-danger" style="background:linear-gradient(135deg,#c62828,#e91e63)">
+            <div class="modal-header card-header-info" style="background:linear-gradient(135deg,#00acc1,#26c6da)">
                 <h5 class="modal-title text-white" id="modalAsignacionTitulo">
                     <i class="fa fa-user-check mr-2"></i>Nueva Asignación
                 </h5>

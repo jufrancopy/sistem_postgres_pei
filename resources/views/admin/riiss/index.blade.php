@@ -560,7 +560,7 @@
 <div class="modal fade" id="modalAsignacionUnificada" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header card-header-danger" style="background:linear-gradient(135deg,#c62828,#e91e63)">
+            <div class="modal-header card-header-info" style="background:linear-gradient(135deg,#00acc1,#26c6da)">
                 <h5 class="modal-title text-white" id="modalAsignacionTitulo">
                     <i class="fa fa-user-check mr-2"></i>Asignación de Evaluación
                 </h5>
@@ -628,7 +628,7 @@
 <div class="modal fade" id="modalEditEst" tabindex="-1" style="display: none;" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#c62828,#e91e63)">
+            <div class="modal-header card-header-info" style="background:linear-gradient(135deg,#00acc1,#26c6da)">
                 <h5 class="modal-title text-white"><i class="fa fa-edit mr-2"></i>Editar establecimiento</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>×</span></button>
             </div>
@@ -715,7 +715,7 @@
 <div class="modal fade" id="modalEst" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#c62828,#e91e63)">
+            <div class="modal-header card-header-info" style="background:linear-gradient(135deg,#00acc1,#26c6da)">
                 <h5 class="modal-title text-white">
                     <i class="fa fa-hospital mr-2"></i><span id="modalEstNombre">—</span>
                 </h5>

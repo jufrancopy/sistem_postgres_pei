@@ -46,7 +46,7 @@
 <div id="loadingOverlay"><div class="spinner-border text-danger"></div></div>
 
 <div class="card">
-    <div class="card-header card-header-danger">
+    <div class="card-header card-header-info">
         <h4 class="card-title">
             <i class="material-icons mr-2" style="vertical-align:middle">local_hospital</i>Establecimientos RIISS
         </h4>
@@ -194,7 +194,7 @@
 <div class="modal fade" id="modalEditEst" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#c62828,#e91e63)">
+            <div class="modal-header card-header-info" style="background:linear-gradient(135deg,#00acc1,#26c6da)">
                 <h5 class="modal-title text-white"><i class="fa fa-edit mr-2"></i>Editar establecimiento</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
@@ -278,7 +278,7 @@
 <div class="modal fade" id="modalEst" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#c62828,#e91e63)">
+            <div class="modal-header card-header-info" style="background:linear-gradient(135deg,#00acc1,#26c6da)">
                 <h5 class="modal-title text-white">
                     <i class="fa fa-hospital mr-2"></i><span id="modalEstNombre">—</span>
                 </h5>
