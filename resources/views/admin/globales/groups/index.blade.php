@@ -2,32 +2,29 @@
 @section('title', 'Grupos')
 
 @section('content')
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                    <div class="card-header card-header-info">
-                        <h4 class="card-title">Grupos de Trabajo</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-2">
-                            <div class="col-md-12">
-                                <a class="btn btn-success font-weight-bold" data-group-id="null" href="javascript:void(0)" id="createNewGroup">
-                                    <i class="fa fa-plus mr-1"></i>Nuevo Grupo
-                                </a>
-                            </div>
-                        </div>
-                    
-                    <nav aria-label="breadcrumb" class="bg-light p-3 mb-0">
-                        <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Grupos</li>
-                        </ol>
-                    </nav>
+    <div class="card">
+        <div class="card-header card-header-info">
+            <h4 class="card-title">Grupos de Trabajo</h4>
+        </div>
 
+        <nav aria-label="breadcrumb" class="bg-light p-3 mb-0">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Lista de Grupos</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card border-0 shadow-none">
                     <div class="card-body p-3">
+                        <div class="success"></div>
+                        <a class="btn btn-success mb-2" data-group-id="null" href="javascript:void(0)" id="createNewGroup">
+                            Nuevo Grupo</a>
+
                         <div class="table-responsive">
-                            <table class="table table-bordered table-striped data-table display nowrap w-100" id="data-table">
-                                <thead class="thead-light">
+                            <table class="table table-bordered data-table display nowrap w-100" id="data-table">
+                                <thead>
                                     <tr>
                                         <th class="text-center" style="width: 60px;">ID</th>
                                         <th>Nombre</th>
