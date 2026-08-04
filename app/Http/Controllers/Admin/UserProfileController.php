@@ -33,8 +33,12 @@ class UserProfileController extends Controller
         $selectedPeiId = $request->pei_id ?? $config?->pei_profile_id;
         $peiSeleccionado = $selectedPeiId ? PeiProfile::find($selectedPeiId) : null;
 
-        // Lista de Planes PEI principales para selector de filtro
-        $peiPlanes = PeiProfile::whereIsRoot()->where('type', 'corporative')->orderByDesc('year_start')->get();
+        // Lista de Planes PEI corporativos principales para selector de filtro
+        $peiPlanes = PeiProfile::whereNull('parent_id')
+            ->where('level', 'master')
+            ->where('type', 'corporative')
+            ->orderByDesc('year_start')
+            ->get();
 
         // Resumen de Gamificación y Jerarquía
         $gamification = $this->gamificationService->getUserGamificationSummary($targetUser, $selectedPeiId);
