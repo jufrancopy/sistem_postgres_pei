@@ -313,7 +313,7 @@
                     </div>
 
                     {{-- ── Perspectiva BSC (opcional) ── --}}
-                    <div class="form-group mb-3" id="axis_bsc_block">
+                    <div class="form-group mb-3" id="axis_bsc_block" style="{{ isset($niveles['bsc_level']) && ($niveles['bsc_level'] === 'goal' || $niveles['bsc_level'] === 'none') ? 'display:none !important;' : '' }}">
                         <label class="control-label font-weight-bold">
                             <i class="fa fa-chart-bar mr-1 text-primary"></i> Perspectiva BSC
                             <span class="badge badge-light border ml-1" style="font-size:.68rem; font-weight:400">opcional</span>

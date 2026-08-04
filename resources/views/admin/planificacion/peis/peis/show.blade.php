@@ -967,10 +967,10 @@
                     // ── Perspectiva BSC (según bsc_level del plan) ──
                     var bscLevel = @json($niveles['bsc_level'] ?? 'axi');
                     if (bscLevel === 'goal' || bscLevel === 'none') {
-                        $('#axis_bsc_block').hide();
+                        $('#axis_bsc_block').attr('style', 'display: none !important;');
                         $('#axis_bsc_perspectiva').val('');
                     } else {
-                        $('#axis_bsc_block').show();
+                        $('#axis_bsc_block').attr('style', 'display: block !important;');
                         var $bscSelect = $('#axis_bsc_perspectiva');
                         if ($bscSelect.hasClass('select2-hidden-accessible')) {
                             $bscSelect.select2('destroy');
