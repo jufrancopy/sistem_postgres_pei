@@ -132,14 +132,14 @@
                     <select name="pei_id" id="select2_pei_id" class="form-control form-control-sm select2" style="min-width: 220px; max-width: 100%; width: 100%;">
                         <option value="">— Todo el Historial Global —</option>
                         @foreach($peiPlanes as $p)
-                        <option value="{{ $p->id }}" {{ request('pei_id') == $p->id || ($peiSeleccionado && $peiSeleccionado->id == $p->id && !request()->has('pei_id')) ? 'selected' : '' }}>
+                        <option value="{{ $p->id }}" {{ ($selectedPeiId == $p->id) ? 'selected' : '' }}>
                             PEI: {{ strip_tags($p->name) }} @if($p->year_start)({{ \Carbon\Carbon::parse($p->year_start)->format('Y') }})@endif
                         </option>
                         @endforeach
                     </select>
-                    @if(request('pei_id'))
+                    @if($selectedPeiId)
                     <div class="input-group-append ml-2 mt-2 mt-sm-0">
-                        <a href="{{ route('user.profile', $targetUser->id) }}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+                        <a href="{{ route('user.profile', ['id' => $targetUser->id, 'pei_id' => '']) }}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
                     </div>
                     @endif
                 </div>

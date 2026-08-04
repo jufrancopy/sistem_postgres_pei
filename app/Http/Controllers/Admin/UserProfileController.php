@@ -27,10 +27,27 @@ class UserProfileController extends Controller
     public function show(Request $request, $id = null)
     {
         $targetUser = $id ? User::with('group')->findOrFail($id) : Auth::user();
-        $config     = HomeConfiguration::first();
+        $config     = HomeConfiguration::firstOrNew([]);
 
-        // PEI seleccionado en filtro o configurado
-        $selectedPeiId = $request->pei_id ?? $config?->pei_profile_id;
+        // Si se seleccionó o limpió un PEI en la petición, guardar de forma permanente en HomeConfiguration y Sesión
+        if ($request->has('pei_id')) {
+            $newPeiId = $request->pei_id ?: null;
+            if ($newPeiId) {
+                $peiExists = PeiProfile::where('id', $newPeiId)->where('is_active', true)->exists();
+                if ($peiExists) {
+                    $config->pei_profile_id = $newPeiId;
+                    $config->save();
+                    session(['selected_pei_id' => $newPeiId]);
+                }
+            } else {
+                $config->pei_profile_id = null;
+                $config->save();
+                session()->forget('selected_pei_id');
+            }
+        }
+
+        // PEI seleccionado en filtro, sesión o configuración persistente
+        $selectedPeiId = $request->pei_id ?? (session('selected_pei_id') ?? $config?->pei_profile_id);
         $peiSeleccionado = $selectedPeiId ? PeiProfile::find($selectedPeiId) : null;
 
         // Lista de Planes PEI corporativos principales para selector de filtro
