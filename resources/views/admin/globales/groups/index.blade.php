@@ -5,15 +5,17 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header text-white d-flex justify-content-between align-items-center" style="background:linear-gradient(135deg,#1a237e,#283593);border-radius:.5rem .5rem 0 0;">
-                        <h4 class="card-title text-white mb-0 font-weight-bold">
-                            <i class="fa fa-users mr-2"></i>Grupos de Trabajo
-                        </h4>
-                        <a class="btn btn-success font-weight-bold" data-group-id="null" href="javascript:void(0)" id="createNewGroup">
-                            <i class="fa fa-plus mr-1"></i>Nuevo Grupo
-                        </a>
+                    <div class="card-header card-header-info">
+                        <h4 class="card-title">Grupos de Trabajo</h4>
                     </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-md-12">
+                                <a class="btn btn-success font-weight-bold" data-group-id="null" href="javascript:void(0)" id="createNewGroup">
+                                    <i class="fa fa-plus mr-1"></i>Nuevo Grupo
+                                </a>
+                            </div>
+                        </div>
                     
                     <nav aria-label="breadcrumb" class="bg-light p-3 mb-0">
                         <ol class="breadcrumb mb-0">

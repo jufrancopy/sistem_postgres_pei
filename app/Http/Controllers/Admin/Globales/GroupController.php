@@ -29,9 +29,9 @@ class GroupController extends Controller
                     return '<span class="badge bg-success">Activo</span>';
                 })
                 ->addColumn('action', function ($row) {
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Editar" class="btn btn-primary btn-sm editGroup"><i class="far fa-edit"></i></a>';
-                    $btn .= ' <a href="' . route('globales.groups.show', $row->id) . '" class="btn btn-success btn-sm" title="Miembros"><i class="fa fa-users"></i></a>';
-                    $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Eliminar" class="btn btn-danger btn-sm deleteGroup"><i class="fa fa-trash"></i></a>';
+                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Editar" class="btn btn-primary btn-circle editGroup"><i class="far fa-edit"></i></a>';
+                    $btn .= ' <a href="' . route('globales.groups.show', $row->id) . '" class="btn btn-success btn-circle" title="Miembros"><i class="fa fa-users"></i></a>';
+                    $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Eliminar" class="btn btn-danger btn-circle deleteGroup"><i class="fa fa-trash"></i></a>';
                     return $btn;
                 })
                 ->rawColumns(['action', 'status'])

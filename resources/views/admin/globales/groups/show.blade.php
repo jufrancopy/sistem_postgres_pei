@@ -2,14 +2,9 @@
 @section('title', 'Grupos de Trabajo')
 
 @section('content')
-    <div class="card border-0 shadow-sm">
-        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background:linear-gradient(135deg,#1a237e,#283593);border-radius:.5rem .5rem 0 0;">
-            <h4 class="card-title text-white font-weight-bold mb-0">
-                <i class="fa fa-users mr-2"></i>Grupos de Trabajo - {{ $group->name }}
-            </h4>
-            <a class="btn btn-success font-weight-bold" data-group-id="{{ $group->id }}" href="javascript:void(0)" id="createNewGroup">
-                <i class="fa fa-plus mr-1"></i>Nuevo Grupo
-            </a>
+    <div class="card">
+        <div class="card-header card-header-info">
+            <h4 class="card-title">Grupos de Trabajo - {{ $group->name }}</h4>
         </div>
 
         <nav aria-label="breadcrumb" class="bg-light p-3 mb-0">
