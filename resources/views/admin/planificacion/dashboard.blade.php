@@ -375,9 +375,29 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
 $(function() {
-    // Select2 Plan Estratégico
+    // Select2 Plan Estratégico — guarda la selección en BD y recarga el dashboard
+    var urlGuardarPei = '{{ route('planificacion-dashboard.guardar-pei') }}';
+    var urlDashboard  = '{{ route('planificacion-dashboard') }}';
+
     $('#selectPei').select2({ width: '100%', minimumResultsForSearch: 5 })
-        .on('select2:select', function() { $('#formSelectorPei').submit(); });
+        .on('select2:select', function() {
+            var peiId = $(this).val();
+
+            // Guardar en BD para que persista entre sesiones
+            $.ajax({
+                url: urlGuardarPei,
+                type: 'POST',
+                data: { _token: '{{ csrf_token() }}', pei_id: peiId },
+                success: function() {
+                    // Redirigir con el pei_id en la URL para que la vista cargue los datos correctos
+                    window.location.href = urlDashboard + '?pei_id=' + peiId;
+                },
+                error: function() {
+                    // Si falla el guardado, igual navegamos (degradación elegante)
+                    window.location.href = urlDashboard + '?pei_id=' + peiId;
+                }
+            });
+        });
 
     // Botón Diagnóstico y Respaldo DB a demanda
     $('#btnEjecutarDiagnostico').on('click', function() {

@@ -153,6 +153,20 @@ class PlanificacionController extends Controller
     }
 
     /**
+     * Guarda el PEI seleccionado en la configuración del dashboard para que persista entre sesiones.
+     */
+    public function guardarPeiSeleccionado(Request $request)
+    {
+        $request->validate(['pei_id' => 'required|uuid|exists:pei_profiles,id']);
+
+        $config = HomeConfiguration::firstOrNew([]);
+        $config->pei_profile_id = $request->pei_id;
+        $config->save();
+
+        return response()->json(['success' => true, 'pei_id' => $request->pei_id]);
+    }
+
+    /**
      * Ejecuta manualmente el respaldo de PostgreSQL y envío de reporte por correo a jucfra23@gmail.com
      */
     public function ejecutarDiagnostico(Request $request)
