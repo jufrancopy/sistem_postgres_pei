@@ -68,9 +68,11 @@ class PeiProfile extends Model
         'ri_recursos_gs',
         'ri_metas',
         'public_token',
+        'is_active',
     ];
 
     protected $casts = [
+        'is_active'   => 'boolean',
         'ri_metas'    => 'array',
         'public_tabs' => 'array',
     ];

@@ -29,8 +29,16 @@ class PeiController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $user = auth()->user();
+            $user  = auth()->user();
             $query = PeiProfile::whereNull('parent_id')->where('level', 'master');
+
+            // Filtro por Estado (Activos / Inactivos / Todos)
+            $estado = $request->get('estado', 'activos');
+            if ($estado === 'activos') {
+                $query->where('is_active', true);
+            } elseif ($estado === 'inactivos') {
+                $query->where('is_active', false);
+            }
 
             if (!$user->hasRole('Administrador')) {
                 $userId = $user->id;
@@ -95,20 +103,27 @@ class PeiController extends Controller
             $data = $query->latest()->get();
             return DataTables::of($data)
                 ->addIndexColumn()
+                ->addColumn('status', function (PeiProfile $profile) {
+                    return $profile->is_active
+                        ? '<span class="badge badge-success px-2 py-1" style="font-size:0.78rem;"><i class="fa fa-check-circle mr-1"></i>Activo</span>'
+                        : '<span class="badge badge-secondary px-2 py-1" style="font-size:0.78rem;"><i class="fa fa-eye-slash mr-1"></i>Inactivo</span>';
+                })
                 ->addColumn('action', function ($row) {
-                    // if (auth()->user()->hasRole('Administrador')) {
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-type="' . $row->type . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editProfile"><i class="far fa-edit"></i></a>';
+                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-type="' . $row->type . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editProfile"><i class="far fa-edit"></i></a>';
 
                     $btn .= ' <a href="' . route('pei-profiles.proceso', $row->id) . '" class="btn btn-success btn-circle" title="Proceso"><i class="fa fa-tasks"></i></a>';
 
                     $btn .= ' <a href="' . route('pei-profiles.details', $row->id) . '" class="btn btn-info btn-circle showTree"><i class="fa fa-tree" aria-hidden="true"></i></a>';
 
+                    // Botón para alternar Estado Activo / Inactivo
+                    $toggleColor = $row->is_active ? 'btn-outline-warning' : 'btn-outline-success';
+                    $toggleIcon  = $row->is_active ? 'fa-eye-slash' : 'fa-eye';
+                    $toggleTitle = $row->is_active ? 'Inactivar PEI (Ocultar)' : 'Activar PEI';
+                    $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" title="' . $toggleTitle . '" class="btn ' . $toggleColor . ' btn-circle toggleStatus"><i class="fa ' . $toggleIcon . '"></i></a>';
+
                     if (auth()->user()->hasRole('Administrador')) {
-                        $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteProfile"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+                        $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteProfile"><i class="fa fa-trash" aria-hidden="true"></i></a>';
                     }
-                    // } elseif (auth()->user()->hasRole('Participantes')) {
-                    // $btn = ' <a href="' . route('pei-profiles.details', $row->id) . '" class="btn btn-info btn-circle showTree"><i class="fa fa-tree" aria-hidden="true"></i></a>';
-                    // }
 
                     return $btn;
                 })
@@ -130,7 +145,7 @@ class PeiController extends Controller
                     return $analystNames;
                 })
 
-                ->rawColumns(['action'])
+                ->rawColumns(['action', 'status'])
                 ->make(true);
         }
 
@@ -932,6 +947,24 @@ class PeiController extends Controller
         return response()->json([
             'total_alertas' => $alertas->count(),
             'acciones'      => $alertas,
+        ]);
+    }
+
+    /**
+     * Alterna el estado activo/inactivo (is_active) de un Plan Estratégico.
+     */
+    public function toggleStatus($id)
+    {
+        $pei = PeiProfile::findOrFail($id);
+        $pei->is_active = !$pei->is_active;
+        $pei->save();
+
+        return response()->json([
+            'success'   => true,
+            'is_active' => $pei->is_active,
+            'message'   => $pei->is_active
+                ? 'El Plan Estratégico "' . strip_tags($pei->name) . '" fue ACTIVADO.'
+                : 'El Plan Estratégico "' . strip_tags($pei->name) . '" fue INACTIVADO (oculto).',
         ]);
     }
 }

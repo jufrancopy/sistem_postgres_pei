@@ -51,7 +51,8 @@ class ActivityController extends Controller
     {
         $search = $request->get('q');
         $query = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')
-            ->where('type', 'corporative');
+            ->where('type', 'corporative')
+            ->where('is_active', true);
 
         if ($search) {
             $query->where('name', 'ILIKE', "%{$search}%");

@@ -48,6 +48,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::delete('plan-maestro/acciones/{accion}', 'Admin\PlanMaestro\PlanMaestroController@destroyAccion')->name('plan-maestro.accion.destroy');
 
     //Rutas de PEI
+    Route::patch('pei-profiles/{id}/toggle-status', 'Admin\Planificacion\Pei\PeiController@toggleStatus')->name('pei-profiles.toggle-status');
     Route::resource('pei-profiles', 'Admin\Planificacion\Pei\PeiController');
     Route::get('pei-profiles/{idPerfil}/detail', 'Admin\Planificacion\Pei\PeiController@showDetailForGroup');
     Route::get('pei-profiles-compareHistorical', 'Admin\Planificacion\Pei\PeiController@compareHistorical')->name('pei-profiles-compareHistorical');

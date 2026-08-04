@@ -17,8 +17,15 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                        <div class="success"></div>
+                    <div class="card-header d-flex flex-wrap align-items-center justify-content-between">
+                        <div class="d-flex align-items-center mb-2">
+                            <label class="font-weight-bold mr-2 mb-0 text-dark small"><i class="fa fa-filter text-info mr-1"></i> Estado:</label>
+                            <select id="filterEstadoPei" class="form-control form-control-sm font-weight-bold" style="width: auto; min-width: 170px;">
+                                <option value="activos" selected>🟢 Sólo Activos</option>
+                                <option value="inactivos">🔴 Sólo Inactivos</option>
+                                <option value="todos">📋 Todos los Planes</option>
+                            </select>
+                        </div>
                         <div>
                             <a class="btn btn-outline-info mb-2 mr-2 font-weight-bold" href="{{ route('globales.roles.guide') }}" title="Ver guía de permisos y roles">
                                 <i class="fa fa-book-open mr-1"></i> Guía de Roles y Permisos
@@ -41,6 +48,7 @@
                                         <th>Tipo</th>
                                         <th>Grupo</th>
                                         <th>Analista</th>
+                                        <th>Estado</th>
                                         <th width="280px">Acciones</th>
                                     </tr>
                                 </thead>
@@ -278,7 +286,12 @@
                         "previous": "Anterior"
                     }
                 },
-                ajax: "{{ route('pei-profiles.index') }}",
+                ajax: {
+                    url: "{{ route('pei-profiles.index') }}",
+                    data: function(d) {
+                        d.estado = $('#filterEstadoPei').val();
+                    }
+                },
                 columns: [{
                     data: 'DT_RowIndex',
                     name: 'DT_RowIndex'
@@ -307,23 +320,49 @@
                     data: 'analysts',
                     name: 'analysts',
                     render: function(data, type, full, meta) {
-                        var analystsArray = data.split(', ');
-
+                        var analystsArray = data ? data.split(', ') : [];
                         var analystsHtml = '';
-
                         analystsArray.forEach(function(analyst) {
-                            analystsHtml += '<span class="badge badge-secondary">' +
-                                analyst + '</span> ';
+                            if (analyst) {
+                                analystsHtml += '<span class="badge badge-secondary">' + analyst + '</span> ';
+                            }
                         });
-
                         return analystsHtml;
                     }
+                }, {
+                    data: 'status',
+                    name: 'status'
                 }, {
                     data: 'action',
                     name: 'action',
                     orderable: false,
                     searchable: false
                 }, ]
+            });
+
+            // Redibujar tabla al cambiar el filtro de estado
+            $('#filterEstadoPei').on('change', function() {
+                table.draw();
+            });
+
+            // Handler para alternar estado Activo / Inactivo vía AJAX
+            $('body').on('click', '.toggleStatus', function() {
+                var id = $(this).data('id');
+                var btn = $(this);
+                btn.prop('disabled', true);
+
+                $.ajax({
+                    url: '{{ url("pei-profiles") }}/' + id + '/toggle-status',
+                    type: 'PATCH',
+                    data: { _token: '{{ csrf_token() }}' },
+                    success: function(res) {
+                        table.draw(false);
+                    },
+                    error: function() {
+                        btn.prop('disabled', false);
+                        alert('No se pudo cambiar el estado del Plan Estratégico.');
+                    }
+                });
             });
 
             // Función para inicializar Select2

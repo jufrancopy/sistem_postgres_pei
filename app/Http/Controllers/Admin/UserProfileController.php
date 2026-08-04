@@ -36,6 +36,7 @@ class UserProfileController extends Controller
         // Lista de Planes PEI corporativos principales para selector de filtro
         $peiPlanes = PeiProfile::whereNull('parent_id')
             ->where('type', 'corporative')
+            ->where('is_active', true)
             ->orderByDesc('year_start')
             ->get();
 
