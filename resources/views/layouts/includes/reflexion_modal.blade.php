@@ -75,10 +75,12 @@
 
 {{-- Script de la Reflexión Diaria --}}
 <script>
-$(document.function || function() {
+$(document).ready(function() {
     // Al cargar el documento, verificar si se debe mostrar automáticamente hoy
     var hoyStr = new Date().toISOString().slice(0, 10);
-    var ultimaFecha = localStorage.getItem('ips_reflexion_fecha');
+    var userId = "{{ Auth::id() }}";
+    var storageKey = 'ips_reflexion_fecha_' + userId;
+    var ultimaFecha = localStorage.getItem(storageKey);
 
     function cargarReflexion(random = 0) {
         var url = "{{ route('globales.reflexion.diaria') }}";
@@ -155,7 +157,7 @@ $(document.function || function() {
 
     // Guardar fecha al cerrar modal
     $(document).on('click', '#btnCerrarReflexion, #modalReflexionDiaria .close', function() {
-        localStorage.setItem('ips_reflexion_fecha', hoyStr);
+        localStorage.setItem(storageKey, hoyStr);
     });
 
     // Auto-mostrar la primera vez que ingresa en el día
@@ -163,8 +165,8 @@ $(document.function || function() {
         setTimeout(function() {
             cargarReflexion(0);
             $('#modalReflexionDiaria').modal('show');
-            localStorage.setItem('ips_reflexion_fecha', hoyStr);
-        }, 1200);
+            localStorage.setItem(storageKey, hoyStr);
+        }, 1000);
     }
 });
 </script>
