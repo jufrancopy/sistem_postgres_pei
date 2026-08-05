@@ -30,9 +30,9 @@ class HomeController extends Controller
             return redirect()->route('riiss.index');
         }
 
-        // Gestor o Colaborador de Actividades → sus actividades
-        if ($user->hasRole(['Gestor de Actividades', 'Colaborador de Actividades'])) {
-            return redirect()->route('globales.activities.mis-actividades');
+        // Analista de Planificación / Coordinador de Planificación → su dashboard de planificación
+        if ($user->hasRole(['Analista de Planificación', 'Coordinador de Planificación'])) {
+            return redirect()->route('planificacion-dashboard');
         }
 
         // Fallback → dashboard global

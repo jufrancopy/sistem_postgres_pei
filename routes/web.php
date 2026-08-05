@@ -411,7 +411,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('pei-profiles/{profileId}/marcos/sync',  'Admin\Planificacion\MarcoReferencialController@sync')->name('pei.marcos.sync');
 
     // ── Módulo PGN ────────────────────────────────────────────────────────────
-    Route::prefix('pgn')->name('pgn.')->middleware(['role:Administrador|Analista PEI'])->group(function () {
+    Route::prefix('pgn')->name('pgn.')->middleware(['role:Administrador|Coordinador de Planificación|Analista PEI|Analista de Planificación|Analista'])->group(function () {
         Route::get('/',                                     'Admin\Planificacion\Pgn\PgnController@index')->name('index');
         // Estructura de niveles
         Route::get('estructura/{anio}',                    'Admin\Planificacion\Pgn\PgnController@estructuraDeAnio')->name('estructura.anio');

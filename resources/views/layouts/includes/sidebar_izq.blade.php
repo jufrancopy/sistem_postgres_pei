@@ -296,7 +296,7 @@
         @endrole
 
         {{-- Mis Actividades: un solo item para todos los roles de actividades --}}
-        @hasanyrole('Gestor de Actividades|Colaborador de Actividades|Analista de Planificación')
+        @hasanyrole('Gestor de Actividades|Colaborador de Actividades')
             <li class="nav-item {{ request()->is('mis-actividades') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('globales.activities.mis-actividades') }}">
                     <i class="material-icons">task_alt</i>
@@ -306,27 +306,21 @@
         @endhasanyrole
 
         {{-- Sidebar exclusivo para Analista PEI / Analista de Planificación --}}
-        @hasanyrole('Analista PEI|Analista de Planificación|Analista|Analista de Monitoreo PEI')
-            @php $enPgnAnalista = str_contains($path, 'pgn') || str_contains($path, 'pei-') || str_contains($path, 'pei/marcos'); @endphp
-            <li class="nav-item active">
+        @hasanyrole('Analista PEI|Analista de Planificación|Analista')
+            @php $enPgnAnalista = str_contains($path, 'pgn') || str_contains($path, 'pei/marcos'); @endphp
+            <li class="nav-item {{ $isActive('planificacion-dashboard') }}">
                 <a class="nav-link" href="{{ route('planificacion-dashboard') }}">
                     <i class="material-icons">dashboard</i>
-                    <p>Inicio PEI</p>
+                    <p>Planificación</p>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" data-toggle="collapse" href="#peiAnalistaMenu" aria-expanded="{{ $enPgnAnalista ? 'true' : 'false' }}">
                     <i class="material-icons">assignment</i>
-                    <p>Planificación <b class="caret"></b></p>
+                    <p>Módulos de Planificación <b class="caret"></b></p>
                 </a>
                 <div class="collapse {{ $enPgnAnalista ? 'show' : '' }}" id="peiAnalistaMenu">
                     <ul class="nav">
-                        <li class="nav-item {{ $isActive('pei-profiles*') }}">
-                            <a class="nav-link" href="{{ route('pei-profiles.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-file-alt" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">PEI</span>
-                            </a>
-                        </li>
                         <li class="nav-item {{ $isActive('pgn*') }}">
                             <a class="nav-link" href="{{ route('pgn.index') }}">
                                 <span class="sidebar-mini"><i class="fa fa-coins" style="font-size:.8rem"></i></span>
