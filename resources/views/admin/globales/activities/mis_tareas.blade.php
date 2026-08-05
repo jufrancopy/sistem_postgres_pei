@@ -143,12 +143,12 @@
 <div class="row">
     @foreach($columnas as $status => $col)
     @php $colTareas = $activity->tasks->where('status', $status)->where('assigned_to', $userId); @endphp
-    <div class="col-md mb-4" style="min-width:220px">
+    <div class="col-md mb-4" style="min-width:220px" data-status="{{ $status }}">
         <div style="border-radius:10px 10px 0 0;background:{{ $col['color'] }};padding:10px 14px;color:#fff;font-weight:700;font-size:.84rem;display:flex;align-items:center;justify-content:space-between">
             <span><i class="fa {{ $col['icon'] }} mr-2"></i>{{ $col['label'] }}</span>
             <span class="badge badge-light text-dark">{{ $colTareas->count() }}</span>
         </div>
-        <div style="background:#f8fafc;border-radius:0 0 10px 10px;min-height:100px;padding:10px">
+        <div class="col-body" style="background:#f8fafc;border-radius:0 0 10px 10px;min-height:150px;padding:10px 10px 25px 10px">
             @forelse($colTareas->sortByDesc('created_at') as $task)
                 @include('admin.globales.activities.partials.task_card', [
                     'task'            => $task,
@@ -158,7 +158,7 @@
                     'esMia'           => $task->assigned_to === $userId,
                 ])
             @empty
-            <div style="text-align:center;padding:20px 8px;color:#cbd5e1;font-size:.78rem">
+            <div class="col-empty" style="text-align:center;padding:20px 8px;color:#cbd5e1;font-size:.78rem">
                 <i class="fa fa-inbox fa-lg d-block mb-1"></i>Sin tareas
             </div>
             @endforelse
@@ -175,11 +175,48 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
 var activityId = {{ $activity->id }};
 var statusBase = "{{ url('admin/globales/activities/tareas') }}";
 var statuses   = @json(array_keys($columnas));
 $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
+
+$(document).ready(function() {
+    initDragDrop();
+});
+
+function initDragDrop() {
+    document.querySelectorAll('.col-body').forEach(function(col) {
+        Sortable.create(col, {
+            group:       'mis-tareas-tablero',
+            animation:   150,
+            ghostClass:  'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass:   'sortable-drag',
+            handle:      '.drag-handle',
+            filter:      '.task-actions, button, a, input, .task-comments-section',
+            preventOnFilter: true,
+            onEnd: function(evt) {
+                var taskId     = $(evt.item).data('id');
+                var newColBody = evt.to;
+                var newStatus  = parseInt($(newColBody).closest('[data-status]').data('status'));
+
+                if (evt.from === evt.to) return;
+
+                if (newStatus === 2) {
+                    $('#completion_task_id').val(taskId);
+                    $('#completion_new_status').val(newStatus);
+                    $('#completion_note').val('');
+                    $('#completionModal').modal('show');
+                    evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex] || null);
+                } else {
+                    moveTask(taskId, newStatus, null);
+                }
+            }
+        });
+    });
+}
 
 $('body').on('click', '.btn-move-right', function() {
     var taskId = $(this).data('id');
