@@ -307,7 +307,7 @@
 
         {{-- Sidebar exclusivo para Analista PEI / Analista de Planificación --}}
         @hasanyrole('Analista PEI|Analista de Planificación|Analista|Analista de Monitoreo PEI')
-            @php $enPgnAnalista = str_contains($path, 'pgn') || str_contains($path, 'pei-'); @endphp
+            @php $enPgnAnalista = str_contains($path, 'pgn') || str_contains($path, 'pei-') || str_contains($path, 'pei/marcos'); @endphp
             <li class="nav-item active">
                 <a class="nav-link" href="{{ route('planificacion-dashboard') }}">
                     <i class="material-icons">dashboard</i>
@@ -331,6 +331,12 @@
                             <a class="nav-link" href="{{ route('pgn.index') }}">
                                 <span class="sidebar-mini"><i class="fa fa-coins" style="font-size:.8rem"></i></span>
                                 <span class="sidebar-normal">PGN</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('pei/marcos*') }}">
+                            <a class="nav-link" href="{{ route('pei.marcos.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-link" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Marcos Referenciales</span>
                             </a>
                         </li>
                     </ul>
