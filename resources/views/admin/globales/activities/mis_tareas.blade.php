@@ -171,6 +171,8 @@
 @include('admin.globales.activities.partials.modal_completion')
 @include('admin.globales.activities.partials.modal_comentarios')
 @include('admin.globales.activities.partials.modal_detalle_tarea')
+@include('admin.globales.activities.partials.modal_evidence')
+@include('admin.globales.activities.partials.modal_tarea')
 
 @endsection
 
@@ -179,6 +181,7 @@
 <script>
 var activityId = {{ $activity->id }};
 var statusBase = "{{ url('admin/globales/activities/tareas') }}";
+var comentariosBase = "{{ url('admin/globales/activities/tareas') }}";
 var statuses   = @json(array_keys($columnas));
 $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
 
@@ -256,6 +259,153 @@ function moveTask(taskId, newStatus, note) {
         error: function(xhr) { toastr.error(xhr.responseJSON?.errors?.completion_note?.[0] || 'Error'); }
     });
 }
+
+// ── Eventos de Tareas ─────────────────────────────────────────────────────────
+
+// Abrir/cerrar sección de comentarios desde el botón en el footer
+$(document).on('click', '.btn-toggle-comments', function(e) {
+    e.stopPropagation();
+    var taskId = $(this).data('task-id');
+    $('#comments-' + taskId).slideToggle(200);
+    $('#comments-' + taskId).promise().done(function() {
+        if ($(this).is(':visible')) {
+            var $l = $('#comments-lista-' + taskId);
+            $l.scrollTop($l[0].scrollHeight);
+            $('#comment-input-' + taskId).focus();
+        }
+    });
+});
+
+$(document).on('keydown', '.comment-input', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); enviarComentario($(this).data('task-id')); }
+});
+$(document).on('click', '.comment-send', function() {
+    enviarComentario($(this).data('task-id'));
+});
+
+function enviarComentario(taskId) {
+    var $input = $('#comment-input-' + taskId);
+    var texto  = $input.val().trim();
+    if (!texto) return;
+    $.ajax({
+        url: comentariosBase + '/' + taskId + '/comentarios', type: 'POST',
+        data: { _token: $('meta[name="csrf-token"]').attr('content'), comentario: texto },
+        success: function(r) {
+            $input.val('');
+            var c = r.item;
+            var $lista = $('#comments-lista-' + taskId);
+            $lista.find('#no-comments-' + taskId).remove();
+            $lista.append(
+                '<div class="d-flex mb-2" style="gap:8px" data-comment-id="' + c.id + '">'
+                + '<div style="width:24px;height:24px;border-radius:50%;background:#dcfce7;color:#166534;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">' + c.initials + '</div>'
+                + '<div style="flex:1;min-width:0">'
+                + '<div style="background:#dbeafe;border-radius:0 8px 8px 8px;padding:6px 10px;font-size:.78rem">' + $('<div>').text(c.comentario).html() + '</div>'
+                + '<div style="font-size:.65rem;color:#94a3b8;margin-top:2px;display:flex;justify-content:space-between">'
+                + '<span>' + c.autor + ' · ' + c.fecha + '</span>'
+                + '<a href="javascript:void(0)" class="btn-delete-comment text-danger" data-id="' + c.id + '" style="font-size:.65rem">×</a>'
+                + '</div></div></div>'
+            );
+            var $card = $('[data-id="' + taskId + '"]').first();
+            var $cont = $card.find('.fa-comment-alt').closest('span');
+            if ($cont.length) {
+                var cur = parseInt($cont.text().trim()) || 0;
+                $cont.html('<i class="fa fa-comment-alt mr-1"></i>' + (cur + 1));
+            }
+        },
+        error: function() { toastr.error('Error al guardar comentario'); }
+    });
+}
+
+$(document).on('click', '.btn-delete-comment', function(e) {
+    e.stopPropagation();
+    var cId = $(this).data('id');
+    var $row = $(this).closest('[data-comment-id]');
+    $.ajax({
+        url: comentariosBase + '/comentarios/' + cId, type: 'DELETE',
+        data: { _token: $('meta[name="csrf-token"]').attr('content') },
+        success: function() { $row.fadeOut(200, function(){ $(this).remove(); }); },
+        error: function() { toastr.error('Error'); }
+    });
+});
+
+// ── Notificar tarea individual ────────────────────────────────────────────────
+$('body').on('click', '.btn-notificar-tarea', function(e) {
+    e.stopPropagation();
+    var taskId = $(this).data('id');
+    var $btn = $(this).prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>');
+    $.ajax({
+        url: '/admin/globales/activities/tareas/' + taskId + '/notificar',
+        type: 'POST',
+        data: { _token: $('meta[name="csrf-token"]').attr('content') },
+        success: function(r) { toastr.success(r.success); },
+        error:   function(xhr) { toastr.error(xhr.responseJSON?.error || 'Error al notificar'); },
+        complete: function() { $btn.prop('disabled', false).html('<i class="fa fa-paper-plane"></i>'); }
+    });
+});
+
+// ── Evidencias ────────────────────────────────────────────────────────────────
+$('body').on('click', '.btn-add-evidence', function(e) {
+    e.stopPropagation();
+    $('#evidence_task_id').val($(this).data('id'));
+    $('#ev_label').val(''); $('#ev_url').val(''); $('#ev_file').val('');
+    $('#evidenceModal').modal('show');
+});
+
+$('#evidenceModal').on('shown.bs.modal', function() { if (typeof toggleEvidenceSection === 'function') toggleEvidenceSection('url'); });
+
+$('body').on('change', '#ev_file', function() {
+    var type = $('#evidence_type').val();
+    var maxMB = type === 'image' ? 2 : 5;
+    var file = this.files[0];
+    if (file && file.size > maxMB * 1024 * 1024) {
+        $('#ev_size_warning').show(); $(this).val('');
+        $('#ev_file_name').text('Haga clic para seleccionar un archivo');
+    } else {
+        $('#ev_size_warning').hide();
+        $('#ev_file_name').text(file ? file.name : 'Haga clic para seleccionar un archivo');
+    }
+});
+
+$('#btnSaveEvidence').click(function() {
+    var taskId = $('#evidence_task_id').val();
+    var type   = $('#evidence_type').val();
+    var formData = new FormData();
+    formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
+    formData.append('type', type);
+    if (type === 'url') {
+        formData.append('label', $('#ev_label').val());
+        formData.append('value', $('#ev_url').val());
+    } else {
+        var file = $('#ev_file')[0].files[0];
+        if (!file) { toastr.error('Seleccione un archivo'); return; }
+        formData.append('file', file);
+    }
+    $(this).text('Guardando...');
+    $.ajax({
+        url: statusBase + '/' + taskId + '/evidencias', type: 'POST',
+        data: formData, processData: false, contentType: false,
+        success: function(r) { $('#evidenceModal').modal('hide'); toastr.success(r.success); location.reload(); },
+        error:   function(xhr) {
+            var errors = xhr.responseJSON?.errors;
+            if (errors) $.each(errors, function(k,v) { toastr.error(v); });
+            else toastr.error('Error al guardar');
+            $('#btnSaveEvidence').text('Guardar');
+        }
+    });
+});
+
+// ── Eliminar tarea ────────────────────────────────────────────────────────────
+$('body').on('click', '.btn-delete-task', function(e) {
+    e.stopPropagation();
+    var taskId = $(this).data('id');
+    Swal.fire({ title:'¿Eliminar tarea?', icon:'warning', showCancelButton:true,
+        confirmButtonColor:'#d33', confirmButtonText:'Sí, eliminar', cancelButtonText:'Cancelar'
+    }).then(function(r) {
+        if (r.value) $.ajax({ url: statusBase + '/' + taskId, type: 'DELETE',
+            success: function() { location.reload(); } });
+    });
+});
+
 @include('admin.globales.activities.partials.scripts_comentarios')
 </script>
 @endpush
