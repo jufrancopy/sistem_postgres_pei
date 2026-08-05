@@ -272,7 +272,7 @@
 </div>
 
 {{-- Breadcrumb + controles --}}
-<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="gap:8px">
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="gap:10px">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0 small">
             <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Dashboard</a></li>
@@ -280,16 +280,30 @@
             <li class="breadcrumb-item active">{{ $activity->name }}</li>
         </ol>
     </nav>
-    <div class="view-toggle d-flex gap-1">
-        <button class="btn btn-sm btn-primary active" id="btnVistaEstado">
-            <i class="fa fa-columns mr-1"></i>Por estado
-        </button>
-        <button class="btn btn-sm btn-outline-secondary" id="btnVistaEtiqueta">
-            <i class="fa fa-tag mr-1"></i>Por etiqueta
-        </button>
-        <button class="btn btn-sm btn-outline-secondary" id="btnVistaGantt">
-            <i class="fa fa-stream mr-1"></i>Cronograma
-        </button>
+    <div class="d-flex align-items-center flex-wrap" style="gap:10px">
+        {{-- Toggle Visibilidad Transparente: Mis Tareas vs Todo el Equipo --}}
+        <div class="btn-group btn-group-toggle" data-toggle="buttons" id="toggleFiltroAsignacion">
+            <label class="btn btn-sm btn-info active font-weight-bold" id="btnFiltroMisTareas" style="border-radius:20px 0 0 20px;padding:5px 14px;cursor:pointer">
+                <input type="radio" name="filtro_scope" value="mis_tareas" checked>
+                <i class="fa fa-user mr-1"></i> Mis Tareas
+            </label>
+            <label class="btn btn-sm btn-outline-info font-weight-bold" id="btnFiltroEquipo" style="border-radius:0 20px 20px 0;padding:5px 14px;cursor:pointer">
+                <input type="radio" name="filtro_scope" value="equipo">
+                <i class="fa fa-users mr-1"></i> Ver Todo el Equipo
+            </label>
+        </div>
+
+        <div class="view-toggle d-flex gap-1">
+            <button class="btn btn-sm btn-primary active" id="btnVistaEstado">
+                <i class="fa fa-columns mr-1"></i>Por estado
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" id="btnVistaEtiqueta">
+                <i class="fa fa-tag mr-1"></i>Por etiqueta
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" id="btnVistaGantt">
+                <i class="fa fa-stream mr-1"></i>Cronograma
+            </button>
+        </div>
     </div>
 </div>
 
@@ -920,13 +934,50 @@ renderPaleta();
 {{-- SortableJS --}}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
-// ── Drag & Drop entre columnas ────────────────────────────────────────────────
-var statuses    = @json(array_keys($columnas));
-var statusDone  = {{ $isScrumActivity ? 2 : 2 }}; // siempre 2 = hecho/finalizado
-var pendingDrag = null; // {taskId, newStatus} — esperando nota de cierre
+// ── Filter Scope: Mis Tareas vs Todo el Equipo ────────────────────────────────
+var currentUserId = {{ auth()->id() }};
+var filtroScope   = 'mis_tareas'; // Por defecto: Mis Tareas
+
+function aplicarFiltroScope() {
+    if (filtroScope === 'mis_tareas') {
+        $('.task-card').each(function() {
+            var assignedTo = $(this).data('assigned-to');
+            if (parseInt(assignedTo) === currentUserId) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    } else {
+        $('.task-card').show();
+    }
+    actualizarContadoresColumnas();
+}
+
+function actualizarContadoresColumnas() {
+    $('.col-body').each(function() {
+        var visibleCount = $(this).find('.task-card:visible').length;
+        $(this).closest('[data-status], .col-md').find('.badge-light').text(visibleCount);
+    });
+}
+
+$('#btnFiltroMisTareas').on('click', function() {
+    filtroScope = 'mis_tareas';
+    $('#btnFiltroMisTareas').addClass('btn-info active').removeClass('btn-outline-info');
+    $('#btnFiltroEquipo').addClass('btn-outline-info').removeClass('btn-info active');
+    aplicarFiltroScope();
+});
+
+$('#btnFiltroEquipo').on('click', function() {
+    filtroScope = 'equipo';
+    $('#btnFiltroEquipo').addClass('btn-info active').removeClass('btn-outline-info');
+    $('#btnFiltroMisTareas').addClass('btn-outline-info').removeClass('btn-info active');
+    aplicarFiltroScope();
+});
 
 $(document).ready(function() {
     initDragDrop();
+    aplicarFiltroScope();
 });
 
 function initDragDrop() {
