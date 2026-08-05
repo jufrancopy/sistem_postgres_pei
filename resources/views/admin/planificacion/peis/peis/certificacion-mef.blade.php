@@ -10,7 +10,9 @@
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-2">
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación</a></li>
+            @hasanyrole('Administrador|Coordinador de Planificación')
             <li class="breadcrumb-item"><a href="{{ route('pei-profiles.index') }}">Perfiles PEI</a></li>
+            @endhasanyrole
             <li class="breadcrumb-item"><a href="{{ route('pei-profiles.proceso', $profile->id) }}">Proceso</a></li>
             <li class="breadcrumb-item active">Certificación MEF</li>
         </ol>

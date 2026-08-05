@@ -13,8 +13,12 @@
     <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-2">
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación</a></li>
+            @hasanyrole('Administrador|Coordinador de Planificación')
             <li class="breadcrumb-item"><a href="{{ route('pei-profiles.index') }}">Perfiles PEI</a></li>
             <li class="breadcrumb-item"><a href="{{ route('pei-profiles.show', $profile->id) }}">{{ strip_tags($profile->name) }}</a></li>
+            @else
+            <li class="breadcrumb-item"><a href="{{ route('pei-profiles.proceso', $profile->id) }}">{{ strip_tags($profile->name) }}</a></li>
+            @endhasanyrole
             <li class="breadcrumb-item active">Tablero</li>
         </ol>
     </nav>

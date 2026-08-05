@@ -502,6 +502,10 @@ class PeiController extends Controller
 
     public function show(Request $request, $id)
     {
+        if (!auth()->user()->hasAnyRole(['Administrador', 'Coordinador de Planificación'])) {
+            return redirect()->route('pei-profiles.proceso', $id);
+        }
+
         $profile = PeiProfile::with([
                 'analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies',
                 'children.marcos', 'children.strategies',
