@@ -117,18 +117,22 @@ $pctGlobal   = round(($completados / 6) * 100);
                 </small>
             </div>
             <div class="col-md-5 text-right">
+                @hasanyrole('Administrador|Coordinador de Planificación')
                 <a href="{{ route('pei-profiles.show', $profile->id) }}" class="btn btn-sm btn-outline-info">
                     <i class="fa fa-edit mr-1"></i> Editar Plan
                 </a>
+                @endhasanyrole
                 <a href="{{ route('pei-profiles.dashboard', $profile->id) }}" class="btn btn-sm btn-dark">
                     <i class="fa fa-chart-bar mr-1"></i> Tablero de Monitoreo
                 </a>
                 <a href="{{ route('pei-profiles.certificacion-mef', $profile->id) }}" class="btn btn-sm btn-warning">
                     <i class="fa fa-certificate mr-1"></i> Certificación MEF
                 </a>
+                @hasanyrole('Administrador|Coordinador de Planificación')
                 <a href="{{ route('proyectos-institucionales.index', $profile->id) }}" class="btn btn-sm btn-success">
                     <i class="fa fa-project-diagram mr-1"></i> Proyectos
                 </a>
+                @endhasanyrole
             </div>
         </div>
 

@@ -24,6 +24,7 @@
                     <label class="font-weight-bold mr-sm-3 mb-2 mb-sm-0 text-nowrap">
                         <i class="fa fa-file-alt mr-1 text-info"></i> Plan Estratégico:
                     </label>
+                    @hasanyrole('Administrador|Coordinador de Planificación')
                     <div class="flex-grow-1 w-100" style="min-width: 0;">
                         <select name="pei_id" id="selectPei" class="form-control select2 w-100" style="width: 100% !important;">
                             @foreach($peisCorporativos as $pei)
@@ -37,19 +38,33 @@
                     <button type="button" id="btnGuardarPei" class="btn btn-success btn-sm ml-sm-2 mt-2 mt-sm-0 text-nowrap" title="Guardar plan seleccionado">
                         <i class="fa fa-save mr-1"></i> Guardar
                     </button>
+                    @else
+                    <div class="flex-grow-1 w-100">
+                        <span class="font-weight-bold text-dark h6 mb-0">
+                            {{ strip_tags($peiActual->name ?? 'Plan Asignado') }}
+                            @if($peiActual && $peiActual->year_start && $peiActual->year_end)
+                                ({{ \Carbon\Carbon::parse($peiActual->year_start)->format('Y') }}–{{ \Carbon\Carbon::parse($peiActual->year_end)->format('Y') }})
+                            @endif
+                        </span>
+                    </div>
+                    @endhasanyrole
                 </div>
             </div>
             @if($peiActual)
             <div class="col-lg-5 col-md-12 text-left text-lg-right d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end">
+                @if(auth()->user()->hasRole('Administrador'))
                 <button type="button" id="btnEjecutarDiagnostico" class="btn btn-sm btn-outline-danger mr-1 mb-1 font-weight-bold" title="Ejecutar respaldo DB y enviar reporte a jucfra23@gmail.com">
                     <i class="fa fa-heartbeat mr-1"></i> Respaldo & Diagnóstico
                 </button>
+                @endif
                 <a href="{{ route('pei-profiles.proceso', $peiActual->id) }}" class="btn btn-sm btn-outline-info mr-1 mb-1">
                     <i class="fa fa-tasks mr-1"></i> Proceso
                 </a>
+                @hasanyrole('Administrador|Coordinador de Planificación')
                 <a href="{{ route('pei-profiles.show', $peiActual->id) }}" class="btn btn-sm btn-outline-primary mr-1 mb-1">
                     <i class="fa fa-sitemap mr-1"></i> Árbol del Plan
                 </a>
+                @endhasanyrole
                 <a href="{{ route('pei-profiles.dashboard', $peiActual->id) }}" class="btn btn-sm btn-dark mb-1">
                     <i class="fa fa-chart-bar mr-1"></i> Tablero
                 </a>
