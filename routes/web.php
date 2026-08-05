@@ -192,8 +192,8 @@ Route::group(['middleware' => ['auth']], function () {
         // ── Show: Administrador + Gestor + Colaborador ───────────────────────
         Route::get('activities/{activity}', 'Admin\Globales\ActivityController@show')->name('activities.show');
 
-        // ── Tareas: Administrador y Gestor de Actividades ─────────────────
-        Route::middleware(['role:Administrador|Gestor de Actividades'])->group(function () {
+        // ── Tareas: Administrador, Gestor y Analistas ─────────────────
+        Route::middleware(['role:Administrador|Gestor de Actividades|Analista de Planificación|Analista PEI|Analista'])->group(function () {
             Route::post('activities/{activityId}/tareas', 'Admin\Globales\ActivityController@storeTarea')->name('activities.tareas.store');
             Route::delete('activities/tareas/{taskId}', 'Admin\Globales\ActivityController@destroyTarea')->name('activities.tareas.destroy');
             Route::post('activities/tareas/{taskId}/evidencias', 'Admin\Globales\ActivityController@storeEvidencia')->name('activities.tareas.evidencias.store');
@@ -202,7 +202,7 @@ Route::group(['middleware' => ['auth']], function () {
             Route::post('activities/tareas/{taskId}/notificar', 'Admin\Globales\ActivityController@notificarTarea')->name('activities.tareas.notificar');
         });
 
-        Route::middleware(['role:Administrador|Gestor de Actividades|Colaborador de Actividades'])->group(function () {
+        Route::middleware(['role:Administrador|Gestor de Actividades|Colaborador de Actividades|Analista de Planificación|Analista PEI|Analista'])->group(function () {
             Route::patch('activities/tareas/{taskId}/reasignar', 'Admin\Globales\ActivityController@reasignarTarea')->name('activities.tareas.reasignar');
         });
 

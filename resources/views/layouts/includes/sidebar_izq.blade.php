@@ -336,6 +336,12 @@
                     </ul>
                 </div>
             </li>
+            <li class="nav-item {{ request()->is('mis-actividades') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('globales.activities.mis-actividades') }}">
+                    <i class="material-icons">task_alt</i>
+                    <p>Mis Actividades</p>
+                </a>
+            </li>
         @endhasanyrole
 
         {{-- Sidebar exclusivo para Analista de Monitoreo PEI --}}
