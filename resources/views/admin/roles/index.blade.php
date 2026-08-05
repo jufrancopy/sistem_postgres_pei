@@ -2,120 +2,52 @@
 @section('title', 'Roles y Permisos')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-0 fw-bold text-dark">
-                                <i class="fa fa-shield-alt text-primary me-2"></i>Roles y Permisos
-                            </h5>
-                            <small class="text-muted">Gestión de roles del sistema</small>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('globales.roles.guide') }}" class="btn btn-sm btn-outline-secondary" title="Ver manual explicativo de roles">
-                                <i class="fa fa-book-open me-1"></i> Guía
+    <div class="card">
+        <div class="card-header card-header-info">
+            <h4 class="card-title">Roles y Permisos</h4>
+        </div>
+
+        <nav aria-label="breadcrumb" class="bg-light p-3 mb-0">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Roles y Permisos</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card border-0 shadow-none">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <a href="{{ route('globales.roles.guide') }}" class="btn btn-outline-secondary font-weight-bold" title="Ver manual explicativo de roles">
+                                <i class="fa fa-book-open mr-1"></i> Guía de Roles
                             </a>
                             @can('role-create')
-                            <button class="btn btn-sm btn-primary" id="btnNuevoRol">
-                                <i class="fa fa-plus me-1"></i> Nuevo Rol
+                            <button class="btn btn-success font-weight-bold" id="btnNuevoRol">
+                                <i class="fa fa-plus mr-1"></i> Nuevo Rol
                             </button>
                             @endcan
                         </div>
-                    </div>
-                </div>
 
-                <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-0">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Roles</li>
-                    </ol>
-                </nav>
-
-                <div class="card-body p-0">
-                    {{-- Buscador --}}
-                    <div class="px-3 pt-3 pb-2 d-flex align-items-center" style="gap:.5rem">
-                        <div class="input-group input-group-sm" style="max-width:280px">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fa fa-search"></i></span>
-                            </div>
-                            <input type="text" id="buscarRol" class="form-control" placeholder="Buscar rol…">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped data-table display nowrap w-100" id="tablaRoles">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="width: 60px;">ID</th>
+                                        <th>Nombre del Rol</th>
+                                        <th class="text-center" style="width: 120px;">Permisos</th>
+                                        <th class="text-center" style="width: 150px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
                         </div>
-                        <small class="text-muted ml-2">
-                            <span id="totalRoles">{{ $roles->total() }}</span> roles registrados
-                        </small>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle" id="tablaRoles">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="text-center" style="width: 50px;">ID</th>
-                                    <th>Nombre del Rol</th>
-                                    <th class="text-center" style="width: 100px;">Permisos</th>
-                                    <th class="text-center" style="width: 150px;">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($roles as $key => $role)
-                                @php
-                                    $permCount = $role->permissions->count();
-                                    $colorBadge = $permCount > 10 ? 'danger' : ($permCount > 5 ? 'warning' : ($permCount > 0 ? 'success' : 'secondary'));
-                                @endphp
-                                <tr id="row-{{ $role->id }}">
-                                    <td class="text-center text-muted" style="font-size:.8rem">{{ $loop->iteration + ($roles->currentPage()-1)*$roles->perPage() }}</td>
-                                    <td>
-                                        <div class="d-flex align-items-center" style="gap:.5rem">
-                                            <span class="role-icon d-flex align-items-center justify-content-center"
-                                                  style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1a237e,#283593);flex-shrink:0">
-                                                <i class="fa fa-user-tag text-white" style="font-size:.7rem"></i>
-                                            </span>
-                                            <span class="fw-bold" style="font-size:.88rem">{{ $role->name }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <button class="btn btn-sm btn-link p-0 btnVerPermisos"
-                                                data-id="{{ $role->id }}"
-                                                data-nombre="{{ $role->name }}"
-                                                title="Ver permisos">
-                                            <span class="badge badge-{{ $colorBadge }}">
-                                                {{ $permCount }} {{ $permCount == 1 ? 'permiso' : 'permisos' }}
-                                            </span>
-                                        </button>
-                                    </td>
-                                    <td class="text-center" style="white-space:nowrap">
-                                        @can('role-edit')
-                                        <button class="btn btn-sm btn-outline-primary py-0 px-2 btnEditarRol"
-                                                data-id="{{ $role->id }}"
-                                                title="Editar">
-                                            <i class="fa fa-edit" style="font-size:.75rem"></i>
-                                        </button>
-                                        @endcan
-                                        @can('role-delete')
-                                        <button class="btn btn-sm btn-outline-danger py-0 px-2 btnEliminarRol"
-                                                data-id="{{ $role->id }}"
-                                                data-nombre="{{ $role->name }}"
-                                                title="Eliminar">
-                                            <i class="fa fa-trash" style="font-size:.75rem"></i>
-                                        </button>
-                                        @endcan
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="px-3 py-2 d-flex justify-content-end">
-                        {{ $roles->links() }}
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
 {{-- ══ Modal Crear / Editar Rol ═══════════════════════════════════════════ --}}
 <div class="modal fade" id="modalRol" tabindex="-1" aria-hidden="true">
@@ -336,13 +268,7 @@ $(function() {
                 data: 'name',
                 name: 'name',
                 render: function(data, type, row) {
-                    return '<div class="d-flex align-items-center" style="gap:.5rem">' +
-                           '<span class="role-icon d-flex align-items-center justify-content-center"' +
-                           'style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1a237e,#283593);flex-shrink:0">' +
-                           '<i class="fa fa-user-tag text-white" style="font-size:.7rem"></i>' +
-                           '</span>' +
-                           '<span class="fw-bold" style="font-size:.88rem">' + data + '</span>' +
-                           '</div>';
+                    return '<div class="font-weight-bold text-dark"><i class="fa fa-user-shield text-info mr-2"></i>' + data + '</div>';
                 }
             },
             {
