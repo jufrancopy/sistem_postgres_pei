@@ -13,7 +13,7 @@ class PeiAccionPgnController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('role:Administrador|Analista PEI');
+        $this->middleware('role:Administrador|Coordinador de Planificación|Analista PEI|Analista de Planificación|Analista');
     }
 
     // GET /pei-profiles/{actionId}/pgn
