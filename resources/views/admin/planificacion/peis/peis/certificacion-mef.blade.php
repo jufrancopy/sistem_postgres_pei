@@ -3,9 +3,8 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header" style="background:linear-gradient(60deg,#e8f4fd,#d1ecf1);color:#0c5460;">
-        <h4 class="card-title"><i class="fa fa-certificate mr-2"></i>Certificación MEF</h4>
-        <p class="card-category">{{ strip_tags($profile->name) }}</p>
+    <div class="card-header card-header-info">
+        <h4 class="card-title"><i class="fa fa-certificate mr-2"></i>Certificación MEF - {{ strip_tags($profile->name) }}</h4>
     </div>
 
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-2">
