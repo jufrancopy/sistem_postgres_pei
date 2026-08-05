@@ -19,9 +19,9 @@
         @endphp
 
         {{-- ── Inspiración Diaria / Código de Ética ── --}}
-        <li class="nav-item d-flex align-items-center mr-1">
-          <a class="nav-link btn btn-link p-1 text-warning" href="javascript:void(0)" id="btnOpenReflexion" title="Inspiración Diaria & Código de Ética IPS" style="font-size:1.1rem;">
-            <i class="fa fa-lightbulb"></i>
+        <li class="nav-item">
+          <a class="nav-link" href="javascript:void(0)" id="btnOpenReflexion" title="Inspiración Diaria & Código de Ética IPS">
+            <i class="material-icons text-warning" style="font-size: 22px;">lightbulb</i>
             <p class="d-lg-none mb-0">Reflexión del Día</p>
           </a>
         </li>
