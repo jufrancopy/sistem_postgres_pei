@@ -90,7 +90,7 @@
 .task-actions .btn { padding: 2px 6px; font-size: .7rem; border-radius: 6px; }
 
 /* ── Drag & Drop ── */
-.col-body { transition: background .15s; }
+.col-body { transition: background .15s; min-height: 150px; padding-bottom: 25px; }
 .col-body.sortable-over { background: #e0f2fe !important; }
 .sortable-ghost  { opacity: .4; transform: rotate(2deg); }
 .sortable-chosen { box-shadow: 0 8px 24px rgba(0,0,0,.2) !important; transform: scale(1.02); cursor: grabbing; }
@@ -250,7 +250,7 @@
             </small>
         </div>
         <div class="d-flex flex-column gap-2" style="flex-shrink:0">
-            @hasanyrole('Administrador|Gestor de Actividades')
+            @hasanyrole('Administrador|Gestor de Actividades|Analista de Planificación|Analista PEI|Analista')
             <button class="btn btn-light btn-sm font-weight-bold" id="btnNuevaTarea">
                 <i class="fa fa-plus mr-1"></i>Nueva Tarea
             </button>

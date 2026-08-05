@@ -93,7 +93,7 @@
                             @endif
                         </span>
                         @endif
-                        <a href="{{ auth()->user()->hasAnyRole(['Administrador', 'Gestor de Actividades']) ? route('globales.activities.show', $act->id) : route('globales.mis-tareas', $act->id) }}" class="btn btn-info btn-sm ml-auto">
+                        <a href="{{ auth()->user()->hasAnyRole(['Administrador', 'Gestor de Actividades', 'Analista de Planificación', 'Analista PEI', 'Analista']) ? route('globales.activities.show', $act->id) : route('globales.mis-tareas', $act->id) }}" class="btn btn-info btn-sm ml-auto">
                             <i class="fa fa-eye mr-1"></i>Ver tablero
                         </a>
                     </div>

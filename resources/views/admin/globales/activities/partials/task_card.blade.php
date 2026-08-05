@@ -4,7 +4,7 @@
     $initials        = $task->assignedTo ? strtoupper(substr($task->assignedTo->name, 0, 2)) : '?';
     $modoColaborador = $modoColaborador ?? false;
     $esMia           = $modoColaborador ? ($task->assigned_to === ($userId ?? null)) : true;
-    $esGestor        = auth()->user()->hasAnyRole(['Administrador', 'Gestor de Actividades']);
+    $esGestor        = auth()->user()->hasAnyRole(['Administrador', 'Gestor de Actividades', 'Analista de Planificación', 'Analista PEI', 'Analista']);
     $puedeGestionar  = $esGestor;
     $puedeMover      = $esGestor || $esMia;
 

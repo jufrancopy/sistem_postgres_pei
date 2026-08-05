@@ -119,7 +119,7 @@ var _detalleTaskId = null;
 var _statusBase    = "{{ url('admin/globales/activities/tareas') }}";
 var _comentBase    = "{{ url('admin/globales/activities/tareas') }}";
 var _getUsersUrl   = "{{ route('globales.get-users') }}";
-var _esGestor      = {{ auth()->user()->hasAnyRole(['Administrador', 'Gestor de Actividades']) ? 'true' : 'false' }};
+var _esGestor      = {{ auth()->user()->hasAnyRole(['Administrador', 'Gestor de Actividades', 'Analista de Planificación', 'Analista PEI', 'Analista']) ? 'true' : 'false' }};
 var _userId        = {{ auth()->id() }};
 
 var _statusMap = {
