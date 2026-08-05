@@ -50,20 +50,22 @@
     </div>
 
 {{-- ══ Modal Crear / Editar Rol ═══════════════════════════════════════════ --}}
-<div class="modal fade" id="modalRol" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalRol" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content shadow">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold mb-0" id="modalRolTitulo">
-                    <i class="fa fa-shield-alt me-2"></i> Nuevo Rol
+                <h5 class="modal-title font-weight-bold mb-0 text-white" id="modalRolTitulo">
+                    <i class="fa fa-shield-alt mr-2"></i> Nuevo Rol
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span>&times;</span>
+                </button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="rol_id">
 
                 <div class="form-group">
-                    <label class="fw-bold">
+                    <label class="font-weight-bold">
                         Nombre del Rol <span class="text-danger">*</span>
                     </label>
                     <input type="text" id="rol_nombre" class="form-control"
@@ -71,14 +73,14 @@
                 </div>
 
                 <div class="form-group mb-0">
-                    <label class="fw-bold d-flex align-items-center justify-content-between">
+                    <label class="font-weight-bold d-flex align-items-center justify-content-between">
                         <span>Permisos</span>
                         <div style="gap:.4rem" class="d-flex">
                             <button type="button" class="btn btn-xs btn-outline-success" id="btnSelTodos" style="font-size:.72rem;padding:2px 8px">
-                                <i class="fa fa-check-square me-1"></i>Todos
+                                <i class="fa fa-check-square mr-1"></i>Todos
                             </button>
                             <button type="button" class="btn btn-xs btn-outline-secondary" id="btnDeselTodos" style="font-size:.72rem;padding:2px 8px">
-                                <i class="fa fa-square me-1"></i>Ninguno
+                                <i class="fa fa-square mr-1"></i>Ninguno
                             </button>
                         </div>
                     </label>
@@ -178,15 +180,15 @@
                         @endforeach
                     </div>
                     <small class="text-muted mt-1 d-block">
-                        <i class="fa fa-info-circle me-1"></i>
+                        <i class="fa fa-info-circle mr-1"></i>
                         <span id="permisosSelCount">0</span> permisos seleccionados — clic para activar/desactivar
                     </small>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success" id="btnGuardarRol">
-                    <i class="fa fa-save me-1"></i> Guardar
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success font-weight-bold" id="btnGuardarRol">
+                    <i class="fa fa-save mr-1"></i> Guardar
                 </button>
             </div>
         </div>
@@ -194,14 +196,14 @@
 </div>
 
 {{-- ══ Modal Ver Permisos ══════════════════════════════════════════════════ --}}
-<div class="modal fade" id="modalVerPermisos" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalVerPermisos" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-md">
         <div class="modal-content shadow">
             <div class="modal-header py-2" style="background:#f5f5f5;border-bottom:1px solid #e0e0e0">
                 <h6 class="modal-title mb-0 font-weight-bold" id="modalVerPermisosTitulo">
-                    <i class="fa fa-list me-1 text-primary"></i> Permisos del Rol
+                    <i class="fa fa-list mr-1 text-primary"></i> Permisos del Rol
                 </h6>
-                <button type="button" class="close" data-bs-dismiss="modal"><span>&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body" id="modalVerPermisosBody">
                 <div class="text-center py-3">
@@ -209,10 +211,10 @@
                 </div>
             </div>
             <div class="modal-footer py-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
                 @can('role-edit')
-                <button type="button" class="btn btn-sm btn-primary" id="btnEditarDesdeVer">
-                    <i class="fa fa-edit me-1"></i> Editar este rol
+                <button type="button" class="btn btn-sm btn-primary font-weight-bold" id="btnEditarDesdeVer">
+                    <i class="fa fa-edit mr-1"></i> Editar este rol
                 </button>
                 @endcan
             </div>
@@ -318,12 +320,8 @@ $(function() {
     $(document).on('click', '.btnSelGrupo', function() {
         var grupo = $(this).data('grupo');
         var $checks = $('.perm-check[data-grupo="' + grupo + '"]');
-        var $pills  = $('.perm-pill[data-perm-id]').filter(function() {
-            return $('#perm_' + $(this).data('perm-id')).data('grupo') === grupo;
-        });
         var todosChecked = $checks.filter(':checked').length === $checks.length;
         $checks.prop('checked', !todosChecked);
-        // Actualizar pills del grupo
         $checks.each(function() {
             var pid = $(this).val();
             $('.perm-pill[data-perm-id="' + pid + '"]').toggleClass('activo', !todosChecked);
@@ -331,23 +329,14 @@ $(function() {
         actualizarContador();
     });
 
-    // ── Filtro búsqueda ──────────────────────────────────────────────────────
-    $('#buscarRol').on('input', function() {
-        var q = $(this).val().toLowerCase();
-        $('#tablaRoles tbody tr').each(function() {
-            var nombre = $(this).find('td:eq(1)').text().toLowerCase();
-            $(this).toggle(nombre.indexOf(q) !== -1);
-        });
-    });
-
     // ── Abrir modal nuevo ────────────────────────────────────────────────────
-    $('#btnNuevoRol').on('click', function() {
+    $(document).on('click', '#btnNuevoRol', function() {
         $('#rol_id').val('');
         $('#rol_nombre').val('');
         $('.perm-check').prop('checked', false);
         $('.perm-pill').removeClass('activo');
         actualizarContador();
-        $('#modalRolTitulo').html('<i class="fa fa-shield-alt me-2"></i> Nuevo Rol');
+        $('#modalRolTitulo').html('<i class="fa fa-shield-alt mr-2"></i> Nuevo Rol');
         $('#modalRol').modal('show');
     });
 
@@ -362,25 +351,29 @@ $(function() {
         $.getJSON('{{ route("globales.roles.edit-ajax", ":id") }}'.replace(':id', id), function(data) {
             $('#rol_id').val(data.role.id);
             $('#rol_nombre').val(data.role.name);
-            // Limpiar todo
             $('.perm-check').prop('checked', false);
             $('.perm-pill').removeClass('activo');
-            // Marcar los que tiene el rol
-            data.rolePermissions.forEach(function(pid) {
-                $('#perm_' + pid).prop('checked', true);
-                $('.perm-pill[data-perm-id="' + pid + '"]').addClass('activo');
-            });
+            if (data.rolePermissions && data.rolePermissions.length) {
+                data.rolePermissions.forEach(function(pid) {
+                    $('#perm_' + pid).prop('checked', true);
+                    $('.perm-pill[data-perm-id="' + pid + '"]').addClass('activo');
+                });
+            }
             actualizarContador();
-            $('#modalRolTitulo').html('<i class="fa fa-edit me-2"></i> Editar: <strong>' + data.role.name + '</strong>');
+            $('#modalRolTitulo').html('<i class="fa fa-edit mr-2"></i> Editar: <strong>' + data.role.name + '</strong>');
             $('#modalRol').modal('show');
         });
     }
 
     // ── Guardar (crear o actualizar) ─────────────────────────────────────────
-    $('#btnGuardarRol').on('click', function() {
+    $(document).on('click', '#btnGuardarRol', function() {
         var id     = $('#rol_id').val();
         var nombre = $.trim($('#rol_nombre').val());
-        if (!nombre) { toastr.warning('El nombre del rol es obligatorio.'); return; }
+        if (!nombre) {
+            if (typeof toastr !== 'undefined') toastr.warning('El nombre del rol es obligatorio.');
+            else alert('El nombre del rol es obligatorio.');
+            return;
+        }
 
         var permisos = [];
         $('.perm-check:checked').each(function() { permisos.push($(this).val()); });
@@ -389,27 +382,27 @@ $(function() {
         var method = id ? 'PUT' : 'POST';
 
         $.ajax({
-            url: url, type: method,
+            url: url,
+            type: method,
             data: { name: nombre, permission: permisos },
             success: function(res) {
-                toastr.success(res.message || 'Guardado correctamente.');
+                if (typeof toastr !== 'undefined') toastr.success(res.message || 'Guardado correctamente.');
+                else alert(res.message || 'Guardado correctamente.');
                 $('#modalRol').modal('hide');
-                // Actualizar fila o agregar nueva
-                if (res.row) {
-                    if (id && $('#row-' + id).length) {
-                        $('#row-' + id).replaceWith(res.row);
-                    } else {
-                        $('#tablaRoles tbody').prepend(res.row);
-                        $('#totalRoles').text(parseInt($('#totalRoles').text()) + 1);
-                    }
-                } else {
-                    setTimeout(() => location.reload(), 600);
-                }
+                table.ajax.reload(null, false);
             },
             error: function(xhr) {
                 var e = xhr.responseJSON?.errors;
-                if (e) $.each(e, (k,v) => toastr.error(v[0]));
-                else toastr.error(xhr.responseJSON?.message || 'Error al guardar.');
+                if (e) {
+                    $.each(e, function(k, v) {
+                        if (typeof toastr !== 'undefined') toastr.error(v[0]);
+                        else alert(v[0]);
+                    });
+                } else {
+                    var msg = xhr.responseJSON?.message || 'Error al guardar el rol.';
+                    if (typeof toastr !== 'undefined') toastr.error(msg);
+                    else alert(msg);
+                }
             }
         });
     });
@@ -419,21 +412,16 @@ $(function() {
         var id     = $(this).data('id');
         var nombre = $(this).data('nombre');
         _rolIdViendo = id;
-        $('#modalVerPermisosTitulo').html(
-            '<i class="fa fa-shield-alt me-1 text-primary"></i> ' + nombre
-        );
-        $('#modalVerPermisosBody').html(
-            '<div class="text-center py-3"><i class="fa fa-spinner fa-spin text-muted"></i></div>'
-        );
+        $('#modalVerPermisosTitulo').html('<i class="fa fa-shield-alt mr-1 text-primary"></i> Permisos de: ' + nombre);
+        $('#modalVerPermisosBody').html('<div class="text-center py-3"><i class="fa fa-spinner fa-spin text-muted"></i> Cargando permisos...</div>');
         $('#modalVerPermisos').modal('show');
 
         $.getJSON('{{ route("globales.roles.show-ajax", ":id") }}'.replace(':id', id), function(data) {
             var $body = $('#modalVerPermisosBody').empty();
-            if (!data.permissions.length) {
+            if (!data.permissions || !data.permissions.length) {
                 $body.html('<p class="text-muted text-center py-2">Este rol no tiene permisos asignados.</p>');
                 return;
             }
-            // Agrupar por prefijo
             var grupos = {};
             data.permissions.forEach(function(p) {
                 var key = p.name.split('-')[0] || 'general';
@@ -443,19 +431,17 @@ $(function() {
             $.each(grupos, function(grupo, perms) {
                 var $grupo = $('<div class="mb-3">').appendTo($body);
                 $('<div>').append(
-                    $('<span class="badge badge-secondary me-2" style="font-size:.7rem;text-transform:uppercase">').text(grupo)
+                    $('<span class="badge badge-secondary mr-2" style="font-size:.7rem;text-transform:uppercase">').text(grupo)
                 ).appendTo($grupo);
                 var $tags = $('<div class="d-flex flex-wrap mt-1" style="gap:.3rem">').appendTo($grupo);
                 perms.forEach(function(p) {
-                    $tags.append(
-                        $('<span class="badge badge-light border" style="font-size:.75rem">').text(p)
-                    );
+                    $tags.append($('<span class="badge badge-light border" style="font-size:.75rem">').text(p));
                 });
             });
         });
     });
 
-    $('#btnEditarDesdeVer').on('click', function() {
+    $(document).on('click', '#btnEditarDesdeVer', function() {
         if (_rolIdViendo) abrirEditar(_rolIdViendo);
     });
 
@@ -463,28 +449,21 @@ $(function() {
     $(document).on('click', '.btnEliminarRol', function() {
         var id     = $(this).data('id');
         var nombre = $(this).data('nombre');
-        Swal.fire({
-            title: '¿Eliminar el rol?',
-            html: '<strong>' + nombre + '</strong><br><small class="text-muted">Se eliminarán todas las asignaciones asociadas.</small>',
-            icon: 'warning', showCancelButton: true,
-            confirmButtonColor: '#d33', cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar',
-        }).then(function(result) {
-            if (!result.isConfirmed) return;
+        if (confirm('¿Estás seguro de eliminar el rol "' + nombre + '"?')) {
             $.ajax({
-                url: '{{ route("globales.roles.destroy", ":id") }}'.replace(':id', id), type: 'DELETE',
+                url: '{{ route("globales.roles.destroy", ":id") }}'.replace(':id', id),
+                type: 'DELETE',
                 success: function(res) {
-                    if (res.ok) {
-                        $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        $('#totalRoles').text(Math.max(0, parseInt($('#totalRoles').text()) - 1));
-                        toastr.success('Rol eliminado correctamente.');
-                    } else {
-                        toastr.error(res.message || 'No se pudo eliminar.');
-                    }
+                    if (typeof toastr !== 'undefined') toastr.success('Rol eliminado correctamente.');
+                    else alert('Rol eliminado correctamente.');
+                    table.ajax.reload(null, false);
                 },
-                error: function() { toastr.error('Error al eliminar.'); }
+                error: function(xhr) {
+                    if (typeof toastr !== 'undefined') toastr.error('No se pudo eliminar el rol.');
+                    else alert('No se pudo eliminar el rol.');
+                }
             });
-        });
+        }
     });
 });
 </script>
