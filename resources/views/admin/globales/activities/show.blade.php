@@ -259,6 +259,10 @@
                     id="btnVerReuniones">
                 <i class="fa fa-users mr-1"></i>Reuniones
             </button>
+            <button class="btn btn-sm font-weight-bold" style="background:rgba(255,255,255,.85);color:#78350f;border:none"
+                    id="btnVerDocumentos">
+                <i class="fa fa-file-alt mr-1"></i>Documentos
+            </button>
             @hasanyrole('Administrador|Gestor de Actividades')
             <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)"
                     id="btnNotificarTodos" data-id="{{ $activity->id }}">
@@ -433,6 +437,7 @@
 @include('admin.globales.activities.partials.modal_ayuda', ['isScrumActivity' => $isScrumActivity])
 @include('admin.globales.activities.partials.modal_detalle_tarea')
 @include('admin.globales.activities.partials.modal_reuniones')
+@include('admin.globales.activities.partials.modal_documentos')
 
 @include('admin.planificacion.peis.peis.partials.chat_drawer')
 @endsection
@@ -650,6 +655,7 @@ $('body').on('click', '.editTaskBtn', function() {
             $('#task_fecha_vencimiento').val(task.fecha_vencimiento_raw || '');
             $('#task_status').val(task.status);
             $('#task_es_reunion').prop('checked', task.es_reunion == 1);
+            $('#task_es_documento').prop('checked', task.es_documento == 1);
             initResponsableSelect(task.assigned_to, task.responsable || '');
             colorSeleccionado = task.color || '#6b7280';
             renderPaleta();
@@ -666,6 +672,7 @@ $('body').on('click', '.editTaskBtn', function() {
         $('#task_etiqueta').val($card.find('.task-etiqueta').text().trim());
         $('#task_fecha_inicio').val($card.data('fecha-inicio') || '');
         $('#task_es_reunion').prop('checked', false);
+        $('#task_es_documento').prop('checked', false);
         colorSeleccionado = $card.css('border-left-color') || '#6b7280';
         renderPaleta();
         initResponsableSelect(null, null);
@@ -1221,6 +1228,132 @@ $('#btnLimpiarFiltro').on('click', function(e) {
     });
 })();
 // ══ FIN REUNIONES ════════════════════════════════════════════════════════════
+</script>
+
+<script>
+// ══ DOCUMENTOS ═══════════════════════════════════════════════════════════════
+(function() {
+    var _documentosData  = [];
+    var _docFiltroActivo = 'todos';
+    var _documentosUrl   = "{{ url('admin/globales/activities') }}/" + activityId + '/documentos';
+
+    var _docStatusLabels = {
+        0: { label: 'Pendiente',   cls: 'badge-warning'   },
+        1: { label: 'En Progreso', cls: 'badge-primary'   },
+        3: { label: 'En Revisión', cls: 'badge-secondary' },
+        2: { label: 'Finalizado',  cls: 'badge-success'   },
+    };
+
+    $('#btnVerDocumentos').on('click', function() {
+        $('#documentosSubtitulo').text('');
+        $('#documentosVacio').hide();
+        $('#documentosTablaWrap').show();
+        $('#documentosBody').html('<tr id="documentosLoading"><td colspan="7" class="text-center text-muted py-4"><i class="fa fa-spinner fa-spin mr-2"></i>Cargando documentos...</td></tr>');
+        $('#modalDocumentos').modal('show');
+        $.getJSON(_documentosUrl, function(data) {
+            _documentosData = data;
+            $('#documentosSubtitulo').text(data.length + ' documento(s) registrado(s)');
+            renderDocumentos(_docFiltroActivo);
+        }).fail(function() {
+            $('#documentosBody').html('<tr><td colspan="7" class="text-center text-danger py-3"><i class="fa fa-exclamation-triangle mr-1"></i>Error al cargar documentos.</td></tr>');
+        });
+    });
+
+    function renderDocumentos(filtro) {
+        var data = _documentosData.slice();
+        if (filtro === 'pendientes')  data = data.filter(function(d) { return d.status !== 2; });
+        if (filtro === 'finalizados') data = data.filter(function(d) { return d.status === 2; });
+
+        $('#documentosCount').text(data.length);
+        var tbody = $('#documentosBody').empty();
+
+        if (!data.length) {
+            if (_documentosData.length === 0) {
+                $('#documentosTablaWrap').hide();
+                $('#documentosVacio').show();
+            } else {
+                tbody.append('<tr><td colspan="7" class="text-center text-muted py-4"><i class="fa fa-filter mr-1"></i>Sin documentos en este estado.</td></tr>');
+            }
+            return;
+        }
+
+        $('#documentosVacio').hide();
+        $('#documentosTablaWrap').show();
+
+        data.forEach(function(d) {
+            var st      = _docStatusLabels[d.status] || _docStatusLabels[0];
+            var fecha   = d.fecha_inicio || '—';
+            var etiq    = d.etiqueta
+                ? '<span class="badge badge-warning" style="font-size:.7rem">' + $('<div>').text(d.etiqueta).html() + '</span>'
+                : '<span class="text-muted small">—</span>';
+
+            var evidHtml = '';
+            if (d.evidencias && d.evidencias.length) {
+                d.evidencias.forEach(function(e) {
+                    if (e.es_pdf) {
+                        evidHtml += '<a href="#" class="btn btn-xs btn-outline-danger mr-1 mb-1 btnVerActa" style="font-size:.68rem;padding:1px 6px" '
+                            + 'data-url="' + e.url + '" data-titulo="' + $('<div>').text(d.title).html() + '">'
+                            + '<i class="fa fa-file-pdf mr-1"></i>PDF</a>';
+                    } else if (e.type === 'url') {
+                        evidHtml += '<a href="' + e.url + '" target="_blank" class="btn btn-xs btn-outline-info mr-1 mb-1" style="font-size:.68rem;padding:1px 6px">'
+                            + '<i class="fa fa-link mr-1"></i>' + $('<div>').text(e.label || 'Enlace').html() + '</a>';
+                    } else {
+                        evidHtml += '<a href="' + e.url + '" target="_blank" class="btn btn-xs btn-outline-secondary mr-1 mb-1" style="font-size:.68rem;padding:1px 6px">'
+                            + '<i class="fa fa-paperclip mr-1"></i>Archivo</a>';
+                    }
+                });
+            } else {
+                evidHtml = '<span class="text-muted small" style="font-size:.72rem">Sin evidencias</span>';
+            }
+
+            tbody.append(
+                '<tr>'
+                + '<td class="font-weight-bold" style="font-size:.82rem">' + $('<div>').text(d.title).html() + '</td>'
+                + '<td class="text-muted" style="font-size:.8rem;max-width:220px">' + ($('<div>').text(d.details || '—').html()) + '</td>'
+                + '<td class="text-center">' + etiq + '</td>'
+                + '<td style="font-size:.8rem">' + $('<div>').text(d.responsable).html() + '</td>'
+                + '<td class="text-center"><span class="badge ' + st.cls + '" style="font-size:.7rem">' + st.label + '</span></td>'
+                + '<td class="text-center" style="font-size:.78rem">' + fecha + '</td>'
+                + '<td class="text-center">' + evidHtml + '</td>'
+                + '</tr>'
+            );
+        });
+    }
+
+    $('#docFiltroTodos').on('click', function() {
+        _docFiltroActivo = 'todos';
+        $(this).addClass('btn-warning active').removeClass('btn-outline-warning');
+        $('#docFiltroPendientes,#docFiltroFinalizados').removeClass('btn-warning btn-success active').addClass('btn-outline-warning btn-outline-success');
+        renderDocumentos('todos');
+    });
+    $('#docFiltroPendientes').on('click', function() {
+        _docFiltroActivo = 'pendientes';
+        $(this).addClass('btn-warning active').removeClass('btn-outline-warning');
+        $('#docFiltroTodos,#docFiltroFinalizados').removeClass('btn-warning btn-success active').addClass('btn-outline-warning btn-outline-success');
+        renderDocumentos('pendientes');
+    });
+    $('#docFiltroFinalizados').on('click', function() {
+        _docFiltroActivo = 'finalizados';
+        $(this).addClass('btn-success active').removeClass('btn-outline-success');
+        $('#docFiltroTodos,#docFiltroPendientes').removeClass('btn-warning btn-success active').addClass('btn-outline-warning btn-outline-success');
+        renderDocumentos('finalizados');
+    });
+
+    $(document).on('click', '#modalDocumentos .btnVerActa', function() {
+        var url    = $(this).data('url');
+        var titulo = $(this).data('titulo');
+        $('#actaPdfTitulo').text(titulo);
+        $('#actaPdfDescargar').attr('href', url);
+        $('#actaPdfFrame').attr('src', url);
+        $('#modalDocumentos').modal('hide');
+        $('#modalActaPdf').modal('show');
+        $('#modalActaPdf').one('hidden.bs.modal', function() {
+            $('#actaPdfFrame').attr('src', '');
+            $('#modalDocumentos').modal('show');
+        });
+    });
+})();
+// ══ FIN DOCUMENTOS ════════════════════════════════════════════════════════════
 </script>
 
 {{-- Google Charts --}}

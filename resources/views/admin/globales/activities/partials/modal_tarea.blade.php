@@ -98,6 +98,22 @@
                         </div>
                     </div>
 
+                    {{-- ── Tipo Documento ── --}}
+                    <div class="form-group mb-1">
+                        <div class="custom-control custom-switch">
+                            <input type="hidden" name="es_documento" value="0">
+                            <input type="checkbox" class="custom-control-input" id="task_es_documento"
+                                   name="es_documento" value="1">
+                            <label class="custom-control-label font-weight-bold small" for="task_es_documento">
+                                <i class="fa fa-file-alt mr-1 text-warning"></i>
+                                Esta tarea es un <strong>Documento</strong>
+                                <small class="text-muted font-weight-normal d-block" style="font-size:.72rem">
+                                    Aparece en la vista de Documentos de la actividad
+                                </small>
+                            </label>
+                        </div>
+                    </div>
+
                 </form>
             </div>
             <div class="modal-footer">

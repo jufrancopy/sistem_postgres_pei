@@ -164,6 +164,7 @@ class ActivityController extends Controller
             'assigned_to'       => $request->assigned_to,
             'status'            => $request->status ?? 0,
             'es_reunion'        => $request->boolean('es_reunion'),
+            'es_documento'      => $request->boolean('es_documento'),
         ];
 
         if (!$request->task_id) {
@@ -306,6 +307,36 @@ class ActivityController extends Controller
         ]));
     }
 
+    public function documentos(int $activityId)
+    {
+        $activity   = \App\Admin\Globales\Activity::findOrFail($activityId);
+        $documentos = ActivityTask::with(['assignedTo', 'evidences'])
+            ->where('activity_id', $activityId)
+            ->where('es_documento', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($documentos->map(fn($t) => [
+            'id'                => $t->id,
+            'title'             => $t->title,
+            'details'           => $t->details,
+            'etiqueta'          => $t->etiqueta,
+            'responsable'       => $t->assignedTo?->name ?? '—',
+            'status'            => $t->status,
+            'fecha_inicio'      => $t->fecha_inicio?->format('d/m/Y'),
+            'fecha_vencimiento' => $t->fecha_vencimiento instanceof \Carbon\Carbon
+                ? $t->fecha_vencimiento->format('d/m/Y')
+                : $t->fecha_vencimiento,
+            'evidencias'        => $t->evidences->map(fn($e) => [
+                'id'    => $e->id,
+                'type'  => $e->type,
+                'label' => $e->label,
+                'url'   => $e->type === 'url' ? $e->value : asset('storage/' . $e->value),
+                'es_pdf'=> str_ends_with(strtolower($e->value ?? ''), '.pdf'),
+            ]),
+        ]));
+    }
+
     public function detalleTarea($taskId)
     {
         $task = ActivityTask::with(['assignedTo', 'completedBy', 'evidences.user', 'comments.user'])->findOrFail($taskId);
@@ -329,6 +360,7 @@ class ActivityController extends Controller
                 'color'            => $task->color ?? '#6b7280',
                 'status'           => $task->status,
                 'es_reunion'       => $task->es_reunion ? 1 : 0,
+                'es_documento'     => $task->es_documento ? 1 : 0,
                 'assigned_to'      => $task->assigned_to,
                 'responsable'      => $task->assignedTo?->name ?? 'Sin asignar',
                 'completion_note'  => $task->completion_note,
