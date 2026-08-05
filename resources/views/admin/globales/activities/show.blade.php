@@ -250,14 +250,16 @@
             </small>
         </div>
         <div class="d-flex flex-column gap-2" style="flex-shrink:0">
-            @hasanyrole('Administrador|Gestor de Actividades|Analista de Planificación|Analista PEI|Analista')
+            @hasanyrole('Administrador|Gestor de Actividades')
             <button class="btn btn-light btn-sm font-weight-bold" id="btnNuevaTarea">
                 <i class="fa fa-plus mr-1"></i>Nueva Tarea
             </button>
+            @endhasanyrole
             <button class="btn btn-sm font-weight-bold" style="background:rgba(255,255,255,.9);color:#1e3a5f;border:none"
                     id="btnVerReuniones">
                 <i class="fa fa-users mr-1"></i>Reuniones
             </button>
+            @hasanyrole('Administrador|Gestor de Actividades')
             <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)"
                     id="btnNotificarTodos" data-id="{{ $activity->id }}">
                 <i class="fa fa-paper-plane mr-1"></i>Notificar a todos

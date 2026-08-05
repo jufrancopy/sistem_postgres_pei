@@ -192,14 +192,18 @@ Route::group(['middleware' => ['auth']], function () {
         // ── Show: Administrador + Gestor + Colaborador ───────────────────────
         Route::get('activities/{activity}', 'Admin\Globales\ActivityController@show')->name('activities.show');
 
-        // ── Tareas: Administrador, Gestor y Analistas ─────────────────
-        Route::middleware(['role:Administrador|Gestor de Actividades|Analista de Planificación|Analista PEI|Analista'])->group(function () {
+        // ── Creación de tareas y Notificaciones por correo: Solo Administrador y Gestor ──
+        Route::middleware(['role:Administrador|Gestor de Actividades'])->group(function () {
             Route::post('activities/{activityId}/tareas', 'Admin\Globales\ActivityController@storeTarea')->name('activities.tareas.store');
+            Route::post('activities/{activityId}/notificar-todos', 'Admin\Globales\ActivityController@notificarTodos')->name('activities.notificar-todos');
+            Route::post('activities/tareas/{taskId}/notificar', 'Admin\Globales\ActivityController@notificarTarea')->name('activities.tareas.notificar');
+        });
+
+        // ── Evidencias y Eliminación de Tareas ──
+        Route::middleware(['role:Administrador|Gestor de Actividades|Analista de Planificación|Analista PEI|Analista'])->group(function () {
             Route::delete('activities/tareas/{taskId}', 'Admin\Globales\ActivityController@destroyTarea')->name('activities.tareas.destroy');
             Route::post('activities/tareas/{taskId}/evidencias', 'Admin\Globales\ActivityController@storeEvidencia')->name('activities.tareas.evidencias.store');
             Route::delete('activities/tareas/evidencias/{evidenceId}', 'Admin\Globales\ActivityController@destroyEvidencia')->name('activities.tareas.evidencias.destroy');
-            Route::post('activities/{activityId}/notificar-todos', 'Admin\Globales\ActivityController@notificarTodos')->name('activities.notificar-todos');
-            Route::post('activities/tareas/{taskId}/notificar', 'Admin\Globales\ActivityController@notificarTarea')->name('activities.tareas.notificar');
         });
 
         Route::middleware(['role:Administrador|Gestor de Actividades|Colaborador de Actividades|Analista de Planificación|Analista PEI|Analista'])->group(function () {

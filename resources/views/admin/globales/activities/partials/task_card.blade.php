@@ -140,11 +140,13 @@
             <i class="fa fa-paperclip"></i>
         </button>
         {{-- Notificar --}}
+        @hasanyrole('Administrador|Gestor de Actividades')
         @if($task->assignedTo)
         <button class="tac-btn tac-teal btn-notificar-tarea" data-id="{{ $task->id }}" title="Notificar">
             <i class="fa fa-paper-plane"></i>
         </button>
         @endif
+        @endhasanyrole
         {{-- Editar --}}
         <button class="tac-btn tac-violet editTaskBtn" data-id="{{ $task->id }}" title="Editar">
             <i class="fa fa-pen"></i>
