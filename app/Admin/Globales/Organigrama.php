@@ -5,6 +5,7 @@ namespace App\Admin\Globales;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Kalnoy\Nestedset\NodeTrait;
+use App\Admin\Planificacion\Pei\PeiProfile;
 
 class Organigrama extends Model
 {
@@ -42,7 +43,28 @@ class Organigrama extends Model
         
     }
 
+    /**
+     * Obtener el PEI asociado a este organigrama
+     */
+    public function pei()
+    {
+        return $this->hasOne(PeiProfile::class, 'dependency_id');
+    }
 
+    /**
+     * Obtener el grupo asociado a este organigrama a través del PEI
+     */
+    public function group()
+    {
+        return $this->hasOneThrough(
+            Group::class,
+            PeiProfile::class,
+            'dependency_id', // Foreign key en pei_profiles
+            'id', // Local key en groups
+            'id', // Local key en organigramas
+            'group_id' // Foreign key en pei_profiles
+        );
+    }
 }
 
 

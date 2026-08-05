@@ -139,36 +139,45 @@ document.getElementById('esEstablecimiento').addEventListener('change', function
     }
 });
 
-$(function() {
-    $('#user_id_select').select2({
-        placeholder: '— Buscar usuario del sistema —',
-        allowClear: true,
-        minimumInputLength: 2,
-        ajax: {
-            url: '{{ url("admin/globales/usuarios-buscar") }}',
-            dataType: 'json',
-            delay: 250,
-            data: function(params) { return { q: params.term }; },
-            processResults: function(data) {
-                return { results: data.map(function(u) {
-                    return { id: u.id, text: u.name + ' — ' + u.email, name: u.name, email: u.email };
-                })};
+(function initUserSelectRoot() {
+    if (!window.jQuery || !window.jQuery.fn || !window.jQuery.fn.select2) {
+        return setTimeout(initUserSelectRoot, 50);
+    }
+
+    var $ = window.jQuery;
+    $(function() {
+        if (!$('#user_id_select').length) return;
+
+        $('#user_id_select').select2({
+            placeholder: '— Buscar usuario del sistema —',
+            allowClear: true,
+            minimumInputLength: 2,
+            ajax: {
+                url: '{{ route('globales.usuarios.buscar') }}',
+                dataType: 'json',
+                delay: 250,
+                data: function(params) { return { q: params.term }; },
+                processResults: function(data) {
+                    return { results: data.map(function(u) {
+                        return { id: u.id, text: u.name + ' — ' + u.email, name: u.name, email: u.email };
+                    })};
+                }
+            },
+            templateResult: function(u) {
+                if (!u.id) return u.text;
+                return $('<span><i class="fa fa-user mr-1 text-muted"></i><strong>' + u.text.split('—')[0] + '</strong><small class="text-muted ml-1">' + (u.text.split('—')[1]||'') + '</small></span>');
             }
-        },
-        templateResult: function(u) {
-            if (!u.id) return u.text;
-            return $('<span><i class="fa fa-user mr-1 text-muted"></i><strong>' + u.text.split('—')[0] + '</strong><small class="text-muted ml-1">' + (u.text.split('—')[1]||'') + '</small></span>');
-        }
-    });
+        });
 
-    $('#user_id_select').on('select2:select', function(e) {
-        var data = e.params.data;
-        $('#manager').val(data.name || '');
-        $('#email').val(data.email || '');
-    });
+        $('#user_id_select').on('select2:select', function(e) {
+            var data = e.params.data;
+            $('#manager').val(data.name || '');
+            $('#email').val(data.email || '');
+        });
 
-    $('#user_id_select').on('select2:clear', function() {
-        $('#manager').val('');
+        $('#user_id_select').on('select2:clear', function() {
+            $('#manager').val('');
+        });
     });
-});
+})();
 </script>

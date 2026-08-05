@@ -26,8 +26,8 @@
 <div class="sidebar-wrapper">
 
     <ul class="nav">
-        {{-- Menu para Administrador y Coordinador de Planificación (todo) --}}
-        @hasanyrole('Administrador|Coordinador de Planificación')
+        {{-- Menú exclusivo para Administrador --}}
+        @role('Administrador')
             <li class="nav-item active  ">
                 <a class="nav-link" href="{{ url('home') }}">
                     <i class="material-icons">dashboard</i>
@@ -121,7 +121,26 @@
                     </ul>
                 </div>
             </li>
+        @endrole
 
+        {{-- Menú específico para Coordinador de Planificación --}}
+        @role('Coordinador de Planificación')
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ route('planificacion-dashboard') }}">
+                    <i class="material-icons">dashboard</i>
+                    <p>Planificación</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('coordinador.index') }}">
+                    <i class="material-icons">groups</i>
+                    <p>Coordinación</p>
+                </a>
+            </li>
+        @endrole
+
+        {{-- Menú exclusivo para Administrador (globales, SIESS, proyectos, etc.) --}}
+        @role('Administrador')
             <li class="nav-item">
                 <a class="nav-link" data-toggle="collapse" href="#proyectosMenu" aria-expanded="{{ $enProyectos ? 'true' : 'false' }}">
                     <i class="material-icons">account_tree</i>
@@ -141,7 +160,6 @@
                                 <span class="sidebar-normal">Dashboard</span>
                             </a>
                         </li>
-
                     </ul>
                 </div>
             </li>
@@ -245,8 +263,6 @@
                     </ul>
                 </div>
             </li>
-
-
 
             {{-- ── RIISS (dentro del menú Administrador) ── --}}
             @php $enRiiss = str_contains($path, 'riiss'); @endphp

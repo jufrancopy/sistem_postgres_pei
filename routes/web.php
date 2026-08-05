@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\Globales\OpenAIController;
 use App\Http\Controllers\Admin\Globales\Survey\QuestionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\Planificacion\Coordinador\CoordinadorPlanificacionController;
 
 
 Route::get('/', 'WelcomeController@index');
@@ -74,6 +75,15 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/matriz',        'Admin\Planificacion\Pei\PeiController@matriz')->name('pei-profiles.matriz');
     Route::get('pei-profiles/{idProfile}/matriz/pdf',    'Admin\Planificacion\Pei\PeiController@matrizPdf')->name('pei-profiles.matriz.pdf');
     Route::get('pei-profiles/{idProfile}/dashboard', 'Admin\Planificacion\Pei\PeiController@dashboard')->name('pei-profiles.dashboard');
+
+    // ── Coordinador de Planificación ─────────────────────────────────────────
+    Route::prefix('coordinador-planificacion')->name('coordinador.')->middleware(['role:Coordinador de Planificación|Analista de Planificación'])->group(function () {
+        Route::get('/', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@index')->name('index');
+        Route::get('gestionar-grupos', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@gestionarGrupos')->name('gestionar-grupos');
+        Route::get('crear-actividad', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@crearActividad')->name('crear-actividad');
+        Route::get('ver-grupos-usuarios', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@verGruposYUsuarios')->name('ver-grupos-usuarios');
+        Route::get('ver-organigrama', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@verOrganigrama')->name('ver-organigrama');
+    });
 
     // Chat PEI
     Route::get('pei-profiles/{profileId}/chat/messages', 'Admin\Planificacion\Pei\PeiChatController@getMessages')->name('pei-chat.messages');
@@ -184,9 +194,16 @@ Route::group(['middleware' => ['auth']], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
 
-        // ── Actividades: index/crear/editar/eliminar solo Administrador ────────
+        // ── Globales administrativas: solo Administrador ───────────────────────
         Route::middleware(['role:Administrador'])->group(function () {
             Route::resource('activities', 'Admin\Globales\ActivityController', ['except' => ['show']]);
+            Route::resource('localities', 'Admin\Globales\LocalityController');
+            Route::resource('patrimonies', 'Admin\Globales\PatrimonyController');
+            Route::resource('patrimony-profiles', 'Admin\Globales\PatrimonyProfileController');
+            Route::resource('users', 'Admin\UserController');
+            Route::resource('permisos', 'Admin\PermissionController');
+            Route::resource('roles', 'Admin\RoleController');
+            Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');
         });
 
         // ── Show: Administrador + Gestor + Colaborador ───────────────────────
@@ -223,9 +240,6 @@ Route::group(['middleware' => ['auth']], function () {
 
 
         //Localities
-        Route::resource('localities', 'Admin\Globales\LocalityController');
-        Route::resource('patrimonies', 'Admin\Globales\PatrimonyController');
-        Route::resource('patrimony-profiles', 'Admin\Globales\PatrimonyProfileController');
         Route::get('patrimony-profiles/{idPatrimonyProfile}/detail', 'Admin\Globales\PatrimonyProfileController@detailPatrimonyProfile')->name('patrimonies.detail-profile');
 
         // Get data from Select2
@@ -233,9 +247,6 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/locality/{city}/localities', 'Admin\Globales\LocalityController@getLocalities');
 
         //Roles and permissions
-        Route::resource('users', 'Admin\UserController');
-        Route::resource('permisos', 'Admin\PermissionController');
-        Route::resource('roles', 'Admin\RoleController');
         Route::get('roles-guide', 'Admin\RoleController@guide')->name('roles.guide');
         Route::get('roles/{id}/edit-ajax', 'Admin\RoleController@editAjax')->name('roles.edit-ajax');
         Route::get('roles/{id}/show-ajax', 'Admin\RoleController@showAjax')->name('roles.show-ajax');
@@ -243,7 +254,6 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-role/{userId}', 'Admin\RoleController@getRole')->name('get-role');
 
         Route::get('formularios-dependecies', 'Admin\Globales\Formulario\FormularioController@getDependencies')->name('formularios.get-dependencies');
-        Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');
         Route::post('formulario-item/{idForm}/selected', 'Admin\Globales\Formulario\FormularioController@postSelectedItem')->name('form.item.selected');
         Route::post('formulario/{idForm}/response', 'Admin\Globales\Formulario\FormularioController@postResponse')->name('form-response-ok');
 

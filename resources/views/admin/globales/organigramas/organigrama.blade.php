@@ -144,223 +144,231 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
 <script>
-$(function() {
-    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+(function initOrganigramaRoot() {
+    if (!window.jQuery) {
+        return setTimeout(initOrganigramaRoot, 50);
+    }
 
-    // ── Inicializar drag & drop en todos los grupos ───────────────────────────
-    function initSortable() {
-        document.querySelectorAll('.sortable-group').forEach(function(el) {
-            if (el._sortable) return; // evitar doble init
+    var $ = window.jQuery;
 
-            el._sortable = Sortable.create(el, {
-                group: 'organigrama',          // permite mover entre grupos
-                handle: '.drag-handle',         // solo arrastrando el ícono
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
-                dragClass: 'sortable-drag',
-                fallbackOnBody: true,
-                swapThreshold: 0.65,
+    $(function() {
+        $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
 
-                onStart: function(evt) {
-                    var nombre = $(evt.item).find('.dep-nombre').first().text().trim();
-                    $('#moveText').text('Moviendo: ' + nombre);
-                    $('#moveIndicator').fadeIn(200);
-                },
+        // ── Inicializar drag & drop en todos los grupos ───────────────────────────
+        function initSortable() {
+            document.querySelectorAll('.sortable-group').forEach(function(el) {
+                if (el._sortable) return; // evitar doble init
 
-                onEnd: function(evt) {
-                    $('#moveIndicator').fadeOut(200);
+                el._sortable = Sortable.create(el, {
+                    group: 'organigrama',          // permite mover entre grupos
+                    handle: '.drag-handle',         // solo arrastrando el ícono
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    fallbackOnBody: true,
+                    swapThreshold: 0.65,
 
-                    var nodoId = $(evt.item).data('id');
+                    onStart: function(evt) {
+                        var nombre = $(evt.item).find('.dep-nombre').first().text().trim();
+                        $('#moveText').text('Moviendo: ' + nombre);
+                        $('#moveIndicator').fadeIn(200);
+                    },
 
-                    // evt.to es el <ul> destino — su padre <li> tiene el data-id del nodo padre
-                    var $toUl        = $(evt.to);
-                    var $parentLi    = $toUl.closest('li.nodo-item');
-                    var nuevoParentId = $parentLi.length ? $parentLi.data('id') : null;
+                    onEnd: function(evt) {
+                        $('#moveIndicator').fadeOut(200);
 
-                    // Si no cambió nada, ignorar
-                    if (evt.from === evt.to && evt.oldIndex === evt.newIndex) return;
+                        var nodoId = $(evt.item).data('id');
 
-                    // No permitir soltar en nivel raíz (fuera de cualquier li)
-                    if (!nuevoParentId) {
-                        toastr.warning('No se puede mover a nivel raíz. Soltá dentro de una dependencia.');
-                        location.reload();
-                        return;
-                    }
+                        // evt.to es el <ul> destino — su padre <li> tiene el data-id del nodo padre
+                        var $toUl        = $(evt.to);
+                        var $parentLi    = $toUl.closest('li.nodo-item');
+                        var nuevoParentId = $parentLi.length ? $parentLi.data('id') : null;
 
-                    // No mover sobre sí mismo
-                    if (nuevoParentId == nodoId) {
-                        location.reload();
-                        return;
-                    }
+                        // Si no cambió nada, ignorar
+                        if (evt.from === evt.to && evt.oldIndex === evt.newIndex) return;
 
-                    var nombreNodo  = $(evt.item).find('> .nodo-row .dep-nombre').text().trim();
-                    var nombrePadre = $parentLi.find('> .nodo-row .dep-nombre').text().trim();
-
-                    Swal.fire({
-                        title: '¿Confirmar movimiento?',
-                        html: '<strong>' + nombreNodo + '</strong><br><i class="fa fa-arrow-down text-muted"></i> Nuevo padre: <strong>' + nombrePadre + '</strong>',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonText: 'Sí, mover',
-                        cancelButtonText: 'Cancelar',
-                        confirmButtonColor: '#28a745',
-                    }).then(function(result) {
-                        if (result.isConfirmed) {
-                            $.post('{{ url('admin/globales/organigramas') }}/' + nodoId + '/mover', {
-                                parent_id: nuevoParentId
-                            }, function(res) {
-                                toastr.success(res.success);
-                                setTimeout(function() { location.reload(); }, 600);
-                            }).fail(function(xhr) {
-                                toastr.error(xhr.responseJSON?.error || 'Error al mover.');
-                                location.reload();
-                            });
-                        } else {
+                        // No permitir soltar en nivel raíz (fuera de cualquier li)
+                        if (!nuevoParentId) {
+                            toastr.warning('No se puede mover a nivel raíz. Soltá dentro de una dependencia.');
                             location.reload();
+                            return;
                         }
+
+                        // No mover sobre sí mismo
+                        if (nuevoParentId == nodoId) {
+                            location.reload();
+                            return;
+                        }
+
+                        var nombreNodo  = $(evt.item).find('> .nodo-row .dep-nombre').text().trim();
+                        var nombrePadre = $parentLi.find('> .nodo-row .dep-nombre').text().trim();
+
+                        Swal.fire({
+                            title: '¿Confirmar movimiento?',
+                            html: '<strong>' + nombreNodo + '</strong><br><i class="fa fa-arrow-down text-muted"></i> Nuevo padre: <strong>' + nombrePadre + '</strong>',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Sí, mover',
+                            cancelButtonText: 'Cancelar',
+                            confirmButtonColor: '#28a745',
+                        }).then(function(result) {
+                            if (result.isConfirmed) {
+                                $.post('{{ url('admin/globales/organigramas') }}/' + nodoId + '/mover', {
+                                    parent_id: nuevoParentId
+                                }, function(res) {
+                                    toastr.success(res.success);
+                                    setTimeout(function() { location.reload(); }, 600);
+                                }).fail(function(xhr) {
+                                    toastr.error(xhr.responseJSON?.error || 'Error al mover.');
+                                    location.reload();
+                                });
+                            } else {
+                                location.reload();
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
+        initSortable();
+
+        // ── Expandir/colapsar hijos ───────────────────────────────────────────────
+        $('body').on('click', '.btn-toggle', function(e) {
+            e.stopPropagation();
+            var $children = $(this).closest('.nodo-item').find('> .nodo-children');
+            var $icon = $(this).find('i');
+            $children.slideToggle(150);
+            $icon.toggleClass('fa-chevron-down fa-chevron-right');
+        });
+
+        // ── Agregar hijo del nodo raíz ────────────────────────────────────────────
+        $('#btnAgregarHijo').on('click', function() {
+            abrirModalCrear($(this).data('id'), $(this).data('nombre'));
+        });
+
+        $('body').on('click', '.btnAgregarSub', function(e) {
+            e.stopPropagation();
+            abrirModalCrear($(this).data('id'), $(this).data('nombre'));
+        });
+
+        // ── Inicializar Select2 de usuario ────────────────────────────────────────
+        function initUserSelect(userId, userName, userEmail) {
+            var $sel = $('#dep_user_id');
+            if ($sel.hasClass('select2-hidden-accessible')) $sel.select2('destroy');
+            $sel.empty();
+
+            $sel.select2({
+                dropdownParent: $('#modalDependencia'),
+                placeholder: '— Buscar por nombre o correo —',
+                allowClear: true,
+                minimumInputLength: 2,
+                ajax: {
+                    url: '{{ route("globales.usuarios.buscar") }}',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(p) { return { q: p.term }; },
+                    processResults: function(data) {
+                        return { results: data.map(function(u) {
+                            return { id: u.id, text: u.name, email: u.email, name: u.name };
+                        })};
+                    }
+                },
+                templateResult: function(u) {
+                    if (u.loading) return u.text;
+                    return $('<span><i class="fa fa-user mr-1 text-muted"></i><strong>' + u.text + '</strong>'
+                        + (u.email ? ' <small class="text-muted ml-1">— ' + u.email + '</small>' : '') + '</span>');
+                }
+            });
+
+            if (userId) {
+                var label = (userName || 'Usuario #' + userId) + (userEmail ? ' — ' + userEmail : '');
+                $sel.append(new Option(label, userId, true, true)).trigger('change');
+            }
+
+            $sel.off('select2:select').on('select2:select', function(e) {
+                var d = e.params.data;
+                $('#dep_manager').val(d.name || '');
+                $('#dep_email').val(d.email || '');
+            });
+        }
+
+        function abrirModalCrear(parentId, parentNombre) {
+            $('#modalDepTitulo').text('Agregar en: ' + parentNombre);
+            $('#formDependencia')[0].reset();
+            $('#dep_id').val('');
+            $('#dep_parent_id').val(parentId);
+            $('#dep_method').val('POST');
+            $('#modalDependencia').modal('show');
+            initUserSelect(null, null, null);
+        }
+
+        // ── Editar ────────────────────────────────────────────────────────────────
+        $('body').on('click', '.btnEditarDep', function(e) {
+            e.stopPropagation();
+            var id = $(this).data('id');
+            $.get('{{ url('admin/globales/get-dependency') }}/' + id, function(dep) {
+                $('#modalDepTitulo').text('Editar: ' + dep.dependency);
+                $('#dep_id').val(dep.id);
+                $('#dep_parent_id').val(dep.parent_id);
+                $('#dep_method').val('PUT');
+                $('#dep_dependency').val(dep.dependency);
+                $('#dep_manager').val(dep.manager || '');
+                $('#dep_phone').val(dep.phone || '');
+                $('#dep_email').val(dep.email || '');
+                $('#modalDependencia').modal('show');
+                initUserSelect(dep.user_id, dep.manager, dep.email);
+            });
+        });
+
+        // ── Guardar ───────────────────────────────────────────────────────────────
+        $('#formDependencia').on('submit', function(e) {
+            e.preventDefault();
+            var id  = $('#dep_id').val();
+            var url = id
+                ? '{{ url('admin/globales/organigramas') }}/' + id
+                : '{{ route('globales.organigramas.store') }}';
+
+            $('#btnGuardarDep').html('<i class="fa fa-spinner fa-spin mr-1"></i>').prop('disabled', true);
+
+            $.ajax({
+                url: url, type: 'POST', data: $(this).serialize(),
+                success: function() {
+                    toastr.success(id ? 'Actualizado.' : 'Creado.');
+                    $('#modalDependencia').modal('hide');
+                    setTimeout(function() { location.reload(); }, 600);
+                },
+                error: function(xhr) {
+                    toastr.error(xhr.responseJSON?.message || 'Error.');
+                    $('#btnGuardarDep').html('<i class="fa fa-save mr-1"></i> Guardar').prop('disabled', false);
+                }
+            });
+        });
+
+        // ── Eliminar ──────────────────────────────────────────────────────────────
+        $('body').on('click', '.btnEliminarDep', function(e) {
+            e.stopPropagation();
+            var id = $(this).data('id'), nombre = $(this).data('nombre');
+            Swal.fire({
+                title: '¿Eliminar ' + nombre + '?',
+                text: 'Se eliminarán también todas sus sub-dependencias.',
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#dc3545', confirmButtonText: 'Sí, eliminar',
+            }).then(function(r) {
+                if (r.isConfirmed) {
+                    $.ajax({
+                        url: '{{ url('admin/globales/organigramas') }}/' + id,
+                        type: 'POST',
+                        data: { _method: 'DELETE', _token: '{{ csrf_token() }}' },
+                        success: function() { toastr.success('Eliminado.'); setTimeout(function() { location.reload(); }, 600); },
+                        error: function() { toastr.error('Error al eliminar.'); }
                     });
                 }
             });
         });
-    }
-
-    initSortable();
-
-    // ── Expandir/colapsar hijos ───────────────────────────────────────────────
-    $('body').on('click', '.btn-toggle', function(e) {
-        e.stopPropagation();
-        var $children = $(this).closest('.nodo-item').find('> .nodo-children');
-        var $icon = $(this).find('i');
-        $children.slideToggle(150);
-        $icon.toggleClass('fa-chevron-down fa-chevron-right');
     });
-
-    // ── Agregar hijo del nodo raíz ────────────────────────────────────────────
-    $('#btnAgregarHijo').on('click', function() {
-        abrirModalCrear($(this).data('id'), $(this).data('nombre'));
-    });
-
-    $('body').on('click', '.btnAgregarSub', function(e) {
-        e.stopPropagation();
-        abrirModalCrear($(this).data('id'), $(this).data('nombre'));
-    });
-
-    // ── Inicializar Select2 de usuario ────────────────────────────────────────
-    function initUserSelect(userId, userName, userEmail) {
-        var $sel = $('#dep_user_id');
-        if ($sel.hasClass('select2-hidden-accessible')) $sel.select2('destroy');
-        $sel.empty();
-
-        $sel.select2({
-            dropdownParent: $('#modalDependencia'),
-            placeholder: '— Buscar por nombre o correo —',
-            allowClear: true,
-            minimumInputLength: 2,
-            ajax: {
-                url: '{{ route("globales.usuarios.buscar") }}',
-                dataType: 'json',
-                delay: 250,
-                data: function(p) { return { q: p.term }; },
-                processResults: function(data) {
-                    return { results: data.map(function(u) {
-                        return { id: u.id, text: u.name, email: u.email, name: u.name };
-                    })};
-                }
-            },
-            templateResult: function(u) {
-                if (u.loading) return u.text;
-                return $('<span><i class="fa fa-user mr-1 text-muted"></i><strong>' + u.text + '</strong>'
-                    + (u.email ? ' <small class="text-muted ml-1">— ' + u.email + '</small>' : '') + '</span>');
-            }
-        });
-
-        if (userId) {
-            var label = (userName || 'Usuario #' + userId) + (userEmail ? ' — ' + userEmail : '');
-            $sel.append(new Option(label, userId, true, true)).trigger('change');
-        }
-
-        $sel.off('select2:select').on('select2:select', function(e) {
-            var d = e.params.data;
-            $('#dep_manager').val(d.name || '');
-            $('#dep_email').val(d.email || '');
-        });
-    }
-
-    function abrirModalCrear(parentId, parentNombre) {
-        $('#modalDepTitulo').text('Agregar en: ' + parentNombre);
-        $('#formDependencia')[0].reset();
-        $('#dep_id').val('');
-        $('#dep_parent_id').val(parentId);
-        $('#dep_method').val('POST');
-        $('#modalDependencia').modal('show');
-        initUserSelect(null, null, null);
-    }
-
-    // ── Editar ────────────────────────────────────────────────────────────────
-    $('body').on('click', '.btnEditarDep', function(e) {
-        e.stopPropagation();
-        var id = $(this).data('id');
-        $.get('{{ url('admin/globales/get-dependency') }}/' + id, function(dep) {
-            $('#modalDepTitulo').text('Editar: ' + dep.dependency);
-            $('#dep_id').val(dep.id);
-            $('#dep_parent_id').val(dep.parent_id);
-            $('#dep_method').val('PUT');
-            $('#dep_dependency').val(dep.dependency);
-            $('#dep_manager').val(dep.manager || '');
-            $('#dep_phone').val(dep.phone || '');
-            $('#dep_email').val(dep.email || '');
-            $('#modalDependencia').modal('show');
-            initUserSelect(dep.user_id, dep.manager, dep.email);
-        });
-    });
-
-    // ── Guardar ───────────────────────────────────────────────────────────────
-    $('#formDependencia').on('submit', function(e) {
-        e.preventDefault();
-        var id  = $('#dep_id').val();
-        var url = id
-            ? '{{ url('admin/globales/organigramas') }}/' + id
-            : '{{ route('globales.organigramas.store') }}';
-
-        $('#btnGuardarDep').html('<i class="fa fa-spinner fa-spin mr-1"></i>').prop('disabled', true);
-
-        $.ajax({
-            url: url, type: 'POST', data: $(this).serialize(),
-            success: function() {
-                toastr.success(id ? 'Actualizado.' : 'Creado.');
-                $('#modalDependencia').modal('hide');
-                setTimeout(function() { location.reload(); }, 600);
-            },
-            error: function(xhr) {
-                toastr.error(xhr.responseJSON?.message || 'Error.');
-                $('#btnGuardarDep').html('<i class="fa fa-save mr-1"></i> Guardar').prop('disabled', false);
-            }
-        });
-    });
-
-    // ── Eliminar ──────────────────────────────────────────────────────────────
-    $('body').on('click', '.btnEliminarDep', function(e) {
-        e.stopPropagation();
-        var id = $(this).data('id'), nombre = $(this).data('nombre');
-        Swal.fire({
-            title: '¿Eliminar ' + nombre + '?',
-            text: 'Se eliminarán también todas sus sub-dependencias.',
-            icon: 'warning', showCancelButton: true,
-            confirmButtonColor: '#dc3545', confirmButtonText: 'Sí, eliminar',
-        }).then(function(r) {
-            if (r.isConfirmed) {
-                $.ajax({
-                    url: '{{ url('admin/globales/organigramas') }}/' + id,
-                    type: 'POST',
-                    data: { _method: 'DELETE', _token: '{{ csrf_token() }}' },
-                    success: function() { toastr.success('Eliminado.'); setTimeout(function() { location.reload(); }, 600); },
-                    error: function() { toastr.error('Error al eliminar.'); }
-                });
-            }
-        });
-    });
-});
+})();
 </script>
 
 <style>

@@ -72,6 +72,95 @@
             @endif
         </div>
 
+        @hasanyrole('Administrador|Coordinador de Planificación|Analista de Planificación')
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card card-header-info">
+                    <h6 class="mb-0 font-weight-bold">
+                        <i class="fa fa-users mr-1"></i>
+                        {{ auth()->user()->hasRole('Analista de Planificación') ? 'Panel de Planificación' : 'Panel del Coordinador de Planificación' }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @if(auth()->user()->hasRole('Coordinador de Planificación') || auth()->user()->hasRole('Administrador'))
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ route('coordinador.gestionar-grupos') }}" class="text-decoration-none">
+                                <div class="card border-left-primary shadow h-100 py-2">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-grow-1">
+                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Gestionar Grupos</div>
+                                                <div class="h5 mb-0 font-weight-bold text-dark">Gestionar</div>
+                                                <div class="text-muted" style="font-size:.72rem">Grupos y Usuarios</div>
+                                            </div>
+                                            <i class="fa fa-users fa-2x text-primary opacity-25 ml-2"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ route('coordinador.crear-actividad') }}" class="text-decoration-none">
+                                <div class="card border-left-success shadow h-100 py-2">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-grow-1">
+                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Crear Actividad</div>
+                                                <div class="h5 mb-0 font-weight-bold text-dark">Nueva</div>
+                                                <div class="text-muted" style="font-size:.72rem">Crear Nuevas Actividades</div>
+                                            </div>
+                                            <i class="fa fa-plus fa-2x text-success opacity-25 ml-2"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        @endif
+
+                        @if(auth()->user()->hasRole('Coordinador de Planificación') || auth()->user()->hasRole('Analista de Planificación'))
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ route('coordinador.ver-organigrama') }}" class="text-decoration-none">
+                                <div class="card border-left-warning shadow h-100 py-2">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-grow-1">
+                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Organigrama</div>
+                                                <div class="h5 mb-0 font-weight-bold text-dark">Gestionar</div>
+                                                <div class="text-muted" style="font-size:.72rem">Organigrama del PEI</div>
+                                            </div>
+                                            <i class="fa fa-sitemap fa-2x text-warning opacity-25 ml-2"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        @endif
+
+                        @if(auth()->user()->hasRole('Coordinador de Planificación') || auth()->user()->hasRole('Administrador'))
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ route('coordinador.ver-grupos-usuarios') }}" class="text-decoration-none">
+                                <div class="card border-left-info shadow h-100 py-2">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-grow-1">
+                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Ver Grupos</div>
+                                                <div class="h5 mb-0 font-weight-bold text-dark">Todos</div>
+                                                <div class="text-muted" style="font-size:.72rem">Grupos y Usuarios</div>
+                                            </div>
+                                            <i class="fa fa-list fa-2x text-info opacity-25 ml-2"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endhasanyrole
+
         @if(!$peiActual)
         <div class="alert alert-info">
             <i class="fa fa-info-circle mr-2"></i>
