@@ -109,20 +109,34 @@ class PeiController extends Controller
                         : '<span class="badge badge-secondary px-2 py-1" style="font-size:0.78rem;"><i class="fa fa-eye-slash mr-1"></i>Inactivo</span>';
                 })
                 ->addColumn('action', function ($row) {
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-type="' . $row->type . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editProfile"><i class="far fa-edit"></i></a>';
+                    $user = auth()->user();
+                    $isAdminOrCoordinator = $user->hasAnyRole(['Administrador', 'Coordinador de Planificación']);
+                    $btn = '';
 
-                    $btn .= ' <a href="' . route('pei-profiles.proceso', $row->id) . '" class="btn btn-success btn-circle" title="Proceso"><i class="fa fa-tasks"></i></a>';
+                    // 1. Editar PEI (Solo Administrador y Coordinador)
+                    if ($isAdminOrCoordinator) {
+                        $btn .= '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-type="' . $row->type . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editProfile" title="Editar Perfil PEI"><i class="far fa-edit"></i></a> ';
+                    }
 
-                    $btn .= ' <a href="' . route('pei-profiles.details', $row->id) . '" class="btn btn-info btn-circle showTree"><i class="fa fa-tree" aria-hidden="true"></i></a>';
+                    // 2. Proceso PEI (Disponible para todos, incluyendo Analistas)
+                    $btn .= '<a href="' . route('pei-profiles.proceso', $row->id) . '" class="btn btn-success btn-circle" title="Proceso PEI"><i class="fa fa-tasks"></i></a>';
 
-                    // Botón para alternar Estado Activo / Inactivo
-                    $toggleColor = $row->is_active ? 'btn-outline-warning' : 'btn-outline-success';
-                    $toggleIcon  = $row->is_active ? 'fa-eye-slash' : 'fa-eye';
-                    $toggleTitle = $row->is_active ? 'Inactivar PEI (Ocultar)' : 'Activar PEI';
-                    $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" title="' . $toggleTitle . '" class="btn ' . $toggleColor . ' btn-circle toggleStatus"><i class="fa ' . $toggleIcon . '"></i></a>';
+                    // 3. Ver Estructura Árbol (Solo Administrador y Coordinador)
+                    if ($isAdminOrCoordinator) {
+                        $btn .= ' <a href="' . route('pei-profiles.details', $row->id) . '" class="btn btn-info btn-circle showTree" title="Estructura Completa PEI"><i class="fa fa-tree" aria-hidden="true"></i></a>';
+                    }
 
-                    if (auth()->user()->hasRole('Administrador')) {
-                        $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteProfile"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+                    // 4. Activar / Inactivar PEI (Solo Administrador y Coordinador)
+                    if ($isAdminOrCoordinator) {
+                        $toggleColor = $row->is_active ? 'btn-outline-warning' : 'btn-outline-success';
+                        $toggleIcon  = $row->is_active ? 'fa-eye-slash' : 'fa-eye';
+                        $toggleTitle = $row->is_active ? 'Inactivar PEI (Ocultar)' : 'Activar PEI';
+                        $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" title="' . $toggleTitle . '" class="btn ' . $toggleColor . ' btn-circle toggleStatus"><i class="fa ' . $toggleIcon . '"></i></a>';
+                    }
+
+                    // 5. Eliminar (Solo Administrador)
+                    if ($user->hasRole('Administrador')) {
+                        $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteProfile" title="Eliminar"><i class="fa fa-trash" aria-hidden="true"></i></a>';
                     }
 
                     return $btn;

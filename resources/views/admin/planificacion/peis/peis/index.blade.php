@@ -32,6 +32,7 @@
                                 <i class="fa fa-sync-alt mr-1"></i> Recalcular Puntos
                             </button>
                             @endif
+                            @hasanyrole('Administrador|Coordinador de Planificación')
                             <a class="btn btn-outline-info mb-2 mr-2 font-weight-bold" href="{{ route('globales.roles.guide') }}" title="Ver guía de permisos y roles">
                                 <i class="fa fa-book-open mr-1"></i> Guía de Roles y Permisos
                             </a>
@@ -39,6 +40,7 @@
                                 id="createNewProfile">
                                 <i class="fa fa-plus mr-1"></i> Nuevo Perfil
                             </a>
+                            @endhasanyrole
                         </div>
                     </div>
 
