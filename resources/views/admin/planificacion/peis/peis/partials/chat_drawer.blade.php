@@ -561,6 +561,7 @@
                 // Scroll al fondo después de abrir el chat
                 setTimeout(() => {
                     scrollToBottom(true);
+                }, 200);
             };
 
             window.handleContextNavigation = function(event, url) {
@@ -1470,6 +1471,7 @@
                         allLoadedMessages.push(data.message);
                         renderFilteredMessages();
                         scrollToBottom(true);
+                    }
                 })
                 .catch(err => {
                     sendBtn.disabled = false;
