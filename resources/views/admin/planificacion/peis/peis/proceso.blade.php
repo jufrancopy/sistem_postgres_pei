@@ -306,7 +306,34 @@ $pctGlobal   = round(($completados / 6) * 100);
 @section('scripts')
 <script>
     $(document).ready(function () {
-        $('#btnProcesoCertMef').on('click', function () {
+
+        // Abrir collapse y hacer scroll si hay hash en la URL (para referencias de otros usuarios)
+        if (window.location.hash) {
+            const elementId = window.location.hash.substring(1);
+            setTimeout(function() {
+                const element = document.getElementById(elementId);
+                if (!element) return;
+                let parent = element.parentElement;
+                while (parent) {
+                    if (parent.classList.contains('collapse') && !parent.classList.contains('show')) {
+                        $(parent).collapse('show');
+                    }
+                    parent = parent.parentElement;
+                }
+                setTimeout(function() {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    element.style.transition = 'all 0.4s ease';
+                    element.style.boxShadow = '0 0 0 3px #22c55e, 0 0 20px rgba(34,197,94,0.5)';
+                    element.style.borderRadius = '8px';
+                    element.style.outline = '2px solid #16a34a';
+                    setTimeout(function() {
+                        element.style.boxShadow = 'none';
+                        element.style.outline = 'none';
+                    }, 3500);
+                }, 450);
+            }, 600);
+        }
+
             var url = "{{ route('pei-profiles.certificacion-mef', $profile->id) }}";
             $('#modalCertificacionMefBody').html('<div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-2x mb-3 text-warning"></i><div>Cargando verificación de certificación MEF...</div></div>');
             $('#modalCertificacionMef').modal('show');

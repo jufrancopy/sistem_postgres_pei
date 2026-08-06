@@ -584,15 +584,29 @@
 
             window.scrollToElement = function(elementId) {
                 const element = document.getElementById(elementId);
-                if (element) {
+                if (!element) return;
+
+                // Abrir todos los collapse padres
+                let parent = element.parentElement;
+                while (parent) {
+                    if (parent.classList.contains('collapse') && !parent.classList.contains('show')) {
+                        $(parent).collapse('show');
+                    }
+                    parent = parent.parentElement;
+                }
+
+                // Esperar a que los collapses terminen de abrirse
+                setTimeout(() => {
                     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    element.style.transition = 'all 0.5s ease';
-                    element.style.boxShadow = '0 0 20px rgba(245, 158, 11, 0.8)';
+                    element.style.transition = 'all 0.4s ease';
+                    element.style.boxShadow = '0 0 0 3px #22c55e, 0 0 20px rgba(34,197,94,0.5)';
                     element.style.borderRadius = '8px';
+                    element.style.outline = '2px solid #16a34a';
                     setTimeout(() => {
                         element.style.boxShadow = 'none';
-                    }, 3000);
-                }
+                        element.style.outline = 'none';
+                    }, 3500);
+                }, 450);
             };
 
             const clearContextBtn = document.getElementById('clearPeiChatContext');
