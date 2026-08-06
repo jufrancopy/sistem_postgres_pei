@@ -584,7 +584,20 @@
 
             window.scrollToElement = function(elementId) {
                 const element = document.getElementById(elementId);
-                if (!element) return;
+                if (!element) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Elemento no encontrado',
+                            text: 'El elemento referenciado fue eliminado o modificado.',
+                            toast: true,
+                            position: 'top-end',
+                            timer: 3500,
+                            showConfirmButton: false
+                        });
+                    }
+                    return;
+                }
 
                 // Abrir todos los collapse padres
                 let parent = element.parentElement;

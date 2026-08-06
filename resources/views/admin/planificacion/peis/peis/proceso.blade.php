@@ -312,7 +312,20 @@ $pctGlobal   = round(($completados / 6) * 100);
             const elementId = window.location.hash.substring(1);
             setTimeout(function() {
                 const element = document.getElementById(elementId);
-                if (!element) return;
+                if (!element) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Elemento no encontrado',
+                            text: 'El elemento referenciado fue eliminado o modificado.',
+                            toast: true,
+                            position: 'top-end',
+                            timer: 3500,
+                            showConfirmButton: false
+                        });
+                    }
+                    return;
+                }
                 let parent = element.parentElement;
                 while (parent) {
                     if (parent.classList.contains('collapse') && !parent.classList.contains('show')) {
