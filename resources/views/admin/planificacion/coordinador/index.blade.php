@@ -818,12 +818,11 @@
                             <thead>
                                 <tr>
                                     <th style="width: 5%;">#</th>
-                                    <th style="width: 25%;">Proyecto / Código</th>
-                                    <th style="width: 18%;">Dependencias (Sol./Ejec.)</th>
-                                    <th style="width: 12%;">Monto / Moneda</th>
-                                    <th style="width: 12%;">Plazo de Ejecución</th>
-                                    <th style="width: 13%; text-align: center;">Estado</th>
-                                    <th style="width: 15%; text-align: center;">Acciones</th>
+                                    <th style="width: 30%;">Proyecto</th>
+                                    <th style="width: 25%;">Dependencia</th>
+                                    <th style="width: 20%;">Vinculación PEI</th>
+                                    <th style="width: 10%; text-align: center;">Estado</th>
+                                    <th style="width: 10%; text-align: center;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -2037,10 +2036,9 @@
             },
             columns: [
                 { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false, className: 'text-center font-weight-bold' },
-                { data: 'proyecto_info', name: 'nombre' },
-                { data: 'dependencias_info', name: 'dependency_solicitante.dependency' },
-                { data: 'monto_info', name: 'monto_total' },
-                { data: 'fechas_info', name: 'fecha_inicio' },
+                { data: 'nombre_info', name: 'nombre' },
+                { data: 'dependencia_info', name: 'dependenciaSolicitante.dependency' },
+                { data: 'pei_vinculo', name: 'peiProfile.name', orderable: false },
                 { data: 'estado_badge', name: 'estado', className: 'text-center' },
                 { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center' }
             ],
