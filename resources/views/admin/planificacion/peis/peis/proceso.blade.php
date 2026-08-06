@@ -326,14 +326,17 @@ $pctGlobal   = round(($completados / 6) * 100);
                     }
                     return;
                 }
+
+                const collapses = [];
                 let parent = element.parentElement;
                 while (parent) {
                     if (parent.classList.contains('collapse') && !parent.classList.contains('show')) {
-                        $(parent).collapse('show');
+                        collapses.unshift(parent);
                     }
                     parent = parent.parentElement;
                 }
-                setTimeout(function() {
+
+                function highlight() {
                     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     element.style.transition = 'all 0.4s ease';
                     element.style.boxShadow = '0 0 0 3px #22c55e, 0 0 20px rgba(34,197,94,0.5)';
@@ -343,7 +346,17 @@ $pctGlobal   = round(($completados / 6) * 100);
                         element.style.boxShadow = 'none';
                         element.style.outline = 'none';
                     }, 3500);
-                }, 450);
+                }
+
+                if (collapses.length === 0) { highlight(); return; }
+
+                function openNext(index) {
+                    if (index >= collapses.length) { setTimeout(highlight, 100); return; }
+                    $(collapses[index]).one('shown.bs.collapse', function() { openNext(index + 1); });
+                    $(collapses[index]).collapse('show');
+                }
+                openNext(0);
+
             }, 600);
         }
 

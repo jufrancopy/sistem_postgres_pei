@@ -599,17 +599,17 @@
                     return;
                 }
 
-                // Abrir todos los collapse padres
+                // Recopilar todos los collapse padres cerrados, del más externo al más interno
+                const collapses = [];
                 let parent = element.parentElement;
                 while (parent) {
                     if (parent.classList.contains('collapse') && !parent.classList.contains('show')) {
-                        $(parent).collapse('show');
+                        collapses.unshift(parent); // más externo primero
                     }
                     parent = parent.parentElement;
                 }
 
-                // Esperar a que los collapses terminen de abrirse
-                setTimeout(() => {
+                function highlightElement() {
                     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     element.style.transition = 'all 0.4s ease';
                     element.style.boxShadow = '0 0 0 3px #22c55e, 0 0 20px rgba(34,197,94,0.5)';
@@ -619,7 +619,27 @@
                         element.style.boxShadow = 'none';
                         element.style.outline = 'none';
                     }, 3500);
-                }, 450);
+                }
+
+                if (collapses.length === 0) {
+                    // Ya está visible
+                    highlightElement();
+                    return;
+                }
+
+                // Abrir en cadena: esperar shown.bs.collapse de cada nivel antes de abrir el siguiente
+                function openNext(index) {
+                    if (index >= collapses.length) {
+                        setTimeout(highlightElement, 100);
+                        return;
+                    }
+                    const col = collapses[index];
+                    $(col).one('shown.bs.collapse', function() {
+                        openNext(index + 1);
+                    });
+                    $(col).collapse('show');
+                }
+                openNext(0);
             };
 
             const clearContextBtn = document.getElementById('clearPeiChatContext');
