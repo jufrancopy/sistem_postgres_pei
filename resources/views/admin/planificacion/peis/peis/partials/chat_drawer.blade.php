@@ -566,23 +566,19 @@
 
             window.handleContextNavigation = function(event, url) {
                 if (!url || url === '#') return;
+                event.preventDefault();
                 try {
                     const targetUrlObj = new URL(url, window.location.origin);
                     const currentUrlObj = new URL(window.location.href);
 
-                    if (targetUrlObj.pathname === currentUrlObj.pathname) {
-                        event.preventDefault();
+                    if (targetUrlObj.pathname === currentUrlObj.pathname && targetUrlObj.hash) {
                         drawer.classList.remove('open');
-                        if (targetUrlObj.hash) {
-                            const elementId = targetUrlObj.hash.substring(1);
-                            setTimeout(() => scrollToElement(elementId), 300);
-                        }
+                        setTimeout(() => scrollToElement(targetUrlObj.hash.substring(1)), 300);
                     } else {
-                        // Otra página: navegar normalmente, el hash hace el scroll
                         window.location.href = url;
                     }
                 } catch(e) {
-                    console.error('Error en handleContextNavigation:', e);
+                    window.location.href = url;
                 }
             };
 
