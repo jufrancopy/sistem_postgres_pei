@@ -986,7 +986,33 @@ $('#btnFiltroEquipo').on('click', function() {
 
 $(document).ready(function() {
     initDragDrop();
-    aplicarFiltroScope();
+
+    // Si hay hash en la URL (referencia desde el chat), mostrar todo el equipo y scrollear
+    if (window.location.hash) {
+        const elementId = window.location.hash.substring(1);
+        filtroScope = 'equipo';
+        $('#btnFiltroEquipo').addClass('btn-info active').removeClass('btn-outline-info');
+        $('#btnFiltroMisTareas').addClass('btn-outline-info').removeClass('btn-info active');
+        aplicarFiltroScope();
+
+        setTimeout(function() {
+            const element = document.getElementById(elementId);
+            if (!element) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'warning', title: 'Tarea no encontrada', text: 'La tarea referenciada fue eliminada o modificada.', toast: true, position: 'top-end', timer: 3500, showConfirmButton: false });
+                }
+                return;
+            }
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.style.transition = 'all 0.4s ease';
+            element.style.boxShadow = '0 0 0 3px #22c55e, 0 0 20px rgba(34,197,94,0.5)';
+            element.style.borderRadius = '8px';
+            element.style.outline = '2px solid #16a34a';
+            setTimeout(function() { element.style.boxShadow = 'none'; element.style.outline = 'none'; }, 3500);
+        }, 400);
+    } else {
+        aplicarFiltroScope();
+    }
 });
 
 function initDragDrop() {

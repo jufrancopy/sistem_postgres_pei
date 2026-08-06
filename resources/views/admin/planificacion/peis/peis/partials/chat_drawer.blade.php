@@ -621,18 +621,11 @@
                     }, 3500);
                 }
 
-                if (collapses.length === 0) {
-                    // Ya está visible
-                    highlightElement();
-                    return;
-                }
+                if (collapses.length === 0) { highlightElement(); return; }
 
                 // Abrir en cadena: esperar shown.bs.collapse de cada nivel antes de abrir el siguiente
                 function openNext(index) {
-                    if (index >= collapses.length) {
-                        setTimeout(highlightElement, 100);
-                        return;
-                    }
+                    if (index >= collapses.length) { setTimeout(highlightElement, 100); return; }
                     const col = collapses[index];
                     $(col).one('shown.bs.collapse', function() {
                         openNext(index + 1);
