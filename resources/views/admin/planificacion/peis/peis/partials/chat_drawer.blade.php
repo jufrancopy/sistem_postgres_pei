@@ -583,56 +583,37 @@
             };
 
             window.scrollToElement = function(elementId) {
-                const element = document.getElementById(elementId);
-                if (!element) {
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Elemento no encontrado',
-                            text: 'El elemento referenciado fue eliminado o modificado.',
-                            toast: true,
-                            position: 'top-end',
-                            timer: 3500,
-                            showConfirmButton: false
-                        });
+                function doScroll() {
+                    const element = document.getElementById(elementId);
+                    if (!element) {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({ icon: 'warning', title: 'Elemento no encontrado', text: 'El elemento referenciado fue eliminado o modificado.', toast: true, position: 'top-end', timer: 3500, showConfirmButton: false });
+                        }
+                        return;
                     }
-                    return;
-                }
-
-                // Recopilar todos los collapse padres cerrados, del más externo al más interno
-                const collapses = [];
-                let parent = element.parentElement;
-                while (parent) {
-                    if (parent.classList.contains('collapse') && !parent.classList.contains('show')) {
-                        collapses.unshift(parent); // más externo primero
-                    }
-                    parent = parent.parentElement;
-                }
-
-                function highlightElement() {
                     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     element.style.transition = 'all 0.4s ease';
                     element.style.boxShadow = '0 0 0 3px #22c55e, 0 0 20px rgba(34,197,94,0.5)';
                     element.style.borderRadius = '8px';
                     element.style.outline = '2px solid #16a34a';
-                    setTimeout(() => {
-                        element.style.boxShadow = 'none';
-                        element.style.outline = 'none';
-                    }, 3500);
+                    setTimeout(() => { element.style.boxShadow = 'none'; element.style.outline = 'none'; }, 3500);
                 }
 
-                if (collapses.length === 0) { highlightElement(); return; }
+                // Abrir todos los collapses cerrados de la página antes de buscar
+                const closedCollapses = Array.from(document.querySelectorAll('.collapse:not(.show)'));
+                if (closedCollapses.length === 0) {
+                    doScroll();
+                    return;
+                }
 
-                // Abrir en cadena: esperar shown.bs.collapse de cada nivel antes de abrir el siguiente
-                function openNext(index) {
-                    if (index >= collapses.length) { setTimeout(highlightElement, 100); return; }
-                    const col = collapses[index];
+                let pending = closedCollapses.length;
+                closedCollapses.forEach(function(col) {
                     $(col).one('shown.bs.collapse', function() {
-                        openNext(index + 1);
+                        pending--;
+                        if (pending === 0) setTimeout(doScroll, 50);
                     });
                     $(col).collapse('show');
-                }
-                openNext(0);
+                });
             };
 
             const clearContextBtn = document.getElementById('clearPeiChatContext');

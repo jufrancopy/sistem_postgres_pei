@@ -307,56 +307,37 @@ $pctGlobal   = round(($completados / 6) * 100);
 <script>
     $(document).ready(function () {
 
-        // Abrir collapse y hacer scroll si hay hash en la URL (para referencias de otros usuarios)
+        // Abrir collapses y hacer scroll si hay hash en la URL (para referencias del chat)
         if (window.location.hash) {
             const elementId = window.location.hash.substring(1);
             setTimeout(function() {
-                const element = document.getElementById(elementId);
-                if (!element) {
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Elemento no encontrado',
-                            text: 'El elemento referenciado fue eliminado o modificado.',
-                            toast: true,
-                            position: 'top-end',
-                            timer: 3500,
-                            showConfirmButton: false
-                        });
+                function doScroll() {
+                    const element = document.getElementById(elementId);
+                    if (!element) {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({ icon: 'warning', title: 'Elemento no encontrado', text: 'El elemento referenciado fue eliminado o modificado.', toast: true, position: 'top-end', timer: 3500, showConfirmButton: false });
+                        }
+                        return;
                     }
-                    return;
-                }
-
-                const collapses = [];
-                let parent = element.parentElement;
-                while (parent) {
-                    if (parent.classList.contains('collapse') && !parent.classList.contains('show')) {
-                        collapses.unshift(parent);
-                    }
-                    parent = parent.parentElement;
-                }
-
-                function highlight() {
                     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     element.style.transition = 'all 0.4s ease';
                     element.style.boxShadow = '0 0 0 3px #22c55e, 0 0 20px rgba(34,197,94,0.5)';
                     element.style.borderRadius = '8px';
                     element.style.outline = '2px solid #16a34a';
-                    setTimeout(function() {
-                        element.style.boxShadow = 'none';
-                        element.style.outline = 'none';
-                    }, 3500);
+                    setTimeout(function() { element.style.boxShadow = 'none'; element.style.outline = 'none'; }, 3500);
                 }
 
-                if (collapses.length === 0) { highlight(); return; }
+                const closedCollapses = Array.from(document.querySelectorAll('.collapse:not(.show)'));
+                if (closedCollapses.length === 0) { doScroll(); return; }
 
-                function openNext(index) {
-                    if (index >= collapses.length) { setTimeout(highlight, 100); return; }
-                    $(collapses[index]).one('shown.bs.collapse', function() { openNext(index + 1); });
-                    $(collapses[index]).collapse('show');
-                }
-                openNext(0);
-
+                let pending = closedCollapses.length;
+                closedCollapses.forEach(function(col) {
+                    $(col).one('shown.bs.collapse', function() {
+                        pending--;
+                        if (pending === 0) setTimeout(doScroll, 50);
+                    });
+                    $(col).collapse('show');
+                });
             }, 600);
         }
 
