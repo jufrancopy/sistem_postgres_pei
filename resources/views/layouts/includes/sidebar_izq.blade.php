@@ -123,21 +123,21 @@
             </li>
         @endrole
 
-        {{-- Menú específico para Coordinador de Planificación --}}
-        @role('Coordinador de Planificación')
-            <li class="nav-item active">
+        {{-- Menú específico para Coordinador / Analista de Planificación --}}
+        @hasanyrole('Coordinador de Planificación|Analista de Planificación')
+            <li class="nav-item {{ request()->is('planificacion-dashboard*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('planificacion-dashboard') }}">
                     <i class="material-icons">dashboard</i>
                     <p>Planificación</p>
                 </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item {{ request()->is('coordinador-planificacion*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('coordinador.index') }}">
                     <i class="material-icons">groups</i>
                     <p>Coordinación</p>
                 </a>
             </li>
-        @endrole
+        @endhasanyrole
 
         {{-- Menú exclusivo para Administrador (globales, SIESS, proyectos, etc.) --}}
         @role('Administrador')

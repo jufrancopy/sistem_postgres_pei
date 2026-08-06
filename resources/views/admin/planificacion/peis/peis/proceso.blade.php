@@ -127,9 +127,9 @@ $pctGlobal   = round(($completados / 6) * 100);
                 <a href="{{ route('pei-profiles.dashboard', $profile->id) }}" class="btn btn-sm btn-dark">
                     <i class="fa fa-chart-bar mr-1"></i> Tablero de Monitoreo
                 </a>
-                <a href="{{ route('pei-profiles.certificacion-mef', $profile->id) }}" class="btn btn-sm btn-warning">
+                <button type="button" class="btn btn-sm btn-warning" id="btnProcesoCertMef">
                     <i class="fa fa-certificate mr-1"></i> Certificación MEF
-                </a>
+                </button>
                 @hasanyrole('Administrador|Coordinador de Planificación')
                 <a href="{{ route('proyectos-institucionales.index', $profile->id) }}" class="btn btn-sm btn-success">
                     <i class="fa fa-project-diagram mr-1"></i> Proyectos
@@ -273,4 +273,51 @@ $pctGlobal   = round(($completados / 6) * 100);
     </div>{{-- card-body --}}
 </div>{{-- card --}}
 
+{{-- ════════════════════════════════════════════════════════════════════════════
+     MODAL: CERTIFICACIÓN MEF (CUMPLIMIENTO DE MATRICES)
+     ════════════════════════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalCertificacionMef" tabindex="-1" role="dialog" aria-labelledby="modalCertificacionMefTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 900px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white d-flex align-items-center justify-content-between p-3" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;">
+                <h5 class="modal-title font-weight-bold text-white mb-0" id="modalCertificacionMefTitulo">
+                    <i class="fa fa-certificate text-warning mr-2"></i> Certificación MEF — {{ strip_tags($profile->name) }}
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9; text-shadow: none;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4" id="modalCertificacionMefBody" style="background-color: #f8fafc; min-height: 260px; max-height: 80vh; overflow-y: auto;">
+                <div class="text-center py-5 text-muted">
+                    <i class="fa fa-spinner fa-spin fa-2x mb-3 text-warning"></i>
+                    <div>Cargando verificación de certificación MEF...</div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white border-top p-3 d-flex justify-content-between align-items-center">
+                <small class="text-muted"><i class="fa fa-info-circle text-info mr-1"></i> Verificación oficial de cumplimiento de estándares y matrices MEF.</small>
+                <button type="button" class="btn btn-secondary btn-round px-4" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @stop
+
+@section('scripts')
+<script>
+    $(document).ready(function () {
+        $('#btnProcesoCertMef').on('click', function () {
+            var url = "{{ route('pei-profiles.certificacion-mef', $profile->id) }}";
+            $('#modalCertificacionMefBody').html('<div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-2x mb-3 text-warning"></i><div>Cargando verificación de certificación MEF...</div></div>');
+            $('#modalCertificacionMef').modal('show');
+
+            $.get(url, function (html) {
+                $('#modalCertificacionMefBody').html(html);
+            }).fail(function (xhr) {
+                var msg = xhr.responseJSON?.message || 'Ocurrió un error al cargar la certificación MEF.';
+                $('#modalCertificacionMefBody').html('<div class="alert alert-danger mb-0"><i class="fa fa-exclamation-circle mr-2"></i> ' + msg + '</div>');
+            });
+        });
+    });
+</script>
+@endsection

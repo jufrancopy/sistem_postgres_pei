@@ -640,7 +640,7 @@ class PeiController extends Controller
         return view('admin.planificacion.peis.peis.proceso', compact('profile', 'niveles'));
     }
 
-    public function certificacionMef($idProfile)
+    public function certificacionMef(Request $request, $idProfile)
     {
         $profile = PeiProfile::with(['group', 'fodaPerfil'])->findOrFail($idProfile);
 
@@ -725,6 +725,12 @@ class PeiController extends Controller
         $completados = collect($checklist)->where('ok', true)->count();
         $total       = collect($checklist)->count();
         $pct         = round(($completados / $total) * 100);
+
+        if ($request->ajax()) {
+            return view('admin.planificacion.peis.peis.partials.certificacion_mef_content', compact(
+                'profile', 'niveles', 'checklist', 'completados', 'total', 'pct'
+            ));
+        }
 
         return view('admin.planificacion.peis.peis.certificacion-mef', compact(
             'profile', 'niveles', 'checklist', 'completados', 'total', 'pct'

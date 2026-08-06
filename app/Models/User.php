@@ -71,42 +71,82 @@ class User extends Authenticatable
         return $this->belongsTo(Group::class);
     }
 
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'groups_has_members', 'user_id', 'group_id');
+    }
+
     /**
-     * Devuelve el PEI activo del usuario según el árbol del grupo al que pertenece.
+     * Devuelve el PEI activo del usuario según el árbol del grupo o dependencias a las que pertenece.
      */
     public function peiActual()
     {
         $group = $this->group;
-        if (!$group) {
-            return null;
+        if (!$group && method_exists($this, 'groups')) {
+            $group = $this->groups()->first();
         }
 
-        $root = $group->ancestors()->withDepth()->orderByDesc('depth')->first() ?? $group;
+        if ($group) {
+            $root = $group->isRoot()
+                ? $group
+                : ($group->ancestors()->whereNull('parent_id')->first() ?? $group->ancestors()->first() ?? $group);
 
-        if ($root) {
-            return $root->pei()->first() ?? $group->pei()->first();
+            if ($root) {
+                $pei = PeiProfile::where('level', 'master')->where('group_id', $root->id)->first();
+                if ($pei) {
+                    return $pei;
+                }
+
+                $descendantIds = $root->descendants()->pluck('id')->toArray();
+                if (!empty($descendantIds)) {
+                    $peiDesc = PeiProfile::where('level', 'master')->whereIn('group_id', $descendantIds)->first();
+                    if ($peiDesc) {
+                        return $peiDesc;
+                    }
+                }
+            }
+        }
+
+        // Si no se encuentra por grupo, buscar por asignación directa de analista o responsable
+        $peiAnalyst = PeiProfile::where('level', 'master')
+            ->whereHas('analysts', function($q) {
+                $q->where('users.id', $this->id);
+            })->first();
+        if ($peiAnalyst) {
+            return $peiAnalyst;
+        }
+
+        $peiResp = PeiProfile::where('level', 'master')
+            ->whereHas('responsibles', function($q) {
+                $q->where('users.id', $this->id);
+            })->first();
+        if ($peiResp) {
+            return $peiResp;
         }
 
         return null;
     }
 
     /**
-     * Devuelve el grupo raíz del árbol funcional asociado al PEI.
+     * Devuelve el grupo raíz del árbol funcional asociado al usuario o PEI.
      */
     public function getGrupoPadreAttribute()
     {
         $group = $this->group;
+        if (!$group && method_exists($this, 'groups')) {
+            $group = $this->groups()->first();
+        }
+
         if (!$group) {
             return null;
         }
 
-        $root = $group->ancestors()->withDepth()->orderByDesc('depth')->first() ?? $group;
-
-        if ($root && $root->pei()->exists()) {
-            return $root;
+        if ($group->isRoot()) {
+            return $group;
         }
 
-        return $group;
+        $root = $group->ancestors()->whereNull('parent_id')->first() ?? $group->ancestors()->first() ?? $group;
+        return $root;
     }
 
     /**
@@ -114,11 +154,18 @@ class User extends Authenticatable
      */
     public function perteneceAlArbol($grupoRoot): bool
     {
-        if (!$grupoRoot || !$this->group) {
+        if (!$grupoRoot) {
             return false;
         }
 
         $grupoActual = $this->group;
+        if (!$grupoActual && method_exists($this, 'groups')) {
+            $grupoActual = $this->groups()->first();
+        }
+
+        if (!$grupoActual) {
+            return false;
+        }
 
         if ($grupoActual->id === $grupoRoot->id) {
             return true;
@@ -135,16 +182,21 @@ class User extends Authenticatable
 
     /**
      * Obtener el organigrama asociado al PEI del grupo del usuario
-     * Solo para roles Coordinador/Analista de Planificación
+     * Solo para roles Coordinador/Analista de Planificación o Administrador
      */
     public function getOrganigramaDelPeiAttribute()
     {
-        if ($this->hasAnyRole(['Coordinador de Planificación', 'Analista de Planificación'])) {
-            $pei = $this->peiActual();
-            if ($pei && $pei->dependency_id) {
-                return Organigrama::find($pei->dependency_id);
-            }
+        $pei = $this->peiActual();
+        if ($pei && $pei->dependency_id) {
+            return Organigrama::find($pei->dependency_id);
         }
+
+        // Buscar si el usuario es manager en algún organigrama
+        $org = Organigrama::where('user_id', $this->id)->first();
+        if ($org) {
+            return $org;
+        }
+
         return null;
     }
 }

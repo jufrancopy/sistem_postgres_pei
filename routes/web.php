@@ -77,12 +77,41 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/dashboard', 'Admin\Planificacion\Pei\PeiController@dashboard')->name('pei-profiles.dashboard');
 
     // ── Coordinador de Planificación ─────────────────────────────────────────
-    Route::prefix('coordinador-planificacion')->name('coordinador.')->middleware(['role:Coordinador de Planificación|Analista de Planificación'])->group(function () {
+    Route::prefix('coordinador-planificacion')->name('coordinador.')->middleware(['role:Coordinador de Planificación|Analista de Planificación|Administrador'])->group(function () {
         Route::get('/', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@index')->name('index');
         Route::get('gestionar-grupos', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@gestionarGrupos')->name('gestionar-grupos');
         Route::get('crear-actividad', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@crearActividad')->name('crear-actividad');
         Route::get('ver-grupos-usuarios', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@verGruposYUsuarios')->name('ver-grupos-usuarios');
         Route::get('ver-organigrama', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@verOrganigrama')->name('ver-organigrama');
+
+        // Endpoints CRUD para Usuarios en Ámbito
+        Route::get('usuarios/data', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@getUsuariosData')->name('usuarios.data');
+        Route::post('usuarios', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@storeUsuario')->name('usuarios.store');
+        Route::get('usuarios/{id}/edit', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@editUsuario')->name('usuarios.edit');
+        Route::delete('usuarios/{id}', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@destroyUsuario')->name('usuarios.destroy');
+
+        // Endpoints CRUD para Grupos de Trabajo en Ámbito
+        Route::get('grupos/data', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@getGruposData')->name('grupos.data');
+        Route::post('grupos', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@storeGrupo')->name('grupos.store');
+        Route::get('grupos/{id}/edit', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@editGrupo')->name('grupos.edit');
+        Route::delete('grupos/{id}', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@destroyGrupo')->name('grupos.destroy');
+        Route::get('grupos/{id}/miembros', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@getGrupoMiembros')->name('grupos.miembros');
+        Route::post('grupos/{id}/miembros/asignar', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@asignarMiembroGrupo')->name('grupos.miembros.asignar');
+        Route::post('grupos/{id}/miembros/crear', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@crearYAsignarMiembroGrupo')->name('grupos.miembros.crear');
+        Route::delete('grupos/{id}/miembros/{userId}', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@removerMiembroGrupo')->name('grupos.miembros.remover');
+
+        // Endpoints CRUD para Organigrama en Ámbito
+        Route::get('organigrama/tree', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@getOrganigramaTree')->name('organigrama.tree');
+        Route::post('organigrama', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@storeDependencia')->name('organigrama.store');
+        Route::get('organigrama/{id}/edit', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@editDependencia')->name('organigrama.edit');
+        Route::delete('organigrama/{id}', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@destroyDependencia')->name('organigrama.destroy');
+        Route::post('organigrama/{id}/mover', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@moverOrganigrama')->name('organigrama.mover');
+
+        // Endpoints para Planes Institucionales (PEI)
+        Route::get('planes/data', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@getPlanesData')->name('planes.data');
+
+        // Endpoints para Proyectos Institucionales
+        Route::get('proyectos/data', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@getProyectosData')->name('proyectos.data');
     });
 
     // Chat PEI
@@ -267,6 +296,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('get-dependency/{idSelection}', 'Admin\Globales\OrganigramaController@getDependency')->name('get-dependency');
         Route::get('get-root-of-dependency/{idSelection}', 'Admin\Globales\OrganigramaController@getRootOfDependency')->name('get-root-of-dependency');
         Route::post('organigramas/{id}/mover', 'Admin\Globales\OrganigramaController@mover')->name('organigramas.mover');
+        Route::post('admin/globales/organigramas/{id}/mover', 'Admin\Globales\OrganigramaController@mover');
         Route::get('get-dependencies-root', 'Admin\Globales\OrganigramaController@getDependenciesRoot')->name('get-dependencies-root');
         Route::get('usuarios-buscar', 'Admin\Globales\OrganigramaController@buscarUsuarios')->name('usuarios.buscar');
 

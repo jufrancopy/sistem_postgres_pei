@@ -19,7 +19,7 @@
                 <i class="fa fa-chevron-down"></i>
             </button>
             @else
-            <span style="min-width:24px;display:inline-block"></span>
+            <span class="empty-toggle-spacer" style="min-width:24px;display:inline-block"></span>
             @endif
 
             {{-- Badge de nivel --}}
@@ -73,14 +73,12 @@
         </div>
 
         {{-- Hijos recursivos --}}
-        @if($tieneHijos)
-        <div class="nodo-children">
+        <div class="nodo-children" style="{{ $tieneHijos ? '' : 'display:none;' }}">
             @include('admin.globales.organigramas.partials.nodo_draggable', [
                 'nodos' => $nodo->children,
                 'nivel' => $nivel + 1,
             ])
         </div>
-        @endif
     </li>
     @endforeach
 </ul>

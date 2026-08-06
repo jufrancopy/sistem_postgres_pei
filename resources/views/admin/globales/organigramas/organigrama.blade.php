@@ -53,7 +53,7 @@
                 </small>
             </div>
             <div class="card-body p-2">
-                <div id="arbolOrganigrama">
+                <div id="arbolOrganigrama" data-root-id="{{ $dependencia->id }}" data-root-name="{{ $dependencia->dependency }}">
                     @include('admin.globales.organigramas.partials.nodo_draggable', [
                         'nodos' => $dependencia->children,
                         'nivel' => 0,
@@ -85,45 +85,63 @@
                                placeholder="Ej: Dirección de Tecnología">
                     </div>
 
-                    {{-- Selector de usuario del sistema --}}
                     <div class="form-group">
-                        <label class="font-weight-bold">
-                            Responsable del sistema
-                            <span class="text-muted font-weight-normal" style="font-size:.8rem">
-                                (vinculá un usuario del sistema)
-                            </span>
-                        </label>
-                        <select id="dep_user_id" name="user_id" style="width:100%"></select>
-                        <small class="text-muted">Escribí al menos 2 letras para buscar por nombre o correo.</small>
+                        <label class="font-weight-bold">Responsable / Encargado</label>
+                        <input type="text" name="manager" id="dep_manager" class="form-control"
+                               placeholder="Ej: Lic. Juan Pérez">
                     </div>
 
                     <div class="form-group">
-                        <label>Nombre del responsable</label>
-                        <input type="text" name="manager" id="dep_manager" class="form-control"
-                               placeholder="Se completa al seleccionar usuario, o escribí manualmente">
+                        <label class="font-weight-bold">Usuario asignado del Sistema</label>
+                        <select name="user_id" id="dep_user_id" class="form-control select2" style="width:100%">
+                            <option value="">-- Sin usuario asignado --</option>
+                            @foreach(\App\Models\User::orderBy('name')->get() as $u)
+                                <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
+                            @endforeach
+                        </select>
                     </div>
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Teléfono</label>
-                                <input type="text" name="phone" id="dep_phone" class="form-control" placeholder="000000">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Correo</label>
+                                <label class="font-weight-bold">Email</label>
                                 <input type="email" name="email" id="dep_email" class="form-control"
                                        placeholder="correo@ips.gov.py">
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Teléfono / Interno</label>
+                                <input type="text" name="phone" id="dep_phone" class="form-control"
+                                       placeholder="021-xxxxxx / Int. 123">
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-right">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success" id="btnGuardarDep">
-                            <i class="fa fa-save mr-1"></i> Guardar
-                        </button>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Tipo de Establecimiento</label>
+                        <select name="tipo_establecimiento" id="dep_tipo_establecimiento" class="form-control">
+                            <option value="">-- Ninguno / Administrativo --</option>
+                            <option value="HOSPITAL">Hospital</option>
+                            <option value="CLINICA">Clínica</option>
+                            <option value="PUESTO_SANITARIO">Puesto Sanitario</option>
+                            <option value="CENTRO_ATENCION">Centro de Atención</option>
+                            <option value="OTRO">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Dirección</label>
+                        <input type="text" name="address" id="dep_address" class="form-control"
+                               placeholder="Dirección física">
                     </div>
                 </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-info" id="btnGuardarDep">
+                    <i class="fa fa-save mr-1"></i> Guardar
+                </button>
             </div>
         </div>
     </div>
@@ -137,22 +155,60 @@
     </div>
 </div>
 
-@stop
+@endsection
 
 @section('scripts')
-{{-- SortableJS --}}
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-
 <script>
-(function initOrganigramaRoot() {
-    if (!window.jQuery) {
-        return setTimeout(initOrganigramaRoot, 50);
+    if (!window.jQuery && typeof jQuery !== 'undefined') {
+        window.$ = jQuery;
     }
 
     var $ = window.jQuery;
 
     $(function() {
         $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+
+        function recalcularNivelesArbol() {
+            var colores = ['nivel-badge-0', 'nivel-badge-1', 'nivel-badge-2', 'nivel-badge-3', 'nivel-badge-4'];
+
+            function procesarUl($ul, nivel) {
+                $ul.children('li.nodo-item').each(function () {
+                    var $li = $(this);
+                    var colorBadge = colores[Math.min(nivel, colores.length - 1)];
+                    var $badge = $li.find('> .nodo-row .badge').first();
+
+                    colores.forEach(function (c) { $badge.removeClass(c); });
+                    $badge.addClass(colorBadge).text('N' + (nivel + 1));
+
+                    var $childrenContainer = $li.find('> .nodo-children');
+                    var $childrenUl = $childrenContainer.find('> ul.sortable-group');
+                    var $toggleBtn = $li.find('> .nodo-row .btn-toggle');
+                    var $emptySpacer = $li.find('> .nodo-row .empty-toggle-spacer');
+
+                    var totalHijos = $childrenUl.children('li.nodo-item').length;
+                    if (totalHijos > 0) {
+                        $childrenContainer.show();
+                        if ($toggleBtn.length === 0 && $emptySpacer.length) {
+                            $emptySpacer.replaceWith(
+                                '<button class="btn btn-link btn-toggle p-0 mr-2" style="font-size:.75rem;color:#6c757d;min-width:16px" title="Expandir/Colapsar">' +
+                                '<i class="fa fa-chevron-down"></i>' +
+                                '</button>'
+                            );
+                        }
+                        procesarUl($childrenUl, nivel + 1);
+                    } else {
+                        if ($toggleBtn.length > 0) {
+                            $toggleBtn.replaceWith('<span class="empty-toggle-spacer" style="min-width:24px;display:inline-block"></span>');
+                        }
+                    }
+                });
+            }
+
+            var $rootUl = $('#arbolOrganigrama > ul.sortable-group');
+            if ($rootUl.length) {
+                procesarUl($rootUl, 0);
+            }
+        }
 
         // ── Inicializar drag & drop en todos los grupos ───────────────────────────
         function initSortable() {
@@ -162,71 +218,120 @@
                 el._sortable = Sortable.create(el, {
                     group: 'organigrama',          // permite mover entre grupos
                     handle: '.drag-handle',         // solo arrastrando el ícono
-                    animation: 150,
+                    animation: 200,
                     ghostClass: 'sortable-ghost',
                     chosenClass: 'sortable-chosen',
                     dragClass: 'sortable-drag',
                     fallbackOnBody: true,
                     swapThreshold: 0.65,
+                    emptyInsertThreshold: 5,
 
                     onStart: function(evt) {
+                        $('body').addClass('is-organigrama-dragging');
                         var nombre = $(evt.item).find('.dep-nombre').first().text().trim();
                         $('#moveText').text('Moviendo: ' + nombre);
-                        $('#moveIndicator').fadeIn(200);
+                        $('#moveIndicator').fadeIn(150);
                     },
 
                     onEnd: function(evt) {
-                        $('#moveIndicator').fadeOut(200);
+                        $('body').removeClass('is-organigrama-dragging');
+                        $('#moveIndicator').fadeOut(150);
 
-                        var nodoId = $(evt.item).data('id');
+                        var $item = $(evt.item);
+                        var nodoId = $item.data('id');
 
                         // evt.to es el <ul> destino — su padre <li> tiene el data-id del nodo padre
                         var $toUl        = $(evt.to);
                         var $parentLi    = $toUl.closest('li.nodo-item');
-                        var nuevoParentId = $parentLi.length ? $parentLi.data('id') : null;
+                        var rootId       = $('#arbolOrganigrama').data('root-id') || {{ $dependencia->id }};
+                        var rootName     = $('#arbolOrganigrama').data('root-name') || '{{ e($dependencia->dependency) }} (Raíz)';
+
+                        var nuevoParentId = $parentLi.length ? $parentLi.data('id') : rootId;
+                        var nombrePadre   = $parentLi.length ? $parentLi.find('> .nodo-row .dep-nombre').text().trim() : rootName;
 
                         // Si no cambió nada, ignorar
                         if (evt.from === evt.to && evt.oldIndex === evt.newIndex) return;
 
-                        // No permitir soltar en nivel raíz (fuera de cualquier li)
-                        if (!nuevoParentId) {
-                            toastr.warning('No se puede mover a nivel raíz. Soltá dentro de una dependencia.');
-                            location.reload();
-                            return;
-                        }
-
                         // No mover sobre sí mismo
                         if (nuevoParentId == nodoId) {
-                            location.reload();
+                            revertirNodo(evt);
                             return;
                         }
 
-                        var nombreNodo  = $(evt.item).find('> .nodo-row .dep-nombre').text().trim();
-                        var nombrePadre = $parentLi.find('> .nodo-row .dep-nombre').text().trim();
+                        var $prev = $item.prev('li.nodo-item');
+                        var $next = $item.next('li.nodo-item');
+                        var beforeId = $next.length ? $next.data('id') : null;
+                        var afterId = $prev.length ? $prev.data('id') : null;
 
-                        Swal.fire({
-                            title: '¿Confirmar movimiento?',
-                            html: '<strong>' + nombreNodo + '</strong><br><i class="fa fa-arrow-down text-muted"></i> Nuevo padre: <strong>' + nombrePadre + '</strong>',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonText: 'Sí, mover',
-                            cancelButtonText: 'Cancelar',
-                            confirmButtonColor: '#28a745',
-                        }).then(function(result) {
-                            if (result.isConfirmed) {
-                                $.post('{{ url('admin/globales/organigramas') }}/' + nodoId + '/mover', {
-                                    parent_id: nuevoParentId
-                                }, function(res) {
-                                    toastr.success(res.success);
-                                    setTimeout(function() { location.reload(); }, 600);
-                                }).fail(function(xhr) {
-                                    toastr.error(xhr.responseJSON?.error || 'Error al mover.');
-                                    location.reload();
+                        var moverUrl = '{{ route('organigramas.mover', ['id' => ':id']) }}'.replace(':id', nodoId);
+
+                        $.ajax({
+                            url: moverUrl,
+                            type: 'POST',
+                            data: {
+                                parent_id: nuevoParentId,
+                                before_id: beforeId,
+                                after_id: afterId
+                            },
+                            success: function(res) {
+                                recalcularNivelesArbol();
+
+                                $item.removeClass('nodo-movido-exito');
+                                void $item[0].offsetWidth; // trigger reflow
+                                $item.addClass('nodo-movido-exito');
+
+                                setTimeout(function () {
+                                    $item.removeClass('nodo-movido-exito');
+                                }, 3200);
+
+                                Swal.fire({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: res.message || 'Nodo reubicado con éxito.',
+                                    showConfirmButton: false,
+                                    timer: 3500,
+                                    timerProgressBar: true
                                 });
-                            } else {
-                                location.reload();
+                            },
+                            error: function(xhr) {
+                                revertirNodo(evt);
+                                recalcularNivelesArbol();
+
+                                var errMsg = xhr.responseJSON?.error || 'Error al mover el nodo.';
+                                Swal.fire({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'error',
+                                    title: errMsg,
+                                    showConfirmButton: false,
+                                    timer: 4500
+                                });
                             }
                         });
+
+                        function revertirNodo(e) {
+                            var target = e.item;
+                            if (e.from !== e.to) {
+                                if (e.oldIndex === 0) {
+                                    $(e.from).prepend(target);
+                                } else {
+                                    var prevSib = $(e.from).children('li.nodo-item').eq(e.oldIndex > 0 ? e.oldIndex - 1 : 0);
+                                    if (prevSib.length) {
+                                        prevSib.after(target);
+                                    } else {
+                                        $(e.from).append(target);
+                                    }
+                                }
+                            } else {
+                                var siblings = $(e.from).children('li.nodo-item').not(target);
+                                if (e.oldIndex === 0) {
+                                    $(e.from).prepend(target);
+                                } else {
+                                    siblings.eq(e.oldIndex - 1).after(target);
+                                }
+                            }
+                        }
                     }
                 });
             });
@@ -401,8 +506,51 @@
 .nivel-badge-4 { background: #fd7e14; }
 
 /* ── Estados drag ── */
-.sortable-ghost  { opacity: .4; background: #e3f2fd !important; border: 2px dashed #2196f3 !important; }
-.sortable-chosen { box-shadow: 0 4px 16px rgba(0,0,0,.2) !important; }
+.sortable-ghost  { opacity: .45; background: #dbeafe !important; border: 2px dashed #2563eb !important; border-radius: 6px !important; }
+.sortable-chosen { box-shadow: 0 4px 16px rgba(0,0,0,.2) !important; background: #eff6ff !important; }
 .sortable-drag   { opacity: .9; }
+
+/* ── Animación Moderna para Iluminar el Elemento Movido ── */
+@keyframes nodoDestacadoGlow {
+    0% {
+        background-color: #dbeafe !important;
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.35), 0 4px 12px rgba(59, 130, 246, 0.2) !important;
+        transform: scale(1.015);
+    }
+    35% {
+        background-color: #eff6ff !important;
+        border-color: #60a5fa !important;
+        box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    }
+    100% {
+        background-color: #ffffff !important;
+        border-color: #e9ecef !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+        transform: scale(1);
+    }
+}
+
+.nodo-item.nodo-movido-exito > .nodo-row {
+    animation: nodoDestacadoGlow 3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    z-index: 10;
+    position: relative;
+}
+
+body.is-organigrama-dragging .nodo-children {
+    display: block !important;
+}
+body.is-organigrama-dragging .nodo-children > ul.sortable-group {
+    min-height: 26px !important;
+    background: rgba(241, 245, 249, 0.7);
+    border: 1px dashed #94a3b8;
+    border-radius: 6px;
+    margin-top: 4px;
+    transition: background 0.2s;
+}
+body.is-organigrama-dragging .nodo-children > ul.sortable-group:hover {
+    background: rgba(219, 234, 254, 0.6);
+    border-color: #3b82f6;
+}
 </style>
 @stop

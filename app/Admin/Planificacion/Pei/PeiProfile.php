@@ -227,6 +227,11 @@ class PeiProfile extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function fodaPerfil()
     {
         return $this->belongsTo(FodaPerfil::class, 'foda_perfil_id');

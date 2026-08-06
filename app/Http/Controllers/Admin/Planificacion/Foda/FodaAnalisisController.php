@@ -365,9 +365,8 @@ class FodaAnalisisController extends Controller
         $oportunidadesCubiertas = array_map('array_unique', $oportunidadesCubiertas);
         $amenazasCubiertas      = array_map('array_unique', $amenazasCubiertas);
 
-        // Comprueba si es una solicitud AJAX
-        if ($request->ajax()) {
-            // Si es una solicitud AJAX, puedes devolver una respuesta JSON
+        // Comprueba si es una solicitud AJAX para JSON o HTML modal
+        if ($request->ajax() && $request->wantsJson() && !$request->get('modal')) {
             return response()->json([
                 'debilidades' => $debilidades,
                 'fortalezas' => $fortalezas,
@@ -375,6 +374,10 @@ class FodaAnalisisController extends Controller
                 'amenazas' => $amenazas,
                 'profiles' => $profiles,
             ]);
+        }
+
+        if ($request->ajax() || $request->get('modal')) {
+            return view('admin.planificacion.fodas.groups.partials.crossing_content', get_defined_vars());
         }
 
         return view('admin.planificacion.fodas.groups.crossing-environments', get_defined_vars())

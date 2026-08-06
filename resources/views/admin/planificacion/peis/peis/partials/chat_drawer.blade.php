@@ -88,43 +88,86 @@
             </div>
         </div>
 
-        <!-- Modern Contact Profile Header Card (Visible in Private Tab) -->
-        <div id="privateContactBar" class="p-3 border-bottom shadow-sm" style="display: none; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white;">
-            <div class="d-flex align-items-center justify-content-between mb-2">
+        <!-- Private Chat Bar -->
+        <div id="privateContactBar" class="border-bottom" style="display: none; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; position: relative;">
+            <div class="d-flex align-items-center justify-content-between px-3 pt-2 pb-1">
                 <span class="text-xs font-weight-bold text-warning text-uppercase" style="letter-spacing:0.5px;">
-                    <i class="fas fa-user-lock mr-1"></i> Chat Privado Directo
+                    <i class="fas fa-user-lock mr-1"></i> Chat Privado
                 </span>
-                <select id="privateUserSelect" class="form-control form-control-sm border-0 font-weight-bold" style="max-width: 55%; height: 26px; padding: 2px 8px; background: rgba(255,255,255,0.92); font-size:11px; border-radius: 12px; color: #0f172a;">
-                    <option value="">-- Elegir contacto --</option>
-                </select>
+                <span class="text-white-50" id="privateUsersCountText" style="font-size: 10.5px;">
+                    <i class="fas fa-users mr-1"></i> Miembros
+                </span>
             </div>
 
-            <!-- Profile Info Widget -->
-            <div id="contactProfileWidget" class="d-flex align-items-center mt-2 p-2 rounded justify-content-between" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); display: none !important;">
-                <div class="d-flex align-items-center" style="min-width: 0;">
-                    <div id="contactAvatarCircle" class="mr-2 d-flex align-items-center justify-content-center font-weight-bold text-white shadow-sm" style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); font-size: 15px; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0;">
-                        --
-                    </div>
-                    <div style="flex:1; min-width:0;" class="ml-2">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <h6 id="contactNameHeading" class="mb-0 font-weight-bold text-white text-truncate" style="font-size: 13px;">
-                                Seleccionar Integrante
-                            </h6>
-                            <span id="contactPointsBadge" class="badge badge-warning text-dark font-weight-bold ml-1" style="font-size: 10px; border-radius: 10px; padding: 3px 7px;">
-                                ⭐ 0 pts
-                            </span>
+            <!-- Custom User Picker -->
+            <div id="privateChatUserPicker" class="px-3 pb-2" style="position: relative;">
+                <!-- Trigger button -->
+                <button type="button" id="privateUserPickerBtn"
+                        class="d-flex align-items-center justify-content-between w-100"
+                        style="background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.2);
+                               border-radius: 10px; padding: 7px 12px; color: #f1f5f9;
+                               cursor: pointer; transition: all 0.2s; font-size: 12.5px; font-weight: 600;
+                               outline: none;">
+                    <div class="d-flex align-items-center text-truncate" style="flex:1; min-width:0;">
+                        <div id="privatePickerAvatarMini"
+                             style="width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.2);
+                                    display:flex; align-items:center; justify-content:center;
+                                    font-size:10px; font-weight:700; flex-shrink:0; margin-right:8px;">
+                            <i class="fas fa-user" style="font-size:10px;"></i>
                         </div>
-                        <div class="d-flex align-items-center mt-1 text-white-50" style="font-size: 10.5px;">
-                            <span id="contactRoleText" class="text-truncate mr-2" style="max-width: 120px; color: #cbd5e1;">
-                                Integrante
-                            </span>
-                            <span id="contactLevelBadge" class="badge text-white font-weight-normal px-2 py-0" style="font-size: 9.5px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);">
-                                Aprendiz
-                            </span>
+                        <span id="privatePickerLabel" class="text-truncate" style="color:#cbd5e1;">
+                            Seleccionar integrante...
+                        </span>
+                    </div>
+                    <i class="fas fa-chevron-down ml-2" id="privatePickerChevron" style="font-size:10px; flex-shrink:0; transition: transform 0.2s; color:#94a3b8;"></i>
+                </button>
+
+                <!-- Dropdown panel -->
+                <div id="privateUserPickerDropdown"
+                     style="display:none; position:absolute; left:12px; right:12px; top:calc(100% + 4px);
+                            background:#ffffff; border-radius:12px; z-index:1080;
+                            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+                            border:1px solid #e2e8f0;">
+                    <div class="d-flex align-items-center px-3 py-2" style="border-bottom:1px solid #f1f5f9; background:#f8fafc;">
+                        <i class="fas fa-search text-muted mr-2" style="font-size:11px;"></i>
+                        <input type="text" id="privatePickerSearch"
+                               placeholder="Buscar integrante..."
+                               autocomplete="off"
+                               style="border:none; outline:none; background:transparent; font-size:12px;
+                                      color:#0f172a; width:100%; font-weight:500;">
+                        <button type="button" id="privatePickerClearSearch"
+                                style="display:none; background:none; border:none; color:#94a3b8; cursor:pointer; padding:0; margin-left:4px;">
+                            <i class="fas fa-times" style="font-size:10px;"></i>
+                        </button>
+                    </div>
+                    <div id="privatePickerList" style="max-height:200px; overflow-y:auto;">
+                        <div class="text-center text-muted py-3" style="font-size:12px;">
+                            <i class="fas fa-spinner fa-spin mr-1"></i> Cargando...
                         </div>
                     </div>
                 </div>
-                <button type="button" class="btn btn-warning btn-sm font-weight-bold ml-2 shadow-sm rounded-pill" id="btnOpenDonateModal" title="Regalar puntos de reputación" style="font-size: 11px; padding: 4px 10px; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: #fff;">
+
+
+            </div>
+
+            <!-- Profile Info Widget -->
+            <div id="contactProfileWidget" class="d-flex align-items-center px-3 pb-2" style="display: none !important;">
+                <div id="contactAvatarCircle"
+                     class="mr-2 d-flex align-items-center justify-content-center font-weight-bold text-white shadow-sm"
+                     style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                            font-size: 13px; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0;">--</div>
+                <div style="flex:1; min-width:0;">
+                    <div class="d-flex align-items-center">
+                        <h6 id="contactNameHeading" class="mb-0 font-weight-bold text-white text-truncate mr-2" style="font-size: 12px; max-width: 130px;">Seleccionar Integrante</h6>
+                        <span id="contactPointsBadge" class="badge badge-warning text-dark font-weight-bold" style="font-size: 9px; border-radius: 8px; padding: 2px 6px; flex-shrink:0;">&#11088; 0 pts</span>
+                    </div>
+                    <div class="d-flex align-items-center" style="font-size: 10px; margin-top: 2px;">
+                        <span id="contactRoleText" class="text-truncate mr-2" style="max-width: 110px; color: #94a3b8;">Integrante</span>
+                        <span id="contactLevelBadge" class="badge font-weight-normal px-2" style="font-size: 9px; background: rgba(255,255,255,0.12); color:#e2e8f0; border: 1px solid rgba(255,255,255,0.2);">Aprendiz</span>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-warning btn-sm font-weight-bold ml-2 shadow-sm rounded-pill" id="btnOpenDonateModal"
+                        title="Regalar puntos" style="font-size: 10px; padding: 3px 8px; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: #fff; flex-shrink:0;">
                     <i class="fas fa-gift mr-1"></i> Donar
                 </button>
             </div>
@@ -192,12 +235,12 @@
         </div>
 
         <!-- Messages Container -->
-        <div id="peiChatMessagesBody" class="pei-chat-body">
+        <div id="peiChatMessagesBody" class="pei-chat-body" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
             <div class="text-center text-muted py-5" id="peiChatLoading">
                 <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                 <div class="small mt-2">Cargando mensajes...</div>
             </div>
-            <div id="peiChatMessagesList" class="d-flex flex-column"></div>
+            <div id="peiChatMessagesList" class="d-flex flex-column" style="min-height: 0;"></div>
         </div>
 
         <!-- Context Reference Active Banner -->
@@ -232,22 +275,42 @@
         </div>
 
         <!-- Input Footer -->
-        <div class="pei-chat-footer" style="background: #ffffff; padding: 10px 14px; border-top: 1px solid #e2e8f0;">
-            <form id="peiChatForm" class="d-flex align-items-center" enctype="multipart/form-data">
-                <label for="peiChatFileInput" class="btn btn-sm mb-0 mr-1 text-slate d-flex align-items-center justify-content-center" title="Adjuntar Archivo" style="width: 36px; height: 36px; border-radius: 50%; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; cursor: pointer; transition: all 0.2s ease;">
-                    <i class="fas fa-paperclip" style="font-size: 14px;"></i>
-                    <input type="file" id="peiChatFileInput" multiple hidden>
-                </label>
-
-                <button type="button" class="btn btn-sm mb-0 mr-2 text-warning d-flex align-items-center justify-content-center" id="btnToggleEmojiPicker" title="Insertar Emoticones" style="width: 36px; height: 36px; border-radius: 50%; background: #fef3c7; color: #d97706; border: 1px solid #fde68a; cursor: pointer; transition: all 0.2s ease;">
-                    <i class="far fa-smile" style="font-size: 16px;"></i>
+        <div class="pei-chat-footer">
+            <form id="peiChatForm" class="d-flex align-items-end" enctype="multipart/form-data">
+                <!-- Botón + (siempre visible, colapsa emoji/adjuntar) -->
+                <button type="button" id="btnChatPlus" title="Más acciones"
+                        style="width:32px; height:32px; border-radius:50%; background:#f1f5f9; border:1px solid #cbd5e1;
+                               color:#475569; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+                               cursor:pointer; transition:all 0.2s; margin-right:6px; margin-bottom:4px;">
+                    <i class="fas fa-plus" style="font-size:13px;"></i>
                 </button>
 
-                <textarea id="peiChatMessageInput" class="form-control form-control-sm border-0 mr-2" 
-                          placeholder="Escribir mensaje al grupo..." rows="1" style="resize: none; background: #f8fafc; border: 1px solid #cbd5e1 !important; border-radius: 20px; padding: 8px 14px; font-size: 13px; color: #1e293b;"></textarea>
+                <!-- Panel expandido (emoji + adjuntar) — oculto por defecto -->
+                <div id="peiChatMoreActions" style="display:none; align-items:center; margin-right:6px; margin-bottom:4px; gap:4px;">
+                    <button type="button" id="btnToggleEmojiPicker" title="Emoticones"
+                            style="width:30px; height:30px; border-radius:50%; background:#f1f5f9; border:1px solid #cbd5e1;
+                                   color:#f59e0b; flex-shrink:0; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                        <i class="far fa-smile" style="font-size:14px;"></i>
+                    </button>
+                    <label for="peiChatFileInput" title="Adjuntar"
+                           style="width:30px; height:30px; border-radius:50%; background:#f1f5f9; border:1px solid #cbd5e1;
+                                  color:#475569; flex-shrink:0; display:flex; align-items:center; justify-content:center; cursor:pointer; margin:0;">
+                        <i class="fas fa-paperclip" style="font-size:13px;"></i>
+                        <input type="file" id="peiChatFileInput" multiple hidden>
+                    </label>
+                </div>
 
-                <button type="submit" class="btn btn-sm shadow-sm d-flex align-items-center justify-content-center" id="sendPeiChatBtn" style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #ffffff; border: none; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35); flex-shrink: 0;">
-                    <i class="fas fa-paper-plane" style="font-size: 13px;"></i>
+                <textarea id="peiChatMessageInput" class="form-control form-control-sm"
+                          placeholder="Escribir mensaje..." rows="1"
+                          style="resize:none; flex:1; min-width:0; box-sizing:border-box; background:#f8fafc; border:1px solid #cbd5e1 !important;
+                                 border-radius:20px; padding:7px 12px; font-size:13px; color:#1e293b;
+                                 min-height:36px; max-height:120px; overflow-y:auto; transition:all 0.2s;"></textarea>
+
+                <button type="submit" id="sendPeiChatBtn"
+                        style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#4f46e5,#7c3aed);
+                               color:#fff; border:none; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+                               box-shadow:0 3px 10px rgba(79,70,229,0.35); margin-left:6px; margin-bottom:4px; cursor:pointer;">
+                    <i class="fas fa-paper-plane" style="font-size:12px;"></i>
                 </button>
             </form>
         </div>
@@ -317,7 +380,10 @@
             flex: 1;
             padding: 15px;
             overflow-y: auto;
+            overflow-x: hidden;
             background-color: #f8f9fc;
+            display: flex;
+            flex-direction: column;
         }
         .pei-chat-reply-bar {
             background: #eef2f7;
@@ -330,9 +396,36 @@
             border-top: 1px solid #e3e6f0;
         }
         .pei-chat-footer {
-            padding: 12px;
+            padding: 8px 12px;
             background: #ffffff;
             border-top: 1px solid #e3e6f0;
+        }
+        #peiChatForm {
+            align-items: flex-end;
+        }
+        #peiChatForm .bmd-form-group {
+            flex: 1 !important;
+            min-width: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 0 !important;
+        }
+        /* Input que se expande automáticamente */
+        #peiChatMessageInput {
+            transition: border-color 0.2s, box-shadow 0.2s;
+            overflow-y: auto;
+        }
+        #peiChatMessageInput:focus {
+            border-color: #4f46e5 !important;
+            box-shadow: 0 0 0 2px rgba(79,70,229,0.15) !important;
+            outline: none;
+        }
+        /* Panel de acciones extra inline */
+        #peiChatMoreActions {
+            display: none;
+        }
+        #peiChatMoreActions.show {
+            display: flex !important;
         }
         .msg-bubble-container {
             margin-bottom: 12px;
@@ -434,7 +527,6 @@
             const tabChannelGroup = document.getElementById('tabChannelGroup');
             const tabChannelPrivate = document.getElementById('tabChannelPrivate');
             const privateContactBar = document.getElementById('privateContactBar');
-            const privateUserSelect = document.getElementById('privateUserSelect');
 
             let currentChannelMode = 'group'; // 'group' or 'private'
             let activeRecipientId = null;
@@ -457,12 +549,19 @@
                 }
 
                 switchChannelMode('group');
-                if (input) input.placeholder = 'Escribir consulta al grupo...';
+                if (inputChat) {
+                    inputChat.placeholder = 'Escribir consulta al grupo...';
+                }
 
                 drawer.classList.add('open');
                 fetchMessages();
                 markRead();
                 startPolling();
+                
+                // Scroll al fondo después de abrir el chat
+                setTimeout(() => {
+                    scrollToBottom();
+                }, 200);
             };
 
             window.handleContextNavigation = function(event, url) {
@@ -474,22 +573,31 @@
                     if (targetUrlObj.pathname === currentUrlObj.pathname && targetUrlObj.hash) {
                         event.preventDefault();
                         const elementId = targetUrlObj.hash.substring(1);
-                        const targetEl = document.getElementById(elementId);
-
-                        if (targetEl) {
-                            drawer.classList.remove('open');
-                            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            targetEl.style.transition = 'all 0.5s ease';
-                            targetEl.style.boxShadow = '0 0 20px rgba(245, 158, 11, 0.8)';
-                            targetEl.style.borderRadius = '8px';
-                            setTimeout(() => {
-                                targetEl.style.boxShadow = 'none';
-                            }, 3000);
-                        } else {
-                            window.location.href = url;
-                        }
+                        
+                        // Cerrar el chat drawer antes de navegar
+                        drawer.classList.remove('open');
+                        
+                        // Pequeño delay para permitir que el drawer se cierre
+                        setTimeout(() => {
+                            scrollToElement(elementId);
+                        }, 300);
                     }
-                } catch(e) {}
+                } catch(e) {
+                    console.error('Error en handleContextNavigation:', e);
+                }
+            };
+
+            window.scrollToElement = function(elementId) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    element.style.transition = 'all 0.5s ease';
+                    element.style.boxShadow = '0 0 20px rgba(245, 158, 11, 0.8)';
+                    element.style.borderRadius = '8px';
+                    setTimeout(() => {
+                        element.style.boxShadow = 'none';
+                    }, 3000);
+                }
             };
 
             const clearContextBtn = document.getElementById('clearPeiChatContext');
@@ -509,23 +617,13 @@
                 switchChannelMode('private');
             });
 
-            privateUserSelect.addEventListener('change', function() {
-                activeRecipientId = this.value || null;
-                const opt = this.options[this.selectedIndex];
-                activeRecipientName = opt ? opt.text : null;
-                updateContactProfileWidget(activeRecipientId);
-                if (activeRecipientId) {
-                    input.placeholder = `Escribir mensaje privado a ${activeRecipientName}...`;
-                } else {
-                    input.placeholder = 'Selecciona un integrante para chatear en privado...';
-                }
-                renderFilteredMessages();
-            });
-
             function updateContactProfileWidget(userId) {
                 const widget = document.getElementById('contactProfileWidget');
                 if (!userId) {
                     widget.style.setProperty('display', 'none', 'important');
+                    if (inputChat) {
+                        inputChat.placeholder = 'Selecciona un integrante para chatear en privado...';
+                    }
                     return;
                 }
 
@@ -566,8 +664,7 @@
                     privateContactBar.style.display = 'none';
                     activeRecipientId = null;
                     activeRecipientName = null;
-                    privateUserSelect.value = '';
-                    input.placeholder = 'Escribir mensaje al grupo...';
+                    if (inputChat) inputChat.placeholder = 'Escribir mensaje al grupo...';
                 } else {
                     tabChannelPrivate.style.borderBottom = '3px solid #ffc107';
                     tabChannelPrivate.classList.remove('text-white-50');
@@ -579,12 +676,7 @@
 
                     privateContactBar.style.display = 'block';
 
-                    // Si hay un destinatario activo, asegurar la selección en el dropdown
-                    if (activeRecipientId) {
-                        privateUserSelect.value = String(activeRecipientId);
-                    } else if (privateUserSelect.value) {
-                        activeRecipientId = privateUserSelect.value;
-                    } else if (allLoadedMessages.length > 0) {
+                    if (!activeRecipientId && allLoadedMessages.length > 0) {
                         const currentUserId = "{{ auth()->id() }}";
                         const lastPrivateMsg = allLoadedMessages.slice().reverse().find(m => {
                             if (!m.is_private) return false;
@@ -592,23 +684,16 @@
                         });
                         if (lastPrivateMsg) {
                             const targetId = (lastPrivateMsg.user_id == currentUserId) ? lastPrivateMsg.recipient_id : lastPrivateMsg.user_id;
-                            if (targetId) {
-                                activeRecipientId = String(targetId);
-                                privateUserSelect.value = activeRecipientId;
-                            }
+                            if (targetId) activeRecipientId = String(targetId);
                         }
                     }
 
                     if (activeRecipientId) {
-                        const opt = privateUserSelect.options[privateUserSelect.selectedIndex];
-                        if (opt && opt.value) {
-                            activeRecipientName = opt.text.split('(')[0].trim();
-                        }
                         updateContactProfileWidget(activeRecipientId);
-                        input.placeholder = `Escribir mensaje privado a ${activeRecipientName || 'Usuario'}...`;
+                        if (inputChat) inputChat.placeholder = `Escribir mensaje privado a ${activeRecipientName || 'Usuario'}...`;
                     } else {
                         updateContactProfileWidget(null);
-                        input.placeholder = 'Selecciona un integrante para chatear en privado...';
+                        if (inputChat) inputChat.placeholder = 'Selecciona un integrante para chatear en privado...';
                     }
                 }
                 renderFilteredMessages();
@@ -618,10 +703,13 @@
                 activeRecipientId = String(id);
                 activeRecipientName = name;
                 participantsPanel.style.display = 'none';
-                
-                privateUserSelect.value = activeRecipientId;
+
                 updateContactProfileWidget(activeRecipientId);
+                if (window._refreshPrivatePicker) window._refreshPrivatePicker();
                 switchChannelMode('private');
+                if (inputChat) {
+                    inputChat.placeholder = `Mensaje privado a ${activeRecipientName || 'Usuario'}...`;
+                }
             };
 
             // Toggle drawer
@@ -703,6 +791,64 @@
                 }
             }
 
+            // Input que se expande automáticamente + botón +
+            const inputChat = input;
+            const moreActions = document.getElementById('peiChatMoreActions');
+            const btnPlus = document.getElementById('btnChatPlus');
+
+            function showExpandedActions() {
+                btnPlus.style.display = 'none';
+                moreActions.style.display = 'flex';
+            }
+            function showCollapsedActions() {
+                moreActions.style.display = 'none';
+                btnPlus.style.display = 'flex';
+            }
+
+            // Estado inicial: botones visibles, plus oculto
+            showExpandedActions();
+
+            input.addEventListener('focus', function() {
+                showCollapsedActions();
+            });
+
+            input.addEventListener('blur', function() {
+                // Solo expandir si el input está vacío
+                if (!input.value.trim()) {
+                    showExpandedActions();
+                }
+            });
+
+            btnPlus.addEventListener('click', function(e) {
+                e.stopPropagation();
+                showExpandedActions();
+                input.focus();
+            });
+
+            function autoResizeTextarea() {
+                input.style.height = 'auto';
+                const hasText = input.value.trim().length > 0;
+                input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+                if (!hasText) {
+                    input.style.height = '36px';
+                    // Al borrar todo, colapsar el panel si estaba abierto por texto
+                }
+            }
+
+            input.addEventListener('input', autoResizeTextarea);
+
+            // Cerrar panel + al hacer click fuera
+            document.addEventListener('click', function(e) {
+                if (moreActionsOpen && !btnPlus.contains(e.target) && !moreActions.contains(e.target)) {
+                    moreActionsOpen = false;
+                    moreActions.style.display = 'none';
+                    btnPlus.style.transform = 'rotate(0deg)';
+                    btnPlus.style.background = '#f1f5f9';
+                    btnPlus.style.color = '#475569';
+                    btnPlus.style.borderColor = '#cbd5e1';
+                }
+            });
+
             // Emoji Picker Handlers
             const emojiBtn = document.getElementById('btnToggleEmojiPicker');
             const emojiPicker = document.getElementById('peiEmojiPicker');
@@ -725,13 +871,134 @@
                     emojiGrid.addEventListener('click', function(e) {
                         if (e.target.classList.contains('emoji-item')) {
                             const emoji = e.target.textContent;
-                            input.value += emoji;
-                            input.focus();
+                            inputChat.value += emoji;
+                            inputChat.focus();
+                            autoResizeTextarea();
                             emojiPicker.style.display = 'none';
                         }
                     });
                 }
             }
+
+            // Custom Private User Picker
+            (function() {
+                const pickerBtn    = document.getElementById('privateUserPickerBtn');
+                const pickerDrop   = document.getElementById('privateUserPickerDropdown');
+                const pickerSearch = document.getElementById('privatePickerSearch');
+                const pickerClear  = document.getElementById('privatePickerClearSearch');
+                const pickerList   = document.getElementById('privatePickerList');
+                const pickerLabel  = document.getElementById('privatePickerLabel');
+                const pickerAvatar = document.getElementById('privatePickerAvatarMini');
+                const pickerChevron= document.getElementById('privatePickerChevron');
+
+                function openPicker() {
+                    pickerDrop.style.display = 'block';
+                    pickerChevron.style.transform = 'rotate(180deg)';
+                    pickerSearch.value = '';
+                    pickerClear.style.display = 'none';
+                    renderPickerList('');
+                    setTimeout(() => pickerSearch.focus(), 50);
+                }
+                function closePicker() {
+                    pickerDrop.style.display = 'none';
+                    pickerChevron.style.transform = 'rotate(0deg)';
+                }
+
+                pickerBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    pickerDrop.style.display === 'none' ? openPicker() : closePicker();
+                });
+
+                pickerSearch.addEventListener('input', function() {
+                    pickerClear.style.display = this.value ? 'block' : 'none';
+                    renderPickerList(this.value.toLowerCase());
+                });
+                pickerClear.addEventListener('click', function() {
+                    pickerSearch.value = '';
+                    this.style.display = 'none';
+                    renderPickerList('');
+                    pickerSearch.focus();
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!pickerBtn.closest('#privateChatUserPicker').contains(e.target)) closePicker();
+                });
+
+                function renderPickerList(query) {
+                    if (!currentParticipants || currentParticipants.length === 0) {
+                        pickerList.innerHTML = '<div class="text-center text-muted py-3" style="font-size:12px;">Sin integrantes disponibles</div>';
+                        return;
+                    }
+                    const filtered = query
+                        ? currentParticipants.filter(u => u.name.toLowerCase().includes(query))
+                        : currentParticipants;
+
+                    if (filtered.length === 0) {
+                        pickerList.innerHTML = '<div class="text-center text-muted py-3" style="font-size:12px;">Sin resultados</div>';
+                        return;
+                    }
+                    pickerList.innerHTML = filtered.map(u => {
+                        const initials = u.initials || u.name.substring(0,2).toUpperCase();
+                        const role = u.role || 'Integrante';
+                        const pts  = u.points || 0;
+                        const sel  = String(u.id) === String(activeRecipientId);
+                        return `<div class="picker-item" 
+                                     data-id="${u.id}" data-name="${u.name.replace(/"/g,'&quot;')}" data-initials="${initials}"
+                                     style="cursor:pointer; display:flex; align-items:center; padding:8px 12px;
+                                            border-bottom:1px solid #f1f5f9; background:${sel?'#e0f2fe':'#fff'};
+                                            transition:background 0.15s;">
+                            <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);
+                                        display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;
+                                        color:#fff;flex-shrink:0;margin-right:8px;pointer-events:none;">${initials}</div>
+                            <div style="flex:1;min-width:0;pointer-events:none;">
+                                <div style="font-size:12px;font-weight:600;color:#0f172a;">${u.name}</div>
+                                <div style="font-size:10px;color:#64748b;">${role}</div>
+                            </div>
+                            <span style="font-size:10px;background:#fef3c7;color:#92400e;border-radius:8px;padding:2px 6px;flex-shrink:0;pointer-events:none;">⭐ ${pts}</span>
+                        </div>`;
+                    }).join('');
+                }
+
+                // Event delegation — un solo listener en el contenedor, nunca se pierde
+                pickerList.addEventListener('click', function(e) {
+                    const item = e.target.closest('.picker-item');
+                    if (!item) return;
+                    e.stopPropagation();
+
+                    const uid  = item.dataset.id;
+                    const uname= item.dataset.name;
+                    const uini = item.dataset.initials;
+
+                    activeRecipientId   = uid;
+                    activeRecipientName = uname;
+
+                    pickerLabel.textContent = uname;
+                    pickerLabel.style.color = '#f1f5f9';
+                    pickerAvatar.innerHTML  = `<span style="font-size:10px;font-weight:700;color:#fff;">${uini}</span>`;
+                    pickerAvatar.style.background = 'linear-gradient(135deg,#4f46e5,#7c3aed)';
+
+                    updateContactProfileWidget(uid);
+                    inputChat.placeholder = `Mensaje privado a ${uname}...`;
+                    renderFilteredMessages();
+                    closePicker();
+                });
+
+                // Exponer para que renderParticipants pueda refrescar el picker
+                window._refreshPrivatePicker = function() {
+                    if (pickerDrop.style.display !== 'none') renderPickerList(pickerSearch.value.toLowerCase());
+                    // Actualizar label si ya hay seleccionado
+                    if (activeRecipientId && currentParticipants.length) {
+                        const u = currentParticipants.find(p => String(p.id) === String(activeRecipientId));
+                        if (u) {
+                            const ini = u.initials || u.name.substring(0,2).toUpperCase();
+                            pickerLabel.textContent = u.name;
+                            pickerLabel.style.color = '#f1f5f9';
+                            pickerAvatar.innerHTML  = `<span style="font-size:10px;font-weight:700;color:#fff;">${ini}</span>`;
+                            pickerAvatar.style.background = 'linear-gradient(135deg,#4f46e5,#7c3aed)';
+                        }
+                    }
+                };
+            })();
 
             // Point Donation Handlers
             const btnOpenDonateModal = document.getElementById('btnOpenDonateModal');
@@ -793,12 +1060,39 @@
                             btnSubmitDonate.disabled = false;
                             btnSubmitDonate.innerHTML = '<i class="fas fa-paper-plane mr-1"></i> Confirmar Donación';
                             if (data.error) {
-                                alert(data.error);
+                                if (typeof Swal !== 'undefined') {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Saldo Insuficiente',
+                                        text: data.error,
+                                        confirmButtonText: 'Entendido',
+                                        confirmButtonColor: '#f59e0b',
+                                        customClass: {
+                                            popup: 'shadow-lg border-0'
+                                        }
+                                    });
+                                } else {
+                                    alert(data.error);
+                                }
                                 return;
                             }
                             donatePopover.style.display = 'none';
                             playCoinChime();
                             triggerCoinBurstAnimation();
+
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Donación Enviada!',
+                                    html: `Has transferido <strong class="text-warning">${amount} pts</strong> correctamente.`,
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                    showConfirmButton: false,
+                                    toast: true,
+                                    position: 'top-end'
+                                });
+                            }
+
                             if (data.message) {
                                 allLoadedMessages.push(data.message);
                                 renderFilteredMessages();
@@ -808,6 +1102,14 @@
                         .catch(err => {
                             btnSubmitDonate.disabled = false;
                             btnSubmitDonate.innerHTML = '<i class="fas fa-paper-plane mr-1"></i> Confirmar Donación';
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error de Comunicación',
+                                    text: 'No se pudo procesar la transferencia de puntos. Intente nuevamente.',
+                                    confirmButtonColor: '#ef4444'
+                                });
+                            }
                             console.error('Error procesando donación:', err);
                         });
                     });
@@ -882,7 +1184,10 @@
                     }
 
                     if (data.participants) {
-                        renderParticipants(data.participants);
+                        // Solo actualizar participantes si el chat está abierto o el tab privado está visible
+                        if (drawer.classList.contains('open') || privateContactBar.style.display !== 'none') {
+                            renderParticipants(data.participants);
+                        }
                     }
                 })
                 .catch(err => console.error('Error fetching chat messages:', err));
@@ -945,7 +1250,10 @@
                 }
 
                 toRender.forEach(msg => renderSingleMessageBubble(msg));
-                scrollToBottom();
+                // Usar setTimeout para asegurar que el DOM esté completamente renderizado
+                setTimeout(() => {
+                    scrollToBottom();
+                }, 50);
             }
 
             function renderSingleMessageBubble(msg) {
@@ -1018,22 +1326,26 @@
 
             function renderParticipants(list) {
                 currentParticipants = list;
+
+                // Update member count badge
+                const countText = document.getElementById('privateUsersCountText');
+                if (countText) {
+                    countText.innerHTML = `<i class="fas fa-users mr-1"></i> ${list ? list.length : 0} Miembro${(list && list.length !== 1) ? 's' : ''}`;
+                }
+
                 if (!list || list.length === 0) {
                     participantsList.innerHTML = '<div class="text-muted text-center small py-2">Sin otros miembros</div>';
-                    privateUserSelect.innerHTML = '<option value="">-- Sin otros miembros --</option>';
                     return;
                 }
 
-                const currVal = privateUserSelect.value;
-                let selectHtml = '<option value="">-- Seleccionar Integrante --</option>';
-                list.forEach(u => {
-                    selectHtml += `<option value="${u.id}" ${u.id == currVal ? 'selected' : ''}>${u.name} (${u.role || 'Integrante'})</option>`;
-                });
-                privateUserSelect.innerHTML = selectHtml;
-
                 if (activeRecipientId) {
                     updateContactProfileWidget(activeRecipientId);
+                    if (inputChat) inputChat.placeholder = `Mensaje privado a ${activeRecipientName || 'Usuario'}...`;
+                } else if (inputChat) {
+                    inputChat.placeholder = 'Selecciona un integrante...';
                 }
+
+                if (window._refreshPrivatePicker) window._refreshPrivatePicker();
 
                 let html = '<div class="text-muted text-xs mb-2 font-weight-bold">Integrantes del Equipo:</div>';
                 list.forEach(u => {
@@ -1063,8 +1375,33 @@
 
             function scrollToBottom() {
                 const body = document.getElementById('peiChatMessagesBody');
-                body.scrollTop = body.scrollHeight;
+                if (body) {
+                    // Usar requestAnimationFrame para asegurar que el DOM esté actualizado
+                    requestAnimationFrame(() => {
+                        body.scrollTop = body.scrollHeight;
+                    });
+                }
             }
+
+            window.scrollToElement = function(elementId) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    // Asegurar que el elemento esté visible
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Resaltar el elemento
+                    element.style.transition = 'all 0.5s ease';
+                    element.style.boxShadow = '0 0 20px rgba(245, 158, 11, 0.8)';
+                    element.style.borderRadius = '8px';
+                    
+                    setTimeout(() => {
+                        element.style.boxShadow = 'none';
+                    }, 3000);
+                    
+                    return true;
+                }
+                return false;
+            };
 
             // Enviar mensaje con tecla Enter (Shift+Enter para salto de línea)
             input.addEventListener('keydown', function (e) {
@@ -1130,11 +1467,15 @@
                 .then(data => {
                     sendBtn.disabled = false;
                     input.value = '';
+                    input.style.height = '36px';
+                    if (moreActions) { moreActions.style.display = 'none'; moreActionsOpen = false; }
+                    if (btnPlus) { btnPlus.style.transform='rotate(0deg)'; btnPlus.style.background='#f1f5f9'; btnPlus.style.color='#475569'; btnPlus.style.borderColor='#cbd5e1'; }
                     fileInput.value = '';
                     currentReplyId = null;
                     currentContext = null;
                     const contextBanner = document.getElementById('peiChatContextBanner');
                     if (contextBanner) contextBanner.style.display = 'none';
+                    playMessageChime();
 
                     if (data.message) {
                         allLoadedMessages.push(data.message);
@@ -1150,8 +1491,12 @@
             // Initial load
             fetchMessages();
 
-            // Ultra-responsive polling every 1.5s
-            setInterval(() => fetchMessages(true), 1500);
+            // Ultra-responsive polling every 1.5s (solo cuando el chat está abierto)
+            setInterval(() => {
+                if (drawer.classList.contains('open')) {
+                    fetchMessages(true);
+                }
+            }, 1500);
 
             let lastUnreadCount = 0;
 
@@ -1188,7 +1533,11 @@
 
             function startPolling() {
                 if (!pollInterval) {
-                    pollInterval = setInterval(() => fetchMessages(true), 1500);
+                    pollInterval = setInterval(() => {
+                        if (drawer.classList.contains('open')) {
+                            fetchMessages(true);
+                        }
+                    }, 1500);
                 }
             }
 
@@ -1199,9 +1548,13 @@
                 }
             }
 
-            // Initial unread check and frequent poll every 2s
+            // Initial unread check and frequent poll every 2s (solo cuando el chat está abierto)
             updateUnreadBadge();
-            setInterval(updateUnreadBadge, 2000);
+            setInterval(() => {
+                if (drawer.classList.contains('open')) {
+                    updateUnreadBadge();
+                }
+            }, 2000);
         });
     </script>
 @endif

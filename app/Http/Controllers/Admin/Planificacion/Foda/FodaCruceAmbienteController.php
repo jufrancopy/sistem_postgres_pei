@@ -81,6 +81,10 @@ class FodaCruceAmbienteController extends Controller
         $oportunidadesCubiertas = array_map('array_unique', $oportunidadesCubiertas);
         $amenazasCubiertas      = array_map('array_unique', $amenazasCubiertas);
 
+        if ($request->ajax() || $request->get('modal')) {
+            return view('admin.planificacion.fodas.groups.partials.crossing_content', get_defined_vars());
+        }
+
         return view('admin.planificacion.fodas.groups.crossing-environments', get_defined_vars());
     }
 
@@ -696,9 +700,19 @@ class FodaCruceAmbienteController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $cruce = FodaCruceAmbiente::find($id)->delete();
+        $cruce = FodaCruceAmbiente::find($id);
+        if ($cruce) {
+            $cruce->delete();
+        }
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Estrategia eliminada correctamente.',
+            ]);
+        }
 
         return back()->with('info', 'Estrategia eliminada correctamente.');
     }

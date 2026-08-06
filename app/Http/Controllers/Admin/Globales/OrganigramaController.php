@@ -115,23 +115,50 @@ class OrganigramaController extends Controller
     public function mover(\Illuminate\Http\Request $request, $id)
     {
         $request->validate([
-            'parent_id' => 'required|integer|different:' . $id,
+            'parent_id' => 'nullable|integer',
+            'before_id' => 'nullable|integer',
+            'after_id'  => 'nullable|integer',
         ]);
 
-        $nodo       = Organigrama::findOrFail($id);
-        $nuevoPadre = Organigrama::findOrFail($request->parent_id);
+        $nodo = Organigrama::findOrFail($id);
+        $nuevoPadre = null;
 
-        // Evitar que un nodo se mueva a uno de sus propios descendientes
-        if ($nuevoPadre->isDescendantOf($nodo)) {
-            return response()->json([
-                'error' => 'No se puede mover un nodo dentro de uno de sus propios descendientes.'
-            ], 422);
+        if ($request->filled('before_id')) {
+            $sibling = Organigrama::findOrFail($request->before_id);
+            if ($sibling->id === $nodo->id || $sibling->isDescendantOf($nodo)) {
+                return response()->json(['error' => 'Posición inválida en la jerarquía.'], 422);
+            }
+            $nodo->beforeNode($sibling)->save();
+            $nodo->refresh();
+            $nuevoPadre = $nodo->parent;
+        } elseif ($request->filled('after_id')) {
+            $sibling = Organigrama::findOrFail($request->after_id);
+            if ($sibling->id === $nodo->id || $sibling->isDescendantOf($nodo)) {
+                return response()->json(['error' => 'Posición inválida en la jerarquía.'], 422);
+            }
+            $nodo->afterNode($sibling)->save();
+            $nodo->refresh();
+            $nuevoPadre = $nodo->parent;
+        } elseif ($request->filled('parent_id')) {
+            $nuevoPadre = Organigrama::findOrFail($request->parent_id);
+            if ($nuevoPadre->id === $nodo->id || $nuevoPadre->isDescendantOf($nodo)) {
+                return response()->json([
+                    'error' => 'No se puede mover un nodo dentro de uno de sus propios descendientes.'
+                ], 422);
+            }
+            $nodo->appendToNode($nuevoPadre)->save();
+            $nodo->refresh();
+        } else {
+            return response()->json(['error' => 'Faltan parámetros de destino.'], 422);
         }
 
-        $nodo->appendToNode($nuevoPadre)->save();
+        $padreNombre = $nuevoPadre ? $nuevoPadre->dependency : 'Raíz';
 
         return response()->json([
-            'success' => "'{$nodo->dependency}' movido correctamente a '{$nuevoPadre->dependency}'.",
+            'success' => true,
+            'message' => "'{$nodo->dependency}' movido correctamente a '{$padreNombre}'.",
+            'node_id' => $nodo->id,
+            'parent_name' => $padreNombre,
         ]);
     }
 

@@ -26,53 +26,52 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         Gate::define('planificacion.scope', function ($user) {
-            if (! $user || ! method_exists($user, 'group')) {
+            if (!$user) {
                 return false;
             }
-
-            if (! $user->hasAnyRole(['Coordinador de Planificación', 'Analista de Planificación'])) {
-                return false;
+            if ($user->hasRole('Administrador')) {
+                return true;
             }
-
-            $group = $user->group;
-            if (! $group) {
-                return false;
-            }
-
-            $root = $group->ancestors()->withDepth()->orderByDesc('depth')->first() ?? $group;
-
-            if ($root && $root->pei()->exists()) {
-                return $user->perteneceAlArbol($root);
-            }
-
-            return true;
+            return $user->hasAnyRole(['Coordinador de Planificación', 'Analista de Planificación']);
         });
 
         Gate::define('planificacion.manage-groups', function ($user) {
-            if (! Gate::allows('planificacion.scope', $user)) {
+            if (!$user) {
                 return false;
             }
-
-            return $user->hasRole('Coordinador de Planificación');
+            if ($user->hasRole('Administrador')) {
+                return true;
+            }
+            return $user->hasAnyRole(['Coordinador de Planificación', 'Analista de Planificación']);
         });
 
         Gate::define('planificacion.create-activity', function ($user) {
-            if (! Gate::allows('planificacion.scope', $user)) {
+            if (!$user) {
                 return false;
             }
-
-            return $user->hasRole('Coordinador de Planificación');
+            if ($user->hasRole('Administrador')) {
+                return true;
+            }
+            return $user->hasAnyRole(['Coordinador de Planificación', 'Analista de Planificación', 'Gestor de Actividades']);
         });
 
         Gate::define('planificacion.view-tree', function ($user) {
-            return Gate::allows('planificacion.scope', $user);
+            if (!$user) {
+                return false;
+            }
+            if ($user->hasRole('Administrador')) {
+                return true;
+            }
+            return $user->hasAnyRole(['Coordinador de Planificación', 'Analista de Planificación']);
         });
 
         Gate::define('planificacion.manage-organigrama', function ($user) {
-            if (! Gate::allows('planificacion.scope', $user)) {
+            if (!$user) {
                 return false;
             }
-
+            if ($user->hasRole('Administrador')) {
+                return true;
+            }
             return $user->hasAnyRole(['Coordinador de Planificación', 'Analista de Planificación']);
         });
     }
