@@ -839,13 +839,8 @@
 
             // Cerrar panel + al hacer click fuera
             document.addEventListener('click', function(e) {
-                if (moreActionsOpen && !btnPlus.contains(e.target) && !moreActions.contains(e.target)) {
-                    moreActionsOpen = false;
-                    moreActions.style.display = 'none';
-                    btnPlus.style.transform = 'rotate(0deg)';
-                    btnPlus.style.background = '#f1f5f9';
-                    btnPlus.style.color = '#475569';
-                    btnPlus.style.borderColor = '#cbd5e1';
+                if (moreActions.style.display === 'flex' && !btnPlus.contains(e.target) && !moreActions.contains(e.target)) {
+                    showCollapsedActions();
                 }
             });
 
@@ -1468,7 +1463,7 @@
                     sendBtn.disabled = false;
                     input.value = '';
                     input.style.height = '36px';
-                    if (moreActions) { moreActions.style.display = 'none'; moreActionsOpen = false; }
+                    if (moreActions) { showCollapsedActions(); }
                     if (btnPlus) { btnPlus.style.transform='rotate(0deg)'; btnPlus.style.background='#f1f5f9'; btnPlus.style.color='#475569'; btnPlus.style.borderColor='#cbd5e1'; }
                     fileInput.value = '';
                     currentReplyId = null;
