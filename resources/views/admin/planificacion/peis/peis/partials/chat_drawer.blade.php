@@ -560,8 +560,7 @@
                 
                 // Scroll al fondo después de abrir el chat
                 setTimeout(() => {
-                    scrollToBottom();
-                }, 200);
+                    scrollToBottom(true);
             };
 
             window.handleContextNavigation = function(event, url) {
@@ -570,17 +569,16 @@
                     const targetUrlObj = new URL(url, window.location.origin);
                     const currentUrlObj = new URL(window.location.href);
 
-                    if (targetUrlObj.pathname === currentUrlObj.pathname && targetUrlObj.hash) {
+                    if (targetUrlObj.pathname === currentUrlObj.pathname) {
                         event.preventDefault();
-                        const elementId = targetUrlObj.hash.substring(1);
-                        
-                        // Cerrar el chat drawer antes de navegar
                         drawer.classList.remove('open');
-                        
-                        // Pequeño delay para permitir que el drawer se cierre
-                        setTimeout(() => {
-                            scrollToElement(elementId);
-                        }, 300);
+                        if (targetUrlObj.hash) {
+                            const elementId = targetUrlObj.hash.substring(1);
+                            setTimeout(() => scrollToElement(elementId), 300);
+                        }
+                    } else {
+                        // Otra página: navegar normalmente, el hash hace el scroll
+                        window.location.href = url;
                     }
                 } catch(e) {
                     console.error('Error en handleContextNavigation:', e);
@@ -1245,10 +1243,7 @@
                 }
 
                 toRender.forEach(msg => renderSingleMessageBubble(msg));
-                // Usar setTimeout para asegurar que el DOM esté completamente renderizado
-                setTimeout(() => {
-                    scrollToBottom();
-                }, 50);
+                setTimeout(() => { scrollToBottom(); }, 50);
             }
 
             function renderSingleMessageBubble(msg) {
@@ -1368,13 +1363,12 @@
                 participantsList.innerHTML = html;
             }
 
-            function scrollToBottom() {
+            function scrollToBottom(force = false) {
                 const body = document.getElementById('peiChatMessagesBody');
-                if (body) {
-                    // Usar requestAnimationFrame para asegurar que el DOM esté actualizado
-                    requestAnimationFrame(() => {
-                        body.scrollTop = body.scrollHeight;
-                    });
+                if (!body) return;
+                const distanceFromBottom = body.scrollHeight - body.scrollTop - body.clientHeight;
+                if (force || distanceFromBottom < 80) {
+                    requestAnimationFrame(() => { body.scrollTop = body.scrollHeight; });
                 }
             }
 
@@ -1475,7 +1469,7 @@
                     if (data.message) {
                         allLoadedMessages.push(data.message);
                         renderFilteredMessages();
-                    }
+                        scrollToBottom(true);
                 })
                 .catch(err => {
                     sendBtn.disabled = false;
