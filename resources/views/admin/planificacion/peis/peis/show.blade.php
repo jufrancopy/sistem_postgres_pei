@@ -433,6 +433,19 @@
                 @include('admin.planificacion.peis.peis.modals')
                 {{-- End Modals --}}
 
+                {{-- Modal Detalle Indicador --}}
+                <div class="modal fade" id="modalIndicadorDetalle" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content border-0 shadow">
+                            <div id="modalIndicadorDetalleBody">
+                                <div class="text-center py-5 text-muted">
+                                    <i class="fa fa-spinner fa-spin fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
         {{-- Fin Contenido Principal --}}
@@ -2798,6 +2811,21 @@ $(document).on('click', '.btnNotificarAccion', function() {
     });
 });
 // ══ FIN NOTIFICACIONES ════════════════════════════════════════════════════════
+</script>
+<script>
+// Modal detalle indicador (accordion)
+$(document).on('click', '.btn-ver-indicador', function() {
+    const id      = $(this).data('id');
+    const profile = $(this).data('profile');
+    const url     = `/pei-profiles/${profile}/indicadores/${id}/detalle`;
+    $('#modalIndicadorDetalleBody').html('<div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-2x"></i></div>');
+    $('#modalIndicadorDetalle').modal('show');
+    $.get(url, function(html) {
+        $('#modalIndicadorDetalleBody').html(html);
+    }).fail(function() {
+        $('#modalIndicadorDetalleBody').html('<div class="alert alert-danger m-3">Error al cargar la ficha del indicador.</div>');
+    });
+});
 </script>
 @include('admin.planificacion.peis.peis.partials.chat_drawer')
 @stop
