@@ -1042,17 +1042,10 @@
                         }
                     }
 
-                    // Estado inicial del acordeón de Vinculación Presupuestaria
-                    var hasRiData = !!(riPres || riProg || riRec || hasRiMetas);
-                    if (typeBtn === 'edit' && hasRiData) {
-                        $('#riVinculacionCollapse').collapse('show');
-                        $('#ri_vinculacion_toggle_label').text('Clic para plegar');
-                        $('#ri_vinculacion_block .ri-chevron-icon').css('transform', 'rotate(180deg)');
-                    } else {
-                        $('#riVinculacionCollapse').collapse('hide');
-                        $('#ri_vinculacion_toggle_label').text('Clic para desplegar');
-                        $('#ri_vinculacion_block .ri-chevron-icon').css('transform', 'rotate(0deg)');
-                    }
+                    // El acordeón de Vinculación Presupuestaria siempre inicia cerrado por defecto
+                    $('#riVinculacionCollapse').collapse('hide');
+                    $('#ri_vinculacion_toggle_label').text('Clic para desplegar');
+                    $('#ri_vinculacion_block .ri-chevron-icon').css('transform', 'rotate(0deg)');
 
                     // Botón agregar meta RI
                     $('#btnAgregarRiMeta').off('click').on('click', function() { agregarRiMeta('', ''); });
