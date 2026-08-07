@@ -64,36 +64,24 @@ class GamificationAdminController extends Controller
             return response()->json([], 403);
         }
 
-        $pei = PeiProfile::find($idProfile);
-        if (!$pei || !$pei->group_id) {
-            return response()->json([]);
-        }
-
-        $group = \App\Admin\Globales\Group::find($pei->group_id);
-        if (!$group) {
-            return response()->json([]);
-        }
-
-        $groupIds = \App\Admin\Globales\Group::descendantsAndSelf($group->id)->pluck('id')->toArray();
-
-        // Usuarios por group_id directo en users
-        $porGroupId = User::whereIn('group_id', $groupIds)->pluck('id');
-
-        // Usuarios por tabla pivot groups_has_members
-        $porPivot = \DB::table('groups_has_members')
-            ->whereIn('group_id', $groupIds)
-            ->pluck('user_id');
-
-        $userIds = $porGroupId->merge($porPivot)->unique()->values();
-
         $q = $request->get('q', '');
-        $users = User::whereIn('id', $userIds)
-            ->when($q, fn($query) => $query->where('name', 'ILIKE', "%{$q}%"))
-            ->orderBy('name')
-            ->limit(20)
-            ->get(['id', 'name']);
 
-        return response()->json($users);
+        $baseQuery = User::when($q, fn($query) => $query->where('name', 'ILIKE', "%{$q}%"))
+            ->orderBy('name')
+            ->limit(20);
+
+        $pei   = PeiProfile::find($idProfile);
+        $group = $pei?->group_id ? \App\Admin\Globales\Group::find($pei->group_id) : null;
+
+        if ($group) {
+            $groupIds   = \App\Admin\Globales\Group::descendantsAndSelf($group->id)->pluck('id')->toArray();
+            $porGroupId = User::whereIn('group_id', $groupIds)->pluck('id');
+            $porPivot   = DB::table('groups_has_members')->whereIn('group_id', $groupIds)->pluck('user_id');
+            $userIds    = $porGroupId->merge($porPivot)->unique()->values();
+            $baseQuery->whereIn('id', $userIds);
+        }
+
+        return response()->json($baseQuery->get(['id', 'name']));
     }
 
     /**

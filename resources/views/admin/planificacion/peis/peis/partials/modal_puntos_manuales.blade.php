@@ -114,8 +114,13 @@ document.addEventListener('DOMContentLoaded', function() {
             pageLength: 8,
             lengthChange: false,
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json',
-                emptyTable: 'Aún no hay puntos manuales otorgados en este plan.'
+                emptyTable:     'Aún no hay puntos manuales otorgados en este plan.',
+                info:           'Mostrando _START_ a _END_ de _TOTAL_ registros',
+                infoEmpty:      'Sin registros',
+                lengthMenu:     'Mostrar _MENU_ registros',
+                search:         'Buscar:',
+                zeroRecords:    'No se encontraron resultados',
+                paginate:       { first: 'Primero', last: 'Último', next: 'Siguiente', previous: 'Anterior' }
             },
             dom: '<"d-flex justify-content-between align-items-center mb-2"f>rt<"d-flex justify-content-between align-items-center mt-2"ip>'
         });
