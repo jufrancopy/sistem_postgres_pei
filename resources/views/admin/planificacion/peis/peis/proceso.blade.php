@@ -383,6 +383,7 @@ $pctGlobal   = round(($completados / 6) * 100);
             }, 600);
         }
 
+        $('#btnProcesoCertMef').on('click', function() {
             var url = "{{ route('pei-profiles.certificacion-mef', $profile->id) }}";
             $('#modalCertificacionMefBody').html('<div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-2x mb-3 text-warning"></i><div>Cargando verificación de certificación MEF...</div></div>');
             $('#modalCertificacionMef').modal('show');
