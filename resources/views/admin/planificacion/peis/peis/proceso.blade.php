@@ -301,6 +301,19 @@ $pctGlobal   = round(($completados / 6) * 100);
     </div>
 </div>
 
+{{-- Modal Detalle Indicador --}}
+<div class="modal fade" id="modalIndicadorDetalle" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-0 shadow">
+            <div id="modalIndicadorDetalleBody">
+                <div class="text-center py-5 text-muted">
+                    <i class="fa fa-spinner fa-spin fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @stop
 
 @section('scripts')
@@ -327,17 +340,56 @@ $pctGlobal   = round(($completados / 6) * 100);
                     setTimeout(function() { element.style.boxShadow = 'none'; element.style.outline = 'none'; }, 3500);
                 }
 
-                const closedCollapses = Array.from(document.querySelectorAll('.collapse:not(.show)'));
-                if (closedCollapses.length === 0) { doScroll(); return; }
+                function expandAncestorsAndScroll(targetEl) {
+                    const target = targetEl || document.getElementById(elementId);
+                    if (!target) {
+                        doScroll();
+                        return;
+                    }
 
-                let pending = closedCollapses.length;
-                closedCollapses.forEach(function(col) {
-                    $(col).one('shown.bs.collapse', function() {
-                        pending--;
-                        if (pending === 0) setTimeout(doScroll, 50);
+                    const collapsesToOpen = [];
+                    let current = target.parentElement;
+                    while (current) {
+                        if (current.classList && current.classList.contains('collapse') && !current.classList.contains('show')) {
+                            collapsesToOpen.push(current);
+                        }
+                        current = current.parentElement;
+                    }
+
+                    const uniqueCollapses = collapsesToOpen.filter(function (collapseEl, index, array) {
+                        return array.indexOf(collapseEl) === index;
+                    }).reverse();
+
+                    if (uniqueCollapses.length === 0) {
+                        doScroll();
+                        return;
+                    }
+
+                    let pending = uniqueCollapses.length;
+                    uniqueCollapses.forEach(function (collapseEl) {
+                        if ($(collapseEl).hasClass('show')) {
+                            pending--;
+                            if (pending === 0) setTimeout(doScroll, 50);
+                            return;
+                        }
+
+                        $(collapseEl).one('shown.bs.collapse', function () {
+                            pending--;
+                            if (pending === 0) setTimeout(doScroll, 50);
+                        });
+                        $(collapseEl).collapse('show');
                     });
-                    $(col).collapse('show');
-                });
+                }
+
+                const targetElement = document.getElementById(elementId);
+                if (!targetElement) {
+                    setTimeout(function () {
+                        expandAncestorsAndScroll();
+                    }, 250);
+                    return;
+                }
+
+                expandAncestorsAndScroll(targetElement);
             }, 600);
         }
 
@@ -351,6 +403,20 @@ $pctGlobal   = round(($completados / 6) * 100);
                 var msg = xhr.responseJSON?.message || 'Ocurrió un error al cargar la certificación MEF.';
                 $('#modalCertificacionMefBody').html('<div class="alert alert-danger mb-0"><i class="fa fa-exclamation-circle mr-2"></i> ' + msg + '</div>');
             });
+        });
+    });
+
+    // Modal detalle indicador
+    $(document).on('click', '.btn-ver-indicador', function() {
+        const id      = $(this).data('id');
+        const profile = $(this).data('profile');
+        const url     = `/pei-profiles/${profile}/indicadores/${id}/detalle`;
+        $('#modalIndicadorDetalleBody').html('<div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-2x"></i></div>');
+        $('#modalIndicadorDetalle').modal('show');
+        $.get(url, function(html) {
+            $('#modalIndicadorDetalleBody').html(html);
+        }).fail(function() {
+            $('#modalIndicadorDetalleBody').html('<div class="alert alert-danger m-3">Error al cargar la ficha del indicador.</div>');
         });
     });
 </script>
