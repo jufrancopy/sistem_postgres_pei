@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Gamification\GamificationPoint;
 use App\Services\GamificationService;
@@ -74,8 +75,18 @@ class GamificationAdminController extends Controller
 
         $groupIds = \App\Admin\Globales\Group::descendantsAndSelf($group->id)->pluck('id')->toArray();
 
+        // Usuarios por group_id directo en users
+        $porGroupId = User::whereIn('group_id', $groupIds)->pluck('id');
+
+        // Usuarios por tabla pivot groups_has_members
+        $porPivot = \DB::table('groups_has_members')
+            ->whereIn('group_id', $groupIds)
+            ->pluck('user_id');
+
+        $userIds = $porGroupId->merge($porPivot)->unique()->values();
+
         $q = $request->get('q', '');
-        $users = User::whereIn('group_id', $groupIds)
+        $users = User::whereIn('id', $userIds)
             ->when($q, fn($query) => $query->where('name', 'ILIKE', "%{$q}%"))
             ->orderBy('name')
             ->limit(20)
