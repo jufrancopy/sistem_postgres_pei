@@ -72,7 +72,7 @@ class GamificationAdminController extends Controller
             return response()->json([]);
         }
 
-        $groupIds = $group->descendantsAndSelf()->pluck('id')->toArray();
+        $groupIds = \App\Admin\Globales\Group::descendantsAndSelf($group->id)->pluck('id')->toArray();
 
         $q = $request->get('q', '');
         $users = User::whereIn('group_id', $groupIds)
