@@ -25,19 +25,25 @@
 
                 <div class="form-group">
                     <label class="font-weight-bold small"><i class="fa fa-coins mr-1"></i>Puntos a otorgar</label>
-                    <div class="d-flex" style="gap:10px">
-                        <button type="button" class="btn btn-outline-secondary btn-puntos flex-fill py-3" data-pts="5">
-                            <div style="font-size:1.5rem;font-weight:800;color:#f59e0b">5</div>
-                            <div style="font-size:.7rem" class="text-muted">Tarea simple</div>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-puntos flex-fill py-3" data-pts="10">
-                            <div style="font-size:1.5rem;font-weight:800;color:#10b981">10</div>
-                            <div style="font-size:.7rem" class="text-muted">Tarea moderada</div>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-puntos flex-fill py-3" data-pts="50">
-                            <div style="font-size:1.5rem;font-weight:800;color:#6366f1">50</div>
-                            <div style="font-size:.7rem" class="text-muted">Tarea destacada</div>
-                        </button>
+                    <div class="row no-gutters" style="gap:0">
+                        <div class="col-4 pr-1">
+                            <button type="button" class="btn btn-outline-secondary btn-puntos w-100 py-2" data-pts="5">
+                                <div style="font-size:1.3rem;font-weight:800;color:#f59e0b">5</div>
+                                <div style="font-size:.68rem" class="text-muted">Simple</div>
+                            </button>
+                        </div>
+                        <div class="col-4 px-1">
+                            <button type="button" class="btn btn-outline-secondary btn-puntos w-100 py-2" data-pts="10">
+                                <div style="font-size:1.3rem;font-weight:800;color:#10b981">10</div>
+                                <div style="font-size:.68rem" class="text-muted">Moderada</div>
+                            </button>
+                        </div>
+                        <div class="col-4 pl-1">
+                            <button type="button" class="btn btn-outline-secondary btn-puntos w-100 py-2" data-pts="50">
+                                <div style="font-size:1.3rem;font-weight:800;color:#6366f1">50</div>
+                                <div style="font-size:.68rem" class="text-muted">Destacada</div>
+                            </button>
+                        </div>
                     </div>
                     <input type="hidden" id="pm_puntos" value="">
                     <div id="pm_puntos_preview" class="mt-2 text-center" style="display:none">
