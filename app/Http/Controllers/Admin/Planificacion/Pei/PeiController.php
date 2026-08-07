@@ -17,6 +17,8 @@ use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaPerfil;
 
 use App\Charts\ActionForDependencies;
+use App\Models\Planificacion\PeiProfileEdit;
+use App\Services\GamificationService;
 
 
 class PeiController extends Controller
@@ -362,6 +364,34 @@ class PeiController extends Controller
                     'ri_recursos_gs'       => $request->ri_recursos_gs ?: null,
                     'ri_metas'             => json_encode($request->input('ri_metas', [])),
                 ]
+            );
+        }
+
+        // Registrar editor y otorgar puntos solo en actualizaciones (no en creación)
+        if (!$profile->wasRecentlyCreated) {
+            $profile->updated_by = $user->id;
+            $profile->saveQuietly();
+
+            PeiProfileEdit::create([
+                'pei_profile_id' => $profile->id,
+                'user_id'        => $user->id,
+            ]);
+
+            // Resolver el PEI raíz para asociar el pei_profile_id correcto al punto
+            $peiRaizId = $profile->level === 'master'
+                ? $profile->id
+                : (PeiProfile::where('_lft', '<=', $profile->_lft)
+                    ->where('_rgt', '>=', $profile->_rgt)
+                    ->where('level', 'master')
+                    ->value('id') ?? $profile->id);
+
+            app(GamificationService::class)->awardPoints(
+                $user,
+                'pei_edit',
+                'Edición de elemento PEI: ' . \Illuminate\Support\Str::limit(strip_tags($profile->name), 40),
+                10,
+                $profile,
+                (string) $peiRaizId
             );
         }
 

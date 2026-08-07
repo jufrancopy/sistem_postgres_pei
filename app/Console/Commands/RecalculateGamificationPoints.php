@@ -15,6 +15,7 @@ use App\Admin\Globales\ActivityTaskComment;
 use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
 use App\Models\Riiss\Evaluacion;
+use App\Models\Planificacion\PeiProfileEdit;
 
 class RecalculateGamificationPoints extends Command
 {
@@ -88,6 +89,7 @@ class RecalculateGamificationPoints extends Command
         $this->collectRiissAsignaciones();
         $this->collectRiissEvaluaciones($gamificationService);
         $this->collectChatMessages();
+        $this->collectPeiEdits();
 
         $this->info('Insertando ' . count($this->pendingRows) . ' registros de puntos...');
         $inserted = $gamificationService->insertPointsBatch($this->pendingRows);
@@ -383,6 +385,28 @@ class RecalculateGamificationPoints extends Command
                     );
                 }
             }
+        }
+    }
+
+    protected function collectPeiEdits(): void
+    {
+        $this->info('Recopilando ediciones de elementos PEI...');
+
+        foreach (PeiProfileEdit::with('user')->cursor() as $edit) {
+            if (!$this->usersById->has($edit->user_id)) {
+                continue;
+            }
+
+            $this->queuePoint(
+                $edit->user_id,
+                'pei_edit',
+                'Edición de elemento PEI',
+                10,
+                PeiProfileEdit::class,
+                $edit->id,
+                (string) $edit->pei_profile_id,
+                $edit->created_at?->toDateTimeString()
+            );
         }
     }
 }

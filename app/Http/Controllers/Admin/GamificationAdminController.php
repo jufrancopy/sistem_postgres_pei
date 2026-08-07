@@ -12,6 +12,7 @@ use App\Models\Gamification\GamificationPoint;
 use App\Services\GamificationService;
 use App\Notifications\PuntosManualNotification;
 use App\Admin\Planificacion\Pei\PeiProfile;
+use App\Models\Planificacion\PeiProfileEdit;
 
 class GamificationAdminController extends Controller
 {
@@ -174,6 +175,28 @@ class GamificationAdminController extends Controller
             ->values();
 
         return response()->json($motivos);
+    }
+
+    /**
+     * Devuelve los editores de un nodo PEI con conteo y última edición.
+     * Usado para visualizar quién ha editado cada elemento del plan.
+     */
+    public function editoresPorNodo(Request $request, $profileId)
+    {
+        $edits = PeiProfileEdit::with('user:id,name')
+            ->where('pei_profile_id', $profileId)
+            ->orderByDesc('created_at')
+            ->get()
+            ->groupBy('user_id')
+            ->map(fn($group) => [
+                'user_id'       => $group->first()->user_id,
+                'name'          => $group->first()->user?->name ?? '—',
+                'total_edits'   => $group->count(),
+                'ultima_edicion'=> $group->first()->created_at->format('d/m/Y H:i'),
+            ])
+            ->values();
+
+        return response()->json($edits);
     }
 
     public function recalculate(Request $request)

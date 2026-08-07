@@ -69,6 +69,7 @@ class PeiProfile extends Model
         'ri_metas',
         'public_token',
         'is_active',
+        'updated_by',
     ];
 
     protected $casts = [
@@ -230,6 +231,16 @@ class PeiProfile extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function edits()
+    {
+        return $this->hasMany(\App\Models\Planificacion\PeiProfileEdit::class, 'pei_profile_id');
     }
 
     public function fodaPerfil()
