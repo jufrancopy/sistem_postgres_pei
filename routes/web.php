@@ -434,6 +434,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{profileId}/indicadores/buscar',           'Admin\Planificacion\IndicadorController@buscar')->name('pei.indicadores.buscar');
     Route::get('pei-profiles/{profileId}/indicadores/siguiente-codigo', 'Admin\Planificacion\IndicadorController@siguienteCodigo')->name('pei.indicadores.siguienteCodigo');
     Route::get('pei-profiles/{profileId}/indicadores/modulo',           'Admin\Planificacion\IndicadorController@modulo')->name('pei.indicadores.modulo');
+    Route::get('pei-profiles/{profileId}/indicadores/{id}/detalle',     'Admin\Planificacion\IndicadorController@detalle')->name('pei.indicadores.detalle');
     Route::get('pei-profiles/{profileId}/indicadores',              'Admin\Planificacion\IndicadorController@porPerfil')->name('pei.indicadores.index');
     Route::post('pei-profiles/{profileId}/indicadores',             'Admin\Planificacion\IndicadorController@store')->name('pei.indicadores.store');
     Route::get('pei/actividades/buscar',                            'Admin\Planificacion\Pei\PeiController@buscarActividades')->name('pei.actividades.buscar');

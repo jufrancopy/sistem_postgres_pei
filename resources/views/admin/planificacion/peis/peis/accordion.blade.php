@@ -84,12 +84,14 @@
                     </span>
                     @endif
                     @if($axi->indicador)
-                    <a href="{{ route('pei.indicadores.modulo', $profile->id) }}"
-                       class="badge badge-light text-primary border"
-                       style="font-size:.68rem"
-                       title="Indicador: {{ $axi->indicador->nombre }}">
+                    <button type="button"
+                       class="badge badge-light text-primary border btn-ver-indicador"
+                       style="font-size:.68rem; cursor:pointer;"
+                       data-id="{{ $axi->indicador->id }}"
+                       data-profile="{{ $profile->id }}"
+                       title="Ver ficha: {{ $axi->indicador->nombre }}">
                         <i class="fa fa-ruler-combined mr-1"></i>[{{ $axi->indicador->codigoCompleto() }}] {{ \Illuminate\Support\Str::limit($axi->indicador->nombre, 35) }}
-                    </a>
+                    </button>
                     @endif
                     <button class="btn btn-sm btn-outline-light py-0 px-1 btnReordenar" data-id="{{ $axi->id }}" data-dir="up" title="Subir">
                         <i class="fa fa-arrow-up" style="font-size:.7rem"></i>
@@ -220,12 +222,14 @@
                                 </span>
                                 @endif
                                 @if($goal->indicador)
-                                <a href="{{ route('pei.indicadores.modulo', $profile->id) }}"
-                                   class="badge badge-info text-white mr-1"
-                                   style="font-size:.65rem"
-                                   title="Indicador: {{ $goal->indicador->nombre }}">
+                                <button type="button"
+                                   class="badge badge-info text-white mr-1 btn-ver-indicador"
+                                   style="font-size:.65rem; cursor:pointer;"
+                                   data-id="{{ $goal->indicador->id }}"
+                                   data-profile="{{ $profile->id }}"
+                                   title="Ver ficha: {{ $goal->indicador->nombre }}">
                                     <i class="fa fa-ruler-combined mr-1"></i>[{{ $goal->indicador->codigoCompleto() }}] {{ \Illuminate\Support\Str::limit($goal->indicador->nombre, 30) }}
-                                </a>
+                                </button>
                                 @endif
                                 <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2"
                                         onclick="event.stopPropagation(); openChatWithContext('PeiGoal', '{{ $goal->id }}', 'Meta: {{ e(strip_tags($goal->name)) }}', '{{ url()->current() }}#goal-{{ $goal->id }}')"

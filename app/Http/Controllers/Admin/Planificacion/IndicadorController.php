@@ -56,6 +56,14 @@ class IndicadorController extends Controller
         return view('admin.planificacion.indicadores.modulo', compact('profile', 'indicadores'));
     }
 
+    // GET /pei-profiles/{profileId}/indicadores/{id}/detalle — HTML para modal
+    public function detalle(string $profileId, int $id)
+    {
+        $profile   = PeiProfile::findOrFail($profileId);
+        $indicador = Indicador::where('pei_profile_id', $profileId)->findOrFail($id);
+        return view('admin.planificacion.indicadores._modal_detalle', compact('profile', 'indicador'));
+    }
+
     // GET /pei-profiles/{profileId}/indicadores/buscar?q=texto&ambito=xxx
     public function buscar(Request $request, string $profileId)
     {
@@ -118,6 +126,36 @@ class IndicadorController extends Controller
             'dependencia_responsable'=> $i->dependencia_responsable,
             'comentarios'            => $i->comentarios,
         ]));
+    }
+
+    // GET /pei-profiles/{profileId}/indicadores/{id}
+    public function show(string $profileId, int $id)
+    {
+        $indicador = Indicador::where('pei_profile_id', $profileId)->findOrFail($id);
+
+        return response()->json([
+            'id'                     => $indicador->id,
+            'codigo'                 => $indicador->codigoCompleto(),
+            'codigo_letras'          => $indicador->codigo_letras,
+            'codigo_numeros'         => $indicador->codigo_numeros,
+            'nombre'                 => $indicador->nombre,
+            'dimension'              => $indicador->dimension,
+            'ambito'                 => $indicador->ambito,
+            'descripcion'            => $indicador->descripcion,
+            'variables'              => $indicador->variables,
+            'formula'                => $indicador->formula,
+            'unidad_medida'          => $indicador->unidad_medida,
+            'frecuencia'             => $indicador->frecuencia,
+            'frecuencia_otro'        => $indicador->frecuencia_otro,
+            'cobertura'              => $indicador->cobertura,
+            'sentido'                => $indicador->sentido,
+            'linea_base_anio'        => $indicador->linea_base_anio,
+            'linea_base_valor'       => $indicador->linea_base_valor,
+            'metas'                  => $indicador->metas ?? [],
+            'fuente'                 => $indicador->fuente,
+            'dependencia_responsable'=> $indicador->dependencia_responsable,
+            'comentarios'            => $indicador->comentarios,
+        ]);
     }
 
     // POST /pei-profiles/{profileId}/indicadores
