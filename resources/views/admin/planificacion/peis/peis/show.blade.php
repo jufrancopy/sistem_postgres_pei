@@ -892,6 +892,7 @@
                             $axisStrategies.select2('destroy');
                         }
                         $axisStrategies.select2({
+                            dropdownParent: $axisStrategies.closest('.form-group'),
                             allowClear: true,
                             placeholder: 'Seleccioná las estrategias FODA...',
                             ajax: {
@@ -946,6 +947,7 @@
                     }
 
                     selectMarcos.select2({
+                        dropdownParent: selectMarcos.closest('.form-group'),
                         placeholder: 'Buscar o crear marco (PND, ODS, ...)...',
                         allowClear: true,
                         tags: true,
@@ -979,7 +981,7 @@
                             $bscSelect.select2('destroy');
                         }
                         $bscSelect.select2({
-                            dropdownParent: $('#ajaxAxisModal'),
+                            dropdownParent: $bscSelect.closest('.form-group'),
                             placeholder: '— Sin perspectiva BSC —',
                             allowClear: true,
                         });
@@ -1005,9 +1007,12 @@
                     }
 
                     // Vinculación presupuestaria del RI
-                    $('#axis_ri_presupuestario').val(typeBtn === 'edit' ? (data.profile.ri_presupuestario || '') : '');
-                    $('#axis_ri_programa').val(typeBtn === 'edit' ? (data.profile.ri_programa || '') : '');
-                    $('#axis_ri_recursos_gs').val(typeBtn === 'edit' ? (data.profile.ri_recursos_gs || '') : '');
+                    var riPres = typeBtn === 'edit' ? (data.profile.ri_presupuestario || '') : '';
+                    var riProg = typeBtn === 'edit' ? (data.profile.ri_programa || '') : '';
+                    var riRec  = typeBtn === 'edit' ? (data.profile.ri_recursos_gs || '') : '';
+                    $('#axis_ri_presupuestario').val(riPres);
+                    $('#axis_ri_programa').val(riProg);
+                    $('#axis_ri_recursos_gs').val(riRec);
 
                     // Metas dinámicas del RI
                     $('#riMetasContainer').empty();
@@ -1026,13 +1031,27 @@
                         );
                     }
 
+                    var hasRiMetas = false;
                     if (typeBtn === 'edit' && data.profile.ri_metas) {
                         var riMetasData = typeof data.profile.ri_metas === 'string'
                             ? JSON.parse(data.profile.ri_metas)
                             : data.profile.ri_metas;
                         if (Array.isArray(riMetasData) && riMetasData.length) {
+                            hasRiMetas = true;
                             riMetasData.forEach(function(m) { agregarRiMeta(m.anio, m.valor); });
                         }
+                    }
+
+                    // Estado inicial del acordeón de Vinculación Presupuestaria
+                    var hasRiData = !!(riPres || riProg || riRec || hasRiMetas);
+                    if (typeBtn === 'edit' && hasRiData) {
+                        $('#riVinculacionCollapse').collapse('show');
+                        $('#ri_vinculacion_toggle_label').text('Clic para plegar');
+                        $('#ri_vinculacion_block .ri-chevron-icon').css('transform', 'rotate(180deg)');
+                    } else {
+                        $('#riVinculacionCollapse').collapse('hide');
+                        $('#ri_vinculacion_toggle_label').text('Clic para desplegar');
+                        $('#ri_vinculacion_block .ri-chevron-icon').css('transform', 'rotate(0deg)');
                     }
 
                     // Botón agregar meta RI
@@ -1047,7 +1066,7 @@
                         $axisIndicadorSel.select2('destroy');
                     }
                     $axisIndicadorSel.select2({
-                        dropdownParent: $('#ajaxAxisModal'),
+                        dropdownParent: $axisIndicadorSel.closest('.form-group'),
                         placeholder: 'Buscar indicador por código o nombre...',
                         allowClear: true,
                         minimumInputLength: 0,
@@ -1399,7 +1418,7 @@
                         $goalsIndicadorSel.select2('destroy');
                     }
                     $goalsIndicadorSel.select2({
-                        dropdownParent: $('#ajaxGoalsModal'),
+                        dropdownParent: $goalsIndicadorSel.closest('.form-group'),
                         placeholder: 'Buscar indicador por código o nombre...',
                         allowClear: true,
                         minimumInputLength: 0,
@@ -1523,7 +1542,7 @@
 
                     var rootId = '{{ $orgRaizId ?? "" }}';
                     $responsibles.select2({
-                        dropdownParent: $('#ajaxActionsModal'),
+                        dropdownParent: $responsibles.closest('.form-group'),
                         placeholder: 'Buscar dependencia responsable...',
                         allowClear: true,
                         minimumInputLength: 1,
@@ -1553,7 +1572,7 @@
                         $indicadorSel.select2('destroy');
                     }
                     $indicadorSel.select2({
-                        dropdownParent: $('#ajaxActionsModal'),
+                        dropdownParent: $indicadorSel.closest('.form-group'),
                         placeholder: 'Buscar indicador por código o nombre...',
                         allowClear: true,
                         minimumInputLength: 0,
@@ -2608,6 +2627,16 @@ $(document).on('click', '.btnAgregarRiMetaBtn', function() {
 });
 $(document).on('click', '.ri-meta-remove', function() {
     $(this).closest('.ri-meta-row').remove();
+});
+
+// Eventos de toggle para acordeón Vinculación Presupuestaria
+$(document).on('show.bs.collapse', '#riVinculacionCollapse', function() {
+    $('#ri_vinculacion_toggle_label').text('Clic para plegar');
+    $('#ri_vinculacion_block .ri-chevron-icon').css('transform', 'rotate(180deg)');
+});
+$(document).on('hide.bs.collapse', '#riVinculacionCollapse', function() {
+    $('#ri_vinculacion_toggle_label').text('Clic para desplegar');
+    $('#ri_vinculacion_block .ri-chevron-icon').css('transform', 'rotate(0deg)');
 });
 $('#btnNotificarTodosPei').on('click', function() {
     var profileId = $(this).data('profile');

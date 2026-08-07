@@ -235,63 +235,78 @@
                         <div id="axis_ri_sugerencias" class="d-flex flex-wrap mt-1" style="gap:4px"></div>
                     </div>
 
-                    {{-- ── Vinculación Presupuestaria del Resultado Intermedio ── --}}
-                    <div class="card bg-light mb-3" id="ri_vinculacion_block">
-                        <div class="card-body">
-                            <p class="text-uppercase font-weight-bold text-muted mb-3" style="font-size:.68rem; letter-spacing:.05em; border-bottom:1px solid #dee2e6; padding-bottom:.5rem">
-                                <i class="fa fa-coins mr-1"></i> Vinculación Presupuestaria (2)
-                            </p>
-
-                            <div class="mb-3">
-                                <label class="small font-weight-bold d-block" style="margin-bottom:.4rem">Resultado Intermedio Presupuestario (2.1)</label>
-                                <input type="text" id="axis_ri_presupuestario" name="ri_presupuestario"
-                                       class="form-control form-control-sm"
-                                       placeholder="Descripción del resultado presupuestario...">
-                                <small class="text-muted d-block" style="font-size:.72rem;margin-top:.3rem">
-                                    Ej: Trabajadores dependientes que aportan al seguro social...
-                                </small>
+                    {{-- ── Vinculación Presupuestaria del Resultado Intermedio (Acordeón) ── --}}
+                    <div class="card border mb-3 shadow-none" id="ri_vinculacion_block" style="border-radius: 8px; border-color: #dee2e6;">
+                        <div class="card-header bg-light d-flex align-items-center justify-content-between py-2 px-3"
+                             style="cursor: pointer; user-select: none;"
+                             data-toggle="collapse"
+                             data-target="#riVinculacionCollapse"
+                             aria-expanded="false"
+                             aria-controls="riVinculacionCollapse">
+                            <div class="d-flex align-items-center">
+                                <i class="fa fa-coins mr-2 text-warning"></i>
+                                <span class="font-weight-bold text-dark" style="font-size:.8rem; letter-spacing:.02em">Vinculación Presupuestaria (2)</span>
+                                <span class="badge badge-light border ml-2" style="font-size:.65rem; font-weight:400">opcional</span>
                             </div>
-
-                            <div class="mb-3">
-                                <label class="small font-weight-bold d-block" style="margin-bottom:.4rem">Programa Presupuestario (2.2)</label>
-                                <input type="text" id="axis_ri_programa" name="ri_programa"
-                                       class="form-control form-control-sm"
-                                       placeholder="Nombre del programa y actividad...">
-                                <small class="text-muted d-block" style="font-size:.72rem;margin-top:.3rem">
-                                    Ej: Programa, Central — Actividad: Servicios de Prestaciones Sanitarias
-                                </small>
+                            <div class="d-flex align-items-center text-muted">
+                                <span class="mr-2 d-none d-sm-inline" style="font-size:.72rem;" id="ri_vinculacion_toggle_label">Clic para desplegar</span>
+                                <i class="fa fa-chevron-down ri-chevron-icon" style="font-size:.72rem; transition: transform .2s ease;"></i>
                             </div>
+                        </div>
 
-                            <div class="mb-3">
-                                <label class="small font-weight-bold d-block" style="margin-bottom:.4rem">Recursos Asignados (2.3) — Gs.</label>
-                                <input type="number" id="axis_ri_recursos_gs" name="ri_recursos_gs"
-                                       class="form-control form-control-sm" min="0" step="1"
-                                       placeholder="0">
-                                <small class="text-muted d-block" style="font-size:.72rem;margin-top:.3rem">
-                                    Ingresar sin puntos ni comas. Ej: 6341255316165
-                                </small>
-                            </div>
-
-                            {{-- Metas dinámicas del Resultado Intermedio --}}
-                            <div class="mb-0">
-                                <div class="d-flex align-items-center mb-2">
-                                    <label class="small font-weight-bold mb-0">
-                                        <i class="fa fa-bullseye mr-1"></i> Metas del Resultado Intermedio
-                                    </label>
-                                    <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 ml-auto btnAgregarRiMetaBtn" style="font-size:.72rem">
-                                        <i class="fa fa-plus mr-1"></i> Agregar período
-                                    </button>
+                        <div id="riVinculacionCollapse" class="collapse">
+                            <div class="card-body bg-white border-top">
+                                <div class="mb-3">
+                                    <label class="small font-weight-bold d-block" style="margin-bottom:.4rem">Resultado Intermedio Presupuestario (2.1)</label>
+                                    <input type="text" id="axis_ri_presupuestario" name="ri_presupuestario"
+                                           class="form-control form-control-sm"
+                                           placeholder="Descripción del resultado presupuestario...">
+                                    <small class="text-muted d-block" style="font-size:.72rem;margin-top:.3rem">
+                                        Ej: Trabajadores dependientes que aportan al seguro social...
+                                    </small>
                                 </div>
-                                <small class="text-muted d-block mb-2" style="font-size:.72rem">
-                                    El valor puede ser porcentaje, número entero o decimal (ej: 85%, 1200, 3.5).
-                                </small>
-                                <div id="riMetasContainer" class="row no-gutters" style="gap:.3rem 0"></div>
+
+                                <div class="mb-3">
+                                    <label class="small font-weight-bold d-block" style="margin-bottom:.4rem">Programa Presupuestario (2.2)</label>
+                                    <input type="text" id="axis_ri_programa" name="ri_programa"
+                                           class="form-control form-control-sm"
+                                           placeholder="Nombre del programa y actividad...">
+                                    <small class="text-muted d-block" style="font-size:.72rem;margin-top:.3rem">
+                                        Ej: Programa, Central — Actividad: Servicios de Prestaciones Sanitarias
+                                    </small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="small font-weight-bold d-block" style="margin-bottom:.4rem">Recursos Asignados (2.3) — Gs.</label>
+                                    <input type="number" id="axis_ri_recursos_gs" name="ri_recursos_gs"
+                                           class="form-control form-control-sm" min="0" step="1"
+                                           placeholder="0">
+                                    <small class="text-muted d-block" style="font-size:.72rem;margin-top:.3rem">
+                                        Ingresar sin puntos ni comas. Ej: 6341255316165
+                                    </small>
+                                </div>
+
+                                {{-- Metas dinámicas del Resultado Intermedio --}}
+                                <div class="mb-0">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <label class="small font-weight-bold mb-0">
+                                            <i class="fa fa-bullseye mr-1"></i> Metas del Resultado Intermedio
+                                        </label>
+                                        <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 ml-auto btnAgregarRiMetaBtn" style="font-size:.72rem">
+                                            <i class="fa fa-plus mr-1"></i> Agregar período
+                                        </button>
+                                    </div>
+                                    <small class="text-muted d-block mb-2" style="font-size:.72rem">
+                                        El valor puede ser porcentaje, número entero o decimal (ej: 85%, 1200, 3.5).
+                                    </small>
+                                    <div id="riMetasContainer" class="row no-gutters" style="gap:.3rem 0"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     {{-- ── Estrategias del Cruce de Ambientes (FODA) ── --}}
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-3 position-relative">
                         {{ Form::label('axis_strategies', 'Estrategias del Cruce de Ambientes (FODA):', ['class' => 'control-label font-weight-bold']) }}
                         <small class="form-text text-muted mb-1">
                             Seleccioná las estrategias FO/FA/DO/DA que fundamentan esta estrategia institucional.
@@ -304,7 +319,7 @@
                     </div>
 
                     {{-- ── Marcos Referenciales (PND, ODS, etc.) ── --}}
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-3 position-relative">
                         <label class="control-label font-weight-bold">
                             <i class="fa fa-link mr-1"></i> Marcos Referenciales
                         </label>
@@ -316,7 +331,7 @@
                     </div>
 
                     {{-- ── Perspectiva BSC (opcional) ── --}}
-                    <div class="form-group mb-3" id="axis_bsc_block" style="{{ isset($niveles['bsc_level']) && ($niveles['bsc_level'] === 'goal' || $niveles['bsc_level'] === 'none') ? 'display:none !important;' : '' }}">
+                    <div class="form-group mb-3 position-relative" id="axis_bsc_block" style="{{ isset($niveles['bsc_level']) && ($niveles['bsc_level'] === 'goal' || $niveles['bsc_level'] === 'none') ? 'display:none !important;' : '' }}">
                         <label class="control-label font-weight-bold">
                             <i class="fa fa-chart-bar mr-1 text-primary"></i> Perspectiva BSC
                             <span class="badge badge-light border ml-1" style="font-size:.68rem; font-weight:400">opcional</span>
@@ -346,7 +361,7 @@
                             <i class="fa fa-external-link-alt mr-1"></i> Gestionar Indicadores
                         </a>
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-3 position-relative">
                         <small class="form-text text-muted mb-1">
                             Seleccioná el indicador de la ficha técnica que mide este objetivo estratégico (ámbito: Objetivo Estratégico).
                         </small>
@@ -442,7 +457,7 @@
                             <i class="fa fa-external-link-alt mr-1"></i> Gestionar Indicadores
                         </a>
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-3 position-relative">
                         <small class="form-text text-muted mb-1">
                             Seleccioná el indicador de la ficha técnica que mide este objetivo específico (ámbito: Objetivo Específico).
                         </small>
@@ -555,7 +570,7 @@
                             <i class="fa fa-external-link-alt mr-1"></i> Gestionar Indicadores
                         </a>
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-3 position-relative">
                         <small class="form-text text-muted mb-1">
                             Seleccioná el indicador de la ficha técnica que mide esta acción.
                             Si no existe aún, crealo desde "Gestionar Indicadores".
