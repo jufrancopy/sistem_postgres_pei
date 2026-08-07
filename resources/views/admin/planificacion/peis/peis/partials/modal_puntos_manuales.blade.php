@@ -233,8 +233,8 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#pm_puntos').val('');
         $('#pm_puntos_preview').hide();
         $('#modalPuntosManuales .btn-puntos').removeClass('active').css({'border-color':'', 'box-shadow':''});
-        $('#pm_motivos_sugeridos').empty();
         $('#btnConfirmarPuntos').prop('disabled', true);
+        renderMotivosSugeridos('');
     }
 
     function resetModalPM() {
