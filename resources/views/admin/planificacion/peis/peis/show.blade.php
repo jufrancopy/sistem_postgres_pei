@@ -57,6 +57,10 @@
                     title="Otorgar puntos manuales a un funcionario en este plan">
                 <i class="fa fa-star mr-1"></i> Otorgar Puntos
             </button>
+            <button type="button" id="btnRecalcularGamificacionPei" class="btn btn-sm btn-outline-warning ml-2 font-weight-bold"
+                    title="Recalcular retroactivamente los puntos e insignias de este plan">
+                <i class="fa fa-sync-alt mr-1"></i> Recalcular Puntos
+            </button>
             @endrole
         </div>
 
@@ -481,6 +485,39 @@
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
+            });
+
+            // ── Recalcular Puntos ────────────────────────────────────────────
+            $('#btnRecalcularGamificacionPei').on('click', function() {
+                var btn = $(this);
+                Swal.fire({
+                    title: '¿Recalcular Puntos e Insignias?',
+                    html: '<p class="text-muted small mb-0">Este proceso actualizará los puntos e insignias del equipo de este plan basándose en el historial.</p>',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#fb8c00',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fa fa-sync-alt mr-1"></i> Sí, recalcular',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (!result.isConfirmed) return;
+                    var originalHtml = btn.html();
+                    btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Recalculando...');
+                    Swal.fire({ title: 'Recalculando puntos...', text: 'Por favor aguardá unos segundos.', allowOutsideClick: false, allowEscapeKey: false, didOpen: () => Swal.showLoading() });
+                    $.ajax({
+                        url: '{{ route("gamification.recalculate") }}',
+                        type: 'POST',
+                        data: { _token: '{{ csrf_token() }}' },
+                        success: function(res) {
+                            btn.prop('disabled', false).html(originalHtml);
+                            Swal.fire(res.success ? '¡Recálculo Exitoso!' : 'Atención', res.message, res.success ? 'success' : 'warning');
+                        },
+                        error: function(xhr) {
+                            btn.prop('disabled', false).html(originalHtml);
+                            Swal.fire('Error', xhr.responseJSON ? xhr.responseJSON.message : 'Error en la solicitud.', 'error');
+                        }
+                    });
+                });
             });
 
             // Initilizaton JSTree

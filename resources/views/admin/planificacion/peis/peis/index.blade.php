@@ -27,11 +27,6 @@
                             </select>
                         </div>
                         <div>
-                            @if(auth()->user()->hasRole('Administrador'))
-                            <button type="button" id="btnRecalcularGamificacionPei" class="btn btn-outline-warning mb-2 mr-2 font-weight-bold" title="Recalcular retroactivamente todos los puntos e insignias de gamificación">
-                                <i class="fa fa-sync-alt mr-1"></i> Recalcular Puntos
-                            </button>
-                            @endif
                             @hasanyrole('Administrador|Coordinador de Planificación')
                             <a class="btn btn-outline-info mb-2 mr-2 font-weight-bold" href="{{ route('globales.roles.guide') }}" title="Ver guía de permisos y roles">
                                 <i class="fa fa-book-open mr-1"></i> Guía de Roles y Permisos
@@ -370,85 +365,6 @@
                 table.draw();
             });
 
-            // Handler para Recalcular Puntos de Equipos (Administrador con SweetAlert2)
-            $('#btnRecalcularGamificacionPei').on('click', function() {
-                var btn = $(this);
-
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: '¿Recalcular Puntos e Insignias?',
-                        html: '<p class="text-muted small mb-0">Este proceso actualizará los puntos e insignias de todos los equipos basándose en el historial y PEIs activos.</p>',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#fb8c00',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: '<i class="fa fa-sync-alt mr-1"></i> Sí, recalcular',
-                        cancelButtonText: 'Cancelar'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            ejecutarRecalculoPei(btn);
-                        }
-                    });
-                } else {
-                    if (confirm('¿Deseas recalcular retroactivamente todos los puntos e insignias de tus equipos de trabajo?')) {
-                        ejecutarRecalculoPei(btn);
-                    }
-                }
-            });
-
-            function ejecutarRecalculoPei(btn) {
-                var originalHtml = btn.html();
-                btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Recalculando...');
-
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: 'Recalculando puntos...',
-                        text: 'Por favor aguarda unos segundos mientras procesamos el historial.',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        didOpen: () => { Swal.showLoading(); }
-                    });
-                }
-
-                $.ajax({
-                    url: '{{ route("gamification.recalculate") }}',
-                    type: 'POST',
-                    data: { _token: '{{ csrf_token() }}' },
-                    success: function(res) {
-                        btn.prop('disabled', false).html(originalHtml);
-                        if (res.success) {
-                            if (typeof Swal !== 'undefined') {
-                                Swal.fire({
-                                    title: '¡Recálculo Exitoso!',
-                                    text: res.message,
-                                    icon: 'success',
-                                    confirmButtonColor: '#00acc1'
-                                }).then(() => {
-                                    table.draw(false);
-                                });
-                            } else {
-                                alert(res.message);
-                                table.draw(false);
-                            }
-                        } else {
-                            if (typeof Swal !== 'undefined') {
-                                Swal.fire('Atención', res.message, 'warning');
-                            } else {
-                                alert('Atención: ' + res.message);
-                            }
-                        }
-                    },
-                    error: function(xhr) {
-                        btn.prop('disabled', false).html(originalHtml);
-                        var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error en la solicitud.';
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire('Error', msg, 'error');
-                        } else {
-                            alert('Error: ' + msg);
-                        }
-                    }
-                });
-            }
             $('body').on('click', '.toggleStatus', function() {
                 var id = $(this).data('id');
                 var btn = $(this);
