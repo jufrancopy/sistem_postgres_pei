@@ -563,36 +563,87 @@ class PeiController extends Controller
 
     public function showDetailsTree($idProfile)
     {
-        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])->descendantsAndSelf($idProfile)->toTree();
-        $responsiblesActionsCount = [];
+        $root = PeiProfile::with([
+            'dependency', 'group', 'group.descendants', 'group.descendants.members',
+            'strategies',
+        ])->findOrFail($idProfile);
 
-        $allDescendants = PeiProfile::with('responsibles')
-            ->whereIn('id', PeiProfile::findOrFail($idProfile)->descendants()->pluck('id'))
-            ->where('level', 'action')
-            ->get();
-
-        foreach ($allDescendants as $action) {
-            foreach ($action->responsibles as $responsible) {
-                $responsiblesId = $responsible->id;
-                $responsiblesActionsCount[$responsiblesId] = ($responsiblesActionsCount[$responsiblesId] ?? 0) + 1;
-            }
-        }
-
-        foreach ($responsiblesActionsCount as $responsibleId => $actionsCount) {
-            $responsible = Organigrama::find($responsibleId);
-            ['dependency' => $responsible->dependency, 'actionsCount' => $actionsCount];
-        }
+        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies'])
+            ->descendantsAndSelf($idProfile)->toTree();
 
         // Etiquetas dinámicas
-        $root = PeiProfile::findOrFail($idProfile);
         $nivelesDefault = ['master' => 'PEI', 'axi' => 'Nivel 1', 'goal' => 'Nivel 2', 'action' => 'Acción'];
         $niveles = $nivelesDefault;
         if ($root->nivel_label) {
             $decoded = json_decode($root->nivel_label, true);
-            if (is_array($decoded)) {
-                $niveles = array_merge($nivelesDefault, $decoded);
+            if (is_array($decoded)) $niveles = array_merge($nivelesDefault, $decoded);
+        }
+
+        // Acciones con responsables
+        $allActions = PeiProfile::with(['responsibles', 'indicador'])
+            ->whereIn('id', $root->descendants()->pluck('id'))
+            ->where('level', 'action')
+            ->get();
+
+        // Acciones por responsable (para el pie chart)
+        $responsiblesActionsCount = [];
+        foreach ($allActions as $action) {
+            foreach ($action->responsibles as $responsible) {
+                $responsiblesActionsCount[$responsible->id] = ($responsiblesActionsCount[$responsible->id] ?? 0) + 1;
             }
         }
+
+        // Métricas generales
+        $totalEjes     = $root->descendants()->where('level', 'axi')->count();
+        $totalMetas    = $root->descendants()->where('level', 'goal')->count();
+        $totalAcciones = $root->descendants()->where('level', 'action')->count();
+
+        // Semáforos
+        $verdes    = $allActions->where('semaforo', 'verde')->count();
+        $amarillos = $allActions->where('semaforo', 'amarillo')->count();
+        $rojos     = $allActions->where('semaforo', 'rojo')->count();
+        $sinDatos  = $allActions->whereNotIn('semaforo', ['verde','amarillo','rojo'])->count();
+
+        // Indicadores
+        $accionesConIndicador = $allActions->whereNotNull('indicador_id')->count();
+        $pctIndicadores = $totalAcciones > 0 ? round(($accionesConIndicador / $totalAcciones) * 100) : 0;
+
+        // Responsables únicos
+        $responsablesUnicos = $allActions->flatMap(fn($a) => $a->responsibles)->unique('id')->count();
+
+        // Participantes del grupo
+        $totalMembers = 0;
+        if ($root->group) {
+            foreach ($root->group->descendants as $g) {
+                $totalMembers += $g->members->count();
+            }
+        }
+
+        // Misión / Visión / Valores
+        $tieneMision  = !empty(strip_tags($root->mision ?? ''));
+        $tieneVision  = !empty(strip_tags($root->vision ?? ''));
+        $tieneValores = !empty(strip_tags($root->values ?? ''));
+
+        // Marcos referenciales (de los ejes)
+        $axisNodes = $root->descendants()->where('level', 'axi')->pluck('id');
+        $totalMarcos = \DB::table('planificacion.pei_profile_marcos')->whereIn('pei_profile_id', $axisNodes)->count();
+
+        // MEE
+        $totalMeeMarcos  = \DB::table('planificacion.mee_marco_legal')->where('pei_profile_id', $idProfile)->count();
+        $totalMeeOfertas = \DB::table('planificacion.mee_oferta_servicios')->where('pei_profile_id', $idProfile)->count();
+
+        // Ejes con resultado intermedio
+        $ejesConRI = $root->descendants()->where('level', 'axi')->whereNotNull('resultado_intermedio')->count();
+
+        // Presupuesto total vinculado (PGN)
+        $presupuestoTotal = \DB::table('planificacion.pei_accion_pgn')
+            ->whereIn('pei_profile_id', $root->descendants()->pluck('id'))
+            ->sum('monto_vinculado_gs');
+
+        // Reportes de avance
+        $totalReportes = \DB::table('planificacion.pei_accion_reportes')
+            ->whereIn('pei_profile_id', $root->descendants()->pluck('id'))
+            ->count();
 
         return view('admin.planificacion.peis.peis.details', get_defined_vars());
     }
