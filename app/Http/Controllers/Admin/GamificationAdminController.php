@@ -223,9 +223,14 @@ class GamificationAdminController extends Controller
             }
 
             // Limpiar notificaciones de puntos manuales cuyo punto ya no existe
+            $validPointIds = GamificationPoint::where('action_type', 'manual_admin')->pluck('id');
+
             \App\Models\SystemNotification::where('tipo', 'puntos_manual')
-                ->whereNotNull('gamification_point_id')
-                ->whereNotIn('gamification_point_id', GamificationPoint::where('action_type', 'manual_admin')->pluck('id'))
+                ->where(function($q) use ($validPointIds) {
+                    // Sin FK (creadas antes del fix) o con FK que ya no existe
+                    $q->whereNull('gamification_point_id')
+                      ->orWhereNotIn('gamification_point_id', $validPointIds);
+                })
                 ->delete();
 
             Artisan::call('gamification:recalculate', $params);
