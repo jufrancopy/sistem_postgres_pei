@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Gamification\GamificationPoint;
 use App\Services\GamificationService;
+use App\Notifications\PuntosManualNotification;
+use App\Admin\Planificacion\Pei\PeiProfile;
 
 class GamificationAdminController extends Controller
 {
@@ -97,6 +99,19 @@ class GamificationAdminController extends Controller
 
         if (!$point) {
             return response()->json(['message' => 'No se pudo registrar el punto.'], 422);
+        }
+
+        // Enviar notificación por email al funcionario
+        $pei = PeiProfile::find($idProfile);
+        try {
+            $user->notify(new PuntosManualNotification(
+                puntos:      (int) $request->puntos,
+                motivo:      $request->motivo,
+                peiNombre:   $pei ? strip_tags($pei->name) : 'Plan PEI',
+                adminNombre: Auth::user()->name
+            ));
+        } catch (\Exception) {
+            // No interrumpir si el mail falla
         }
 
         return response()->json([
