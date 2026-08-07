@@ -1134,6 +1134,7 @@ $('#btnLimpiarFiltro').on('click', function(e) {
     var _reunionesData = [];
     var _filtroActivo  = 'todas';
     var _reunionesUrl  = "{{ url('admin/globales/activities') }}/" + activityId + '/reuniones';
+    var _dt            = null;
 
     var _statusLabels = {
         0: { label: 'Pendiente',   cls: 'badge-warning'   },
@@ -1142,84 +1143,111 @@ $('#btnLimpiarFiltro').on('click', function(e) {
         2: { label: 'Finalizada',  cls: 'badge-success'   },
     };
 
+    function buildActa(r) {
+        var acta = '';
+        if (r.evidencias && r.evidencias.length) {
+            r.evidencias.forEach(function(e) {
+                if (e.es_pdf) {
+                    acta += '<button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 btnVerActa mr-1 mb-1" ' +
+                        'data-url="' + e.url + '" data-titulo="' + (e.label || r.title) + '" style="font-size:.7rem">' +
+                        '<i class="fa fa-file-pdf mr-1"></i>' + (e.label || 'Acta') + '</button>';
+                } else {
+                    acta += '<a href="' + e.url + '" target="_blank" class="btn btn-sm btn-outline-secondary py-0 px-2 mr-1 mb-1" style="font-size:.7rem">' +
+                        '<i class="fa fa-link mr-1"></i>' + (e.label || 'Adjunto') + '</a>';
+                }
+            });
+        } else {
+            acta = '<button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 btnSubirActa" data-task-id="' + r.id + '" style="font-size:.7rem">' +
+                   '<i class="fa fa-upload mr-1"></i>Subir acta</button>';
+        }
+        return acta;
+    }
+
+    function initDt(data) {
+        if (_dt) {
+            _dt.clear().rows.add(data).draw();
+            return;
+        }
+        _dt = $('#tblReuniones').DataTable({
+            data: data,
+            scrollY: '55vh',
+            scrollCollapse: true,
+            paging: false,
+            info: false,
+            searching: true,
+            ordering: true,
+            language: {
+                search: 'Buscar:',
+                zeroRecords: 'Sin reuniones en este estado.',
+                emptyTable: 'No hay reuniones registradas.',
+            },
+            columns: [
+                { data: 'title',      title: 'Título',
+                  render: function(d) { return '<span class="font-weight-bold">' + d + '</span>'; } },
+                { data: 'details',    title: 'Descripción',
+                  render: function(d) { return d ? '<span class="text-muted" style="font-size:.8rem">' + d + '</span>' : '<span class="text-muted">—</span>'; } },
+                { data: 'etiqueta',   title: 'Etiqueta', width: '100px',
+                  render: function(d) { return d ? '<span class="badge badge-info" style="font-size:.68rem">' + d + '</span>' : '<span class="text-muted">—</span>'; } },
+                { data: 'responsable',title: 'Responsable', width: '140px',
+                  render: function(d) { return '<span style="font-size:.8rem">' + (d || '—') + '</span>'; } },
+                { data: 'status',     title: 'Estado', width: '90px', className: 'text-center',
+                  render: function(d) { var s = _statusLabels[d] || _statusLabels[0]; return '<span class="badge ' + s.cls + '" style="font-size:.68rem">' + s.label + '</span>'; } },
+                { data: 'fecha_inicio', title: 'Fecha', width: '90px', className: 'text-center',
+                  render: function(d) { return '<span style="font-size:.78rem">' + (d || '—') + '</span>'; } },
+                { data: null,         title: 'Acta', width: '130px', className: 'text-center', orderable: false,
+                  render: function(d, t, r) { return buildActa(r); } },
+            ],
+            dom: '<"d-flex align-items-center mb-2"f>t',
+            drawCallback: function() {
+                $('#reunionesCount').text(this.api().rows({ search: 'applied' }).count());
+            }
+        });
+    }
+
+    function filtrarDt(filtro) {
+        var data = _reunionesData.slice();
+        if (filtro === 'pendientes')  data = data.filter(function(r) { return r.status !== 2; });
+        if (filtro === 'finalizadas') data = data.filter(function(r) { return r.status === 2; });
+        if (_dt) {
+            _dt.clear().rows.add(data).draw();
+        } else {
+            initDt(data);
+        }
+        $('#reunionesCount').text(data.length);
+    }
+
     $('#btnVerReuniones').on('click', function() {
         $('#reunionesSubtitulo').text('');
-        $('#reunionesBody').html('<tr id="reunionesLoading"><td colspan="7" class="text-center text-muted py-4"><i class="fa fa-spinner fa-spin mr-2"></i>Cargando...</td></tr>');
         $('#modalReuniones').modal('show');
+    });
+
+    $('#modalReuniones').on('shown.bs.modal', function() {
         $.getJSON(_reunionesUrl, function(data) {
             _reunionesData = data;
             $('#reunionesSubtitulo').text(data.length + ' reunión(es) registrada(s)');
-            renderReuniones(_filtroActivo);
+            filtrarDt(_filtroActivo);
         }).fail(function() {
             $('#reunionesBody').html('<tr><td colspan="7" class="text-center text-danger py-3"><i class="fa fa-exclamation-triangle mr-1"></i>Error al cargar reuniones.</td></tr>');
         });
     });
 
-    function renderReuniones(filtro) {
-        var data = _reunionesData.slice();
-        if (filtro === 'pendientes')  data = data.filter(function(r) { return r.status !== 2; });
-        if (filtro === 'finalizadas') data = data.filter(function(r) { return r.status === 2; });
-
-        $('#reunionesCount').text(data.length);
-        var tbody = $('#reunionesBody').empty();
-
-        if (!data.length) {
-            tbody.append('<tr><td colspan="7" class="text-center text-muted py-4"><i class="fa fa-inbox mr-1"></i>Sin reuniones' + (filtro !== 'todas' ? ' en este estado' : '') + '.</td></tr>');
-            return;
-        }
-
-        data.forEach(function(r) {
-            var st    = _statusLabels[r.status] || _statusLabels[0];
-            var fecha = r.fecha_inicio || '—';
-            var acta  = '';
-
-            if (r.evidencias && r.evidencias.length) {
-                r.evidencias.forEach(function(e) {
-                    if (e.es_pdf) {
-                        acta += '<button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 btnVerActa mr-1 mb-1" ' +
-                            'data-url="' + e.url + '" data-titulo="' + (e.label || r.title) + '" style="font-size:.7rem">' +
-                            '<i class="fa fa-file-pdf mr-1"></i>' + (e.label || 'Acta') + '</button>';
-                    } else {
-                        acta += '<a href="' + e.url + '" target="_blank" class="btn btn-sm btn-outline-secondary py-0 px-2 mr-1 mb-1" style="font-size:.7rem">' +
-                            '<i class="fa fa-link mr-1"></i>' + (e.label || 'Adjunto') + '</a>';
-                    }
-                });
-            } else {
-                acta = '<button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 btnSubirActa" data-task-id="' + r.id + '" style="font-size:.7rem">'
-                     + '<i class="fa fa-upload mr-1"></i>Subir acta</button>';
-            }
-
-            tbody.append(
-                '<tr>' +
-                '<td class="font-weight-bold" style="font-size:.83rem;vertical-align:middle">' + r.title + '</td>' +
-                '<td style="font-size:.8rem;color:#6c757d;vertical-align:middle">' + (r.details || '—') + '</td>' +
-                '<td style="vertical-align:middle">' + (r.etiqueta ? '<span class="badge badge-info" style="font-size:.68rem">' + r.etiqueta + '</span>' : '<span class="text-muted" style="font-size:.75rem">—</span>') + '</td>' +
-                '<td style="font-size:.8rem;vertical-align:middle">' + r.responsable + '</td>' +
-                '<td class="text-center" style="vertical-align:middle"><span class="badge ' + st.cls + '" style="font-size:.68rem">' + st.label + '</span></td>' +
-                '<td class="text-center" style="font-size:.78rem;vertical-align:middle">' + fecha + '</td>' +
-                '<td class="text-center" style="vertical-align:middle">' + acta + '</td>' +
-                '</tr>'
-            );
-        });
-    }
-
     $('#filtroTodas').on('click', function() {
         _filtroActivo = 'todas';
         $(this).addClass('btn-dark active').removeClass('btn-outline-secondary');
         $('#filtroPendientes,#filtroFinalizadas').addClass('btn-outline-secondary').removeClass('btn-warning btn-success active');
-        renderReuniones('todas');
+        filtrarDt('todas');
     });
     $('#filtroPendientes').on('click', function() {
         _filtroActivo = 'pendientes';
         $(this).addClass('btn-warning active').removeClass('btn-outline-secondary');
         $('#filtroTodas,#filtroFinalizadas').addClass('btn-outline-secondary').removeClass('btn-dark btn-success active');
-        renderReuniones('pendientes');
+        filtrarDt('pendientes');
     });
     $('#filtroFinalizadas').on('click', function() {
         _filtroActivo = 'finalizadas';
         $(this).addClass('btn-success active').removeClass('btn-outline-secondary');
         $('#filtroTodas,#filtroPendientes').addClass('btn-outline-secondary').removeClass('btn-dark btn-warning active');
-        renderReuniones('finalizadas');
+        filtrarDt('finalizadas');
     });
 
     $(document).on('click', '.btnSubirActa', function() {
@@ -1233,7 +1261,7 @@ $('#btnLimpiarFiltro').on('click', function(e) {
             $('#modalReuniones').modal('show');
             $.getJSON(_reunionesUrl, function(data) {
                 _reunionesData = data;
-                renderReuniones(_filtroActivo);
+                filtrarDt(_filtroActivo);
             });
         }
     });
