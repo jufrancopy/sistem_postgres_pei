@@ -130,11 +130,12 @@ class GamificationAdminController extends Controller
         $pei = PeiProfile::find($idProfile);
 
         \App\Models\SystemNotification::crearPuntosManual(
-            userId:     $user->id,
-            puntos:     (int) $request->puntos,
-            motivo:     $request->motivo,
-            peiNombre:  $pei ? strip_tags($pei->name) : 'Plan PEI',
-            adminNombre: Auth::user()->name
+            userId:              $user->id,
+            puntos:              (int) $request->puntos,
+            motivo:              $request->motivo,
+            peiNombre:           $pei ? strip_tags($pei->name) : 'Plan PEI',
+            adminNombre:         Auth::user()->name,
+            gamificationPointId: $point->id
         );
 
         // Enviar notificación por email al funcionario
@@ -213,6 +214,12 @@ class GamificationAdminController extends Controller
             if ($request->filled('user_id')) {
                 $params['--user'] = $request->input('user_id');
             }
+
+            // Limpiar notificaciones de puntos manuales cuyo punto ya no existe
+            \App\Models\SystemNotification::where('tipo', 'puntos_manual')
+                ->whereNotNull('gamification_point_id')
+                ->whereNotIn('gamification_point_id', GamificationPoint::where('action_type', 'manual_admin')->pluck('id'))
+                ->delete();
 
             Artisan::call('gamification:recalculate', $params);
             $output = Artisan::output();

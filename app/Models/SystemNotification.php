@@ -9,7 +9,7 @@ class SystemNotification extends Model
     protected $table = 'system_notifications';
 
     protected $fillable = [
-        'user_id', 'tipo', 'titulo', 'mensaje', 'icono', 'url', 'leida', 'leida_at',
+        'user_id', 'tipo', 'titulo', 'mensaje', 'icono', 'url', 'leida', 'leida_at', 'gamification_point_id',
     ];
 
     protected $casts = [
@@ -29,7 +29,7 @@ class SystemNotification extends Model
 
     // ── Factory methods ───────────────────────────────────────────────────────
 
-    public static function crearPuntosManual(int $userId, int $puntos, string $motivo, string $peiNombre, string $adminNombre): self
+    public static function crearPuntosManual(int $userId, int $puntos, string $motivo, string $peiNombre, string $adminNombre, ?int $gamificationPointId = null): self
     {
         $emoji = match(true) {
             $puntos >= 50 => '🏆',
@@ -38,12 +38,13 @@ class SystemNotification extends Model
         };
 
         return self::create([
-            'user_id' => $userId,
-            'tipo'    => 'puntos_manual',
-            'titulo'  => "{$emoji} ¡Recibiste +{$puntos} puntos!",
-            'mensaje' => "El administrador <b>{$adminNombre}</b> te otorgó <b>+{$puntos} pts</b> en <i>{$peiNombre}</i>.<br><small class=\"text-muted\">{$motivo}</small>",
-            'icono'   => 'fa-star text-warning',
-            'url'     => '/perfil',
+            'user_id'               => $userId,
+            'tipo'                  => 'puntos_manual',
+            'titulo'                => "{$emoji} ¡Recibiste +{$puntos} puntos!",
+            'mensaje'               => "El administrador <b>{$adminNombre}</b> te otorgó <b>+{$puntos} pts</b> en <i>{$peiNombre}</i>.<br><small class=\"text-muted\">{$motivo}</small>",
+            'icono'                 => 'fa-star text-warning',
+            'url'                   => '/perfil',
+            'gamification_point_id' => $gamificationPointId,
         ]);
     }
 }

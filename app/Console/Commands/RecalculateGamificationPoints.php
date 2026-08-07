@@ -59,13 +59,15 @@ class RecalculateGamificationPoints extends Command
         $this->defaultPeiId = $gamificationService->resolvePeiProfileId(null);
 
         if ($this->option('reset')) {
-            $this->warn('Reseteando historial de puntos e insignias...');
+            $this->warn('Reseteando historial de puntos e insignias (preservando puntos manuales)...');
             if ($userFilter) {
                 $userIds = $users->pluck('id');
-                GamificationPoint::whereIn('user_id', $userIds)->delete();
+                GamificationPoint::whereIn('user_id', $userIds)
+                    ->where('action_type', '!=', 'manual_admin')
+                    ->delete();
                 \App\Models\Gamification\GamificationBadge::whereIn('user_id', $userIds)->delete();
             } else {
-                GamificationPoint::truncate();
+                GamificationPoint::where('action_type', '!=', 'manual_admin')->delete();
                 \App\Models\Gamification\GamificationBadge::truncate();
             }
         } else {
