@@ -114,8 +114,18 @@ class GamificationAdminController extends Controller
             return response()->json(['message' => 'No se pudo registrar el punto.'], 422);
         }
 
-        // Enviar notificación por email al funcionario
+        // Notificación en sistema
         $pei = PeiProfile::find($idProfile);
+
+        \App\Models\SystemNotification::crearPuntosManual(
+            userId:     $user->id,
+            puntos:     (int) $request->puntos,
+            motivo:     $request->motivo,
+            peiNombre:  $pei ? strip_tags($pei->name) : 'Plan PEI',
+            adminNombre: Auth::user()->name
+        );
+
+        // Enviar notificación por email al funcionario
         try {
             $user->notify(new PuntosManualNotification(
                 puntos:      (int) $request->puntos,

@@ -35,7 +35,7 @@
           </a>
           <div class="dropdown-menu dropdown-menu-right shadow-lg border-0" id="siessNotifMenu" style="width:340px; max-height:420px; overflow-y:auto; padding:0; border-radius:10px;">
             <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light">
-              <strong style="font-size:.85rem"><i class="fa fa-bell mr-1 text-primary"></i> Notificaciones SIESS</strong>
+              <strong style="font-size:.85rem"><i class="fa fa-bell mr-1 text-primary"></i> Notificaciones</strong>
               <a href="javascript:void(0)" id="btnLeerTodas" class="text-muted" style="font-size:.75rem">Marcar leídas</a>
             </div>
             <div id="siessNotifLista">
@@ -132,9 +132,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     var html = '';
                     res.notificaciones.forEach(function(n) {
-                        html += '<div class="px-3 py-2 border-bottom ' + (n.leida ? '' : 'bg-light') + '" style="cursor:pointer" data-id="' + n.id + '">';
+                        var cursor = n.url ? 'cursor:pointer' : '';
+                        html += '<div class="px-3 py-2 border-bottom ' + (n.leida ? '' : 'bg-light') + '" style="' + cursor + '" data-id="' + n.id + '" data-url="' + (n.url || '') + '">';
                         html += '<div class="d-flex align-items-start">';
-                        html += '<i class="fa ' + n.icono + ' mr-2 mt-1 text-primary" style="font-size:.9rem"></i>';
+                        html += '<i class="fa ' + n.icono + ' mr-2 mt-1" style="font-size:.9rem"></i>';
                         html += '<div style="flex:1">';
                         html += '<div style="font-size:.8rem;font-weight:' + (n.leida ? 'normal' : 'bold') + '">' + n.titulo + '</div>';
                         html += '<div style="font-size:.75rem;color:#6c757d">' + n.mensaje + '</div>';
@@ -152,9 +153,11 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#siessNotifBtn').on('click', function() { cargarNotificaciones(); });
 
         $(document).on('click', '#siessNotifLista [data-id]', function() {
-            var id = $(this).data('id');
+            var id  = $(this).data('id');
+            var url = $(this).data('url');
             $.post('{{ url('siess/notificaciones') }}/' + id + '/leer', {}, function() {
                 cargarNotificaciones();
+                if (url) window.location.href = url;
             });
         });
 

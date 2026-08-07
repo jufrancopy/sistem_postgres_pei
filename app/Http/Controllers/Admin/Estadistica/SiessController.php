@@ -316,25 +316,29 @@ class SiessController extends Controller
     public function notificaciones(Request $request)
     {
         try {
-            $notifs = \App\Models\Estadistica\SiessNotificacion::where('user_id', Auth::id())
-                ->with('extracto.modulo')
+            $userId = Auth::id();
+
+            // SystemNotifications (gamificación, PEI, etc.)
+            $sysNotifs = \App\Models\SystemNotification::where('user_id', $userId)
                 ->orderByDesc('created_at')
                 ->limit(20)
-                ->get();
-
-            $noLeidas = $notifs->where('leida', false)->count();
-
-            return response()->json([
-                'notificaciones' => $notifs->map(fn($n) => [
-                    'id'      => $n->id,
+                ->get()
+                ->map(fn($n) => [
+                    'id'      => 'sys_' . $n->id,
                     'titulo'  => $n->titulo,
                     'mensaje' => $n->mensaje,
                     'tipo'    => $n->tipo,
-                    'icono'   => $n->iconoTipo(),
+                    'icono'   => $n->icono,
                     'leida'   => $n->leida,
+                    'url'     => $n->url,
                     'fecha'   => $n->created_at->diffForHumans(),
-                ]),
-                'no_leidas' => $noLeidas,
+                ]);
+
+            $noLeidas = $sysNotifs->where('leida', false)->count();
+
+            return response()->json([
+                'notificaciones' => $sysNotifs->values(),
+                'no_leidas'      => $noLeidas,
             ]);
         } catch (\Exception $e) {
             return response()->json(['notificaciones' => [], 'no_leidas' => 0]);
@@ -343,14 +347,21 @@ class SiessController extends Controller
 
     public function marcarNotificacionLeida(Request $request, $id)
     {
-        $notif = \App\Models\Estadistica\SiessNotificacion::findOrFail($id);
+        // Soporte para IDs con prefijo sys_
+        if (str_starts_with($id, 'sys_')) {
+            $notif = \App\Models\SystemNotification::findOrFail(substr($id, 4));
+        } else {
+            $notif = \App\Models\Estadistica\SiessNotificacion::findOrFail($id);
+        }
         $notif->marcarLeida();
         return response()->json(['success' => true]);
     }
 
     public function marcarTodasLeidas(Request $request)
     {
-        \App\Models\Estadistica\SiessNotificacion::where('user_id', Auth::id())
+        $userId = Auth::id();
+
+        \App\Models\SystemNotification::where('user_id', $userId)
             ->where('leida', false)
             ->update(['leida' => true, 'leida_at' => now()]);
 
