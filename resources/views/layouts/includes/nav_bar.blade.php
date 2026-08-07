@@ -44,7 +44,7 @@
               </div>
             </div>
             <div class="border-top text-center py-2 bg-light">
-              <a href="{{ route('siess.extractos.index') }}" class="font-weight-bold" style="font-size:.8rem">Ver extractos</a>
+              <a href="{{ route('user.profile') }}" class="font-weight-bold" style="font-size:.8rem">Ver mi perfil</a>
             </div>
           </div>
         </li>
