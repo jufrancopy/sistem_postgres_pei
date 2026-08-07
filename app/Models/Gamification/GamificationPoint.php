@@ -51,6 +51,9 @@ class GamificationPoint extends Model
             'manual_admin'       => '⭐ Asignación manual',
             'donacion_enviada'   => 'Donación enviada',
             'donacion_recibida'  => 'Donación recibida',
+            'chat_message'       => 'Aporte en el chat',
+            'chat_context_query' => 'Consulta vinculada en chat',
+            'pei_edit'           => 'Edición de elemento PEI',
         ];
         return $labels[$this->action_type] ?? ucfirst(str_replace('_', ' ', $this->action_type));
     }
