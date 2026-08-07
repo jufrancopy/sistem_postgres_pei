@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        $('#siessNotifBtn').on('click', function() { cargarNotificaciones(); });
+        $('#siessNotifBtn').closest('.dropdown').on('show.bs.dropdown', function() { cargarNotificaciones(); });
 
         $(document).on('click', '#siessNotifLista [data-id]', function() {
             var id  = $(this).data('id');
