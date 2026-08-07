@@ -54,19 +54,32 @@ class GamificationAdminController extends Controller
 
     /**
      * Busca usuarios por nombre para el Select2 de puntos manuales.
+     * Solo devuelve usuarios del árbol del grupo raíz (evento) del PEI.
      */
-    public function buscarUsuarios(Request $request)
+    public function buscarUsuarios(Request $request, $idProfile)
     {
         if (!Auth::user()->hasRole('Administrador')) {
             return response()->json([], 403);
         }
 
+        $pei = PeiProfile::find($idProfile);
+        if (!$pei || !$pei->group_id) {
+            return response()->json([]);
+        }
+
+        $group = \App\Admin\Globales\Group::find($pei->group_id);
+        if (!$group) {
+            return response()->json([]);
+        }
+
+        $groupIds = $group->descendantsAndSelf()->pluck('id')->toArray();
+
         $q = $request->get('q', '');
-        $users = User::select('id', 'name')
+        $users = User::whereIn('group_id', $groupIds)
             ->when($q, fn($query) => $query->where('name', 'ILIKE', "%{$q}%"))
             ->orderBy('name')
             ->limit(20)
-            ->get();
+            ->get(['id', 'name']);
 
         return response()->json($users);
     }
