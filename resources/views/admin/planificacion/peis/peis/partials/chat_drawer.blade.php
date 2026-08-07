@@ -599,21 +599,56 @@
                     setTimeout(() => { element.style.boxShadow = 'none'; element.style.outline = 'none'; }, 3500);
                 }
 
-                // Abrir todos los collapses cerrados de la página antes de buscar
-                const closedCollapses = Array.from(document.querySelectorAll('.collapse:not(.show)'));
-                if (closedCollapses.length === 0) {
-                    doScroll();
+                function expandAncestorsAndScroll(targetEl) {
+                    const target = targetEl || document.getElementById(elementId);
+                    if (!target) {
+                        doScroll();
+                        return;
+                    }
+
+                    const collapsesToOpen = [];
+                    let current = target.parentElement;
+                    while (current) {
+                        if (current.classList && current.classList.contains('collapse') && !current.classList.contains('show')) {
+                            collapsesToOpen.push(current);
+                        }
+                        current = current.parentElement;
+                    }
+
+                    const uniqueCollapses = collapsesToOpen.filter(function (collapseEl, index, array) {
+                        return array.indexOf(collapseEl) === index;
+                    }).reverse();
+
+                    if (uniqueCollapses.length === 0) {
+                        doScroll();
+                        return;
+                    }
+
+                    let pending = uniqueCollapses.length;
+                    uniqueCollapses.forEach(function (collapseEl) {
+                        if ($(collapseEl).hasClass('show')) {
+                            pending--;
+                            if (pending === 0) setTimeout(doScroll, 50);
+                            return;
+                        }
+
+                        $(collapseEl).one('shown.bs.collapse', function () {
+                            pending--;
+                            if (pending === 0) setTimeout(doScroll, 50);
+                        });
+                        $(collapseEl).collapse('show');
+                    });
+                }
+
+                const targetElement = document.getElementById(elementId);
+                if (!targetElement) {
+                    setTimeout(function () {
+                        expandAncestorsAndScroll();
+                    }, 250);
                     return;
                 }
 
-                let pending = closedCollapses.length;
-                closedCollapses.forEach(function(col) {
-                    $(col).one('shown.bs.collapse', function() {
-                        pending--;
-                        if (pending === 0) setTimeout(doScroll, 50);
-                    });
-                    $(col).collapse('show');
-                });
+                expandAncestorsAndScroll(targetElement);
             };
 
             const clearContextBtn = document.getElementById('clearPeiChatContext');
@@ -1390,25 +1425,7 @@
                 }
             }
 
-            window.scrollToElement = function(elementId) {
-                const element = document.getElementById(elementId);
-                if (element) {
-                    // Asegurar que el elemento esté visible
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // Resaltar el elemento
-                    element.style.transition = 'all 0.5s ease';
-                    element.style.boxShadow = '0 0 20px rgba(245, 158, 11, 0.8)';
-                    element.style.borderRadius = '8px';
-                    
-                    setTimeout(() => {
-                        element.style.boxShadow = 'none';
-                    }, 3000);
-                    
-                    return true;
-                }
-                return false;
-            };
+
 
             // Enviar mensaje con tecla Enter (Shift+Enter para salto de línea)
             input.addEventListener('keydown', function (e) {
