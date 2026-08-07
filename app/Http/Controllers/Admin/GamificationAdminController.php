@@ -66,22 +66,41 @@ class GamificationAdminController extends Controller
 
         $q = $request->get('q', '');
 
-        $baseQuery = User::when($q, fn($query) => $query->where('name', 'ILIKE', "%{$q}%"))
-            ->orderBy('name')
-            ->limit(20);
-
-        $pei   = PeiProfile::find($idProfile);
-        $group = $pei?->group_id ? \App\Admin\Globales\Group::find($pei->group_id) : null;
-
-        if ($group) {
-            $groupIds   = \App\Admin\Globales\Group::descendantsAndSelf($group->id)->pluck('id')->toArray();
-            $porGroupId = User::whereIn('group_id', $groupIds)->pluck('id');
-            $porPivot   = DB::table('groups_has_members')->whereIn('group_id', $groupIds)->pluck('user_id');
-            $userIds    = $porGroupId->merge($porPivot)->unique()->values();
-            $baseQuery->whereIn('id', $userIds);
+        $pei = PeiProfile::find($idProfile);
+        if (!$pei) {
+            return response()->json([]);
         }
 
-        return response()->json($baseQuery->get(['id', 'name']));
+        // Si el nodo no tiene group_id, subir al master raíz
+        $groupId = $pei->group_id;
+        if (!$groupId) {
+            $groupId = PeiProfile::where('_lft', '<=', $pei->_lft)
+                ->where('_rgt', '>=', $pei->_rgt)
+                ->where('level', 'master')
+                ->value('group_id');
+        }
+
+        if (!$groupId) {
+            return response()->json([]);
+        }
+
+        $group = \App\Admin\Globales\Group::find($groupId);
+        if (!$group) {
+            return response()->json([]);
+        }
+
+        $groupIds   = \App\Admin\Globales\Group::descendantsAndSelf($group->id)->pluck('id')->toArray();
+        $porGroupId = User::whereIn('group_id', $groupIds)->pluck('id');
+        $porPivot   = DB::table('groups_has_members')->whereIn('group_id', $groupIds)->pluck('user_id');
+        $userIds    = $porGroupId->merge($porPivot)->unique()->values();
+
+        return response()->json(
+            User::whereIn('id', $userIds)
+                ->when($q, fn($query) => $query->where('name', 'ILIKE', "%{$q}%"))
+                ->orderBy('name')
+                ->limit(20)
+                ->get(['id', 'name'])
+        );
     }
 
     /**

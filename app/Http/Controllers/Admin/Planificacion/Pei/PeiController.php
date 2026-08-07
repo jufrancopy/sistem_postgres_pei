@@ -284,88 +284,56 @@ class PeiController extends Controller
         // Generar UUID si no se proporciona profile_id
         $profileId = $request->profile_id ?? Str::uuid();
 
-        // Lógica de almacenamiento basada en el tipo de perfil
-        if ($request->type == 'corporative') {
-            $profile = PeiProfile::updateOrCreate(
-                ['id' => $profileId],
-                [
-                    'name' => $request->name,
-                    'year_start' => $request->year_start,
-                    'year_end' => $request->year_end,
-                    'type' => $request->type,
-                    'level' => $request->level,
-                    'mision' => $request->mision,
-                    'vision' => $request->vision,
-                    'values' => $request->values,
-                    'period' => $request->period,
-                    'numerator' => $request->numerator,
-                    'operator' => $request->operator,
-                    'denominator' => $denominator,
-                    'goal' => $request->goal,
-                    'progress' => $request->progress,
-                    'group_id' => $request->group_id,
-                    'dependency_id' => $request->dependency_id,
-                    'action' => $request->action,
-                    'indicator' => $request->indicator,
-                    'baseline' => $request->baseline,
-                    'target' => $request->target,
-                    'user_id' => $user->id,
-                    'order_item' => $request->order_item,
-                    'report_type' => $request->report_type,
-                    'parameters' => $parametersJson,
-                    'nivel_label' => $request->nivel_label ?: null,
-                    'foda_perfil_id' => $request->foda_perfil_id ?: null,
-                    'bsc_perspectiva' => $request->bsc_perspectiva ?: null,
-                    'indicador_id'    => $request->indicador_id ?: null,
-                    'activity_id'     => $request->activity_id ?: null,
-                    'resultado_intermedio' => $request->resultado_intermedio ?: null,
-                    'ri_presupuestario'    => $request->ri_presupuestario ?: null,
-                    'ri_programa'          => $request->ri_programa ?: null,
-                    'ri_recursos_gs'       => $request->ri_recursos_gs ?: null,
-                    'ri_metas'             => json_encode($request->input('ri_metas', [])),
-                ]
-            );
-        } else {
-            $profile = PeiProfile::updateOrCreate(
-                ['id' => $profileId],
-                [
-                    'name' => $request->name,
-                    'year_start' => $request->year_start,
-                    'year_end' => $request->year_end,
-                    'type' => $request->type,
-                    'level' => $request->level,
-                    'mision' => $request->mision,
-                    'vision' => $request->vision,
-                    'values' => $request->values,
-                    'period' => $request->period,
-                    'numerator' => $request->numerator,
-                    'operator' => $request->operator,
-                    'denominator' => $denominator,
-                    'goal' => $request->goal,
-                    'progress' => $request->progress,
-                    'group_id' => $request->group_id,
-                    'dependency_id' => $request->dependency_id,
-                    'action' => $request->action,
-                    'indicator' => $request->indicator,
-                    'baseline' => $request->baseline,
-                    'target' => $request->target,
-                    'user_id' => $user->id,
-                    'order_item' => $request->order_item,
-                    'report_type' => $request->report_type,
-                    'parameters' => $parametersJson,
-                    'nivel_label' => $request->nivel_label ?: null,
-                    'foda_perfil_id' => $request->foda_perfil_id ?: null,
-                    'bsc_perspectiva' => $request->bsc_perspectiva ?: null,
-                    'indicador_id'    => $request->indicador_id ?: null,
-                    'activity_id'     => $request->activity_id ?: null,
-                    'resultado_intermedio' => $request->resultado_intermedio ?: null,
-                    'ri_presupuestario'    => $request->ri_presupuestario ?: null,
-                    'ri_programa'          => $request->ri_programa ?: null,
-                    'ri_recursos_gs'       => $request->ri_recursos_gs ?: null,
-                    'ri_metas'             => json_encode($request->input('ri_metas', [])),
-                ]
-            );
-        }
+        // Campos exclusivos del nodo master — solo se actualizan si vienen
+        // explícitamente en el request (evita que ediciones de nodos hijos los pisen)
+        $masterOnlyFields = ['group_id', 'dependency_id', 'nivel_label', 'bsc_perspectiva',
+                             'foda_perfil_id', 'mision', 'vision', 'values', 'year_start', 'year_end'];
+
+        $existing = $profileId ? PeiProfile::where('id', $profileId)
+            ->first($masterOnlyFields) : null;
+
+        $resolve = fn(string $field, $requestValue) =>
+            $request->has($field) ? ($requestValue ?: null) : ($existing?->$field ?? null);
+
+        $profile = PeiProfile::updateOrCreate(
+            ['id' => $profileId],
+            [
+                'name'                 => $request->name,
+                'year_start'           => $resolve('year_start', $request->year_start),
+                'year_end'             => $resolve('year_end', $request->year_end),
+                'type'                 => $request->type,
+                'level'                => $request->level,
+                'mision'               => $resolve('mision', $request->mision),
+                'vision'               => $resolve('vision', $request->vision),
+                'values'               => $resolve('values', $request->values),
+                'period'               => $request->period,
+                'numerator'            => $request->numerator,
+                'operator'             => $request->operator,
+                'denominator'          => $denominator,
+                'goal'                 => $request->goal,
+                'progress'             => $request->progress,
+                'group_id'             => $resolve('group_id', $request->group_id),
+                'dependency_id'        => $resolve('dependency_id', $request->dependency_id),
+                'action'               => $request->action,
+                'indicator'            => $request->indicator,
+                'baseline'             => $request->baseline,
+                'target'               => $request->target,
+                'user_id'              => $user->id,
+                'order_item'           => $request->order_item,
+                'report_type'          => $request->report_type,
+                'parameters'           => $parametersJson,
+                'nivel_label'          => $resolve('nivel_label', $request->nivel_label),
+                'foda_perfil_id'       => $resolve('foda_perfil_id', $request->foda_perfil_id),
+                'bsc_perspectiva'      => $resolve('bsc_perspectiva', $request->bsc_perspectiva),
+                'indicador_id'         => $request->indicador_id ?: null,
+                'activity_id'          => $request->activity_id ?: null,
+                'resultado_intermedio' => $request->resultado_intermedio ?: null,
+                'ri_presupuestario'    => $request->ri_presupuestario ?: null,
+                'ri_programa'          => $request->ri_programa ?: null,
+                'ri_recursos_gs'       => $request->ri_recursos_gs ?: null,
+                'ri_metas'             => json_encode($request->input('ri_metas', [])),
+            ]
+        );
 
         // Registrar editor y otorgar puntos solo en actualizaciones (no en creación)
         if (!$profile->wasRecentlyCreated) {
