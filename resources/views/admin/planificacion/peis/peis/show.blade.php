@@ -433,19 +433,6 @@
                 @include('admin.planificacion.peis.peis.modals')
                 {{-- End Modals --}}
 
-                {{-- Modal Detalle Indicador --}}
-                <div class="modal fade" id="modalIndicadorDetalle" tabindex="-1" role="dialog">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content border-0 shadow">
-                            <div id="modalIndicadorDetalleBody">
-                                <div class="text-center py-5 text-muted">
-                                    <i class="fa fa-spinner fa-spin fa-2x"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
         {{-- Fin Contenido Principal --}}
@@ -2813,18 +2800,70 @@ $(document).on('click', '.btnNotificarAccion', function() {
 // ══ FIN NOTIFICACIONES ════════════════════════════════════════════════════════
 </script>
 <script>
-// Modal detalle indicador (accordion)
+// Modal detalle indicador (accordion) — usa el modal de ficha técnica reutilizable
 $(document).on('click', '.btn-ver-indicador', function() {
     const id      = $(this).data('id');
     const profile = $(this).data('profile');
-    const url     = `/pei-profiles/${profile}/indicadores/${id}/detalle`;
-    $('#modalIndicadorDetalleBody').html('<div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-2x"></i></div>');
-    $('#modalIndicadorDetalle').modal('show');
-    $.get(url, function(html) {
-        $('#modalIndicadorDetalleBody').html(html);
+
+    // Obtener todos los indicadores del perfil y encontrar el solicitado
+    $.getJSON(`/pei-profiles/${profile}/indicadores`, function(data) {
+        var ind = data.find(function(i) { return i.id == id; });
+        if (!ind) { toastr.error('Indicador no encontrado.'); return; }
+
+        // Resetear formulario
+        $('#ind_id').val(ind.id);
+        $('#ind_nombre').val(ind.nombre);
+        $('#ind_codigo_letras').val(ind.codigo_letras);
+        $('#ind_codigo_numeros').val(ind.codigo_numeros);
+
+        // Radios
+        $.each(['dimension','ambito','frecuencia','cobertura','sentido'], function(i, campo) {
+            var val = ind[campo];
+            var radio = $('input[name="ind_' + campo + '"][value="' + val + '"]');
+            radio.prop('checked', true).trigger('change');
+        });
+        if (ind.frecuencia === 'otro') $('#ind_frecuencia_otro').val(ind.frecuencia_otro);
+
+        // Campos de texto
+        $('#ind_descripcion').val(ind.descripcion);
+        $('#ind_variables').val(ind.variables);
+        $('#ind_formula').val(ind.formula);
+        $('#ind_unidad_medida').val(ind.unidad_medida);
+        $('#ind_linea_base_anio').val(ind.linea_base_anio);
+        $('#ind_linea_base_valor').val(ind.linea_base_valor);
+        $('#ind_fuente').val(ind.fuente);
+        $('#ind_dependencia_responsable').val(ind.dependencia_responsable);
+        $('#ind_comentarios').val(ind.comentarios);
+
+        // Metas
+        $('#metasContainer').empty();
+        if (ind.metas && ind.metas.length) {
+            ind.metas.forEach(function(m) {
+                $('#metasContainer').append(
+                    '<div class="col-md-3 mb-2 meta-row">' +
+                    '<div class="input-group input-group-sm">' +
+                        '<div class="input-group-prepend"><span class="input-group-text" style="font-size:.72rem">Año</span></div>' +
+                        '<input type="number" class="form-control meta-anio" value="' + m.anio + '" min="2020" max="2100">' +
+                        '<input type="text" class="form-control meta-valor" value="' + m.valor + '">' +
+                        '<div class="input-group-append"><button type="button" class="btn btn-outline-danger btn-remove-meta" style="font-size:.72rem"><i class="fa fa-times"></i></button></div>' +
+                    '</div></div>'
+                );
+            });
+        }
+
+        // Configurar modal en modo solo lectura
+        $('#modalIndicadorTitulo').html('<i class="fa fa-eye mr-2"></i>Ficha del Indicador');
+        $('#modalIndicadorSubtitulo').text(ind.nombre);
+        $('#btnGuardarIndicador').hide();
+        $('#modalIndicador').modal('show');
     }).fail(function() {
-        $('#modalIndicadorDetalleBody').html('<div class="alert alert-danger m-3">Error al cargar la ficha del indicador.</div>');
+        toastr.error('Error al cargar la ficha del indicador.');
     });
+});
+
+// Mostrar botón guardar al cerrar el modal
+$('#modalIndicador').on('hidden.bs.modal', function() {
+    $('#btnGuardarIndicador').show();
 });
 </script>
 @include('admin.planificacion.peis.peis.partials.chat_drawer')

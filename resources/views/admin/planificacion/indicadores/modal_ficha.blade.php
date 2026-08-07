@@ -40,6 +40,7 @@
                     </div>
                 </div>
                 <input type="hidden" id="ind_id">
+                <input type="hidden" id="ind_pei_profile_id">
 
                 {{-- Layout de dos columnas --}}
                 <div class="row no-gutters">
