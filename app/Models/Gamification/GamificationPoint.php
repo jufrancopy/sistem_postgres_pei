@@ -48,6 +48,9 @@ class GamificationPoint extends Model
             'riiss_cumplimiento' => 'Cumplimiento RIISS',
             'daily_login'        => 'Acceso diario',
             'login_streak'       => 'Racha de accesos',
+            'manual_admin'       => '⭐ Asignación manual',
+            'donacion_enviada'   => 'Donación enviada',
+            'donacion_recibida'  => 'Donación recibida',
         ];
         return $labels[$this->action_type] ?? ucfirst(str_replace('_', ' ', $this->action_type));
     }

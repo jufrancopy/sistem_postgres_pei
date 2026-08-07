@@ -6,12 +6,127 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Models\Gamification\GamificationPoint;
+use App\Services\GamificationService;
 
 class GamificationAdminController extends Controller
 {
     /**
      * Recalcula retroactivamente los puntos e insignias de gamificación para todos los usuarios o uno en específico.
      */
+    /**
+     * Historial de puntos manuales para DataTables.
+     */
+    public function historialManual(Request $request, $idProfile)
+    {
+        if (!Auth::user()->hasRole('Administrador')) {
+            return response()->json(['data' => []], 403);
+        }
+
+        $query = GamificationPoint::with('user')
+            ->where('pei_profile_id', $idProfile)
+            ->where('action_type', 'manual_admin')
+            ->orderByDesc('created_at');
+
+        $total = $query->count();
+
+        $rows = $query->skip($request->input('start', 0))
+            ->take($request->input('length', 10))
+            ->get()
+            ->map(fn($p) => [
+                'fecha'       => $p->created_at->format('d/m/Y H:i'),
+                'funcionario' => $p->user?->name ?? '—',
+                'motivo'      => $p->description,
+                'puntos'      => $p->points,
+                'id'          => $p->id,
+            ]);
+
+        return response()->json([
+            'draw'            => intval($request->input('draw', 1)),
+            'recordsTotal'    => $total,
+            'recordsFiltered' => $total,
+            'data'            => $rows,
+        ]);
+    }
+
+    /**
+     * Busca usuarios por nombre para el Select2 de puntos manuales.
+     */
+    public function buscarUsuarios(Request $request)
+    {
+        if (!Auth::user()->hasRole('Administrador')) {
+            return response()->json([], 403);
+        }
+
+        $q = $request->get('q', '');
+        $users = User::select('id', 'name')
+            ->when($q, fn($query) => $query->where('name', 'ILIKE', "%{$q}%"))
+            ->orderBy('name')
+            ->limit(20)
+            ->get();
+
+        return response()->json($users);
+    }
+
+    /**
+     * Otorga puntos manuales a un funcionario en el contexto de un PEI.
+     */
+    public function awardManual(Request $request, $idProfile)
+    {
+        if (!Auth::user()->hasRole('Administrador')) {
+            return response()->json(['message' => 'Sin permisos.'], 403);
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'motivo'  => 'required|string|min:3|max:255',
+            'puntos'  => 'required|in:5,10,50',
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+
+        $point = app(GamificationService::class)->awardPoints(
+            $user,
+            'manual_admin',
+            $request->motivo,
+            (int) $request->puntos,
+            null,
+            $idProfile
+        );
+
+        if (!$point) {
+            return response()->json(['message' => 'No se pudo registrar el punto.'], 422);
+        }
+
+        return response()->json([
+            'success'   => true,
+            'user_name' => $user->name,
+            'puntos'    => $request->puntos,
+            'motivo'    => $request->motivo,
+        ]);
+    }
+
+    /**
+     * Devuelve los motivos manuales ya usados en este PEI para autocomplete.
+     */
+    public function motivosSugeridos($idProfile)
+    {
+        if (!Auth::user()->hasRole('Administrador')) {
+            return response()->json([], 403);
+        }
+
+        $motivos = GamificationPoint::where('pei_profile_id', $idProfile)
+            ->where('action_type', 'manual_admin')
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->pluck('description')
+            ->unique()
+            ->values();
+
+        return response()->json($motivos);
+    }
+
     public function recalculate(Request $request)
     {
         if (!Auth::user()->hasRole('Administrador')) {

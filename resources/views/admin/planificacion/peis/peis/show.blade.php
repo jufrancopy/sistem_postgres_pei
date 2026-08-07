@@ -51,6 +51,13 @@
             <button type="button" class="btn btn-sm btn-outline-secondary ml-2" data-toggle="modal" data-target="#modalQrSolicitud">
                 <i class="fa fa-qrcode mr-1"></i> QR Solicitud
             </button>
+            @role('Administrador')
+            <button type="button" class="btn btn-sm ml-2" data-toggle="modal" data-target="#modalPuntosManuales"
+                    style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none"
+                    title="Otorgar puntos manuales a un funcionario en este plan">
+                <i class="fa fa-star mr-1"></i> Otorgar Puntos
+            </button>
+            @endrole
         </div>
 
         <!-- HTML del segundo nav (inicialmente oculto) -->
@@ -431,6 +438,9 @@
 
                 {{-- Star Modals --}}
                 @include('admin.planificacion.peis.peis.modals')
+                @role('Administrador')
+                @include('admin.planificacion.peis.peis.partials.modal_puntos_manuales')
+                @endrole
                 {{-- End Modals --}}
 
             </div>

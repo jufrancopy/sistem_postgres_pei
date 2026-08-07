@@ -531,7 +531,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <small class="text-muted font-weight-bold" style="font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;">Plan PEI</small>
-                            <div id="modalPointsDetailPei" class="font-weight-bold text-dark" style="font-size: 1.1rem; margin-top: 4px;"><span class="badge badge-info">Global</span></div>
+                            <div id="modalPointsDetailPei" class="font-weight-bold text-dark" style="font-size: 0.95rem; margin-top: 4px; word-break: break-word; white-space: normal; overflow-wrap: anywhere;"><span class="badge badge-info">Global</span></div>
                         </div>
                     </div>
                 </div>
@@ -690,7 +690,7 @@ $(function() {
             ? (peiNamesMap[selectedPeiId] || selectedPeiId) 
             : 'Global';
         $('#modalPointsDetailPei').html(selectedPeiId 
-            ? '<span class="badge badge-primary" style="background: linear-gradient(135deg, #667eea, #764ba2);">' + peiLabel + '</span>'
+            ? '<span class="badge badge-primary" style="background: linear-gradient(135deg, #667eea, #764ba2); white-space: normal; word-break: break-word; display: inline-block; max-width: 100%;">' + peiLabel + '</span>'
             : '<span class="badge badge-info">Global</span>');
         $('#modalPointsDetailBody').empty();
         $('#modalPointsDetailLoading').removeClass('d-none');
@@ -725,10 +725,10 @@ $(function() {
 
                 // Actualizar nombre del PEI si viene en la respuesta
                 if (response.pei_name) {
-                    $('#modalPointsDetailPei').html('<span class="badge badge-primary" style="background: linear-gradient(135deg, #667eea, #764ba2);">' + response.pei_name + '</span>');
+                    $('#modalPointsDetailPei').html('<span class="badge badge-primary" style="background: linear-gradient(135deg, #667eea, #764ba2); white-space: normal; word-break: break-word; display: inline-block; max-width: 100%;">' + response.pei_name + '</span>');
                 } else if (response.selected_pei_id) {
                     const peiLabel = peiNamesMap[response.selected_pei_id] || response.selected_pei_id;
-                    $('#modalPointsDetailPei').html('<span class="badge badge-primary" style="background: linear-gradient(135deg, #667eea, #764ba2);">' + peiLabel + '</span>');
+                    $('#modalPointsDetailPei').html('<span class="badge badge-primary" style="background: linear-gradient(135deg, #667eea, #764ba2); white-space: normal; word-break: break-word; display: inline-block; max-width: 100%;">' + peiLabel + '</span>');
                 }
 
                 if (!response.ok || !Array.isArray(response.points) || response.points.length === 0) {
