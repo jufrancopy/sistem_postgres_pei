@@ -333,6 +333,26 @@
                         </select>
                     </div>
 
+                    {{-- ── Indicador de la Ficha Técnica (Ámbito: Objetivo Estratégico) ── --}}
+                    <hr class="my-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <h6 class="font-weight-bold mb-0">
+                            <i class="fa fa-ruler-combined mr-1 text-primary"></i> Indicador
+                        </h6>
+                        <a href="{{ route('pei.indicadores.modulo', $profile->id) }}"
+                           target="_blank"
+                           class="btn btn-sm btn-outline-primary py-0 px-2 ml-auto"
+                           style="font-size:.72rem" title="Gestionar fichas de indicadores">
+                            <i class="fa fa-external-link-alt mr-1"></i> Gestionar Indicadores
+                        </a>
+                    </div>
+                    <div class="form-group mb-3">
+                        <small class="form-text text-muted mb-1">
+                            Seleccioná el indicador de la ficha técnica que mide este objetivo estratégico (ámbito: Objetivo Estratégico).
+                        </small>
+                        <select id="axis_indicador_id" name="indicador_id" style="width:100%"></select>
+                    </div>
+
                     <div class="col-sm-offset-2 col-sm-10 mt-3">
                         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                         <button type="submit" class="btn btn-success" id="saveBtnAxis" value="create">
@@ -407,6 +427,26 @@
                             <option value="procesos">⚙️ Perspectiva de Procesos Internos</option>
                             <option value="aprendizaje">📚 Perspectiva de Aprendizaje y Crecimiento</option>
                         </select>
+                    </div>
+
+                    {{-- ── Indicador de la Ficha Técnica (Ámbito: Objetivo Específico) ── --}}
+                    <hr class="my-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <h6 class="font-weight-bold mb-0">
+                            <i class="fa fa-ruler-combined mr-1 text-primary"></i> Indicador
+                        </h6>
+                        <a href="{{ route('pei.indicadores.modulo', $profile->id) }}"
+                           target="_blank"
+                           class="btn btn-sm btn-outline-primary py-0 px-2 ml-auto"
+                           style="font-size:.72rem" title="Gestionar fichas de indicadores">
+                            <i class="fa fa-external-link-alt mr-1"></i> Gestionar Indicadores
+                        </a>
+                    </div>
+                    <div class="form-group mb-3">
+                        <small class="form-text text-muted mb-1">
+                            Seleccioná el indicador de la ficha técnica que mide este objetivo específico (ámbito: Objetivo Específico).
+                        </small>
+                        <select id="goals_indicador_id" name="indicador_id" style="width:100%"></select>
                     </div>
 
                     <div class="col-sm-offset-2 col-sm-10 mt-3">

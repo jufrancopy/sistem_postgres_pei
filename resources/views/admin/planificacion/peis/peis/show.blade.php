@@ -1040,6 +1040,57 @@
                     $(document).off('click.rimeta').on('click.rimeta', '.ri-meta-remove', function() {
                         $(this).closest('.ri-meta-row').remove();
                     });
+
+                    // ── Select2 Indicador (Ámbito: Objetivo Estratégico) ──────
+                    var $axisIndicadorSel = $('#axis_indicador_id');
+                    if ($axisIndicadorSel.hasClass('select2-hidden-accessible')) {
+                        $axisIndicadorSel.select2('destroy');
+                    }
+                    $axisIndicadorSel.select2({
+                        dropdownParent: $('#ajaxAxisModal'),
+                        placeholder: 'Buscar indicador por código o nombre...',
+                        allowClear: true,
+                        minimumInputLength: 0,
+                        ajax: {
+                            url: '{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/indicadores/buscar',
+                            dataType: 'json',
+                            delay: 250,
+                            data: function(params) {
+                                return {
+                                    q: params.term || '',
+                                    ambito: 'objetivo_estrategico'
+                                };
+                            },
+                            processResults: function(data) {
+                                return { results: data };
+                            },
+                            cache: true
+                        },
+                        templateResult: function(item) {
+                            if (!item.id) return item.text;
+                            var sentidoIcon = item.sentido === 'ascendente'
+                                ? '<span class="text-success ml-1">▲</span>'
+                                : '<span class="text-danger ml-1">▼</span>';
+                            return $('<span>' +
+                                '<span class="badge badge-dark mr-2" style="font-size:.65rem">' + item.codigo + '</span>' +
+                                item.text.replace('[' + item.codigo + '] ', '') +
+                                sentidoIcon +
+                            '</span>');
+                        }
+                    });
+
+                    // Pre-cargar indicador vinculado en edición
+                    if (typeBtn === 'edit' && data.profile.indicador_id) {
+                        $.getJSON('{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/indicadores/buscar', { q: '', ambito: 'objetivo_estrategico' }, function(res) {
+                            var ind = res.find(function(i) { return i.id == data.profile.indicador_id; });
+                            if (ind) {
+                                var opt = new Option(ind.text, ind.id, true, true);
+                                $axisIndicadorSel.append(opt).trigger('change');
+                            }
+                        });
+                    } else {
+                        $axisIndicadorSel.val(null).trigger('change');
+                    }
                 }); // cierre del $.get de createAxis
             }); // cierre del on('click', '#createAxis')
 
@@ -1222,6 +1273,7 @@
                     });
                     formData.append('name', axisEditor.getData());
                     formData.append('bsc_perspectiva', $('#axis_bsc_perspectiva').val() || '');
+                    formData.append('indicador_id', $('#axis_indicador_id').val() || '');
                     formData.append('resultado_intermedio', $('#axis_resultado_intermedio').val() || '');
                     formData.append('ri_presupuestario', $('#axis_ri_presupuestario').val() || '');
                     formData.append('ri_programa', $('#axis_ri_programa').val() || '');
@@ -1340,6 +1392,57 @@
                         $('#goals_bsc_block').hide();
                         $('#goals_bsc_perspectiva').val('');
                     }
+
+                    // ── Select2 Indicador (Ámbito: Objetivo Específico) ──────
+                    var $goalsIndicadorSel = $('#goals_indicador_id');
+                    if ($goalsIndicadorSel.hasClass('select2-hidden-accessible')) {
+                        $goalsIndicadorSel.select2('destroy');
+                    }
+                    $goalsIndicadorSel.select2({
+                        dropdownParent: $('#ajaxGoalsModal'),
+                        placeholder: 'Buscar indicador por código o nombre...',
+                        allowClear: true,
+                        minimumInputLength: 0,
+                        ajax: {
+                            url: '{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/indicadores/buscar',
+                            dataType: 'json',
+                            delay: 250,
+                            data: function(params) {
+                                return {
+                                    q: params.term || '',
+                                    ambito: 'objetivo_especifico'
+                                };
+                            },
+                            processResults: function(data) {
+                                return { results: data };
+                            },
+                            cache: true
+                        },
+                        templateResult: function(item) {
+                            if (!item.id) return item.text;
+                            var sentidoIcon = item.sentido === 'ascendente'
+                                ? '<span class="text-success ml-1">▲</span>'
+                                : '<span class="text-danger ml-1">▼</span>';
+                            return $('<span>' +
+                                '<span class="badge badge-dark mr-2" style="font-size:.65rem">' + item.codigo + '</span>' +
+                                item.text.replace('[' + item.codigo + '] ', '') +
+                                sentidoIcon +
+                            '</span>');
+                        }
+                    });
+
+                    // Pre-cargar indicador vinculado en edición
+                    if (typeBtn === 'edit' && data.profile.indicador_id) {
+                        $.getJSON('{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/indicadores/buscar', { q: '', ambito: 'objetivo_especifico' }, function(res) {
+                            var ind = res.find(function(i) { return i.id == data.profile.indicador_id; });
+                            if (ind) {
+                                var opt = new Option(ind.text, ind.id, true, true);
+                                $goalsIndicadorSel.append(opt).trigger('change');
+                            }
+                        });
+                    } else {
+                        $goalsIndicadorSel.val(null).trigger('change');
+                    }
                 });
             });
 
@@ -1352,6 +1455,7 @@
                 var formData = new FormData(this);
                 formData.append('name', goalsEditor.getData());
                 formData.append('bsc_perspectiva', $('#goals_bsc_perspectiva').val() || '');
+                formData.append('indicador_id', $('#goals_indicador_id').val() || '');
 
                 $.ajax({
                     data: formData,
@@ -1457,7 +1561,12 @@
                             url: '{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/indicadores/buscar',
                             dataType: 'json',
                             delay: 250,
-                            data: function(params) { return { q: params.term || '' }; },
+                            data: function(params) {
+                                return {
+                                    q: params.term || '',
+                                    ambito: 'accion_estrategica'
+                                };
+                            },
                             processResults: function(data) {
                                 return { results: data };
                             },
@@ -1478,7 +1587,7 @@
 
                     // Pre-cargar indicador vinculado en edición
                     if (typeBtn === 'edit' && data.profile.indicador_id) {
-                        $.getJSON('{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/indicadores/buscar', { q: '' }, function(res) {
+                        $.getJSON('{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/indicadores/buscar', { q: '', ambito: 'accion_estrategica' }, function(res) {
                             var ind = res.find(function(i) { return i.id == data.profile.indicador_id; });
                             if (ind) {
                                 var opt = new Option(ind.text, ind.id, true, true);

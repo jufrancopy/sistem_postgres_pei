@@ -56,18 +56,24 @@ class IndicadorController extends Controller
         return view('admin.planificacion.indicadores.modulo', compact('profile', 'indicadores'));
     }
 
-    // GET /pei-profiles/{profileId}/indicadores/buscar?q=texto
+    // GET /pei-profiles/{profileId}/indicadores/buscar?q=texto&ambito=xxx
     public function buscar(Request $request, string $profileId)
     {
-        $q = $request->get('q', '');
+        $q      = $request->get('q', '');
+        $ambito = $request->get('ambito');
 
-        $indicadores = Indicador::where('pei_profile_id', $profileId)
+        $query = Indicador::where('pei_profile_id', $profileId)
             ->where(function($query) use ($q) {
                 $query->whereRaw('LOWER(nombre) LIKE ?', ['%' . strtolower($q) . '%'])
                       ->orWhereRaw('LOWER(codigo_letras) LIKE ?', ['%' . strtolower($q) . '%'])
                       ->orWhereRaw('LOWER(codigo_numeros) LIKE ?', ['%' . strtolower($q) . '%']);
-            })
-            ->orderBy('codigo_letras')->orderBy('codigo_numeros')
+            });
+
+        if (!empty($ambito)) {
+            $query->where('ambito', $ambito);
+        }
+
+        $indicadores = $query->orderBy('codigo_letras')->orderBy('codigo_numeros')
             ->limit(20)
             ->get();
 
@@ -77,6 +83,7 @@ class IndicadorController extends Controller
             'codigo'    => $i->codigoCompleto(),
             'dimension' => $i->dimension,
             'sentido'   => $i->sentido,
+            'ambito'    => $i->ambito,
         ]));
     }
 

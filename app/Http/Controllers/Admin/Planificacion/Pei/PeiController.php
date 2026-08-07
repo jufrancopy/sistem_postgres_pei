@@ -509,7 +509,9 @@ class PeiController extends Controller
         $profile = PeiProfile::with([
                 'analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies',
                 'children.marcos', 'children.strategies',
-                'children.children.children.indicador', // acciones (level=action) con su indicador
+                'children.indicador', // nivel 1 (axi) con su indicador
+                'children.children.indicador', // nivel 2 (goal) con su indicador
+                'children.children.children.indicador', // nivel 3 (action) con su indicador
             ])
             ->findOrFail($id);
         $type = $profile->type;
