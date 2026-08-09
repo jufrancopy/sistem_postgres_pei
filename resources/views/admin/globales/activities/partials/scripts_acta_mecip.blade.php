@@ -115,6 +115,7 @@
             $('#acta_uuid').val(a.uuid || '');
             $('#acta_estado').val(a.estado || 'borrador');
             $('#acta_numero').val(a.numero_acta || '');
+            $('#acta_logo_url').val(a.logo_url || '');
             $('#acta_institucion').val(a.institucion || 'INSTITUTO DE PREVISIÓN SOCIAL');
             $('#acta_dependencia').val(a.dependencia || 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS');
             $('#acta_lugar').val(a.lugar || 'REUNIÓN VIRTUAL');
@@ -188,6 +189,7 @@
             institucion:      $('#acta_institucion').val(),
             dependencia:      $('#acta_dependencia').val(),
             numero_acta:      $('#acta_numero').val(),
+            logo_url:         $('#acta_logo_url').val(),
             lugar:            $('#acta_lugar').val(),
             fecha:            $('#acta_fecha').val(),
             hora_desde:       $('#acta_hora_desde').val(),

@@ -57,6 +57,7 @@ class ActaMecipController extends Controller
             'activity_task_id' => $acta->activity_task_id,
             'uuid'             => $acta->uuid,
             'numero_acta'      => $acta->numero_acta,
+            'logo_url'         => $acta->logo_url,
             'institucion'      => $acta->institucion ?? 'INSTITUTO DE PREVISIÓN SOCIAL',
             'dependencia'      => $acta->dependencia ?? 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS',
             'lugar'            => $acta->lugar ?? 'REUNIÓN VIRTUAL',
@@ -114,6 +115,7 @@ class ActaMecipController extends Controller
             'institucion'      => 'nullable|string|max:255',
             'dependencia'      => 'nullable|string|max:255',
             'numero_acta'      => 'nullable|string|max:100',
+            'logo_url'         => 'nullable|string|max:500',
             'lugar'            => 'nullable|string|max:255',
             'fecha'            => 'nullable|date',
             'hora_desde'       => 'nullable|string|max:10',
@@ -143,6 +145,7 @@ class ActaMecipController extends Controller
         $acta->institucion      = $validated['institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL';
         $acta->dependencia      = $validated['dependencia'] ?? 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS';
         $acta->numero_acta      = $validated['numero_acta'] ?? ('Acta ' . $task->id . '/' . date('Y'));
+        $acta->logo_url         = $validated['logo_url'] ?? null;
         $acta->lugar            = $validated['lugar'] ?? 'REUNIÓN VIRTUAL';
         $acta->fecha            = $validated['fecha'] ?? ($task->fecha_inicio ?? now());
         $acta->hora_desde       = $validated['hora_desde'] ?? '15:00';

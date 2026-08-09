@@ -61,9 +61,13 @@
                         <div class="text-center mb-4 pb-3 border-bottom" style="border-bottom-width: 2px !important; border-bottom-color: #0f172a !important;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <div style="text-align: left;">
-                                    <span class="badge badge-light border text-muted px-2 py-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                                    <span class="badge badge-light border text-muted px-2 py-1 mb-1" style="font-size: 0.72rem; letter-spacing: 0.5px; display: block; width: max-content;">
                                         MECIP:2015
                                     </span>
+                                    <input type="text" class="form-control form-control-sm text-muted" 
+                                           id="acta_logo_url" name="logo_url" placeholder="URL Logo (Opcional)" 
+                                           style="width: 140px; border: 1px dashed #cbd5e1; border-radius: 6px; font-size: 0.75rem;" 
+                                           title="Si se deja vacío, se usará el logo por defecto.">
                                 </div>
                                 <div class="text-right">
                                     <div class="d-flex align-items-center" style="gap: 6px;">

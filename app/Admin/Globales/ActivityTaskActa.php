@@ -14,6 +14,7 @@ class ActivityTaskActa extends Model
         'activity_task_id',
         'uuid',
         'numero_acta',
+        'logo_url',
         'institucion',
         'dependencia',
         'lugar',
