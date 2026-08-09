@@ -32,6 +32,9 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h5 class="mb-0 font-weight-bold">
                 <i class="fa fa-list mr-2 text-info"></i>Lista de actividades
+                @if(isset($peiProfile))
+                    - Plan: <span class="text-primary">{{ strip_tags($peiProfile->name) }}</span>
+                @endif
             </h5>
             <button class="btn btn-info" id="createNewActivity">
                 <i class="fa fa-plus mr-1"></i>Nueva Actividad
@@ -162,7 +165,7 @@ $(function() {
             zeroRecords:    'Sin resultados',
             paginate: { first:'Primero', last:'Último', next:'Siguiente', previous:'Anterior' },
         },
-        ajax: '{{ route("globales.activities.index") }}',
+        ajax: '{!! route("globales.activities.index", ["pei_profile_id" => request("pei_profile_id")]) !!}',
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'name', name: 'name' },
@@ -250,7 +253,11 @@ $(function() {
         $('.errors').addClass('d-none').text('');
         initTipoSelect();
         $('#group_id').val('').trigger('change');
+        @if(isset($peiProfile))
+        initPeiProfileSelect({ id: '{{ $peiProfile->id }}', text: '{!! addslashes(strip_tags($peiProfile->name)) !!}' });
+        @else
         initPeiProfileSelect(null);
+        @endif
         initResponsablesSelect(null);
         $('#activityModal').modal('show');
     });

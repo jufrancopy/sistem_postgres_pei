@@ -21,7 +21,13 @@ class ActivityController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Activity::with(['responsibles', 'peiProfile', 'group'])->latest()->get();
+            $query = Activity::with(['responsibles', 'peiProfile', 'group'])->latest();
+
+            if ($request->has('pei_profile_id') && !empty($request->pei_profile_id)) {
+                $query->where('pei_profile_id', $request->pei_profile_id);
+            }
+
+            $data = $query->get();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('pei_profile', function (Activity $a) {
@@ -44,7 +50,13 @@ class ActivityController extends Controller
         }
 
         $groups = \App\Admin\Globales\Group::orderBy('name')->get();
-        return view('admin.globales.activities.index', compact('groups'));
+        
+        $peiProfile = null;
+        if ($request->has('pei_profile_id') && !empty($request->pei_profile_id)) {
+            $peiProfile = \App\Admin\Planificacion\Pei\PeiProfile::find($request->pei_profile_id);
+        }
+
+        return view('admin.globales.activities.index', compact('groups', 'peiProfile'));
     }
 
     public function getPeiProfiles(Request $request)
