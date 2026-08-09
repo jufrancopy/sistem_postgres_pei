@@ -482,6 +482,16 @@
     <script>
         $(document).ready(function() {
             var submitUrl = "{{ route('actas.public.registrar', $acta->uuid) }}";
+            var yaFirmoServer = {{ (isset($yaFirmo) && $yaFirmo) ? 'true' : 'false' }};
+            var storageKey = 'acta_signed_{{ $acta->uuid }}';
+
+            if (yaFirmoServer || localStorage.getItem(storageKey) === 'true') {
+                $('#formPublicRegistro').hide();
+                $('#formPublicRegistro').prevAll('.d-flex.align-items-center').hide();
+                $('#alertSuccessRegistro').show();
+                $('#successMsgTitle').text('Tu asistencia ya se encuentra registrada.');
+                $('#successMsgSubtitle').text('Ya has firmado esta acta previamente. Abajo puedes ver la lista de participantes confirmados.');
+            }
 
             // Inicializar Signature Pad
             var canvas = document.getElementById('signature-pad');
@@ -527,6 +537,8 @@
                     },
                     success: function(res) {
                         if (res.success) {
+                            localStorage.setItem(storageKey, 'true');
+                            
                             $('#formPublicRegistro').slideUp();
                             $('#formPublicRegistro').prevAll('.d-flex.align-items-center').slideUp();
                             $('#alertSuccessRegistro').slideDown();

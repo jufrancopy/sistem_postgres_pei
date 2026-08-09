@@ -346,7 +346,16 @@ class ActaMecipController extends Controller
         $publicUrl = route('actas.public.show', $acta->uuid);
         $qrSvg     = (string) QrCode::size(160)->margin(1)->generate($publicUrl);
 
-        return view('public.actas.show', compact('acta', 'task', 'publicUrl', 'qrSvg'));
+        $yaFirmo = false;
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $email = Auth::user()->email;
+            $yaFirmo = $acta->participantes->contains(function ($part) use ($userId, $email) {
+                return $part->user_id === $userId || (!empty($email) && strtolower($part->correo) === strtolower($email));
+            });
+        }
+
+        return view('public.actas.show', compact('acta', 'task', 'publicUrl', 'qrSvg', 'yaFirmo'));
     }
 
     /**
