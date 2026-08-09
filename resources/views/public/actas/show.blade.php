@@ -527,9 +527,14 @@
                     },
                     success: function(res) {
                         if (res.success) {
+                            $('#formPublicRegistro').slideUp();
+                            $('#formPublicRegistro').prevAll('.d-flex.align-items-center').slideUp();
                             $('#alertSuccessRegistro').slideDown();
                             $('#successMsgTitle').text(res.message);
-                            $('#btnSubmitRegistro').html('<i class="fa fa-check-circle mr-2"></i>¡Asistencia Registrada!').removeClass('btn-register').addClass('btn btn-success font-weight-bold py-3');
+                            
+                            $('html, body').animate({
+                                scrollTop: $("#alertSuccessRegistro").offset().top - 30
+                            }, 500);
 
                             // Agregar a la lista de participantes en vivo
                             if (res.participante) {
