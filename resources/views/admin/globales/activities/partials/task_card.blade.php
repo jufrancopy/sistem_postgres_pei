@@ -112,6 +112,17 @@
             <span>Consultar</span>
         </button>
 
+        @if($task->es_reunion)
+        {{-- Acta MECIP --}}
+        <button type="button" class="tac-btn tac-violet btnRedactarActaMecip"
+                onclick="event.stopPropagation();"
+                data-task-id="{{ $task->id }}"
+                title="Redactar / Ver Acta MECIP">
+            <i class="fa fa-file-signature"></i>
+            <span>Acta</span>
+        </button>
+        @endif
+
         {{-- Mover --}}
         @if($puedeMover)
             @if(!$esPrimero)

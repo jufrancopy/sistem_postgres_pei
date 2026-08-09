@@ -20,6 +20,10 @@ Route::patch('/home-config/save',   'Admin\HomeConfigController@save')->name('ho
 // ── Vistas públicas PEI (sin autenticación) ───────────────────────────────────
 Route::get('/public/pei/{token}', 'Admin\Planificacion\PublicPeiController@show')->name('pei.public.show');
 
+// ── Vistas públicas Acta de Reunión MECIP (sin autenticación) ─────────────────
+Route::get('/actas-reunion/{token}', 'Admin\Globales\ActaMecipController@publicView')->name('actas.public.show');
+Route::post('/actas-reunion/{token}/registro', 'Admin\Globales\ActaMecipController@publicRegistrar')->name('actas.public.registrar');
+
 Route::group(['middleware' => ['auth']], function () {
     Route::resource('products', 'Admin\ProductController');
 
@@ -271,6 +275,14 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('activities/tareas/{taskId}/comentarios', 'Admin\Globales\ActivityController@getComentarios')->name('activities.tareas.comentarios.index');
         Route::post('activities/tareas/{taskId}/comentarios', 'Admin\Globales\ActivityController@storeComentario')->name('activities.tareas.comentarios.store');
         Route::delete('activities/tareas/comentarios/{commentId}', 'Admin\Globales\ActivityController@destroyComentario')->name('activities.tareas.comentarios.destroy');
+
+        // ── Actas de Reunión MECIP ──────────────────────────────────────────
+        Route::get('activities/tareas/{taskId}/acta-mecip', 'Admin\Globales\ActaMecipController@getActa')->name('activities.acta-mecip.get');
+        Route::post('activities/tareas/{taskId}/acta-mecip', 'Admin\Globales\ActaMecipController@storeOrUpdate')->name('activities.acta-mecip.store');
+        Route::post('activities/tareas/{taskId}/acta-mecip/finalizar', 'Admin\Globales\ActaMecipController@finalizar')->name('activities.acta-mecip.finalizar');
+        Route::post('activities/tareas/{taskId}/acta-mecip/participantes', 'Admin\Globales\ActaMecipController@addParticipante')->name('activities.acta-mecip.participantes.add');
+        Route::delete('activities/tareas/{taskId}/acta-mecip/participantes/{participanteId}', 'Admin\Globales\ActaMecipController@deleteParticipante')->name('activities.acta-mecip.participantes.delete');
+        Route::get('activities/tareas/{taskId}/acta-mecip/imprimir', 'Admin\Globales\ActaMecipController@imprimir')->name('activities.acta-mecip.imprimir');
 
 
         //Localities

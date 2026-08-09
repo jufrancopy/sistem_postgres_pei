@@ -203,6 +203,10 @@ function renderDetalleBasico(taskId) {
         renderComentariosDetalle(data.comentarios || []);
 
         var accionesHtml = '';
+        if (data.es_reunion == 1) {
+            var btnLabel = data.has_acta ? 'Acta MECIP ' + (data.acta_participantes_count > 0 ? '(' + data.acta_participantes_count + ' part.)' : '') : 'Redactar Acta MECIP';
+            accionesHtml += '<button class="btn btn-sm btn-block btnRedactarActaMecip mb-2" data-task-id="' + taskId + '" style="background:#dbeafe;color:#1e40af;border:none;border-radius:8px;font-size:.8rem;font-weight:600;padding:8px"><i class="fa fa-file-signature mr-2"></i>' + btnLabel + '</button>';
+        }
         if (_esGestor) {
             accionesHtml += '<button class="btn btn-sm btn-block editTaskBtn-detalle" data-id="' + taskId + '" style="background:#ede9fe;color:#5b21b6;border:none;border-radius:8px;font-size:.8rem;font-weight:600;padding:8px"><i class="fa fa-pen mr-2"></i>Editar tarea</button>';
             accionesHtml += '<button class="btn btn-sm btn-block btn-add-evidence-detalle" data-id="' + taskId + '" style="background:#f0fdf4;color:#065f46;border:none;border-radius:8px;font-size:.8rem;font-weight:600;padding:8px"><i class="fa fa-paperclip mr-2"></i>Agregar evidencia</button>';

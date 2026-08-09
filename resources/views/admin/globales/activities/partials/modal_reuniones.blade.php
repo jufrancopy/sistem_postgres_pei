@@ -41,7 +41,7 @@
                                 <th style="width:140px">Responsable</th>
                                 <th style="width:90px" class="text-center">Estado</th>
                                 <th style="width:90px" class="text-center">Fecha</th>
-                                <th style="width:130px" class="text-center">Acta</th>
+                                <th style="min-width:180px" class="text-center">Acta MECIP / Evidencia</th>
                             </tr>
                         </thead>
                         <tbody id="reunionesBody"></tbody>

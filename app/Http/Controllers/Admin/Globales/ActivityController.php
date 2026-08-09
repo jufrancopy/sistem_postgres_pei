@@ -280,7 +280,7 @@ class ActivityController extends Controller
     public function reuniones(int $activityId)
     {
         $activity  = \App\Admin\Globales\Activity::findOrFail($activityId);
-        $reuniones = ActivityTask::with(['assignedTo', 'evidences'])
+        $reuniones = ActivityTask::with(['assignedTo', 'evidences', 'acta.participantes'])
             ->where('activity_id', $activityId)
             ->where('es_reunion', true)
             ->orderBy('fecha_inicio')
@@ -297,6 +297,13 @@ class ActivityController extends Controller
             'fecha_vencimiento' => $t->fecha_vencimiento instanceof \Carbon\Carbon
                 ? $t->fecha_vencimiento->format('d/m/Y')
                 : $t->fecha_vencimiento,
+            'has_acta'          => (bool) $t->acta,
+            'acta_id'           => $t->acta?->id,
+            'acta_uuid'         => $t->acta?->uuid,
+            'acta_numero'       => $t->acta?->numero_acta,
+            'acta_estado'       => $t->acta?->estado,
+            'acta_participantes_count' => $t->acta ? $t->acta->participantes->count() : 0,
+            'acta_public_url'   => $t->acta ? route('actas.public.show', $t->acta->uuid) : null,
             'evidencias'        => $t->evidences->map(fn($e) => [
                 'id'    => $e->id,
                 'type'  => $e->type,
@@ -339,7 +346,7 @@ class ActivityController extends Controller
 
     public function detalleTarea($taskId)
     {
-        $task = ActivityTask::with(['assignedTo', 'completedBy', 'evidences.user', 'comments.user'])->findOrFail($taskId);
+        $task = ActivityTask::with(['assignedTo', 'completedBy', 'evidences.user', 'comments.user', 'acta.participantes'])->findOrFail($taskId);
 
         $venc = null; $vencColor = null;
         if ($task->fecha_vencimiento && $task->status !== 2) {
@@ -361,6 +368,9 @@ class ActivityController extends Controller
                 'status'           => $task->status,
                 'es_reunion'       => $task->es_reunion ? 1 : 0,
                 'es_documento'     => $task->es_documento ? 1 : 0,
+                'has_acta'         => (bool) $task->acta,
+                'acta_id'          => $task->acta?->id,
+                'acta_participantes_count' => $task->acta ? $task->acta->participantes->count() : 0,
                 'assigned_to'      => $task->assigned_to,
                 'responsable'      => $task->assignedTo?->name ?? 'Sin asignar',
                 'completion_note'  => $task->completion_note,

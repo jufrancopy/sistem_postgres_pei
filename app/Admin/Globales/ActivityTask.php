@@ -70,4 +70,9 @@ class ActivityTask extends Model
     {
         return $this->belongsTo(\App\Models\ScheduleItem::class, 'schedule_item_id');
     }
+
+    public function acta()
+    {
+        return $this->hasOne(ActivityTaskActa::class, 'activity_task_id');
+    }
 }

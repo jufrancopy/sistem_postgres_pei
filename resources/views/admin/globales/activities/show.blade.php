@@ -438,6 +438,8 @@
 @include('admin.globales.activities.partials.modal_detalle_tarea')
 @include('admin.globales.activities.partials.modal_reuniones')
 @include('admin.globales.activities.partials.modal_documentos')
+@include('admin.globales.activities.partials.modal_editor_acta_mecip')
+@include('admin.globales.activities.partials.modal_qr_acta')
 
 @include('admin.planificacion.peis.peis.partials.chat_drawer')
 @endsection
@@ -1144,22 +1146,40 @@ $('#btnLimpiarFiltro').on('click', function(e) {
     };
 
     function buildActa(r) {
-        var acta = '';
+        var acta = '<div class="d-flex align-items-center justify-content-center flex-wrap" style="gap:3px">';
+        
+        if (r.has_acta) {
+            var labelText = r.acta_participantes_count > 0 
+                ? '<i class="fa fa-file-signature mr-1"></i>Acta (' + r.acta_participantes_count + ' <i class="fa fa-users" style="font-size:0.65rem"></i>)' 
+                : '<i class="fa fa-file-signature mr-1"></i>Acta MECIP';
+            
+            acta += '<button type="button" class="btn btn-sm btn-primary py-0 px-2 btnRedactarActaMecip" data-task-id="' + r.id + '" title="Editar Acta MECIP en línea" style="font-size:.7rem">' +
+                    labelText + '</button>';
+
+            acta += '<button type="button" class="btn btn-sm btn-outline-success py-0 px-2 btnVerQrDirecto" data-task-id="' + r.id + '" title="Ver Código QR de asistencia" style="font-size:.7rem">' +
+                    '<i class="fa fa-qrcode"></i></button>';
+        } else {
+            acta += '<button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 btnRedactarActaMecip" data-task-id="' + r.id + '" title="Redactar Acta MECIP en línea" style="font-size:.7rem">' +
+                    '<i class="fa fa-file-signature mr-1"></i>+ Acta MECIP</button>';
+        }
+
         if (r.evidencias && r.evidencias.length) {
             r.evidencias.forEach(function(e) {
                 if (e.es_pdf) {
-                    acta += '<button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 btnVerActa mr-1 mb-1" ' +
-                        'data-url="' + e.url + '" data-titulo="' + (e.label || r.title) + '" style="font-size:.7rem">' +
-                        '<i class="fa fa-file-pdf mr-1"></i>' + (e.label || 'Acta') + '</button>';
+                    acta += '<button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 btnVerActa" ' +
+                        'data-url="' + e.url + '" data-titulo="' + (e.label || r.title) + '" title="Ver PDF Adjunto" style="font-size:.7rem">' +
+                        '<i class="fa fa-file-pdf"></i></button>';
                 } else {
-                    acta += '<a href="' + e.url + '" target="_blank" class="btn btn-sm btn-outline-secondary py-0 px-2 mr-1 mb-1" style="font-size:.7rem">' +
-                        '<i class="fa fa-link mr-1"></i>' + (e.label || 'Adjunto') + '</a>';
+                    acta += '<a href="' + e.url + '" target="_blank" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Ver Enlace Adjunto" style="font-size:.7rem">' +
+                        '<i class="fa fa-link"></i></a>';
                 }
             });
-        } else {
-            acta = '<button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 btnSubirActa" data-task-id="' + r.id + '" style="font-size:.7rem">' +
-                   '<i class="fa fa-upload mr-1"></i>Subir acta</button>';
+        } else if (!r.has_acta) {
+            acta += '<button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 btnSubirActa" data-task-id="' + r.id + '" title="Adjuntar archivo o evidencia" style="font-size:.7rem">' +
+                   '<i class="fa fa-paperclip"></i></button>';
         }
+
+        acta += '</div>';
         return acta;
     }
 
@@ -1194,7 +1214,7 @@ $('#btnLimpiarFiltro').on('click', function(e) {
                   render: function(d) { var s = _statusLabels[d] || _statusLabels[0]; return '<span class="badge ' + s.cls + '" style="font-size:.68rem">' + s.label + '</span>'; } },
                 { data: 'fecha_inicio', title: 'Fecha', width: '90px', className: 'text-center',
                   render: function(d) { return '<span style="font-size:.78rem">' + (d || '—') + '</span>'; } },
-                { data: null,         title: 'Acta', width: '130px', className: 'text-center', orderable: false,
+                { data: null,         title: 'Acta MECIP / Evidencias', width: '180px', className: 'text-center', orderable: false,
                   render: function(d, t, r) { return buildActa(r); } },
             ],
             dom: '<"d-flex align-items-center mb-2"f>t',
@@ -1407,8 +1427,11 @@ $('#btnLimpiarFiltro').on('click', function(e) {
         });
     });
 })();
-// ══ FIN DOCUMENTOS ════════════════════════════════════════════════════════════
 </script>
+
+{{-- Scripts de Acta MECIP --}}
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+@include('admin.globales.activities.partials.scripts_acta_mecip')
 
 {{-- Google Charts --}}
 <script src="/assets/googleCharts/loader.js"></script>
