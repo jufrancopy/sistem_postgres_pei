@@ -1051,7 +1051,7 @@
 
                     // ── Función para inicializar Select2 de estrategias según perfil FODA ──
                     function initAxisStrategiesSelect2(fodaPerfilId) {
-                        var urlCrossings = '{{ route('get-crossings') }}?pei_id={{ $profile->id }}';
+                        var urlCrossings = "{{ route('get-crossings') }}?pei_id={{ $profile->id }}";
                         if (fodaPerfilId) {
                             urlCrossings += '&foda_perfil_id=' + fodaPerfilId;
                         }
@@ -1120,7 +1120,7 @@
                         allowClear: true,
                         tags: true,
                         ajax: {
-                            url: '{{ route('pei.marcos.buscar') }}',
+                            url: "{{ route('pei.marcos.buscar') }}",
                             dataType: 'json',
                             delay: 300,
                             data: function(params) { return { q: params.term }; },
@@ -2004,7 +2004,7 @@
             $('body').on('click', '#compareHistorical', function() {
                 var typeBtn = $(this).data('type');
 
-                url = '{{ route('pei-profiles-compareHistorical') }}' + '?pei_id={{ $profile->id }}'
+                url = "{{ route('pei-profiles-compareHistorical') }}" + '?pei_id={{ $profile->id }}'
                 $.get(url, function(data) {
                     console.log(data)
                     $('#modalHeadingHistorical').html(
