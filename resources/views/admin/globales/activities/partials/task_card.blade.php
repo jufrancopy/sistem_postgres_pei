@@ -49,7 +49,7 @@
 
     {{-- Cuerpo clickeable → abre modal detalle --}}
     <div class="card-inner drag-handle" style="cursor:pointer"
-         onclick="abrirDetalleTask({{ $task->id }})">
+         onclick="abrirDetalleTask('{{ $task->id }}')">
 
         @if($task->etiqueta)
         <div class="mb-1">
