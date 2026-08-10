@@ -118,11 +118,13 @@
             var logoUrl = a.logo_url || '';
             $('#acta_logo_url').val(logoUrl);
             
-            // Ocultar MECIP:2015 badge si existe un logo (personalizado o heredado)
+            // Ocultar MECIP:2015 badge si existe un logo (personalizado o heredado) y mostrar imagen
             if (logoUrl) {
                 $('#badge_mecip_2015').hide();
+                $('#acta_logo_preview').attr('src', logoUrl).show();
             } else {
                 $('#badge_mecip_2015').show();
+                $('#acta_logo_preview').hide();
             }
             
             $('#acta_institucion').val(a.institucion || 'INSTITUTO DE PREVISIÓN SOCIAL');
@@ -176,15 +178,6 @@
             alert('Error de conexión al cargar el acta.');
         });
     };
-
-    // ── Dinamismo UI ────────────────────────────────────────────────────────
-    $('#acta_logo_url').on('input', function() {
-        if ($(this).val().trim() !== '') {
-            $('#badge_mecip_2015').hide();
-        } else {
-            $('#badge_mecip_2015').show();
-        }
-    });
 
     // ── Guardar Acta ──────────────────────────────────────────────────────────
     function guardarActa(callback) {

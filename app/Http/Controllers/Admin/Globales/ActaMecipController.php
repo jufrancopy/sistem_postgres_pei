@@ -53,12 +53,23 @@ class ActaMecipController extends Controller
         }
 
         $logoUrl = $acta->logo_url;
-        if (empty($logoUrl)) {
+        $institucion = $acta->institucion;
+        $dependencia = $acta->dependencia;
+        
+        if (empty($logoUrl) || empty($institucion) || empty($dependencia)) {
             $peiProfile = $task->activity?->peiProfile;
             if ($peiProfile && $peiProfile->parameters) {
                 $params = json_decode($peiProfile->parameters, true);
-                if (is_array($params) && !empty($params['acta_logo_url'])) {
-                    $logoUrl = $params['acta_logo_url'];
+                if (is_array($params)) {
+                    if (empty($logoUrl) && !empty($params['acta_logo_url'])) {
+                        $logoUrl = $params['acta_logo_url'];
+                    }
+                    if (empty($institucion) && !empty($params['acta_institucion'])) {
+                        $institucion = $params['acta_institucion'];
+                    }
+                    if (empty($dependencia) && !empty($params['acta_dependencia'])) {
+                        $dependencia = $params['acta_dependencia'];
+                    }
                 }
             }
         }
@@ -69,8 +80,8 @@ class ActaMecipController extends Controller
             'uuid'             => $acta->uuid,
             'numero_acta'      => $acta->numero_acta,
             'logo_url'         => $logoUrl,
-            'institucion'      => $acta->institucion ?? 'INSTITUTO DE PREVISIÓN SOCIAL',
-            'dependencia'      => $acta->dependencia ?? 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS',
+            'institucion'      => $institucion ?? 'INSTITUTO DE PREVISIÓN SOCIAL',
+            'dependencia'      => $dependencia ?? 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS',
             'lugar'            => $acta->lugar ?? 'REUNIÓN VIRTUAL',
             'fecha'            => $acta->fecha ? $acta->fecha->format('Y-m-d') : date('Y-m-d'),
             'hora_desde'       => $acta->hora_desde,

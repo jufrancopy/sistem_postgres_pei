@@ -1055,6 +1055,12 @@ class PeiController extends Controller
         if ($request->has('acta_logo_url')) {
             $params['acta_logo_url'] = $request->input('acta_logo_url');
         }
+        if ($request->has('acta_institucion')) {
+            $params['acta_institucion'] = $request->input('acta_institucion');
+        }
+        if ($request->has('acta_dependencia')) {
+            $params['acta_dependencia'] = $request->input('acta_dependencia');
+        }
         
         $profile->parameters = json_encode($params);
         $profile->save();

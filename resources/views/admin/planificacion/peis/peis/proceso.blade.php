@@ -316,15 +316,32 @@ $pctGlobal   = round(($completados / 6) * 100);
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
                     @php
                         $params = json_decode($profile->parameters, true) ?? [];
                         $actaLogoUrl = $params['acta_logo_url'] ?? '';
+                        $actaInstitucion = $params['acta_institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL';
+                        $actaDependencia = $params['acta_dependencia'] ?? 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS';
                     @endphp
+                    
                     <div class="form-group mb-3">
-                        <label class="font-weight-bold text-dark">URL del Logo para Actas (Acta MECIP)</label>
-                        <input type="text" name="acta_logo_url" class="form-control" placeholder="Ej: https://midominio.com/logo.png" value="{{ $actaLogoUrl }}">
-                        <small class="text-muted">Si se define, todas las nuevas actas generadas bajo este plan utilizarán este logo por defecto. Si se deja en blanco, usarán el logo predeterminado del sistema.</small>
+                        <label class="font-weight-bold text-dark">Institución (Acta MECIP)</label>
+                        <input type="text" name="acta_institucion" class="form-control" value="{{ $actaInstitucion }}">
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark">Dependencia (Acta MECIP)</label>
+                        <textarea name="acta_dependencia" class="form-control" rows="2">{{ $actaDependencia }}</textarea>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark">URL del Logo (Acta MECIP)</label>
+                        <input type="text" name="acta_logo_url" id="config_acta_logo_url" class="form-control" placeholder="Ej: https://midominio.com/logo.png" value="{{ $actaLogoUrl }}">
+                        <small class="text-muted">Si se deja en blanco, usarán el logo predeterminado del sistema.</small>
+                    </div>
+                    
+                    <div class="text-center bg-light p-3 border rounded" style="min-height: 100px;">
+                        <small class="d-block text-muted mb-2">Vista Previa del Logo</small>
+                        <img id="config_logo_preview" src="{{ !empty($actaLogoUrl) ? $actaLogoUrl : asset('material/img/new_logo.png') }}" style="max-height: 60px; max-width: 100%;">
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
@@ -335,6 +352,19 @@ $pctGlobal   = round(($completados / 6) * 100);
         </form>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var inputLogo = document.getElementById('config_acta_logo_url');
+        if (inputLogo) {
+            inputLogo.addEventListener('input', function() {
+                var url = this.value.trim();
+                var preview = document.getElementById('config_logo_preview');
+                preview.src = url ? url : '{{ asset('material/img/new_logo.png') }}';
+            });
+        }
+    });
+</script>
 
 {{-- Modal Ficha Técnica de Indicador (reutilizable) --}}
 @include('admin.planificacion.indicadores.modal_ficha', ['profile' => $profile])

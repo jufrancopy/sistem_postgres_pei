@@ -64,10 +64,8 @@
                                     <span id="badge_mecip_2015" class="badge badge-light border text-muted px-2 py-1 mb-1" style="font-size: 0.72rem; letter-spacing: 0.5px; display: block; width: max-content;">
                                         MECIP:2015
                                     </span>
-                                    <input type="text" class="form-control form-control-sm text-muted" 
-                                           id="acta_logo_url" name="logo_url" placeholder="URL Logo (Opcional)" 
-                                           style="width: 140px; border: 1px dashed #cbd5e1; border-radius: 6px; font-size: 0.75rem;" 
-                                           title="Si se deja vacío, se usará el logo por defecto.">
+                                    <input type="hidden" id="acta_logo_url" name="logo_url">
+                                    <img id="acta_logo_preview" src="" style="max-height: 45px; max-width: 140px; display: none; margin-top: 5px;">
                                 </div>
                                 <div class="text-right">
                                     <div class="d-flex align-items-center" style="gap: 6px;">
