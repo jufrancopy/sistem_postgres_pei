@@ -48,7 +48,13 @@
             <a href="{{ route('proyectos-institucionales.index', $profile->id) }}" class="btn btn-sm btn-success ml-2">
                 <i class="fa fa-project-diagram mr-1"></i> Proyectos
             </a>
-            <a href="{{ route('globales.activities.index', ['pei_profile_id' => $profile->id]) }}" class="btn btn-sm btn-info ml-2">
+            @php
+                $actividadVinculada = \App\Admin\Globales\Activity::where('pei_profile_id', $profile->id)->first();
+                $urlActividad = $actividadVinculada 
+                    ? route('globales.activities.show', $actividadVinculada->id) 
+                    : route('globales.activities.create', ['pei_profile_id' => $profile->id]);
+            @endphp
+            <a href="{{ $urlActividad }}" class="btn btn-sm btn-info ml-2">
                 <i class="fa fa-tasks mr-1"></i> Actividades
             </a>
             <button type="button" class="btn btn-sm btn-outline-secondary ml-2" data-toggle="modal" data-target="#modalQrSolicitud">

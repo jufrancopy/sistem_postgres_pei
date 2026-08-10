@@ -323,19 +323,19 @@ $pctGlobal   = round(($completados / 6) * 100);
                         $actaDependencia = $params['acta_dependencia'] ?? 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS';
                     @endphp
                     
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold text-dark">Institución (Acta MECIP)</label>
-                        <input type="text" name="acta_institucion" class="form-control" value="{{ $actaInstitucion }}">
+                    <div class="form-group mb-3 bmd-form-group is-filled">
+                        <label class="bmd-label-floating font-weight-bold text-dark">Institución (Acta MECIP)</label>
+                        <input type="text" name="acta_institucion" class="form-control px-2 border rounded" value="{{ $actaInstitucion }}">
                     </div>
 
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold text-dark">Dependencia (Acta MECIP)</label>
-                        <textarea name="acta_dependencia" class="form-control" rows="2">{{ $actaDependencia }}</textarea>
+                    <div class="form-group mb-3 bmd-form-group is-filled">
+                        <label class="bmd-label-floating font-weight-bold text-dark">Dependencia (Acta MECIP)</label>
+                        <textarea name="acta_dependencia" class="form-control px-2 border rounded" rows="2">{{ $actaDependencia }}</textarea>
                     </div>
 
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold text-dark">URL del Logo (Acta MECIP)</label>
-                        <input type="text" name="acta_logo_url" id="config_acta_logo_url" class="form-control" placeholder="Ej: https://midominio.com/logo.png" value="{{ $actaLogoUrl }}">
+                    <div class="form-group mb-3 bmd-form-group is-filled">
+                        <label class="bmd-label-floating font-weight-bold text-dark">URL del Logo (Acta MECIP)</label>
+                        <input type="text" name="acta_logo_url" id="config_acta_logo_url" class="form-control px-2 border rounded" placeholder="Ej: https://midominio.com/logo.png" value="{{ $actaLogoUrl }}">
                         <small class="text-muted">Si se deja en blanco, usarán el logo predeterminado del sistema.</small>
                     </div>
                     
