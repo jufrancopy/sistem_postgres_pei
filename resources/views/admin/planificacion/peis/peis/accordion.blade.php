@@ -115,6 +115,16 @@
                     </a>
                     @endrole
                 </div>
+                {{-- Editores del Objetivo --}}
+                @php $uniqueEditorsAxi = $axi->edits->pluck('user')->filter()->unique('id'); @endphp
+                @if($uniqueEditorsAxi->isNotEmpty())
+                <div class="mt-1 px-1 d-flex flex-wrap align-items-center" style="gap:.25rem">
+                    <small class="text-white mr-1" style="opacity:.6;font-size:.62rem;"><i class="fa fa-user-edit mr-1"></i>Editores:</small>
+                    @foreach($uniqueEditorsAxi as $uEditor)
+                        <span class="badge" style="background:rgba(255,255,255,.2);color:#fff;font-size:.65rem">{{ $uEditor->name }}</span>
+                    @endforeach
+                </div>
+                @endif
                 {{-- Resultado Intermedio Institucional --}}
                 @if($axi->resultado_intermedio)
                 @php
@@ -259,7 +269,17 @@
                                      <i class="fa fa-trash" style="font-size:.7rem"></i>
                                  </a>
                                  @endrole
-                            </div>
+                             </div>
+                             {{-- Editores de la Meta --}}
+                             @php $uniqueEditorsGoal = $goal->edits->pluck('user')->filter()->unique('id'); @endphp
+                             @if($uniqueEditorsGoal->isNotEmpty())
+                             <div class="mt-1 d-flex flex-wrap align-items-center" style="gap:.25rem">
+                                 <small class="text-muted mr-1" style="font-size:.62rem;"><i class="fa fa-user-edit mr-1"></i>Editores:</small>
+                                 @foreach($uniqueEditorsGoal as $uEditor)
+                                     <span class="badge badge-light border" style="font-size:.65rem">{{ $uEditor->name }}</span>
+                                 @endforeach
+                             </div>
+                             @endif
                         </div>{{-- /card-header meta --}}
 
                         {{-- Body Meta → Acciones --}}
@@ -366,6 +386,16 @@
                                                         </button>
                                                     </div>
                                                 </div>
+                                                {{-- Editores de la Acción --}}
+                                                @php $uniqueEditorsAction = $action->edits->pluck('user')->filter()->unique('id'); @endphp
+                                                @if($uniqueEditorsAction->isNotEmpty())
+                                                <div class="mt-1 d-flex flex-wrap align-items-center px-1" style="gap:.25rem">
+                                                    <small class="text-muted mr-1" style="font-size:.62rem;"><i class="fa fa-user-edit mr-1"></i>Editores:</small>
+                                                    @foreach($uniqueEditorsAction as $uEditor)
+                                                        <span class="badge badge-light border" style="font-size:.65rem">{{ $uEditor->name }}</span>
+                                                    @endforeach
+                                                </div>
+                                                @endif
                                             </div>{{-- /card-header accion --}}
 
                                             {{-- ── Cuerpo tipo Matriz Integrada ── --}}

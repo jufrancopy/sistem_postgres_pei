@@ -839,9 +839,12 @@ class PeiController extends Controller
         $profile = \App\Admin\Planificacion\Pei\PeiProfile::with([
             'children.marcos',
             'children.strategies',
+            'children.edits.user',
+            'children.children.edits.user',
             'children.children.children.indicador',
             'children.children.children.responsibles',
             'children.children.children.activityTasks',
+            'children.children.children.edits.user',
         ])->findOrFail($profileId);
 
         $nivelesDefault = ['master'=>'PEI','axi'=>'Nivel 1','goal'=>'Nivel 2','action'=>'Acción'];
