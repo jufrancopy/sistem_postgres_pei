@@ -39,6 +39,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/gamification/buscar-usuarios', 'Admin\GamificationAdminController@buscarUsuarios')->name('pei-profiles.gamification.buscar-usuarios');
     Route::get('pei-profiles/{idProfile}/gamification/historial-manual', 'Admin\GamificationAdminController@historialManual')->name('pei-profiles.gamification.historial-manual');
     Route::get('pei-profiles/{profileId}/gamification/editores', 'Admin\GamificationAdminController@editoresPorNodo')->name('pei-profiles.gamification.editores');
+    Route::get('pei-profiles/{idProfile}/gamification/ranking', 'Admin\Planificacion\Pei\PeiController@rankingTalentoHumano')->name('pei-profiles.gamification.ranking');
     Route::get('/profile', function () { return redirect()->route('user.profile'); })->name('profile.edit');
 
     // ── Mis Tareas (colaboradores) ────────────────────────────────────────────

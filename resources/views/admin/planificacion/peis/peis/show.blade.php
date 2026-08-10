@@ -66,6 +66,11 @@
                     title="Otorgar puntos manuales a un funcionario en este plan">
                 <i class="fa fa-star mr-1"></i> Otorgar Puntos
             </button>
+            <button type="button" class="btn btn-sm btn-outline-warning ml-2 font-weight-bold" id="btnRankingPei"
+                    data-toggle="modal" data-target="#modalRankingPei"
+                    title="Ver ranking de talento humano por puntos en este plan">
+                <i class="fa fa-trophy mr-1"></i> Ranking
+            </button>
             <button type="button" id="btnRecalcularGamificacionPei" class="btn btn-sm btn-outline-warning ml-2 font-weight-bold"
                     title="Recalcular retroactivamente los puntos e insignias de este plan">
                 <i class="fa fa-sync-alt mr-1"></i> Recalcular Puntos
@@ -521,6 +526,39 @@
 
 @stop
 
+{{-- Modal Ranking Talento Humano --}}
+<div class="modal fade" id="modalRankingPei" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header" style="background:linear-gradient(135deg,#1e2746,#2d3a6b);color:white;">
+                <h5 class="modal-title font-weight-bold mb-0">
+                    <i class="fa fa-trophy mr-2 text-warning"></i> Ranking de Talento Humano
+                    <small class="d-block text-white-50" style="font-size:.75rem;font-weight:400;">{{ strip_tags($profile->name) }}</small>
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="p-3 border-bottom" style="background:#f8fafc;">
+                    <table class="table table-hover table-sm mb-0" id="tablaRankingPei" style="width:100%">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th style="width:50px" class="text-center">#</th>
+                                <th>Funcionario</th>
+                                <th style="width:120px" class="text-center">Puntos Totales</th>
+                                <th style="width:150px" class="text-center">Mayor Aporte</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer" style="background:#f8fafc;">
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section('scripts')
     {{-- My custom scripts --}}
     <script type="text/javascript">
@@ -529,6 +567,33 @@
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
+            });
+
+            // Ranking Talento Humano
+            var tablaRanking = null;
+            $('#modalRankingPei').on('show.bs.modal', function() {
+                if (tablaRanking) { tablaRanking.ajax.reload(); return; }
+                tablaRanking = $('#tablaRankingPei').DataTable({
+                    processing: true,
+                    serverSide: true,
+                    ajax: '{{ route("pei-profiles.gamification.ranking", $profile->id) }}',
+                    columns: [
+                        { data: 'DT_RowIndex', orderable: false, searchable: false, className: 'text-center font-weight-bold', render: function(data) {
+                            var medals = ['🥇','🥈','🥉'];
+                            return medals[data-1] ? '<span style="font-size:1.1rem">'+medals[data-1]+'</span>' : data;
+                        }},
+                        { data: 'nombre' },
+                        { data: 'total_points', className: 'text-center', render: function(data) {
+                            return '<span class="badge badge-warning text-dark font-weight-bold" style="font-size:.85rem;padding:.4em .7em">⭐ '+data+' pts</span>';
+                        }},
+                        { data: 'top_action', className: 'text-center', render: function(data) {
+                            return '<span class="badge badge-light border text-dark" style="font-size:.78rem">'+data+'</span>';
+                        }},
+                    ],
+                    language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json' },
+                    pageLength: 10,
+                    order: [[2, 'desc']],
+                });
             });
 
             // ── Recalcular Puntos ────────────────────────────────────────────
