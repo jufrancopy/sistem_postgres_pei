@@ -974,7 +974,7 @@
 
                     // ── Función para inicializar Select2 de estrategias según perfil FODA ──
                     function initAxisStrategiesSelect2(fodaPerfilId) {
-                        var urlCrossings = '{{ route('get-crossings') }}?pei_id={{ $profile->id }}';
+                        var urlCrossings = "{{ route('get-crossings') }}?pei_id={{ $profile->id }}";
                         if (fodaPerfilId) {
                             urlCrossings += '&foda_perfil_id=' + fodaPerfilId;
                         }
@@ -1029,7 +1029,7 @@
 
                     // Pre-cargar marcos ya vinculados (solo en edición)
                     if (typeBtn === 'edit') {
-                        $.get('{{ route('pei.marcos.porPerfil', ['profileId' => '__ID__']) }}'.replace('__ID__', profileID), function(marcos) {
+                        $.get("{{ route('pei.marcos.porPerfil', ['profileId' => '__ID__']) }}".replace('__ID__', profileID), function(marcos) {
                             marcos.forEach(function(m) {
                                 selectMarcos.append(new Option(m.text, m.id, true, true));
                             });
@@ -1043,7 +1043,7 @@
                         allowClear: true,
                         tags: true,
                         ajax: {
-                            url: '{{ route('pei.marcos.buscar') }}',
+                            url: "{{ route('pei.marcos.buscar') }}",
                             dataType: 'json',
                             delay: 300,
                             data: function(params) { return { q: params.term }; },
@@ -1927,7 +1927,7 @@
             $('body').on('click', '#compareHistorical', function() {
                 var typeBtn = $(this).data('type');
 
-                url = '{{ route('pei-profiles-compareHistorical') }}' + '?pei_id={{ $profile->id }}'
+                url = "{{ route('pei-profiles-compareHistorical') }}" + '?pei_id={{ $profile->id }}'
                 $.get(url, function(data) {
                     console.log(data)
                     $('#modalHeadingHistorical').html(
