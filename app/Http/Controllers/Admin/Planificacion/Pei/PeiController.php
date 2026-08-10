@@ -281,8 +281,7 @@ class PeiController extends Controller
 
         $user = Auth::user();
 
-        // Generar UUID si no se proporciona profile_id
-        $profileId = $request->profile_id ?? Str::uuid();
+        $profileId = $request->profile_id ?? null;
 
         // Campos exclusivos del nodo master — solo se actualizan si vienen
         // explícitamente en el request (evita que ediciones de nodos hijos los pisen)
@@ -295,9 +294,7 @@ class PeiController extends Controller
         $resolve = fn(string $field, $requestValue) =>
             $request->has($field) ? ($requestValue ?: null) : ($existing?->$field ?? null);
 
-        $profile = PeiProfile::updateOrCreate(
-            ['id' => $profileId],
-            [
+        $attributes = [
                 'name'                 => $request->name,
                 'year_start'           => $resolve('year_start', $request->year_start),
                 'year_end'             => $resolve('year_end', $request->year_end),
@@ -332,8 +329,17 @@ class PeiController extends Controller
                 'ri_programa'          => $request->ri_programa ?: null,
                 'ri_recursos_gs'       => $request->ri_recursos_gs ?: null,
                 'ri_metas'             => json_encode($request->input('ri_metas', [])),
-            ]
-        );
+        ];
+
+        // Si es un nodo nuevo con parent_id, lo insertamos directamente en el
+        // árbol NestedSet. updateOrCreate no maneja parent_id porque no está en $fillable.
+        if (!$profileId && $request->parent_id) {
+            $parent  = PeiProfile::findOrFail($request->parent_id);
+            $profile = new PeiProfile($attributes);
+            $profile->appendToNode($parent)->save();
+        } else {
+            $profile = PeiProfile::updateOrCreate(['id' => $profileId ?? Str::uuid()], $attributes);
+        }
 
         $wasChanged = $profile->wasChanged();
 
