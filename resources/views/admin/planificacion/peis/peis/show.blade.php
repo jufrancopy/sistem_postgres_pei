@@ -217,6 +217,41 @@
 
                                             </div>
 
+                                            {{-- ── Editores del Plan ── --}}
+                                            @php
+                                                $nodosIds = \App\Admin\Planificacion\Pei\PeiProfile::where('_lft', '>=', $profile->_lft)
+                                                    ->where('_rgt', '<=', $profile->_rgt)
+                                                    ->pluck('id');
+                                                $editores = \App\Models\Planificacion\PeiProfileEdit::whereIn('pei_profile_id', $nodosIds)
+                                                    ->with('user')
+                                                    ->select('user_id')
+                                                    ->groupBy('user_id')
+                                                    ->get();
+                                            @endphp
+                                            <div class="mt-3 px-1">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-users text-muted mr-2"></i>
+                                                    <span class="font-weight-bold text-uppercase" style="font-size:.75rem; letter-spacing:.05em; color:#495057">
+                                                        Editores del Plan
+                                                    </span>
+                                                    <span class="badge badge-light border ml-2" style="font-size:.68rem">
+                                                        {{ $editores->count() }} editor(es)
+                                                    </span>
+                                                </div>
+                                                <div class="d-flex flex-wrap" style="gap:.35rem">
+                                                    @foreach($editores as $editor)
+                                                        @if($editor->user)
+                                                            <span class="badge badge-light border" style="font-size:.72rem; padding:.35em .6em" title="Ha editado elementos dentro del plan">
+                                                                <i class="fa fa-user-edit mr-1 text-info"></i>{{ $editor->user->name }}
+                                                            </span>
+                                                        @endif
+                                                    @endforeach
+                                                    @if($editores->isEmpty())
+                                                        <span class="text-muted small"><i>Nadie ha editado este plan aún.</i></span>
+                                                    @endif
+                                                </div>
+                                            </div>
+
                                             {{-- ── Marco Estratégico General ── --}}
                                             @if($marcosGenerales->count() > 0)
                                             @php

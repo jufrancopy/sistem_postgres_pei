@@ -357,7 +357,7 @@ class PeiController extends Controller
                 $user,
                 'pei_edit',
                 'Edición de elemento PEI: ' . \Illuminate\Support\Str::limit(strip_tags($profile->name), 40),
-                10,
+                100,
                 $profile,
                 (string) $peiRaizId
             );
