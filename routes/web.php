@@ -35,7 +35,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/perfil/password', 'Admin\UserProfileController@updatePassword')->name('user.profile.password');
     Route::post('/gamification/recalculate', 'Admin\GamificationAdminController@recalculate')->name('gamification.recalculate');
     Route::post('pei-profiles/{idProfile}/gamification/award-manual', 'Admin\GamificationAdminController@awardManual')->name('pei-profiles.gamification.award-manual');
-    Route::get('pei-profiles/{idProfile}/gamification/ranking',         'Admin\Planificacion\Pei\PeiController@rankingTalentoHumano')->name('pei-profiles.gamification.ranking');
     Route::get('pei-profiles/{idProfile}/gamification/motivos', 'Admin\GamificationAdminController@motivosSugeridos')->name('pei-profiles.gamification.motivos');
     Route::get('pei-profiles/{idProfile}/gamification/buscar-usuarios', 'Admin\GamificationAdminController@buscarUsuarios')->name('pei-profiles.gamification.buscar-usuarios');
     Route::get('pei-profiles/{idProfile}/gamification/historial-manual', 'Admin\GamificationAdminController@historialManual')->name('pei-profiles.gamification.historial-manual');

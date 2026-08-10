@@ -51,7 +51,7 @@
 
         {{-- Tabla --}}
         <div class="table-responsive">
-            <table class="table table-hover table-sm" id="tablaIndicadores" style="width:100%">
+            <table class="table table-hover table-sm">
                 <thead class="thead-light">
                     <tr>
                         <th style="width:90px">Código</th>
@@ -146,24 +146,6 @@ $(function() {
     var _indicadorEditId = null;
     var _metaIndex       = 0;
     var _indicadoresData = @json($indicadores->map(fn($i) => array_merge($i->toArray(), ['codigo' => $i->codigoCompleto()])));
-
-    // ── DataTable ──
-    var dt = $('#tablaIndicadores').DataTable({
-        pageLength: 25,
-        order: [[0, 'asc']],
-        language: {
-            search: 'Buscar:',
-            lengthMenu: 'Mostrar _MENU_ registros',
-            info: 'Mostrando _START_ a _END_ de _TOTAL_ indicadores',
-            infoEmpty: 'Sin indicadores',
-            zeroRecords: 'No se encontraron resultados',
-            paginate: { previous: '‹', next: '›' },
-        },
-        columnDefs: [
-            { targets: [2, 3, 4, 5, 6, 7], orderable: false },
-            { targets: 7, searchable: false },
-        ],
-    });
 
     // ── Radio seleccionable ──
     $(document).on('change', '.ind-radio', function() {
@@ -308,7 +290,7 @@ $(function() {
                 type: 'DELETE',
                 success: function() {
                     toastr.success('Indicador eliminado.');
-                    dt.row('#ind-row-' + id).remove().draw();
+                    $('#ind-row-' + id).fadeOut(300, function() { $(this).remove(); });
                     _indicadoresData = _indicadoresData.filter(i => i.id != id);
                 }
             });
