@@ -48,8 +48,11 @@
                 </div>
                 {{-- Fila 2: botones --}}
                 <div class="d-flex align-items-center mt-1 flex-wrap" style="gap:.3rem">
-                    <button type="button" class="btn btn-sm btn-outline-light py-0 px-2"
-                            onclick="event.stopPropagation(); openChatWithContext('PeiObjective', '{{ $axi->id }}', 'Objetivo: {{ e(strip_tags($axi->name)) }}', '{{ url()->current() }}#axi-{{ $axi->id }}')"
+                    <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 btnConsultarChat"
+                            data-type="PeiObjective"
+                            data-id="{{ $axi->id }}"
+                            data-label="Objetivo: {{ e(strip_tags($axi->name)) }}"
+                            data-url="{{ url()->current() }}#axi-{{ $axi->id }}"
                             title="Consultar sobre este objetivo en el chat">
                         <i class="fa fa-comment-dots mr-1" style="font-size:.75rem"></i> Consultar
                     </button>
@@ -235,8 +238,11 @@
                                     <i class="fa fa-ruler-combined mr-1"></i>[{{ $goal->indicador->codigoCompleto() }}] {{ \Illuminate\Support\Str::limit($goal->indicador->nombre, 30) }}
                                 </button>
                                 @endif
-                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2"
-                                        onclick="event.stopPropagation(); openChatWithContext('PeiGoal', '{{ $goal->id }}', 'Meta: {{ e(strip_tags($goal->name)) }}', '{{ url()->current() }}#goal-{{ $goal->id }}')"
+                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 btnConsultarChat"
+                                        data-type="PeiGoal"
+                                        data-id="{{ $goal->id }}"
+                                        data-label="Meta: {{ e(strip_tags($goal->name)) }}"
+                                        data-url="{{ url()->current() }}#goal-{{ $goal->id }}"
                                         title="Consultar sobre esta meta en el chat">
                                     <i class="fa fa-comment-dots mr-1" style="font-size:.7rem"></i> Consultar
                                 </button>
@@ -342,8 +348,11 @@
                                                         </div>
                                                     </div>
                                                     <div class="d-flex flex-shrink-0" style="gap:.3rem">
-                                                        <button type="button" class="btn btn-sm btn-outline-info py-0 px-2"
-                                                                onclick="event.stopPropagation(); openChatWithContext('PeiAction', '{{ $action->id }}', 'Acción: {{ e(strip_tags($action->name)) }}', '{{ url()->current() }}#actionsBlock_{{ $action->id }}')"
+                                                        <button type="button" class="btn btn-sm btn-outline-info py-0 px-2 btnConsultarChat"
+                                                                data-type="PeiAction"
+                                                                data-id="{{ $action->id }}"
+                                                                data-label="Acción: {{ e(strip_tags($action->name)) }}"
+                                                                data-url="{{ url()->current() }}#actionsBlock_{{ $action->id }}"
                                                                 title="Consultar sobre esta acción en el chat"
                                                                 style="font-size:.7rem">
                                                             <i class="fa fa-comment-dots mr-1"></i> Consultar
@@ -659,3 +668,17 @@
     </div>
     @endforeach
 </div>
+
+<script>
+// Delegated handler para los botones "Consultar" del acordeón.
+// Se usa data-* en lugar de onclick inline para evitar que apóstrofes
+// o comillas en los nombres de ejes/objetivos/acciones rompan el JS.
+$(document).on('click', '.btnConsultarChat', function(e) {
+    e.stopPropagation();
+    var type  = $(this).data('type');
+    var id    = $(this).data('id');
+    var label = $(this).data('label');
+    var url   = $(this).data('url');
+    openChatWithContext(type, id, label, url);
+});
+</script>
