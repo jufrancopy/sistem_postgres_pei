@@ -335,6 +335,13 @@ class PeiController extends Controller
             ]
         );
 
+        // Si es un nodo recién creado y viene con parent_id, vincularlo al árbol NestedSet.
+        // Sin esto el nodo queda como raíz huérfana y nunca aparece en el plan.
+        if ($profile->wasRecentlyCreated && $request->parent_id) {
+            $parent = PeiProfile::findOrFail($request->parent_id);
+            $profile->appendToNode($parent)->save();
+        }
+
         $wasChanged = $profile->wasChanged();
 
         // Manejo de relaciones
@@ -679,6 +686,36 @@ class PeiController extends Controller
             ->setOption(['isPhpEnabled' => true, 'isHtml5ParserEnabled' => true]);
 
         return $pdf->download('consolidado-pei-' . $profile->first()->name . '.pdf');
+    }
+
+    public function rankingTalentoHumano(Request $request, $idProfile)
+    {
+        PeiProfile::findOrFail($idProfile);
+
+        $ranking = \App\Models\Gamification\GamificationPoint::with('user')
+            ->where('pei_profile_id', $idProfile)
+            ->selectRaw('user_id, SUM(points) as total_points, MAX(action_type) as top_action')
+            ->groupBy('user_id')
+            ->orderByDesc('total_points')
+            ->get()
+            ->map(function ($row, $index) {
+                $labels = [
+                    'task_completed'     => 'Tarea completada',
+                    'manual_admin'       => 'Asignación manual',
+                    'chat_context_query' => 'Consulta en chat',
+                    'pei_edit'           => 'Edición PEI',
+                    'donacion_recibida'  => 'Donación recibida',
+                    'foda_analisis'      => 'Análisis FODA',
+                ];
+                return [
+                    'DT_RowIndex'  => $index + 1,
+                    'nombre'       => $row->user?->name ?? 'Usuario eliminado',
+                    'total_points' => (int) $row->total_points,
+                    'top_action'   => $labels[$row->top_action] ?? ucfirst(str_replace('_', ' ', $row->top_action)),
+                ];
+            });
+
+        return DataTables::of($ranking)->make(true);
     }
 
     public function proceso($idProfile)
