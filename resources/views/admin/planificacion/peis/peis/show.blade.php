@@ -562,16 +562,6 @@
 @section('scripts')
     {{-- My custom scripts --}}
     <script type="text/javascript">
-        // Variables de etiquetas de niveles — seguras contra apóstrofes/comillas en los valores.
-        @php
-            $nivelAxiJs    = json_encode($niveles['axi']    ?? 'Nivel 1');
-            $nivelGoalJs   = json_encode($niveles['goal']   ?? 'Nivel 2');
-            $nivelActionJs = json_encode($niveles['action'] ?? 'Acción');
-        @endphp
-        var _nivelAxi    = {!! $nivelAxiJs !!};
-        var _nivelGoal   = {!! $nivelGoalJs !!};
-        var _nivelAction = {!! $nivelActionJs !!};
-
         $(function() {
             $.ajaxSetup({
                 headers: {
@@ -1015,7 +1005,7 @@
                 var typeBtn = $(this).data('type');
 
                 $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                    $('#modalHeadingAxis').html(typeBtn === 'create' ? "Crear " + _nivelAxi : "Editar " + _nivelAxi);
+                    $('#modalHeadingAxis').html(typeBtn === 'create' ? "Crear {{ $niveles['axi'] ?? 'Nivel 1' }}" : "Editar {{ $niveles['axi'] ?? 'Nivel 1' }}");
                     $('#saveBtnAxis').val(typeBtn === 'create' ? "create" : "edit");
                     $('#ajaxAxisModal').modal('show');
                     $('#axisForm').trigger("reset");
@@ -1051,7 +1041,7 @@
 
                     // ── Función para inicializar Select2 de estrategias según perfil FODA ──
                     function initAxisStrategiesSelect2(fodaPerfilId) {
-                        var urlCrossings = "{{ route('get-crossings') }}?pei_id={{ $profile->id }}";
+                        var urlCrossings = '{{ route('get-crossings') }}?pei_id={{ $profile->id }}';
                         if (fodaPerfilId) {
                             urlCrossings += '&foda_perfil_id=' + fodaPerfilId;
                         }
@@ -1120,7 +1110,7 @@
                         allowClear: true,
                         tags: true,
                         ajax: {
-                            url: "{{ route('pei.marcos.buscar') }}",
+                            url: '{{ route('pei.marcos.buscar') }}',
                             dataType: 'json',
                             delay: 300,
                             data: function(params) { return { q: params.term }; },
@@ -1539,7 +1529,7 @@
                 var typeBtn = $(this).data('type');
 
                 $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                    $('#modalHeadingGoals').html(typeBtn === 'create' ? "Crear " + _nivelGoal : "Editar " + _nivelGoal);
+                    $('#modalHeadingGoals').html(typeBtn === 'create' ? "Crear {{ $niveles['goal'] ?? 'Nivel 2' }}" : "Editar {{ $niveles['goal'] ?? 'Nivel 2' }}");
                     $('#saveBtnGoals').val(typeBtn === 'create' ? "create" : "edit");
                     $('#ajaxGoalsModal').modal('show');
                     $('#goalsForm').trigger("reset");
@@ -1665,8 +1655,8 @@
                 var typeBtn = $(this).data('type');
 
                 $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                    $('#modalHeadingActions').html(typeBtn === 'create' ? "Crear " + _nivelAction :
-                        "Editar " + _nivelAction);
+                    $('#modalHeadingActions').html(typeBtn === 'create' ? "Crear {{ $niveles['action'] ?? 'Acción' }}" :
+                        "Editar {{ $niveles['action'] ?? 'Acción' }}");
                     $('#saveBtnGoals').val(typeBtn === 'create' ? "create" : "edit");
                     $('#ajaxActionsModal').modal('show');
                     $('#actionsForm').trigger("reset");
@@ -2004,7 +1994,7 @@
             $('body').on('click', '#compareHistorical', function() {
                 var typeBtn = $(this).data('type');
 
-                url = "{{ route('pei-profiles-compareHistorical') }}" + '?pei_id={{ $profile->id }}'
+                url = '{{ route('pei-profiles-compareHistorical') }}' + '?pei_id={{ $profile->id }}'
                 $.get(url, function(data) {
                     console.log(data)
                     $('#modalHeadingHistorical').html(
@@ -2047,7 +2037,7 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/axis-list',
                     function(data) {
-                        $('#modalHeadingAxisList').html('Lista de ' + _nivelAxi + 's');
+                        $('#modalHeadingAxisList').html('Lista de {{ $niveles['axi'] ?? 'Nivel 1' }}s');
                         $('#ajaxAxisListlModal').modal('show');
 
                         var tableBody = $('#axisList .table tbody');
@@ -2082,7 +2072,7 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/goals-list',
                     function(data) {
-                        $('#modalHeadingGoalsList').html('Lista de ' + _nivelGoal + 's');
+                        $('#modalHeadingGoalsList').html('Lista de {{ $niveles['goal'] ?? 'Nivel 2' }}s');
                         $('#ajaxGoalsListModal').modal('show');
 
                         var tableBody = $('#goalsList .table tbody');
@@ -2103,7 +2093,7 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/actions-list',
                     function(data) {
-                        $('#modalHeadingActionsList').html('Lista de ' + _nivelAction);
+                        $('#modalHeadingActionsList').html('Lista de {{ $niveles['action'] ?? 'Acciones' }}');
                         $('#ajaxActionsListModal').modal('show');
 
                         var tableBody = $('#actionsList .table tbody');
@@ -2142,7 +2132,7 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/actions-list',
                     function(data) {
-                        $('#modalHeadingActionsList').html('Lista de ' + _nivelAction);
+                        $('#modalHeadingActionsList').html('Lista de {{ $niveles['action'] ?? 'Acciones' }}');
                         $('#ajaxActionsListModal').modal('show');
 
                         var tableBody = $('#actionsList .table tbody');
