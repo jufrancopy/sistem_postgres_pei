@@ -510,23 +510,36 @@
     $(document).on('click', '.btnDeleteParticipanteActa', function() {
         if (!_actaCurrentTaskId) return;
         var pId = $(this).data('id');
-        if (!confirm('¿Eliminar este participante del acta?')) return;
+        
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: '¿Eliminar este participante del acta?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var url = _actaBaseUrl + '/' + _actaCurrentTaskId + '/acta-mecip/participantes/' + pId;
 
-        var url = _actaBaseUrl + '/' + _actaCurrentTaskId + '/acta-mecip/participantes/' + pId;
-
-        $.ajax({
-            url: url,
-            type: 'DELETE',
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-            success: function(res) {
-                if (res.ok) {
-                    var getUrl = _actaBaseUrl + '/' + _actaCurrentTaskId + '/acta-mecip';
-                    $.getJSON(getUrl, function(r) {
-                        if (r.ok && r.acta) {
-                            renderParticipantes(r.acta.participantes || []);
+                $.ajax({
+                    url: url,
+                    type: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    success: function(res) {
+                        if (res.ok) {
+                            var getUrl = _actaBaseUrl + '/' + _actaCurrentTaskId + '/acta-mecip';
+                            $.getJSON(getUrl, function(r) {
+                                if (r.ok && r.acta) {
+                                    renderParticipantes(r.acta.participantes || []);
+                                    Swal.fire('Eliminado', 'El participante fue eliminado.', 'success');
+                                }
+                            });
                         }
-                    });
-                }
+                    }
+                });
             }
         });
     });
