@@ -564,9 +564,14 @@
     <script type="text/javascript">
         // Variables de etiquetas de niveles — se escapan con @json para evitar
         // que apóstrofes o comillas en los valores rompan el parser JS.
-        var _nivelAxi    = @json($niveles['axi']    ?? 'Nivel 1');
-        var _nivelGoal   = @json($niveles['goal']   ?? 'Nivel 2');
-        var _nivelAction = @json($niveles['action'] ?? 'Acción');
+        @php
+            $nivelAxiJs    = $niveles['axi']    ?? 'Nivel 1';
+            $nivelGoalJs   = $niveles['goal']   ?? 'Nivel 2';
+            $nivelActionJs = $niveles['action'] ?? 'Acción';
+        @endphp
+        var _nivelAxi    = @json($nivelAxiJs);
+        var _nivelGoal   = @json($nivelGoalJs);
+        var _nivelAction = @json($nivelActionJs);
 
         $(function() {
             $.ajaxSetup({
