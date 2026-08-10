@@ -93,12 +93,6 @@
                         <i class="fa fa-ruler-combined mr-1"></i>[{{ $axi->indicador->codigoCompleto() }}] {{ \Illuminate\Support\Str::limit($axi->indicador->nombre, 35) }}
                     </button>
                     @endif
-                    <button class="btn btn-sm btn-outline-light py-0 px-1 btnReordenar" data-id="{{ $axi->id }}" data-dir="up" title="Subir">
-                        <i class="fa fa-arrow-up" style="font-size:.7rem"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-light py-0 px-1 btnReordenar" data-id="{{ $axi->id }}" data-dir="down" title="Bajar">
-                        <i class="fa fa-arrow-down" style="font-size:.7rem"></i>
-                    </button>
                     <a class="btn btn-sm btn-outline-light py-0 px-2" data-id="{{ $axi->id }}"
                        data-type="edit" href="javascript:void(0)" id="createAxis" title="Editar">
                         <i class="fa fa-edit" style="font-size:.75rem"></i>
@@ -246,12 +240,6 @@
                                         title="Consultar sobre esta meta en el chat">
                                     <i class="fa fa-comment-dots mr-1" style="font-size:.7rem"></i> Consultar
                                 </button>
-                                <button class="btn btn-sm btn-outline-secondary py-0 px-1 btnReordenar" data-id="{{ $goal->id }}" data-dir="up" title="Subir">
-                                    <i class="fa fa-arrow-up" style="font-size:.65rem"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-secondary py-0 px-1 btnReordenar" data-id="{{ $goal->id }}" data-dir="down" title="Bajar">
-                                    <i class="fa fa-arrow-down" style="font-size:.65rem"></i>
-                                </button>
                                 <a class="btn btn-sm btn-outline-primary py-0 px-2" data-id="{{ $goal->id }}"
                                    data-type="edit" href="javascript:void(0)" id="createGoals" title="Editar">
                                     <i class="fa fa-edit" style="font-size:.7rem"></i>
@@ -359,12 +347,6 @@
                                                                 title="Consultar sobre esta acción en el chat"
                                                                 style="font-size:.7rem">
                                                             <i class="fa fa-comment-dots mr-1"></i> Consultar
-                                                        </button>
-                                                        <button class="btn btn-sm btn-outline-secondary py-0 px-1 btnReordenar" data-id="{{ $action->id }}" data-dir="up" title="Subir">
-                                                            <i class="fa fa-arrow-up" style="font-size:.65rem"></i>
-                                                        </button>
-                                                        <button class="btn btn-sm btn-outline-secondary py-0 px-1 btnReordenar" data-id="{{ $action->id }}" data-dir="down" title="Bajar">
-                                                            <i class="fa fa-arrow-down" style="font-size:.65rem"></i>
                                                         </button>
                                                         <a class="btn btn-sm btn-outline-info py-0 px-2"
                                                            data-id="{{ $action->id }}" data-type="edit"
