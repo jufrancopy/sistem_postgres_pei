@@ -529,10 +529,10 @@
                     type: 'DELETE',
                     headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
                     success: function(res) {
-                        if (res.ok) {
+                        if (res.ok || res.success) {
                             var getUrl = _actaBaseUrl + '/' + _actaCurrentTaskId + '/acta-mecip';
                             $.getJSON(getUrl, function(r) {
-                                if (r.ok && r.acta) {
+                                if ((r.ok || r.success) && r.acta) {
                                     renderParticipantes(r.acta.participantes || []);
                                     Swal.fire('Eliminado', 'El participante fue eliminado.', 'success');
                                 }
