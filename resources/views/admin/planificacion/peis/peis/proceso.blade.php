@@ -309,13 +309,14 @@ $pctGlobal   = round(($completados / 6) * 100);
     <div class="modal-dialog" role="document">
         <form action="{{ route('pei-profiles.update-parameters', $profile->id) }}" method="POST">
             @csrf
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title font-weight-bold"><i class="fa fa-cogs mr-2 text-info"></i> Variables del Plan (Globales)</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title font-weight-bold text-white"><i class="fa fa-cogs mr-2"></i> Variables del Plan (Globales)</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
+                <div class="modal-body p-4">
                     @php
                         $params = json_decode($profile->parameters, true) ?? [];
                         $actaLogoUrl = $params['acta_logo_url'] ?? '';
@@ -323,30 +324,30 @@ $pctGlobal   = round(($completados / 6) * 100);
                         $actaDependencia = $params['acta_dependencia'] ?? 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS';
                     @endphp
                     
-                    <div class="form-group mb-3 bmd-form-group is-filled">
-                        <label class="bmd-label-floating font-weight-bold text-dark">Institución (Acta MECIP)</label>
-                        <input type="text" name="acta_institucion" class="form-control px-2 border rounded" value="{{ $actaInstitucion }}">
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bold text-dark"><i class="fa fa-building text-info mr-1"></i> Institución (Acta MECIP)</label>
+                        <input type="text" name="acta_institucion" class="form-control p-2 border rounded shadow-sm" value="{{ $actaInstitucion }}" style="background-color: #f8f9fa;">
                     </div>
 
-                    <div class="form-group mb-3 bmd-form-group is-filled">
-                        <label class="bmd-label-floating font-weight-bold text-dark">Dependencia (Acta MECIP)</label>
-                        <textarea name="acta_dependencia" class="form-control px-2 border rounded" rows="2">{{ $actaDependencia }}</textarea>
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bold text-dark"><i class="fa fa-sitemap text-info mr-1"></i> Dependencia (Acta MECIP)</label>
+                        <textarea name="acta_dependencia" class="form-control p-2 border rounded shadow-sm" rows="2" style="background-color: #f8f9fa;">{{ $actaDependencia }}</textarea>
                     </div>
 
-                    <div class="form-group mb-3 bmd-form-group is-filled">
-                        <label class="bmd-label-floating font-weight-bold text-dark">URL del Logo (Acta MECIP)</label>
-                        <input type="text" name="acta_logo_url" id="config_acta_logo_url" class="form-control px-2 border rounded" placeholder="Ej: https://midominio.com/logo.png" value="{{ $actaLogoUrl }}">
-                        <small class="text-muted">Si se deja en blanco, usarán el logo predeterminado del sistema.</small>
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bold text-dark"><i class="fa fa-image text-info mr-1"></i> URL del Logo (Acta MECIP)</label>
+                        <input type="text" name="acta_logo_url" id="config_acta_logo_url" class="form-control p-2 border rounded shadow-sm" placeholder="Ej: https://midominio.com/logo.png" value="{{ $actaLogoUrl }}" style="background-color: #f8f9fa;">
+                        <small class="text-muted d-block mt-2"><i class="fa fa-info-circle text-info"></i> Si se deja en blanco, usarán el logo predeterminado del sistema.</small>
                     </div>
                     
-                    <div class="text-center bg-light p-3 border rounded" style="min-height: 100px;">
-                        <small class="d-block text-muted mb-2">Vista Previa del Logo</small>
-                        <img id="config_logo_preview" src="{{ !empty($actaLogoUrl) ? $actaLogoUrl : asset('material/img/new_logo.png') }}" style="max-height: 60px; max-width: 100%;">
+                    <div class="text-center bg-light p-3 border rounded shadow-sm" style="min-height: 110px;">
+                        <small class="d-block text-muted mb-3 font-weight-bold text-uppercase">Vista Previa del Logo</small>
+                        <img id="config_logo_preview" src="{{ !empty($actaLogoUrl) ? $actaLogoUrl : asset('material/img/new_logo.png') }}" style="max-height: 70px; max-width: 100%;">
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
+                <div class="modal-footer bg-light border-top-0">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success"><i class="fa fa-save mr-1"></i> Guardar Variables</button>
+                    <button type="submit" class="btn btn-info"><i class="fa fa-save mr-1"></i> Guardar Variables</button>
                 </div>
             </div>
         </form>
