@@ -669,6 +669,7 @@
     @endforeach
 </div>
 
+@push('scripts')
 <script>
 // Delegated handler para los botones "Consultar" del acordeón.
 // Se usa data-* en lugar de onclick inline para evitar que apóstrofes
@@ -682,3 +683,4 @@ $(document).on('click', '.btnConsultarChat', function(e) {
     openChatWithContext(type, id, label, url);
 });
 </script>
+@endpush

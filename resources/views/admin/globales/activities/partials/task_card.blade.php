@@ -105,8 +105,11 @@
     <div class="task-action-bar">
 
         {{-- Consultar en Chat --}}
-        <button type="button" class="tac-btn tac-blue"
-                onclick="event.stopPropagation(); openChatWithContext('ActivityTask', '{{ $task->id }}', 'Tarea: {{ e($task->title) }}', '{{ url()->current() }}#task-{{ $task->id }}')"
+        <button type="button" class="tac-btn tac-blue btnConsultarChat"
+                data-type="ActivityTask"
+                data-id="{{ $task->id }}"
+                data-label="Tarea: {{ e($task->title) }}"
+                data-url="{{ url()->current() }}#task-{{ $task->id }}"
                 title="Consultar sobre esta tarea en el Chat">
             <i class="fa fa-comment-dots"></i>
             <span>Consultar</span>
@@ -236,3 +239,19 @@
 .tac-violet { background: #ede9fe; color: #5b21b6; }
 .tac-teal   { background: #ccfbf1; color: #065f46; }
 </style>
+
+@once
+@push('scripts')
+<script>
+$(document).on('click', '.btnConsultarChat', function(e) {
+    e.stopPropagation();
+    openChatWithContext(
+        $(this).data('type'),
+        $(this).data('id'),
+        $(this).data('label'),
+        $(this).data('url')
+    );
+});
+</script>
+@endpush
+@endonce
