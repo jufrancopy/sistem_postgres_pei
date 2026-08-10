@@ -562,6 +562,12 @@
 @section('scripts')
     {{-- My custom scripts --}}
     <script type="text/javascript">
+        // Variables de etiquetas de niveles — se escapan con @json para evitar
+        // que apóstrofes o comillas en los valores rompan el parser JS.
+        var _nivelAxi    = @json($niveles['axi']    ?? 'Nivel 1');
+        var _nivelGoal   = @json($niveles['goal']   ?? 'Nivel 2');
+        var _nivelAction = @json($niveles['action'] ?? 'Acción');
+
         $(function() {
             $.ajaxSetup({
                 headers: {
@@ -1005,7 +1011,7 @@
                 var typeBtn = $(this).data('type');
 
                 $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                    $('#modalHeadingAxis').html(typeBtn === 'create' ? "Crear {{ $niveles['axi'] ?? 'Nivel 1' }}" : "Editar {{ $niveles['axi'] ?? 'Nivel 1' }}");
+                    $('#modalHeadingAxis').html(typeBtn === 'create' ? "Crear " + _nivelAxi : "Editar " + _nivelAxi);
                     $('#saveBtnAxis').val(typeBtn === 'create' ? "create" : "edit");
                     $('#ajaxAxisModal').modal('show');
                     $('#axisForm').trigger("reset");
@@ -1529,7 +1535,7 @@
                 var typeBtn = $(this).data('type');
 
                 $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                    $('#modalHeadingGoals').html(typeBtn === 'create' ? "Crear {{ $niveles['goal'] ?? 'Nivel 2' }}" : "Editar {{ $niveles['goal'] ?? 'Nivel 2' }}");
+                    $('#modalHeadingGoals').html(typeBtn === 'create' ? "Crear " + _nivelGoal : "Editar " + _nivelGoal);
                     $('#saveBtnGoals').val(typeBtn === 'create' ? "create" : "edit");
                     $('#ajaxGoalsModal').modal('show');
                     $('#goalsForm').trigger("reset");
@@ -1655,8 +1661,8 @@
                 var typeBtn = $(this).data('type');
 
                 $.get("{{ route('pei-profiles.index') }}" + '/' + profileID + '/edit', function(data) {
-                    $('#modalHeadingActions').html(typeBtn === 'create' ? "Crear {{ $niveles['action'] ?? 'Acción' }}" :
-                        "Editar {{ $niveles['action'] ?? 'Acción' }}");
+                    $('#modalHeadingActions').html(typeBtn === 'create' ? "Crear " + _nivelAction :
+                        "Editar " + _nivelAction);
                     $('#saveBtnGoals').val(typeBtn === 'create' ? "create" : "edit");
                     $('#ajaxActionsModal').modal('show');
                     $('#actionsForm').trigger("reset");
@@ -2037,7 +2043,7 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/axis-list',
                     function(data) {
-                        $('#modalHeadingAxisList').html('Lista de {{ $niveles['axi'] ?? 'Nivel 1' }}s');
+                        $('#modalHeadingAxisList').html('Lista de ' + _nivelAxi + 's');
                         $('#ajaxAxisListlModal').modal('show');
 
                         var tableBody = $('#axisList .table tbody');
@@ -2072,7 +2078,7 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/goals-list',
                     function(data) {
-                        $('#modalHeadingGoalsList').html('Lista de {{ $niveles['goal'] ?? 'Nivel 2' }}s');
+                        $('#modalHeadingGoalsList').html('Lista de ' + _nivelGoal + 's');
                         $('#ajaxGoalsListModal').modal('show');
 
                         var tableBody = $('#goalsList .table tbody');
@@ -2093,7 +2099,7 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/actions-list',
                     function(data) {
-                        $('#modalHeadingActionsList').html('Lista de {{ $niveles['action'] ?? 'Acciones' }}');
+                        $('#modalHeadingActionsList').html('Lista de ' + _nivelAction);
                         $('#ajaxActionsListModal').modal('show');
 
                         var tableBody = $('#actionsList .table tbody');
@@ -2132,7 +2138,7 @@
                 $.get("{{ route('pei-profiles.index') }}" +
                     '/' + profileID + '/actions-list',
                     function(data) {
-                        $('#modalHeadingActionsList').html('Lista de {{ $niveles['action'] ?? 'Acciones' }}');
+                        $('#modalHeadingActionsList').html('Lista de ' + _nivelAction);
                         $('#ajaxActionsListModal').modal('show');
 
                         var tableBody = $('#actionsList .table tbody');
