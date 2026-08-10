@@ -1042,4 +1042,23 @@ class PeiController extends Controller
                 : 'El Plan Estratégico "' . strip_tags($pei->name) . '" fue INACTIVADO (oculto).',
         ]);
     }
+
+    /**
+     * Actualiza las variables globales (parameters) del PEI.
+     */
+    public function updateParameters(Request $request, $id)
+    {
+        $profile = PeiProfile::findOrFail($id);
+        
+        $params = json_decode($profile->parameters, true) ?? [];
+        
+        if ($request->has('acta_logo_url')) {
+            $params['acta_logo_url'] = $request->input('acta_logo_url');
+        }
+        
+        $profile->parameters = json_encode($params);
+        $profile->save();
+        
+        return redirect()->back()->with('success', 'Variables del plan actualizadas correctamente.');
+    }
 }

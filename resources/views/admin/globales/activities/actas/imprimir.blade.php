@@ -127,8 +127,10 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div style="width: 130px; text-align: left;">
                     <img src="{{ !empty($acta->logo_url) ? $acta->logo_url : asset('material/img/new_logo.png') }}" style="max-width: 100%; height: auto; max-height: 55px; margin-bottom: 5px;">
-                    <br>
-                    <small class="font-weight-bold" style="font-size: 8pt; border: 1px solid #000; padding: 2px 4px; display: inline-block; margin-top: 5px;">MECIP:2015</small>
+                    @if(empty($acta->logo_url))
+                        <br>
+                        <small class="font-weight-bold" style="font-size: 8pt; border: 1px solid #000; padding: 2px 4px; display: inline-block; margin-top: 5px;">MECIP:2015</small>
+                    @endif
                 </div>
                 <div class="text-center flex-grow-1" style="padding-top: 10px;">
                     <h5 class="font-weight-bold mb-0 text-uppercase" style="font-size: 13pt;">

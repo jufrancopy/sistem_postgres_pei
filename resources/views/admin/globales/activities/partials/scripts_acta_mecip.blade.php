@@ -115,7 +115,16 @@
             $('#acta_uuid').val(a.uuid || '');
             $('#acta_estado').val(a.estado || 'borrador');
             $('#acta_numero').val(a.numero_acta || '');
-            $('#acta_logo_url').val(a.logo_url || '');
+            var logoUrl = a.logo_url || '';
+            $('#acta_logo_url').val(logoUrl);
+            
+            // Ocultar MECIP:2015 badge si existe un logo (personalizado o heredado)
+            if (logoUrl) {
+                $('#badge_mecip_2015').hide();
+            } else {
+                $('#badge_mecip_2015').show();
+            }
+            
             $('#acta_institucion').val(a.institucion || 'INSTITUTO DE PREVISIÓN SOCIAL');
             $('#acta_dependencia').val(a.dependencia || 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS');
             $('#acta_lugar').val(a.lugar || 'REUNIÓN VIRTUAL');
@@ -167,6 +176,15 @@
             alert('Error de conexión al cargar el acta.');
         });
     };
+
+    // ── Dinamismo UI ────────────────────────────────────────────────────────
+    $('#acta_logo_url').on('input', function() {
+        if ($(this).val().trim() !== '') {
+            $('#badge_mecip_2015').hide();
+        } else {
+            $('#badge_mecip_2015').show();
+        }
+    });
 
     // ── Guardar Acta ──────────────────────────────────────────────────────────
     function guardarActa(callback) {

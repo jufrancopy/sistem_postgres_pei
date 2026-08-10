@@ -130,6 +130,9 @@ $pctGlobal   = round(($completados / 6) * 100);
                 <button type="button" class="btn btn-sm btn-warning" id="btnProcesoCertMef">
                     <i class="fa fa-certificate mr-1"></i> Certificación MEF
                 </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modalConfigVariables">
+                    <i class="fa fa-cogs mr-1"></i> Variables del Plan
+                </button>
                 @hasanyrole('Administrador|Coordinador de Planificación')
                 <a href="{{ route('proyectos-institucionales.index', $profile->id) }}" class="btn btn-sm btn-success">
                     <i class="fa fa-project-diagram mr-1"></i> Proyectos
@@ -298,6 +301,38 @@ $pctGlobal   = round(($completados / 6) * 100);
                 <button type="button" class="btn btn-secondary btn-round px-4" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
+    </div>
+</div>
+
+{{-- Modal Variables del Plan --}}
+<div class="modal fade" id="modalConfigVariables" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form action="{{ route('pei-profiles.update-parameters', $profile->id) }}" method="POST">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold"><i class="fa fa-cogs mr-2 text-info"></i> Variables del Plan (Globales)</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    @php
+                        $params = json_decode($profile->parameters, true) ?? [];
+                        $actaLogoUrl = $params['acta_logo_url'] ?? '';
+                    @endphp
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark">URL del Logo para Actas (Acta MECIP)</label>
+                        <input type="text" name="acta_logo_url" class="form-control" placeholder="Ej: https://midominio.com/logo.png" value="{{ $actaLogoUrl }}">
+                        <small class="text-muted">Si se define, todas las nuevas actas generadas bajo este plan utilizarán este logo por defecto. Si se deja en blanco, usarán el logo predeterminado del sistema.</small>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success"><i class="fa fa-save mr-1"></i> Guardar Variables</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 

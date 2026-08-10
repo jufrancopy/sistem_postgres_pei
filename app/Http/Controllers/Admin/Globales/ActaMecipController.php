@@ -52,12 +52,23 @@ class ActaMecipController extends Controller
             $acta->load('participantes');
         }
 
+        $logoUrl = $acta->logo_url;
+        if (empty($logoUrl)) {
+            $peiProfile = $task->activity?->peiProfile;
+            if ($peiProfile && $peiProfile->parameters) {
+                $params = json_decode($peiProfile->parameters, true);
+                if (is_array($params) && !empty($params['acta_logo_url'])) {
+                    $logoUrl = $params['acta_logo_url'];
+                }
+            }
+        }
+
         $actaData = [
             'id'               => $acta->id,
             'activity_task_id' => $acta->activity_task_id,
             'uuid'             => $acta->uuid,
             'numero_acta'      => $acta->numero_acta,
-            'logo_url'         => $acta->logo_url,
+            'logo_url'         => $logoUrl,
             'institucion'      => $acta->institucion ?? 'INSTITUTO DE PREVISIÓN SOCIAL',
             'dependencia'      => $acta->dependencia ?? 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS',
             'lugar'            => $acta->lugar ?? 'REUNIÓN VIRTUAL',
