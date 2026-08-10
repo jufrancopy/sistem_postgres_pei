@@ -380,7 +380,18 @@ class ActaMecipController extends Controller
             });
         }
 
-        return view('public.actas.show', compact('acta', 'task', 'publicUrl', 'qrSvg', 'yaFirmo'));
+        $logoUrl = $acta->logo_url;
+        if (empty($logoUrl)) {
+            $peiProfile = $task->activity?->peiProfile;
+            if ($peiProfile && $peiProfile->parameters) {
+                $params = json_decode($peiProfile->parameters, true);
+                if (!empty($params['acta_logo_url'])) {
+                    $logoUrl = $params['acta_logo_url'];
+                }
+            }
+        }
+
+        return view('public.actas.show', compact('acta', 'task', 'publicUrl', 'qrSvg', 'yaFirmo', 'logoUrl'));
     }
 
     /**

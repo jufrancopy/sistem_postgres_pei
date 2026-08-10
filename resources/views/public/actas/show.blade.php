@@ -170,13 +170,19 @@
     {{-- ══ Encabezado Institucional Superior ══ --}}
     <header class="header-institutional text-center">
         <div class="container" style="max-width: 900px;">
-            <div class="d-inline-flex align-items-center mb-2 px-3 py-1 rounded-pill" 
-                 style="background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2);">
-                <i class="fa fa-shield-alt text-warning mr-2" style="font-size: 0.85rem;"></i>
-                <span class="small font-weight-bold tracking-wide" style="font-size: 0.75rem; letter-spacing: 1px;">
-                    MECIP:2015 • CONTROL INTERNO INSTITUCIONAL
-                </span>
-            </div>
+            @if(!empty($logoUrl))
+                <div class="mb-3">
+                    <img src="{{ $logoUrl }}" style="max-height: 70px; max-width: 100%;" alt="Logo Institucional">
+                </div>
+            @else
+                <div class="d-inline-flex align-items-center mb-2 px-3 py-1 rounded-pill" 
+                     style="background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                    <i class="fa fa-shield-alt text-warning mr-2" style="font-size: 0.85rem;"></i>
+                    <span class="small font-weight-bold tracking-wide" style="font-size: 0.75rem; letter-spacing: 1px;">
+                        MECIP:2015 • CONTROL INTERNO INSTITUCIONAL
+                    </span>
+                </div>
+            @endif
 
             <h5 class="font-weight-bold text-uppercase mb-1" style="letter-spacing: 0.5px; opacity: 0.9; font-size: 1.05rem;">
                 {{ $acta->institucion ?? 'INSTITUTO DE PREVISIÓN SOCIAL' }}
