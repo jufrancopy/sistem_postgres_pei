@@ -335,8 +335,22 @@ class PeiController extends Controller
             ]
         );
 
-        // Registrar editor y otorgar puntos solo en actualizaciones (no en creación)
-        if (!$profile->wasRecentlyCreated) {
+        $wasChanged = $profile->wasChanged();
+
+        // Manejo de relaciones
+        $syncAnalysts = $profile->analysts()->sync($request->analyst_id);
+        $syncStrategies = $profile->strategies()->sync($request->strategy_id);
+        $syncResponsibles = $profile->responsibles()->sync($request->responsible_id);
+        $syncActivityTasks = $profile->activityTasks()->sync($request->input('activity_task_ids', []));
+
+        $relationsChanged = 
+            !empty($syncAnalysts['attached']) || !empty($syncAnalysts['detached']) || !empty($syncAnalysts['updated']) ||
+            !empty($syncStrategies['attached']) || !empty($syncStrategies['detached']) || !empty($syncStrategies['updated']) ||
+            !empty($syncResponsibles['attached']) || !empty($syncResponsibles['detached']) || !empty($syncResponsibles['updated']) ||
+            !empty($syncActivityTasks['attached']) || !empty($syncActivityTasks['detached']) || !empty($syncActivityTasks['updated']);
+
+        // Registrar editor y otorgar puntos solo en actualizaciones reales (no en creación ni en guardados sin cambios)
+        if (!$profile->wasRecentlyCreated && ($wasChanged || $relationsChanged)) {
             $profile->updated_by = $user->id;
             $profile->saveQuietly();
 
@@ -362,12 +376,6 @@ class PeiController extends Controller
                 (string) $peiRaizId
             );
         }
-
-        // Manejo de relaciones
-        $profile->analysts()->sync($request->analyst_id);
-        $profile->strategies()->sync($request->strategy_id);
-        $profile->responsibles()->sync($request->responsible_id);
-        $profile->activityTasks()->sync($request->input('activity_task_ids', []));
 
         // Si se envía foda_perfil_id, guardarlo en el PEI raíz
         if ($request->has('foda_perfil_id')) {
