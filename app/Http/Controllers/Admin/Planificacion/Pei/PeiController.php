@@ -354,7 +354,7 @@ class PeiController extends Controller
             $profile->updated_by = $user->id;
             $profile->saveQuietly();
 
-            PeiProfileEdit::create([
+            $peiEditRecord = PeiProfileEdit::create([
                 'pei_profile_id' => $profile->id,
                 'user_id'        => $user->id,
             ]);
@@ -372,7 +372,7 @@ class PeiController extends Controller
                 'pei_edit',
                 'Edición de elemento PEI: ' . \Illuminate\Support\Str::limit(strip_tags($profile->name), 40),
                 100,
-                $profile,
+                $peiEditRecord,
                 (string) $peiRaizId
             );
         }
