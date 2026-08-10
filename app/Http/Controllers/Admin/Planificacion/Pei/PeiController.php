@@ -335,13 +335,6 @@ class PeiController extends Controller
             ]
         );
 
-        // Si es un nodo recién creado y viene con parent_id, vincularlo al árbol NestedSet.
-        // Sin esto el nodo queda como raíz huérfana y nunca aparece en el plan.
-        if ($profile->wasRecentlyCreated && $request->parent_id) {
-            $parent = PeiProfile::findOrFail($request->parent_id);
-            $profile->appendToNode($parent)->save();
-        }
-
         $wasChanged = $profile->wasChanged();
 
         // Manejo de relaciones
