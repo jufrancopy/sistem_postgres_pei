@@ -11,6 +11,7 @@
     $enPlanificacion = str_contains($path, 'pei-') || str_contains($path, 'foda') || str_contains($path, 'planificacion') || str_contains($path, 'tasks') || str_contains($path, 'pgn') || str_contains($path, 'pei/marcos');
     $enProyectos     = str_contains($path, 'proyectos') || str_contains($path, 'epc');
     $enSiess         = str_contains($path, 'siess') || str_contains($path, 'eph') || str_contains($path, 'dgeec') || str_contains($path, 'contexto');
+    $enBioestadistica = str_contains($path, 'bioestadistica');
     $enCronogramas   = str_contains($path, 'cronogramas');
     $enModulosSiess  = str_contains($path, 'siess/modulos');
     $enFoda          = str_contains($path, 'foda');
@@ -264,6 +265,24 @@
                 </div>
             </li>
 
+            {{-- ── Bioestadísticas ── --}}
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="collapse" href="#bioestadisticaMenu" aria-expanded="{{ $enBioestadistica ? 'true' : 'false' }}">
+                    <i class="material-icons">healing</i>
+                    <p>Bioestadísticas <b class="caret"></b></p>
+                </a>
+                <div class="collapse {{ $enBioestadistica ? 'show' : '' }}" id="bioestadisticaMenu">
+                    <ul class="nav">
+                        <li class="nav-item {{ $isActive('bioestadistica') || $isActive('bioestadistica/dashboard') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.dashboard') }}">
+                                <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Dashboard</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
             {{-- ── RIISS (dentro del menú Administrador) ── --}}
             @php $enRiiss = str_contains($path, 'riiss'); @endphp
             <li class="nav-item">
@@ -367,6 +386,26 @@
                     <i class="material-icons">track_changes</i>
                     <p>Mis Acciones PEI</p>
                 </a>
+            </li>
+        @endrole
+
+        {{-- Sidebar exclusivo para Analista de Bioestadística --}}
+        @role('Analista de Bioestadística')
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="collapse" href="#bioestadisticaMenuAnalista" aria-expanded="{{ $enBioestadistica ? 'true' : 'false' }}">
+                    <i class="material-icons">healing</i>
+                    <p>Bioestadísticas <b class="caret"></b></p>
+                </a>
+                <div class="collapse {{ $enBioestadistica ? 'show' : '' }}" id="bioestadisticaMenuAnalista">
+                    <ul class="nav">
+                        <li class="nav-item {{ $isActive('bioestadistica') || $isActive('bioestadistica/dashboard') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.dashboard') }}">
+                                <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Dashboard</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
         @endrole
 

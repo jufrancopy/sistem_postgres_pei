@@ -214,6 +214,12 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/reportes/csv',  'Admin\Estadistica\SiessReporteController@exportarCsv')->name('reportes.csv');
     });
 
+    // ── Bioestadísticas ────────────────────────────────────────────────────────
+    Route::prefix('bioestadistica')->name('bioestadistica.')->middleware(['role:Administrador|Analista de Bioestadística'])->group(function () {
+        Route::get('/', 'Admin\Bioestadistica\BioestadisticaDashboardController@index')->name('dashboard');
+        Route::get('/dashboard', 'Admin\Bioestadistica\BioestadisticaDashboardController@index');
+    });
+
     // Rutas de Proyectos 
     Route::get('proyectos-dashboard', 'Admin\Proyectos\ProyectosDashboardController@index')->name('proyectos-dashboard');
 

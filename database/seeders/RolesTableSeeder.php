@@ -19,11 +19,22 @@ class RolesTableSeeder extends Seeder
             'Colaborador de Actividades',
             'Analista de Monitoreo PEI',
             'Analista - RIISS',
+            'Analista de Bioestadística',
             'Participantes',
         ];
 
         foreach ($roles as $r) {
             Role::firstOrCreate(['name' => $r, 'guard_name' => 'web']);
+        }
+
+        $bioPermission = Permission::firstOrCreate([
+            'name' => 'bioestadistica-dashboard',
+            'guard_name' => 'web',
+        ]);
+
+        $bioRole = Role::where('name', 'Analista de Bioestadística')->first();
+        if ($bioRole) {
+            $bioRole->givePermissionTo($bioPermission);
         }
 
         $adminRole = Role::where('name', 'Administrador')->first();
