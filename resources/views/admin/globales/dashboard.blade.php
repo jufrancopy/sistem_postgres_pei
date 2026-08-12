@@ -483,7 +483,18 @@
                                 <tr id="user_row_{{ $u->id }}">
                                     <td>{{ count($usuariosList) - $idx }}</td>
                                     <td>
-                                        <div class="font-weight-bold text-dark">{{ $u->name }}</div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="font-weight-bold text-dark">{{ $u->name }}</span>
+                                            @if($u->isOnline() || auth()->id() == $u->id)
+                                                <span class="badge badge-success border border-white ml-2 px-2 py-1 shadow-sm" style="font-size: 0.65rem; border-radius: 12px; background-color: #10b981;" title="En Línea (Activo en los últimos 5 min)">
+                                                    <i class="fa fa-circle text-white mr-1 pulse-green" style="font-size: 0.45rem;"></i> En Línea
+                                                </span>
+                                            @else
+                                                <span class="badge badge-light border text-muted ml-2 px-2 py-1" style="font-size: 0.65rem; border-radius: 12px; background-color: #f1f5f9;" title="Desconectado">
+                                                    <i class="fa fa-circle text-secondary mr-1" style="font-size: 0.45rem;"></i> Desconectado
+                                                </span>
+                                            @endif
+                                        </div>
                                         <small class="text-muted"><i class="fa fa-envelope mr-1"></i>{{ $u->email }}</small>
                                     </td>
                                     <td>

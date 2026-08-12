@@ -230,7 +230,12 @@ class CoordinadorPlanificacionController extends Controller
                     ? '<img src="' . asset($avatar) . '" class="rounded-circle mr-2 border shadow-sm" style="width: 36px; height: 36px; object-fit: cover;">'
                     : '<span class="avatar-circle mr-2 bg-info text-white font-weight-bold d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border-radius: 50%;">' . $initial . '</span>';
 
-                return '<div class="d-flex align-items-center">' . $avatarHtml . '<div><div class="font-weight-bold text-dark">' . e($u->name) . '</div><small class="text-muted">' . e($u->email) . '</small></div></div>';
+                $isOnline = $u->isOnline() || (auth()->id() == $u->id);
+                $statusBadge = $isOnline
+                    ? '<span class="badge badge-success border border-white ml-2 px-2 py-1 shadow-sm" style="font-size: 0.65rem; border-radius: 12px; background-color: #10b981;" title="En Línea (Activo en los últimos 5 min)"><i class="fa fa-circle text-white mr-1" style="font-size: 0.45rem;"></i> En Línea</span>'
+                    : '<span class="badge badge-light border text-muted ml-2 px-2 py-1" style="font-size: 0.65rem; border-radius: 12px; background-color: #f1f5f9;" title="Desconectado"><i class="fa fa-circle text-secondary mr-1" style="font-size: 0.45rem;"></i> Desconectado</span>';
+
+                return '<div class="d-flex align-items-center">' . $avatarHtml . '<div><div class="d-flex align-items-center"><span class="font-weight-bold text-dark">' . e($u->name) . '</span>' . $statusBadge . '</div><small class="text-muted">' . e($u->email) . '</small></div></div>';
             })
             ->addColumn('group_name', function (User $u) {
                 return $u->group

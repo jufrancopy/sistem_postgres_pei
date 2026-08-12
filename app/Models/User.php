@@ -18,6 +18,14 @@ class User extends Authenticatable
     use Notifiable, HasRoles;
 
     /**
+     * Comprueba si el usuario está actualmente en línea (activo en los últimos 5 min).
+     */
+    public function isOnline(): bool
+    {
+        return \Illuminate\Support\Facades\Cache::has('user-is-online-' . $this->id);
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
