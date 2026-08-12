@@ -16,7 +16,8 @@ class GroupController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth', 'role:Administrador']);
+        $this->middleware(['auth']);
+        $this->middleware(['role:Administrador'])->except(['getRootGroups', 'getGroupsFromRoot', 'dataGroupParent', 'dataGroup']);
     }
 
     public function index(Request $request)
@@ -44,16 +45,12 @@ class GroupController extends Controller
 
     public function store(Request $request)
     {
-        if ($request->ajax()) {
+        if ($request->ajax() && (!$request->group_id || $request->has('name'))) {
             $request->validate(
-                [
-                    'name'              => 'required',
-                ],
-                [
-                    'name.required'     => 'El campo Nombre es requerido',
-                ]
+                ['name' => 'required'],
+                ['name.required' => 'El campo Nombre es requerido']
             );
-        };
+        }
 
         try {
             if (!$request->group_id && $request->parent_id) {
@@ -61,20 +58,22 @@ class GroupController extends Controller
                 $group = new Group(['name' => $request->name]);
                 $parent->appendNode($group);
             } else {
-                $group = Group::updateOrCreate(
-                    ['id' => $request->group_id],
-                    ['name' => $request->name]
-                );
+                $group = Group::findOrFail($request->group_id);
+                if ($request->has('name') && !empty($request->name)) {
+                    $group->name = $request->name;
+                    $group->save();
+                }
             }
 
-            $members = $request->user_id ?? [];
-            $group->members()->sync($members);
-
-            if ($group->parent_id == null) {
-                return response()->json(['success' => 'Evento creado con éxito']);
-            } else {
-                return response()->json(['success' => 'Grupo agregado al Evento correctamente', 'parent_id' => $request->parent_id]);
+            if ($request->has('user_id')) {
+                $members = $request->user_id ?? [];
+                $group->members()->sync($members);
             }
+
+            return response()->json([
+                'success' => 'Información del grupo e integrantes guardada correctamente.',
+                'group'   => $group
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

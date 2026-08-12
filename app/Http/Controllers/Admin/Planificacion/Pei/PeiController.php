@@ -383,16 +383,19 @@ class PeiController extends Controller
             );
         }
 
-        // Si se envía foda_perfil_id, guardarlo en el PEI raíz
-        if ($request->has('foda_perfil_id')) {
-            $peiRaiz = $profile->level === 'master'
-                ? $profile
-                : PeiProfile::where('_lft', '<=', $profile->_lft)
-                    ->where('_rgt', '>=', $profile->_rgt)
-                    ->where('level', 'master')
-                    ->first();
+        // Guardar foda_perfil_id en el PEI raíz de forma segura sin pisar con null al editar sub-nodos
+        if ($profile->level === 'master') {
+            if ($request->has('foda_perfil_id')) {
+                $profile->foda_perfil_id = $request->foda_perfil_id ?: null;
+                $profile->save();
+            }
+        } elseif ($request->filled('foda_perfil_id')) {
+            $peiRaiz = PeiProfile::where('_lft', '<=', $profile->_lft)
+                ->where('_rgt', '>=', $profile->_rgt)
+                ->where('level', 'master')
+                ->first();
             if ($peiRaiz) {
-                $peiRaiz->foda_perfil_id = $request->foda_perfil_id ?: null;
+                $peiRaiz->foda_perfil_id = $request->foda_perfil_id;
                 $peiRaiz->save();
             }
         }
@@ -1084,6 +1087,7 @@ class PeiController extends Controller
         return response()->json([
             'success'   => true,
             'is_active' => $pei->is_active,
+            'status'    => $pei->is_active ? 1 : 0,
             'message'   => $pei->is_active
                 ? 'El Plan Estratégico "' . strip_tags($pei->name) . '" fue ACTIVADO.'
                 : 'El Plan Estratégico "' . strip_tags($pei->name) . '" fue INACTIVADO (oculto).',

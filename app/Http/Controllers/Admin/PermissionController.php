@@ -50,12 +50,15 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
-        Permission::updateOrCreate(
+        $permission = Permission::updateOrCreate(
             ['id' => $request->permiso_id],
             ['name' => $request->name]
         );
 
-        return response()->json(['success' => 'Permiso creado correctamente.']);
+        return response()->json([
+            'success'    => 'Permiso guardado correctamente.',
+            'permission' => $permission
+        ]);
     }
     /**
      * Show the form for editing the specified resource.

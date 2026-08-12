@@ -171,7 +171,7 @@
 @include('admin.globales.activities.partials.modal_completion')
 @include('admin.globales.activities.partials.modal_comentarios')
 @include('admin.globales.activities.partials.modal_detalle_tarea')
-@include('admin.globales.activities.partials.modal_evidence')
+@include('admin.globales.activities.partials.modal_evidencia')
 @include('admin.globales.activities.partials.modal_tarea')
 
 @endsection

@@ -25,6 +25,11 @@ class Group extends Model
         return $this->belongsToMany(User::class, 'groups_has_members', 'group_id', 'user_id');
     }
 
+    public function users()
+    {
+        return $this->members();
+    }
+
     public function tasks()
     {
         return $this->hasMany(Task::class, 'group_id');

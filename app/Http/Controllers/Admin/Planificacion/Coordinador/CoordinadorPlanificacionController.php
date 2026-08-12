@@ -401,20 +401,58 @@ class CoordinadorPlanificacionController extends Controller
             ? Group::whereIn('id', $context['subgrupoIds'])->with('members')->get()
             : collect();
 
+        // Calcular Puntos de Gamificación para todos los integrantes
+        $allMemberIds = $grupos->pluck('members')->flatten()->pluck('id')->unique();
+        $pointsPerUser = \App\Models\Gamification\GamificationPoint::whereIn('user_id', $allMemberIds)
+            ->selectRaw('user_id, SUM(points) as total_points')
+            ->groupBy('user_id')
+            ->pluck('total_points', 'user_id');
+
         return DataTables::of($grupos)
             ->addIndexColumn()
             ->addColumn('tipo_badge', function (Group $g) {
                 return '<span class="badge badge-info"><i class="fa fa-users mr-1"></i>Grupo de Trabajo</span>';
             })
-            ->addColumn('members_count', function (Group $g) {
-                $count = $g->members->count();
-                return '<span class="badge badge-light border font-weight-bold text-primary">' . $count . ' integrantes</span>';
+            ->addColumn('members_count', function (Group $g) use ($pointsPerUser) {
+                $totalCount = $g->members->count();
+                if ($g->members->isEmpty()) {
+                    return '<span class="badge badge-light border font-weight-bold text-muted px-2 py-1" style="font-size:0.75rem;"><i class="fa fa-users text-muted mr-1"></i> 0 integrantes</span>';
+                }
+
+                $sortedMembers = $g->members->map(function($m) use ($pointsPerUser) {
+                    $m->puntos_gamificacion = (int) ($pointsPerUser[$m->id] ?? 0);
+                    return $m;
+                })->sortByDesc('puntos_gamificacion')->values();
+
+                $topMiembros = $sortedMembers->take(3);
+                $medals = ['🥇', '🥈', '🥉'];
+                $styles = [
+                    'background: #fef3c7; color: #92400e; border: 1px solid #f59e0b;',
+                    'background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;',
+                    'background: #ffedd5; color: #9a3412; border: 1px solid #fb923c;'
+                ];
+
+                $html = '<div class="d-flex flex-column" style="gap: 3px;">';
+                foreach ($topMiembros as $tIdx => $topMember) {
+                    $medal = $medals[$tIdx] ?? '⭐';
+                    $st = $styles[$tIdx] ?? 'background: #f8fafc; color: #475569; border: 1px solid #e2e8f0;';
+                    $html .= '<div class="badge d-inline-flex align-items-center justify-content-between p-1 px-2" style="' . $st . ' font-size: 0.72rem; font-weight: 600; border-radius: 6px;" title="' . e($topMember->name) . ' — ' . number_format($topMember->puntos_gamificacion) . ' pts">';
+                    $html .= '<span class="text-truncate" style="max-width: 130px;">' . $medal . ' ' . e($topMember->name) . '</span>';
+                    $html .= '<span class="badge badge-pill badge-dark ml-2" style="font-size: 0.65rem;">' . number_format($topMember->puntos_gamificacion) . ' pts</span>';
+                    $html .= '</div>';
+                }
+                if ($totalCount > 3) {
+                    $html .= '<small class="text-muted font-weight-bold ml-1 mt-1" style="font-size: 0.68rem;">+' . ($totalCount - 3) . ' más (Total: ' . $totalCount . ')</small>';
+                }
+                $html .= '</div>';
+
+                return $html;
             })
             ->addColumn('members_names', function (Group $g) {
                 if ($g->members->isEmpty()) {
                     return '<span class="text-muted small">Sin miembros asignados</span>';
                 }
-                return $g->members->pluck('name')->map(fn($n) => '<span class="badge badge-light text-dark border mr-1 mb-1">' . e($n) . '</span>')->implode(' ');
+                return $g->members->pluck('name')->map(fn($n) => '<span class="badge badge-light text-dark border mr-1 mb-1" style="font-size:0.75rem; font-weight:500;">' . e($n) . '</span>')->implode(' ');
             })
             ->addColumn('action', function (Group $g) {
                 $btn = '<button type="button" data-id="' . $g->id . '" data-name="' . e($g->name) . '" class="btn btn-info btn-circle btnMiembrosGrupo mr-1" title="Gestionar Integrantes"><i class="fa fa-user-plus"></i></button>';
@@ -700,15 +738,17 @@ class CoordinadorPlanificacionController extends Controller
             'parent_id'            => 'nullable|exists:organigramas,id',
             'manager'              => 'nullable|string|max:255',
             'user_id'              => 'nullable|exists:users,id',
-            'email'                => 'nullable|email|max:255',
+            'email'                => 'nullable|email|max:255|unique:organigramas,email,' . ($depId ?: 'NULL') . ',id',
             'phone'                => 'nullable|string|max:255',
-            'address'              => 'nullable|string|max:255',
+            'region'               => 'nullable|string|max:255',
             'tipo_establecimiento' => 'nullable|string|max:255',
+        ], [
+            'email.unique' => 'El correo electrónico ya está registrado en otra dependencia del organigrama.'
         ]);
 
         if ($depId) {
             $dep = Organigrama::findOrFail($depId);
-            if (!in_array($dep->id, $context['organigramaIds'], true)) {
+            if (!$context['user']->hasRole('Administrador') && !in_array($dep->id, $context['organigramaIds'], true)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No tenés permisos para editar esta dependencia.'
@@ -717,7 +757,7 @@ class CoordinadorPlanificacionController extends Controller
         } else {
             $dep = new Organigrama();
             $parentId = $request->parent_id ?: ($context['organigramaRaiz'] ? $context['organigramaRaiz']->id : null);
-            if ($parentId && !in_array((int)$parentId, $context['organigramaIds'], true)) {
+            if (!$context['user']->hasRole('Administrador') && $parentId && !in_array((int)$parentId, $context['organigramaIds'], true)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'El nodo superior seleccionado no forma parte de tu organigrama.'
@@ -729,9 +769,10 @@ class CoordinadorPlanificacionController extends Controller
         $dep->dependency = $request->dependency;
         $dep->manager = $request->manager;
         $dep->user_id = $request->user_id ?: null;
-        $dep->email = $request->email;
-        $dep->phone = $request->phone;
-        $dep->address = $request->address;
+        $dep->email = $request->email ?: null;
+        $phoneDigits = preg_replace('/\D/', '', (string)$request->phone);
+        $dep->phone = $phoneDigits !== '' ? (int)$phoneDigits : null;
+        $dep->region = $request->region;
         $dep->tipo_establecimiento = $request->tipo_establecimiento;
         $dep->save();
 
@@ -748,7 +789,7 @@ class CoordinadorPlanificacionController extends Controller
 
         $dep = Organigrama::with('user')->findOrFail($id);
 
-        if (!in_array($dep->id, $context['organigramaIds'], true)) {
+        if (!$context['user']->hasRole('Administrador') && !in_array($dep->id, $context['organigramaIds'], true)) {
             return response()->json([
                 'success' => false,
                 'message' => 'La dependencia no pertenece a tu rama orgánica.'
@@ -775,7 +816,7 @@ class CoordinadorPlanificacionController extends Controller
 
         $dep = Organigrama::findOrFail($id);
 
-        if (!in_array($dep->id, $context['organigramaIds'], true)) {
+        if (!$context['user']->hasRole('Administrador') && !in_array($dep->id, $context['organigramaIds'], true)) {
             return response()->json([
                 'success' => false,
                 'message' => 'La dependencia no pertenece a tu rama orgánica.'

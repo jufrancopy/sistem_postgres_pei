@@ -77,9 +77,13 @@ class RoleController extends Controller
         ]);
     }
 
-    // ── Crear ────────────────────────────────────────────────────────────────
+    // ── Crear / Guardar ───────────────────────────────────────────────────────
     public function store(Request $request)
     {
+        if ($request->filled('role_id')) {
+            return $this->update($request, $request->role_id);
+        }
+
         $request->validate([
             'name' => 'required|unique:roles,name',
         ], [
@@ -88,11 +92,14 @@ class RoleController extends Controller
         ]);
 
         $role = Role::create(['name' => $request->input('name')]);
-        $role->syncPermissions($request->input('permission', []));
+        if ($request->has('permission')) {
+            $role->syncPermissions($request->input('permission', []));
+        }
 
         if ($request->ajax()) {
             return response()->json([
                 'ok'      => true,
+                'role'    => $role,
                 'message' => 'Rol creado correctamente.',
             ]);
         }
@@ -103,21 +110,27 @@ class RoleController extends Controller
     // ── Actualizar ───────────────────────────────────────────────────────────
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'name' => 'required|unique:roles,name,' . $id,
-        ], [
-            'name.required' => 'El nombre del rol es obligatorio.',
-            'name.unique'   => 'Ya existe un rol con ese nombre.',
-        ]);
-
         $role = Role::findOrFail($id);
-        $role->name = $request->input('name');
-        $role->save();
-        $role->syncPermissions($request->input('permission', []));
+
+        if ($request->has('name')) {
+            $request->validate([
+                'name' => 'required|unique:roles,name,' . $id,
+            ], [
+                'name.required' => 'El nombre del rol es obligatorio.',
+                'name.unique'   => 'Ya existe un rol con ese nombre.',
+            ]);
+            $role->name = $request->input('name');
+            $role->save();
+        }
+
+        if ($request->has('permission')) {
+            $role->syncPermissions($request->input('permission', []));
+        }
 
         if ($request->ajax()) {
             return response()->json([
                 'ok'      => true,
+                'role'    => $role,
                 'message' => 'Rol actualizado correctamente.',
             ]);
         }
