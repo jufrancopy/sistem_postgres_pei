@@ -510,12 +510,17 @@
                                         @endforelse
                                     </td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-circle btn-info" onclick="abrirModalEditarUsuario('{{ $u->id }}')" title="Editar Usuario In-Situ">
-                                            <i class="fa fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-circle btn-danger" onclick="eliminarUsuario('{{ $u->id }}', '{{ addslashes($u->name) }}')" title="Eliminar Usuario">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
+                                        <div class="d-flex justify-content-center" style="gap: 4px;">
+                                            <button type="button" class="btn btn-circle" style="background:#6366f1; border-color:#6366f1; color:#fff;" onclick="abrirModalTelemetriaUsuario('{{ $u->id }}')" title="Telemetría & Analítica del Funcionario">
+                                                <i class="fa fa-chart-line"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-circle btn-info" onclick="abrirModalEditarUsuario('{{ $u->id }}')" title="Editar Usuario In-Situ">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarUsuario('{{ $u->id }}', '{{ addslashes($u->name) }}')" title="Eliminar Usuario">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -1795,6 +1800,85 @@
     </div>
 </div>
 
+{{-- ════════════════════════════════════════════════════════════════════════════
+     MODAL DE TELEMETRÍA Y ANALÍTICA DE FUNCIONARIO (IN-SITU)
+     ════════════════════════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalTelemetriaUsuario" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg rounded-lg" style="background-color: #f8fafc;">
+            <div class="modal-header bg-dark text-white d-flex align-items-center justify-content-between p-3" style="border-top-left-radius: .5rem; border-top-right-radius: .5rem;">
+                <h5 class="modal-title font-weight-bold mb-0 text-white" id="modalTelHeading">
+                    <i class="fa fa-chart-line text-warning mr-2"></i> Telemetría y Analítica de Funcionario
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                {{-- Tarjeta Perfil Funcionario --}}
+                <div class="card border shadow-sm mb-4" style="border-radius: 10px; overflow: hidden;">
+                    <div class="card-body p-3 bg-white d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+                        <div class="d-flex align-items-center mb-3 mb-md-0">
+                            <img id="tel_user_avatar" src="{{ asset('assets/images/user-avatar.png') }}" class="rounded-circle border shadow-sm mr-3" style="width: 54px; height: 54px; object-fit: cover;">
+                            <div>
+                                <h5 class="font-weight-bold text-dark mb-0" id="tel_user_name">—</h5>
+                                <div class="small text-muted mb-1" id="tel_user_email">—</div>
+                                <span class="badge badge-light border text-dark font-weight-bold" id="tel_user_group"><i class="fa fa-users text-info mr-1"></i> —</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center" style="gap: 8px;">
+                            <span id="tel_user_online_badge"></span>
+                            <span class="badge badge-warning text-dark font-weight-bold p-2 px-3 shadow-sm" style="font-size: 0.82rem; border-radius: 20px;" id="tel_user_points">
+                                🏆 0 pts
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Rejilla de KPIs --}}
+                <div class="row mb-4">
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                        <div class="card border-0 shadow-sm p-3 bg-white text-center" style="border-radius: 10px;">
+                            <div class="text-primary font-weight-bold text-uppercase mb-1" style="font-size: 0.75rem;">Total Interacciones</div>
+                            <h3 class="font-weight-bold text-dark mb-0" id="tel_kpi_total">0</h3>
+                            <small class="text-muted">Acciones registradas</small>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                        <div class="card border-0 shadow-sm p-3 bg-white text-center" style="border-radius: 10px;">
+                            <div class="text-success font-weight-bold text-uppercase mb-1" style="font-size: 0.75rem;">Última Actividad</div>
+                            <h6 class="font-weight-bold text-dark mb-0 mt-1" id="tel_kpi_last_act">—</h6>
+                            <small class="text-muted">Sello de tiempo</small>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="card border-0 shadow-sm p-3 bg-white text-center" style="border-radius: 10px;">
+                            <div class="text-info font-weight-bold text-uppercase mb-1" style="font-size: 0.75rem;">Conexión IP Reciente</div>
+                            <h6 class="font-weight-bold text-dark mb-0 mt-1" id="tel_kpi_ip">—</h6>
+                            <small class="text-muted">Dirección IP</small>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Cronología Reciente --}}
+                <div class="card border shadow-sm" style="border-radius: 10px;">
+                    <div class="card-header bg-light py-2 px-3 font-weight-bold text-dark small text-uppercase">
+                        <i class="fa fa-history text-info mr-1"></i> Cronología Transaccional Reciente (Últimas Actividades)
+                    </div>
+                    <div class="card-body p-3 bg-white" style="max-height: 280px; overflow-y: auto;">
+                        <ul class="list-group list-group-flush" id="tel_timeline_list">
+                            <li class="list-group-item text-center text-muted small py-4">Cargando datos de telemetría...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-4">
+                <button type="button" class="btn btn-secondary btn-round px-4" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
@@ -2717,6 +2801,67 @@ $(document).ready(function() {
     }
 
     initOrganigramaSortable();
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // HANDLERS AJAX PARA MODAL DE TELEMETRÍA DE USUARIO IN-SITU
+    // ════════════════════════════════════════════════════════════════════════════
+    window.abrirModalTelemetriaUsuario = function(userId) {
+        $('#tel_user_name').text('Cargando...');
+        $('#tel_user_email').text('');
+        $('#tel_user_group').text('—');
+        $('#tel_user_online_badge').html('');
+        $('#tel_user_points').text('🏆 0 pts');
+        $('#tel_kpi_total').text('0');
+        $('#tel_kpi_last_act').text('—');
+        $('#tel_kpi_ip').text('—');
+        $('#tel_timeline_list').html('<li class="list-group-item text-center text-muted small py-4"><i class="fa fa-spinner fa-spin mr-1"></i> Consultando telemetría...</li>');
+        $('#modalTelemetriaUsuario').modal('show');
+
+        $.ajax({
+            url: '{{ url("admin/globales/users") }}/' + userId + '/telemetry',
+            type: 'GET',
+            success: function(res) {
+                if (res.success) {
+                    var u = res.user;
+                    var k = res.kpis;
+
+                    $('#tel_user_name').text(u.name);
+                    $('#tel_user_email').text(u.email);
+                    if (u.avatar_url) $('#tel_user_avatar').attr('src', u.avatar_url);
+                    $('#tel_user_group').html('<i class="fa fa-users text-info mr-1"></i> ' + u.group_name);
+                    $('#tel_user_points').text('🏆 ' + (u.points || 0).toLocaleString() + ' pts');
+
+                    if (u.is_online) {
+                        $('#tel_user_online_badge').html('<span class="badge badge-success px-3 py-2 font-weight-bold" style="border-radius:15px; background:#10b981;"><i class="fa fa-circle text-white mr-1" style="font-size:0.5rem"></i> En Línea</span>');
+                    } else {
+                        $('#tel_user_online_badge').html('<span class="badge badge-light border text-muted px-3 py-2" style="border-radius:15px;"><i class="fa fa-circle text-secondary mr-1" style="font-size:0.5rem"></i> Desconectado</span>');
+                    }
+
+                    $('#tel_kpi_total').text((k.total_activities || 0).toLocaleString());
+                    $('#tel_kpi_last_act').text(k.last_activity);
+                    $('#tel_kpi_ip').text(k.last_ip);
+
+                    var $list = $('#tel_timeline_list');
+                    $list.empty();
+                    if (res.timeline && res.timeline.length > 0) {
+                        $.each(res.timeline, function(i, item) {
+                            var modBadge = '<span class="badge badge-info mr-2" style="font-size:0.7rem">' + item.module + '</span>';
+                            var html = '<li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-bottom">' +
+                                '<div>' + modBadge + '<strong class="small text-dark">' + item.description + '</strong><div class="small text-muted" style="font-size:0.72rem"><i class="fa fa-laptop mr-1"></i>IP: ' + item.ip + '</div></div>' +
+                                '<span class="badge badge-light border text-muted" style="font-size:0.7rem"><i class="fa fa-clock mr-1"></i>' + item.hace + '</span>' +
+                                '</li>';
+                            $list.append(html);
+                        });
+                    } else {
+                        $list.html('<li class="list-group-item text-center text-muted small py-4"><i class="fa fa-info-circle mr-1"></i> El funcionario aún no registra interacciones en el módulo.</li>');
+                    }
+                }
+            },
+            error: function() {
+                toastr.error('No se pudo consultar la información de telemetría del funcionario.');
+            }
+        });
+    };
 
     // ════════════════════════════════════════════════════════════════════════════
     // HANDLERS AJAX PARA MODAL DE USUARIOS IN-SITU

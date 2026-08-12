@@ -26,6 +26,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Relación con las actividades del funcionario (Telemetría)
+     */
+    public function activities()
+    {
+        return $this->hasMany(UserActivity::class, 'user_id');
+    }
+
+    /**
+     * Puntos totales acumulados en Gamificación
+     */
+    public function getGamificationPointsAttribute(): int
+    {
+        return (int) \App\Models\Gamification\GamificationPoint::where('user_id', $this->id)->sum('points');
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array

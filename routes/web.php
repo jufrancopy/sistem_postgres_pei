@@ -42,9 +42,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/gamification/ranking', 'Admin\Planificacion\Pei\PeiController@rankingTalentoHumano')->name('pei-profiles.gamification.ranking');
     Route::get('/profile', function () { return redirect()->route('user.profile'); })->name('profile.edit');
 
-    // ── Mis Tareas (colaboradores) ────────────────────────────────────────────
+    // ── Mis Tareas & Telemetría (colaboradores) ──────────────────────────────
     Route::get('mis-tareas/{activityId}', 'Admin\Globales\ActivityController@misTareas')->name('globales.mis-tareas');
     Route::get('mis-actividades', 'Admin\Globales\ActivityController@misActividades')->name('globales.activities.mis-actividades');
+    Route::get('admin/globales/users/{id}/telemetry', 'Admin\UserTelemetryController@getTelemetry')->name('globales.users.telemetry');
 
     //Rutas del Dpto. Planificacion
     Route::get('planificacion-dashboard', 'Admin\Planificacion\PlanificacionController@dashboard')->name('planificacion-dashboard');
