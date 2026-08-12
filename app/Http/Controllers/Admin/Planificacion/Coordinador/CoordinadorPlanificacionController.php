@@ -756,14 +756,18 @@ class CoordinadorPlanificacionController extends Controller
             }
         } else {
             $dep = new Organigrama();
-            $parentId = $request->parent_id ?: ($context['organigramaRaiz'] ? $context['organigramaRaiz']->id : null);
-            if (!$context['user']->hasRole('Administrador') && $parentId && !in_array((int)$parentId, $context['organigramaIds'], true)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El nodo superior seleccionado no forma parte de tu organigrama.'
-                ], 422);
+            if ($request->boolean('is_root')) {
+                $dep->parent_id = null;
+            } else {
+                $parentId = $request->parent_id ?: ($context['organigramaRaiz'] ? $context['organigramaRaiz']->id : null);
+                if (!$context['user']->hasRole('Administrador') && $parentId && !in_array((int)$parentId, $context['organigramaIds'], true)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'El nodo superior seleccionado no forma parte de tu organigrama.'
+                    ], 422);
+                }
+                $dep->parent_id = $parentId;
             }
-            $dep->parent_id = $parentId;
         }
 
         $dep->dependency = $request->dependency;

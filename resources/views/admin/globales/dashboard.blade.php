@@ -646,9 +646,9 @@
                                 Árbol jerárquico interactivo. Arrastrá por el ícono <i class="fa fa-grip-vertical text-muted"></i> para reorganizar dependencias.
                             </p>
                         </div>
-                        <div class="mt-3 mt-md-0 d-flex align-items-center gap-2">
+                        <div class="mt-3 mt-md-0 d-flex align-items-center flex-wrap" style="gap: 6px;">
                             @if($organigramasRaizList->count() > 0)
-                                <div class="mr-2" style="min-width: 260px;">
+                                <div class="mr-1" style="min-width: 240px;">
                                     <select id="organigramaSelect" class="form-control select2 font-weight-bold">
                                         @foreach($organigramasRaizList as $oRaiz)
                                             <option value="{{ $oRaiz->id }}" {{ $organigramaId == $oRaiz->id ? 'selected' : '' }}>
@@ -658,7 +658,10 @@
                                     </select>
                                 </div>
                             @endif
-                            <button type="button" class="btn btn-outline-info btn-round px-3 text-dark font-weight-bold mr-2 shadow-sm" onclick="abrirModalVisualOrganigrama()">
+                            <button type="button" class="btn btn-info btn-round shadow-sm px-3 text-white mr-1" id="btnNuevoOrganigramaRaiz">
+                                <i class="fa fa-plus-circle mr-1"></i> Nuevo Organigrama Raíz
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-round px-3 text-dark font-weight-bold mr-1 shadow-sm" onclick="abrirModalVisualOrganigrama()">
                                 <i class="fa fa-sitemap mr-1 text-primary"></i> Diagrama Visual
                             </button>
                             @if($organigramaRaiz)
@@ -1211,6 +1214,7 @@
                 @csrf
                 <input type="hidden" id="dep_id" name="dependency_id">
                 <input type="hidden" id="dep_parent_id" name="parent_id">
+                <input type="hidden" id="is_root_dep" name="is_root" value="0">
                 <div class="modal-body p-4">
                     <div class="form-group mb-3">
                         <label class="font-weight-bold small">Nombre de la Dependencia <span class="text-danger">*</span></label>
@@ -2296,6 +2300,30 @@ $(document).ready(function() {
         placeholder: "— Seleccionar uno o más roles —",
         allowClear: true,
         width: '100%'
+    });
+
+    // Abrir Modal para Crear Nuevo Organigrama Raíz
+    $(document).on('click', '#btnNuevoOrganigramaRaiz', function () {
+        $('#formDependencia')[0].reset();
+        $('#dep_id').val('');
+        $('#dep_parent_id').val('');
+        $('#is_root_dep').val('1');
+        $('#dep_user_id').val('').trigger('change');
+        $('#modalDepTitulo').html('<i class="fa fa-sitemap text-info mr-2"></i> Crear Nuevo Organigrama Raíz');
+        $('#modalDependencia').modal('show');
+    });
+
+    // Abrir Modal Agregar Sub-dependencia a la Raíz Activa
+    $(document).on('click', '#btnAgregarSubRaiz', function () {
+        var rootId = $(this).data('id');
+        var rootName = $(this).data('nombre');
+        $('#formDependencia')[0].reset();
+        $('#dep_id').val('');
+        $('#dep_parent_id').val(rootId);
+        $('#is_root_dep').val('0');
+        $('#dep_user_id').val('').trigger('change');
+        $('#modalDepTitulo').html('<i class="fa fa-plus-circle mr-2"></i> Agregar Sub-dependencia a: ' + rootName);
+        $('#modalDependencia').modal('show');
     });
 
     // Select2 en Selector de Organigrama de Estructura
