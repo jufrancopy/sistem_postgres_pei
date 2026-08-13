@@ -556,6 +556,7 @@
             <form id="formNuevaIniciativaMejora">
                 @csrf
                 <input type="hidden" id="ini_pei_profile_id" name="pei_profile_id">
+                <input type="hidden" id="ini_iniciativa_id" name="iniciativa_id">
                 <div class="modal-body p-4 bg-light">
                     {{-- Tarjeta Informativa de Acción PEI Vinculada --}}
                     <div class="mb-4" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #16a34a; border-radius: 10px; padding: 14px 18px;">
@@ -3152,9 +3153,63 @@ $('#modalIndicador').on('hidden.bs.modal', function() {
 // ── Handlers de Iniciativas de Mejora Continua ────────────────────────────────
 window.abrirModalNuevaIniciativa = function(peiProfileId, accionName) {
     $('#formNuevaIniciativaMejora')[0].reset();
+    $('#ini_iniciativa_id').val('');
     $('#ini_pei_profile_id').val(peiProfileId);
     $('#ini_accion_pei_label').text(accionName);
+    $('#modalNuevaIniciativaMejora .modal-title').html('<i class="fa fa-plus-circle text-warning mr-2"></i> Nueva Iniciativa de Mejora Continua');
     $('#modalNuevaIniciativaMejora').modal('show');
+};
+
+window.abrirModalEditarIniciativa = function(iniciativa, accionName) {
+    $('#formNuevaIniciativaMejora')[0].reset();
+    $('#ini_iniciativa_id').val(iniciativa.id);
+    $('#ini_pei_profile_id').val(iniciativa.pei_profile_id);
+    $('#ini_accion_pei_label').text(accionName);
+
+    $('#ini_accion').val(iniciativa.accion);
+    $('#ini_momento').val(iniciativa.momento);
+    $('#ini_estado').val(iniciativa.estado);
+    $('#ini_responsable').val(iniciativa.responsable || '');
+    $('#ini_plazo').val(iniciativa.plazo || '');
+    $('#ini_kpi').val(iniciativa.kpi || '');
+
+    $('#modalNuevaIniciativaMejora .modal-title').html('<i class="fa fa-pencil text-warning mr-2"></i> Editar Iniciativa: ' + (iniciativa.codigo || ''));
+    $('#modalNuevaIniciativaMejora').modal('show');
+};
+
+window.eliminarIniciativa = function(iniciativaId, codigo) {
+    Swal.fire({
+        title: '¿Eliminar Iniciativa ' + (codigo || '') + '?',
+        text: "Esta acción no se puede deshacer.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmColor: '#ef4444',
+        cancelColor: '#64748b',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        customClass: { container: 'swal-over-modal' }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '{{ url("plan-maestro/acciones") }}/' + iniciativaId,
+                type: 'DELETE',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function(res) {
+                    if (res.ok) {
+                        toastr.success('Iniciativa ' + (codigo || '') + ' eliminada correctamente.');
+                        if (typeof loadAccordion === 'function') {
+                            loadAccordion();
+                        } else {
+                            location.reload();
+                        }
+                    }
+                },
+                error: function() {
+                    toastr.error('Error al eliminar la iniciativa.');
+                }
+            });
+        }
+    });
 };
 
 window.cambiarEstadoIniciativa = function(iniciativaId, nuevoEstado) {

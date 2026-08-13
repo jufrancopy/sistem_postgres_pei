@@ -196,11 +196,12 @@ class PlanMaestroController extends Controller
     }
 
     /**
-     * Crea una nueva Iniciativa de Mejora vinculada directamente a un nodo del PEI (Acción PEI).
+     * Crea o actualiza una Iniciativa de Mejora vinculada directamente a un nodo del PEI (Acción PEI).
      */
     public function storeIniciativa(Request $request)
     {
         $data = $request->validate([
+            'iniciativa_id'  => 'nullable|exists:plan_acciones,id',
             'pei_profile_id' => 'required|exists:planificacion.pei_profiles,id',
             'eje_id'         => 'nullable|exists:plan_ejes,id',
             'momento'        => 'required|string|max:10',
@@ -212,6 +213,25 @@ class PlanMaestroController extends Controller
             'estado'         => 'required|string|max:100',
             'detalle'        => 'nullable|string',
         ]);
+
+        if (!empty($data['iniciativa_id'])) {
+            $iniciativa = \App\Models\PlanMaestro\PlanAccion::findOrFail($data['iniciativa_id']);
+            $iniciativa->update([
+                'momento'     => $data['momento'],
+                'accion'      => $data['accion'],
+                'kpi'         => $data['kpi'] ?? null,
+                'plazo'       => $data['plazo'] ?? null,
+                'responsable' => $data['responsable'] ?? null,
+                'estado'      => strtoupper($data['estado']),
+                'detalle'     => $data['detalle'] ?? null,
+            ]);
+
+            return response()->json([
+                'ok'         => true,
+                'iniciativa' => $iniciativa,
+                'mensaje'    => 'Iniciativa de Mejora actualizada exitosamente.'
+            ]);
+        }
 
         $plan = \App\Models\PlanMaestro\PlanMaestro::firstOrCreate(
             ['activo' => true],

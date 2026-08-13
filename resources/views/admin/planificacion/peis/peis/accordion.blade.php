@@ -662,6 +662,14 @@
                                                                             </a>
                                                                         </div>
                                                                     </div>
+
+                                                                    {{-- Botones Editar y Eliminar --}}
+                                                                    <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size:.68rem; border-radius:6px;" onclick="abrirModalEditarIniciativa({{ json_encode($ini) }}, '{{ addslashes(strip_tags($action->name)) }}')" title="Editar esta Iniciativa">
+                                                                        <i class="fa fa-edit text-primary"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-xs btn-outline-danger py-0 px-1" style="font-size:.68rem; border-radius:6px;" onclick="eliminarIniciativa('{{ $ini->id }}', '{{ $ini->codigo }}')" title="Eliminar esta Iniciativa">
+                                                                        <i class="fa fa-trash text-danger"></i>
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         @endforeach
