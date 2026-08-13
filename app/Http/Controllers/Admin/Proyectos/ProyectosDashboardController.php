@@ -35,6 +35,7 @@ class ProyectosDashboardController extends Controller
 
         $planesPei = PeiProfile::whereNull('parent_id')
             ->where('level', 'master')
+            ->where('is_active', true)
             ->whereHas('descendants', fn($q) => $q->whereIn('id', $accionIds))
             ->with(['dependency'])
             ->orderByDesc('year_start')
