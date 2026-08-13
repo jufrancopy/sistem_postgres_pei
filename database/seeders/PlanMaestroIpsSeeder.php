@@ -65,14 +65,100 @@ class PlanMaestroIpsSeeder extends Seeder
             'I' => '3e834b0f-97b2-41f2-a628-8526188690fb',
         ];
 
+        // Mapeo específico y granular por código de Iniciativa a Nodos Acción PEI en Producción
+        $specificCodeMap = [
+            // EJE A · Gobernanza
+            'A-01' => 'a27752f7-cb9b-4082-af59-0e18f238f03b',
+            'A-02' => 'a27752f7-cb9b-4082-af59-0e18f238f03b',
+            'A-03' => 'c62263ee-c882-4050-b6df-77e82c3c4679',
+            'A-04' => 'a27752f7-cb9b-4082-af59-0e18f238f03b',
+            'A-05' => 'c62263ee-c882-4050-b6df-77e82c3c4679',
+            'A-06' => 'c62263ee-c882-4050-b6df-77e82c3c4679',
+            'A-07' => 'a1d81f57-e5a9-46a4-97eb-9bf6933ce4f4',
+            'A-08' => 'a1d81f57-e5a9-46a4-97eb-9bf6933ce4f4',
+            'A-09' => 'a27752f7-cb9b-4082-af59-0e18f238f03b',
+            'A-10' => 'c62263ee-c882-4050-b6df-77e82c3c4679',
+            'A-11' => 'a27752f7-cb9b-4082-af59-0e18f238f03b',
+            'A-12' => 'a27752f7-cb9b-4082-af59-0e18f238f03b',
+            'A-13' => 'c62263ee-c882-4050-b6df-77e82c3c4679',
+            'A-14' => 'a1d81f57-e5a9-46a4-97eb-9bf6933ce4f4',
+
+            // EJE B · Vademécum
+            'B-01' => '5e152af6-bf03-484e-bce8-d1224e518c72',
+            'B-02' => '5e152af6-bf03-484e-bce8-d1224e518c72',
+            'B-03' => '5e152af6-bf03-484e-bce8-d1224e518c72',
+            'B-04' => '5e152af6-bf03-484e-bce8-d1224e518c72',
+            'B-05' => '5e152af6-bf03-484e-bce8-d1224e518c72',
+            'B-06' => '5e152af6-bf03-484e-bce8-d1224e518c72',
+            'B-07' => 'd1925b92-d58c-450f-abab-5e9662e72b3f',
+            'B-08' => 'd1925b92-d58c-450f-abab-5e9662e72b3f',
+            'B-09' => '5e152af6-bf03-484e-bce8-d1224e518c72',
+            'B-10' => '5e152af6-bf03-484e-bce8-d1224e518c72',
+            'B-11' => 'd1925b92-d58c-450f-abab-5e9662e72b3f',
+            'B-12' => 'd1925b92-d58c-450f-abab-5e9662e72b3f',
+            'B-13' => 'd1925b92-d58c-450f-abab-5e9662e72b3f',
+
+            // EJE C · Contratos
+            'C-10' => 'b00f0ebf-ed83-489d-b712-264659a6572c',
+            'C-11' => 'b00f0ebf-ed83-489d-b712-264659a6572c',
+            'C-16' => '1409f5c3-f125-44e2-998b-fc76aae2140a',
+
+            // EJE D · Prestaciones
+            'D-01' => 'd5f46bc4-08b9-4014-bf76-a77f3f6cd73a',
+            'D-02' => 'd5f46bc4-08b9-4014-bf76-a77f3f6cd73a',
+            'D-03' => 'd5f46bc4-08b9-4014-bf76-a77f3f6cd73a',
+            'D-04' => 'dec95d29-07dd-40c1-9628-987820299120',
+            'D-05' => 'dec95d29-07dd-40c1-9628-987820299120',
+            'D-06' => 'd5f46bc4-08b9-4014-bf76-a77f3f6cd73a',
+            'D-07' => '3b375a3c-87e8-4bc6-989d-dfc1b16eaf81',
+            'D-08' => 'dec95d29-07dd-40c1-9628-987820299120',
+            'D-09' => 'dec95d29-07dd-40c1-9628-987820299120',
+            'D-10' => 'dec95d29-07dd-40c1-9628-987820299120',
+            'D-11' => 'dec95d29-07dd-40c1-9628-987820299120',
+            'D-12' => 'd5f46bc4-08b9-4014-bf76-a77f3f6cd73a',
+            'D-13' => 'd5f46bc4-08b9-4014-bf76-a77f3f6cd73a',
+
+            // EJE E · Finanzas
+            'E-01' => '532a5707-a7be-499d-a5f6-b7485afefbe2',
+            'E-02' => '532a5707-a7be-499d-a5f6-b7485afefbe2',
+            'E-03' => '532a5707-a7be-499d-a5f6-b7485afefbe2',
+            'E-04' => '532a5707-a7be-499d-a5f6-b7485afefbe2',
+            'E-05' => '31218f42-059c-4804-9712-5c3812ced212',
+            'E-06' => '31218f42-059c-4804-9712-5c3812ced212',
+            'E-07' => '31218f42-059c-4804-9712-5c3812ced212',
+            'E-08' => '532a5707-a7be-499d-a5f6-b7485afefbe2',
+            'E-09' => '532a5707-a7be-499d-a5f6-b7485afefbe2',
+            'E-10' => '532a5707-a7be-499d-a5f6-b7485afefbe2',
+            'E-11' => '532a5707-a7be-499d-a5f6-b7485afefbe2',
+            'E-12' => '4b54eb48-4c2e-45da-875f-4e7448e0089e',
+            'E-13' => '4b54eb48-4c2e-45da-875f-4e7448e0089e',
+        ];
+
         $items = $this->getDatasetAcciones();
 
         foreach ($items as $i => $item) {
             $ejeLetter   = substr($item['codigo'], 0, 1);
-            $targetPeiId = $peiEjeMap[$ejeLetter] ?? null;
+            $targetPeiId = $specificCodeMap[$item['codigo']] ?? ($peiEjeMap[$ejeLetter] ?? null);
 
+            // Si el UUID de producción no existe en la BD local, buscar por coincidencia temática
             if ($targetPeiId && !\App\Admin\Planificacion\Pei\PeiProfile::where('id', $targetPeiId)->exists()) {
-                $targetPeiId = \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->first()?->id;
+                $targetPeiId = match($ejeLetter) {
+                    'A' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%Estratégico%')->first()?->id
+                        ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%MECIP%')->first()?->id,
+                    'B' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%abastecimiento%')->first()?->id
+                        ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%protocolos%')->first()?->id,
+                    'C' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%PAC%')->first()?->id
+                        ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%infraestructura%')->first()?->id,
+                    'D' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%obstétrica%')->first()?->id
+                        ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%Redes%')->first()?->id,
+                    'E' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%reservas%')->first()?->id
+                        ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%recaudación%')->first()?->id,
+                    'F' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%Inmobiliaria%')->first()?->id,
+                    'G' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%prestaciones%')->first()?->id,
+                    'H' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%Concursos%')->first()?->id,
+                    'I' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%información%')->first()?->id,
+                    default => null,
+                } ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->first()?->id;
             }
 
             // Extraer código de momento (T0, T1, T2, T3, T4, T5, TX)
