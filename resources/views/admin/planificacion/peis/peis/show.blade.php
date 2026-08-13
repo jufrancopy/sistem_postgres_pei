@@ -501,6 +501,133 @@
         {{-- Fin Contenido Principal --}}
     </div>
 
+{{-- Modal Nueva Iniciativa de Mejora Continua --}}
+<style>
+    .ini-field-group {
+        display: flex !important;
+        flex-direction: column !important;
+        margin-bottom: 1.2rem !important;
+        position: static !important;
+    }
+    .ini-field-group label {
+        font-size: 0.82rem !important;
+        font-weight: 700 !important;
+        color: #1e293b !important;
+        margin-bottom: 6px !important;
+        display: block !important;
+        position: static !important;
+        transform: none !important;
+        opacity: 1 !important;
+    }
+    .ini-field-group .form-control, 
+    .ini-field-group textarea, 
+    .ini-field-group select {
+        display: block !important;
+        width: 100% !important;
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        padding: 10px 14px !important;
+        font-size: 0.88rem !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+        height: auto !important;
+        min-height: 42px !important;
+        line-height: 1.5 !important;
+        position: static !important;
+    }
+    .ini-field-group .form-control:focus, 
+    .ini-field-group textarea:focus, 
+    .ini-field-group select:focus {
+        border-color: #6366f1 !important;
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+    }
+</style>
+<div class="modal fade" id="modalNuevaIniciativaMejora" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:14px; overflow:hidden;">
+            <div class="modal-header text-white p-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);">
+                <h5 class="modal-title font-weight-bold mb-0 text-white d-flex align-items-center" style="font-size: 1.1rem;">
+                    <i class="fa fa-tasks text-warning mr-2" style="font-size: 1.2rem;"></i> Nueva Iniciativa de Mejora Continua
+                </h5>
+                <button type="button" class="close text-white opacity-80" data-dismiss="modal" aria-label="Cerrar">&times;</button>
+            </div>
+            <form id="formNuevaIniciativaMejora">
+                @csrf
+                <input type="hidden" id="ini_pei_profile_id" name="pei_profile_id">
+                <div class="modal-body p-4 bg-light">
+                    {{-- Tarjeta Informativa de Acción PEI Vinculada --}}
+                    <div class="mb-4" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #16a34a; border-radius: 10px; padding: 14px 18px;">
+                        <div class="small font-weight-bold text-uppercase text-success mb-1" style="letter-spacing: 0.05em; font-size: 0.7rem;">
+                            <i class="fa fa-link mr-1"></i> Acción PEI Vincular
+                        </div>
+                        <div id="ini_accion_pei_label" class="font-weight-bold text-dark" style="font-size: 0.95rem; line-height: 1.4;">—</div>
+                    </div>
+
+                    <div class="ini-field-group">
+                        <label>Título / Descripción de la Iniciativa <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="accion" id="ini_accion" rows="2" placeholder="Ej: Pedido formal de cargos a disposición / Taller de revisión del vademécum..." required></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="ini-field-group">
+                                <label>Bloque Temporal <span class="text-danger">*</span></label>
+                                <select class="form-control" name="momento" id="ini_momento" required>
+                                    <option value="T0">T0 · Ejecutado / En Curso</option>
+                                    <option value="T1">T1 · Días 1–30</option>
+                                    <option value="T2">T2 · Días 31–60</option>
+                                    <option value="T3">T3 · Días 61–100</option>
+                                    <option value="T4">T4 · Meses 4–6</option>
+                                    <option value="T5">T5 · Meses 7–9</option>
+                                    <option value="TX">TX · Transversal</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="ini-field-group">
+                                <label>Estado Inicial (Semáforo) <span class="text-danger">*</span></label>
+                                <select class="form-control" name="estado" id="ini_estado" required>
+                                    <option value="PENDIENTE">🔴 PENDIENTE</option>
+                                    <option value="EN CURSO">🟡 EN CURSO</option>
+                                    <option value="EJECUTADO">🟢 EJECUTADO</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="ini-field-group">
+                                <label>Responsable</label>
+                                <input type="text" class="form-control" name="responsable" id="ini_responsable" placeholder="Ej: Presidencia / Gerencia de Salud">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="ini-field-group">
+                                <label>Hito / Fecha Límite</label>
+                                <input type="text" class="form-control" name="plazo" id="ini_plazo" placeholder="Ej: Hito día 1 (22/04/2026)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ini-field-group mb-0">
+                        <label>Indicador / Meta de Medición</label>
+                        <input type="text" class="form-control" name="kpi" id="ini_kpi" placeholder="Ej: % de cargos efectivamente puestos a disposición y resueltos">
+                    </div>
+                </div>
+                <div class="modal-footer bg-white p-3 px-4 d-flex align-items-center justify-content-end" style="gap: 10px;">
+                    <button type="button" class="btn btn-light px-4 py-2 font-weight-bold text-secondary" style="border-radius: 20px; font-size: 0.85rem;" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary px-4 py-2 font-weight-bold" id="btnGuardarIniciativa" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: none; border-radius: 20px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(99,102,241,0.3);">
+                        <i class="fa fa-save mr-1"></i> Guardar Iniciativa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- Modal QR Solicitud de Proyecto --}}
 <style>.swal-over-modal { z-index: 99999 !important; }</style>
 <div class="modal fade" id="modalQrSolicitud" tabindex="-1">
@@ -3020,6 +3147,66 @@ $(document).on('click', '.btn-ver-indicador', function() {
 // Mostrar botón guardar al cerrar el modal
 $('#modalIndicador').on('hidden.bs.modal', function() {
     $('#btnGuardarIndicador').show();
+});
+
+// ── Handlers de Iniciativas de Mejora Continua ────────────────────────────────
+window.abrirModalNuevaIniciativa = function(peiProfileId, accionName) {
+    $('#formNuevaIniciativaMejora')[0].reset();
+    $('#ini_pei_profile_id').val(peiProfileId);
+    $('#ini_accion_pei_label').text(accionName);
+    $('#modalNuevaIniciativaMejora').modal('show');
+};
+
+window.cambiarEstadoIniciativa = function(iniciativaId, nuevoEstado) {
+    $.ajax({
+        url: '{{ url("plan-maestro/acciones") }}/' + iniciativaId + '/estado',
+        type: 'PATCH',
+        data: {
+            _token: '{{ csrf_token() }}',
+            estado: nuevoEstado
+        },
+        success: function(res) {
+            if (res.ok) {
+                toastr.success('Estado de Iniciativa actualizado a ' + nuevoEstado);
+                if (typeof loadAccordion === 'function') {
+                    loadAccordion();
+                } else {
+                    location.reload();
+                }
+            }
+        },
+        error: function() {
+            toastr.error('No se pudo actualizar el estado de la iniciativa.');
+        }
+    });
+};
+
+$('#formNuevaIniciativaMejora').on('submit', function(e) {
+    e.preventDefault();
+    var $btn = $('#btnGuardarIniciativa');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
+
+    $.ajax({
+        url: '{{ route("plan-maestro.iniciativa.store") }}',
+        type: 'POST',
+        data: $(this).serialize(),
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Iniciativa');
+            if (res.ok) {
+                $('#modalNuevaIniciativaMejora').modal('hide');
+                toastr.success(res.mensaje || 'Iniciativa de Mejora guardada.');
+                if (typeof loadAccordion === 'function') {
+                    loadAccordion();
+                } else {
+                    location.reload();
+                }
+            }
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Iniciativa');
+            toastr.error(xhr.responseJSON?.message || 'Error al guardar la Iniciativa de Mejora.');
+        }
+    });
 });
 </script>
 @include('admin.planificacion.peis.peis.partials.chat_drawer')

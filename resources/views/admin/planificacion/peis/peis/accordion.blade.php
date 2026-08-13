@@ -604,6 +604,75 @@
                                             </div>
                                             @endif
 
+                                            {{-- Iniciativas de Mejora Continua (Plan 100 Días) --}}
+                                            @php
+                                                $iniciativasAccion = $action->iniciativas;
+                                            @endphp
+                                            <div class="px-3 py-2" style="border-top:1px solid #e2e8f0; background:#f8fafc; font-size:.78rem">
+                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                    <span class="font-weight-bold text-uppercase text-dark" style="font-size:.68rem; letter-spacing:.04em">
+                                                        <i class="fa fa-tasks text-info mr-1"></i> Iniciativas de Mejora Continua (Plan 100 Días)
+                                                        <span class="badge badge-info ml-1">{{ $iniciativasAccion->count() }}</span>
+                                                    </span>
+                                                    <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size:.68rem; border-radius:12px;" onclick="abrirModalNuevaIniciativa('{{ $action->id }}', '{{ addslashes(strip_tags($action->name)) }}')" title="Agregar nueva Iniciativa de Mejora">
+                                                        <i class="fa fa-plus-circle mr-1"></i> + Nueva Iniciativa
+                                                    </button>
+                                                </div>
+
+                                                @if($iniciativasAccion->count() > 0)
+                                                    <div class="d-flex flex-column" style="gap: .4rem;">
+                                                        @foreach($iniciativasAccion as $ini)
+                                                            @php
+                                                                $grpState = $ini->estado_grupo;
+                                                                $stBadge = match($grpState) {
+                                                                    'EJECUTADO' => ['cls' => 'badge-success', 'icon' => 'fa-check-circle', 'label' => 'EJECUTADO', 'color' => '#10b981'],
+                                                                    'EN CURSO'  => ['cls' => 'badge-warning text-dark', 'icon' => 'fa-clock-o', 'label' => 'EN CURSO', 'color' => '#f59e0b'],
+                                                                    default     => ['cls' => 'badge-danger', 'icon' => 'fa-hourglass-start', 'label' => 'PENDIENTE', 'color' => '#ef4444'],
+                                                                };
+                                                                $mom = \App\Models\PlanMaestro\PlanAccion::MOMENTOS[$ini->momento] ?? ['label' => $ini->momento, 'color' => '#64748b'];
+                                                            @endphp
+                                                            <div class="d-flex align-items-md-center justify-content-between p-2 rounded border bg-white shadow-xs flex-column flex-md-row" id="ini_card_{{ $ini->id }}" style="border-left: 4px solid {{ $stBadge['color'] }} !important;">
+                                                                <div class="d-flex align-items-center mb-2 mb-md-0" style="gap: .5rem;">
+                                                                    <span class="badge badge-dark font-weight-bold" style="font-size:.65rem">{{ $ini->codigo }}</span>
+                                                                    <span class="badge text-white font-weight-bold" style="font-size:.62rem; background:{{ $mom['color'] }}">{{ $ini->momento }}</span>
+                                                                    <div style="font-size:.78rem; font-weight:600; color:#1e293b;" title="{{ $ini->detalle_ejecucion ?? $ini->accion }}">
+                                                                        {{ $ini->accion }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="d-flex align-items-center" style="gap: .4rem;">
+                                                                    @if($ini->responsable)
+                                                                    <span class="badge badge-light border text-dark" style="font-size:.64rem" title="Responsable">
+                                                                        <i class="fa fa-user mr-1 text-muted"></i>{{ \Illuminate\Support\Str::limit($ini->responsable, 25) }}
+                                                                    </span>
+                                                                    @endif
+                                                                    {{-- Semáforo interactivo de cambio de estado con 1-clic --}}
+                                                                    <div class="dropdown">
+                                                                        <button class="btn btn-sm {{ $stBadge['cls'] }} dropdown-toggle py-0 px-2" type="button" data-toggle="dropdown" style="font-size:.65rem; border-radius:12px;">
+                                                                            <i class="fa {{ $stBadge['icon'] }} mr-1"></i> {{ $stBadge['label'] }}
+                                                                        </button>
+                                                                        <div class="dropdown-menu dropdown-menu-right shadow-sm p-1" style="font-size:.75rem;">
+                                                                            <a class="dropdown-item py-1 text-success font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'EJECUTADO')">
+                                                                                🟢 Marcar como EJECUTADO
+                                                                            </a>
+                                                                            <a class="dropdown-item py-1 text-warning font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'EN CURSO')">
+                                                                                🟡 Marcar como EN CURSO
+                                                                            </a>
+                                                                            <a class="dropdown-item py-1 text-danger font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'PENDIENTE')">
+                                                                                🔴 Marcar como PENDIENTE
+                                                                            </a>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <div class="text-muted small italic py-1 text-center" style="font-size:.72rem">
+                                                        Sin Iniciativas de Mejora registradas para esta Acción PEI. Presiona <strong>+ Nueva Iniciativa</strong> para crear una.
+                                                    </div>
+                                                @endif
+                                            </div>
+
                                             {{-- Reportes: todos visibles --}}
                                             <div style="border-top:1px solid #e9ecef;font-size:.78rem">
                                                 <div class="px-3 pt-2 pb-1">

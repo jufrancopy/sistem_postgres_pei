@@ -9,7 +9,7 @@ class PlanAccion extends Model
     protected $table = 'plan_acciones';
 
     protected $fillable = [
-        'plan_id', 'eje_id', 'codigo', 'momento', 'accion',
+        'plan_id', 'eje_id', 'pei_profile_id', 'codigo', 'momento', 'accion',
         'justificacion', 'kpi', 'plazo', 'responsable', 'estado', 'detalle', 'orden',
     ];
 
@@ -49,5 +49,10 @@ class PlanAccion extends Model
     public function eje()
     {
         return $this->belongsTo(PlanEje::class, 'eje_id');
+    }
+
+    public function peiProfile()
+    {
+        return $this->belongsTo(\App\Admin\Planificacion\Pei\PeiProfile::class, 'pei_profile_id');
     }
 }
