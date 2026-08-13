@@ -543,6 +543,22 @@
         outline: none !important;
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
     }
+    .ini-field-group .select2-container--default .select2-selection--single {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        height: 42px !important;
+        padding: 6px 10px !important;
+        background-color: #ffffff !important;
+    }
+    .ini-field-group .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 28px !important;
+        color: #0f172a !important;
+        font-size: 0.85rem !important;
+        padding-left: 0 !important;
+    }
+    .ini-field-group .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+    }
 </style>
 <div class="modal fade" id="modalNuevaIniciativaMejora" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
@@ -3165,13 +3181,27 @@ $('#modalIndicador').on('hidden.bs.modal', function() {
     $('#btnGuardarIndicador').show();
 });
 
-// ── Handlers de Iniciativas de Mejora Continua ────────────────────────────────
+// ── Handlers de Acciones Operativas ──────────────────────────────────────────
+function initIndicadorSelect2(val) {
+    var $sel = $('#ini_indicador_id');
+    if ($sel.hasClass('select2-hidden-accessible')) {
+        $sel.select2('destroy');
+    }
+    $sel.val(val || '').trigger('change');
+    $sel.select2({
+        dropdownParent: $('#modalNuevaIniciativaMejora'),
+        placeholder: '-- Sin Indicador Vincular --',
+        allowClear: true,
+        width: '100%'
+    });
+}
+
 window.abrirModalNuevaIniciativa = function(peiProfileId, accionName) {
     $('#formNuevaIniciativaMejora')[0].reset();
     $('#ini_iniciativa_id').val('');
     $('#ini_pei_profile_id').val(peiProfileId);
-    $('#ini_indicador_id').val('');
     $('#ini_accion_pei_label').text(accionName);
+    initIndicadorSelect2('');
     $('#modalNuevaIniciativaMejora .modal-title').html('<i class="fa fa-plus-circle text-warning mr-2"></i> Nueva Acción Operativa');
     $('#modalNuevaIniciativaMejora').modal('show');
 };
@@ -3180,7 +3210,6 @@ window.abrirModalEditarIniciativa = function(iniciativa, accionName) {
     $('#formNuevaIniciativaMejora')[0].reset();
     $('#ini_iniciativa_id').val(iniciativa.id);
     $('#ini_pei_profile_id').val(iniciativa.pei_profile_id);
-    $('#ini_indicador_id').val(iniciativa.indicador_id || '');
     $('#ini_accion_pei_label').text(accionName);
 
     $('#ini_accion').val(iniciativa.accion);
@@ -3189,6 +3218,7 @@ window.abrirModalEditarIniciativa = function(iniciativa, accionName) {
     $('#ini_responsable').val(iniciativa.responsable || '');
     $('#ini_plazo').val(iniciativa.plazo || '');
     $('#ini_kpi').val(iniciativa.kpi || '');
+    initIndicadorSelect2(iniciativa.indicador_id || '');
 
     $('#modalNuevaIniciativaMejora .modal-title').html('<i class="fa fa-pencil text-warning mr-2"></i> Editar Acción Operativa: ' + (iniciativa.codigo || ''));
     $('#modalNuevaIniciativaMejora').modal('show');
