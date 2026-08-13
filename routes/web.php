@@ -51,12 +51,13 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('planificacion-dashboard/ejecutar-diagnostico', 'Admin\Planificacion\PlanificacionController@ejecutarDiagnostico')->name('planificacion-dashboard.ejecutar-diagnostico');
     Route::post('planificacion-dashboard/guardar-pei', 'Admin\Planificacion\PlanificacionController@guardarPeiSeleccionado')->name('planificacion-dashboard.guardar-pei');
 
-    // ── Plan Maestro ─────────────────────────────────────────────────────────
+    // ── Plan Maestro & Iniciativas de Mejora Continua ────────────────────────
     Route::get('plan-maestro', 'Admin\PlanMaestro\PlanMaestroController@index')->name('plan-maestro.index');
     Route::get('plan-maestro/{plan}', 'Admin\PlanMaestro\PlanMaestroController@show')->name('plan-maestro.show');
     Route::get('plan-maestro/{plan}/buscar', 'Admin\PlanMaestro\PlanMaestroController@buscar')->name('plan-maestro.buscar');
     Route::patch('plan-maestro/acciones/{accion}/estado', 'Admin\PlanMaestro\PlanMaestroController@actualizarEstado')->name('plan-maestro.accion.estado');
     Route::post('plan-maestro/{plan}/acciones', 'Admin\PlanMaestro\PlanMaestroController@storeAccion')->name('plan-maestro.accion.store');
+    Route::post('plan-maestro/iniciativas', 'Admin\PlanMaestro\PlanMaestroController@storeIniciativa')->name('plan-maestro.iniciativa.store');
     Route::delete('plan-maestro/acciones/{accion}', 'Admin\PlanMaestro\PlanMaestroController@destroyAccion')->name('plan-maestro.accion.destroy');
 
     //Rutas de PEI

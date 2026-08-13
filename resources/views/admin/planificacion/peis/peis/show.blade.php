@@ -501,6 +501,80 @@
         {{-- Fin Contenido Principal --}}
     </div>
 
+{{-- Modal Nueva Iniciativa de Mejora Continua --}}
+<div class="modal fade" id="modalNuevaIniciativaMejora" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:10px;">
+            <div class="modal-header bg-dark text-white p-3" style="border-top-left-radius:10px; border-top-right-radius:10px;">
+                <h5 class="modal-title font-weight-bold mb-0 text-white">
+                    <i class="fa fa-plus-circle text-info mr-2"></i> Nueva Iniciativa de Mejora Continua
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <form id="formNuevaIniciativaMejora">
+                @csrf
+                <input type="hidden" id="ini_pei_profile_id" name="pei_profile_id">
+                <div class="modal-body p-4 bg-light">
+                    <div class="alert alert-info py-2 px-3 mb-3 small" style="border-radius:8px;">
+                        <i class="fa fa-info-circle mr-1"></i> Se vinculará esta Iniciativa de Mejora a la Acción PEI: <br>
+                        <strong id="ini_accion_pei_label" class="text-dark">—</strong>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small">Título / Descripción de la Iniciativa <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="accion" id="ini_accion" rows="2" placeholder="Ej: Pedido formal de cargos a disposición / Taller de vademécum..." required></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark small">Bloque Temporal <span class="text-danger">*</span></label>
+                            <select class="form-control form-control-sm" name="momento" id="ini_momento" required>
+                                <option value="T0">T0 · Ejecutado / En Curso</option>
+                                <option value="T1">T1 · Días 1–30</option>
+                                <option value="T2">T2 · Días 31–60</option>
+                                <option value="T3">T3 · Días 61–100</option>
+                                <option value="T4">T4 · Meses 4–6</option>
+                                <option value="T5">T5 · Meses 7–9</option>
+                                <option value="TX">TX · Transversal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark small">Estado Inicial (Semáforo) <span class="text-danger">*</span></label>
+                            <select class="form-control form-control-sm" name="estado" id="ini_estado" required>
+                                <option value="PENDIENTE">🔴 PENDIENTE</option>
+                                <option value="EN CURSO">🟡 EN CURSO</option>
+                                <option value="EJECUTADO">🟢 EJECUTADO</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark small">Responsable</label>
+                            <input type="text" class="form-control form-control-sm" name="responsable" id="ini_responsable" placeholder="Ej: Presidencia / Gerencia de Salud">
+                        </div>
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark small">Hito / Fecha Límite</label>
+                            <input type="text" class="form-control form-control-sm" name="plazo" id="ini_plazo" placeholder="Ej: Hito día 1 (22/04/2026)">
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold text-dark small">Indicador / Meta de Medición</label>
+                        <input type="text" class="form-control form-control-sm" name="kpi" id="ini_kpi" placeholder="Ej: % de cargos efectivamente puestos a disposición">
+                    </div>
+                </div>
+                <div class="modal-footer bg-white p-3">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4" id="btnGuardarIniciativa">
+                        <i class="fa fa-save mr-1"></i> Guardar Iniciativa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- Modal QR Solicitud de Proyecto --}}
 <style>.swal-over-modal { z-index: 99999 !important; }</style>
 <div class="modal fade" id="modalQrSolicitud" tabindex="-1">
@@ -3020,6 +3094,66 @@ $(document).on('click', '.btn-ver-indicador', function() {
 // Mostrar botón guardar al cerrar el modal
 $('#modalIndicador').on('hidden.bs.modal', function() {
     $('#btnGuardarIndicador').show();
+});
+
+// ── Handlers de Iniciativas de Mejora Continua ────────────────────────────────
+window.abrirModalNuevaIniciativa = function(peiProfileId, accionName) {
+    $('#formNuevaIniciativaMejora')[0].reset();
+    $('#ini_pei_profile_id').val(peiProfileId);
+    $('#ini_accion_pei_label').text(accionName);
+    $('#modalNuevaIniciativaMejora').modal('show');
+};
+
+window.cambiarEstadoIniciativa = function(iniciativaId, nuevoEstado) {
+    $.ajax({
+        url: '{{ url("plan-maestro/acciones") }}/' + iniciativaId + '/estado',
+        type: 'PATCH',
+        data: {
+            _token: '{{ csrf_token() }}',
+            estado: nuevoEstado
+        },
+        success: function(res) {
+            if (res.ok) {
+                toastr.success('Estado de Iniciativa actualizado a ' + nuevoEstado);
+                if (typeof loadAccordion === 'function') {
+                    loadAccordion();
+                } else {
+                    location.reload();
+                }
+            }
+        },
+        error: function() {
+            toastr.error('No se pudo actualizar el estado de la iniciativa.');
+        }
+    });
+};
+
+$('#formNuevaIniciativaMejora').on('submit', function(e) {
+    e.preventDefault();
+    var $btn = $('#btnGuardarIniciativa');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
+
+    $.ajax({
+        url: '{{ route("plan-maestro.iniciativa.store") }}',
+        type: 'POST',
+        data: $(this).serialize(),
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Iniciativa');
+            if (res.ok) {
+                $('#modalNuevaIniciativaMejora').modal('hide');
+                toastr.success(res.mensaje || 'Iniciativa de Mejora guardada.');
+                if (typeof loadAccordion === 'function') {
+                    loadAccordion();
+                } else {
+                    location.reload();
+                }
+            }
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Iniciativa');
+            toastr.error(xhr.responseJSON?.message || 'Error al guardar la Iniciativa de Mejora.');
+        }
+    });
 });
 </script>
 @include('admin.planificacion.peis.peis.partials.chat_drawer')

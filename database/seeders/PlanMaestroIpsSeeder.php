@@ -49,22 +49,41 @@ class PlanMaestroIpsSeeder extends Seeder
             $ejeMap[$codigo] = $eje->id;
         }
 
-        // ── Acciones ─────────────────────────────────────────────────────────
+        $peiEjeMap = [
+            'A' => 'a27752f7-cb9b-4082-af59-0e18f238f03b',
+            'B' => 'd1925b92-d58c-450f-abab-5e9662e72b3f',
+            'C' => 'caf00eb8-6960-4deb-b7b9-0ab91dfdda49',
+            'D' => 'dec95d29-07dd-40c1-9628-987820299120',
+            'E' => '31218f42-059c-4804-9712-5c3812ced212',
+            'F' => '0c05cd2a-9d57-40e2-9947-d791fda9acea',
+            'G' => '29587945-7e1c-4009-b22a-e1d8707c4530',
+            'H' => 'e48761a8-0b05-4362-97df-2c0fbaa87e46',
+            'I' => '3e834b0f-97b2-41f2-a628-8526188690fb',
+        ];
+
+        // ── Acciones / Iniciativas de Mejora ──────────────────────────────
         $acciones = array_merge($this->getAcciones(), $this->getAccionesCD(), $this->getAccionesEFGHI());
         foreach ($acciones as $i => $a) {
+            $ejeLetter = $a['eje'];
+            $targetPeiId = $peiEjeMap[$ejeLetter] ?? null;
+            if ($targetPeiId && !\App\Admin\Planificacion\Pei\PeiProfile::where('id', $targetPeiId)->exists()) {
+                $targetPeiId = \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->first()?->id;
+            }
+
             PlanAccion::create([
-                'plan_id'       => $plan->id,
-                'eje_id'        => $ejeMap[$a['eje']],
-                'codigo'        => $a['id'],
-                'momento'       => $a['momento'],
-                'accion'        => $a['accion'],
-                'justificacion' => $a['justificacion'] ?? null,
-                'kpi'           => $a['kpi'] ?? null,
-                'plazo'         => $a['plazo'] ?? null,
-                'responsable'   => $a['responsable'] ?? null,
-                'estado'        => $a['estado'] ?? null,
-                'detalle'       => $a['detalle'] ?? null,
-                'orden'         => $i,
+                'plan_id'        => $plan->id,
+                'eje_id'         => $ejeMap[$ejeLetter],
+                'pei_profile_id' => $targetPeiId,
+                'codigo'         => $a['id'],
+                'momento'        => $a['momento'],
+                'accion'         => $a['accion'],
+                'justificacion'  => $a['justificacion'] ?? null,
+                'kpi'            => $a['kpi'] ?? null,
+                'plazo'          => $a['plazo'] ?? null,
+                'responsable'    => $a['responsable'] ?? null,
+                'estado'         => $a['estado'] ?? null,
+                'detalle'        => $a['detalle'] ?? null,
+                'orden'          => $i,
             ]);
         }
 

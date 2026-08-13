@@ -194,4 +194,72 @@ class PlanMaestroController extends Controller
         $accion->delete();
         return response()->json(['ok' => true]);
     }
+
+    /**
+     * Crea una nueva Iniciativa de Mejora vinculada directamente a un nodo del PEI (Acción PEI).
+     */
+    public function storeIniciativa(Request $request)
+    {
+        $data = $request->validate([
+            'pei_profile_id' => 'required|exists:planificacion.pei_profiles,id',
+            'eje_id'         => 'nullable|exists:plan_ejes,id',
+            'momento'        => 'required|string|max:10',
+            'accion'         => 'required|string',
+            'justificacion'  => 'nullable|string',
+            'kpi'            => 'nullable|string',
+            'plazo'          => 'nullable|string|max:200',
+            'responsable'    => 'nullable|string|max:200',
+            'estado'         => 'required|string|max:100',
+            'detalle'        => 'nullable|string',
+        ]);
+
+        $plan = \App\Models\PlanMaestro\PlanMaestro::firstOrCreate(
+            ['activo' => true],
+            [
+                'nombre'      => 'Plan de Gestión 2026',
+                'institucion' => 'Instituto de Previsión Social',
+                'descripcion' => 'Primeros 100 días + Hoja de Ruta 9 meses',
+                'periodo'     => '2026',
+            ]
+        );
+
+        $ejeId = $data['eje_id'] ?? \App\Models\PlanMaestro\PlanEje::where('plan_id', $plan->id)->first()?->id;
+        if (!$ejeId) {
+            $eje = \App\Models\PlanMaestro\PlanEje::create([
+                'plan_id' => $plan->id,
+                'codigo'  => 'A',
+                'nombre'  => 'Gobernanza',
+                'color'   => '#2a9d8f',
+                'icono'   => 'fa-landmark',
+            ]);
+            $ejeId = $eje->id;
+        }
+
+        $ejeObj = \App\Models\PlanMaestro\PlanEje::find($ejeId);
+        $prefix = $ejeObj->codigo ?? 'M';
+        $count  = \App\Models\PlanMaestro\PlanAccion::where('eje_id', $ejeId)->count() + 1;
+        $codigo = $prefix . '-' . str_pad($count, 2, '0', STR_PAD_LEFT);
+
+        $iniciativa = \App\Models\PlanMaestro\PlanAccion::create([
+            'plan_id'        => $plan->id,
+            'eje_id'         => $ejeId,
+            'pei_profile_id' => $data['pei_profile_id'],
+            'codigo'         => $codigo,
+            'momento'        => $data['momento'],
+            'accion'         => $data['accion'],
+            'justificacion'  => $data['justificacion'] ?? null,
+            'kpi'            => $data['kpi'] ?? null,
+            'plazo'          => $data['plazo'] ?? null,
+            'responsable'    => $data['responsable'] ?? null,
+            'estado'         => strtoupper($data['estado']),
+            'detalle'        => $data['detalle'] ?? null,
+            'orden'          => \App\Models\PlanMaestro\PlanAccion::max('orden') + 1,
+        ]);
+
+        return response()->json([
+            'ok'         => true,
+            'iniciativa' => $iniciativa,
+            'mensaje'    => 'Iniciativa de Mejora agregada exitosamente.'
+        ]);
+    }
 }

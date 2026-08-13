@@ -78,6 +78,14 @@ class PeiProfile extends Model
         'public_tabs' => 'array',
     ];
 
+    /**
+     * Relación con las Iniciativas de Mejora Continua (Plan 100 Días)
+     */
+    public function iniciativas(): HasMany
+    {
+        return $this->hasMany(\App\Models\PlanMaestro\PlanAccion::class, 'pei_profile_id');
+    }
+
     const BSC_PERSPECTIVAS = [
         'financiera'  => 'Perspectiva Financiera',
         'clientes'    => 'Perspectiva de Clientes / Usuarios',
