@@ -20,7 +20,11 @@ class UserTelemetryController extends Controller
         $isOnline = $user->isOnline() || (auth()->id() == $user->id);
         $points   = $user->gamification_points;
 
-        $activitiesQuery = UserActivity::where('user_id', $user->id);
+        $activitiesQuery = UserActivity::where('user_id', $user->id)
+            ->where('description', 'NOT LIKE', '%/siess/notificaciones%')
+            ->where('description', 'NOT LIKE', '%/telemetry%')
+            ->where('description', 'NOT LIKE', '%/get-dependencies%')
+            ->where('description', 'NOT LIKE', '%/notifications%');
         $totalActivities = (clone $activitiesQuery)->count();
         $latestActivity  = (clone $activitiesQuery)->latest()->first();
 
