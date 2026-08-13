@@ -203,6 +203,7 @@ class PlanMaestroController extends Controller
         $data = $request->validate([
             'iniciativa_id'  => 'nullable|exists:plan_acciones,id',
             'pei_profile_id' => 'required|exists:planificacion.pei_profiles,id',
+            'indicador_id'   => 'nullable|exists:planificacion.indicadores,id',
             'eje_id'         => 'nullable|exists:plan_ejes,id',
             'momento'        => 'required|string|max:10',
             'accion'         => 'required|string',
@@ -217,19 +218,20 @@ class PlanMaestroController extends Controller
         if (!empty($data['iniciativa_id'])) {
             $iniciativa = \App\Models\PlanMaestro\PlanAccion::findOrFail($data['iniciativa_id']);
             $iniciativa->update([
-                'momento'     => $data['momento'],
-                'accion'      => $data['accion'],
-                'kpi'         => $data['kpi'] ?? null,
-                'plazo'       => $data['plazo'] ?? null,
-                'responsable' => $data['responsable'] ?? null,
-                'estado'      => strtoupper($data['estado']),
-                'detalle'     => $data['detalle'] ?? null,
+                'indicador_id' => $data['indicador_id'] ?? null,
+                'momento'      => $data['momento'],
+                'accion'       => $data['accion'],
+                'kpi'          => $data['kpi'] ?? null,
+                'plazo'        => $data['plazo'] ?? null,
+                'responsable'  => $data['responsable'] ?? null,
+                'estado'       => strtoupper($data['estado']),
+                'detalle'      => $data['detalle'] ?? null,
             ]);
 
             return response()->json([
                 'ok'         => true,
                 'iniciativa' => $iniciativa,
-                'mensaje'    => 'Iniciativa de Mejora actualizada exitosamente.'
+                'mensaje'    => 'Acción Operativa actualizada exitosamente.'
             ]);
         }
 
@@ -264,6 +266,7 @@ class PlanMaestroController extends Controller
             'plan_id'        => $plan->id,
             'eje_id'         => $ejeId,
             'pei_profile_id' => $data['pei_profile_id'],
+            'indicador_id'   => $data['indicador_id'] ?? null,
             'codigo'         => $codigo,
             'momento'        => $data['momento'],
             'accion'         => $data['accion'],
@@ -279,7 +282,7 @@ class PlanMaestroController extends Controller
         return response()->json([
             'ok'         => true,
             'iniciativa' => $iniciativa,
-            'mensaje'    => 'Iniciativa de Mejora agregada exitosamente.'
+            'mensaje'    => 'Acción Operativa agregada exitosamente.'
         ]);
     }
 }

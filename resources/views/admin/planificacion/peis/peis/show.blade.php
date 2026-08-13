@@ -549,7 +549,7 @@
         <div class="modal-content border-0 shadow-lg" style="border-radius:14px; overflow:hidden;">
             <div class="modal-header text-white p-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);">
                 <h5 class="modal-title font-weight-bold mb-0 text-white d-flex align-items-center" style="font-size: 1.1rem;">
-                    <i class="fa fa-tasks text-warning mr-2" style="font-size: 1.2rem;"></i> Nueva Iniciativa de Mejora Continua
+                    <i class="fa fa-tasks text-warning mr-2" style="font-size: 1.2rem;"></i> Nueva Acción Operativa
                 </h5>
                 <button type="button" class="close text-white opacity-80" data-dismiss="modal" aria-label="Cerrar">&times;</button>
             </div>
@@ -567,7 +567,7 @@
                     </div>
 
                     <div class="ini-field-group">
-                        <label>Título / Descripción de la Iniciativa <span class="text-danger">*</span></label>
+                        <label>Título / Descripción de la Acción Operativa <span class="text-danger">*</span></label>
                         <textarea class="form-control" name="accion" id="ini_accion" rows="2" placeholder="Ej: Pedido formal de cargos a disposición / Taller de revisión del vademécum..." required></textarea>
                     </div>
 
@@ -613,15 +613,30 @@
                         </div>
                     </div>
 
-                    <div class="ini-field-group mb-0">
-                        <label>Indicador / Meta de Medición</label>
-                        <input type="text" class="form-control" name="kpi" id="ini_kpi" placeholder="Ej: % de cargos efectivamente puestos a disposición y resueltos">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="ini-field-group mb-0">
+                                <label>Indicador / Meta de Medición (Texto)</label>
+                                <input type="text" class="form-control" name="kpi" id="ini_kpi" placeholder="Ej: % de cargos efectivamente puestos a disposición y resueltos">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="ini-field-group mb-0">
+                                <label>Indicador Institucional (Ficha)</label>
+                                <select class="form-control" name="indicador_id" id="ini_indicador_id">
+                                    <option value="">-- Sin Indicador Vincular --</option>
+                                    @foreach(\App\Models\Planificacion\Indicador::where('pei_profile_id', $profile->id)->get() as $indObj)
+                                        <option value="{{ $indObj->id }}">[{{ $indObj->codigoCompleto() }}] {{ $indObj->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-white p-3 px-4 d-flex align-items-center justify-content-end" style="gap: 10px;">
                     <button type="button" class="btn btn-light px-4 py-2 font-weight-bold text-secondary" style="border-radius: 20px; font-size: 0.85rem;" data-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary px-4 py-2 font-weight-bold" id="btnGuardarIniciativa" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: none; border-radius: 20px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(99,102,241,0.3);">
-                        <i class="fa fa-save mr-1"></i> Guardar Iniciativa
+                        <i class="fa fa-save mr-1"></i> Guardar Acción Operativa
                     </button>
                 </div>
             </form>
@@ -3155,8 +3170,9 @@ window.abrirModalNuevaIniciativa = function(peiProfileId, accionName) {
     $('#formNuevaIniciativaMejora')[0].reset();
     $('#ini_iniciativa_id').val('');
     $('#ini_pei_profile_id').val(peiProfileId);
+    $('#ini_indicador_id').val('');
     $('#ini_accion_pei_label').text(accionName);
-    $('#modalNuevaIniciativaMejora .modal-title').html('<i class="fa fa-plus-circle text-warning mr-2"></i> Nueva Iniciativa de Mejora Continua');
+    $('#modalNuevaIniciativaMejora .modal-title').html('<i class="fa fa-plus-circle text-warning mr-2"></i> Nueva Acción Operativa');
     $('#modalNuevaIniciativaMejora').modal('show');
 };
 
@@ -3164,6 +3180,7 @@ window.abrirModalEditarIniciativa = function(iniciativa, accionName) {
     $('#formNuevaIniciativaMejora')[0].reset();
     $('#ini_iniciativa_id').val(iniciativa.id);
     $('#ini_pei_profile_id').val(iniciativa.pei_profile_id);
+    $('#ini_indicador_id').val(iniciativa.indicador_id || '');
     $('#ini_accion_pei_label').text(accionName);
 
     $('#ini_accion').val(iniciativa.accion);
@@ -3173,7 +3190,7 @@ window.abrirModalEditarIniciativa = function(iniciativa, accionName) {
     $('#ini_plazo').val(iniciativa.plazo || '');
     $('#ini_kpi').val(iniciativa.kpi || '');
 
-    $('#modalNuevaIniciativaMejora .modal-title').html('<i class="fa fa-pencil text-warning mr-2"></i> Editar Iniciativa: ' + (iniciativa.codigo || ''));
+    $('#modalNuevaIniciativaMejora .modal-title').html('<i class="fa fa-pencil text-warning mr-2"></i> Editar Acción Operativa: ' + (iniciativa.codigo || ''));
     $('#modalNuevaIniciativaMejora').modal('show');
 };
 

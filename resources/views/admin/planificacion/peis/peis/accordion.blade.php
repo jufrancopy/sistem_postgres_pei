@@ -604,23 +604,23 @@
                                             </div>
                                             @endif
 
-                                            {{-- Iniciativas de Mejora Continua (Plan 100 Días) --}}
+                                            {{-- Acciones Operativas (Plan de Gestión 100 Días) --}}
                                             @php
                                                 $iniciativasAccion = $action->iniciativas;
                                             @endphp
                                             <div class="px-3 py-2" style="border-top:1px solid #e2e8f0; background:#f8fafc; font-size:.78rem">
                                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                                     <span class="font-weight-bold text-uppercase text-dark" style="font-size:.68rem; letter-spacing:.04em">
-                                                        <i class="fa fa-tasks text-info mr-1"></i> Iniciativas de Mejora Continua (Plan 100 Días)
+                                                        <i class="fa fa-tasks text-info mr-1"></i> Acciones Operativas (Plan 100 Días)
                                                         <span class="badge badge-info ml-1">{{ $iniciativasAccion->count() }}</span>
                                                     </span>
-                                                    <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size:.68rem; border-radius:12px;" onclick="abrirModalNuevaIniciativa('{{ $action->id }}', '{{ addslashes(strip_tags($action->name)) }}')" title="Agregar nueva Iniciativa de Mejora">
-                                                        <i class="fa fa-plus-circle mr-1"></i> + Nueva Iniciativa
+                                                    <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size:.68rem; border-radius:12px;" onclick="abrirModalNuevaIniciativa('{{ $action->id }}', '{{ addslashes(strip_tags($action->name)) }}')" title="Agregar nueva Acción Operativa">
+                                                        <i class="fa fa-plus-circle mr-1"></i> + Nueva Acción Operativa
                                                     </button>
                                                 </div>
 
                                                 @if($iniciativasAccion->count() > 0)
-                                                    <div class="d-flex flex-column" style="gap: .4rem;">
+                                                    <div class="d-flex flex-column" style="gap: .5rem;">
                                                         @foreach($iniciativasAccion as $ini)
                                                             @php
                                                                 $grpState = $ini->estado_grupo;
@@ -631,52 +631,85 @@
                                                                 };
                                                                 $mom = \App\Models\PlanMaestro\PlanAccion::MOMENTOS[$ini->momento] ?? ['label' => $ini->momento, 'color' => '#64748b'];
                                                             @endphp
-                                                            <div class="d-flex align-items-md-center justify-content-between p-2 rounded border bg-white shadow-xs flex-column flex-md-row" id="ini_card_{{ $ini->id }}" style="border-left: 4px solid {{ $stBadge['color'] }} !important;">
-                                                                <div class="d-flex align-items-center mb-2 mb-md-0" style="gap: .5rem;">
-                                                                    <span class="badge badge-dark font-weight-bold" style="font-size:.65rem">{{ $ini->codigo }}</span>
-                                                                    <span class="badge text-white font-weight-bold" style="font-size:.62rem; background:{{ $mom['color'] }}">{{ $ini->momento }}</span>
-                                                                    <div style="font-size:.78rem; font-weight:600; color:#1e293b;" title="{{ $ini->detalle_ejecucion ?? $ini->accion }}">
-                                                                        {{ $ini->accion }}
-                                                                    </div>
-                                                                </div>
-                                                                <div class="d-flex align-items-center" style="gap: .4rem;">
-                                                                    @if($ini->responsable)
-                                                                    <span class="badge badge-light border text-dark" style="font-size:.64rem" title="Responsable">
-                                                                        <i class="fa fa-user mr-1 text-muted"></i>{{ \Illuminate\Support\Str::limit($ini->responsable, 25) }}
-                                                                    </span>
-                                                                    @endif
-                                                                    {{-- Semáforo interactivo de cambio de estado con 1-clic --}}
-                                                                    <div class="dropdown">
-                                                                        <button class="btn btn-sm {{ $stBadge['cls'] }} dropdown-toggle py-0 px-2" type="button" data-toggle="dropdown" style="font-size:.65rem; border-radius:12px;">
-                                                                            <i class="fa {{ $stBadge['icon'] }} mr-1"></i> {{ $stBadge['label'] }}
-                                                                        </button>
-                                                                        <div class="dropdown-menu dropdown-menu-right shadow-sm p-1" style="font-size:.75rem;">
-                                                                            <a class="dropdown-item py-1 text-success font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'EJECUTADO')">
-                                                                                🟢 Marcar como EJECUTADO
-                                                                            </a>
-                                                                            <a class="dropdown-item py-1 text-warning font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'EN CURSO')">
-                                                                                🟡 Marcar como EN CURSO
-                                                                            </a>
-                                                                            <a class="dropdown-item py-1 text-danger font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'PENDIENTE')">
-                                                                                🔴 Marcar como PENDIENTE
-                                                                            </a>
+                                                            <div class="p-2.5 rounded border bg-white shadow-xs" id="ini_card_{{ $ini->id }}" style="border-left: 4px solid {{ $stBadge['color'] }} !important;">
+                                                                {{-- Fila Principal --}}
+                                                                <div class="d-flex align-items-md-center justify-content-between flex-column flex-md-row" style="gap: .5rem;">
+                                                                    <div class="d-flex align-items-center flex-wrap" style="gap: .4rem;">
+                                                                        <span class="badge badge-dark font-weight-bold" style="font-size:.65rem">{{ $ini->codigo }}</span>
+                                                                        <span class="badge text-white font-weight-bold" style="font-size:.62rem; background:{{ $mom['color'] }}" title="{{ $mom['label'] }}">{{ $ini->momento }}</span>
+                                                                        <div class="font-weight-bold text-dark" style="font-size:.82rem;" title="{{ $ini->accion }}">
+                                                                            {{ $ini->accion }}
                                                                         </div>
                                                                     </div>
+                                                                    <div class="d-flex align-items-center flex-wrap" style="gap: .4rem;">
+                                                                        @if($ini->responsable)
+                                                                        <span class="badge badge-light border text-dark" style="font-size:.64rem" title="Responsable">
+                                                                            <i class="fa fa-user mr-1 text-muted"></i>{{ \Illuminate\Support\Str::limit($ini->responsable, 25) }}
+                                                                        </span>
+                                                                        @endif
 
-                                                                    {{-- Botones Editar y Eliminar --}}
-                                                                    <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size:.68rem; border-radius:6px;" onclick="abrirModalEditarIniciativa({{ json_encode($ini) }}, '{{ addslashes(strip_tags($action->name)) }}')" title="Editar esta Iniciativa">
-                                                                        <i class="fa fa-edit text-primary"></i>
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-xs btn-outline-danger py-0 px-1" style="font-size:.68rem; border-radius:6px;" onclick="eliminarIniciativa('{{ $ini->id }}', '{{ $ini->codigo }}')" title="Eliminar esta Iniciativa">
-                                                                        <i class="fa fa-trash text-danger"></i>
-                                                                    </button>
+                                                                        {{-- Semáforo interactivo de cambio de estado con 1-clic --}}
+                                                                        <div class="dropdown">
+                                                                            <button class="btn btn-sm {{ $stBadge['cls'] }} dropdown-toggle py-0 px-2" type="button" data-toggle="dropdown" style="font-size:.65rem; border-radius:12px;">
+                                                                                <i class="fa {{ $stBadge['icon'] }} mr-1"></i> {{ $stBadge['label'] }}
+                                                                            </button>
+                                                                            <div class="dropdown-menu dropdown-menu-right shadow-sm p-1" style="font-size:.75rem;">
+                                                                                <a class="dropdown-item py-1 text-success font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'EJECUTADO')">
+                                                                                    🟢 Marcar como EJECUTADO
+                                                                                </a>
+                                                                                <a class="dropdown-item py-1 text-warning font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'EN CURSO')">
+                                                                                    🟡 Marcar como EN CURSO
+                                                                                </a>
+                                                                                <a class="dropdown-item py-1 text-danger font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'PENDIENTE')">
+                                                                                    🔴 Marcar como PENDIENTE
+                                                                                </a>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {{-- Botones Editar y Eliminar --}}
+                                                                        <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size:.68rem; border-radius:6px;" onclick="abrirModalEditarIniciativa({{ json_encode($ini) }}, '{{ addslashes(strip_tags($action->name)) }}')" title="Editar esta Acción Operativa">
+                                                                            <i class="fa fa-edit text-primary"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-xs btn-outline-danger py-0 px-1" style="font-size:.68rem; border-radius:6px;" onclick="eliminarIniciativa('{{ $ini->id }}', '{{ $ini->codigo }}')" title="Eliminar esta Acción Operativa">
+                                                                            <i class="fa fa-trash text-danger"></i>
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
+
+                                                                {{-- Fila Secundaria de Detalles --}}
+                                                                @if($ini->justificacion || $ini->detalle || $ini->kpi || $ini->plazo || $ini->indicador_id)
+                                                                <div class="mt-2 pt-1.5 border-top d-flex flex-wrap align-items-center" style="gap: .4rem; font-size:.72rem; color:#475569;">
+                                                                    @if($ini->justificacion || $ini->detalle)
+                                                                    <div class="w-100 mb-1 text-muted" style="font-size:.71rem; font-style:italic;">
+                                                                        <i class="fa fa-info-circle mr-1 text-info"></i> {{ $ini->justificacion ?? $ini->detalle }}
+                                                                    </div>
+                                                                    @endif
+
+                                                                    @if($ini->kpi)
+                                                                    <span class="badge badge-light border text-dark" style="font-size:.65rem; background:#f0fdf4; border-color:#bbf7d0 !important;">
+                                                                        <i class="fa fa-chart-line text-success mr-1"></i> <strong>Meta/KPI:</strong> {{ $ini->kpi }}
+                                                                    </span>
+                                                                    @endif
+
+                                                                    @if($ini->plazo)
+                                                                    <span class="badge badge-light border text-dark" style="font-size:.65rem; background:#fffbeb; border-color:#fde68a !important;">
+                                                                        <i class="fa fa-calendar-alt text-warning mr-1"></i> <strong>Hito/Plazo:</strong> {{ $ini->plazo }}
+                                                                    </span>
+                                                                    @endif
+
+                                                                    @if($ini->indicador_id && $ini->indicador)
+                                                                    <button type="button" class="btn btn-xs btn-outline-info py-0 px-2 btn-ver-indicador" data-id="{{ $ini->indicador_id }}" data-profile="{{ $profile->id }}" style="font-size:.65rem; border-radius:10px;">
+                                                                        <i class="fa fa-chart-bar mr-1"></i> Indicador Operativo: [{{ $ini->indicador->codigoCompleto() }}] {{ $ini->indicador->nombre }}
+                                                                    </button>
+                                                                    @endif
+                                                                </div>
+                                                                @endif
                                                             </div>
                                                         @endforeach
                                                     </div>
                                                 @else
                                                     <div class="text-muted small italic py-1 text-center" style="font-size:.72rem">
-                                                        Sin Iniciativas de Mejora registradas para esta Acción PEI. Presiona <strong>+ Nueva Iniciativa</strong> para crear una.
+                                                        Sin Acciones Operativas registradas para esta Acción PEI. Presiona <strong>+ Nueva Acción Operativa</strong> para crear una.
                                                     </div>
                                                 @endif
                                             </div>

@@ -41,6 +41,11 @@ class PlanAccion extends Model
         return 'PENDIENTE';
     }
 
+    public function indicador()
+    {
+        return $this->belongsTo(\App\Models\Planificacion\Indicador::class, 'indicador_id');
+    }
+
     public function plan()
     {
         return $this->belongsTo(PlanMaestro::class, 'plan_id');
