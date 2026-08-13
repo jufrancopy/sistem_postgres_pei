@@ -22,6 +22,28 @@ class UserActivityMiddleware
             $path = $request->path();
             $method = $request->method();
 
+            // Ignorar peticiones de fondo, polling AJAX de notificaciones y la propia telemetría
+            $ignoredPaths = [
+                'siess/notificaciones',
+                'telemetry',
+                'get-dependencies',
+                'notifications',
+                'livewire',
+                'debugbar',
+                'check-session',
+            ];
+
+            foreach ($ignoredPaths as $ignored) {
+                if (str_contains($path, $ignored)) {
+                    return $next($request);
+                }
+            }
+
+            // Ignorar peticiones AJAX automáticas en segundo plano (GET AJAX) para no distorsionar la navegación del usuario
+            if ($request->ajax() && strtolower($method) === 'get') {
+                return $next($request);
+            }
+
             $module = 'general';
             if (str_contains($path, 'pei') || str_contains($path, 'planificacion')) {
                 $module = 'pei';
@@ -37,7 +59,7 @@ class UserActivityMiddleware
                 $module = 'organigrama';
             }
 
-            $cacheKey = "user-activity-log-{$userId}-{$module}";
+            $cacheKey = "user-activity-log-{$userId}-{$module}-{$path}";
             if (!Cache::has($cacheKey)) {
                 Cache::put($cacheKey, true, now()->addSeconds(15));
 
