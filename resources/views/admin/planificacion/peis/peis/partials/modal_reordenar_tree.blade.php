@@ -26,7 +26,7 @@
     }
 </style>
 
-<div class="modal fade" id="modalReordenarPei" tabindex="-1" role="dialog" aria-labelledby="modalReordenarPeiLabel" aria-hidden="true" data-backdrop="static">
+<div class="modal fade" id="modalReordenarPei" tabindex="-1" role="dialog" aria-labelledby="modalReordenarPeiLabel" data-backdrop="static">
     <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-pei-reordenar" role="document">
         <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
             
@@ -56,7 +56,7 @@
                         <h6 class="font-weight-bold text-dark mb-0" style="font-size: .88rem;">Instrucciones para Reordenar</h6>
                         <small class="text-muted" style="font-size: .78rem;">
                             Arrastrá cualquier elemento por el ícono <i class="fa fa-grip-vertical text-muted"></i> para modificar su posición.
-                            Los elementos se mantienen estrictamente protegidos dentro de su mismo tipo jerárquico.
+                            Los cambios se guardan automáticamente en tiempo real.
                         </small>
                     </div>
                 </div>
@@ -109,18 +109,14 @@
             {{-- Footer --}}
             <div class="modal-footer bg-white py-2 px-4 d-flex align-items-center justify-content-between">
                 <small class="text-muted" id="lblEstadoReordenamiento">
-                    <i class="fa fa-check-circle text-success mr-1"></i> Cambios en memoria. Haz clic en guardar para aplicar.
+                    <i class="fa fa-check-circle text-success mr-1"></i> Arrastrá cualquier elemento para reordenar en tiempo real.
                 </small>
                 <div>
-                    <button type="button" class="btn btn-sm btn-secondary px-3 mr-2" data-dismiss="modal">
-                        Cancelar
-                    </button>
-                    <button type="button" class="btn btn-sm btn-success font-weight-bold px-4 shadow-sm" id="btnGuardarOrdenTreePei">
-                        <i class="fa fa-save mr-1"></i> GUARDAR NUEVO ORDEN
+                    <button type="button" class="btn btn-sm btn-primary font-weight-bold px-4 shadow-sm" data-dismiss="modal">
+                        <i class="fa fa-check mr-1"></i> LISTO / CERRAR
                     </button>
                 </div>
             </div>
-
         </div>
     </div>
 </div>

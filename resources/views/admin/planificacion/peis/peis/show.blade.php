@@ -3401,7 +3401,9 @@ $('#formNuevaIniciativaMejora').on('submit', function(e) {
     });
 });
 
-// ── Reordenar Estructura PEI (Drag & Drop) ───────────────────────────
+// ── Reordenar Estructura PEI (Drag & Drop con Auto-Guardado) ──────────────
+window.peiTreeReordered = false;
+
 $('#btnAbrirModalReordenarPei').on('click', function() {
     var profileId = $(this).data('profile');
     var $btn = $(this);
@@ -3414,7 +3416,7 @@ $('#btnAbrirModalReordenarPei').on('click', function() {
             $btn.prop('disabled', false).html('<i class="fa fa-sort-amount-asc mr-1 text-warning"></i> REORDENAR PEI');
             $('#containerModalReordenarPei').html(html);
             $('#modalReordenarPei').modal('show');
-            initPeiTreeSortable();
+            initPeiTreeSortable(profileId);
         },
         error: function() {
             $btn.prop('disabled', false).html('<i class="fa fa-sort-amount-asc mr-1 text-warning"></i> REORDENAR PEI');
@@ -3423,7 +3425,7 @@ $('#btnAbrirModalReordenarPei').on('click', function() {
     });
 });
 
-function initPeiTreeSortable() {
+function initPeiTreeSortable(profileId) {
     document.querySelectorAll('#contenedorArbolDraggablePei .sortable-pei-group').forEach(function(el) {
         if (el._sortable) return;
         var groupLevel = el.getAttribute('data-level') || 'sub';
@@ -3436,11 +3438,62 @@ function initPeiTreeSortable() {
             chosenClass: 'sortable-chosen',
             dragClass: 'sortable-drag',
             onEnd: function() {
-                $('#lblEstadoReordenamiento').html('<i class="fa fa-exclamation-circle text-warning mr-1"></i> Tienes cambios pendientes de guardar.');
+                autoGuardarOrdenTreePei(profileId);
             }
         });
     });
 }
+
+function autoGuardarOrdenTreePei(profileId) {
+    var items = [];
+
+    $('#contenedorArbolDraggablePei li.nodo-pei-item').each(function() {
+        var id = $(this).attr('data-id');
+        var dbId = $(this).attr('data-db-id') || id;
+        var type = $(this).attr('data-type') || 'profile';
+        var parentUl = $(this).closest('ul.sortable-pei-group');
+        var parentId = parentUl.attr('data-parent-id');
+        var orderIndex = $(this).index();
+
+        items.push({
+            id: id,
+            db_id: dbId,
+            type: type,
+            parent_id: parentId,
+            order_item: orderIndex
+        });
+    });
+
+    $('#lblEstadoReordenamiento').html('<i class="fa fa-spinner fa-spin text-info mr-1"></i> Guardando cambios automáticamente...');
+
+    $.ajax({
+        url: '{{ url("pei-profiles") }}/' + profileId + '/reordenar-tree',
+        type: 'POST',
+        data: { items: items, _token: '{{ csrf_token() }}' },
+        success: function(res) {
+            window.peiTreeReordered = true;
+            $('#lblEstadoReordenamiento').html('<i class="fa fa-check-circle text-success mr-1"></i> ¡Guardado automáticamente en tiempo real!');
+            toastr.success('¡Posición actualizada!', '', { timeOut: 1200 });
+        },
+        error: function(xhr) {
+            $('#lblEstadoReordenamiento').html('<i class="fa fa-exclamation-triangle text-danger mr-1"></i> Error al guardar la posición.');
+            toastr.error(xhr.responseJSON?.error || 'Error al guardar el reordenamiento.');
+        }
+    });
+}
+
+$(document).on('hidden.bs.modal', '#modalReordenarPei', function() {
+    if (window.peiTreeReordered) {
+        window.peiTreeReordered = false;
+        if (typeof window.recargarAcordeon === 'function') {
+            window.recargarAcordeon();
+        } else if (typeof loadAccordion === 'function') {
+            loadAccordion();
+        } else {
+            location.reload();
+        }
+    }
+});
 
 $(document).on('click', '.btn-toggle-pei-children', function() {
     var $icon = $(this).find('i');
@@ -3462,53 +3515,6 @@ $(document).on('click', '#btnExpandirTodoTreePei', function() {
 $(document).on('click', '#btnColapsarTodoTreePei', function() {
     $('#contenedorArbolDraggablePei .nodo-pei-children').slideUp(150);
     $('#contenedorArbolDraggablePei .btn-toggle-pei-children i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
-});
-
-$(document).on('click', '#btnGuardarOrdenTreePei', function() {
-    var items = [];
-
-    $('#contenedorArbolDraggablePei li.nodo-pei-item').each(function() {
-        var id = $(this).attr('data-id');
-        var dbId = $(this).attr('data-db-id') || id;
-        var type = $(this).attr('data-type') || 'profile';
-        var parentUl = $(this).closest('ul.sortable-pei-group');
-        var parentId = parentUl.attr('data-parent-id');
-        var orderIndex = $(this).index();
-
-        items.push({
-            id: id,
-            db_id: dbId,
-            type: type,
-            parent_id: parentId,
-            order_item: orderIndex
-        });
-    });
-
-    var $btn = $(this);
-    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
-
-    $.ajax({
-        url: '{{ url("pei-profiles") }}/' + _profileId + '/reordenar-tree',
-        type: 'POST',
-        data: { items: items, _token: '{{ csrf_token() }}' },
-        success: function(res) {
-            toastr.success(res.message || '¡Estructura PEI reordenada exitosamente!');
-            $('#modalReordenarPei').modal('hide');
-            setTimeout(function() {
-                if (typeof window.recargarAcordeon === 'function') {
-                    window.recargarAcordeon();
-                } else if (typeof loadAccordion === 'function') {
-                    loadAccordion();
-                } else {
-                    location.reload();
-                }
-            }, 600);
-        },
-        error: function(xhr) {
-            $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> GUARDAR NUEVO ORDEN');
-            toastr.error(xhr.responseJSON?.error || 'Error al guardar el reordenamiento.');
-        }
-    });
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
