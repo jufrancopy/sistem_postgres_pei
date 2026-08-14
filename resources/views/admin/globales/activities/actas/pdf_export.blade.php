@@ -190,5 +190,39 @@
         </div>
     @endif
 
+    {{-- DECLARACIÓN DE INTEGRIDAD Y PROCEDIMIENTO DE SEGURIDAD --}}
+    <div style="margin-top: 15px; padding: 7px 9px; background: #f8fafc; border: 1px solid #cbd5e1; font-size: 7.5pt; color: #334155; line-height: 1.4; text-align: justify;">
+        <strong>PROCEDIMIENTO DE SEGURIDAD E INTEGRIDAD DIGITAL (MECIP:2015):</strong>
+        Este documento es un registro oficial generado por el Sistema PEI - IPS. Las asistencias y rúbricas fueron capturadas mediante autenticación digital de usuario o escaneo de código QR en tiempo real. 
+        @if($acta->estado === 'finalizada' || $acta->hash_seguridad)
+        Al ser finalizada el acta por el moderador, el sistema aplicó un sellado criptográfico inmutable SHA-256. Cualquier alteración posterior del texto o de las firmas invalida automáticamente el código de verificación y la autenticidad en el Portal Público.
+        @else
+        El acta se encuentra en estado de borrador / redacción preliminar hasta su firma y cierre definitivo.
+        @endif
+    </div>
+
+    {{-- PIE DE PÁGINA CON CÓDIGO QR Y VALIDACIÓN --}}
+    <table style="width: 100%; margin-top: 10px; border-top: 1px solid #000; padding-top: 5px;">
+        <tr>
+            <td style="width: 75%; vertical-align: top; font-size: 8pt; color: #333; line-height: 1.35;">
+                <strong>DOCUMENTO DIGITAL REGISTRADO EN EL SISTEMA PEI - IPS</strong><br>
+                Generado el {{ \Carbon\Carbon::now('America/Asuncion')->format('d/m/Y H:i') }} hs.<br>
+                Validez oficial según estándares de control interno MECIP:2015.<br>
+                @if($acta->hash_seguridad)
+                <div style="font-family: monospace; font-size: 7pt; background: #f1f5f9; padding: 2px 4px; border: 1px solid #cbd5e1; display: inline-block; margin-top: 3px; font-weight: bold; color: #0f172a;">
+                    CÓDIGO VERIFICADOR: {{ $acta->hash_seguridad }}
+                </div><br>
+                @endif
+                <span style="font-size: 7pt; color: #555;">Enlace de verificación: {{ $publicUrl }}</span>
+            </td>
+            <td style="width: 25%; text-align: right; vertical-align: top;">
+                @if(!empty($qrBase64))
+                    <img src="{{ $qrBase64 }}" style="width: 65px; height: 65px; display: block; margin-left: auto;">
+                    <div style="font-size: 6.5pt; font-weight: bold; text-align: right; margin-top: 2px;">ESCANEAR QR</div>
+                @endif
+            </td>
+        </tr>
+    </table>
+
 </body>
 </html>

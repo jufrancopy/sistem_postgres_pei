@@ -284,18 +284,22 @@
         </div>
         @endif
 
-        {{-- DECLARACIÓN DE INTEGRIDAD --}}
-        @if($acta->hash_seguridad)
-        <div style="margin-top: 20px; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 8pt; color: #334155; line-height: 1.5; text-align: justify;">
-            <strong>DECLARACIÓN DE INTEGRIDAD CRIPTOGRÁFICA:</strong> Las firmas trazadas en este documento han sido capturadas digitalmente de forma consentida por los participantes y el moderador. Al finalizar la reunión, el sistema genera automáticamente un Hash criptográfico SHA-256 de seguridad, que sella el contenido del acta de forma inmutable. Cualquier alteración posterior del texto, participantes o rúbricas invalidará automáticamente el Código Verificador y el QR de validación en tiempo real.
+        {{-- DECLARACIÓN DE INTEGRIDAD Y PROCEDIMIENTO DE SEGURIDAD --}}
+        <div style="margin-top: 20px; padding: 10px 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 8pt; color: #334155; line-height: 1.5; text-align: justify;">
+            <strong>PROCEDIMIENTO DE SEGURIDAD E INTEGRIDAD DIGITAL (MECIP:2015):</strong>
+            Este documento es un registro oficial generado por el Sistema PEI - IPS. Las asistencias y rúbricas fueron capturadas mediante autenticación digital de usuario o escaneo de código QR en tiempo real. 
+            @if($acta->estado === 'finalizada' || $acta->hash_seguridad)
+            Al ser finalizada el acta por el moderador, el sistema aplicó un sellado criptográfico inmutable SHA-256. Cualquier alteración posterior del texto o de las firmas invalida automáticamente el código de verificación y la autenticidad en el Portal Público.
+            @else
+            El acta se encuentra en estado de borrador / redacción preliminar hasta su firma y cierre definitivo.
+            @endif
         </div>
-        @endif
 
         {{-- PIE DE PÁGINA CON CÓDIGO QR Y VALIDACIÓN --}}
         <div class="mt-4 pt-2 border-top d-flex justify-content-between align-items-center" style="border-top: 1px solid #ccc !important;">
             <div style="font-size: 8.5pt; color: #444; line-height: 1.4;">
                 <strong>DOCUMENTO DIGITAL REGISTRADO EN EL SISTEMA PEI - IPS</strong><br>
-                Generado el {{ date('d/m/Y H:i') }} hs.<br>
+                Generado el {{ \Carbon\Carbon::now('America/Asuncion')->format('d/m/Y H:i') }} hs. (Hora Oficial de Paraguay)<br>
                 Validez oficial según estándares de control interno MECIP:2015.<br>
                 @if($acta->hash_seguridad)
                 <div style="font-family: monospace; font-size: 7.5pt; background: #f8fafc; padding: 4px 6px; border: 1px solid #cbd5e1; display: inline-block; margin-top: 4px; font-weight: bold; color: #0f172a;">
