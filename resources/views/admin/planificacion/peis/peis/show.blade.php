@@ -3469,12 +3469,16 @@ $(document).on('click', '#btnGuardarOrdenTreePei', function() {
 
     $('#contenedorArbolDraggablePei li.nodo-pei-item').each(function() {
         var id = $(this).attr('data-id');
+        var dbId = $(this).attr('data-db-id') || id;
+        var type = $(this).attr('data-type') || 'profile';
         var parentUl = $(this).closest('ul.sortable-pei-group');
         var parentId = parentUl.attr('data-parent-id');
         var orderIndex = $(this).index();
 
         items.push({
             id: id,
+            db_id: dbId,
+            type: type,
             parent_id: parentId,
             order_item: orderIndex
         });

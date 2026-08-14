@@ -959,12 +959,60 @@ class PeiController extends Controller
     public function getTreeDraggable($idProfile)
     {
         $master = PeiProfile::findOrFail($idProfile);
-        $tree = PeiProfile::defaultOrder()
+        $treeNode = PeiProfile::defaultOrder()
+            ->with(['children', 'iniciativas'])
             ->descendantsAndSelf($idProfile)
             ->toTree()
             ->first();
 
-        return view('admin.planificacion.peis.peis.partials.modal_reordenar_tree', compact('master', 'tree'));
+        $treeArray = $this->buildDraggableTreeArray($treeNode);
+
+        return view('admin.planificacion.peis.peis.partials.modal_reordenar_tree', [
+            'master' => $master,
+            'treeArray' => $treeArray
+        ]);
+    }
+
+    private function buildDraggableTreeArray($node)
+    {
+        $hijos = [];
+
+        // 1. Agregar hijos PeiProfile
+        if ($node->children && $node->children->isNotEmpty()) {
+            foreach ($node->children as $child) {
+                $hijos[] = $this->buildDraggableTreeArray($child);
+            }
+        }
+
+        // 2. Si el nodo es una Acción Estratégica (action / accion_estrategica), incluir sus Acciones Operativas (iniciativas)
+        if (in_array($node->level, ['action', 'accion_estrategica']) && $node->relationLoaded('iniciativas') && $node->iniciativas->isNotEmpty()) {
+            foreach ($node->iniciativas->sortBy('orden') as $ini) {
+                $hijos[] = [
+                    'id'        => 'ini_' . $ini->id,
+                    'db_id'     => $ini->id,
+                    'type'      => 'iniciativa',
+                    'level'     => 'accion_operativa',
+                    'name'      => ($ini->codigo ? '[' . $ini->codigo . '] ' : '') . trim(strip_tags($ini->accion)),
+                    'parent_id' => $node->id,
+                    'children'  => [],
+                ];
+            }
+        }
+
+        $levelKey = $node->level;
+        if ($levelKey === 'axi') $levelKey = 'eje';
+        if ($levelKey === 'goal') $levelKey = 'objetivo';
+        if ($levelKey === 'action') $levelKey = 'accion_estrategica';
+
+        return [
+            'id'        => $node->id,
+            'db_id'     => $node->id,
+            'type'      => 'profile',
+            'level'     => $levelKey,
+            'name'      => trim(strip_tags($node->name)),
+            'parent_id' => $node->parent_id,
+            'children'  => $hijos,
+        ];
     }
 
     public function reordenarTree(Request $request, $idProfile)
@@ -981,22 +1029,44 @@ class PeiController extends Controller
             foreach ($items as $item) {
                 if (empty($item['id'])) continue;
 
-                $node = PeiProfile::find($item['id']);
-                if (!$node) continue;
+                $type = $item['type'] ?? 'profile';
+                $dbId = $item['db_id'] ?? $item['id'];
+                $parentId = $item['parent_id'] ?? null;
+                $orderItem = (int)($item['order_item'] ?? 0);
 
-                $dirty = false;
-                if (isset($item['parent_id']) && $item['parent_id'] !== $node->parent_id) {
-                    $node->parent_id = $item['parent_id'];
-                    $dirty = true;
-                }
-
-                if (isset($item['order_item']) && (int)$item['order_item'] !== (int)$node->order_item) {
-                    $node->order_item = (int)$item['order_item'];
-                    $dirty = true;
-                }
-
-                if ($dirty) {
-                    $node->save();
+                if ($type === 'iniciativa' || str_starts_with((string)$item['id'], 'ini_')) {
+                    $cleanId = str_replace('ini_', '', $dbId);
+                    $iniciativa = \App\Models\PlanMaestro\PlanAccion::find($cleanId);
+                    if ($iniciativa) {
+                        $dirty = false;
+                        if ($parentId && $iniciativa->pei_profile_id !== $parentId) {
+                            $iniciativa->pei_profile_id = $parentId;
+                            $dirty = true;
+                        }
+                        if ((int)$iniciativa->orden !== $orderItem) {
+                            $iniciativa->orden = $orderItem;
+                            $dirty = true;
+                        }
+                        if ($dirty) {
+                            $iniciativa->save();
+                        }
+                    }
+                } else {
+                    $node = PeiProfile::find($dbId);
+                    if ($node) {
+                        $dirty = false;
+                        if ($parentId && $node->parent_id !== $parentId) {
+                            $node->parent_id = $parentId;
+                            $dirty = true;
+                        }
+                        if ((int)$node->order_item !== $orderItem) {
+                            $node->order_item = $orderItem;
+                            $dirty = true;
+                        }
+                        if ($dirty) {
+                            $node->save();
+                        }
+                    }
                 }
             }
 
@@ -1010,7 +1080,7 @@ class PeiController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => '¡Estructura PEI reordenada exitosamente!'
+                'message' => '¡Estructura PEI y Acciones Operativas reordenadas exitosamente!'
             ]);
         } catch (\Throwable $e) {
             \DB::rollBack();
