@@ -527,15 +527,30 @@
             border-radius: 12px 12px 12px 2px;
         }
 
-        /* Animación de destello al hacer clic en Cita */
+        /* Animación de destello al hacer clic en Cita (Enmarcado y Resaltado Visual) */
         @keyframes messageHighlightPulse {
-            0% { background-color: #fef08a !important; box-shadow: 0 0 12px rgba(234, 179, 8, 0.8) !important; transform: scale(1.02); }
-            50% { background-color: #fef08a !important; box-shadow: 0 0 8px rgba(234, 179, 8, 0.5) !important; }
-            100% { background-color: transparent; box-shadow: none; transform: scale(1); }
+            0% {
+                box-shadow: 0 0 0 4px #6366f1, 0 0 22px rgba(99, 102, 241, 0.75) !important;
+                background-color: #e0e7ff !important;
+                color: #1e1b4b !important;
+                transform: scale(1.03);
+            }
+            35% {
+                box-shadow: 0 0 0 4px #6366f1, 0 0 25px rgba(99, 102, 241, 0.8) !important;
+                background-color: #e0e7ff !important;
+                color: #1e1b4b !important;
+                transform: scale(1.03);
+            }
+            100% {
+                box-shadow: none !important;
+                transform: scale(1);
+            }
         }
-        .highlight-message {
-            animation: messageHighlightPulse 2.2s ease-in-out !important;
-            border-radius: 12px;
+        .highlight-message .msg-bubble {
+            animation: messageHighlightPulse 2.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
+            border-radius: 14px !important;
+            position: relative;
+            z-index: 10;
         }
 
         .msg-bubble-line {
@@ -1443,7 +1458,7 @@
                     target.classList.add('highlight-message');
                     setTimeout(() => {
                         target.classList.remove('highlight-message');
-                    }, 2200);
+                    }, 2500);
                 }
             };
 
