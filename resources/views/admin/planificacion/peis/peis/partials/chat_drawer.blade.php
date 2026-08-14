@@ -433,6 +433,8 @@
             margin-bottom: 12px;
             display: flex;
             flex-direction: column;
+            width: 100%;
+            min-width: 0;
         }
         .msg-bubble-container.mine {
             align-items: flex-end;
@@ -440,12 +442,19 @@
         .msg-bubble-container.other {
             align-items: flex-start;
         }
+        .msg-content-stack {
+            min-width: 0;
+            box-sizing: border-box;
+        }
         .msg-bubble {
-            max-width: 82%;
+            max-width: 100%;
             padding: 10px 14px;
             font-size: 13px;
             line-height: 1.4;
             word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            min-width: 0;
         }
         .msg-bubble-container.mine .msg-bubble {
             background: linear-gradient(135deg, #4e73df, #224abe);
@@ -481,6 +490,10 @@
             cursor: pointer;
             transition: all 0.15s ease;
             box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .msg-reply-ref:hover {
             background: #e2e8f0;
@@ -512,11 +525,13 @@
             color: #4e73df;
         }
         .msg-reference-badge {
-            max-width: 85% !important;
+            max-width: 100% !important;
+            min-width: 0;
             width: 100%;
             box-sizing: border-box;
             overflow: hidden;
             border: 1px solid rgba(79, 70, 229, 0.25);
+            border-radius: 12px;
         }
         .msg-bubble-container.mine .msg-reference-badge {
             background: #eef2ff;
