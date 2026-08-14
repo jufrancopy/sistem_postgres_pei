@@ -256,15 +256,17 @@
             </div>
         </div>
 
-        <!-- Reply Preview Bar -->
+        <!-- Reply Preview Bar (Facebook Messenger Style) -->
         <div id="peiChatReplyBar" class="pei-chat-reply-bar" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="text-truncate mr-2 small">
-                    <span class="font-weight-bold" id="peiChatReplyUser"></span>: 
-                    <span id="peiChatReplyText" class="text-muted"></span>
+            <div class="d-flex justify-content-between align-items-center" style="min-width: 0;">
+                <div class="text-truncate mr-2" style="font-size: 12px; min-width: 0; flex: 1;">
+                    <i class="fas fa-reply text-indigo mr-1" style="font-size:11px; color:#4f46e5;"></i>
+                    <span class="font-weight-bold text-dark" id="peiChatReplyUser" style="color: #1c1e21 !important;"></span>: 
+                    <span id="peiChatReplyText" class="text-muted" style="color: #65676b !important;"></span>
                 </div>
-                <button type="button" class="btn btn-xs text-danger" id="cancelPeiChatReply">
-                    <i class="fas fa-times"></i>
+                <button type="button" id="cancelPeiChatReply" title="Cancelar respuesta"
+                        style="width:24px; height:24px; border-radius:50%; background:#e4e6eb; border:none; color:#65676b; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:all 0.15s;">
+                    <i class="fas fa-times" style="font-size:11px;"></i>
                 </button>
             </div>
         </div>
@@ -524,28 +526,50 @@
         }
         .highlight-message {
             animation: messageHighlightPulse 2.2s ease-in-out !important;
-            border-radius: 8px;
+            border-radius: 12px;
         }
 
-        /* Acciones de Mensaje (Responder, Reaccionar) */
-        .btn-msg-action {
-            font-size: 10px;
-            padding: 1px 7px;
-            border-radius: 10px;
-            background: #f1f5f9;
-            color: #475569;
-            border: 1px solid #cbd5e1;
-            cursor: pointer;
-            transition: all 0.15s;
-            line-height: 1.4;
+        /* Facebook Messenger Style Hover Action Buttons */
+        .msg-row {
+            position: relative;
+            width: 100%;
         }
-        .btn-msg-action:hover {
-            background: #4f46e5;
-            color: #ffffff;
-            border-color: #4f46e5;
+        .msg-hover-actions {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .msg-row:hover .msg-hover-actions {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .btn-messenger-action {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #f0f2f5;
+            border: 1px solid #e4e6eb;
+            color: #65676b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.15s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            padding: 0;
+        }
+        .btn-messenger-action:hover {
+            background: #e4e6eb;
+            color: #050505;
+            transform: scale(1.1);
+        }
+        .emoji-opt {
+            display: inline-block;
+            transition: transform 0.15s ease;
         }
         .emoji-opt:hover {
-            transform: scale(1.3);
+            transform: scale(1.35) !important;
         }
 
         /* Badges de Reacciones Emoji */
@@ -1463,8 +1487,15 @@
                 const escapedText = rawText.substring(0, 60).replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
 
                 let html = '';
+
+                // Row container for bubble + side hover icons (Facebook Messenger Style)
+                html += `<div class="msg-row d-flex align-items-center ${msg.is_mine ? 'flex-row-reverse' : 'flex-row'}" style="gap: 6px;">`;
+
+                // Main Bubble Content Stack
+                html += `<div class="msg-content-stack" style="max-width: 82%;">`;
+
                 if (!msg.is_mine) {
-                    html += `<div class="msg-sender-name" style="cursor:pointer;" title="Clic para abrir chat privado" onclick="setPrivateRecipient('${msg.user_id}', '${escapedSender}')">
+                    html += `<div class="msg-sender-name mb-0.5" style="cursor:pointer;" title="Clic para abrir chat privado" onclick="setPrivateRecipient('${msg.user_id}', '${escapedSender}')">
                                 ${msg.user_name} <i class="fas fa-comment-dots text-muted ml-1" style="font-size:10px;"></i>`;
                     if (msg.is_private) {
                         html += ` <span class="badge badge-warning text-dark ml-1" style="font-size:9px;"><i class="fas fa-lock mr-1"></i>Privado</span>`;
@@ -1476,7 +1507,7 @@
 
                 // Cita / Mensaje Padre Referenciado
                 if (msg.parent) {
-                    html += `<div class="msg-reply-ref" onclick="scrollToChatMessage('${msg.parent.id}')" title="Clic para ver mensaje original">
+                    html += `<div class="msg-reply-ref mb-1" onclick="scrollToChatMessage('${msg.parent.id}')" title="Clic para ver mensaje original">
                                 <i class="fas fa-reply text-indigo mr-1" style="font-size:10px;"></i>
                                 <strong>${msg.parent.user_name}</strong>: ${msg.parent.message}
                              </div>`;
@@ -1496,8 +1527,8 @@
                              </div>`;
                 }
 
+                // Message Bubble
                 html += `<div class="msg-bubble">${msg.message}`;
-
                 if (msg.attachments && msg.attachments.length > 0) {
                     html += `<div class="mt-1">`;
                     msg.attachments.forEach(att => {
@@ -1507,43 +1538,17 @@
                     });
                     html += `</div>`;
                 }
-
                 html += `</div>`;
 
-                // Badges de Reacciones Emoji
+                // Badges de Reacciones Emoji debajo de la burbuja
                 html += `<div id="reactions-${msg.id}" class="chat-reactions-container mt-1">
                             ${renderReactionBadgesHtml(msg.id, msg.reactions)}
                          </div>`;
 
-                // Metadatos y Barra de Acciones (Responder, Reaccionar)
-                html += `<div class="d-flex align-items-center justify-content-between w-100 mt-1" style="font-size:10px;">
-                            <div class="msg-meta text-muted" style="font-size:9.5px;">${msg.time_ago}</div>`;
-
-                if (!msg.is_system) {
-                    html += `<div class="d-flex align-items-center msg-actions-toolbar" style="gap:4px;">
-                                <button type="button" class="btn-msg-action" onclick="setReplyMessage('${msg.id}', '${escapedSender}', '${escapedText}')" title="Responder a este mensaje">
-                                    <i class="fas fa-reply mr-1"></i> Responder
-                                </button>
-                                <div class="dropdown d-inline-block">
-                                    <button type="button" class="btn-msg-action dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Reaccionar">
-                                        <i class="far fa-smile mr-1"></i> Reaccionar
-                                    </button>
-                                    <div class="dropdown-menu p-1 shadow-lg border-0" style="min-width:auto; white-space:nowrap; background:#0f172a; border-radius:20px; font-size:16px;">
-                                        <div class="d-flex p-1" style="gap:6px;">
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '👍')">👍</span>
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '❤️')">❤️</span>
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '💡')">💡</span>
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '👏')">👏</span>
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '✔️')">✔️</span>
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '🔥')">🔥</span>
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '😮')">😮</span>
-                                        </div>
-                                    </div>
-                                </div>
-                             </div>`;
-                }
-
-                html += `</div>`;
+                // Timestamp & Module Origin
+                html += `<div class="d-flex align-items-center ${msg.is_mine ? 'justify-content-end' : 'justify-content-start'} mt-0.5" style="gap:6px;">
+                            <span class="msg-meta text-muted" style="font-size:9.5px;">${msg.time_ago}</span>
+                         </div>`;
 
                 if (msg.origin_module) {
                     const isAct = msg.origin_module === 'Actividades';
@@ -1557,6 +1562,35 @@
                                 </a>
                              </div>`;
                 }
+
+                html += `</div>`; // Close msg-content-stack
+
+                // Hover Actions Beside Message (Facebook Messenger Style)
+                if (!msg.is_system) {
+                    html += `<div class="msg-hover-actions d-flex align-items-center" style="gap: 3px;">
+                                <button type="button" class="btn-messenger-action" onclick="setReplyMessage('${msg.id}', '${escapedSender}', '${escapedText}')" title="Responder">
+                                    <i class="fas fa-reply"></i>
+                                </button>
+                                <div class="dropdown d-inline-block">
+                                    <button type="button" class="btn-messenger-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Reaccionar">
+                                        <i class="far fa-smile"></i>
+                                    </button>
+                                    <div class="dropdown-menu ${msg.is_mine ? 'dropdown-menu-right' : ''} p-1 shadow-lg border-0" style="min-width:auto; white-space:nowrap; background:#ffffff; border-radius:24px; box-shadow: 0 4px 20px rgba(0,0,0,0.18) !important;">
+                                        <div class="d-flex px-2 py-1" style="gap:8px; font-size:19px;">
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '👍')">👍</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '❤️')">❤️</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '💡')">💡</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '👏')">👏</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '✔️')">✔️</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '🔥')">🔥</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '😮')">😮</span>
+                                        </div>
+                                    </div>
+                                </div>
+                             </div>`;
+                }
+
+                html += `</div>`; // Close msg-row
 
                 container.innerHTML = html;
                 messagesList.appendChild(container);
