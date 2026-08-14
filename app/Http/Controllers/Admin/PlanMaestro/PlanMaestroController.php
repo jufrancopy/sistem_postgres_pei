@@ -200,6 +200,13 @@ class PlanMaestroController extends Controller
      */
     public function storeIniciativa(Request $request)
     {
+        if ($request->has('responsable')) {
+            $respInput = $request->input('responsable');
+            if (is_array($respInput)) {
+                $request->merge(['responsable' => implode(' + ', array_filter($respInput))]);
+            }
+        }
+
         $data = $request->validate([
             'iniciativa_id'  => 'nullable|exists:plan_acciones,id',
             'pei_profile_id' => ['required', function($attribute, $value, $fail) {

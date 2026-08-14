@@ -617,8 +617,15 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="ini-field-group">
-                                <label>Responsable</label>
-                                <input type="text" class="form-control" name="responsable" id="ini_responsable" placeholder="Ej: Presidencia / Gerencia de Salud">
+                                <label>Responsable(s) / Dependencia(s) PEI</label>
+                                <select class="form-control select2" name="responsable[]" id="ini_responsable" multiple="multiple" style="width: 100%;">
+                                    @php
+                                        $dependenciasPEI = \App\Admin\Globales\Organigrama::whereNotNull('dependency')->orderBy('dependency')->pluck('dependency')->unique()->values();
+                                    @endphp
+                                    @foreach($dependenciasPEI as $depName)
+                                        <option value="{{ $depName }}">{{ $depName }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -3209,12 +3216,39 @@ function initIndicadorSelect2(val) {
     });
 }
 
+function initResponsableSelect2(valString) {
+    var $sel = $('#ini_responsable');
+    if ($sel.hasClass('select2-hidden-accessible')) {
+        $sel.select2('destroy');
+    }
+    
+    var rText = valString || '';
+    var rArray = rText.split(/\s*[\+\,]\s*/).map(function(s) { return s.trim(); }).filter(Boolean);
+
+    rArray.forEach(function(val) {
+        if ($sel.find('option[value="' + val.replace(/"/g, '\\"') + '"]').length === 0) {
+            var newOption = new Option(val, val, true, true);
+            $sel.append(newOption);
+        }
+    });
+
+    $sel.val(rArray).trigger('change');
+    $sel.select2({
+        dropdownParent: $('#modalNuevaIniciativaMejora'),
+        placeholder: 'Seleccionar una o más dependencias PEI...',
+        tags: true,
+        tokenSeparators: [',', '+'],
+        width: '100%'
+    });
+}
+
 window.abrirModalNuevaIniciativa = function(peiProfileId, accionName) {
     $('#formNuevaIniciativaMejora')[0].reset();
     $('#ini_iniciativa_id').val('');
     $('#ini_pei_profile_id').val(peiProfileId);
     $('#ini_accion_pei_label').text(accionName);
     initIndicadorSelect2('');
+    initResponsableSelect2('');
     $('#modalNuevaIniciativaMejora .modal-title').html('<i class="fa fa-plus-circle text-warning mr-2"></i> Nueva Acción Operativa');
     $('#modalNuevaIniciativaMejora').modal('show');
 };
@@ -3228,7 +3262,7 @@ window.abrirModalEditarIniciativa = function(iniciativa, accionName) {
     $('#ini_accion').val(iniciativa.accion);
     $('#ini_momento').val(iniciativa.momento);
     $('#ini_estado').val(iniciativa.estado);
-    $('#ini_responsable').val(iniciativa.responsable || '');
+    initResponsableSelect2(iniciativa.responsable || '');
     $('#ini_plazo').val(iniciativa.plazo || '');
     $('#ini_kpi').val(iniciativa.kpi || '');
     initIndicadorSelect2(iniciativa.indicador_id || '');
