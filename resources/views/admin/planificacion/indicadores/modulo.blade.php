@@ -197,7 +197,6 @@
             </table>
         </div>
         @endif
-        @endif
 
     </div>
 </div>
