@@ -7,7 +7,12 @@ composer.lock
 
 backups/
 *.xlsx
+*.xls
+*.accdb
+*.laccdb
+.docs-bio/
 _fix_nivel_label.php
 recursos/*.csv
 recursos/*.xls
 recursos/*.doc
+.siplan_agosto_2026.sql

@@ -75,6 +75,29 @@
 
 ---
 
+### Módulo Bioestadística Sanitaria (planillas SP1–SP14)
+
+Motor **metadata-driven** de formularios e indicadores estadísticos (estilo REDCap / DHIS2),
+en schema propio `bioestadistica`, aislado de PEI, SIESS y RIISS.
+Las planillas SP no son tablas: son configuración almacenada en base de datos.
+
+📖 **Documentación técnica completa: [`docs/bioestadistica/`](docs/bioestadistica/README.md)**
+
+| Fase | Alcance | Estado |
+|---|---|---|
+| F0 | Documentación, modelo de datos, DDL, contrato de API, análisis de fuentes | ✅ |
+| F1 | Migraciones, geografía (depto→distrito→establecimiento), CRUD de metadata, seeders, roles | 🟡 En curso — core + 249 distritos cargados; 45 establecimientos sin distrito |
+| F2 | Motor de captura `records`/`record_values` con período estadístico | 🔲 |
+| F3 | Motor de indicadores (AST) y capa estadística | 🔲 |
+| F4 | Dashboards configurables Chart.js y diseñador de reportes | 🔲 |
+| F5 | Wizard de importación Excel | 🔲 |
+| F6 | Módulo híbrido de hospitalización SP10 | 🔲 |
+| F7 | Auditoría, permisos finos y hardening | 🔲 |
+
+Ver el detalle de cada fase en [`docs/bioestadistica/11-roadmap.md`](docs/bioestadistica/11-roadmap.md).
+
+---
+
 ## 🔲 PENDIENTE — Próximas fases
 
 ### Fase A — Observatorio Institucional (MECIP — impacto directo en puntuación)
@@ -142,7 +165,7 @@ Fase F (IA)               ← valor agregado
 - PDF: `barryvdh/laravel-dompdf`
 - Gráficos: Chart.js 3.9
 - IA: `google-gemini-php/laravel`
-- Schemas BD: `public`, `planificacion`, `estadistica`, `proyecto`
+- Schemas BD: `public`, `planificacion`, `estadistica`, `proyecto`, `bioestadistica`
 - Jobs programados: silencio administrativo (7am), alertas vencimiento (8am), generación períodos (día 28)
 
 ---
