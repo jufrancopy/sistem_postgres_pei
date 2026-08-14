@@ -40,24 +40,7 @@
                                         <label class="small font-weight-bold text-dark mb-1">
                                             <i class="fa fa-paper-plane mr-1 text-primary"></i>Dependencia Destino
                                         </label>
-                                        <input type="text" name="destino_dependencia" id="task_destino_dependencia" class="form-control bg-white" placeholder="Ej: Dirección Financiera / MEF" list="listDependenciasSugeridas">
-                                        <datalist id="listDependenciasSugeridas">
-                                            @if(isset($dependenciasOrganigrama) && count($dependenciasOrganigrama) > 0)
-                                                @foreach($dependenciasOrganigrama as $dep)
-                                                    <option value="{{ $dep }}">
-                                                @endforeach
-                                            @else
-                                                <option value="DIRECCIÓN DE PLANIFICACIÓN">
-                                                <option value="DIRECCIÓN FINANCIERA">
-                                                <option value="DIRECCIÓN DE RECURSOS HUMANOS">
-                                                <option value="DIRECCIÓN DE INFRAESTRUCTURA">
-                                                <option value="DIRECCIÓN MÉDICA / SALUD">
-                                                <option value="CONSEJO DE ADMINISTRACIÓN">
-                                                <option value="PRESIDENCIA IPS">
-                                                <option value="MINISTERIO DE ECONOMÍA Y FINANZAS (MEF)">
-                                                <option value="CONTRALORÍA GENERAL DE LA REPÚBLICA">
-                                            @endif
-                                        </datalist>
+                                        <select name="destino_dependencia" id="task_destino_dependencia" style="width:100%;"></select>
                                     </div>
                                 </div>
                             </div>

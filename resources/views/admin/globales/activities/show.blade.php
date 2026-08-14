@@ -632,6 +632,37 @@ function initResponsableSelect(selectedId, selectedText) {
 }
 
 
+// ── Select2 dependencia destino ──────────────────────────────────────────
+function initDestinoDependenciaSelect(selectedVal) {
+    var $select = $('#task_destino_dependencia').empty();
+    if ($select.select2) {
+        $select.select2({
+            placeholder: 'Seleccioná o escribí la dependencia destino...',
+            allowClear: true,
+            tags: true,
+            dropdownParent: $('#tareaModal'),
+            ajax: {
+                url: "{{ route('globales.get-dependencies') }}",
+                dataType: 'json', delay: 250,
+                data: function(params) { return { q: params.term }; },
+                processResults: function(data) {
+                    return {
+                        results: $.map(data, function(item) {
+                            return { id: item.dependency, text: item.dependency };
+                        })
+                    };
+                }
+            }
+        });
+    }
+    if (selectedVal) {
+        $select.append(new Option(selectedVal, selectedVal, true, true));
+        if ($select.select2) {
+            $select.trigger('change');
+        }
+    }
+}
+
 // ── Reset Formulario Tarea ──────────────────────────────────────────
 function resetFormularioTarea() {
     $('#tareaForm')[0].reset();
@@ -649,6 +680,7 @@ function resetFormularioTarea() {
     colorSeleccionado = '#6b7280';
     renderPaleta();
     initResponsableSelect(null, null);
+    initDestinoDependenciaSelect(null);
     cargarEtiquetasExistentes();
 }
 
@@ -756,7 +788,9 @@ $('body').on('click', '.editTaskBtn', function() {
             $('#task_es_seguimiento').prop('checked', task.es_seguimiento == 1).trigger('change');
             if (task.es_seguimiento == 1) {
                 $('#task_nro_expediente').val(task.nro_expediente || '');
-                $('#task_destino_dependencia').val(task.destino_dependencia || '');
+                initDestinoDependenciaSelect(task.destino_dependencia || '');
+            } else {
+                initDestinoDependenciaSelect(null);
             }
             initResponsableSelect(task.assigned_to, task.responsable || '');
             colorSeleccionado = task.color || '#6b7280';
