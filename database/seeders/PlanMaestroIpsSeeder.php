@@ -140,25 +140,38 @@ class PlanMaestroIpsSeeder extends Seeder
             $ejeLetter   = substr($item['codigo'], 0, 1);
             $targetPeiId = $specificCodeMap[$item['codigo']] ?? ($peiEjeMap[$ejeLetter] ?? null);
 
-            // Si el UUID de producción no existe en la BD local, buscar por coincidencia temática
+            // Si el UUID de producción no existe en la BD local, buscar por coincidencia temática inteligente
             if ($targetPeiId && !\App\Admin\Planificacion\Pei\PeiProfile::where('id', $targetPeiId)->exists()) {
-                $targetPeiId = match($ejeLetter) {
-                    'A' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%Estratégico%')->first()?->id
-                        ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%MECIP%')->first()?->id,
-                    'B' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%abastecimiento%')->first()?->id
-                        ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%protocolos%')->first()?->id,
-                    'C' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%PAC%')->first()?->id
-                        ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%infraestructura%')->first()?->id,
-                    'D' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%obstétrica%')->first()?->id
-                        ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%Redes%')->first()?->id,
-                    'E' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%reservas%')->first()?->id
-                        ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%recaudación%')->first()?->id,
-                    'F' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%Inmobiliaria%')->first()?->id,
-                    'G' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%prestaciones%')->first()?->id,
-                    'H' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%Concursos%')->first()?->id,
-                    'I' => \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->where('name', 'like', '%información%')->first()?->id,
-                    default => null,
-                } ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->first()?->id;
+                $activeMaster = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')
+                    ->where('level', 'master')
+                    ->where('type', 'corporative')
+                    ->where('is_active', true)
+                    ->first();
+
+                $activeActionIds = $activeMaster 
+                    ? $activeMaster->descendants()->where('level', 'action')->pluck('id')->toArray()
+                    : \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'action')->pluck('id')->toArray();
+
+                if (!empty($activeActionIds)) {
+                    $targetPeiId = match($ejeLetter) {
+                        'A' => \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $activeActionIds)->where(function($q) { $q->where('name', 'ilike', '%estratégic%')->orWhere('name', 'ilike', '%mecip%')->orWhere('name', 'ilike', '%procesos%'); })->first()?->id,
+                        'B' => \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $activeActionIds)->where(function($q) { $q->where('name', 'ilike', '%abastec%')->orWhere('name', 'ilike', '%protocol%')->orWhere('name', 'ilike', '%vademécum%'); })->first()?->id,
+                        'C' => \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $activeActionIds)->where(function($q) { $q->where('name', 'ilike', '%pac%')->orWhere('name', 'ilike', '%infraestruct%')->orWhere('name', 'ilike', '%contrat%'); })->first()?->id,
+                        'D' => \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $activeActionIds)->where(function($q) { $q->where('name', 'ilike', '%obstétric%')->orWhere('name', 'ilike', '%redes%')->orWhere('name', 'ilike', '%salud%'); })->first()?->id,
+                        'E' => \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $activeActionIds)->where(function($q) { $q->where('name', 'ilike', '%reserv%')->orWhere('name', 'ilike', '%recaud%')->orWhere('name', 'ilike', '%finanz%'); })->first()?->id,
+                        'F' => \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $activeActionIds)->where(function($q) { $q->where('name', 'ilike', '%inmob%')->orWhere('name', 'ilike', '%patrimon%'); })->first()?->id,
+                        'G' => \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $activeActionIds)->where(function($q) { $q->where('name', 'ilike', '%prestac%')->orWhere('name', 'ilike', '%jubil%'); })->first()?->id,
+                        'H' => \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $activeActionIds)->where(function($q) { $q->where('name', 'ilike', '%concurs%')->orWhere('name', 'ilike', '%human%'); })->first()?->id,
+                        'I' => \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $activeActionIds)->where(function($q) { $q->where('name', 'ilike', '%informac%')->orWhere('name', 'ilike', '%comunic%'); })->first()?->id,
+                        default => null,
+                    };
+
+                    // Si no hubo coincidencia de palabras clave, asignar de forma balanceada entre los nodos existentes
+                    if (!$targetPeiId) {
+                        $index = $i % count($activeActionIds);
+                        $targetPeiId = $activeActionIds[$index];
+                    }
+                }
             }
 
             // Extraer código de momento (T0, T1, T2, T3, T4, T5, TX)

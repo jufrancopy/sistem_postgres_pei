@@ -113,11 +113,14 @@ class MarcoReferencialController extends Controller
     public function storeTipo(Request $request)
     {
         $request->validate([
-            'clave' => 'required|string|max:50|regex:/^[a-z0-9_]+$/|unique:planificacion.marco_tipos,clave',
+            'clave' => ['required', 'string', 'max:50', 'regex:/^[a-z0-9_]+$/', function($attribute, $value, $fail) {
+                if (MarcoTipo::where('clave', $value)->exists()) {
+                    $fail('Ya existe un tipo con esa clave.');
+                }
+            }],
             'label' => 'required|string|max:100',
             'color' => 'required|string|regex:/^#[0-9a-fA-F]{6}$/',
         ], [
-            'clave.unique'  => 'Ya existe un tipo con esa clave.',
             'clave.regex'   => 'La clave solo puede contener letras minúsculas, números y guión bajo.',
             'color.regex'   => 'El color debe ser un valor hexadecimal válido (#rrggbb).',
         ]);

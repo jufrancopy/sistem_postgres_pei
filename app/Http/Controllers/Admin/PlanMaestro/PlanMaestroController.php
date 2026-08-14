@@ -202,8 +202,16 @@ class PlanMaestroController extends Controller
     {
         $data = $request->validate([
             'iniciativa_id'  => 'nullable|exists:plan_acciones,id',
-            'pei_profile_id' => 'required|exists:planificacion.pei_profiles,id',
-            'indicador_id'   => 'nullable|exists:planificacion.indicadores,id',
+            'pei_profile_id' => ['required', function($attribute, $value, $fail) {
+                if (!\App\Admin\Planificacion\Pei\PeiProfile::where('id', $value)->exists()) {
+                    $fail("El perfil PEI seleccionado no existe.");
+                }
+            }],
+            'indicador_id'   => ['nullable', function($attribute, $value, $fail) {
+                if ($value && !\App\Models\Planificacion\Indicador::where('id', $value)->exists()) {
+                    $fail("El indicador seleccionado no existe.");
+                }
+            }],
             'eje_id'         => 'nullable|exists:plan_ejes,id',
             'momento'        => 'required|string|max:10',
             'accion'         => 'required|string',
