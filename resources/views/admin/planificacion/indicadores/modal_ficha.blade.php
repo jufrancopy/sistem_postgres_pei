@@ -128,20 +128,22 @@
                         </div>
 
                         {{-- 13. Metas --}}
-                        <div class="mb-2">
+                        <div class="mb-3">
                             <div class="d-flex align-items-center justify-content-between mb-2">
-                                <label class="ind-label mb-0"><span class="ind-num">13</span> Metas por Período</label>
-                                <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2.5 rounded-pill" id="btnAgregarMeta" style="font-size:.72rem">
-                                    <i class="fa fa-plus mr-1"></i> + Agregar Meta
+                                <label class="ind-label mb-0" style="font-size: .8rem; font-weight: 700; color: #1e293b;">
+                                    <span class="ind-num" style="background:#4f46e5; color:#fff; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; font-size:.68rem; margin-right:4px;">13</span> Metas por Período
+                                </label>
+                                <button type="button" class="btn btn-xs btn-outline-primary py-1 px-3 rounded-pill font-weight-bold" id="btnAgregarMeta" style="font-size:.72rem; border-color:#8b5cf6; color:#7c3aed; background:#faf5ff;">
+                                    <i class="fa fa-plus mr-1"></i> + AGREGAR META
                                 </button>
                             </div>
-                            <div class="table-responsive rounded border bg-white shadow-xs">
-                                <table class="table table-sm table-hover mb-0" style="font-size:0.8rem">
-                                    <thead class="bg-light text-muted text-uppercase" style="font-size:0.68rem; letter-spacing:0.04em">
+                            <div class="table-responsive rounded border bg-white shadow-xs" style="border-color:#e2e8f0 !important;">
+                                <table class="table table-sm table-borderless align-middle mb-0" style="font-size: 0.78rem;">
+                                    <thead class="bg-light text-muted" style="font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0;">
                                         <tr>
-                                            <th style="width:38%; padding-left:0.75rem">Año de la Meta</th>
-                                            <th style="width:47%">Valor de la Meta</th>
-                                            <th style="width:15%" class="text-center">Acción</th>
+                                            <th style="width:38%; padding:0.45rem 0.75rem;">Año</th>
+                                            <th style="width:47%; padding:0.45rem 0.5rem;">Valor de la Meta</th>
+                                            <th style="width:15%; padding:0.45rem 0.75rem;" class="text-center">Acción</th>
                                         </tr>
                                     </thead>
                                     <tbody id="metasContainer">

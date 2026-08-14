@@ -2702,19 +2702,16 @@
         // ── Agregar fila de meta ───────────────────────────────────────────
         function agregarMeta(anio, valor) {
             var idx = _metaIndex++;
-            var row = '<tr class="meta-row align-middle" data-idx="' + idx + '">' +
-                '<td class="pl-3 py-1.5">' +
-                    '<div class="input-group input-group-sm">' +
-                        '<div class="input-group-prepend"><span class="input-group-text bg-light text-muted font-weight-bold" style="font-size:.7rem">📅 Año</span></div>' +
-                        '<input type="number" class="form-control meta-anio font-weight-bold" placeholder="' + new Date().getFullYear() + '" value="' + (anio||'') + '" min="2020" max="2100">' +
-                    '</div>' +
+            var row = '<tr class="meta-row border-bottom align-middle" data-idx="' + idx + '">' +
+                '<td class="py-1.5 pl-3 pr-2" style="vertical-align:middle;">' +
+                    '<input type="number" class="form-control form-control-sm meta-anio font-weight-bold" placeholder="Ej: 2026" value="' + (anio||'') + '" min="2020" max="2100" style="font-size:.78rem; height: 30px; border-radius: 6px;">' +
                 '</td>' +
-                '<td class="py-1.5 px-2">' +
-                    '<input type="text" class="form-control form-control-sm meta-valor" placeholder="Ej: 2, 85%, 1500" value="' + (valor||'') + '">' +
+                '<td class="py-1.5 px-2" style="vertical-align:middle;">' +
+                    '<input type="text" class="form-control form-control-sm meta-valor" placeholder="Ej: 2, 85%, 1500" value="' + (valor||'') + '" style="font-size:.78rem; height: 30px; border-radius: 6px;">' +
                 '</td>' +
-                '<td class="text-center py-1.5 pr-2">' +
-                    '<button type="button" class="btn btn-sm btn-icon-action-delete btn-remove-meta" title="Eliminar Meta">' +
-                        '<i class="fas fa-trash-alt"></i>' +
+                '<td class="text-center py-1.5 pr-3" style="vertical-align:middle;">' +
+                    '<button type="button" class="btn btn-sm btn-circle btn-remove-meta" title="Eliminar Meta" style="width: 28px; height: 28px; border-radius: 50%; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: #ffe4e6; color: #e11d48; border: none; cursor: pointer; transition: all 0.2s;">' +
+                        '<i class="fas fa-trash-alt" style="font-size: 0.72rem;"></i>' +
                     '</button>' +
                 '</td>' +
             '</tr>';
