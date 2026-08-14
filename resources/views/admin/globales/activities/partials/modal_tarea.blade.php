@@ -69,7 +69,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-7">
+                        <div class="col-md-7" id="boxEtiquetaInput">
                             <div class="form-group mb-3">
                                 <label class="small font-weight-bold">
                                     <i class="fa fa-tag mr-1"></i>Etiqueta
@@ -77,9 +77,12 @@
                                 <input type="text" name="etiqueta" id="task_etiqueta" class="form-control"
                                        placeholder="Ej: Frontend, Marketing, RRHH..." autocomplete="off">
                                 <div id="etiquetasSugeridas" class="d-flex flex-wrap mt-1" style="gap:4px"></div>
+                                <small id="helpEtiquetaSeguimiento" class="text-indigo font-weight-bold" style="display:none; color:#4f46e5; font-size:.72rem;">
+                                    <i class="fa fa-lock mr-1"></i>Fijo en "SEGUIMIENTO" para control de expedientes salientes
+                                </small>
                             </div>
                         </div>
-                        <div class="col-md-5">
+                        <div class="col-md-5" id="boxColorPicker">
                             <div class="form-group mb-3">
                                 <label class="small font-weight-bold">
                                     Color &nbsp;
@@ -132,7 +135,7 @@
                     </div>
 
                     {{-- ── Opciones adicionales: Reunión / Documento ── --}}
-                    <div class="p-2.5 rounded bg-light border mt-2">
+                    <div class="p-2.5 rounded bg-light border mt-2" id="boxOpcionesAdicionales">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="custom-control custom-switch">

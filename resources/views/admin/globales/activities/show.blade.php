@@ -638,6 +638,12 @@ function resetFormularioTarea() {
     $('#task_id').val('');
     $('#task_es_seguimiento').prop('checked', false);
     $('#containerCamposSeguimiento').hide();
+    $('#task_etiqueta').prop('readonly', false).removeClass('bg-light');
+    $('#helpEtiquetaSeguimiento').hide();
+    $('#etiquetasSugeridas').show();
+    $('#boxEtiquetaInput').removeClass('col-md-12').addClass('col-md-7');
+    $('#boxColorPicker').show();
+    $('#boxOpcionesAdicionales').show();
     $('#lblFechaVencimiento').html('<i class="fa fa-clock mr-1 text-warning"></i>Fecha de vencimiento');
     $('#helpFechaVencimiento').text('Opcional — genera alertas visuales al acercarse');
     colorSeleccionado = '#6b7280';
@@ -652,12 +658,18 @@ $('#task_es_seguimiento').on('change', function() {
         $('#containerCamposSeguimiento').slideDown(150);
         $('#lblFechaVencimiento').html('<i class="fa fa-bell text-warning mr-1"></i>Fecha de Alerta (Respuesta)');
         $('#helpFechaVencimiento').text('Fecha estimada para recibir respuesta y consultar el trámite');
+        
+        // Bloquear campo Etiqueta en SEGUIMIENTO y ocultar campos irrelevantes
+        $('#task_etiqueta').val('SEGUIMIENTO').prop('readonly', true).addClass('bg-light');
+        $('#helpEtiquetaSeguimiento').show();
+        $('#etiquetasSugeridas').hide();
+        $('#boxEtiquetaInput').removeClass('col-md-7').addClass('col-md-12');
+        $('#boxColorPicker').hide();
+        $('#boxOpcionesAdicionales').slideUp(150);
+
         var hoy = new Date().toISOString().split('T')[0];
         if (!$('#task_fecha_inicio').val()) {
             $('#task_fecha_inicio').val(hoy);
-        }
-        if (!$('#task_etiqueta').val()) {
-            $('#task_etiqueta').val('SEGUIMIENTO');
         }
         colorSeleccionado = '#4f46e5';
         renderPaleta();
@@ -665,6 +677,14 @@ $('#task_es_seguimiento').on('change', function() {
         $('#containerCamposSeguimiento').slideUp(150);
         $('#lblFechaVencimiento').html('<i class="fa fa-clock mr-1 text-warning"></i>Fecha de vencimiento');
         $('#helpFechaVencimiento').text('Opcional — genera alertas visuales al acercarse');
+
+        // Restablecer campos
+        $('#task_etiqueta').prop('readonly', false).removeClass('bg-light');
+        $('#helpEtiquetaSeguimiento').hide();
+        $('#etiquetasSugeridas').show();
+        $('#boxEtiquetaInput').removeClass('col-md-12').addClass('col-md-7');
+        $('#boxColorPicker').show();
+        $('#boxOpcionesAdicionales').slideDown(150);
     }
 });
 
