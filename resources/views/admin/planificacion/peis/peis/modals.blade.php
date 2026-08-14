@@ -865,6 +865,9 @@
                             <span class="text-muted">Unidad: </span><span id="rp_ind_unidad"></span>
                         </div>
                     </div>
+                    <div id="rp_ind_variables_container" class="mt-1 text-muted" style="font-size:.73rem; display:none;">
+                        <i class="fa fa-calculator text-primary mr-1"></i><strong>Variables:</strong> <span id="rp_ind_variables" class="text-dark font-italic"></span>
+                    </div>
                     <div class="mt-1">
                         <span class="text-muted" style="font-size:.72rem">Meta del año actual: </span>
                         <strong id="rp_ind_meta_anio" style="font-size:.78rem;color:#1a237e"></strong>

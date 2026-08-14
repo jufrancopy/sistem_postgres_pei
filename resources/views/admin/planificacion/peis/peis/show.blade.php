@@ -2470,6 +2470,12 @@
                                     $('#rp_ind_formula').text(ind.formula || '—');
                                     $('#rp_ind_unidad').text(ind.unidad_medida || '—');
                                     $('#rp_unidad_label').text(ind.unidad_medida || '—');
+                                    if (ind.variables) {
+                                        $('#rp_ind_variables').text(ind.variables);
+                                        $('#rp_ind_variables_container').show();
+                                    } else {
+                                        $('#rp_ind_variables_container').hide();
+                                    }
                                     $('#rp_ind_meta_anio').text(meta ? anio + ': ' + meta.valor : 'Sin meta para ' + anio);
                                     $('#reportProgress_fichaIndicador').show();
                                 }
