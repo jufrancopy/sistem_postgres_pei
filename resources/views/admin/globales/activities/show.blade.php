@@ -254,12 +254,19 @@
             <button class="btn btn-light btn-sm font-weight-bold" id="btnNuevaTarea">
                 <i class="fa fa-plus mr-1"></i>Nueva Tarea
             </button>
+            <button class="btn btn-sm font-weight-bold text-white shadow-xs" style="background:#4f46e5;border:none" id="btnNuevoSeguimiento" title="Registrar nuevo seguimiento de expediente">
+                <i class="fa fa-folder-open mr-1"></i>+ Nuevo Seguimiento
+            </button>
             @endhasanyrole
-            <button class="btn btn-sm font-weight-bold" style="background:rgba(255,255,255,.9);color:#1e3a5f;border:none"
+            <button class="btn btn-sm font-weight-bold" style="background:rgba(255,255,255,.9);color:#312e81;border:none"
+                    id="btnVerSeguimientos">
+                <i class="fa fa-search-location mr-1"></i>Seguimientos
+            </button>
+            <button class="btn btn-sm font-weight-bold" style="background:rgba(255,255,255,.85);color:#1e3a5f;border:none"
                     id="btnVerReuniones">
                 <i class="fa fa-users mr-1"></i>Reuniones
             </button>
-            <button class="btn btn-sm font-weight-bold" style="background:rgba(255,255,255,.85);color:#78350f;border:none"
+            <button class="btn btn-sm font-weight-bold" style="background:rgba(255,255,255,.8);color:#78350f;border:none"
                     id="btnVerDocumentos">
                 <i class="fa fa-file-alt mr-1"></i>Documentos
             </button>
@@ -315,9 +322,25 @@
 
 {{-- Alerta tareas vencidas/por vencer --}}
 @php
-    $vencidas  = $activity->tasks->filter(fn($t) => $t->status !== 2 && $t->fecha_vencimiento && \Carbon\Carbon::parse($t->fecha_vencimiento)->isPast());
+    $expedientesVencidos = $activity->tasks->filter(fn($t) => $t->es_seguimiento && $t->status !== 2 && $t->fecha_vencimiento && \Carbon\Carbon::parse($t->fecha_vencimiento)->isPast());
+    $vencidas  = $activity->tasks->filter(fn($t) => !$t->es_seguimiento && $t->status !== 2 && $t->fecha_vencimiento && \Carbon\Carbon::parse($t->fecha_vencimiento)->isPast());
     $porVencer = $activity->tasks->filter(fn($t) => $t->status !== 2 && $t->fecha_vencimiento && !\Carbon\Carbon::parse($t->fecha_vencimiento)->isPast() && \Carbon\Carbon::parse($t->fecha_vencimiento)->diffInDays(now()) <= 3);
 @endphp
+@if($expedientesVencidos->count() > 0)
+<div class="alert alert-danger d-flex align-items-center mb-3 py-2.5 shadow-sm" style="border-radius:10px; border-left: 5px solid #dc2626 !important; background:#fef2f2; cursor:pointer;" 
+     id="btnAbrirSeguimientosAlertados">
+    <i class="fa fa-exclamation-triangle fa-lg mr-3 text-danger"></i>
+    <div style="flex:1">
+        <strong class="text-danger" style="font-size:0.92rem">⚠️ {{ $expedientesVencidos->count() }} Expediente(s) con Fecha de Alerta Vencida (Pendientes de Respuesta)</strong>
+        <div class="small text-dark mt-0.5">
+            — {{ $expedientesVencidos->map(fn($e) => ($e->nro_expediente ? 'EXP: '.$e->nro_expediente.' ('.$e->title.')' : $e->title))->implode(', ') }}
+        </div>
+    </div>
+    <span class="badge badge-danger font-weight-bold ml-2 px-3 py-1" style="font-size:.78rem; border-radius:12px;">
+        <i class="fa fa-search mr-1"></i>Ver Expedientes
+    </span>
+</div>
+@endif
 @if($vencidas->count() > 0)
 <div class="alert alert-danger d-flex align-items-center mb-3 py-2" style="border-radius:10px;cursor:pointer;transition:all .2s" 
      id="alertVencidas" 
@@ -438,6 +461,7 @@
 @include('admin.globales.activities.partials.modal_detalle_tarea')
 @include('admin.globales.activities.partials.modal_reuniones')
 @include('admin.globales.activities.partials.modal_documentos')
+@include('admin.globales.activities.partials.modal_seguimientos')
 @include('admin.globales.activities.partials.modal_editor_acta_mecip')
 @include('admin.globales.activities.partials.modal_qr_acta')
 
@@ -611,15 +635,65 @@ function initResponsableSelect(selectedId, selectedText) {
 }
 
 
-// ── Nueva tarea ───────────────────────────────────────────────────────────────
-$('#btnNuevaTarea').click(function() {
-    $('#tareaHeading').text('Nueva Tarea');
+// ── Reset Formulario Tarea ──────────────────────────────────────────
+function resetFormularioTarea() {
     $('#tareaForm')[0].reset();
     $('#task_id').val('');
+    $('#task_es_seguimiento').prop('checked', false);
+    $('#containerCamposSeguimiento').hide();
+    $('#lblFechaVencimiento').html('<i class="fa fa-clock mr-1 text-warning"></i>Fecha de vencimiento');
+    $('#helpFechaVencimiento').text('Opcional — genera alertas visuales al acercarse');
     colorSeleccionado = '#6b7280';
     renderPaleta();
     initResponsableSelect(null, null);
     cargarEtiquetasExistentes();
+}
+
+// ── Switch Seguimiento Event Handler ────────────────────────────────────────
+$('#task_es_seguimiento').on('change', function() {
+    if ($(this).is(':checked')) {
+        $('#containerCamposSeguimiento').slideDown(150);
+        $('#lblFechaVencimiento').html('<i class="fa fa-bell text-warning mr-1"></i>Fecha de Alerta (Respuesta)');
+        $('#helpFechaVencimiento').text('Fecha estimada para recibir respuesta y consultar el trámite');
+        var hoy = new Date().toISOString().split('T')[0];
+        if (!$('#task_fecha_inicio').val()) {
+            $('#task_fecha_inicio').val(hoy);
+        }
+        if (!$('#task_etiqueta').val()) {
+            $('#task_etiqueta').val('SEGUIMIENTO');
+        }
+        colorSeleccionado = '#4f46e5';
+        renderPaleta();
+    } else {
+        $('#containerCamposSeguimiento').slideUp(150);
+        $('#lblFechaVencimiento').html('<i class="fa fa-clock mr-1 text-warning"></i>Fecha de vencimiento');
+        $('#helpFechaVencimiento').text('Opcional — genera alertas visuales al acercarse');
+    }
+});
+
+// ── Nueva tarea ───────────────────────────────────────────────────────────────
+$('#btnNuevaTarea').click(function() {
+    $('#tareaHeading').text('Nueva Tarea');
+    resetFormularioTarea();
+    $('#tareaModal').modal('show');
+});
+
+// ── Nuevo Seguimiento de Expediente ────────────────────────────────────────
+$(document).on('click', '#btnNuevoSeguimiento, #btnCrearSeguimientoModal', function() {
+    if ($('#modalSeguimientos').is(':visible')) {
+        $('#modalSeguimientos').modal('hide');
+    }
+    $('#tareaHeading').text('Nuevo Seguimiento de Expediente');
+    resetFormularioTarea();
+    $('#task_es_seguimiento').prop('checked', true).trigger('change');
+    
+    var hoy = new Date().toISOString().split('T')[0];
+    $('#task_fecha_inicio').val(hoy);
+    if (!$('#task_etiqueta').val()) {
+        $('#task_etiqueta').val('SEGUIMIENTO');
+    }
+    colorSeleccionado = '#4f46e5';
+    renderPaleta();
     $('#tareaModal').modal('show');
 });
 
@@ -645,10 +719,14 @@ $('#tareaForm').submit(function(e) {
 // ── Editar tarea ─────────────────────────────────────────────────────────────
 $('body').on('click', '.editTaskBtn', function() {
     var taskId = $(this).data('id');
+    if ($('#modalSeguimientos').is(':visible')) {
+        $('#modalSeguimientos').modal('hide');
+    }
     $.get(statusBase + '/' + taskId + '/detalle', function(res) {
         if (res?.ok && res?.data) {
             var task = res.data;
             $('#tareaHeading').text('Editar Tarea');
+            resetFormularioTarea();
             $('#task_id').val(taskId);
             $('#task_title').val(task.title);
             $('#task_details').val(task.details || '');
@@ -658,6 +736,11 @@ $('body').on('click', '.editTaskBtn', function() {
             $('#task_status').val(task.status);
             $('#task_es_reunion').prop('checked', task.es_reunion == 1);
             $('#task_es_documento').prop('checked', task.es_documento == 1);
+            $('#task_es_seguimiento').prop('checked', task.es_seguimiento == 1).trigger('change');
+            if (task.es_seguimiento == 1) {
+                $('#task_nro_expediente').val(task.nro_expediente || '');
+                $('#task_destino_dependencia').val(task.destino_dependencia || '');
+            }
             initResponsableSelect(task.assigned_to, task.responsable || '');
             colorSeleccionado = task.color || '#6b7280';
             renderPaleta();
@@ -668,6 +751,7 @@ $('body').on('click', '.editTaskBtn', function() {
         // fallback: tomar datos del DOM si falla la API
         var $card = $('[data-id="' + taskId + '"]').first();
         $('#tareaHeading').text('Editar Tarea');
+        resetFormularioTarea();
         $('#task_id').val(taskId);
         $('#task_title').val($card.find('.task-title').clone().find('.fa-check-circle').remove().end().text().trim());
         $('#task_details').val($card.find('.task-desc').text().trim());
@@ -1425,6 +1509,156 @@ $('#btnLimpiarFiltro').on('click', function(e) {
             $('#actaPdfFrame').attr('src', '');
             $('#modalDocumentos').modal('show');
         });
+    });
+})();
+</script>
+
+<script>
+// ══ SEGUIMIENTO DE EXPEDIENTES ════════════════════════════════════════════════
+(function() {
+    var _seguimientosData = [];
+    var _seguimientosUrl  = "{{ url('admin/globales/activities') }}/" + activityId + '/seguimientos';
+    var _dtSeguimientos   = null;
+    var _filtroSeguimientoActivo = 'todos';
+
+    function buildStatusBadgeSeguimiento(status, esVencida) {
+        if (status === 2) {
+            return '<span class="badge badge-success px-2 py-1"><i class="fa fa-check-circle mr-1"></i>Finalizado / Con Respuesta</span>';
+        }
+        if (esVencida) {
+            return '<span class="badge badge-danger px-2 py-1"><i class="fa fa-exclamation-triangle mr-1"></i>⚠️ Alerta Vencida</span>';
+        }
+        if (status === 1) {
+            return '<span class="badge badge-primary px-2 py-1"><i class="fa fa-sync fa-spin mr-1"></i>En Respuesta</span>';
+        }
+        if (status === 3) {
+            return '<span class="badge badge-purple text-white px-2 py-1"><i class="fa fa-eye mr-1"></i>En Revisión</span>';
+        }
+        return '<span class="badge badge-warning text-dark px-2 py-1"><i class="fa fa-clock mr-1"></i>Pendiente</span>';
+    }
+
+    function buildAccionesSeguimiento(row) {
+        var html = '<div class="d-flex align-items-center justify-content-center" style="gap:4px">';
+        html += '<button type="button" class="btn btn-xs btn-outline-primary editTaskBtn" data-id="' + row.id + '" title="Editar Trámite"><i class="fa fa-pencil-alt"></i></button>';
+        html += '<button type="button" class="btn btn-xs btn-outline-info" onclick="abrirDetalleTask(' + row.id + ')" title="Ver Detalle"><i class="fa fa-eye"></i></button>';
+        html += '</div>';
+        return html;
+    }
+
+    function initDtSeguimientos(data) {
+        if ($.fn.DataTable.isDataTable('#tblSeguimientos')) {
+            $('#tblSeguimientos').DataTable().destroy();
+        }
+        _dtSeguimientos = $('#tblSeguimientos').DataTable({
+            data: data,
+            language: {
+                search: 'Buscar expediente/destino:',
+                zeroRecords: 'No se encontraron expedientes con ese filtro.',
+                emptyTable: 'No hay expedientes en seguimiento registrados.',
+            },
+            columns: [
+                { data: 'nro_expediente', title: 'N° Expediente', width: '130px',
+                  render: function(d, t, r) {
+                      return '<span class="font-weight-bold text-indigo" style="color:#4f46e5"><i class="fa fa-folder-open mr-1"></i>' + (d || 'S/N') + '</span>';
+                  } 
+                },
+                { data: 'title', title: 'Asunto / Título',
+                  render: function(d, t, r) {
+                      return '<div class="font-weight-bold text-dark">' + d + '</div>' + (r.details ? '<small class="text-muted d-block">' + r.details.substring(0, 50) + '</small>' : '');
+                  }
+                },
+                { data: 'destino_dependencia', title: 'Dependencia Destino',
+                  render: function(d) {
+                      return '<span class="badge badge-light border text-primary px-2 py-1"><i class="fa fa-paper-plane mr-1 text-info"></i>' + (d || 'Sin especificar') + '</span>';
+                  } 
+                },
+                { data: 'fecha_inicio', title: 'Fecha Salida', width: '95px', className: 'text-center',
+                  render: function(d) { return '<span class="small text-muted">' + (d || '—') + '</span>'; } 
+                },
+                { data: 'fecha_alerta', title: 'Fecha Alerta', width: '105px', className: 'text-center',
+                  render: function(d, t, r) {
+                      var cls = r.es_vencida ? 'text-danger font-weight-bold' : 'text-dark';
+                      return '<span class="' + cls + '"><i class="fa fa-bell mr-1 ' + (r.es_vencida ? 'text-danger' : 'text-warning') + '"></i>' + (d || '—') + '</span>';
+                  } 
+                },
+                { data: 'status', title: 'Estado Alerta', width: '120px', className: 'text-center',
+                  render: function(d, t, r) { return buildStatusBadgeSeguimiento(d, r.es_vencida); } 
+                },
+                { data: 'responsable', title: 'Responsable', width: '120px',
+                  render: function(d, t, r) {
+                      return '<small class="text-dark font-weight-bold d-block">' + (d || 'Sin asignar') + '</small><small class="text-muted" style="font-size:.68rem">Por: ' + (r.creador || '—') + '</small>';
+                  } 
+                },
+                { data: null, title: 'Acciones', width: '90px', className: 'text-center', orderable: false,
+                  render: function(d, t, r) { return buildAccionesSeguimiento(r); } 
+                },
+            ],
+            dom: '<"d-flex align-items-center justify-content-between mb-2"f>t',
+            drawCallback: function() {
+                $('#seguimientosCount').text(this.api().rows({ search: 'applied' }).count() + ' expedientes');
+            }
+        });
+    }
+
+    function filtrarDtSeguimientos(filtro) {
+        var data = _seguimientosData.slice();
+        if (filtro === 'vencidos')    data = data.filter(function(r) { return r.es_vencida; });
+        if (filtro === 'pendientes')  data = data.filter(function(r) { return r.status !== 2 && !r.es_vencida; });
+        if (filtro === 'finalizados') data = data.filter(function(r) { return r.status === 2; });
+        
+        if (_dtSeguimientos) {
+            _dtSeguimientos.clear().rows.add(data).draw();
+        } else {
+            initDtSeguimientos(data);
+        }
+        $('#seguimientosCount').text(data.length + ' expedientes');
+    }
+
+    $(document).on('click', '#btnVerSeguimientos, #btnAbrirSeguimientosAlertados', function() {
+        var preFiltro = $(this).attr('id') === 'btnAbrirSeguimientosAlertados' ? 'vencidos' : 'todos';
+        $('#modalSeguimientos').modal('show');
+        cargarSeguimientosModal(preFiltro);
+    });
+
+    function cargarSeguimientosModal(filtroDeseado) {
+        $.getJSON(_seguimientosUrl, function(data) {
+            _seguimientosData = data;
+            var vencidosCount = data.filter(function(r) { return r.es_vencida; }).length;
+            $('#countSeguimientosVencidos').text(vencidosCount);
+            
+            if (filtroDeseado === 'vencidos') {
+                $('#filtroSeguimientoVencidos').trigger('click');
+            } else {
+                filtrarDtSeguimientos(_filtroSeguimientoActivo);
+            }
+        }).fail(function() {
+            $('#seguimientosBody').html('<tr><td colspan="8" class="text-center text-danger py-3"><i class="fa fa-exclamation-triangle mr-1"></i>Error al cargar los expedientes de seguimiento.</td></tr>');
+        });
+    }
+
+    $('#filtroSeguimientoTodos').on('click', function() {
+        _filtroSeguimientoActivo = 'todos';
+        $(this).addClass('btn-dark active').removeClass('btn-outline-dark');
+        $('#filtroSeguimientoVencidos,#filtroSeguimientoPendientes,#filtroSeguimientoFinalizados').removeClass('btn-danger btn-warning btn-success active').addClass('btn-outline-danger btn-outline-warning btn-outline-success');
+        filtrarDtSeguimientos('todos');
+    });
+    $('#filtroSeguimientoVencidos').on('click', function() {
+        _filtroSeguimientoActivo = 'vencidos';
+        $(this).addClass('btn-danger active').removeClass('btn-outline-danger');
+        $('#filtroSeguimientoTodos,#filtroSeguimientoPendientes,#filtroSeguimientoFinalizados').removeClass('btn-dark btn-warning btn-success active').addClass('btn-outline-dark btn-outline-warning btn-outline-success');
+        filtrarDtSeguimientos('vencidos');
+    });
+    $('#filtroSeguimientoPendientes').on('click', function() {
+        _filtroSeguimientoActivo = 'pendientes';
+        $(this).addClass('btn-warning active').removeClass('btn-outline-warning');
+        $('#filtroSeguimientoTodos,#filtroSeguimientoVencidos,#filtroSeguimientoFinalizados').removeClass('btn-dark btn-danger btn-success active').addClass('btn-outline-dark btn-outline-danger btn-outline-warning');
+        filtrarDtSeguimientos('pendientes');
+    });
+    $('#filtroSeguimientoFinalizados').on('click', function() {
+        _filtroSeguimientoActivo = 'finalizados';
+        $(this).addClass('btn-success active').removeClass('btn-outline-success');
+        $('#filtroSeguimientoTodos,#filtroSeguimientoVencidos,#filtroSeguimientoPendientes').removeClass('btn-dark btn-danger btn-warning active').addClass('btn-outline-dark btn-outline-danger btn-outline-warning');
+        filtrarDtSeguimientos('finalizados');
     });
 })();
 </script>

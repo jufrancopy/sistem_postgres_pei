@@ -51,7 +51,16 @@
     <div class="card-inner drag-handle" style="cursor:pointer"
          onclick="abrirDetalleTask({{ $task->id }})">
 
-        @if($task->etiqueta)
+        @if($task->es_seguimiento)
+        <div class="mb-1 d-flex align-items-center flex-wrap" style="gap:4px">
+            <span class="badge badge-dark px-2 py-1" style="background:#4f46e5;color:#fff;font-size:.64rem;border-radius:4px">
+                <i class="fa fa-folder-open mr-1"></i>SEGUIMIENTO{{ $task->nro_expediente ? ' · EXP: '.$task->nro_expediente : '' }}
+            </span>
+            @if($task->etiqueta)
+            <span class="task-etiqueta" style="background:{{ $cardColor }}">{{ $task->etiqueta }}</span>
+            @endif
+        </div>
+        @elseif($task->etiqueta)
         <div class="mb-1">
             <span class="task-etiqueta" style="background:{{ $cardColor }}">{{ $task->etiqueta }}</span>
         </div>
@@ -66,11 +75,23 @@
         <div class="task-desc">{{ Str::limit($task->details, 70) }}</div>
         @endif
 
+        @if($task->es_seguimiento && $task->destino_dependencia)
+        <div class="small font-weight-bold text-truncate my-1" style="font-size:.68rem;color:#4338ca;background:#e0e7ff;padding:2px 6px;border-radius:4px">
+            <i class="fa fa-paper-plane mr-1 text-primary"></i>Destino: {{ $task->destino_dependencia }}
+        </div>
+        @endif
+
         @if($venc)
         <div class="mb-1">
             <span style="font-size:.65rem;font-weight:600;padding:2px 7px;border-radius:20px;background:{{ $vencColor }}15;color:{{ $vencColor }};border:1px solid {{ $vencColor }}30">
-                <i class="fa fa-clock mr-1"></i>{{ $venc }}
+                <i class="fa {{ $task->es_seguimiento ? 'fa-bell text-warning' : 'fa-clock' }} mr-1"></i>{{ $task->es_seguimiento ? 'Alerta: '.$venc : $venc }}
             </span>
+        </div>
+        @endif
+
+        @if($task->es_seguimiento && !$isDone && $vencColor === '#ef4444')
+        <div class="mt-1 p-1 rounded bg-danger text-white font-weight-bold text-center shadow-xs" style="font-size:.65rem; letter-spacing: 0.02em;">
+            <i class="fa fa-exclamation-triangle mr-1"></i>⚠️ ¡ALERTA VENCIDA! Sin respuesta esperada
         </div>
         @endif
 

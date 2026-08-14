@@ -63,11 +63,11 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="small font-weight-bold">
+                                <label class="small font-weight-bold" id="lblFechaVencimiento">
                                     <i class="fa fa-clock mr-1 text-warning"></i>Fecha de vencimiento
                                 </label>
                                 <input type="date" name="fecha_vencimiento" id="task_fecha_vencimiento" class="form-control">
-                                <small class="text-muted">Opcional — genera alertas visuales al acercarse</small>
+                                <small class="text-muted" id="helpFechaVencimiento">Opcional — genera alertas visuales al acercarse</small>
                             </div>
                         </div>
                     </div>
@@ -111,6 +111,55 @@
                                     Aparece en la vista de Documentos de la actividad
                                 </small>
                             </label>
+                        </div>
+                    </div>
+
+                    {{-- ── Tipo Seguimiento de Expediente ── --}}
+                    <div class="form-group mb-1">
+                        <div class="custom-control custom-switch">
+                            <input type="hidden" name="es_seguimiento" value="0">
+                            <input type="checkbox" class="custom-control-input" id="task_es_seguimiento"
+                                   name="es_seguimiento" value="1">
+                            <label class="custom-control-label font-weight-bold small" for="task_es_seguimiento">
+                                <i class="fa fa-folder-open mr-1 text-indigo" style="color:#4f46e5"></i>
+                                Esta tarea es un <strong>Seguimiento de Expediente</strong>
+                                <small class="text-muted font-weight-normal d-block" style="font-size:.72rem">
+                                    Control de trámites/expedientes salientes con número de expediente, destino y fecha de alerta.
+                                </small>
+                            </label>
+                        </div>
+                    </div>
+
+                    {{-- ── Campos de Seguimiento de Expediente ── --}}
+                    <div id="containerCamposSeguimiento" class="p-3 mb-3 rounded shadow-xs" style="display:none; background:#eff6ff; border:1px solid #bfdbfe;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-2">
+                                    <label class="small font-weight-bold text-dark">
+                                        <i class="fa fa-hashtag mr-1 text-primary"></i>N° de Expediente / Trámite
+                                    </label>
+                                    <input type="text" name="nro_expediente" id="task_nro_expediente" class="form-control form-control-sm" placeholder="Ej: EXP-2026-89412 o 12345/2026">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-2">
+                                    <label class="small font-weight-bold text-dark">
+                                        <i class="fa fa-paper-plane mr-1 text-primary"></i>Dependencia Destino
+                                    </label>
+                                    <input type="text" name="destino_dependencia" id="task_destino_dependencia" class="form-control form-control-sm" placeholder="Ej: Dirección Financiera / MEF" list="listDependenciasSugeridas">
+                                    <datalist id="listDependenciasSugeridas">
+                                        <option value="DIRECCIÓN DE PLANIFICACIÓN">
+                                        <option value="DIRECCIÓN FINANCIERA">
+                                        <option value="DIRECCIÓN DE RECURSOS HUMANOS">
+                                        <option value="DIRECCIÓN DE INFRAESTRUCTURA">
+                                        <option value="DIRECCIÓN MÉDICA / SALUD">
+                                        <option value="CONSEJO DE ADMINISTRACIÓN">
+                                        <option value="PRESIDENCIA IPS">
+                                        <option value="MINISTERIO DE ECONOMÍA Y FINANZAS (MEF)">
+                                        <option value="CONTRALORÍA GENERAL DE LA REPÚBLICA">
+                                    </datalist>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

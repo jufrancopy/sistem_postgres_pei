@@ -166,17 +166,20 @@ class ActivityController extends Controller
         $request->validate(['title' => 'required'], ['title.required' => 'El título es requerido']);
 
         $payload = [
-            'activity_id'       => $activityId,
-            'title'             => $request->title,
-            'details'           => $request->details,
-            'etiqueta'          => $request->etiqueta,
-            'color'             => $request->color ?? '#6b7280',
-            'fecha_inicio'     => $request->fecha_inicio ?: null,
-            'fecha_vencimiento' => $request->fecha_vencimiento ?: null,
-            'assigned_to'       => $request->assigned_to,
-            'status'            => $request->status ?? 0,
-            'es_reunion'        => $request->boolean('es_reunion'),
-            'es_documento'      => $request->boolean('es_documento'),
+            'activity_id'        => $activityId,
+            'title'              => $request->title,
+            'details'            => $request->details,
+            'etiqueta'           => $request->etiqueta,
+            'color'              => $request->color ?? '#6b7280',
+            'fecha_inicio'      => $request->fecha_inicio ?: null,
+            'fecha_vencimiento'  => $request->fecha_vencimiento ?: null,
+            'assigned_to'        => $request->assigned_to,
+            'status'             => $request->status ?? 0,
+            'es_reunion'         => $request->boolean('es_reunion'),
+            'es_documento'       => $request->boolean('es_documento'),
+            'es_seguimiento'     => $request->boolean('es_seguimiento'),
+            'nro_expediente'     => $request->nro_expediente,
+            'destino_dependencia'=> $request->destino_dependencia,
         ];
 
         if (!$request->task_id) {
@@ -356,6 +359,52 @@ class ActivityController extends Controller
         ]));
     }
 
+    public function seguimientos(int $activityId)
+    {
+        $activity = \App\Admin\Globales\Activity::findOrFail($activityId);
+        $seguimientos = ActivityTask::with(['assignedTo', 'createdBy', 'evidences'])
+            ->where('activity_id', $activityId)
+            ->where('es_seguimiento', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($seguimientos->map(function($t) {
+            $esVencida = false;
+            $diasVencido = 0;
+            if ($t->status != 2 && $t->fecha_vencimiento) {
+                $fVenc = \Carbon\Carbon::parse($t->fecha_vencimiento)->startOfDay();
+                if ($fVenc->isPast()) {
+                    $esVencida = true;
+                    $diasVencido = (int) $fVenc->diffInDays(now()->startOfDay());
+                }
+            }
+
+            return [
+                'id'                  => $t->id,
+                'title'               => $t->title,
+                'details'             => $t->details,
+                'etiqueta'            => $t->etiqueta,
+                'color'               => $t->color ?? '#4f46e5',
+                'nro_expediente'      => $t->nro_expediente ?: 'S/N',
+                'destino_dependencia' => $t->destino_dependencia ?: 'Sin destino especificado',
+                'responsable'         => $t->assignedTo?->name ?? 'Sin asignar',
+                'creador'             => $t->createdBy?->name ?? '—',
+                'status'              => $t->status,
+                'fecha_inicio'        => $t->fecha_inicio?->format('d/m/Y') ?? $t->created_at?->format('d/m/Y'),
+                'fecha_alerta'        => $t->fecha_vencimiento?->format('d/m/Y') ?? 'Sin fecha de alerta',
+                'es_vencida'          => $esVencida,
+                'dias_vencido'        => $diasVencido,
+                'evidencias'          => $t->evidences->map(fn($e) => [
+                    'id'    => $e->id,
+                    'type'  => $e->type,
+                    'label' => $e->label,
+                    'url'   => $e->type === 'url' ? $e->value : asset('storage/' . $e->value),
+                    'es_pdf'=> str_ends_with(strtolower($e->value ?? ''), '.pdf'),
+                ]),
+            ];
+        }));
+    }
+
     public function detalleTarea($taskId)
     {
         $task = ActivityTask::with(['assignedTo', 'completedBy', 'evidences.user', 'comments.user', 'acta.participantes'])->findOrFail($taskId);
@@ -380,6 +429,9 @@ class ActivityController extends Controller
                 'status'           => $task->status,
                 'es_reunion'       => $task->es_reunion ? 1 : 0,
                 'es_documento'     => $task->es_documento ? 1 : 0,
+                'es_seguimiento'   => $task->es_seguimiento ? 1 : 0,
+                'nro_expediente'   => $task->nro_expediente,
+                'destino_dependencia' => $task->destino_dependencia,
                 'has_acta'         => (bool) $task->acta,
                 'acta_id'          => $task->acta?->id,
                 'acta_participantes_count' => $task->acta ? $task->acta->participantes->count() : 0,

@@ -16,7 +16,7 @@ class ActivityTask extends Model
         'activity_id', 'title', 'details', 'etiqueta', 'color',
         'fecha_inicio', 'fecha_vencimiento', 'assigned_to', 'created_by', 'status',
         'completed_at', 'completed_by', 'completion_note', 'schedule_item_id',
-        'es_reunion', 'es_documento',
+        'es_reunion', 'es_documento', 'es_seguimiento', 'nro_expediente', 'destino_dependencia',
     ];
 
     protected $casts = [
@@ -25,6 +25,7 @@ class ActivityTask extends Model
         'completed_at'      => 'datetime',
         'es_reunion'        => 'boolean',
         'es_documento'      => 'boolean',
+        'es_seguimiento'    => 'boolean',
     ];
 
     public function getEstadoVencimientoAttribute(): ?string
