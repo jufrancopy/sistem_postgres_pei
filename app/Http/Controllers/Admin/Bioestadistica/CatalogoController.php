@@ -54,7 +54,9 @@ class CatalogoController extends Controller
         $data = $request->validate([
             'codigo' => [
                 'nullable', 'string', 'max:80',
-                Rule::unique('bioestadistica.catalog_items', 'codigo')->where('catalogo_id', $catalogo->id),
+                Rule::unique(CatalogItem::class, 'codigo')
+                    ->where('catalogo_id', $catalogo->id)
+                    ->withoutTrashed(),
             ],
             'label' => ['required', 'string', 'max:400'],
             'orden' => ['nullable', 'integer', 'min:0'],
@@ -80,7 +82,7 @@ class CatalogoController extends Controller
         $data = $request->validate([
             'codigo' => [
                 'required', 'alpha_dash', 'max:80',
-                Rule::unique('bioestadistica.catalogos', 'codigo')->ignore($catalogo?->id),
+                Rule::unique(Catalogo::class, 'codigo')->ignore($catalogo?->id)->withoutTrashed(),
             ],
             'nombre' => ['required', 'string', 'max:200'],
             'descripcion' => ['nullable', 'string', 'max:2000'],

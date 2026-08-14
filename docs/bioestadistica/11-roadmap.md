@@ -51,6 +51,20 @@ Criterios de aceptación:
 
 ## F2 — Captura
 
+**Estado: implementado**. Incluye la migración EAV, índice único parcial por período
+(`WHERE deleted_at IS NULL`), el servicio de persistencia y validación en servidor,
+interfaz de inicio/listado/edición, panel de períodos pendientes, asignación de
+establecimientos al Digitador y el circuito borrador → enviado → aprobado/objetado.
+Consultor y Auditor ven todos los registros; el Digitador queda limitado a sus
+establecimientos asignados.
+
+**SP1 queda como piloto configurado y publicado**: sección de consultas por especialidad
+con un campo `tabla` sobre el catálogo `VAR_1_CONSULTA_POR_ESPECIALIDAD` (58 especialidades),
+columna `total_consultas` con mínimo 0, totales en vivo y una sección de observaciones.
+El editor tabular real ya está implementado; los valores se guardan como
+`{"rows": {"<catalog_item_id>": {"<columna>": número}}}` descartando filas vacías.
+Subtabla y matriz siguen con editor JSON hasta importar SP8 y SP11.
+
 | Paso | Detalle |
 |---|---|
 | 1 | Migraciones `records` y `record_values` con la restricción única de período |

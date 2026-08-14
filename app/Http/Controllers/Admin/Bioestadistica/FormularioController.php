@@ -133,7 +133,7 @@ class FormularioController extends Controller
         return $request->validate([
             'codigo' => [
                 'required', 'string', 'max:20',
-                Rule::unique('bioestadistica.formularios', 'codigo')->ignore($formulario?->id),
+                Rule::unique(Formulario::class, 'codigo')->ignore($formulario?->id)->withoutTrashed(),
             ],
             'nombre' => ['required', 'string', 'max:250'],
             'descripcion' => ['nullable', 'string', 'max:3000'],
@@ -148,9 +148,10 @@ class FormularioController extends Controller
         return $request->validate([
             'code' => [
                 'required', 'alpha_dash', 'max:100',
-                Rule::unique('bioestadistica.fields', 'code')
+                Rule::unique(Field::class, 'code')
                     ->where('seccion_id', $seccion->id)
-                    ->ignore($field?->id),
+                    ->ignore($field?->id)
+                    ->withoutTrashed(),
             ],
             'label' => ['required', 'string', 'max:400'],
             'type' => ['required', Rule::in([
@@ -163,9 +164,9 @@ class FormularioController extends Controller
             'validation_regex' => ['nullable', 'string', 'max:500'],
             'tooltip' => ['nullable', 'string', 'max:400'],
             'help_text' => ['nullable', 'string', 'max:2000'],
-            'catalogo_id' => ['nullable', 'integer', Rule::exists('bioestadistica.catalogos', 'id')],
-            'parent_field_id' => ['nullable', 'integer', Rule::exists('bioestadistica.fields', 'id')],
-            'variable_definition_id' => ['nullable', 'integer', Rule::exists('bioestadistica.variable_definitions', 'id')],
+            'catalogo_id' => ['nullable', 'integer', Rule::exists(Catalogo::class, 'id')->withoutTrashed()],
+            'parent_field_id' => ['nullable', 'integer', Rule::exists(Field::class, 'id')->withoutTrashed()],
+            'variable_definition_id' => ['nullable', 'integer', Rule::exists(VariableDefinition::class, 'id')->withoutTrashed()],
             'config' => ['nullable'],
             'orden' => ['nullable', 'integer', 'min:0'],
         ]);

@@ -14,6 +14,7 @@ class BioestadisticaSeeder extends Seeder
             BioestadisticaDistritosSeeder::class,
             BioestadisticaEstablecimientosSeeder::class,
             BioestadisticaFormulariosSeeder::class,
+            BioestadisticaSp1Seeder::class,
         ]);
     }
 }

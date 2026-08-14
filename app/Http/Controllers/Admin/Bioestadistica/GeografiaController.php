@@ -72,8 +72,8 @@ class GeografiaController extends Controller
     public function storeDepartamento(Request $request): RedirectResponse
     {
         Departamento::create($request->validate([
-            'codigo' => ['required', 'string', 'max:10', Rule::unique('bioestadistica.departamentos', 'codigo')],
-            'nombre' => ['required', 'string', 'max:150', Rule::unique('bioestadistica.departamentos', 'nombre')],
+            'codigo' => ['required', 'string', 'max:10', Rule::unique(Departamento::class, 'codigo')->withoutTrashed()],
+            'nombre' => ['required', 'string', 'max:150', Rule::unique(Departamento::class, 'nombre')->withoutTrashed()],
             'activo' => ['nullable', 'boolean'],
         ]));
 
@@ -83,12 +83,13 @@ class GeografiaController extends Controller
     public function storeDistrito(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'departamento_id' => ['required', 'integer', Rule::exists('bioestadistica.departamentos', 'id')],
+            'departamento_id' => ['required', 'integer', Rule::exists(Departamento::class, 'id')->withoutTrashed()],
             'codigo' => ['nullable', 'string', 'max:20'],
             'nombre' => [
                 'required', 'string', 'max:150',
-                Rule::unique('bioestadistica.distritos', 'nombre')
-                    ->where('departamento_id', $request->input('departamento_id')),
+                Rule::unique(Distrito::class, 'nombre')
+                    ->where('departamento_id', $request->input('departamento_id'))
+                    ->withoutTrashed(),
             ],
             'activo' => ['nullable', 'boolean'],
         ]);
@@ -123,20 +124,21 @@ class GeografiaController extends Controller
         $data = $request->validate([
             'codigo' => [
                 'required', 'string', 'max:30',
-                Rule::unique('bioestadistica.establecimientos', 'codigo')->ignore($establecimiento?->id),
+                Rule::unique(Establecimiento::class, 'codigo')->ignore($establecimiento?->id)->withoutTrashed(),
             ],
             'nombre' => ['required', 'string', 'max:250'],
-            'departamento_id' => ['required', 'integer', Rule::exists('bioestadistica.departamentos', 'id')],
+            'departamento_id' => ['required', 'integer', Rule::exists(Departamento::class, 'id')->withoutTrashed()],
             'distrito_id' => [
                 'required',
                 'integer',
-                Rule::exists('bioestadistica.distritos', 'id')
-                    ->where('departamento_id', $request->input('departamento_id')),
+                Rule::exists(Distrito::class, 'id')
+                    ->where('departamento_id', $request->input('departamento_id'))
+                    ->withoutTrashed(),
             ],
-            'microred_id' => ['nullable', 'integer', Rule::exists('bioestadistica.microredes', 'id')],
-            'tipo_establecimiento_id' => ['nullable', 'integer', Rule::exists('bioestadistica.tipos_establecimiento', 'id')],
-            'grado_complejidad_id' => ['nullable', 'integer', Rule::exists('bioestadistica.grados_complejidad', 'id')],
-            'area_gestion_id' => ['nullable', 'integer', Rule::exists('bioestadistica.areas_gestion', 'id')],
+            'microred_id' => ['nullable', 'integer', Rule::exists(Microred::class, 'id')->withoutTrashed()],
+            'tipo_establecimiento_id' => ['nullable', 'integer', Rule::exists(TipoEstablecimiento::class, 'id')->withoutTrashed()],
+            'grado_complejidad_id' => ['nullable', 'integer', Rule::exists(GradoComplejidad::class, 'id')->withoutTrashed()],
+            'area_gestion_id' => ['nullable', 'integer', Rule::exists(AreaGestion::class, 'id')->withoutTrashed()],
             'nivel_atencion' => ['nullable', 'string', 'max:50'],
             'prestador' => ['nullable', 'string', 'max:80'],
             'situacion_inmueble' => ['nullable', 'string', 'max:120'],

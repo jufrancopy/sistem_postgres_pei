@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Admin\Globales\Group;
 use App\Admin\Globales\Organigrama;
 use App\Admin\Planificacion\Pei\PeiProfile;
+use App\Models\Bioestadistica\Establecimiento;
 
 
 class User extends Authenticatable
@@ -74,6 +75,16 @@ class User extends Authenticatable
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'groups_has_members', 'user_id', 'group_id');
+    }
+
+    public function establecimientosBioestadistica()
+    {
+        return $this->belongsToMany(
+            Establecimiento::class,
+            'bioestadistica.usuario_establecimientos',
+            'user_id',
+            'establecimiento_id'
+        )->withTimestamps();
     }
 
     /**

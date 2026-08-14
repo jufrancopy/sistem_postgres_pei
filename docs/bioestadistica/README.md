@@ -58,3 +58,9 @@ formularios, catálogos, maestro geográfico, clasificaciones, roles/permisos y 
 Carga inicial: 18 departamentos, **249 distritos**, 140 establecimientos (95 con distrito asignado
 por coincidencia de nombre; 45 pendientes de CRUD), 93 catálogos, 551 variables únicas y
 14 formularios base. Fuente de distritos: `.docs-bio/codigo distrito.xlsx`.
+
+**Fase 2 iniciada (14/08/2026)**: motor de captura EAV con `records` y `record_values`,
+validación de tipos de campo, contexto de período estadístico, flujo borrador/enviado/aprobado/objetado,
+alcance de Digitador por establecimiento, índice único parcial de período y panel de períodos pendientes.
+SP1 queda publicado como piloto con su tabla de 58 especialidades y editor tabular real;
+los 13 formularios restantes siguen en borrador y sin campos hasta la Fase 5.

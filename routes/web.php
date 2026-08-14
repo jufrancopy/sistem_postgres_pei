@@ -276,6 +276,29 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.catalog.update')->name('catalogos.items.store');
         Route::delete('/catalog-items/{item}', 'Admin\Bioestadistica\CatalogoController@destroyItem')
             ->middleware('permission:bio.catalog.delete')->name('catalog-items.destroy');
+
+        Route::get('/captura', 'Admin\Bioestadistica\CapturaController@index')
+            ->middleware('permission:bio.record.view')->name('captura.index');
+        Route::get('/captura/nueva', 'Admin\Bioestadistica\CapturaController@create')
+            ->middleware('permission:bio.record.create')->name('captura.create');
+        Route::get('/captura/pendientes', 'Admin\Bioestadistica\CapturaController@pending')
+            ->middleware('permission:bio.record.view')->name('captura.pending');
+        Route::post('/captura', 'Admin\Bioestadistica\CapturaController@store')
+            ->middleware('permission:bio.record.create')->name('captura.store');
+        Route::get('/captura/{record}', 'Admin\Bioestadistica\CapturaController@edit')
+            ->middleware('permission:bio.record.view')->name('captura.edit');
+        Route::put('/captura/{record}', 'Admin\Bioestadistica\CapturaController@update')
+            ->middleware('permission:bio.record.update')->name('captura.update');
+        Route::post('/captura/{record}/enviar', 'Admin\Bioestadistica\CapturaController@submit')
+            ->middleware('permission:bio.record.submit')->name('captura.submit');
+        Route::post('/captura/{record}/aprobar', 'Admin\Bioestadistica\CapturaController@approve')
+            ->middleware('permission:bio.record.approve')->name('captura.approve');
+        Route::post('/captura/{record}/objetar', 'Admin\Bioestadistica\CapturaController@reject')
+            ->middleware('permission:bio.record.approve')->name('captura.reject');
+        Route::get('/captura-asignaciones', 'Admin\Bioestadistica\CapturaController@assignments')
+            ->middleware('permission:bio.record.approve')->name('captura.assignments');
+        Route::put('/captura-asignaciones/{user}', 'Admin\Bioestadistica\CapturaController@updateAssignments')
+            ->middleware('permission:bio.record.approve')->name('captura.assignments.update');
     });
 
     // Rutas de Proyectos 

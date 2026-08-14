@@ -4,6 +4,7 @@ namespace App\Models\Bioestadistica;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Establecimiento extends BioestadisticaModel
 {
@@ -37,6 +38,11 @@ class Establecimiento extends BioestadisticaModel
     public function areaGestion(): BelongsTo
     {
         return $this->belongsTo(AreaGestion::class);
+    }
+
+    public function records(): HasMany
+    {
+        return $this->hasMany(Record::class);
     }
 
     public function scopeBuscar(Builder $query, ?string $term): Builder
