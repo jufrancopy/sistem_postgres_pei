@@ -259,11 +259,6 @@ Route::group(['middleware' => ['auth']], function () {
             Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');
         });
 
-        // ── Impersonación de Usuarios / Vista Previa por Rol ──────────────────
-        Route::get('impersonate/take/{id}', 'Admin\ImpersonateController@take')->name('impersonate.take');
-        Route::get('impersonate/leave', 'Admin\ImpersonateController@leave')->name('impersonate.leave');
-        Route::get('impersonate/list-users', 'Admin\ImpersonateController@listUsers')->name('impersonate.list-users');
-
         // ── Show: Administrador + Gestor + Colaborador ───────────────────────
         Route::get('activities/{activity}', 'Admin\Globales\ActivityController@show')->name('activities.show');
 
@@ -364,6 +359,11 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('reflexion-diaria', 'Admin\ReflexionController@obtenerReflexionDiaria')->name('reflexion.diaria');
         Route::post('reflexion-ia', 'Admin\ReflexionController@generarConGroq')->name('reflexion.ia');
     });
+
+    // ── Impersonación de Usuarios / Vista Previa por Rol ──────────────────
+    Route::get('impersonate/take/{id}', 'Admin\ImpersonateController@take')->name('impersonate.take');
+    Route::get('impersonate/leave', 'Admin\ImpersonateController@leave')->name('impersonate.leave');
+    Route::get('impersonate/list-users', 'Admin\ImpersonateController@listUsers')->name('impersonate.list-users');
 
     //Rutas del Modulo Surveys
     Route::resource('surveys', 'Admin\Globales\Survey\SurveyController');
@@ -558,7 +558,7 @@ Route::group(['middleware' => 'auth'], function () {
 });
 
 Route::group(['middleware' => 'auth'], function () {
-    Route::resource('user', 'UserController', ['except' => ['show']]);
+    Route::resource('user', 'Admin\UserController', ['except' => ['show']]);
     Route::get('profile', function () { return redirect()->route('user.profile'); })->name('profile.edit');
     Route::post('profile', function () { return redirect()->route('user.profile'); })->name('profile.update');
     Route::post('profile/password', function () { return redirect()->route('user.profile'); })->name('profile.password');
