@@ -584,10 +584,44 @@ $(function() {
         $('#contenedorAgrupado').html(groupHtml);
     }
 
+    // ── Inicializar Select2 en Filtros ──
+    $('.select2-filter').select2({
+        width: '100%',
+        minimumResultsForSearch: 6
+    }).on('change', function() {
+        aplicarFiltrosYAgrupacion();
+    });
+
     // Escuchar eventos de cambio en filtros
     $('#filterBuscador').on('keyup input', aplicarFiltrosYAgrupacion);
-    $('#filterDimension, #filterAmbito, #filterFrecuencia, #selectAgruparPor').on('change', aplicarFiltrosYAgrupacion);
 });
 </script>
+
+<style>
+.select2-container--default .select2-selection--single {
+    height: 31px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    background-color: #ffffff !important;
+    padding: 2px 8px !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 25px !important;
+    font-size: 0.78rem !important;
+    color: #334155 !important;
+    font-weight: 500 !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 29px !important;
+}
+#selectAgruparPor + .select2-container--default .select2-selection--single {
+    border-color: #a855f7 !important;
+    background-color: #faf5ff !important;
+}
+#selectAgruparPor + .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #7e22ce !important;
+    font-weight: 700 !important;
+}
+</style>
 @include('admin.planificacion.peis.peis.partials.chat_drawer')
 @stop
