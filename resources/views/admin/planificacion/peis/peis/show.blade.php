@@ -914,7 +914,7 @@
             }
 
             // ── Recargar acordeón sin recargar la página ──────────────────────
-            function recargarAcordeon() {
+            window.recargarAcordeon = function(highlightIniciativaId) {
                 var scrollPos = $(window).scrollTop();
                 // Guardar qué ejes están abiertos
                 var abiertos = [];
@@ -922,7 +922,7 @@
                     abiertos.push($(this).attr('id'));
                 });
 
-                $('#pei-accordion-container').css('opacity', '0.5');
+                $('#pei-accordion-container').css('opacity', '0.7');
                 $.ajax({
                     url: '{{ url("pei-profiles") }}/' + '{{ $profile->id }}' + '/accordion',
                     type: 'GET',
@@ -937,12 +937,25 @@
                         $(window).scrollTop(scrollPos);
                         // Reinicializar popovers
                         $('[data-toggle="popover"]').popover();
+
+                        if (highlightIniciativaId) {
+                            setTimeout(function() {
+                                var $el = $('#ini_card_' + highlightIniciativaId);
+                                if ($el.length) {
+                                    $el[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    $el.addClass('highlight-target-edited');
+                                    setTimeout(function() {
+                                        $el.removeClass('highlight-target-edited');
+                                    }, 2800);
+                                }
+                            }, 150);
+                        }
                     },
                     error: function() {
                         $('#pei-accordion-container').css('opacity', '1');
                     }
                 });
-            }
+            };
 
             // Inicialization CKEditor
             var misionEditor;
@@ -3226,7 +3239,7 @@ window.abrirModalEditarIniciativa = function(iniciativa, accionName) {
 
 window.eliminarIniciativa = function(iniciativaId, codigo) {
     Swal.fire({
-        title: '¿Eliminar Iniciativa ' + (codigo || '') + '?',
+        title: '¿Eliminar Acción Operativa ' + (codigo || '') + '?',
         text: "Esta acción no se puede deshacer.",
         icon: 'warning',
         showCancelButton: true,
@@ -3243,16 +3256,16 @@ window.eliminarIniciativa = function(iniciativaId, codigo) {
                 data: { _token: '{{ csrf_token() }}' },
                 success: function(res) {
                     if (res.ok) {
-                        toastr.success('Iniciativa ' + (codigo || '') + ' eliminada correctamente.');
-                        if (typeof loadAccordion === 'function') {
+                        toastr.success('Acción Operativa ' + (codigo || '') + ' eliminada correctamente.');
+                        if (typeof window.recargarAcordeon === 'function') {
+                            window.recargarAcordeon();
+                        } else if (typeof loadAccordion === 'function') {
                             loadAccordion();
-                        } else {
-                            location.reload();
                         }
                     }
                 },
                 error: function() {
-                    toastr.error('Error al eliminar la iniciativa.');
+                    toastr.error('Error al eliminar la Acción Operativa.');
                 }
             });
         }
@@ -3269,11 +3282,11 @@ window.cambiarEstadoIniciativa = function(iniciativaId, nuevoEstado) {
         },
         success: function(res) {
             if (res.ok) {
-                toastr.success('Estado de Iniciativa actualizado a ' + nuevoEstado);
-                if (typeof loadAccordion === 'function') {
+                toastr.success('Estado actualizado a ' + nuevoEstado);
+                if (typeof window.recargarAcordeon === 'function') {
+                    window.recargarAcordeon(iniciativaId);
+                } else if (typeof loadAccordion === 'function') {
                     loadAccordion();
-                } else {
-                    location.reload();
                 }
             }
         },
@@ -3296,17 +3309,18 @@ $('#formNuevaIniciativaMejora').on('submit', function(e) {
             $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Iniciativa');
             if (res.ok) {
                 $('#modalNuevaIniciativaMejora').modal('hide');
-                toastr.success(res.mensaje || 'Iniciativa de Mejora guardada.');
-                if (typeof loadAccordion === 'function') {
+                toastr.success(res.mensaje || 'Acción Operativa guardada.');
+                var editedId = res.iniciativa ? res.iniciativa.id : null;
+                if (typeof window.recargarAcordeon === 'function') {
+                    window.recargarAcordeon(editedId);
+                } else if (typeof loadAccordion === 'function') {
                     loadAccordion();
-                } else {
-                    location.reload();
                 }
             }
         },
         error: function(xhr) {
             $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Iniciativa');
-            toastr.error(xhr.responseJSON?.message || 'Error al guardar la Iniciativa de Mejora.');
+            toastr.error(xhr.responseJSON?.message || 'Error al guardar la Acción Operativa.');
         }
     });
 });

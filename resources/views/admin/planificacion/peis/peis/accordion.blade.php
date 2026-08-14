@@ -1,3 +1,70 @@
+<style>
+.btn-icon-action-edit {
+    background: #f3e8ff !important;
+    color: #7e22ce !important;
+    border: 1px solid #e9d5ff !important;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 1px 2px rgba(126, 34, 206, 0.08);
+}
+.btn-icon-action-edit:hover {
+    background: #7e22ce !important;
+    color: #ffffff !important;
+    border-color: #7e22ce !important;
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 10px rgba(126, 34, 206, 0.25);
+}
+
+.btn-icon-action-delete {
+    background: #ffe4e6 !important;
+    color: #e11d48 !important;
+    border: 1px solid #fecdd3 !important;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 1px 2px rgba(225, 29, 72, 0.08);
+}
+.btn-icon-action-delete:hover {
+    background: #e11d48 !important;
+    color: #ffffff !important;
+    border-color: #e11d48 !important;
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 10px rgba(225, 29, 72, 0.25);
+}
+
+@keyframes highlightGreenPulse {
+    0% {
+        background-color: #d1fae5 !important;
+        border-color: #059669 !important;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.35);
+    }
+    50% {
+        background-color: #ecfdf5 !important;
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.2);
+    }
+    100% {
+        background-color: #ffffff !important;
+        box-shadow: none;
+    }
+}
+.highlight-target-edited {
+    animation: highlightGreenPulse 2.5s ease-out forwards;
+}
+</style>
 <div>
     @foreach ($profile->children->sortBy('order_item') as $axi)
     @php
@@ -671,13 +738,13 @@
                                                                             </div>
                                                                         </div>
 
-                                                                        {{-- Botones Editar y Eliminar --}}
-                                                                        <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size:.68rem; border-radius:6px;" onclick="abrirModalEditarIniciativa({{ json_encode($ini) }}, '{{ addslashes(strip_tags($action->name)) }}')" title="Editar esta Acción Operativa">
-                                                                            <i class="fa fa-edit text-primary"></i>
-                                                                        </button>
-                                                                        <button type="button" class="btn btn-xs btn-outline-danger py-0 px-1" style="font-size:.68rem; border-radius:6px;" onclick="eliminarIniciativa('{{ $ini->id }}', '{{ $ini->codigo }}')" title="Eliminar esta Acción Operativa">
-                                                                            <i class="fa fa-trash text-danger"></i>
-                                                                        </button>
+                                                                         {{-- Botones Editar y Eliminar --}}
+                                                                         <button type="button" class="btn btn-sm btn-icon-action-edit" onclick="abrirModalEditarIniciativa({{ json_encode($ini) }}, '{{ addslashes(strip_tags($action->name)) }}')" title="Editar esta Acción Operativa">
+                                                                             <i class="fas fa-pencil-alt"></i>
+                                                                         </button>
+                                                                         <button type="button" class="btn btn-sm btn-icon-action-delete" onclick="eliminarIniciativa('{{ $ini->id }}', '{{ $ini->codigo }}')" title="Eliminar esta Acción Operativa">
+                                                                             <i class="fas fa-trash-alt"></i>
+                                                                         </button>
                                                                     </div>
                                                                 </div>
 
