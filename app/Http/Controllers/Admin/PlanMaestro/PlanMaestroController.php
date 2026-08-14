@@ -225,7 +225,7 @@ class PlanMaestroController extends Controller
 
         if (!empty($data['iniciativa_id'])) {
             $iniciativa = \App\Models\PlanMaestro\PlanAccion::findOrFail($data['iniciativa_id']);
-            $iniciativa->update([
+            $updateData = [
                 'indicador_id' => $data['indicador_id'] ?? null,
                 'momento'      => $data['momento'],
                 'accion'       => $data['accion'],
@@ -234,11 +234,25 @@ class PlanMaestroController extends Controller
                 'responsable'  => $data['responsable'] ?? null,
                 'estado'       => strtoupper($data['estado']),
                 'detalle'      => $data['detalle'] ?? null,
-            ]);
+            ];
+            if (empty($iniciativa->user_id) && auth()->check()) {
+                $updateData['user_id'] = auth()->id();
+            }
+            $iniciativa->update($updateData);
+
+            if (auth()->check()) {
+                app(\App\Services\GamificationService::class)->awardPoints(
+                    auth()->user(),
+                    'accion_operativa_updated',
+                    5,
+                    "Edición de Acción Operativa [{$iniciativa->codigo}]",
+                    $iniciativa->pei_profile_id
+                );
+            }
 
             return response()->json([
                 'ok'         => true,
-                'iniciativa' => $iniciativa,
+                'iniciativa' => $iniciativa->load('creator'),
                 'mensaje'    => 'Acción Operativa actualizada exitosamente.'
             ]);
         }
@@ -274,6 +288,7 @@ class PlanMaestroController extends Controller
             'plan_id'        => $plan->id,
             'eje_id'         => $ejeId,
             'pei_profile_id' => $data['pei_profile_id'],
+            'user_id'        => auth()->id(),
             'indicador_id'   => $data['indicador_id'] ?? null,
             'codigo'         => $codigo,
             'momento'        => $data['momento'],
@@ -287,10 +302,20 @@ class PlanMaestroController extends Controller
             'orden'          => \App\Models\PlanMaestro\PlanAccion::max('orden') + 1,
         ]);
 
+        if (auth()->check()) {
+            app(\App\Services\GamificationService::class)->awardPoints(
+                auth()->user(),
+                'accion_operativa_created',
+                15,
+                "Aporte/Creación de Acción Operativa [{$iniciativa->codigo}]",
+                $iniciativa->pei_profile_id
+            );
+        }
+
         return response()->json([
             'ok'         => true,
-            'iniciativa' => $iniciativa,
-            'mensaje'    => 'Acción Operativa agregada exitosamente.'
+            'iniciativa' => $iniciativa->load('creator'),
+            'mensaje'    => 'Acción Operativa agregada exitosamente (+15 pts en Gamificación).'
         ]);
     }
 }

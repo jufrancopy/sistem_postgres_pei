@@ -642,9 +642,14 @@
                                                                         </div>
                                                                     </div>
                                                                     <div class="d-flex align-items-center flex-wrap" style="gap: .4rem;">
+                                                                        @if($ini->creator)
+                                                                        <span class="badge badge-light border text-primary font-weight-bold" style="font-size:.64rem; background:#eff6ff; border-color:#bfdbfe !important;" title="Usuario que registró este aporte">
+                                                                            <i class="fa fa-user-circle mr-1 text-primary"></i>Cargado por: {{ \Illuminate\Support\Str::limit($ini->creator->name, 22) }}
+                                                                        </span>
+                                                                        @endif
                                                                         @if($ini->responsable)
-                                                                        <span class="badge badge-light border text-dark" style="font-size:.64rem" title="Responsable">
-                                                                            <i class="fa fa-user mr-1 text-muted"></i>{{ \Illuminate\Support\Str::limit($ini->responsable, 25) }}
+                                                                        <span class="badge badge-light border text-dark" style="font-size:.64rem" title="Responsable Institucional">
+                                                                            <i class="fa fa-building-o mr-1 text-muted"></i>{{ \Illuminate\Support\Str::limit($ini->responsable, 25) }}
                                                                         </span>
                                                                         @endif
 

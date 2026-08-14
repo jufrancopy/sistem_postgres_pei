@@ -92,6 +92,7 @@ class RecalculateGamificationPoints extends Command
         $this->collectRiissEvaluaciones($gamificationService);
         $this->collectChatMessages();
         $this->collectPeiEdits();
+        $this->collectAccionesOperativas();
 
         $this->info('Insertando ' . count($this->pendingRows) . ' registros de puntos...');
         $inserted = $gamificationService->insertPointsBatch($this->pendingRows);
@@ -408,6 +409,28 @@ class RecalculateGamificationPoints extends Command
                 $edit->id,
                 (string) $edit->pei_profile_id,
                 $edit->created_at?->toDateTimeString()
+            );
+        }
+    }
+
+    protected function collectAccionesOperativas(): void
+    {
+        $this->info('Recopilando Acciones Operativas registradas...');
+
+        foreach (\App\Models\PlanMaestro\PlanAccion::whereNotNull('user_id')->cursor() as $accion) {
+            if (!$this->usersById->has($accion->user_id)) {
+                continue;
+            }
+
+            $this->queuePoint(
+                $accion->user_id,
+                'accion_operativa_created',
+                'Aporte/Registro de Acción Operativa: ' . Str::limit($accion->accion, 35),
+                15,
+                \App\Models\PlanMaestro\PlanAccion::class,
+                $accion->id,
+                (string) ($accion->pei_profile_id ?: $this->defaultPeiId),
+                $accion->created_at?->toDateTimeString()
             );
         }
     }
