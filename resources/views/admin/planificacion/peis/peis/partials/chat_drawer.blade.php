@@ -527,27 +527,32 @@
             border-radius: 12px 12px 12px 2px;
         }
 
-        /* Animación de destello al hacer clic en Cita (Enmarcado y Resaltado Visual) */
+        /* Animación de destello al hacer clic en Cita (Contorno Verdoso Suave que Desaparece) */
         @keyframes messageHighlightPulse {
             0% {
-                box-shadow: 0 0 0 4px #6366f1, 0 0 22px rgba(99, 102, 241, 0.75) !important;
-                background-color: #e0e7ff !important;
-                color: #1e1b4b !important;
-                transform: scale(1.03);
+                box-shadow: 0 0 0 3px #10b981, 0 0 16px rgba(16, 185, 129, 0.45) !important;
+                outline: 2px solid #34d399 !important;
+                outline-offset: 2px;
+                background-color: #ecfdf5 !important;
+                color: #064e3b !important;
+                transform: scale(1.02);
             }
-            35% {
-                box-shadow: 0 0 0 4px #6366f1, 0 0 25px rgba(99, 102, 241, 0.8) !important;
-                background-color: #e0e7ff !important;
-                color: #1e1b4b !important;
-                transform: scale(1.03);
+            40% {
+                box-shadow: 0 0 0 3px #10b981, 0 0 18px rgba(16, 185, 129, 0.5) !important;
+                outline: 2px solid #34d399 !important;
+                outline-offset: 2px;
+                background-color: #ecfdf5 !important;
+                color: #064e3b !important;
+                transform: scale(1.02);
             }
             100% {
                 box-shadow: none !important;
+                outline: none !important;
                 transform: scale(1);
             }
         }
         .highlight-message .msg-bubble {
-            animation: messageHighlightPulse 2.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
+            animation: messageHighlightPulse 2.5s ease-out !important;
             border-radius: 14px !important;
             position: relative;
             z-index: 10;
