@@ -30,32 +30,16 @@
         </div>
         @else
 
-        @if($indicadores->isEmpty())
-        <div class="text-center py-5 text-muted">
-            <i class="fa fa-ruler-combined fa-3x mb-3 d-block" style="opacity:.3"></i>
-            <p class="mb-1">Sin indicadores registrados para este plan.</p>
-            <small>Creá la primera ficha usando el botón <strong>Nueva Ficha</strong>.</small>
-        </div>
-        @else
-
-        {{-- Panel de Filtros Interactivos y Agrupamiento --}}
+        {{-- Panel de Filtros Interactivos y Agrupamiento con Select2 --}}
         <div class="p-3 mb-3 rounded border bg-light shadow-xs">
             <div class="row align-items-center" style="gap: .5rem 0;">
-                {{-- Buscador General y por Variables --}}
-                <div class="col-md-3">
-                    <label class="font-weight-bold text-dark mb-1" style="font-size:.72rem">
-                        <i class="fa fa-search text-primary mr-1"></i>Buscar Indicador / Variable
-                    </label>
-                    <input type="text" id="filterBuscador" class="form-control form-control-sm bg-white" placeholder="Buscar por código, nombre, variables...">
-                </div>
-
                 {{-- Dimensión --}}
-                <div class="col-md-2 col-6">
+                <div class="col-md-3 col-6">
                     <label class="font-weight-bold text-dark mb-1" style="font-size:.72rem">
                         <i class="fa fa-layer-group text-info mr-1"></i>Dimensión
                     </label>
-                    <select id="filterDimension" class="form-control form-control-sm bg-white">
-                        <option value="">Todas</option>
+                    <select id="filterDimension" class="form-control form-control-sm select2-filter">
+                        <option value="">Todas las Dimensiones</option>
                         @foreach(\App\Models\Planificacion\Indicador::DIMENSIONES as $key => $lbl)
                             <option value="{{ $key }}">{{ $lbl }}</option>
                         @endforeach
@@ -63,12 +47,12 @@
                 </div>
 
                 {{-- Ámbito --}}
-                <div class="col-md-2 col-6">
+                <div class="col-md-3 col-6">
                     <label class="font-weight-bold text-dark mb-1" style="font-size:.72rem">
                         <i class="fa fa-sitemap text-warning mr-1"></i>Ámbito
                     </label>
-                    <select id="filterAmbito" class="form-control form-control-sm bg-white">
-                        <option value="">Todos</option>
+                    <select id="filterAmbito" class="form-control form-control-sm select2-filter">
+                        <option value="">Todos los Ámbitos</option>
                         @foreach(\App\Models\Planificacion\Indicador::AMBITOS as $key => $lbl)
                             <option value="{{ $key }}">{{ $lbl }}</option>
                         @endforeach
@@ -76,12 +60,12 @@
                 </div>
 
                 {{-- Frecuencia --}}
-                <div class="col-md-2 col-6">
+                <div class="col-md-3 col-6">
                     <label class="font-weight-bold text-dark mb-1" style="font-size:.72rem">
                         <i class="fa fa-calendar-alt text-secondary mr-1"></i>Frecuencia
                     </label>
-                    <select id="filterFrecuencia" class="form-control form-control-sm bg-white">
-                        <option value="">Todas</option>
+                    <select id="filterFrecuencia" class="form-control form-control-sm select2-filter">
+                        <option value="">Todas las Frecuencias</option>
                         @foreach(\App\Models\Planificacion\Indicador::FRECUENCIAS as $key => $lbl)
                             <option value="{{ $key }}">{{ $lbl }}</option>
                         @endforeach
@@ -93,7 +77,7 @@
                     <label class="font-weight-bold text-primary mb-1" style="font-size:.72rem">
                         <i class="fa fa-object-group text-primary mr-1"></i>Agrupar Vista por
                     </label>
-                    <select id="selectAgruparPor" class="form-control form-control-sm bg-white border-primary text-primary font-weight-bold">
+                    <select id="selectAgruparPor" class="form-control form-control-sm select2-filter">
                         <option value="none">Sin Agrupar (Tabla Plana)</option>
                         <option value="dimension">Agrupar por Dimensión</option>
                         <option value="ambito">Agrupar por Ámbito</option>
@@ -466,57 +450,66 @@ $(function() {
         });
     });
 
-    // ── Lógica de Filtros y Agrupamiento Dinámico ──
+    // ── Lógica de Filtros y Agrupamiento Dinámico con DataTables ──
     var mapDimensiones  = @json(\App\Models\Planificacion\Indicador::DIMENSIONES);
     var mapAmbitos      = @json(\App\Models\Planificacion\Indicador::AMBITOS);
     var mapFrecuencias  = @json(\App\Models\Planificacion\Indicador::FRECUENCIAS);
 
+    // Integrar filtro nativo de DataTables
+    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        if (settings.nTable.id !== 'tablaIndicadores') return true;
+
+        var rowNode = dt ? $(dt.row(dataIndex).node()) : $('#tablaIndicadores tbody tr').eq(dataIndex);
+        if (!rowNode || !rowNode.length) return true;
+
+        var rowDim  = rowNode.data('dimension');
+        var rowAmb  = rowNode.data('ambito');
+        var rowFrec = rowNode.data('frecuencia');
+
+        var selDim  = $('#filterDimension').val();
+        var selAmb  = $('#filterAmbito').val();
+        var selFrec = $('#filterFrecuencia').val();
+
+        if (selDim && rowDim !== selDim) return false;
+        if (selAmb && rowAmb !== selAmb) return false;
+        if (selFrec && rowFrec !== selFrec) return false;
+
+        return true;
+    });
+
     function aplicarFiltrosYAgrupacion() {
-        var txt  = $('#filterBuscador').val().toLowerCase().trim();
         var dim  = $('#filterDimension').val();
         var amb  = $('#filterAmbito').val();
         var frec = $('#filterFrecuencia').val();
         var modo = $('#selectAgruparPor').val();
 
-        // 1. Filtrar lista de indicadores
+        // 1. Filtrar lista de objetos JS
         var filtrados = _indicadoresData.filter(function(ind) {
             if (dim && ind.dimension !== dim) return false;
             if (amb && ind.ambito !== amb) return false;
             if (frec && ind.frecuencia !== frec) return false;
-            if (txt) {
-                var searchTarget = (ind.codigo + ' ' + (ind.nombre||'') + ' ' + (ind.variables||'') + ' ' + (ind.descripcion||'') + ' ' + (ind.formula||'')).toLowerCase();
-                if (searchTarget.indexOf(txt) === -1) return false;
-            }
             return true;
         });
-
-        $('#badgeTotalIndicadores').text('Total: ' + filtrados.length);
 
         if (modo === 'none') {
             $('#contenedorAgrupado').hide().empty();
             $('#contenedorTablaPlana').show();
 
-            // Filtrar filas de la tabla DataTables
-            $('#tablaIndicadores tbody tr').each(function() {
-                var rowId = $(this).attr('id');
-                if (!rowId) return;
-                var id = rowId.replace('ind-row-', '');
-                var match = filtrados.some(f => f.id == id);
-                if (match) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
+            // Redibujar DataTables para aplicar los 3 filtros Select2
+            if (dt) dt.draw();
+            var totalVisibles = dt ? dt.rows({ filter: 'applied' }).count() : filtrados.length;
+            $('#badgeTotalIndicadores').text('Total: ' + totalVisibles);
             return;
         }
+
+        $('#badgeTotalIndicadores').text('Total: ' + filtrados.length);
 
         // Si se eligió un modo de agrupamiento
         $('#contenedorTablaPlana').hide();
         $('#contenedorAgrupado').show().empty();
 
         if (filtrados.length === 0) {
-            $('#contenedorAgrupado').html('<div class="alert alert-warning text-center">No se encontraron indicadores con los filtros seleccionados.</div>');
+            $('#contenedorAgrupado').html('<div class="alert alert-warning text-center py-4">No se encontraron indicadores con los filtros seleccionados.</div>');
             return;
         }
 
