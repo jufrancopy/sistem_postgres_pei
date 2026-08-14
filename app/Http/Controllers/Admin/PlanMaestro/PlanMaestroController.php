@@ -223,6 +223,8 @@ class PlanMaestroController extends Controller
             'detalle'        => 'nullable|string',
         ]);
 
+        $hasUserIdColumn = \Illuminate\Support\Facades\Schema::hasColumn('plan_acciones', 'user_id');
+
         if (!empty($data['iniciativa_id'])) {
             $iniciativa = \App\Models\PlanMaestro\PlanAccion::findOrFail($data['iniciativa_id']);
             $updateData = [
@@ -235,7 +237,7 @@ class PlanMaestroController extends Controller
                 'estado'       => strtoupper($data['estado']),
                 'detalle'      => $data['detalle'] ?? null,
             ];
-            if (empty($iniciativa->user_id) && auth()->check()) {
+            if ($hasUserIdColumn && empty($iniciativa->user_id) && auth()->check()) {
                 $updateData['user_id'] = auth()->id();
             }
             $iniciativa->update($updateData);
@@ -252,7 +254,7 @@ class PlanMaestroController extends Controller
 
             return response()->json([
                 'ok'         => true,
-                'iniciativa' => $iniciativa->load('creator'),
+                'iniciativa' => $hasUserIdColumn ? $iniciativa->load('creator') : $iniciativa,
                 'mensaje'    => 'Acción Operativa actualizada exitosamente.'
             ]);
         }
@@ -284,11 +286,10 @@ class PlanMaestroController extends Controller
         $count  = \App\Models\PlanMaestro\PlanAccion::where('eje_id', $ejeId)->count() + 1;
         $codigo = $prefix . '-' . str_pad($count, 2, '0', STR_PAD_LEFT);
 
-        $iniciativa = \App\Models\PlanMaestro\PlanAccion::create([
+        $createData = [
             'plan_id'        => $plan->id,
             'eje_id'         => $ejeId,
             'pei_profile_id' => $data['pei_profile_id'],
-            'user_id'        => auth()->id(),
             'indicador_id'   => $data['indicador_id'] ?? null,
             'codigo'         => $codigo,
             'momento'        => $data['momento'],
@@ -300,7 +301,13 @@ class PlanMaestroController extends Controller
             'estado'         => strtoupper($data['estado']),
             'detalle'        => $data['detalle'] ?? null,
             'orden'          => \App\Models\PlanMaestro\PlanAccion::max('orden') + 1,
-        ]);
+        ];
+
+        if ($hasUserIdColumn && auth()->check()) {
+            $createData['user_id'] = auth()->id();
+        }
+
+        $iniciativa = \App\Models\PlanMaestro\PlanAccion::create($createData);
 
         if (auth()->check()) {
             app(\App\Services\GamificationService::class)->awardPoints(
@@ -314,8 +321,8 @@ class PlanMaestroController extends Controller
 
         return response()->json([
             'ok'         => true,
-            'iniciativa' => $iniciativa->load('creator'),
-            'mensaje'    => 'Acción Operativa agregada exitosamente (+15 pts en Gamificación).'
+            'iniciativa' => $hasUserIdColumn ? $iniciativa->load('creator') : $iniciativa,
+            'mensaje'    => 'Acción Operativa agregada exitosamente.'
         ]);
     }
 }
