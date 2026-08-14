@@ -169,13 +169,26 @@
 
                         {{-- 13. Metas --}}
                         <div class="mb-2">
-                            <div class="d-flex align-items-center mb-1">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
                                 <label class="ind-label mb-0"><span class="ind-num">13</span> Metas por Período</label>
-                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 ml-auto" id="btnAgregarMeta" style="font-size:.72rem">
-                                    <i class="fa fa-plus mr-1"></i> Agregar
+                                <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2.5 rounded-pill" id="btnAgregarMeta" style="font-size:.72rem">
+                                    <i class="fa fa-plus mr-1"></i> + Agregar Meta
                                 </button>
                             </div>
-                            <div id="metasContainer" class="row no-gutters" style="gap:.3rem 0"></div>
+                            <div class="table-responsive rounded border bg-white shadow-xs">
+                                <table class="table table-sm table-hover mb-0" style="font-size:0.8rem">
+                                    <thead class="bg-light text-muted text-uppercase" style="font-size:0.68rem; letter-spacing:0.04em">
+                                        <tr>
+                                            <th style="width:38%; padding-left:0.75rem">Año de la Meta</th>
+                                            <th style="width:47%">Valor de la Meta</th>
+                                            <th style="width:15%" class="text-center">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="metasContainer">
+                                        <!-- Se puebla dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                     </div>{{-- /col izquierda --}}

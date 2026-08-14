@@ -2702,20 +2702,22 @@
         // ── Agregar fila de meta ───────────────────────────────────────────
         function agregarMeta(anio, valor) {
             var idx = _metaIndex++;
-            var row = '<div class="col-md-3 mb-2 meta-row" data-idx="' + idx + '">' +
-                '<div class="input-group input-group-sm">' +
-                    '<div class="input-group-prepend">' +
-                        '<span class="input-group-text" style="font-size:.72rem">Año</span>' +
+            var row = '<tr class="meta-row align-middle" data-idx="' + idx + '">' +
+                '<td class="pl-3 py-1.5">' +
+                    '<div class="input-group input-group-sm">' +
+                        '<div class="input-group-prepend"><span class="input-group-text bg-light text-muted font-weight-bold" style="font-size:.7rem">📅 Año</span></div>' +
+                        '<input type="number" class="form-control meta-anio font-weight-bold" placeholder="' + new Date().getFullYear() + '" value="' + (anio||'') + '" min="2020" max="2100">' +
                     '</div>' +
-                    '<input type="number" class="form-control meta-anio" placeholder="' + new Date().getFullYear() + '" value="' + (anio||'') + '" min="2020" max="2100">' +
-                    '<input type="text"   class="form-control meta-valor" placeholder="Meta" value="' + (valor||'') + '">' +
-                    '<div class="input-group-append">' +
-                        '<button type="button" class="btn btn-outline-danger btn-remove-meta" style="font-size:.72rem">' +
-                            '<i class="fa fa-times"></i>' +
-                        '</button>' +
-                    '</div>' +
-                '</div>' +
-            '</div>';
+                '</td>' +
+                '<td class="py-1.5 px-2">' +
+                    '<input type="text" class="form-control form-control-sm meta-valor" placeholder="Ej: 2, 85%, 1500" value="' + (valor||'') + '">' +
+                '</td>' +
+                '<td class="text-center py-1.5 pr-2">' +
+                    '<button type="button" class="btn btn-sm btn-icon-action-delete btn-remove-meta" title="Eliminar Meta">' +
+                        '<i class="fas fa-trash-alt"></i>' +
+                    '</button>' +
+                '</td>' +
+            '</tr>';
             $('#metasContainer').append(row);
         }
 

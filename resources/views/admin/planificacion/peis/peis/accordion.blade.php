@@ -700,51 +700,54 @@
                                                             @endphp
                                                             <div class="p-2.5 rounded border bg-white shadow-xs" id="ini_card_{{ $ini->id }}" style="border-left: 4px solid {{ $stBadge['color'] }} !important;">
                                                                 {{-- Fila Principal --}}
-                                                                <div class="d-flex align-items-md-center justify-content-between flex-column flex-md-row" style="gap: .5rem;">
-                                                                    <div class="d-flex align-items-center flex-wrap" style="gap: .4rem;">
+                                                                <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: .5rem;">
+                                                                    <div class="d-flex align-items-center flex-wrap flex-grow-1 mr-2" style="gap: .4rem; min-width: 0;">
                                                                         <span class="badge badge-dark font-weight-bold" style="font-size:.65rem">{{ $ini->codigo }}</span>
                                                                         <span class="badge text-white font-weight-bold" style="font-size:.62rem; background:{{ $mom['color'] }}" title="{{ $mom['label'] }}">{{ $ini->momento }}</span>
                                                                         <div class="font-weight-bold text-dark" style="font-size:.82rem;" title="{{ $ini->accion }}">
                                                                             {{ $ini->accion }}
                                                                         </div>
                                                                     </div>
-                                                                    <div class="d-flex align-items-center flex-wrap" style="gap: .4rem;">
+                                                                    <div class="d-flex align-items-center ml-auto flex-wrap" style="gap: .4rem;">
                                                                         @if($ini->creator)
                                                                         <span class="badge badge-light border text-primary font-weight-bold" style="font-size:.64rem; background:#eff6ff; border-color:#bfdbfe !important;" title="Usuario que registró este aporte">
-                                                                            <i class="fa fa-user-circle mr-1 text-primary"></i>Cargado por: {{ \Illuminate\Support\Str::limit($ini->creator->name, 22) }}
+                                                                            <i class="fa fa-user-circle mr-1 text-primary"></i>Cargado por: {{ \Illuminate\Support\Str::limit($ini->creator->name, 18) }}
                                                                         </span>
                                                                         @endif
                                                                         @if($ini->responsable)
                                                                         <span class="badge badge-light border text-dark" style="font-size:.64rem" title="Responsable Institucional">
-                                                                            <i class="fa fa-building-o mr-1 text-muted"></i>{{ \Illuminate\Support\Str::limit($ini->responsable, 25) }}
+                                                                            <i class="fa fa-building-o mr-1 text-muted"></i>{{ \Illuminate\Support\Str::limit($ini->responsable, 22) }}
                                                                         </span>
                                                                         @endif
 
-                                                                        {{-- Semáforo interactivo de cambio de estado con 1-clic --}}
-                                                                        <div class="dropdown">
-                                                                            <button class="btn btn-sm {{ $stBadge['cls'] }} dropdown-toggle py-0 px-2" type="button" data-toggle="dropdown" style="font-size:.65rem; border-radius:12px;">
-                                                                                <i class="fa {{ $stBadge['icon'] }} mr-1"></i> {{ $stBadge['label'] }}
-                                                                            </button>
-                                                                            <div class="dropdown-menu dropdown-menu-right shadow-sm p-1" style="font-size:.75rem;">
-                                                                                <a class="dropdown-item py-1 text-success font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'EJECUTADO')">
-                                                                                    🟢 Marcar como EJECUTADO
-                                                                                </a>
-                                                                                <a class="dropdown-item py-1 text-warning font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'EN CURSO')">
-                                                                                    🟡 Marcar como EN CURSO
-                                                                                </a>
-                                                                                <a class="dropdown-item py-1 text-danger font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'PENDIENTE')">
-                                                                                    🔴 Marcar como PENDIENTE
-                                                                                </a>
+                                                                        {{-- Grupo Indivisible de Controles --}}
+                                                                        <div class="d-flex align-items-center flex-shrink-0" style="gap: .35rem; white-space: nowrap;">
+                                                                            {{-- Semáforo interactivo de cambio de estado con 1-clic --}}
+                                                                            <div class="dropdown">
+                                                                                <button class="btn btn-sm {{ $stBadge['cls'] }} dropdown-toggle py-0 px-2" type="button" data-toggle="dropdown" style="font-size:.65rem; border-radius:12px;">
+                                                                                    <i class="fa {{ $stBadge['icon'] }} mr-1"></i> {{ $stBadge['label'] }}
+                                                                                </button>
+                                                                                <div class="dropdown-menu dropdown-menu-right shadow-sm p-1" style="font-size:.75rem;">
+                                                                                    <a class="dropdown-item py-1 text-success font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'EJECUTADO')">
+                                                                                        🟢 Marcar como EJECUTADO
+                                                                                    </a>
+                                                                                    <a class="dropdown-item py-1 text-warning font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'EN CURSO')">
+                                                                                        🟡 Marcar como EN CURSO
+                                                                                    </a>
+                                                                                    <a class="dropdown-item py-1 text-danger font-weight-bold" href="javascript:void(0)" onclick="cambiarEstadoIniciativa('{{ $ini->id }}', 'PENDIENTE')">
+                                                                                        🔴 Marcar como PENDIENTE
+                                                                                    </a>
+                                                                                </div>
                                                                             </div>
-                                                                        </div>
 
-                                                                         {{-- Botones Editar y Eliminar --}}
-                                                                         <button type="button" class="btn btn-sm btn-icon-action-edit" onclick="abrirModalEditarIniciativa({{ json_encode($ini) }}, '{{ addslashes(strip_tags($action->name)) }}')" title="Editar esta Acción Operativa">
-                                                                             <i class="fas fa-pencil-alt"></i>
-                                                                         </button>
-                                                                         <button type="button" class="btn btn-sm btn-icon-action-delete" onclick="eliminarIniciativa('{{ $ini->id }}', '{{ $ini->codigo }}')" title="Eliminar esta Acción Operativa">
-                                                                             <i class="fas fa-trash-alt"></i>
-                                                                         </button>
+                                                                            {{-- Botones Editar y Eliminar --}}
+                                                                            <button type="button" class="btn btn-sm btn-icon-action-edit" onclick="abrirModalEditarIniciativa({{ json_encode($ini) }}, '{{ addslashes(strip_tags($action->name)) }}')" title="Editar esta Acción Operativa">
+                                                                                <i class="fas fa-pencil-alt"></i>
+                                                                            </button>
+                                                                            <button type="button" class="btn btn-sm btn-icon-action-delete" onclick="eliminarIniciativa('{{ $ini->id }}', '{{ $ini->codigo }}')" title="Eliminar esta Acción Operativa">
+                                                                                <i class="fas fa-trash-alt"></i>
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
 
