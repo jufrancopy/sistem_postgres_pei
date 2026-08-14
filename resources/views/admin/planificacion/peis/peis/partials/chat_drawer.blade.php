@@ -1313,7 +1313,7 @@
                             tabChannelPrivate.innerHTML = `<i class="fas fa-user-lock mr-1"></i> Mensaje Privado`;
                         }
 
-                        renderFilteredMessages();
+                        renderFilteredMessages(isPolling);
 
                         if (isPolling && hasNewOtherMessage) {
                             const latestNewMsg = allLoadedMessages[allLoadedMessages.length - 1];
@@ -1353,8 +1353,13 @@
                 });
             });
 
-            function renderFilteredMessages() {
-                messagesList.innerHTML = '';
+            function renderFilteredMessages(isPolling = false) {
+                // 1. Si el usuario tiene un menú desplegable de emojis abierto, no tocamos el DOM durante el polling
+                const openDropdown = document.querySelector('#peiChatMessagesBody .dropdown-menu.show');
+                if (isPolling && openDropdown) {
+                    return;
+                }
+
                 let toRender = [];
 
                 if (currentChannelMode === 'group') {
@@ -1392,8 +1397,32 @@
                     return;
                 }
 
-                toRender.forEach(msg => renderSingleMessageBubble(msg));
-                setTimeout(() => { scrollToBottom(); }, 50);
+                // 2. Si no es polling (cambio de filtro o carga manual), renderizado completo desde cero
+                if (!isPolling) {
+                    messagesList.innerHTML = '';
+                    toRender.forEach(msg => renderSingleMessageBubble(msg));
+                    setTimeout(() => { scrollToBottom(); }, 50);
+                    return;
+                }
+
+                // 3. Si es polling, sincronizado incremental inteligente: solo se agregan mensajes nuevos o se actualizan reacciones
+                toRender.forEach(msg => {
+                    const existingMsgEl = document.getElementById(`msg-${msg.id}`);
+                    if (!existingMsgEl) {
+                        // Mensaje nuevo: renderizar y agregar al final
+                        renderSingleMessageBubble(msg);
+                        setTimeout(() => { scrollToBottom(); }, 50);
+                    } else {
+                        // Mensaje existente: actualizar solo las reacciones si han cambiado
+                        const reactionsEl = document.getElementById(`reactions-${msg.id}`);
+                        if (reactionsEl) {
+                            const updatedReactionsHtml = renderReactionBadgesHtml(msg.id, msg.reactions);
+                            if (reactionsEl.innerHTML.trim() !== updatedReactionsHtml.trim()) {
+                                reactionsEl.innerHTML = updatedReactionsHtml;
+                            }
+                        }
+                    }
+                });
             }
 
             window.scrollToChatMessage = function(msgId) {
