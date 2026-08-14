@@ -81,6 +81,9 @@ class ActivityController extends Controller
             ];
         });
 
+        return response()->json($results);
+    }
+
     public function show($id)
     {
         $activity = Activity::with([
