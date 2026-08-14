@@ -30,7 +30,81 @@
         </div>
         @else
 
-        {{-- Resumen --}}
+        @if($indicadores->isEmpty())
+        <div class="text-center py-5 text-muted">
+            <i class="fa fa-ruler-combined fa-3x mb-3 d-block" style="opacity:.3"></i>
+            <p class="mb-1">Sin indicadores registrados para este plan.</p>
+            <small>Creá la primera ficha usando el botón <strong>Nueva Ficha</strong>.</small>
+        </div>
+        @else
+
+        {{-- Panel de Filtros Interactivos y Agrupamiento --}}
+        <div class="p-3 mb-3 rounded border bg-light shadow-xs">
+            <div class="row align-items-center" style="gap: .5rem 0;">
+                {{-- Buscador General y por Variables --}}
+                <div class="col-md-3">
+                    <label class="font-weight-bold text-dark mb-1" style="font-size:.72rem">
+                        <i class="fa fa-search text-primary mr-1"></i>Buscar Indicador / Variable
+                    </label>
+                    <input type="text" id="filterBuscador" class="form-control form-control-sm bg-white" placeholder="Buscar por código, nombre, variables...">
+                </div>
+
+                {{-- Dimensión --}}
+                <div class="col-md-2 col-6">
+                    <label class="font-weight-bold text-dark mb-1" style="font-size:.72rem">
+                        <i class="fa fa-layer-group text-info mr-1"></i>Dimensión
+                    </label>
+                    <select id="filterDimension" class="form-control form-control-sm bg-white">
+                        <option value="">Todas</option>
+                        @foreach(\App\Models\Planificacion\Indicador::DIMENSIONES as $key => $lbl)
+                            <option value="{{ $key }}">{{ $lbl }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Ámbito --}}
+                <div class="col-md-2 col-6">
+                    <label class="font-weight-bold text-dark mb-1" style="font-size:.72rem">
+                        <i class="fa fa-sitemap text-warning mr-1"></i>Ámbito
+                    </label>
+                    <select id="filterAmbito" class="form-control form-control-sm bg-white">
+                        <option value="">Todos</option>
+                        @foreach(\App\Models\Planificacion\Indicador::AMBITOS as $key => $lbl)
+                            <option value="{{ $key }}">{{ $lbl }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Frecuencia --}}
+                <div class="col-md-2 col-6">
+                    <label class="font-weight-bold text-dark mb-1" style="font-size:.72rem">
+                        <i class="fa fa-calendar-alt text-secondary mr-1"></i>Frecuencia
+                    </label>
+                    <select id="filterFrecuencia" class="form-control form-control-sm bg-white">
+                        <option value="">Todas</option>
+                        @foreach(\App\Models\Planificacion\Indicador::FRECUENCIAS as $key => $lbl)
+                            <option value="{{ $key }}">{{ $lbl }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Selector de Agrupamiento --}}
+                <div class="col-md-3 col-6">
+                    <label class="font-weight-bold text-primary mb-1" style="font-size:.72rem">
+                        <i class="fa fa-object-group text-primary mr-1"></i>Agrupar Vista por
+                    </label>
+                    <select id="selectAgruparPor" class="form-control form-control-sm bg-white border-primary text-primary font-weight-bold">
+                        <option value="none">Sin Agrupar (Tabla Plana)</option>
+                        <option value="dimension">Agrupar por Dimensión</option>
+                        <option value="ambito">Agrupar por Ámbito</option>
+                        <option value="frecuencia">Agrupar por Frecuencia</option>
+                        <option value="sentido">Agrupar por Sentido (▲/▼)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        {{-- Resumen de Badges --}}
         @php
             $porDimension = $indicadores->groupBy('dimension');
             $colDim = ['eficiencia'=>'primary','eficacia'=>'success','calidad'=>'info','economia'=>'warning'];
@@ -44,13 +118,16 @@
             </span>
             @endif
             @endforeach
-            <span class="badge badge-dark ml-auto" style="font-size:.8rem;padding:.4em .8em">
+            <span class="badge badge-dark ml-auto" style="font-size:.8rem;padding:.4em .8em" id="badgeTotalIndicadores">
                 Total: {{ $indicadores->count() }}
             </span>
         </div>
 
-        {{-- Tabla --}}
-        <div class="table-responsive">
+        {{-- Contenedor de Vista Agrupada --}}
+        <div id="contenedorAgrupado" class="mb-3" style="display:none;"></div>
+
+        {{-- Tabla Estándar --}}
+        <div id="contenedorTablaPlana" class="table-responsive">
             <table class="table table-hover table-sm" id="tablaIndicadores" style="width:100%">
                 <thead class="thead-light">
                     <tr>
@@ -70,13 +147,20 @@
                         $colDimBadge = ['eficiencia'=>'primary','eficacia'=>'success','calidad'=>'info','economia'=>'warning'];
                         $dimColor    = $colDimBadge[$ind->dimension] ?? 'secondary';
                     @endphp
-                    <tr id="ind-row-{{ $ind->id }}">
+                    <tr id="ind-row-{{ $ind->id }}" data-dimension="{{ $ind->dimension }}" data-ambito="{{ $ind->ambito }}" data-frecuencia="{{ $ind->frecuencia }}" data-sentido="{{ $ind->sentido }}">
                         <td>
                             <span class="badge badge-dark" style="font-size:.72rem;letter-spacing:.03em">
                                 {{ $ind->codigoCompleto() }}
                             </span>
                         </td>
-                        <td style="font-size:.88rem;font-weight:500">{{ $ind->nombre }}</td>
+                        <td style="font-size:.88rem;font-weight:500">
+                            <div>{{ $ind->nombre }}</div>
+                            @if($ind->variables)
+                            <div class="text-muted" style="font-size:.72rem;font-style:italic">
+                                <i class="fa fa-calculator text-info mr-1"></i>Variables: {{ \Illuminate\Support\Str::limit($ind->variables, 90) }}
+                            </div>
+                            @endif
+                        </td>
                         <td>
                             <span class="badge badge-{{ $dimColor }}" style="font-size:.68rem">
                                 {{ \App\Models\Planificacion\Indicador::DIMENSIONES[$ind->dimension] ?? $ind->dimension }}
@@ -128,6 +212,7 @@
                 </tbody>
             </table>
         </div>
+        @endif
         @endif
 
     </div>
@@ -182,13 +267,22 @@ $(function() {
     function agregarMeta(anio, valor) {
         var idx = _metaIndex++;
         $('#metasContainer').append(
-            '<div class="col-md-3 mb-2 meta-row" data-idx="' + idx + '">' +
-            '<div class="input-group input-group-sm">' +
-                '<div class="input-group-prepend"><span class="input-group-text" style="font-size:.72rem">Año</span></div>' +
-                '<input type="number" class="form-control meta-anio" placeholder="{{ date("Y") }}" value="' + (anio||'') + '" min="2020" max="2100">' +
-                '<input type="text" class="form-control meta-valor" placeholder="Meta" value="' + (valor||'') + '">' +
-                '<div class="input-group-append"><button type="button" class="btn btn-outline-danger btn-remove-meta" style="font-size:.72rem"><i class="fa fa-times"></i></button></div>' +
-            '</div></div>'
+            '<tr class="meta-row align-middle" data-idx="' + idx + '">' +
+                '<td class="pl-3 py-1.5">' +
+                    '<div class="input-group input-group-sm">' +
+                        '<div class="input-group-prepend"><span class="input-group-text bg-light text-muted font-weight-bold" style="font-size:.7rem">📅 Año</span></div>' +
+                        '<input type="number" class="form-control meta-anio font-weight-bold" placeholder="{{ date("Y") }}" value="' + (anio||'') + '" min="2020" max="2100">' +
+                    '</div>' +
+                '</td>' +
+                '<td class="py-1.5 px-2">' +
+                    '<input type="text" class="form-control form-control-sm meta-valor" placeholder="Ej: 2, 85%, 1500" value="' + (valor||'') + '">' +
+                '</td>' +
+                '<td class="text-center py-1.5 pr-2">' +
+                    '<button type="button" class="btn btn-sm btn-icon-action-delete btn-remove-meta" title="Eliminar Meta">' +
+                        '<i class="fas fa-trash-alt"></i>' +
+                    '</button>' +
+                '</td>' +
+            '</tr>'
         );
     }
 
@@ -371,6 +465,128 @@ $(function() {
             }
         });
     });
+
+    // ── Lógica de Filtros y Agrupamiento Dinámico ──
+    var mapDimensiones  = @json(\App\Models\Planificacion\Indicador::DIMENSIONES);
+    var mapAmbitos      = @json(\App\Models\Planificacion\Indicador::AMBITOS);
+    var mapFrecuencias  = @json(\App\Models\Planificacion\Indicador::FRECUENCIAS);
+
+    function aplicarFiltrosYAgrupacion() {
+        var txt  = $('#filterBuscador').val().toLowerCase().trim();
+        var dim  = $('#filterDimension').val();
+        var amb  = $('#filterAmbito').val();
+        var frec = $('#filterFrecuencia').val();
+        var modo = $('#selectAgruparPor').val();
+
+        // 1. Filtrar lista de indicadores
+        var filtrados = _indicadoresData.filter(function(ind) {
+            if (dim && ind.dimension !== dim) return false;
+            if (amb && ind.ambito !== amb) return false;
+            if (frec && ind.frecuencia !== frec) return false;
+            if (txt) {
+                var searchTarget = (ind.codigo + ' ' + (ind.nombre||'') + ' ' + (ind.variables||'') + ' ' + (ind.descripcion||'') + ' ' + (ind.formula||'')).toLowerCase();
+                if (searchTarget.indexOf(txt) === -1) return false;
+            }
+            return true;
+        });
+
+        $('#badgeTotalIndicadores').text('Total: ' + filtrados.length);
+
+        if (modo === 'none') {
+            $('#contenedorAgrupado').hide().empty();
+            $('#contenedorTablaPlana').show();
+
+            // Filtrar filas de la tabla DataTables
+            $('#tablaIndicadores tbody tr').each(function() {
+                var rowId = $(this).attr('id');
+                if (!rowId) return;
+                var id = rowId.replace('ind-row-', '');
+                var match = filtrados.some(f => f.id == id);
+                if (match) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+            return;
+        }
+
+        // Si se eligió un modo de agrupamiento
+        $('#contenedorTablaPlana').hide();
+        $('#contenedorAgrupado').show().empty();
+
+        if (filtrados.length === 0) {
+            $('#contenedorAgrupado').html('<div class="alert alert-warning text-center">No se encontraron indicadores con los filtros seleccionados.</div>');
+            return;
+        }
+
+        // Agrupar filtrados por la clave elegida
+        var grupos = {};
+        filtrados.forEach(function(ind) {
+            var keyVal = ind[modo] || 'Sin definir';
+            var groupLabel = keyVal;
+
+            if (modo === 'dimension') groupLabel = mapDimensiones[keyVal] || keyVal;
+            else if (modo === 'ambito') groupLabel = mapAmbitos[keyVal] || keyVal;
+            else if (modo === 'frecuencia') groupLabel = mapFrecuencias[keyVal] || keyVal;
+            else if (modo === 'sentido') groupLabel = keyVal === 'ascendente' ? '▲ Ascendente (Más es mejor)' : '▼ Descendente (Menos es mejor)';
+
+            if (!grupos[groupLabel]) grupos[groupLabel] = [];
+            grupos[groupLabel].push(ind);
+        });
+
+        // Renderizar secciones agrupadas
+        var groupHtml = '';
+        $.each(grupos, function(gTitle, list) {
+            groupHtml += '<div class="card mb-3 shadow-xs border-0 rounded-lg overflow-hidden">' +
+                '<div class="card-header bg-dark text-white d-flex align-items-center py-2 px-3">' +
+                    '<h6 class="mb-0 font-weight-bold" style="font-size:.85rem"><i class="fa fa-folder-open text-info mr-2"></i>' + gTitle + '</h6>' +
+                    '<span class="badge badge-pill badge-info ml-auto" style="font-size:.72rem">' + list.length + ' indicador(es)</span>' +
+                '</div>' +
+                '<div class="card-body p-2 bg-light">' +
+                    '<div class="row" style="gap: .75rem 0;">';
+
+            list.forEach(function(ind) {
+                var dimColors = { eficiencia:'primary', eficacia:'success', calidad:'info', economia:'warning' };
+                var badgeColor = dimColors[ind.dimension] || 'secondary';
+                var sentidoIcon = ind.sentido === 'ascendente' ? '<span class="text-success font-weight-bold">▲ Ascendente</span>' : '<span class="text-danger font-weight-bold">▼ Descendente</span>';
+
+                groupHtml += '<div class="col-md-6 mb-2">' +
+                    '<div class="p-3 bg-white rounded border shadow-xs h-100 d-flex flex-column justify-content-between">' +
+                        '<div>' +
+                            '<div class="d-flex align-items-center justify-content-between mb-2 flex-wrap" style="gap:.3rem">' +
+                                '<span class="badge badge-dark font-weight-bold" style="font-size:.7rem">' + ind.codigo + '</span>' +
+                                '<span class="badge badge-' + badgeColor + '" style="font-size:.65rem">' + (mapDimensiones[ind.dimension]||ind.dimension) + '</span>' +
+                                '<small class="text-muted" style="font-size:.68rem">' + (mapAmbitos[ind.ambito]||ind.ambito) + '</small>' +
+                                sentidoIcon +
+                            '</div>' +
+                            '<h6 class="font-weight-bold text-dark mb-1" style="font-size:.88rem">' + ind.nombre + '</h6>' +
+                            (ind.variables ? '<div class="p-2 mb-2 rounded bg-light text-muted" style="font-size:.73rem;border-left:3px solid #17a2b8"><i class="fa fa-calculator text-info mr-1"></i><strong>Variables:</strong> ' + ind.variables + '</div>' : '') +
+                            '<div class="row text-muted mb-2" style="font-size:.72rem">' +
+                                '<div class="col-6"><strong>Fórmula:</strong> ' + (ind.formula||'—') + '</div>' +
+                                '<div class="col-6"><strong>Unidad:</strong> ' + (ind.unidad_medida||'—') + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="pt-2 border-top d-flex align-items-center justify-content-between" style="font-size:.72rem">' +
+                            '<span class="text-muted">Frecuencia: ' + (mapFrecuencias[ind.frecuencia]||ind.frecuencia) + '</span>' +
+                            '<div style="white-space:nowrap">' +
+                                '<button class="btn btn-xs btn-outline-info py-0 px-2 mr-1 btnVerFicha" data-id="' + ind.id + '" title="Ver Ficha"><i class="fa fa-eye"></i></button>' +
+                                '<button class="btn btn-xs btn-outline-primary py-0 px-2 mr-1 btnEditarIndicador" data-id="' + ind.id + '" title="Editar"><i class="fa fa-edit"></i></button>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            });
+
+            groupHtml += '</div></div></div>';
+        });
+
+        $('#contenedorAgrupado').html(groupHtml);
+    }
+
+    // Escuchar eventos de cambio en filtros
+    $('#filterBuscador').on('keyup input', aplicarFiltrosYAgrupacion);
+    $('#filterDimension, #filterAmbito, #filterFrecuencia, #selectAgruparPor').on('change', aplicarFiltrosYAgrupacion);
 });
 </script>
 @include('admin.planificacion.peis.peis.partials.chat_drawer')
