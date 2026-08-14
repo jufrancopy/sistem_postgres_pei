@@ -470,11 +470,21 @@
         }
         .msg-reply-ref {
             background: rgba(0,0,0,0.05);
-            border-left: 2px solid #4e73df;
-            padding: 2px 6px;
+            border-left: 3px solid #6366f1;
+            padding: 4px 8px;
             margin-bottom: 4px;
             font-size: 11px;
-            border-radius: 3px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .msg-reply-ref:hover {
+            background: rgba(99, 102, 241, 0.12);
+        }
+        .msg-bubble-container.mine .msg-reply-ref {
+            background: rgba(255, 255, 255, 0.2);
+            border-left-color: #fde047;
+            color: #ffffff;
         }
         .msg-attachment-item {
             display: inline-block;
@@ -504,6 +514,69 @@
         .msg-bubble-container.other .msg-reference-badge {
             background: #f8fafc;
             border-radius: 12px 12px 12px 2px;
+        }
+
+        /* Animación de destello al hacer clic en Cita */
+        @keyframes messageHighlightPulse {
+            0% { background-color: #fef08a !important; box-shadow: 0 0 12px rgba(234, 179, 8, 0.8) !important; transform: scale(1.02); }
+            50% { background-color: #fef08a !important; box-shadow: 0 0 8px rgba(234, 179, 8, 0.5) !important; }
+            100% { background-color: transparent; box-shadow: none; transform: scale(1); }
+        }
+        .highlight-message {
+            animation: messageHighlightPulse 2.2s ease-in-out !important;
+            border-radius: 8px;
+        }
+
+        /* Acciones de Mensaje (Responder, Reaccionar) */
+        .btn-msg-action {
+            font-size: 10px;
+            padding: 1px 7px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            transition: all 0.15s;
+            line-height: 1.4;
+        }
+        .btn-msg-action:hover {
+            background: #4f46e5;
+            color: #ffffff;
+            border-color: #4f46e5;
+        }
+        .emoji-opt:hover {
+            transform: scale(1.3);
+        }
+
+        /* Badges de Reacciones Emoji */
+        .chat-reactions-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .chat-reaction-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 11px;
+            padding: 1px 7px;
+            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.15s ease;
+        }
+        .chat-reaction-badge:hover {
+            transform: scale(1.08);
+            border-color: #4f46e5;
+        }
+        .chat-reaction-badge.active-reaction {
+            background: #eef2ff;
+            border-color: #6366f1;
+            color: #4338ca;
+            font-weight: bold;
         }
     </style>
 
@@ -1299,14 +1372,98 @@
                 setTimeout(() => { scrollToBottom(); }, 50);
             }
 
+            window.scrollToChatMessage = function(msgId) {
+                const target = document.getElementById(`msg-${msgId}`);
+                const body = document.getElementById('peiChatMessagesBody');
+                if (target && body) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    target.classList.remove('highlight-message');
+                    void target.offsetWidth; // trigger reflow
+                    target.classList.add('highlight-message');
+                    setTimeout(() => {
+                        target.classList.remove('highlight-message');
+                    }, 2200);
+                }
+            };
+
+            window.setReplyMessage = function(msgId, userName, textSnippet) {
+                currentReplyId = msgId;
+                const replyBar = document.getElementById('peiChatReplyBar');
+                const replyUser = document.getElementById('peiChatReplyUser');
+                const replyText = document.getElementById('peiChatReplyText');
+                if (replyBar && replyUser && replyText) {
+                    replyUser.textContent = 'Respondiendo a ' + userName;
+                    replyText.textContent = textSnippet;
+                    replyBar.style.display = 'block';
+                }
+                const input = document.getElementById('peiChatMessageInput');
+                if (input) input.focus();
+            };
+
+            window.cancelReplyMessage = function() {
+                currentReplyId = null;
+                const replyBar = document.getElementById('peiChatReplyBar');
+                if (replyBar) replyBar.style.display = 'none';
+            };
+
+            const cancelReplyBtn = document.getElementById('cancelPeiChatReply');
+            if (cancelReplyBtn) {
+                cancelReplyBtn.addEventListener('click', function() {
+                    window.cancelReplyMessage();
+                });
+            }
+
+            window.toggleChatReaction = function(msgId, emoji) {
+                fetch(`{{ url('pei-profiles') }}/${peiProfileId}/chat/messages/${msgId}/react`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ emoji: emoji })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const msgObj = allLoadedMessages.find(m => m.id == msgId);
+                        if (msgObj) {
+                            msgObj.reactions = data.reactions;
+                        }
+                        const container = document.getElementById(`reactions-${msgId}`);
+                        if (container) {
+                            container.innerHTML = renderReactionBadgesHtml(msgId, data.reactions);
+                        }
+                    }
+                })
+                .catch(err => console.error('Error al reaccionar:', err));
+            };
+
+            function renderReactionBadgesHtml(msgId, reactions) {
+                if (!reactions || reactions.length === 0) return '';
+                let html = '';
+                reactions.forEach(r => {
+                    const usersStr = r.users ? r.users.join(', ') : 'Usuarios';
+                    const activeClass = r.has_mine ? 'active-reaction' : '';
+                    const escapedEmoji = (r.emoji || '').replace(/'/g, "\\'");
+                    html += `<span class="chat-reaction-badge ${activeClass}" onclick="toggleChatReaction('${msgId}', '${escapedEmoji}')" title="${r.users ? r.users.length : 1} personas: ${usersStr}">
+                                ${r.emoji} <small class="font-weight-bold ml-1">${r.count}</small>
+                             </span>`;
+                });
+                return html;
+            }
+
             function renderSingleMessageBubble(msg) {
                 const container = document.createElement('div');
                 container.id = `msg-${msg.id}`;
                 container.className = `msg-bubble-container ${msg.is_mine ? 'mine' : 'other'}`;
 
+                const escapedSender = (msg.user_name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const rawText = msg.message ? msg.message.replace(/<[^>]*>?/gm, '') : '';
+                const escapedText = rawText.substring(0, 60).replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
+
                 let html = '';
                 if (!msg.is_mine) {
-                    const escapedSender = msg.user_name.replace(/'/g, "\\'");
                     html += `<div class="msg-sender-name" style="cursor:pointer;" title="Clic para abrir chat privado" onclick="setPrivateRecipient('${msg.user_id}', '${escapedSender}')">
                                 ${msg.user_name} <i class="fas fa-comment-dots text-muted ml-1" style="font-size:10px;"></i>`;
                     if (msg.is_private) {
@@ -1317,8 +1474,12 @@
                     html += `<div class="text-right text-xs font-weight-bold text-warning mb-1" style="font-size:10px;"><i class="fas fa-lock mr-1"></i>Privado para ${msg.recipient_name || 'Usuario'}</div>`;
                 }
 
+                // Cita / Mensaje Padre Referenciado
                 if (msg.parent) {
-                    html += `<div class="msg-reply-ref"><strong>${msg.parent.user_name}</strong>: ${msg.parent.message}</div>`;
+                    html += `<div class="msg-reply-ref" onclick="scrollToChatMessage('${msg.parent.id}')" title="Clic para ver mensaje original">
+                                <i class="fas fa-reply text-indigo mr-1" style="font-size:10px;"></i>
+                                <strong>${msg.parent.user_name}</strong>: ${msg.parent.message}
+                             </div>`;
                 }
 
                 if (msg.reference_title) {
@@ -1348,7 +1509,41 @@
                 }
 
                 html += `</div>`;
-                html += `<div class="msg-meta">${msg.time_ago}</div>`;
+
+                // Badges de Reacciones Emoji
+                html += `<div id="reactions-${msg.id}" class="chat-reactions-container mt-1">
+                            ${renderReactionBadgesHtml(msg.id, msg.reactions)}
+                         </div>`;
+
+                // Metadatos y Barra de Acciones (Responder, Reaccionar)
+                html += `<div class="d-flex align-items-center justify-content-between w-100 mt-1" style="font-size:10px;">
+                            <div class="msg-meta text-muted" style="font-size:9.5px;">${msg.time_ago}</div>`;
+
+                if (!msg.is_system) {
+                    html += `<div class="d-flex align-items-center msg-actions-toolbar" style="gap:4px;">
+                                <button type="button" class="btn-msg-action" onclick="setReplyMessage('${msg.id}', '${escapedSender}', '${escapedText}')" title="Responder a este mensaje">
+                                    <i class="fas fa-reply mr-1"></i> Responder
+                                </button>
+                                <div class="dropdown d-inline-block">
+                                    <button type="button" class="btn-msg-action dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Reaccionar">
+                                        <i class="far fa-smile mr-1"></i> Reaccionar
+                                    </button>
+                                    <div class="dropdown-menu p-1 shadow-lg border-0" style="min-width:auto; white-space:nowrap; background:#0f172a; border-radius:20px; font-size:16px;">
+                                        <div class="d-flex p-1" style="gap:6px;">
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '👍')">👍</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '❤️')">❤️</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '💡')">💡</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '👏')">👏</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '✔️')">✔️</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '🔥')">🔥</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '😮')">😮</span>
+                                        </div>
+                                    </div>
+                                </div>
+                             </div>`;
+                }
+
+                html += `</div>`;
 
                 if (msg.origin_module) {
                     const isAct = msg.origin_module === 'Actividades';
@@ -1495,7 +1690,7 @@
                     if (moreActions) { showCollapsedActions(); }
                     if (btnPlus) { btnPlus.style.transform='rotate(0deg)'; btnPlus.style.background='#f1f5f9'; btnPlus.style.color='#475569'; btnPlus.style.borderColor='#cbd5e1'; }
                     fileInput.value = '';
-                    currentReplyId = null;
+                    if (window.cancelReplyMessage) window.cancelReplyMessage();
                     currentContext = null;
                     const contextBanner = document.getElementById('peiChatContextBanner');
                     if (contextBanner) contextBanner.style.display = 'none';

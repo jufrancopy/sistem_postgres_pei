@@ -61,4 +61,9 @@ class PeiChatMessage extends Model
     {
         return $this->hasMany(PeiChatMessage::class, 'parent_id');
     }
+
+    public function reactions()
+    {
+        return $this->hasMany(PeiChatReaction::class, 'message_id');
+    }
 }

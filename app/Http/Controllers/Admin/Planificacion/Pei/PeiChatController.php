@@ -107,7 +107,7 @@ class PeiChatController extends Controller
                   ->orWhere('user_id', $user->id)
                   ->orWhere('recipient_id', $user->id);
             })
-            ->with(['user:id,name,email', 'recipient:id,name', 'parent.user:id,name'])
+            ->with(['user:id,name,email', 'recipient:id,name', 'parent.user:id,name', 'reactions.user:id,name'])
             ->orderBy('created_at', 'asc');
 
         if ($request->has('since')) {
@@ -115,6 +115,17 @@ class PeiChatController extends Controller
         }
 
         $messages = $query->get()->map(function ($msg) use ($user) {
+            $reactionsGrouped = $msg->reactions->groupBy('emoji')->map(function($group, $emoji) use ($user) {
+                $users = $group->map(fn($r) => $r->user ? $r->user->name : 'Usuario')->values()->toArray();
+                $hasMine = $group->contains('user_id', $user->id);
+                return [
+                    'emoji' => $emoji,
+                    'count' => $group->count(),
+                    'users' => $users,
+                    'has_mine' => $hasMine,
+                ];
+            })->values()->toArray();
+
             return [
                 'id' => $msg->id,
                 'pei_profile_id' => $msg->pei_profile_id,
@@ -140,8 +151,9 @@ class PeiChatController extends Controller
                 'parent' => $msg->parent ? [
                     'id' => $msg->parent->id,
                     'user_name' => $msg->parent->user ? $msg->parent->user->name : 'Usuario',
-                    'message' => Str::limit($msg->parent->message, 40),
+                    'message' => Str::limit($msg->parent->message, 50),
                 ] : null,
+                'reactions' => $reactionsGrouped,
             ];
         });
 
@@ -443,6 +455,62 @@ class PeiChatController extends Controller
                 'created_at' => $msg->created_at->format('Y-m-d H:i:s'),
                 'time_ago' => 'Hace un momento',
             ]
+        ]);
+    }
+
+    /**
+     * Alternar una reacción emoji en un mensaje del chat.
+     */
+    public function toggleReaction(Request $request, $peiProfileId, $messageId)
+    {
+        $user = auth()->user();
+        $peiProfile = PeiProfile::findOrFail($peiProfileId);
+
+        if (!$this->checkUserAccess($peiProfile, $user)) {
+            return response()->json(['error' => 'Acceso denegado.'], 403);
+        }
+
+        $request->validate([
+            'emoji' => 'required|string|max:20',
+        ]);
+
+        $message = PeiChatMessage::where('pei_profile_id', $peiProfileId)->findOrFail($messageId);
+
+        $existing = \App\Models\Planificacion\PeiChatReaction::where('message_id', $message->id)
+            ->where('user_id', $user->id)
+            ->where('emoji', $request->emoji)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+            $action = 'removed';
+        } else {
+            \App\Models\Planificacion\PeiChatReaction::create([
+                'message_id' => $message->id,
+                'user_id'    => $user->id,
+                'emoji'      => $request->emoji,
+            ]);
+            $action = 'added';
+        }
+
+        // Obtener reacciones agrupadas
+        $message->load('reactions.user:id,name');
+        $reactionsGrouped = $message->reactions->groupBy('emoji')->map(function($group, $emoji) use ($user) {
+            $users = $group->map(fn($r) => $r->user ? $r->user->name : 'Usuario')->values()->toArray();
+            $hasMine = $group->contains('user_id', $user->id);
+            return [
+                'emoji'    => $emoji,
+                'count'    => $group->count(),
+                'users'    => $users,
+                'has_mine' => $hasMine,
+            ];
+        })->values()->toArray();
+
+        return response()->json([
+            'success'    => true,
+            'action'     => $action,
+            'message_id' => $message->id,
+            'reactions'  => $reactionsGrouped,
         ]);
     }
 }

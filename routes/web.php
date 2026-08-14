@@ -130,6 +130,7 @@ Route::group(['middleware' => ['auth']], function () {
     // Chat PEI
     Route::get('pei-profiles/{profileId}/chat/messages', 'Admin\Planificacion\Pei\PeiChatController@getMessages')->name('pei-chat.messages');
     Route::post('pei-profiles/{profileId}/chat/messages', 'Admin\Planificacion\Pei\PeiChatController@storeMessage')->name('pei-chat.store');
+    Route::post('pei-profiles/{profileId}/chat/messages/{messageId}/react', 'Admin\Planificacion\Pei\PeiChatController@toggleReaction')->name('pei-chat.react');
     Route::get('pei-profiles/{profileId}/chat/unread', 'Admin\Planificacion\Pei\PeiChatController@getUnreadCount')->name('pei-chat.unread');
     Route::post('pei-profiles/{profileId}/chat/read', 'Admin\Planificacion\Pei\PeiChatController@markRead')->name('pei-chat.read');
     Route::post('pei-profiles/{profileId}/chat/donate', 'Admin\Planificacion\Pei\PeiChatController@donatePoints')->name('pei-chat.donate');
@@ -137,6 +138,7 @@ Route::group(['middleware' => ['auth']], function () {
     // Alias con prefijo legacy/admin para compatibilidad total
     Route::get('admin/planificacion/pei-profiles/{profileId}/chat/messages', 'Admin\Planificacion\Pei\PeiChatController@getMessages');
     Route::post('admin/planificacion/pei-profiles/{profileId}/chat/messages', 'Admin\Planificacion\Pei\PeiChatController@storeMessage');
+    Route::post('admin/planificacion/pei-profiles/{profileId}/chat/messages/{messageId}/react', 'Admin\Planificacion\Pei\PeiChatController@toggleReaction');
     Route::get('admin/planificacion/pei-profiles/{profileId}/chat/unread', 'Admin\Planificacion\Pei\PeiChatController@getUnreadCount');
     Route::post('admin/planificacion/pei-profiles/{profileId}/chat/read', 'Admin\Planificacion\Pei\PeiChatController@markRead');
     Route::post('admin/planificacion/pei-profiles/{profileId}/chat/donate', 'Admin\Planificacion\Pei\PeiChatController@donatePoints');
