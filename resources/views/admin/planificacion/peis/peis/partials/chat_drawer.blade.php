@@ -538,8 +538,7 @@
             border-radius: 12px;
         }
 
-        /* Facebook Messenger Style Hover Action Buttons */
-        .msg-row {
+        .msg-bubble-line {
             position: relative;
             width: 100%;
         }
@@ -548,7 +547,7 @@
             pointer-events: none;
             transition: opacity 0.2s ease-in-out;
         }
-        .msg-row:hover .msg-hover-actions {
+        .msg-bubble-line:hover .msg-hover-actions {
             opacity: 1;
             pointer-events: auto;
         }
@@ -1565,7 +1564,8 @@
                              </div>`;
                 }
 
-                // Message Bubble
+                // Dedicated Bubble Line (Text Bubble + Side Hover Action Icons)
+                html += `<div class="msg-bubble-line d-flex align-items-center ${msg.is_mine ? 'flex-row-reverse' : 'flex-row'}" style="gap: 4px;">`;
                 html += `<div class="msg-bubble">${msg.message}`;
                 if (msg.attachments && msg.attachments.length > 0) {
                     html += `<div class="mt-1">`;
@@ -1576,7 +1576,34 @@
                     });
                     html += `</div>`;
                 }
-                html += `</div>`;
+                html += `</div>`; // Close msg-bubble
+
+                // Hover Actions Directly Beside Bubble (Facebook Messenger Style)
+                if (!msg.is_system) {
+                    html += `<div class="msg-hover-actions d-flex align-items-center" style="gap: 3px;">
+                                <button type="button" class="btn-messenger-action" onclick="setReplyMessage('${msg.id}', '${escapedSender}', '${escapedText}')" title="Responder">
+                                    <i class="fas fa-reply"></i>
+                                </button>
+                                <div class="dropdown d-inline-block">
+                                    <button type="button" class="btn-messenger-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Reaccionar">
+                                        <i class="far fa-smile"></i>
+                                    </button>
+                                    <div class="dropdown-menu ${msg.is_mine ? 'dropdown-menu-right' : ''} p-1 shadow-lg border-0" style="min-width:auto; white-space:nowrap; background:#ffffff; border-radius:24px; box-shadow: 0 4px 20px rgba(0,0,0,0.18) !important;">
+                                        <div class="d-flex px-2 py-1" style="gap:8px; font-size:19px;">
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '👍')">👍</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '❤️')">❤️</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '💡')">💡</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '👏')">👏</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '✔️')">✔️</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '🔥')">🔥</span>
+                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '😮')">😮</span>
+                                        </div>
+                                    </div>
+                                </div>
+                             </div>`;
+                }
+
+                html += `</div>`; // Close msg-bubble-line
 
                 // Badges de Reacciones Emoji debajo de la burbuja
                 html += `<div id="reactions-${msg.id}" class="chat-reactions-container mt-1">
@@ -1602,32 +1629,6 @@
                 }
 
                 html += `</div>`; // Close msg-content-stack
-
-                // Hover Actions Beside Message (Facebook Messenger Style)
-                if (!msg.is_system) {
-                    html += `<div class="msg-hover-actions d-flex align-items-center" style="gap: 3px;">
-                                <button type="button" class="btn-messenger-action" onclick="setReplyMessage('${msg.id}', '${escapedSender}', '${escapedText}')" title="Responder">
-                                    <i class="fas fa-reply"></i>
-                                </button>
-                                <div class="dropdown d-inline-block">
-                                    <button type="button" class="btn-messenger-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Reaccionar">
-                                        <i class="far fa-smile"></i>
-                                    </button>
-                                    <div class="dropdown-menu ${msg.is_mine ? 'dropdown-menu-right' : ''} p-1 shadow-lg border-0" style="min-width:auto; white-space:nowrap; background:#ffffff; border-radius:24px; box-shadow: 0 4px 20px rgba(0,0,0,0.18) !important;">
-                                        <div class="d-flex px-2 py-1" style="gap:8px; font-size:19px;">
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '👍')">👍</span>
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '❤️')">❤️</span>
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '💡')">💡</span>
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '👏')">👏</span>
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '✔️')">✔️</span>
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '🔥')">🔥</span>
-                                            <span style="cursor:pointer;" class="emoji-opt" onclick="toggleChatReaction('${msg.id}', '😮')">😮</span>
-                                        </div>
-                                    </div>
-                                </div>
-                             </div>`;
-                }
-
                 html += `</div>`; // Close msg-row
 
                 container.innerHTML = html;
