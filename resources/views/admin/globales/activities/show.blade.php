@@ -254,13 +254,10 @@
             <button class="btn btn-light btn-sm font-weight-bold" id="btnNuevaTarea">
                 <i class="fa fa-plus mr-1"></i>Nueva Tarea
             </button>
-            <button class="btn btn-sm font-weight-bold text-white shadow-xs" style="background:#4f46e5;border:none" id="btnNuevoSeguimiento" title="Registrar nuevo seguimiento de expediente">
-                <i class="fa fa-folder-open mr-1"></i>+ Nuevo Seguimiento
-            </button>
             @endhasanyrole
             <button class="btn btn-sm font-weight-bold" style="background:rgba(255,255,255,.9);color:#312e81;border:none"
                     id="btnVerSeguimientos">
-                <i class="fa fa-search-location mr-1"></i>Seguimientos
+                <i class="fa fa-folder-open mr-1"></i>Seguimientos
             </button>
             <button class="btn btn-sm font-weight-bold" style="background:rgba(255,255,255,.85);color:#1e3a5f;border:none"
                     id="btnVerReuniones">
