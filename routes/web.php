@@ -299,6 +299,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('activities/tareas/{taskId}/acta-mecip/participantes', 'Admin\Globales\ActaMecipController@addParticipante')->name('activities.acta-mecip.participantes.add');
         Route::delete('activities/tareas/{taskId}/acta-mecip/participantes/{participanteId}', 'Admin\Globales\ActaMecipController@deleteParticipante')->name('activities.acta-mecip.participantes.delete');
         Route::get('activities/tareas/{taskId}/acta-mecip/imprimir', 'Admin\Globales\ActaMecipController@imprimir')->name('activities.acta-mecip.imprimir');
+        Route::get('activities/tareas/{taskId}/acta-mecip/pdf', 'Admin\Globales\ActaMecipController@descargarPdf')->name('activities.acta-mecip.pdf');
 
 
         //Localities

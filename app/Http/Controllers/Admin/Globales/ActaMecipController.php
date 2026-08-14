@@ -390,6 +390,33 @@ class ActaMecipController extends Controller
     }
 
     /**
+     * Descarga el PDF oficial del Acta MECIP generado en el servidor con DomPDF.
+     */
+    public function descargarPdf(int $taskId)
+    {
+        $task = ActivityTask::with(['activity', 'acta.participantes', 'assignedTo'])->findOrFail($taskId);
+        $acta = $task->acta;
+
+        if (!$acta) {
+            abort(404, 'No se ha redactado el acta para esta reunión.');
+        }
+
+        $defaults = $this->resolveDefaultsForTask($task);
+        if (!empty($defaults['institucion'])) $acta->institucion = $defaults['institucion'];
+        if (!empty($defaults['dependencia'])) $acta->dependencia = $defaults['dependencia'];
+        if (!empty($defaults['logo_url']))     $acta->logo_url    = $defaults['logo_url'];
+
+        $publicUrl = route('actas.public.show', $acta->uuid);
+        $qrBase64 = 'data:image/svg+xml;base64,' . base64_encode(QrCode::size(120)->margin(1)->generate($publicUrl));
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.globales.activities.actas.pdf_export', compact('task', 'acta', 'publicUrl', 'qrBase64'))
+            ->setPaper('a4', 'portrait');
+
+        $numClean = Str::slug($acta->numero_acta ?: 'IPS', '_');
+        return $pdf->download("Acta_MECIP_{$numClean}.pdf");
+    }
+
+    /**
      * Vista pública personalizada para participantes que acceden mediante Código QR.
      */
     public function publicView(string $token)

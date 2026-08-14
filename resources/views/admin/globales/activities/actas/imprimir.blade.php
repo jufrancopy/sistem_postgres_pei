@@ -87,7 +87,7 @@
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 10mm 15mm 10mm 15mm;
+                margin: 0;
             }
             html, body {
                 background-color: white !important;
@@ -101,8 +101,9 @@
                 width: 100% !important;
                 min-height: auto !important;
                 margin: 0 !important;
-                padding: 0 !important;
+                padding: 15mm 20mm 15mm 20mm !important;
                 box-shadow: none !important;
+                box-sizing: border-box !important;
             }
         }
     </style>
@@ -114,16 +115,16 @@
         <div class="d-flex align-items-center" style="gap: 10px;">
             <i class="fa fa-file-alt text-warning"></i>
             <span class="font-weight-bold">Vista de Impresión Oficial MECIP - {{ $acta->numero_acta }}</span>
-            <span class="badge badge-warning text-dark font-weight-normal ml-2 d-none d-md-inline-block" style="font-size:0.75rem; padding: 4px 8px;">
-                <i class="fa fa-lightbulb mr-1"></i> Desmarcá "Encabezados y pies de página" en la impresora para ocultar la URL
-            </span>
         </div>
         <div class="d-flex align-items-center" style="gap: 8px;">
+            <a href="{{ route('activities.acta-mecip.pdf', $task->id) }}" class="btn btn-sm btn-info font-weight-bold px-3 shadow-sm">
+                <i class="fa fa-file-pdf mr-1"></i> Descargar PDF Oficial
+            </a>
+            <button onclick="window.print()" class="btn btn-sm btn-success font-weight-bold px-4 shadow-sm">
+                <i class="fa fa-print mr-1"></i> Imprimir Rápido
+            </button>
             <button onclick="window.close()" class="btn btn-sm btn-outline-light font-weight-bold px-3">
                 <i class="fa fa-times mr-1"></i> Cerrar
-            </button>
-            <button onclick="window.print()" class="btn btn-sm btn-success font-weight-bold px-4 shadow-sm">
-                <i class="fa fa-print mr-1"></i> Imprimir / Guardar PDF
             </button>
         </div>
     </div>
