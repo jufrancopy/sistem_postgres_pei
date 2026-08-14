@@ -542,16 +542,16 @@
             border-radius: 12px 12px 12px 2px;
         }
 
-        /* Resaltado Verdoso Nítido para Citas Referenciadas */
+        /* Resaltado Verdoso Nítido para Citas Referenciadas (Sin Desbordamiento) */
         .msg-bubble {
-            transition: all 0.4s ease;
+            transition: all 0.35s ease;
+            box-sizing: border-box;
         }
         .highlight-target {
             background: #d1fae5 !important;
             color: #065f46 !important;
-            border: 3px solid #059669 !important;
-            box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.45), 0 0 25px rgba(16, 185, 129, 0.6) !important;
-            transform: scale(1.04) !important;
+            border: 2.5px solid #059669 !important;
+            box-shadow: inset 0 0 0 1px #059669, 0 4px 16px rgba(5, 150, 105, 0.4) !important;
             position: relative !important;
             z-index: 99 !important;
         }
