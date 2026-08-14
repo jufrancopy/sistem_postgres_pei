@@ -246,8 +246,9 @@ class PlanMaestroController extends Controller
                 app(\App\Services\GamificationService::class)->awardPoints(
                     auth()->user(),
                     'accion_operativa_updated',
-                    5,
                     "Edición de Acción Operativa [{$iniciativa->codigo}]",
+                    5,
+                    $iniciativa,
                     $iniciativa->pei_profile_id
                 );
             }
@@ -313,8 +314,9 @@ class PlanMaestroController extends Controller
             app(\App\Services\GamificationService::class)->awardPoints(
                 auth()->user(),
                 'accion_operativa_created',
-                15,
                 "Aporte/Creación de Acción Operativa [{$iniciativa->codigo}]",
+                15,
+                $iniciativa,
                 $iniciativa->pei_profile_id
             );
         }
