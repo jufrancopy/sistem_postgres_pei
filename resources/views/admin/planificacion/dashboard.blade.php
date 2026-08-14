@@ -52,11 +52,11 @@
             </div>
             @if($peiActual)
             <div class="col-lg-5 col-md-12 text-left text-lg-right d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end">
-                @if(auth()->user()->hasRole('Administrador'))
-                <button type="button" id="btnEjecutarDiagnostico" class="btn btn-sm btn-outline-danger mr-1 mb-1 font-weight-bold" title="Ejecutar respaldo DB y enviar reporte a jucfra23@gmail.com">
+                @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista PEI|Analista de Planificación')
+                <button type="button" id="btnEjecutarDiagnostico" class="btn btn-sm btn-outline-danger mr-1 mb-1 font-weight-bold btn-trigger-diagnostico-global" title="Ejecutar respaldo DB y enviar reporte a jucfra23@gmail.com">
                     <i class="fa fa-heartbeat mr-1"></i> Respaldo & Diagnóstico
                 </button>
-                @endif
+                @endhasanyrole
                 <a href="{{ route('pei-profiles.proceso', $peiActual->id) }}" class="btn btn-sm btn-outline-info mr-1 mb-1">
                     <i class="fa fa-tasks mr-1"></i> Proceso
                 </a>

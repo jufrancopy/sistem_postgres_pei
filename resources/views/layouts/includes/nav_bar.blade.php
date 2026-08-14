@@ -56,6 +56,15 @@
             </a>
         </li>
 
+        {{-- ── Botón Diagnóstico Servidor (Escritorio) ── --}}
+        @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista PEI|Analista de Planificación')
+        <li class="nav-item d-none d-md-flex align-items-center mr-2">
+            <button type="button" class="btn btn-xs btn-outline-danger font-weight-bold px-2 py-1 btn-trigger-diagnostico-global" style="border-radius:20px; font-size:11px;" title="Ejecutar Diagnóstico del Servidor y Respaldo DB">
+                <i class="fa fa-heartbeat mr-1"></i> Diagnóstico Servidor
+            </button>
+        </li>
+        @endhasanyrole
+
         {{-- ── Menú de Usuario (Material Pattern) ── --}}
         <li class="nav-item dropdown">
           <a class="nav-link d-flex align-items-center" href="#" id="navbarDropdownUser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -72,9 +81,11 @@
             <a href="{{ route('user.profile') }}" class="dropdown-item px-3 py-2">
                 <i class="fa fa-award text-warning mr-2" style="width: 18px;"></i> Mi Perfil y Gamificación
             </a>
-            <a href="#" class="dropdown-item px-3 py-2">
-                <i class="fa fa-cog text-secondary mr-2" style="width: 18px;"></i> Configurar
+            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista PEI|Analista de Planificación')
+            <a href="#" class="dropdown-item px-3 py-2 text-danger font-weight-bold btn-trigger-diagnostico-global" onclick="event.preventDefault();">
+                <i class="fa fa-heartbeat text-danger mr-2" style="width: 18px;"></i> Respaldo & Diagnóstico DB
             </a>
+            @endhasanyrole
             <div class="dropdown-divider my-1"></div>
             <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="dropdown-item px-3 py-2 text-danger font-weight-bold">
                 <i class="fa fa-sign-out-alt text-danger mr-2" style="width: 18px;"></i> Salir del Sistema
@@ -186,7 +197,96 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }, 120000);
 
+        // Click Handler para Diagnóstico Servidor en cualquier vista
+        $(document).on('click', '.btn-trigger-diagnostico-global', function(e) {
+            e.preventDefault();
+            $('#diagnosticoGlobalLoading').show();
+            $('#diagnosticoGlobalResultado').hide();
+            $('#diagnosticoGlobalError').hide();
+            $('#modalDiagnosticoGlobal').modal('show');
+
+            $.ajax({
+                url: '{{ route('planificacion-dashboard.ejecutar-diagnostico') }}',
+                type: 'POST',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function(res) {
+                    $('#diagnosticoGlobalLoading').hide();
+                    if (res.success) {
+                        $('#diagnosticoGlobalOutputText').text(res.output || 'Respaldo de PostgreSQL generado con éxito. Reporte enviado por correo.');
+                        $('#diagnosticoGlobalResultado').fadeIn();
+                    } else {
+                        $('#diagnosticoGlobalErrorMessage').text(res.message);
+                        $('#diagnosticoGlobalError').fadeIn();
+                    }
+                },
+                error: function(xhr) {
+                    $('#diagnosticoGlobalLoading').hide();
+                    var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Ocurrió un error al ejecutar el diagnóstico en el servidor.';
+                    $('#diagnosticoGlobalErrorMessage').text(msg);
+                    $('#diagnosticoGlobalError').fadeIn();
+                }
+            });
+        });
+
     }, 100);
 });
 </script>
+
+<!-- Modal Diagnóstico y Respaldo DB Global -->
+<div class="modal fade" id="modalDiagnosticoGlobal" tabindex="-1" role="dialog" aria-labelledby="modalDiagnosticoGlobalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white p-3" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                <h5 class="modal-title font-weight-bold text-white d-flex align-items-center mb-0" id="modalDiagnosticoGlobalTitle">
+                    <i class="fa fa-heartbeat text-danger mr-2"></i> Diagnóstico de Salud & Respaldo PostgreSQL
+                </h5>
+                <button type="button" class="close text-white opacity-75" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                
+                <!-- Loading State -->
+                <div id="diagnosticoGlobalLoading" class="text-center py-4">
+                    <div class="spinner-border text-danger mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="sr-only">Procesando...</span>
+                    </div>
+                    <h5 class="font-weight-bold text-dark mb-1">Ejecutando Diagnóstico del Servidor (Artisan)</h5>
+                    <p class="text-muted small mb-0">Generando copia comprimida de PostgreSQL y enviando reporte a <strong>jucfra23@gmail.com</strong>...</p>
+                </div>
+
+                <!-- Results Content -->
+                <div id="diagnosticoGlobalResultado" style="display: none;">
+                    <div class="alert alert-success d-flex align-items-center border-0 shadow-sm mb-4" style="border-radius: 10px; background: #e6f4ea; color: #137333;">
+                        <i class="fa fa-check-circle fa-2x mr-3"></i>
+                        <div>
+                            <div class="font-weight-bold" style="font-size: 0.95rem;">¡Diagnóstico completado con éxito!</div>
+                            <div style="font-size: 0.82rem;">El reporte de salud y respaldo de base de datos fue enviado correctamente a <strong>jucfra23@gmail.com</strong>.</div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 bg-light p-3 mb-3" style="border-radius: 10px;">
+                        <h6 class="font-weight-bold text-uppercase text-muted small mb-2"><i class="fa fa-terminal mr-1"></i> Resumen de Ejecución Artisan (`php artisan siplan:health-and-backup`)</h6>
+                        <pre id="diagnosticoGlobalOutputText" class="mb-0 bg-dark text-success p-3 rounded small" style="max-height: 250px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; border-radius: 8px;"></pre>
+                    </div>
+                </div>
+
+                <!-- Error State -->
+                <div id="diagnosticoGlobalError" style="display: none;">
+                    <div class="alert alert-danger d-flex align-items-center border-0 shadow-sm" style="border-radius: 10px;">
+                        <i class="fa fa-exclamation-triangle fa-2x mr-3"></i>
+                        <div>
+                            <div class="font-weight-bold">Error en la ejecución</div>
+                            <div id="diagnosticoGlobalErrorMessage" style="font-size: 0.85rem;"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-light border-0 p-3">
+                <button type="button" class="btn btn-secondary px-4 font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endauth
