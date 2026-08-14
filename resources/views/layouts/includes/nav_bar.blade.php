@@ -123,6 +123,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
 
+        $(document).ajaxError(function(event, xhr, settings) {
+            if (xhr.status === 419 || xhr.status === 401) {
+                if (typeof toastr !== 'undefined') {
+                    toastr.warning('Tu sesión ha expirado por inactividad. Redireccionando al inicio de sesión...');
+                }
+                setTimeout(function() {
+                    window.location.href = "{{ route('login') }}";
+                }, 1200);
+            }
+        });
+
         function cargarNotificaciones() {
             $.ajax({
                 url: '{{ route('siess.notificaciones') }}',

@@ -48,9 +48,16 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
-        // if ($exception instanceof \Spatie\Permission\Exceptions\UnauthorizedException) {
-        //     return response()->json(['User have not permission for this page access.']);
-        // }
+        if ($exception instanceof \Illuminate\Session\TokenMismatchException) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'message'  => 'Tu sesión ha expirado por inactividad. Redireccionando al inicio de sesión...',
+                    'redirect' => route('login'),
+                ], 401);
+            }
+            return redirect()->route('login')->with('warning', 'Tu sesión ha expirado por inactividad. Por favor, iniciá sesión nuevamente.');
+        }
+
         return parent::render($request, $exception);
     }
 }

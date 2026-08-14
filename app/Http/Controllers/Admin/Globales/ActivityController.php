@@ -81,9 +81,6 @@ class ActivityController extends Controller
             ];
         });
 
-        return response()->json($results);
-    }
-
     public function show($id)
     {
         $activity = Activity::with([
@@ -95,7 +92,10 @@ class ActivityController extends Controller
             'tasks.evidences',
             'tasks.comments',
         ])->findOrFail($id);
-        return view('admin.globales.activities.show', compact('activity'));
+
+        $dependenciasOrganigrama = \App\Admin\Globales\Organigrama::orderBy('dependency')->pluck('dependency')->filter()->unique()->values();
+
+        return view('admin.globales.activities.show', compact('activity', 'dependenciasOrganigrama'));
     }
 
     public function store(Request $request)
