@@ -137,7 +137,7 @@
                         {{ $acta->institucion ?? 'INSTITUTO DE PREVISIÓN SOCIAL' }}
                     </h5>
                     <p class="mb-1 text-uppercase" style="font-size: 9.5pt; font-weight: 600;">
-                        {{ $acta->dependencia ?? 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS' }}
+                        {{ $acta->dependencia ?? 'DIRECCIÓN DE PLANIFICACIÓN' }}
                     </p>
                     <h4 class="font-weight-bold mb-0 text-uppercase" style="font-size: 14pt; letter-spacing: 0.5px;">
                         ACTA DE REUNIÓN Nº {{ $acta->numero_acta }}

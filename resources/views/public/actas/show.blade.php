@@ -189,7 +189,7 @@
             </h5>
             
             <p class="small text-white-50 mb-3 mx-auto" style="max-width: 650px; font-size: 0.85rem;">
-                {{ $acta->dependencia ?? 'Centro de Enseñanza, Documentación y Estudios de la Seguridad Social - CEDESS' }}
+                {{ $acta->dependencia ?? 'DIRECCIÓN DE PLANIFICACIÓN' }}
             </p>
 
             <h2 class="font-weight-bolder mb-2 text-white" style="letter-spacing: -0.5px; font-size: 1.75rem;">

@@ -13,6 +13,30 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ActaMecipController extends Controller
 {
+    protected function resolveDefaultsForTask(ActivityTask $task): array
+    {
+        $institucion = 'INSTITUTO DE PREVISIÓN SOCIAL';
+        $dependencia = 'DIRECCIÓN DE PLANIFICACIÓN';
+        $logoUrl     = null;
+
+        $peiProfile = $task->activity?->peiProfile;
+        if ($peiProfile) {
+            $master = $peiProfile->parent_id ? ($peiProfile->getRoot() ?? $peiProfile) : $peiProfile;
+            $params = is_string($master->parameters) ? json_decode($master->parameters, true) : ($master->parameters ?? []);
+            if (is_array($params)) {
+                if (!empty($params['acta_institucion'])) $institucion = $params['acta_institucion'];
+                if (!empty($params['acta_dependencia'])) $dependencia = $params['acta_dependencia'];
+                if (!empty($params['acta_logo_url']))     $logoUrl     = $params['acta_logo_url'];
+            }
+        }
+
+        return [
+            'institucion' => $institucion,
+            'dependencia' => $dependencia,
+            'logo_url'    => $logoUrl,
+        ];
+    }
+
     /**
      * Obtiene los datos del Acta MECIP para una tarea/reunión.
      * Si no existe, genera los valores por defecto iniciales.
@@ -20,6 +44,7 @@ class ActaMecipController extends Controller
     public function getActa(int $taskId)
     {
         $task = ActivityTask::with(['activity', 'assignedTo', 'acta.participantes'])->findOrFail($taskId);
+        $defaults = $this->resolveDefaultsForTask($task);
 
         $acta = $task->acta;
 
@@ -33,8 +58,9 @@ class ActaMecipController extends Controller
                 'activity_task_id' => $task->id,
                 'uuid'             => (string) Str::uuid(),
                 'numero_acta'      => 'Acta ' . $task->id . '/' . date('Y'),
-                'institucion'      => 'INSTITUTO DE PREVISIÓN SOCIAL',
-                'dependencia'      => 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS',
+                'institucion'      => $defaults['institucion'],
+                'dependencia'      => $defaults['dependencia'],
+                'logo_url'         => $defaults['logo_url'],
                 'lugar'            => 'REUNIÓN VIRTUAL',
                 'fecha'            => $task->fecha_inicio ? $task->fecha_inicio->format('Y-m-d') : date('Y-m-d'),
                 'hora_desde'       => '15:00',
@@ -52,26 +78,12 @@ class ActaMecipController extends Controller
             $acta->load('participantes');
         }
 
-        $logoUrl = $acta->logo_url;
-        $institucion = $acta->institucion;
-        $dependencia = $acta->dependencia;
-        
-        if (empty($logoUrl) || empty($institucion) || empty($dependencia)) {
-            $peiProfile = $task->activity?->peiProfile;
-            if ($peiProfile && $peiProfile->parameters) {
-                $params = json_decode($peiProfile->parameters, true);
-                if (is_array($params)) {
-                    if (empty($logoUrl) && !empty($params['acta_logo_url'])) {
-                        $logoUrl = $params['acta_logo_url'];
-                    }
-                    if (empty($institucion) && !empty($params['acta_institucion'])) {
-                        $institucion = $params['acta_institucion'];
-                    }
-                    if (empty($dependencia) && !empty($params['acta_dependencia'])) {
-                        $dependencia = $params['acta_dependencia'];
-                    }
-                }
-            }
+        $logoUrl = !empty($acta->logo_url) ? $acta->logo_url : $defaults['logo_url'];
+        $institucion = !empty($defaults['institucion']) ? $defaults['institucion'] : ($acta->institucion ?? 'INSTITUTO DE PREVISIÓN SOCIAL');
+        $dependencia = !empty($defaults['dependencia']) ? $defaults['dependencia'] : ($acta->dependencia ?? 'DIRECCIÓN DE PLANIFICACIÓN');
+
+        if ($acta->dependencia && !str_contains($acta->dependencia, 'CEDESS') && !empty($acta->dependencia)) {
+            $dependencia = $acta->dependencia;
         }
 
         $actaData = [
@@ -80,8 +92,8 @@ class ActaMecipController extends Controller
             'uuid'             => $acta->uuid,
             'numero_acta'      => $acta->numero_acta,
             'logo_url'         => $logoUrl,
-            'institucion'      => $institucion ?? 'INSTITUTO DE PREVISIÓN SOCIAL',
-            'dependencia'      => $dependencia ?? 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS',
+            'institucion'      => $institucion,
+            'dependencia'      => $dependencia,
             'lugar'            => $acta->lugar ?? 'REUNIÓN VIRTUAL',
             'fecha'            => $acta->fecha ? $acta->fecha->format('Y-m-d') : date('Y-m-d'),
             'hora_desde'       => $acta->hora_desde,
@@ -164,10 +176,11 @@ class ActaMecipController extends Controller
             $acta->created_by       = Auth::id();
         }
 
-        $acta->institucion      = $validated['institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL';
-        $acta->dependencia      = $validated['dependencia'] ?? 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS';
+        $defaults = $this->resolveDefaultsForTask($task);
+        $acta->institucion      = $validated['institucion'] ?? $defaults['institucion'];
+        $acta->dependencia      = $validated['dependencia'] ?? $defaults['dependencia'];
         $acta->numero_acta      = $validated['numero_acta'] ?? ('Acta ' . $task->id . '/' . date('Y'));
-        $acta->logo_url         = $validated['logo_url'] ?? null;
+        $acta->logo_url         = $validated['logo_url'] ?? $defaults['logo_url'];
         $acta->lugar            = $validated['lugar'] ?? 'REUNIÓN VIRTUAL';
         $acta->fecha            = $validated['fecha'] ?? ($task->fecha_inicio ?? now());
         $acta->hora_desde       = $validated['hora_desde'] ?? '15:00';
@@ -207,6 +220,7 @@ class ActaMecipController extends Controller
     {
         $task = ActivityTask::with('acta')->findOrFail($taskId);
         $acta = $task->acta;
+        $defaults = $this->resolveDefaultsForTask($task);
         
         $firmaModerador = $request->input('firma_moderador');
         
@@ -219,8 +233,9 @@ class ActaMecipController extends Controller
                 'activity_task_id'       => $task->id,
                 'uuid'                   => (string) Str::uuid(),
                 'numero_acta'            => 'Acta ' . $task->id . '/' . date('Y'),
-                'institucion'            => 'INSTITUTO DE PREVISIÓN SOCIAL',
-                'dependencia'            => 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS',
+                'institucion'            => $defaults['institucion'],
+                'dependencia'            => $defaults['dependencia'],
+                'logo_url'               => $defaults['logo_url'],
                 'lugar'                  => 'REUNIÓN VIRTUAL',
                 'fecha'                  => $task->fecha_inicio ?? now(),
                 'estado'                 => 'finalizada',
@@ -264,14 +279,16 @@ class ActaMecipController extends Controller
     {
         $task = ActivityTask::with('acta')->findOrFail($taskId);
         $acta = $task->acta;
+        $defaults = $this->resolveDefaultsForTask($task);
 
         if (!$acta) {
             $acta = ActivityTaskActa::create([
                 'activity_task_id' => $task->id,
                 'uuid'             => (string) Str::uuid(),
                 'numero_acta'      => 'Acta ' . $task->id . '/' . date('Y'),
-                'institucion'      => 'INSTITUTO DE PREVISIÓN SOCIAL',
-                'dependencia'      => 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS',
+                'institucion'      => $defaults['institucion'],
+                'dependencia'      => $defaults['dependencia'],
+                'logo_url'         => $defaults['logo_url'],
                 'lugar'            => 'REUNIÓN VIRTUAL',
                 'fecha'            => $task->fecha_inicio ?? now(),
                 'estado'           => 'borrador',

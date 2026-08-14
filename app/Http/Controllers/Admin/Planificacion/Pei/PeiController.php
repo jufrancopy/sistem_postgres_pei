@@ -1159,7 +1159,7 @@ class PeiController extends Controller
     }
 
     /**
-     * Actualiza las variables globales (parameters) del PEI.
+     * Actualiza las variables globales (parameters) del PEI e impacta en las Actas vinculadas.
      */
     public function updateParameters(Request $request, $id)
     {
@@ -1179,7 +1179,36 @@ class PeiController extends Controller
         
         $profile->parameters = json_encode($params);
         $profile->save();
-        
-        return redirect()->back()->with('success', 'Variables del plan actualizadas correctamente.');
+
+        // ── Sincronizar masivamente con todas las Actas MECIP del plan ──
+        try {
+            $allProfileIds = PeiProfile::whereIn('id', $profile->descendantsAndSelf($profile->id)->pluck('id'))->pluck('id')->toArray();
+            if (empty($allProfileIds)) $allProfileIds = [$profile->id];
+
+            $activityIds = \App\Admin\Globales\Activity::whereIn('pei_profile_id', $allProfileIds)->pluck('id')->toArray();
+            if (!empty($activityIds)) {
+                $taskIds = \App\Admin\Globales\ActivityTask::whereIn('activity_id', $activityIds)->pluck('id')->toArray();
+                if (!empty($taskIds)) {
+                    $updateActaData = [];
+                    if (!empty($params['acta_institucion'])) {
+                        $updateActaData['institucion'] = $params['acta_institucion'];
+                    }
+                    if (!empty($params['acta_dependencia'])) {
+                        $updateActaData['dependencia'] = $params['acta_dependencia'];
+                    }
+                    if (isset($params['acta_logo_url'])) {
+                        $updateActaData['logo_url'] = $params['acta_logo_url'];
+                    }
+
+                    if (!empty($updateActaData)) {
+                        \App\Admin\Globales\ActivityTaskActa::whereIn('activity_task_id', $taskIds)->update($updateActaData);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Error al sincronizar actas MECIP tras actualizar variables: ' . $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'Variables del plan y Actas de Reunión actualizadas correctamente.');
     }
 }

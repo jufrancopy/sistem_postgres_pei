@@ -128,7 +128,7 @@
             }
             
             $('#acta_institucion').val(a.institucion || 'INSTITUTO DE PREVISIÓN SOCIAL');
-            $('#acta_dependencia').val(a.dependencia || 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS');
+            $('#acta_dependencia').val(a.dependencia || 'DIRECCIÓN DE PLANIFICACIÓN');
             $('#acta_lugar').val(a.lugar || 'REUNIÓN VIRTUAL');
             $('#acta_fecha').val(a.fecha ? a.fecha.substring(0, 10) : '');
             $('#acta_hora_desde').val(a.hora_desde || '15:00');

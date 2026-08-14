@@ -321,7 +321,7 @@ $pctGlobal   = round(($completados / 6) * 100);
                         $params = json_decode($profile->parameters, true) ?? [];
                         $actaLogoUrl = $params['acta_logo_url'] ?? '';
                         $actaInstitucion = $params['acta_institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL';
-                        $actaDependencia = $params['acta_dependencia'] ?? 'CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS';
+                        $actaDependencia = $params['acta_dependencia'] ?? 'DIRECCIÓN DE PLANIFICACIÓN';
                     @endphp
                     
                     <div class="form-group mb-4">

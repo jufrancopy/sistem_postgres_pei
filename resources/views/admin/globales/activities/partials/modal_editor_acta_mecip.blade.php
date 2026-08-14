@@ -82,7 +82,7 @@
                                    style="font-size: 1.15rem; color: #0f172a; letter-spacing: 0.5px;">
 
                             <input type="text" class="form-control form-control-sm text-center font-weight-semibold border-0 bg-transparent p-0 mb-2 text-muted" 
-                                   id="acta_dependencia" name="dependencia" value="CENTRO DE ENSEÑANZA, DOCUMENTACIÓN Y ESTUDIOS DE LA SEGURIDAD SOCIAL - CEDESS"
+                                   id="acta_dependencia" name="dependencia" value="DIRECCIÓN DE PLANIFICACIÓN"
                                    style="font-size: 0.9rem; color: #475569;">
 
                             <h4 class="font-weight-bolder text-dark mb-0 text-uppercase" style="letter-spacing: 1px; font-size: 1.25rem;">
