@@ -28,35 +28,48 @@ class FodaCruceAmbienteController extends Controller
         // $idPerfil viene como parámetro de ruta (UUID del perfil consolidado)
         $perfil  = FodaPerfil::where('id', '=', $idPerfil)->first();
         $profile = $perfil; // alias que espera la vista crossing-environments
-        $matriz  = 0.17;
+        $matriz  = config('foda.umbral_matriz') ?? 0.17;
 
-        //Ambiente Interno - Debilidad
-        $debilidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
+        // Determinar si es perfil de tipo consolidado / grupal o si tiene group_id
+        $perfilIds = [$idPerfil];
+        if ($perfil && ($perfil->group_id || in_array($perfil->type, ['consolidado', 'grupal']))) {
+            $groupId = $perfil->group_id;
+            if ($groupId) {
+                $groups = Group::descendantsOf($groupId);
+                $groupIds = array_merge([$groupId], $groups->pluck('id')->toArray());
+                $subPerfilIds = FodaPerfil::whereIn('group_id', $groupIds)->pluck('id')->toArray();
+                if (!empty($subPerfilIds)) {
+                    $perfilIds = array_unique(array_merge($perfilIds, $subPerfilIds));
+                }
+            }
+        }
+
+        $allAnalisis = FodaAnalisis::with('aspecto')
+            ->whereIn('perfil_id', $perfilIds)
+            ->select(
+                DB::raw('planificacion.foda_analisis.*'),
+                DB::raw('(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz')
+            )
             ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
-            ->where('tipo', 'Debilidad')
+            ->whereIn('tipo', ['Debilidad', 'Fortaleza', 'Oportunidad', 'Amenaza'])
             ->get();
 
-        //Ambiente Interno - Fortaleza
-        $fortalezas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
-            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
-            ->where('tipo', 'Fortaleza')
-            ->get();
+        if ($allAnalisis->isNotEmpty() && count($perfilIds) > 1) {
+            $uniqueAspects = $allAnalisis->unique('aspecto_id')->map(function ($item) use ($allAnalisis) {
+                $maxScoreAspect = $allAnalisis->where('aspecto_id', $item->aspecto_id)->max('matriz');
+                return $allAnalisis->where('aspecto_id', $item->aspecto_id)->firstWhere('matriz', $maxScoreAspect);
+            })->filter();
 
-        //Ambiente Externo - Oportunidad
-        $oportunidades = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
-            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
-            ->where('tipo', 'Oportunidad')
-            ->get();
-
-        //Ambiente Externo - Amenaza
-        $amenazas = FodaAnalisis::where('perfil_id', '=', $idPerfil)
-            ->select(DB::raw('planificacion.foda_analisis.*,(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz'))
-            ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matriz")
-            ->where('tipo', 'Amenaza')
-            ->get();
+            $debilidades   = $uniqueAspects->where('tipo', 'Debilidad')->values();
+            $fortalezas    = $uniqueAspects->where('tipo', 'Fortaleza')->values();
+            $oportunidades = $uniqueAspects->where('tipo', 'Oportunidad')->values();
+            $amenazas      = $uniqueAspects->where('tipo', 'Amenaza')->values();
+        } else {
+            $debilidades   = $allAnalisis->where('tipo', 'Debilidad')->values();
+            $fortalezas    = $allAnalisis->where('tipo', 'Fortaleza')->values();
+            $oportunidades = $allAnalisis->where('tipo', 'Oportunidad')->values();
+            $amenazas      = $allAnalisis->where('tipo', 'Amenaza')->values();
+        }
 
         $FOs = FodaCruceAmbiente::with(['fortalezas','oportunidades'])->where('tipo', '=', 'FO')->where('perfil_id', '=', $idPerfil)->get();
         $DOs = FodaCruceAmbiente::with(['debilidades','oportunidades'])->where('tipo', '=', 'DO')->where('perfil_id', '=', $idPerfil)->get();

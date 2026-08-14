@@ -356,6 +356,100 @@
                                             </div>
                                             @endif
 
+                                            {{-- ── Aspectos del FODA - Priorizado ── --}}
+                                            @php
+                                                $totalFortalezas    = $fodaAspectosPriorizados['fortalezas']->count();
+                                                $totalDebilidades   = $fodaAspectosPriorizados['debilidades']->count();
+                                                $totalOportunidades = $fodaAspectosPriorizados['oportunidades']->count();
+                                                $totalAmenazas      = $fodaAspectosPriorizados['amenazas']->count();
+                                                $totalPriorizados   = $totalFortalezas + $totalDebilidades + $totalOportunidades + $totalAmenazas;
+                                            @endphp
+                                            <div class="mt-3 px-1 pt-2 border-top">
+                                                <div class="d-flex align-items-center mb-2 flex-wrap" style="gap:8px">
+                                                    <i class="fa fa-th-large text-warning mr-1"></i>
+                                                    <span class="font-weight-bold text-uppercase" style="font-size:.78rem; letter-spacing:.05em; color:#1e293b">
+                                                        Aspectos del FODA - Priorizado
+                                                    </span>
+                                                    @if($fodaPerfilVinculado)
+                                                    <span class="badge badge-success px-2 py-1" style="font-size:.68rem">
+                                                        <i class="fa fa-layer-group mr-1"></i>Perfil Consolidado: {{ $fodaPerfilVinculado->name }} ({{ $totalPriorizados }} aspectos)
+                                                    </span>
+                                                    @endif
+                                                    @if($fodaPerfilId)
+                                                    <button type="button" class="btn btn-xs btn-outline-warning font-weight-bold ml-auto btnVerFodaCrossing"
+                                                            data-url="{{ route('foda-cruce-ambientes', $fodaPerfilId) }}"
+                                                            data-name="{{ addslashes(strip_tags($profile->name)) }}"
+                                                            title="Ver Cruce de Ambientes">
+                                                        <i class="fa fa-random mr-1"></i>Ver Cruce de Ambientes
+                                                    </button>
+                                                    @endif
+                                                </div>
+
+                                                @if($totalPriorizados > 0)
+                                                <div class="row no-gutters p-2 rounded border" style="background:#f8fafc; gap:8px">
+                                                    {{-- Fortalezas --}}
+                                                    <div class="col p-2 rounded bg-white border" style="min-width: 180px;">
+                                                        <small class="font-weight-bold text-success text-uppercase d-block mb-1.5" style="font-size:.68rem; letter-spacing:.04em">
+                                                            <i class="fa fa-arrow-up mr-1"></i>Fortalezas ({{ $totalFortalezas }})
+                                                        </small>
+                                                        <div class="d-flex flex-wrap" style="gap:.25rem; max-height: 120px; overflow-y: auto;">
+                                                            @foreach($fodaAspectosPriorizados['fortalezas'] as $item)
+                                                            <span class="badge badge-success text-white" style="font-size:.65rem; font-weight:500; padding:.3em .5em" title="Puntaje: {{ number_format($item->matriz, 2) }}">
+                                                                <i class="fa fa-check mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
+                                                            </span>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- Debilidades --}}
+                                                    <div class="col p-2 rounded bg-white border" style="min-width: 180px;">
+                                                        <small class="font-weight-bold text-danger text-uppercase d-block mb-1.5" style="font-size:.68rem; letter-spacing:.04em">
+                                                            <i class="fa fa-arrow-down mr-1"></i>Debilidades ({{ $totalDebilidades }})
+                                                        </small>
+                                                        <div class="d-flex flex-wrap" style="gap:.25rem; max-height: 120px; overflow-y: auto;">
+                                                            @foreach($fodaAspectosPriorizados['debilidades'] as $item)
+                                                            <span class="badge badge-danger text-white" style="font-size:.65rem; font-weight:500; padding:.3em .5em" title="Puntaje: {{ number_format($item->matriz, 2) }}">
+                                                                <i class="fa fa-exclamation-circle mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
+                                                            </span>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- Oportunidades --}}
+                                                    <div class="col p-2 rounded bg-white border" style="min-width: 180px;">
+                                                        <small class="font-weight-bold text-info text-uppercase d-block mb-1.5" style="font-size:.68rem; letter-spacing:.04em">
+                                                            <i class="fa fa-star mr-1"></i>Oportunidades ({{ $totalOportunidades }})
+                                                        </small>
+                                                        <div class="d-flex flex-wrap" style="gap:.25rem; max-height: 120px; overflow-y: auto;">
+                                                            @foreach($fodaAspectosPriorizados['oportunidades'] as $item)
+                                                            <span class="badge badge-info text-white" style="font-size:.65rem; font-weight:500; padding:.3em .5em" title="Puntaje: {{ number_format($item->matriz, 2) }}">
+                                                                <i class="fa fa-star mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
+                                                            </span>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- Amenazas --}}
+                                                    <div class="col p-2 rounded bg-white border" style="min-width: 180px;">
+                                                        <small class="font-weight-bold text-warning text-dark text-uppercase d-block mb-1.5" style="font-size:.68rem; letter-spacing:.04em">
+                                                            <i class="fa fa-exclamation-triangle mr-1"></i>Amenazas ({{ $totalAmenazas }})
+                                                        </small>
+                                                        <div class="d-flex flex-wrap" style="gap:.25rem; max-height: 120px; overflow-y: auto;">
+                                                            @foreach($fodaAspectosPriorizados['amenazas'] as $item)
+                                                            <span class="badge badge-warning text-dark" style="font-size:.65rem; font-weight:500; padding:.3em .5em" title="Puntaje: {{ number_format($item->matriz, 2) }}">
+                                                                <i class="fa fa-bolt mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
+                                                            </span>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                @else
+                                                <div class="p-2 text-muted small bg-light rounded border">
+                                                    <i class="fa fa-info-circle mr-1 text-info"></i>Sin aspectos priorizados en el perfil FODA vinculado.
+                                                </div>
+                                                @endif
+                                            </div>
+
                                         </div>
                                     </div>
                                 </div>

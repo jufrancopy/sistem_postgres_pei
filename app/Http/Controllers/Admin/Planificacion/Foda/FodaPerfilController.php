@@ -29,10 +29,12 @@ class FodaPerfilController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = FodaPerfil::where('type', '!=', 'consolidado');
+            $query = FodaPerfil::query();
 
             if ($request->filled('type')) {
                 $query->where('type', $request->type);
+            } else {
+                $query->where('type', '!=', 'consolidado');
             }
 
             $data = $query->latest()->get();
@@ -40,9 +42,9 @@ class FodaPerfilController extends Controller
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('dependency', function (FodaPerfil $profile) {
-                    if ($profile->type === 'grupal') {
+                    if ($profile->type === 'grupal' || $profile->type === 'consolidado') {
                         return $profile->group
-                            ? '<span class="badge badge-info"><i class="fa fa-users mr-1"></i>' . $profile->group->name . '</span>'
+                            ? '<span class="badge badge-' . ($profile->type === 'consolidado' ? 'success' : 'info') . '"><i class="fa fa-' . ($profile->type === 'consolidado' ? 'layer-group' : 'users') . ' mr-1"></i>' . $profile->group->name . '</span>'
                             : '<span class="badge badge-secondary">Sin grupo</span>';
                     }
                     return $profile->dependency
@@ -50,7 +52,7 @@ class FodaPerfilController extends Controller
                         : '<span class="badge badge-secondary">—</span>';
                 })
                 ->addColumn('model', function (FodaPerfil $profile) {
-                    return $profile->model->name;
+                    return $profile->model ? $profile->model->name : '—';
                 })
                 ->addColumn('action', function ($row) {
                     $btn = '<a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-primary btn-circle editProfile" title="Editar"><i class="far fa-edit"></i></a>';
@@ -71,6 +73,14 @@ class FodaPerfilController extends Controller
 
                         $btn .= ' <a href="' . route('foda-analisis-matriz', $row->id) . '" class="btn btn-warning btn-circle" title="Mi Matriz FODA"><i class="fa fa-th"></i></a>';
 
+                    } elseif ($row->type === 'consolidado') {
+                        $groupRootId = $row->group_id;
+                        if ($groupRootId) {
+                            $btn .= ' <a href="' . route('foda-matriz-groups-crossing', $groupRootId) . '" class="btn btn-warning btn-circle" title="Ver Cruce de Ambientes Consolidado"><i class="fa fa-random"></i></a>';
+                            $btn .= ' <a href="' . route('foda-matriz-groups', $groupRootId) . '" class="btn btn-info btn-circle" title="Ver Matriz Consolidada"><i class="fa fa-layer-group"></i></a>';
+                        } else {
+                            $btn .= ' <a href="/foda-cruce-ambientes/' . $row->id . '" class="btn btn-warning btn-circle" title="Ver Cruce de Ambientes"><i class="fa fa-random"></i></a>';
+                        }
                     } else {
                         // Grupal → ver la matriz consolidada del grupo
                         $groupRootId = $row->group_id;

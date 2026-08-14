@@ -33,6 +33,12 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" id="tab-consolidado" data-toggle="tab" href="#panel-consolidado" role="tab">
+                    <i class="fa fa-layer-group mr-1"></i> Consolidados
+                    <span class="badge badge-light ml-1" id="count-consolidado">...</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" id="tab-individual" data-toggle="tab" href="#panel-individual" role="tab">
                     <i class="fa fa-user mr-1"></i> Individuales
                     <span class="badge badge-light ml-1" id="count-individual">...</span>
@@ -52,6 +58,25 @@
                                 <th>Nombre</th>
                                 <th>Contexto</th>
                                 <th>Grupo</th>
+                                <th>Modelo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- ── Tab Consolidado ── --}}
+            <div class="tab-pane fade" id="panel-consolidado" role="tabpanel">
+                <div class="table-responsive mt-2">
+                    <table class="table table-hover" id="table-consolidado">
+                        <thead class="text-success">
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>Contexto</th>
+                                <th>Grupo Consolidado</th>
                                 <th>Modelo</th>
                                 <th>Acciones</th>
                             </tr>
@@ -193,6 +218,28 @@ $(function () {
         }
     });
 
+    // ── DataTable Consolidado ─────────────────────────────────
+    var tableConsolidado = $('#table-consolidado').DataTable({
+        processing: true, serverSide: true,
+        dom: 'Bfrtip', buttons: dtButtons, language: dtLang,
+        autoWidth: false,
+        ajax: {
+            url: "{{ route('foda-perfiles.index') }}",
+            data: function(d) { d.type = 'consolidado'; }
+        },
+        columns: [
+            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+            { data: 'name', name: 'name' },
+            { data: 'context', name: 'context' },
+            { data: 'dependency', name: 'dependency' },
+            { data: 'model', name: 'model' },
+            { data: 'action', name: 'action', orderable: false, searchable: false },
+        ],
+        drawCallback: function(s) {
+            $('#count-consolidado').text(s.fnRecordsTotal());
+        }
+    });
+
     // ── DataTable Individual ──────────────────────────────────
     var tableIndividual = $('#table-individual').DataTable({
         processing: true, serverSide: true,
@@ -219,6 +266,8 @@ $(function () {
     $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
         if ($(e.target).attr('href') === '#panel-individual') {
             tableIndividual.columns.adjust().draw();
+        } else if ($(e.target).attr('href') === '#panel-consolidado') {
+            tableConsolidado.columns.adjust().draw();
         } else {
             tableGrupal.columns.adjust().draw();
         }

@@ -565,8 +565,56 @@ class PeiController extends Controller
         // Marco Estratégico Específico: marcos legales y oferta de servicios del perfil
         $meeMarcos  = \App\Models\Planificacion\MeeMarcoLegal::where('pei_profile_id', $id)
             ->orderBy('orden')->get();
-        $meeOfertas = \App\Models\Planificacion\MeeOfertaServicio::where('pei_profile_id', $id)
-            ->orderBy('orden')->get();
+        // Aspectos FODA Priorizados del Perfil FODA vinculado (Consolidado/Grupal/Individual)
+        $fodaPerfilId = $profile->foda_perfil_id;
+        $fodaAspectosPriorizados = [
+            'fortalezas'    => collect(),
+            'debilidades'   => collect(),
+            'oportunidades' => collect(),
+            'amenazas'      => collect(),
+        ];
+        $fodaPerfilVinculado = null;
+
+        if ($fodaPerfilId) {
+            $fodaPerfilVinculado = \App\Admin\Planificacion\Foda\FodaPerfil::find($fodaPerfilId);
+            if ($fodaPerfilVinculado) {
+                $perfilIds = [$fodaPerfilId];
+                if ($fodaPerfilVinculado->group_id || in_array($fodaPerfilVinculado->type, ['consolidado', 'grupal'])) {
+                    $groupId = $fodaPerfilVinculado->group_id;
+                    if ($groupId) {
+                        $groups = \App\Admin\Globales\Group::descendantsOf($groupId);
+                        $groupIds = array_merge([$groupId], $groups->pluck('id')->toArray());
+                        $subPerfilIds = \App\Admin\Planificacion\Foda\FodaPerfil::whereIn('group_id', $groupIds)->pluck('id')->toArray();
+                        if (!empty($subPerfilIds)) {
+                            $perfilIds = array_unique(array_merge($perfilIds, $subPerfilIds));
+                        }
+                    }
+                }
+
+                $matrizUmbral = config('foda.umbral_matriz') ?? 0.17;
+                $allAnalisis = \App\Admin\Planificacion\Foda\FodaAnalisis::with('aspecto')
+                    ->whereIn('perfil_id', $perfilIds)
+                    ->select(
+                        \DB::raw('planificacion.foda_analisis.*'),
+                        \DB::raw('(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) as matriz')
+                    )
+                    ->whereRaw("(planificacion.foda_analisis.ocurrencia * planificacion.foda_analisis.impacto) > $matrizUmbral")
+                    ->whereIn('tipo', ['Debilidad', 'Fortaleza', 'Oportunidad', 'Amenaza'])
+                    ->get();
+
+                if ($allAnalisis->isNotEmpty()) {
+                    $uniqueAspects = $allAnalisis->unique('aspecto_id')->map(function ($item) use ($allAnalisis) {
+                        $maxScoreAspect = $allAnalisis->where('aspecto_id', $item->aspecto_id)->max('matriz');
+                        return $allAnalisis->where('aspecto_id', $item->aspecto_id)->firstWhere('matriz', $maxScoreAspect);
+                    })->filter();
+
+                    $fodaAspectosPriorizados['fortalezas']    = $uniqueAspects->where('tipo', 'Fortaleza')->sortByDesc('matriz')->values();
+                    $fodaAspectosPriorizados['debilidades']   = $uniqueAspects->where('tipo', 'Debilidad')->sortByDesc('matriz')->values();
+                    $fodaAspectosPriorizados['oportunidades'] = $uniqueAspects->where('tipo', 'Oportunidad')->sortByDesc('matriz')->values();
+                    $fodaAspectosPriorizados['amenazas']      = $uniqueAspects->where('tipo', 'Amenaza')->sortByDesc('matriz')->values();
+                }
+            }
+        }
 
         if ($request->ajax()) {
             return response()->json(['profile' => $profile]);
