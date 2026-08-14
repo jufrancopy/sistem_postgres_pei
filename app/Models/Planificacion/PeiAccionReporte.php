@@ -70,29 +70,47 @@ class PeiAccionReporte extends Model
         $metaNumero = (float) preg_replace('/[^0-9.]/', '', $metaDelAnio['valor']);
 
         if ($metaNumero <= 0) {
-            $this->semaforo  = 'sin-datos';
+            $this->semaforo   = 'sin-datos';
             $this->pct_avance = null;
             if ($save) $this->save();
             return;
         }
 
-        $pct = round(($this->valor_numerador / $metaNumero) * 100, 2);
-        $this->pct_avance = $pct;
-
-        // Semáforo según sentido del indicador
+        // Semáforo y porcentaje de avance según sentido del indicador
         if ($indicador->sentido === 'descendente') {
-            // En descendente: lograr menos es mejor
-            // Si el valor logrado es <= meta, vamos bien
-            $ratio = $metaNumero > 0 ? ($this->valor_numerador / $metaNumero) : 1;
-            if ($ratio <= 0.85)       $this->semaforo = 'verde';
-            elseif ($ratio <= 1.0)    $this->semaforo = 'amarillo';
-            else                      $this->semaforo = 'rojo';
+            // En descendente (reducción): lograr menos que la línea base/meta es mejor
+            $lbValorRaw = $indicador->linea_base_valor;
+            $lbNumero   = ($lbValorRaw !== null && $lbValorRaw !== '') ? (float) preg_replace('/[^0-9.]/', '', $lbValorRaw) : null;
+
+            if ($lbNumero !== null && $lbNumero > $metaNumero) {
+                // Reducción planeada = LB - Meta
+                $reduccionPlaneada = $lbNumero - $metaNumero;
+                // Reducción lograda = LB - ValorReportado
+                $reduccionLograda  = $lbNumero - $this->valor_numerador;
+
+                $pct = round(($reduccionLograda / $reduccionPlaneada) * 100, 2);
+            } else {
+                // Sin línea base o LB <= Meta: si el valor logrado es <= meta, se cumplió al 100%
+                if ($this->valor_numerador <= $metaNumero) {
+                    $pct = 100.0;
+                } else {
+                    $pct = round(($metaNumero / $this->valor_numerador) * 100, 2);
+                }
+            }
         } else {
             // Ascendente: más es mejor
-            if ($pct >= 85)      $this->semaforo = 'verde';
-            elseif ($pct >= 50)  $this->semaforo = 'amarillo';
-            else                 $this->semaforo = 'rojo';
+            $pct = round(($this->valor_numerador / $metaNumero) * 100, 2);
         }
+
+        if ($pct < 0) {
+            $pct = 0.0;
+        }
+
+        $this->pct_avance = min($pct, 100.0);
+
+        if ($this->pct_avance >= 85)      $this->semaforo = 'verde';
+        elseif ($this->pct_avance >= 50)  $this->semaforo = 'amarillo';
+        else                              $this->semaforo = 'rojo';
 
         if ($save) $this->save();
     }
