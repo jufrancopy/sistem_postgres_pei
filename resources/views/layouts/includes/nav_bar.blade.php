@@ -81,6 +81,11 @@
             <a href="{{ route('user.profile') }}" class="dropdown-item px-3 py-2">
                 <i class="fa fa-award text-warning mr-2" style="width: 18px;"></i> Mi Perfil y Gamificación
             </a>
+            @hasrole('Administrador')
+            <a href="#" class="dropdown-item px-3 py-2 text-primary font-weight-bold" data-toggle="modal" data-target="#modalSimuladorRoles">
+                <i class="fa fa-user-secret text-primary mr-2" style="width: 18px;"></i> Ver como otro Usuario / Rol
+            </a>
+            @endhasrole
             @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista PEI|Analista de Planificación')
             <a href="#" class="dropdown-item px-3 py-2 text-danger font-weight-bold btn-trigger-diagnostico-global" onclick="event.preventDefault();">
                 <i class="fa fa-heartbeat text-danger mr-2" style="width: 18px;"></i> Respaldo & Diagnóstico DB
@@ -300,4 +305,80 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div>
+
+@hasrole('Administrador')
+{{-- ── Modal Simulador de Roles / Impersonación ── --}}
+<div class="modal fade" id="modalSimuladorRoles" tabindex="-1" role="dialog" aria-labelledby="modalSimuladorRolesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 540px;">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 14px; overflow: hidden;">
+            <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #1e293b, #334155);">
+                <h5 class="modal-title font-weight-bold text-white mb-0" id="modalSimuladorRolesLabel" style="font-size: 1.05rem;">
+                    <i class="fa fa-user-secret text-warning mr-2"></i> Modo Vista Previa por Rol / Usuario
+                </h5>
+                <button type="button" class="close text-white opacity-80" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-white">
+                <div class="alert alert-info border-0 shadow-sm mb-3 text-dark small" style="border-radius: 10px; background:#eff6ff;">
+                    <i class="fa fa-info-circle text-primary mr-1"></i> Seleccioná cualquier usuario para simular su interfaz, permisos y menús en tiempo real. Podrás volver a tu cuenta de Administrador en cualquier momento con un clic.
+                </div>
+                <div class="form-group mb-3">
+                    <label class="small font-weight-bold text-dark mb-1">Buscar Usuario por Nombre, Email o Rol</label>
+                    <select id="selectUserImpersonate" class="form-control" style="width: 100%;"></select>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-4">
+                <button type="button" class="btn btn-secondary btn-round px-3" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-info btn-round px-4 font-weight-bold" id="btnIniciarSimulacion">
+                    <i class="fa fa-eye mr-1"></i> Iniciar Vista Previa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var checkJq = setInterval(function() {
+        if (typeof $ === 'undefined') return;
+        clearInterval(checkJq);
+
+        $('#modalSimuladorRoles').on('shown.bs.modal', function () {
+            if ($('#selectUserImpersonate').data('select2')) return;
+            $('#selectUserImpersonate').select2({
+                placeholder: 'Escribí un nombre, correo o rol...',
+                allowClear: true,
+                dropdownParent: $('#modalSimuladorRoles'),
+                ajax: {
+                    url: "{{ route('impersonate.list-users') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) { return { q: params.term }; },
+                    processResults: function(data) {
+                        return {
+                            results: $.map(data, function(u) {
+                                return {
+                                    id: u.id,
+                                    text: u.name + ' — (' + u.roles + ')'
+                                };
+                            })
+                        };
+                    }
+                }
+            });
+        });
+
+        $('#btnIniciarSimulacion').click(function() {
+            var userId = $('#selectUserImpersonate').val();
+            if (!userId) {
+                if (typeof toastr !== 'undefined') toastr.warning('Seleccioná un usuario para simular vista.');
+                return;
+            }
+            window.location.href = "{{ url('impersonate/take') }}/" + userId;
+        });
+    }, 100);
+});
+</script>
+@endhasrole
 @endauth

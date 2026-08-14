@@ -28,11 +28,14 @@ class UserController extends Controller
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
+                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editUser"><i class="far fa-edit"></i></a>';
 
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editUser"><i class="far fa-edit"></i></a>';
-
-                    if (auth()->user()->hasRole('Administrador')) {
-                        $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteUser"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+                    if (auth()->user()->hasRole('Administrador') || session()->has('impersonator_id')) {
+                        if ($row->id !== auth()->id()) {
+                            $impUrl = route('impersonate.take', $row->id);
+                            $btn .= ' <a href="' . $impUrl . '" data-toggle="tooltip" title="Ver sistema como este usuario" class="btn btn-info btn-circle"><i class="fa fa-eye" aria-hidden="true"></i></a>';
+                        }
+                        $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteUser"><i class="fa fa-trash" aria-hidden="true"></i></a>';
                     }
 
                     return $btn;

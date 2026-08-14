@@ -48,7 +48,10 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
-        if ($exception instanceof \Illuminate\Session\TokenMismatchException) {
+        $isCsrfException = $exception instanceof \Illuminate\Session\TokenMismatchException
+            || ($exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException && $exception->getStatusCode() === 419);
+
+        if ($isCsrfException) {
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'message'  => 'Tu sesión ha expirado por inactividad. Redireccionando al inicio de sesión...',

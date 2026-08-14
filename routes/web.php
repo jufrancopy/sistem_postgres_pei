@@ -259,6 +259,11 @@ Route::group(['middleware' => ['auth']], function () {
             Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');
         });
 
+        // ── Impersonación de Usuarios / Vista Previa por Rol ──────────────────
+        Route::get('impersonate/take/{id}', 'Admin\ImpersonateController@take')->name('impersonate.take');
+        Route::get('impersonate/leave', 'Admin\ImpersonateController@leave')->name('impersonate.leave');
+        Route::get('impersonate/list-users', 'Admin\ImpersonateController@listUsers')->name('impersonate.list-users');
+
         // ── Show: Administrador + Gestor + Colaborador ───────────────────────
         Route::get('activities/{activity}', 'Admin\Globales\ActivityController@show')->name('activities.show');
 
