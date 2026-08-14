@@ -117,7 +117,7 @@
             <span class="font-weight-bold">Vista de Impresión Oficial MECIP - {{ $acta->numero_acta }}</span>
         </div>
         <div class="d-flex align-items-center" style="gap: 8px;">
-            <a href="{{ route('activities.acta-mecip.pdf', $task->id) }}" class="btn btn-sm btn-info font-weight-bold px-3 shadow-sm">
+            <a href="{{ route('globales.activities.acta-mecip.pdf', $task->id) }}" class="btn btn-sm btn-info font-weight-bold px-3 shadow-sm">
                 <i class="fa fa-file-pdf mr-1"></i> Descargar PDF Oficial
             </a>
             <button onclick="window.print()" class="btn btn-sm btn-success font-weight-bold px-4 shadow-sm">
