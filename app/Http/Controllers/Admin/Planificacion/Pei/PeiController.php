@@ -565,6 +565,8 @@ class PeiController extends Controller
         // Marco Estratégico Específico: marcos legales y oferta de servicios del perfil
         $meeMarcos  = \App\Models\Planificacion\MeeMarcoLegal::where('pei_profile_id', $id)
             ->orderBy('orden')->get();
+        $meeOfertas = \App\Models\Planificacion\MeeOfertaServicio::where('pei_profile_id', $id)
+            ->orderBy('orden')->get();
         // Aspectos FODA Priorizados del Perfil FODA vinculado (Consolidado/Grupal/Individual)
         $fodaPerfilId = $profile->foda_perfil_id;
         $fodaAspectosPriorizados = [
