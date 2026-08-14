@@ -527,35 +527,32 @@
             border-radius: 12px 12px 12px 2px;
         }
 
-        /* Animación de destello al hacer clic en Cita (Contorno Verdoso Suave que Desaparece) */
-        @keyframes messageHighlightPulse {
+        /* Animación de Destello Verdoso Nítido para Citas Referenciadas */
+        @keyframes messageHighlightGreen {
             0% {
-                box-shadow: 0 0 0 3px #10b981, 0 0 16px rgba(16, 185, 129, 0.45) !important;
-                outline: 2px solid #34d399 !important;
-                outline-offset: 2px;
-                background-color: #ecfdf5 !important;
-                color: #064e3b !important;
-                transform: scale(1.02);
+                background: #d1fae5 !important;
+                color: #065f46 !important;
+                border: 3px solid #059669 !important;
+                box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.4), 0 0 25px rgba(16, 185, 129, 0.6) !important;
+                transform: scale(1.04);
             }
             40% {
-                box-shadow: 0 0 0 3px #10b981, 0 0 18px rgba(16, 185, 129, 0.5) !important;
-                outline: 2px solid #34d399 !important;
-                outline-offset: 2px;
-                background-color: #ecfdf5 !important;
-                color: #064e3b !important;
-                transform: scale(1.02);
+                background: #d1fae5 !important;
+                color: #065f46 !important;
+                border: 3px solid #059669 !important;
+                box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.4), 0 0 25px rgba(16, 185, 129, 0.6) !important;
+                transform: scale(1.04);
             }
             100% {
-                box-shadow: none !important;
-                outline: none !important;
                 transform: scale(1);
             }
         }
-        .highlight-message .msg-bubble {
-            animation: messageHighlightPulse 2.5s ease-out !important;
-            border-radius: 14px !important;
-            position: relative;
-            z-index: 10;
+        .highlight-message,
+        .highlight-message .msg-bubble,
+        .highlight-message.msg-bubble {
+            animation: messageHighlightGreen 2.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
+            position: relative !important;
+            z-index: 99 !important;
         }
 
         .msg-bubble-line {
@@ -1458,11 +1455,19 @@
                 const body = document.getElementById('peiChatMessagesBody');
                 if (target && body) {
                     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const bubble = target.querySelector('.msg-bubble');
+                    
                     target.classList.remove('highlight-message');
+                    if (bubble) bubble.classList.remove('highlight-message');
+                    
                     void target.offsetWidth; // trigger reflow
+                    
                     target.classList.add('highlight-message');
+                    if (bubble) bubble.classList.add('highlight-message');
+
                     setTimeout(() => {
                         target.classList.remove('highlight-message');
+                        if (bubble) bubble.classList.remove('highlight-message');
                     }, 2500);
                 }
             };
