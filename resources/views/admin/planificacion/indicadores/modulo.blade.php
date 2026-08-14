@@ -291,11 +291,8 @@ $(function() {
         $('#ind_descripcion,#ind_variables,#ind_formula,#ind_unidad_medida').val('');
         $('#ind_frecuencia_otro,#ind_linea_base_anio,#ind_linea_base_valor').val('');
         $('#ind_fuente,#ind_dependencia_responsable,#ind_comentarios').val('');
-        $('[name^="ind_"]').filter(':radio').prop('checked', false);
-        $('.ind-radio-card').each(function() {
-            var color = $(this).data('color') || 'secondary';
-            $(this).removeClass('ind-selected-' + color);
-        });
+        $('#container_frecuencia_otro').hide();
+        $('.modal-select2').val('').trigger('change');
         $('#metasContainer').empty();
         _metaIndex = 0;
     }
@@ -307,10 +304,20 @@ $(function() {
         $('#ind_nombre').val(ind.nombre);
         $('#ind_codigo_letras').val(ind.codigo_letras);
         $('#ind_codigo_numeros').val(ind.codigo_numeros);
-        $.each(['dimension','ambito','frecuencia','cobertura','sentido'], function(i, c) {
-            $('input[name="ind_' + c + '"][value="' + ind[c] + '"]').prop('checked', true).trigger('change');
-        });
-        if (ind.frecuencia === 'otro') $('#ind_frecuencia_otro').val(ind.frecuencia_otro);
+
+        $('#form_ind_dimension').val(ind.dimension).trigger('change');
+        $('#form_ind_ambito').val(ind.ambito).trigger('change');
+        $('#form_ind_frecuencia').val(ind.frecuencia).trigger('change');
+        $('#form_ind_cobertura').val(ind.cobertura).trigger('change');
+        $('#form_ind_sentido').val(ind.sentido).trigger('change');
+
+        if (ind.frecuencia === 'otro') {
+            $('#ind_frecuencia_otro').val(ind.frecuencia_otro);
+            $('#container_frecuencia_otro').show();
+        } else {
+            $('#container_frecuencia_otro').hide();
+        }
+
         $('#ind_descripcion').val(ind.descripcion);
         $('#ind_variables').val(ind.variables);
         $('#ind_formula').val(ind.formula);
@@ -377,30 +384,33 @@ $(function() {
             title: '¿Eliminar indicador?',
             html: '<strong>' + nombre + '</strong><br><small class="text-muted">Si está asignado a acciones, se desvinculará.</small>',
             icon: 'warning', showCancelButton: true,
-            confirmButtonColor: '#d33', cancelButtonColor: '#6c757d',
             confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar',
-        }).then(function(r) {
-            if (!r.isConfirmed) return;
-            $.ajax({
-                url: '{{ url("pei-profiles") }}/' + _profileId + '/indicadores/' + id,
-                type: 'DELETE',
-                success: function() {
-                    toastr.success('Indicador eliminado.');
-                    dt.row('#ind-row-' + id).remove().draw();
-                    _indicadoresData = _indicadoresData.filter(i => i.id != id);
-                }
-            });
+            confirmButtonColor: '#dc3545',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '{{ url("pei-profiles") }}/' + _profileId + '/indicadores/' + id,
+                    type: 'DELETE',
+                    success: function() {
+                        toastr.success('Indicador eliminado.');
+                        $('#ind-row-' + id).fadeOut(400, function() { $(this).remove(); });
+                    },
+                    error: function(xhr) {
+                        toastr.error(xhr.responseJSON?.message || 'Error al eliminar.');
+                    }
+                });
+            }
         });
     });
 
     // ── Guardar ──
     $('#btnGuardarIndicador').on('click', function() {
         var nombre = $.trim($('#ind_nombre').val());
-        var dim    = $('input[name="ind_dimension"]:checked').val();
-        var amb    = $('input[name="ind_ambito"]:checked').val();
-        var frec   = $('input[name="ind_frecuencia"]:checked').val();
-        var cob    = $('input[name="ind_cobertura"]:checked').val();
-        var sent   = $('input[name="ind_sentido"]:checked').val();
+        var dim    = $('#form_ind_dimension').val();
+        var amb    = $('#form_ind_ambito').val();
+        var frec   = $('#form_ind_frecuencia').val();
+        var cob    = $('#form_ind_cobertura').val();
+        var sent   = $('#form_ind_sentido').val();
 
         if (!nombre) { toastr.warning('El nombre es obligatorio.'); return; }
         if (!dim)    { toastr.warning('Seleccioná la dimensión.'); return; }

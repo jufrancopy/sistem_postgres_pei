@@ -51,103 +51,63 @@
                         {{-- 3. Dimensión --}}
                         <div class="mb-3">
                             <label class="ind-label"><span class="ind-num">3</span> Dimensión <span class="text-danger">*</span></label>
-                            <div class="row no-gutters" style="gap:0">
-                                @foreach(['eficiencia'=>['Eficiencia','primary'],'eficacia'=>['Eficacia','success'],'calidad'=>['Calidad','info'],'economia'=>['Economía','warning']] as $val => $cfg)
-                                <div class="col-6 pr-1 pb-1">
-                                    <label class="ind-radio-card w-100 mb-0" data-color="{{ $cfg[1] }}">
-                                        <input type="radio" name="ind_dimension" value="{{ $val }}" class="ind-radio d-none">
-                                        <span class="ind-card-inner d-flex align-items-center justify-content-center rounded" style="padding:.45rem;font-size:.83rem;border:2px solid #dee2e6;text-align:center">
-                                            {{ $cfg[0] }}
-                                        </span>
-                                    </label>
-                                </div>
-                                @endforeach
-                            </div>
+                            <select id="form_ind_dimension" name="ind_dimension" class="form-control form-control-sm modal-select2">
+                                <option value="">Seleccionar Dimensión...</option>
+                                <option value="eficiencia">⚡ Eficiencia</option>
+                                <option value="eficacia">🎯 Eficacia</option>
+                                <option value="calidad">💎 Calidad</option>
+                                <option value="economia">💰 Economía</option>
+                            </select>
                         </div>
 
                         {{-- 4. Ámbito --}}
                         <div class="mb-3">
                             <label class="ind-label"><span class="ind-num">4</span> Ámbito <span class="text-danger">*</span></label>
-                            <div class="row no-gutters">
-                                @foreach(['objetivo_estrategico'=>'Obj. Estratégico','objetivo_especifico'=>'Obj. Específico','accion_estrategica'=>'Acc. Estratégica','accion_operativa'=>'Acc. Operativa'] as $val => $lbl)
-                                <div class="col-6 pr-1 pb-1">
-                                    <label class="ind-radio-card w-100 mb-0" data-color="dark">
-                                        <input type="radio" name="ind_ambito" value="{{ $val }}" class="ind-radio d-none">
-                                        <span class="ind-card-inner d-flex align-items-center justify-content-center rounded" style="padding:.45rem;font-size:.8rem;border:2px solid #dee2e6;text-align:center">
-                                            {{ $lbl }}
-                                        </span>
-                                    </label>
-                                </div>
-                                @endforeach
-                            </div>
+                            <select id="form_ind_ambito" name="ind_ambito" class="form-control form-control-sm modal-select2">
+                                <option value="">Seleccionar Ámbito...</option>
+                                <option value="objetivo_estrategico">📌 Objetivo Estratégico</option>
+                                <option value="objetivo_especifico">🎯 Objetivo Específico</option>
+                                <option value="accion_estrategica">⚡ Acción Estratégica</option>
+                                <option value="accion_operativa">🛠️ Acción Operativa</option>
+                            </select>
                         </div>
 
                         {{-- 9. Frecuencia --}}
                         <div class="mb-3">
                             <label class="ind-label"><span class="ind-num">9</span> Frecuencia <span class="text-danger">*</span></label>
-                            <div class="row no-gutters">
-                                @foreach(['mensual'=>'Mensual','trimestral'=>'Trimestral','semestral'=>'Semestral','anual'=>'Anual'] as $val => $lbl)
-                                <div class="col-6 pr-1 pb-1">
-                                    <label class="ind-radio-card w-100 mb-0" data-color="secondary">
-                                        <input type="radio" name="ind_frecuencia" value="{{ $val }}" class="ind-radio d-none">
-                                        <span class="ind-card-inner d-flex align-items-center justify-content-center rounded" style="padding:.4rem;font-size:.82rem;border:2px solid #dee2e6;text-align:center">
-                                            {{ $lbl }}
-                                        </span>
-                                    </label>
-                                </div>
-                                @endforeach
-                                <div class="col-12 pr-1 pb-1">
-                                    <label class="ind-radio-card w-100 mb-0" data-color="secondary">
-                                        <input type="radio" name="ind_frecuencia" value="otro" class="ind-radio d-none">
-                                        <span class="ind-card-inner d-flex align-items-center rounded" style="padding:.4rem;font-size:.82rem;border:2px solid #dee2e6;gap:.4rem">
-                                            <span style="white-space:nowrap">Otro:</span>
-                                            <input type="text" id="ind_frecuencia_otro" class="form-control form-control-sm" placeholder="Especificar" style="flex:1">
-                                        </span>
-                                    </label>
-                                </div>
+                            <select id="form_ind_frecuencia" name="ind_frecuencia" class="form-control form-control-sm modal-select2">
+                                <option value="">Seleccionar Frecuencia...</option>
+                                <option value="mensual">📅 Mensual</option>
+                                <option value="trimestral">📊 Trimestral</option>
+                                <option value="semestral">📈 Semestral</option>
+                                <option value="anual">🗓️ Anual</option>
+                                <option value="otro">✏️ Otro (Especificar...)</option>
+                            </select>
+                            <div id="container_frecuencia_otro" class="mt-2" style="display:none;">
+                                <input type="text" id="ind_frecuencia_otro" class="form-control form-control-sm" placeholder="Especificar frecuencia personalizada...">
                             </div>
                         </div>
 
                         {{-- 10. Cobertura --}}
                         <div class="mb-3">
                             <label class="ind-label"><span class="ind-num">10</span> Cobertura Geográfica <span class="text-danger">*</span></label>
-                            <div class="row no-gutters">
-                                @foreach(['nacional'=>'Nacional','regional'=>'Regional','departamental'=>'Departamental','municipal'=>'Municipal'] as $val => $lbl)
-                                <div class="col-6 pr-1 pb-1">
-                                    <label class="ind-radio-card w-100 mb-0" data-color="teal">
-                                        <input type="radio" name="ind_cobertura" value="{{ $val }}" class="ind-radio d-none">
-                                        <span class="ind-card-inner d-flex align-items-center justify-content-center rounded" style="padding:.4rem;font-size:.82rem;border:2px solid #dee2e6;text-align:center">
-                                            {{ $lbl }}
-                                        </span>
-                                    </label>
-                                </div>
-                                @endforeach
-                            </div>
+                            <select id="form_ind_cobertura" name="ind_cobertura" class="form-control form-control-sm modal-select2">
+                                <option value="">Seleccionar Cobertura...</option>
+                                <option value="nacional">🇵🇾 Nacional</option>
+                                <option value="regional">🏛️ Regional</option>
+                                <option value="departamental">🗺️ Departamental</option>
+                                <option value="municipal">🏡 Municipal</option>
+                            </select>
                         </div>
 
                         {{-- 11. Sentido --}}
                         <div class="mb-3">
                             <label class="ind-label"><span class="ind-num">11</span> Sentido del Indicador <span class="text-danger">*</span></label>
-                            <div class="row no-gutters">
-                                <div class="col-6 pr-1">
-                                    <label class="ind-radio-card w-100 mb-0" data-color="success">
-                                        <input type="radio" name="ind_sentido" value="ascendente" class="ind-radio d-none">
-                                        <span class="ind-card-inner d-flex align-items-center justify-content-center rounded" style="padding:.5rem;font-size:.85rem;border:2px solid #dee2e6;gap:.3rem">
-                                            <span class="text-success font-weight-bold">▲</span> Ascendente
-                                        </span>
-                                    </label>
-                                    <small class="text-muted d-block text-center mt-1" style="font-size:.68rem">más es mejor</small>
-                                </div>
-                                <div class="col-6 pr-1">
-                                    <label class="ind-radio-card w-100 mb-0" data-color="danger">
-                                        <input type="radio" name="ind_sentido" value="descendente" class="ind-radio d-none">
-                                        <span class="ind-card-inner d-flex align-items-center justify-content-center rounded" style="padding:.5rem;font-size:.85rem;border:2px solid #dee2e6;gap:.3rem">
-                                            <span class="text-danger font-weight-bold">▼</span> Descendente
-                                        </span>
-                                    </label>
-                                    <small class="text-muted d-block text-center mt-1" style="font-size:.68rem">menos es mejor</small>
-                                </div>
-                            </div>
+                            <select id="form_ind_sentido" name="ind_sentido" class="form-control form-control-sm modal-select2">
+                                <option value="">Seleccionar Sentido...</option>
+                                <option value="ascendente">▲ Ascendente (más es mejor)</option>
+                                <option value="descendente">▼ Descendente (menos es mejor)</option>
+                            </select>
                         </div>
 
                         {{-- 12. Línea de base --}}
