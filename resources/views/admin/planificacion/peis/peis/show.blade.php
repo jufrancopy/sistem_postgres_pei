@@ -2379,24 +2379,55 @@
                     });
                 }
 
+                function extraerNumeroLimpioJS(texto) {
+                    if (!texto) return null;
+                    var str = String(texto);
+                    if (str.indexOf(':') !== -1) {
+                        var parts = str.split(':');
+                        str = parts[parts.length - 1];
+                    }
+                    var match = str.match(/[0-9]+(?:\.[0-9]+)?/);
+                    return match ? parseFloat(match[0]) : null;
+                }
+
                 function calcularSemaforoPrev(valor, indicador) {
-                    if (!valor || !indicador || !indicador.metas) return null;
+                    if (valor === null || valor === undefined || isNaN(valor) || !indicador || !indicador.metas) return null;
                     var anio  = new Date().getFullYear();
                     var metas = indicador.metas;
                     var meta  = metas.find(function(m) { return m.anio == anio; });
                     if (!meta) meta = metas.sort(function(a,b) { return a.anio - b.anio; }).find(function(m) { return m.anio >= anio; });
-                    if (!meta) return null;
-                    var metaNum = parseFloat(String(meta.valor).replace(/[^0-9.]/g,''));
-                    if (!metaNum) return null;
-                    var pct = (valor / metaNum) * 100;
-                    var semaforo;
+                    if (!meta || !meta.valor) return null;
+                    
+                    var metaNum = extraerNumeroLimpioJS(meta.valor);
+                    if (!metaNum || metaNum <= 0) return null;
+
+                    var lbNum = extraerNumeroLimpioJS(indicador.linea_base_valor);
+                    var pct, semaforo;
+
                     if (indicador.sentido === 'descendente') {
-                        var ratio = valor / metaNum;
-                        semaforo = ratio <= 0.85 ? 'verde' : (ratio <= 1.0 ? 'amarillo' : 'rojo');
+                        if (lbNum !== null && lbNum > metaNum) {
+                            var redPlaneada = lbNum - metaNum;
+                            var redLograda  = lbNum - valor;
+                            pct = (redLograda / redPlaneada) * 100;
+                        } else {
+                            if (valor <= metaNum) {
+                                pct = 100.0;
+                            } else {
+                                pct = (metaNum / valor) * 100;
+                            }
+                        }
                     } else {
-                        semaforo = pct >= 85 ? 'verde' : (pct >= 50 ? 'amarillo' : 'rojo');
+                        pct = (valor / metaNum) * 100;
                     }
-                    return { semaforo: semaforo, pct: Math.round(pct * 100) / 100, metaLabel: meta.valor };
+
+                    if (pct < 0) pct = 0;
+                    pct = Math.min(Math.round(pct * 100) / 100, 100.0);
+
+                    if (pct >= 85)      semaforo = 'verde';
+                    else if (pct >= 50) semaforo = 'amarillo';
+                    else                semaforo = 'rojo';
+
+                    return { semaforo: semaforo, pct: pct, metaLabel: meta.valor };
                 }
 
                 $('body').on('click', '.reportProgress', function() {

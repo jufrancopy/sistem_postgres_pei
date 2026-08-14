@@ -34,6 +34,20 @@ class PeiAccionReporte extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public static function extraerNumeroLimpio(?string $texto): ?float
+    {
+        if (empty($texto)) return null;
+        $str = (string) $texto;
+        if (strpos($str, ':') !== false) {
+            $parts = explode(':', $str);
+            $str = end($parts);
+        }
+        if (preg_match('/[0-9]+(?:\.[0-9]+)?/', $str, $matches)) {
+            return (float) $matches[0];
+        }
+        return null;
+    }
+
     /**
      * Calcula el semáforo y el % de avance dado el indicador de la acción.
      * Actualiza los campos y guarda si se pasa $save=true.
@@ -41,7 +55,7 @@ class PeiAccionReporte extends Model
     public function calcularSemaforo(Indicador $indicador, bool $save = false): void
     {
         if ($this->valor_numerador === null || !$indicador->metas) {
-            $this->semaforo  = 'sin-datos';
+            $this->semaforo   = 'sin-datos';
             $this->pct_avance = null;
             if ($save) $this->save();
             return;
@@ -59,17 +73,17 @@ class PeiAccionReporte extends Model
                 ->first(fn($m) => $m['anio'] >= $anioReporte);
         }
 
-        if (!$metaDelAnio || !$metaDelAnio['valor']) {
-            $this->semaforo  = 'sin-datos';
+        if (!$metaDelAnio || empty($metaDelAnio['valor'])) {
+            $this->semaforo   = 'sin-datos';
             $this->pct_avance = null;
             if ($save) $this->save();
             return;
         }
 
-        // Extraer el valor numérico de la meta (puede ser "85%", "Reducir 5%", "1200", etc.)
-        $metaNumero = (float) preg_replace('/[^0-9.]/', '', $metaDelAnio['valor']);
+        // Extraer el valor numérico limpio de la meta
+        $metaNumero = self::extraerNumeroLimpio($metaDelAnio['valor']);
 
-        if ($metaNumero <= 0) {
+        if (!$metaNumero || $metaNumero <= 0) {
             $this->semaforo   = 'sin-datos';
             $this->pct_avance = null;
             if ($save) $this->save();
@@ -79,8 +93,7 @@ class PeiAccionReporte extends Model
         // Semáforo y porcentaje de avance según sentido del indicador
         if ($indicador->sentido === 'descendente') {
             // En descendente (reducción): lograr menos que la línea base/meta es mejor
-            $lbValorRaw = $indicador->linea_base_valor;
-            $lbNumero   = ($lbValorRaw !== null && $lbValorRaw !== '') ? (float) preg_replace('/[^0-9.]/', '', $lbValorRaw) : null;
+            $lbNumero = self::extraerNumeroLimpio($indicador->linea_base_valor);
 
             if ($lbNumero !== null && $lbNumero > $metaNumero) {
                 // Reducción planeada = LB - Meta
