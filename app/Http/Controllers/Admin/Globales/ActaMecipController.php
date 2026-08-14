@@ -371,6 +371,18 @@ class ActaMecipController extends Controller
             abort(404, 'No se ha redactado el acta para esta reunión.');
         }
 
+        // Resolver variables globales de la institución/dependencia desde el PEI o fallback
+        $defaults = $this->resolveDefaultsForTask($task);
+        if (!empty($defaults['institucion'])) {
+            $acta->institucion = $defaults['institucion'];
+        }
+        if (!empty($defaults['dependencia'])) {
+            $acta->dependencia = $defaults['dependencia'];
+        }
+        if (!empty($defaults['logo_url'])) {
+            $acta->logo_url = $defaults['logo_url'];
+        }
+
         $publicUrl = route('actas.public.show', $acta->uuid);
         $qrSvg     = (string) QrCode::size(140)->margin(1)->generate($publicUrl);
 
@@ -385,6 +397,14 @@ class ActaMecipController extends Controller
         $acta = ActivityTaskActa::with(['task.activity', 'participantes'])->where('uuid', $token)->firstOrFail();
         $task = $acta->task;
 
+        $defaults = $this->resolveDefaultsForTask($task);
+        if (!empty($defaults['institucion'])) {
+            $acta->institucion = $defaults['institucion'];
+        }
+        if (!empty($defaults['dependencia'])) {
+            $acta->dependencia = $defaults['dependencia'];
+        }
+
         $publicUrl = route('actas.public.show', $acta->uuid);
         $qrSvg     = (string) QrCode::size(160)->margin(1)->generate($publicUrl);
 
@@ -397,16 +417,7 @@ class ActaMecipController extends Controller
             });
         }
 
-        $logoUrl = $acta->logo_url;
-        if (empty($logoUrl)) {
-            $peiProfile = $task->activity?->peiProfile;
-            if ($peiProfile && $peiProfile->parameters) {
-                $params = json_decode($peiProfile->parameters, true);
-                if (!empty($params['acta_logo_url'])) {
-                    $logoUrl = $params['acta_logo_url'];
-                }
-            }
-        }
+        $logoUrl = !empty($acta->logo_url) ? $acta->logo_url : $defaults['logo_url'];
 
         return view('public.actas.show', compact('acta', 'task', 'publicUrl', 'qrSvg', 'yaFirmo', 'logoUrl'));
     }
