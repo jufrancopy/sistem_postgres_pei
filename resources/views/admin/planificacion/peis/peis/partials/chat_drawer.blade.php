@@ -1566,9 +1566,13 @@
 
                 // Cita / Mensaje Padre Referenciado
                 if (msg.parent) {
-                    html += `<div class="msg-reply-ref mb-1 w-100" style="max-width: 100%; min-width: 0; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" onclick="scrollToChatMessage('${msg.parent.id}')" title="Clic para ver mensaje original">
-                                <i class="fas fa-reply text-indigo mr-1" style="font-size:10px;"></i>
-                                <strong>${msg.parent.user_name}</strong>: ${msg.parent.message}
+                    const parentText = msg.parent.message ? msg.parent.message.replace(/<[^>]*>?/gm, '') : '';
+                    html += `<div class="msg-reply-ref mb-1" style="max-width: 100%; min-width: 0; box-sizing: border-box; overflow: hidden; border-radius: 8px;" onclick="scrollToChatMessage('${msg.parent.id}')" title="Clic para ver mensaje original: ${msg.parent.user_name}: ${parentText}">
+                                <div class="d-flex align-items-center" style="min-width: 0; width: 100%; overflow: hidden;">
+                                    <i class="fas fa-reply text-indigo mr-1 flex-shrink-0" style="font-size: 10px;"></i>
+                                    <strong class="mr-1 flex-shrink-0" style="font-size: 11px; white-space: nowrap;">${msg.parent.user_name}:</strong>
+                                    <span class="text-truncate" style="font-size: 11px; min-width: 0; flex: 1 1 0%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${parentText}</span>
+                                </div>
                              </div>`;
                 }
 
