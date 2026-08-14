@@ -471,22 +471,31 @@
             color: #4e73df;
         }
         .msg-reply-ref {
-            background: rgba(0,0,0,0.05);
-            border-left: 3px solid #6366f1;
-            padding: 4px 8px;
+            background: #f1f5f9;
+            border-left: 4px solid #6366f1;
+            color: #1e293b !important;
+            padding: 5px 10px;
             margin-bottom: 4px;
             font-size: 11px;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.15s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
         }
         .msg-reply-ref:hover {
-            background: rgba(99, 102, 241, 0.12);
+            background: #e2e8f0;
+            border-left-color: #4f46e5;
+        }
+        .msg-reply-ref strong {
+            color: #4338ca !important;
         }
         .msg-bubble-container.mine .msg-reply-ref {
-            background: rgba(255, 255, 255, 0.2);
-            border-left-color: #fde047;
-            color: #ffffff;
+            background: #f1f5f9;
+            border-left-color: #eab308;
+            color: #0f172a !important;
+        }
+        .msg-bubble-container.mine .msg-reply-ref strong {
+            color: #854d0e !important;
         }
         .msg-attachment-item {
             display: inline-block;
