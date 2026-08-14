@@ -5,31 +5,31 @@
     <title>Acta de Reunión MECIP - {{ $acta->numero_acta ?? 'IPS' }}</title>
     <style>
         @page {
-            margin: 15mm 15mm 15mm 15mm;
+            margin: 12mm 12mm 12mm 12mm;
         }
         body {
             font-family: Helvetica, Arial, sans-serif;
-            font-size: 10pt;
-            line-height: 1.4;
+            font-size: 9.5pt;
+            line-height: 1.35;
             color: #000000;
         }
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .header-table td {
-            vertical-align: top;
+            vertical-align: middle;
         }
         .title-institucion {
-            font-size: 13pt;
+            font-size: 12.5pt;
             font-weight: bold;
             text-transform: uppercase;
             text-align: center;
             margin-bottom: 2px;
         }
         .title-dependencia {
-            font-size: 9.5pt;
+            font-size: 9pt;
             font-weight: bold;
             text-transform: uppercase;
             text-align: center;
@@ -37,7 +37,7 @@
             margin-bottom: 4px;
         }
         .title-acta {
-            font-size: 13pt;
+            font-size: 12.5pt;
             font-weight: bold;
             text-transform: uppercase;
             text-align: center;
@@ -46,12 +46,12 @@
         .table-mecip {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .table-mecip th, .table-mecip td {
             border: 1px solid #000000;
-            padding: 5px 7px;
-            font-size: 9.5pt;
+            padding: 5px 6px;
+            font-size: 9pt;
         }
         .table-mecip th {
             background-color: #f2f2f2;
@@ -59,31 +59,24 @@
         }
         .section-title {
             font-weight: bold;
-            font-size: 10.5pt;
+            font-size: 10pt;
             text-transform: uppercase;
-            margin-top: 14px;
+            margin-top: 12px;
             margin-bottom: 4px;
             text-decoration: underline;
         }
         .content-block {
             text-align: justify;
             white-space: pre-wrap;
-            font-size: 10pt;
+            font-size: 9.5pt;
             line-height: 1.4;
             margin-bottom: 10px;
-        }
-        .firma-box {
-            border: 1px solid #cccccc;
-            padding: 8px;
-            text-align: center;
-            background: #fafafa;
-            border-radius: 4px;
         }
     </style>
 </head>
 <body>
 
-    {{-- Encabezado --}}
+    {{-- Encabezado Institucional --}}
     <table class="header-table">
         <tr>
             <td style="width: 25%;">
@@ -100,7 +93,7 @@
             </td>
             <td style="width: 25%; text-align: right;">
                 @if(!empty($qrBase64))
-                    <img src="{{ $qrBase64 }}" style="width: 75px; height: 75px;">
+                    <img src="{{ $qrBase64 }}" style="width: 70px; height: 70px;">
                 @endif
             </td>
         </tr>
@@ -109,12 +102,12 @@
     {{-- Tabla de Metadatos --}}
     <table class="table-mecip">
         <tr>
-            <td style="width: 20%; font-weight: bold; background: #f2f2f2;">LUGAR:</td>
+            <td style="width: 18%; font-weight: bold; background: #f2f2f2;">LUGAR:</td>
             <td colspan="3">{{ $acta->lugar ?? 'REUNIÓN VIRTUAL' }}</td>
         </tr>
         <tr>
             <td style="font-weight: bold; background: #f2f2f2;">FECHA:</td>
-            <td style="width: 30%;">{{ $acta->fecha ? \Carbon\Carbon::parse($acta->fecha)->format('d/m/Y') : '' }}</td>
+            <td style="width: 32%;">{{ $acta->fecha ? \Carbon\Carbon::parse($acta->fecha)->format('d/m/Y') : '' }}</td>
             <td style="font-weight: bold; background: #f2f2f2; width: 15%;">HORA:</td>
             <td>Desde: {{ $acta->hora_desde }} &nbsp;&nbsp; Hasta: {{ $acta->hora_hasta }}</td>
         </tr>
@@ -143,38 +136,58 @@
         <div class="content-block">{!! nl2br(e($acta->acuerdos)) !!}</div>
     @endif
 
-    {{-- Participantes y Firmas --}}
+    {{-- TABLA DE PARTICIPANTES Y FIRMAS DIGITALES --}}
     @if($acta->participantes->count() > 0)
-        <div class="section-title" style="margin-top: 20px;">PARTICIPANTES Y ASISTENCIA REGISTRADA:</div>
-        <table class="table-mecip">
+        <div class="section-title" style="margin-top: 15px;">PARTICIPANTES Y ASISTENCIA REGISTRADA:</div>
+        <table class="table-mecip" style="margin-bottom: 20px;">
             <thead>
                 <tr>
-                    <th style="width: 5%;">#</th>
-                    <th style="width: 30%;">Nombre y Apellido</th>
-                    <th style="width: 30%;">Dependencia / Unidad</th>
-                    <th style="width: 35%;">Firma Digital / Registro</th>
+                    <th style="width: 5%; text-align: center;">Nº</th>
+                    <th style="width: 25%;">Nombre y Apellido</th>
+                    <th style="width: 25%;">Dependencia / Cargo</th>
+                    <th style="width: 25%;">Correo / Contacto</th>
+                    <th style="width: 20%; text-align: center;">Firma / Asistencia</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($acta->participantes as $index => $part)
+                @foreach($acta->participantes as $idx => $part)
                     <tr>
-                        <td style="text-align: center;">{{ $index + 1 }}</td>
+                        <td style="text-align: center; font-weight: bold;">{{ $idx + 1 }}</td>
+                        <td style="font-weight: bold;">{{ $part->nombre_completo }}</td>
                         <td>
-                            <strong>{{ $part->nombre }} {{ $part->apellido }}</strong>
-                            @if($part->cargo)<br><small style="color:#555;">{{ $part->cargo }}</small>@endif
+                            <div>{{ $part->dependencia ?? '—' }}</div>
+                            @if($part->cargo)<small style="font-size: 8pt; color: #444;">{{ $part->cargo }}</small>@endif
                         </td>
-                        <td>{{ $part->dependencia ?? '-' }}</td>
-                        <td style="text-align: center;">
-                            @if(!empty($part->firma_base64))
-                                <img src="{{ $part->firma_base64 }}" style="max-height: 35px; max-width: 120px;">
+                        <td>
+                            <div>{{ $part->correo ?? '—' }}</div>
+                            @if($part->telefono)<small style="font-size: 8pt; color: #444;">{{ $part->telefono }}</small>@endif
+                        </td>
+                        <td style="text-align: center; vertical-align: middle;">
+                            @if($part->firma)
+                                <img src="{{ $part->firma }}" style="max-height: 38px; max-width: 110px; display: block; margin: 0 auto;">
+                                <div style="font-size: 6.5pt; color: #166534; font-weight: bold; margin-top: 2px;">FIRMA DIGITAL VALIDA</div>
+                            @elseif($part->registrado_via_qr)
+                                <span style="color: #166534; font-weight: bold; font-size: 8pt;">Verificado Digital (QR)</span>
                             @else
-                                <span style="color: #16a34a; font-weight: bold; font-size: 8pt;">✓ Presente (Registrado)</span>
+                                <span style="color: #1e3a8a; font-weight: bold; font-size: 8pt;">Presente (Registrado)</span>
                             @endif
                         </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
+    @endif
+
+    {{-- FIRMA DEL MODERADOR --}}
+    @if($acta->firma_moderador && $acta->estado === 'finalizada')
+        <div style="margin-top: 25px; margin-bottom: 15px; text-align: center;">
+            <div style="display: inline-block; text-align: center;">
+                <img src="{{ $acta->firma_moderador }}" style="max-height: 80px; margin-bottom: 4px;">
+                <div style="border-top: 1px solid #333; width: 230px; padding-top: 4px; margin: 0 auto; font-size: 9pt; font-weight: bold;">
+                    MODERADOR / ENCARGADO
+                </div>
+            </div>
+        </div>
     @endif
 
 </body>
