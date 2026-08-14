@@ -85,8 +85,14 @@
         }
 
         @media print {
-            body {
+            @page {
+                size: A4 portrait;
+                margin: 10mm 15mm 10mm 15mm;
+            }
+            html, body {
                 background-color: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
             .no-print-bar {
                 display: none !important;
@@ -108,6 +114,9 @@
         <div class="d-flex align-items-center" style="gap: 10px;">
             <i class="fa fa-file-alt text-warning"></i>
             <span class="font-weight-bold">Vista de Impresión Oficial MECIP - {{ $acta->numero_acta }}</span>
+            <span class="badge badge-warning text-dark font-weight-normal ml-2 d-none d-md-inline-block" style="font-size:0.75rem; padding: 4px 8px;">
+                <i class="fa fa-lightbulb mr-1"></i> Desmarcá "Encabezados y pies de página" en la impresora para ocultar la URL
+            </span>
         </div>
         <div class="d-flex align-items-center" style="gap: 8px;">
             <button onclick="window.close()" class="btn btn-sm btn-outline-light font-weight-bold px-3">
