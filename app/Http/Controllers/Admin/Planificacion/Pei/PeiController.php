@@ -956,6 +956,70 @@ class PeiController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function getTreeDraggable($idProfile)
+    {
+        $master = PeiProfile::findOrFail($idProfile);
+        $tree = PeiProfile::defaultOrder()
+            ->descendantsAndSelf($idProfile)
+            ->toTree()
+            ->first();
+
+        return view('admin.planificacion.peis.peis.partials.modal_reordenar_tree', compact('master', 'tree'));
+    }
+
+    public function reordenarTree(Request $request, $idProfile)
+    {
+        $master = PeiProfile::findOrFail($idProfile);
+        $items  = $request->input('items', []);
+
+        if (empty($items)) {
+            return response()->json(['error' => 'No se enviaron elementos para reordenar.'], 422);
+        }
+
+        \DB::beginTransaction();
+        try {
+            foreach ($items as $item) {
+                if (empty($item['id'])) continue;
+
+                $node = PeiProfile::find($item['id']);
+                if (!$node) continue;
+
+                $dirty = false;
+                if (isset($item['parent_id']) && $item['parent_id'] !== $node->parent_id) {
+                    $node->parent_id = $item['parent_id'];
+                    $dirty = true;
+                }
+
+                if (isset($item['order_item']) && (int)$item['order_item'] !== (int)$node->order_item) {
+                    $node->order_item = (int)$item['order_item'];
+                    $dirty = true;
+                }
+
+                if ($dirty) {
+                    $node->save();
+                }
+            }
+
+            \DB::commit();
+
+            try {
+                PeiProfile::fixTree();
+            } catch (\Throwable $t) {
+                // Ignore nested set fix warning
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => '¡Estructura PEI reordenada exitosamente!'
+            ]);
+        } catch (\Throwable $e) {
+            \DB::rollBack();
+            return response()->json([
+                'error' => 'Error al guardar reordenamiento: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function destroy(Request $request, $id)
     {
         $profile = PeiProfile::find($id)->delete();

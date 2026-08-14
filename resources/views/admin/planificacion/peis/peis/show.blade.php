@@ -32,6 +32,12 @@
             <a href="{{ route('pei-profiles.matriz', $profile->id) }}" class="btn btn-sm btn-outline-primary ml-2" target="_blank">
                 <i class="fa fa-table mr-1"></i> Formulación Estratégica Integrada
             </a>
+            <button type="button" class="btn btn-sm btn-dark font-weight-bold ml-2 shadow-xs" id="btnAbrirModalReordenarPei"
+                    data-profile="{{ $profile->id }}"
+                    title="Reordenar Estructura PEI arrastrando y soltando (Drag & Drop)"
+                    style="background: #1e293b; color: #f8fafc; border: none;">
+                <i class="fa fa-sort-amount-asc mr-1 text-warning"></i> REORDENAR PEI
+            </button>
             <button type="button" class="btn btn-sm btn-outline-success ml-2" id="btnNotificarTodosPei"
                     data-profile="{{ $profile->id }}"
                     title="Enviar email a todos los responsables de acciones del plan">
@@ -3394,6 +3400,114 @@ $('#formNuevaIniciativaMejora').on('submit', function(e) {
         }
     });
 });
+
+// ── Reordenar Estructura PEI (Drag & Drop) ───────────────────────────
+$('#btnAbrirModalReordenarPei').on('click', function() {
+    var profileId = $(this).data('profile');
+    var $btn = $(this);
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Cargando...');
+
+    $.ajax({
+        url: '{{ url("pei-profiles") }}/' + profileId + '/tree-draggable',
+        type: 'GET',
+        success: function(html) {
+            $btn.prop('disabled', false).html('<i class="fa fa-sort-amount-asc mr-1 text-warning"></i> REORDENAR PEI');
+            $('#containerModalReordenarPei').html(html);
+            $('#modalReordenarPei').modal('show');
+            initPeiTreeSortable();
+        },
+        error: function() {
+            $btn.prop('disabled', false).html('<i class="fa fa-sort-amount-asc mr-1 text-warning"></i> REORDENAR PEI');
+            toastr.error('No se pudo cargar la estructura para reordenar.');
+        }
+    });
+});
+
+function initPeiTreeSortable() {
+    document.querySelectorAll('#contenedorArbolDraggablePei .sortable-pei-group').forEach(function(el) {
+        if (el._sortable) return;
+        var groupLevel = el.getAttribute('data-level') || 'sub';
+
+        el._sortable = Sortable.create(el, {
+            group: 'pei-group-' + groupLevel,
+            handle: '.drag-handle-pei',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            onEnd: function() {
+                $('#lblEstadoReordenamiento').html('<i class="fa fa-exclamation-circle text-warning mr-1"></i> Tienes cambios pendientes de guardar.');
+            }
+        });
+    });
+}
+
+$(document).on('click', '.btn-toggle-pei-children', function() {
+    var $icon = $(this).find('i');
+    var $children = $(this).closest('li.nodo-pei-item').find('> .nodo-pei-children');
+    $children.slideToggle(150, function() {
+        if ($children.is(':visible')) {
+            $icon.removeClass('fa-chevron-right').addClass('fa-chevron-down');
+        } else {
+            $icon.removeClass('fa-chevron-down').addClass('fa-chevron-right');
+        }
+    });
+});
+
+$(document).on('click', '#btnExpandirTodoTreePei', function() {
+    $('#contenedorArbolDraggablePei .nodo-pei-children').slideDown(150);
+    $('#contenedorArbolDraggablePei .btn-toggle-pei-children i').removeClass('fa-chevron-right').addClass('fa-chevron-down');
+});
+
+$(document).on('click', '#btnColapsarTodoTreePei', function() {
+    $('#contenedorArbolDraggablePei .nodo-pei-children').slideUp(150);
+    $('#contenedorArbolDraggablePei .btn-toggle-pei-children i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
+});
+
+$(document).on('click', '#btnGuardarOrdenTreePei', function() {
+    var items = [];
+
+    $('#contenedorArbolDraggablePei li.nodo-pei-item').each(function() {
+        var id = $(this).attr('data-id');
+        var parentUl = $(this).closest('ul.sortable-pei-group');
+        var parentId = parentUl.attr('data-parent-id');
+        var orderIndex = $(this).index();
+
+        items.push({
+            id: id,
+            parent_id: parentId,
+            order_item: orderIndex
+        });
+    });
+
+    var $btn = $(this);
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
+
+    $.ajax({
+        url: '{{ url("pei-profiles") }}/' + _profileId + '/reordenar-tree',
+        type: 'POST',
+        data: { items: items, _token: '{{ csrf_token() }}' },
+        success: function(res) {
+            toastr.success(res.message || '¡Estructura PEI reordenada exitosamente!');
+            $('#modalReordenarPei').modal('hide');
+            setTimeout(function() {
+                if (typeof window.recargarAcordeon === 'function') {
+                    window.recargarAcordeon();
+                } else if (typeof loadAccordion === 'function') {
+                    loadAccordion();
+                } else {
+                    location.reload();
+                }
+            }, 600);
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> GUARDAR NUEVO ORDEN');
+            toastr.error(xhr.responseJSON?.error || 'Error al guardar el reordenamiento.');
+        }
+    });
+});
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<div id="containerModalReordenarPei"></div>
 @include('admin.planificacion.peis.peis.partials.chat_drawer')
 @stop

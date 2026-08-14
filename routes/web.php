@@ -85,6 +85,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('instituciones-paraguay/buscar', 'Admin\Planificacion\Pei\PeiActorController@buscarInstituciones')->name('instituciones-paraguay.buscar');
     Route::get('pei-profiles/{profileId}/accordion',    'Admin\Planificacion\Pei\PeiController@accordion')->name('pei-profiles.accordion');
     Route::post('pei-profiles/{id}/reordenar',           'Admin\Planificacion\Pei\PeiController@reordenar')->name('pei-profiles.reordenar');
+    Route::get('pei-profiles/{idProfile}/tree-draggable', 'Admin\Planificacion\Pei\PeiController@getTreeDraggable')->name('pei-profiles.tree-draggable');
+    Route::post('pei-profiles/{idProfile}/reordenar-tree', 'Admin\Planificacion\Pei\PeiController@reordenarTree')->name('pei-profiles.reordenar-tree');
     Route::post('pei-profiles/{idProfile}/parameters',   'Admin\Planificacion\Pei\PeiController@updateParameters')->name('pei-profiles.update-parameters');
     Route::get('pei-profiles/{idProfile}/matriz',        'Admin\Planificacion\Pei\PeiController@matriz')->name('pei-profiles.matriz');
     Route::get('pei-profiles/{idProfile}/matriz/pdf',    'Admin\Planificacion\Pei\PeiController@matrizPdf')->name('pei-profiles.matriz.pdf');
