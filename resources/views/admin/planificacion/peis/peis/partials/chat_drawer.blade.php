@@ -1534,8 +1534,9 @@
                 // Row container for bubble + side hover icons (Facebook Messenger Style)
                 html += `<div class="msg-row d-flex align-items-center ${msg.is_mine ? 'flex-row-reverse' : 'flex-row'}" style="gap: 6px;">`;
 
-                // Main Bubble Content Stack
-                html += `<div class="msg-content-stack" style="max-width: 82%;">`;
+                // Main Bubble Content Stack (Unificada Alineación)
+                const stackAlign = msg.is_mine ? 'align-items-end text-right' : 'align-items-start text-left';
+                html += `<div class="msg-content-stack d-flex flex-column ${stackAlign}" style="max-width: 82%;">`;
 
                 if (!msg.is_mine) {
                     html += `<div class="msg-sender-name mb-0.5" style="cursor:pointer;" title="Clic para abrir chat privado" onclick="setPrivateRecipient('${msg.user_id}', '${escapedSender}')">
@@ -1550,7 +1551,7 @@
 
                 // Cita / Mensaje Padre Referenciado
                 if (msg.parent) {
-                    html += `<div class="msg-reply-ref mb-1" onclick="scrollToChatMessage('${msg.parent.id}')" title="Clic para ver mensaje original">
+                    html += `<div class="msg-reply-ref mb-1 w-100" onclick="scrollToChatMessage('${msg.parent.id}')" title="Clic para ver mensaje original">
                                 <i class="fas fa-reply text-indigo mr-1" style="font-size:10px;"></i>
                                 <strong>${msg.parent.user_name}</strong>: ${msg.parent.message}
                              </div>`;
@@ -1558,7 +1559,7 @@
 
                 if (msg.reference_title) {
                     const refUrl = msg.reference_url || '#';
-                    html += `<div class="msg-reference-badge p-2 mb-1">
+                    html += `<div class="msg-reference-badge p-2 mb-1 w-100">
                                 <div class="d-flex align-items-center justify-content-between" style="min-width: 0;">
                                     <div class="text-truncate mr-2 font-weight-bold" style="font-size: 11px; color: #3730a3; min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                         <i class="fas fa-bookmark mr-1"></i> ${msg.reference_title}
@@ -1571,7 +1572,8 @@
                 }
 
                 // Dedicated Bubble Line (Text Bubble + Side Hover Action Icons)
-                html += `<div class="msg-bubble-line d-flex align-items-center ${msg.is_mine ? 'flex-row-reverse' : 'flex-row'}" style="gap: 4px;">`;
+                const lineAlign = msg.is_mine ? 'flex-row-reverse' : 'flex-row';
+                html += `<div class="msg-bubble-line d-flex align-items-center ${lineAlign}" style="gap: 4px; width: 100%;">`;
                 html += `<div class="msg-bubble">${msg.message}`;
                 if (msg.attachments && msg.attachments.length > 0) {
                     html += `<div class="mt-1">`;
@@ -1612,12 +1614,12 @@
                 html += `</div>`; // Close msg-bubble-line
 
                 // Badges de Reacciones Emoji debajo de la burbuja
-                html += `<div id="reactions-${msg.id}" class="chat-reactions-container mt-1">
+                html += `<div id="reactions-${msg.id}" class="chat-reactions-container mt-1 ${msg.is_mine ? 'text-right' : 'text-left'}" style="width: 100%;">
                             ${renderReactionBadgesHtml(msg.id, msg.reactions)}
                          </div>`;
 
                 // Timestamp & Module Origin
-                html += `<div class="d-flex align-items-center ${msg.is_mine ? 'justify-content-end' : 'justify-content-start'} mt-0.5" style="gap:6px;">
+                html += `<div class="d-flex align-items-center ${msg.is_mine ? 'justify-content-end' : 'justify-content-start'} mt-0.5" style="gap:6px; width: 100%;">
                             <span class="msg-meta text-muted" style="font-size:9.5px;">${msg.time_ago}</span>
                          </div>`;
 
@@ -1626,8 +1628,9 @@
                     const icon = isAct ? 'fa-tasks' : 'fa-bullseye';
                     const badgeStyle = isAct ? 'background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;' : 'background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;';
                     const linkUrl = msg.origin_url || '#';
+                    const originAlign = msg.is_mine ? 'justify-content-end' : 'justify-content-start';
                     
-                    html += `<div class="msg-origin-badge mt-1 text-xs" style="font-size: 9.5px;">
+                    html += `<div class="msg-origin-badge mt-1 text-xs d-flex ${originAlign}" style="font-size: 9.5px; width: 100%;">
                                 <a href="${linkUrl}" target="_blank" class="d-inline-flex align-items-center rounded-pill px-2 py-0.5" style="${badgeStyle} text-decoration:none;" title="Ir a la pantalla de origen del emisor">
                                     <i class="fas ${icon} mr-1"></i> Desde: ${msg.origin_module} ${msg.origin_title ? '— ' + msg.origin_title : ''} <i class="fas fa-external-link-alt ml-1" style="font-size:8px;"></i>
                                 </a>
