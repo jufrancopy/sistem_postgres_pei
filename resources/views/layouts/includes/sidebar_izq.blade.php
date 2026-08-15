@@ -381,6 +381,14 @@
                                 <span class="sidebar-normal">Encuestas & Evaluación</span>
                             </a>
                         </li>
+
+                        {{-- Variables Globales del Sistema --}}
+                        <li class="nav-item {{ str_contains($path, 'configuracion-sistema') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('globales.configuracion-sistema') }}">
+                                <span class="sidebar-mini"><i class="fa fa-cogs text-warning" style="font-size:.8rem;"></i></span>
+                                <span class="sidebar-normal font-weight-bold" style="color: #d97706;">Variables Globales</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>

@@ -126,4 +126,42 @@ class HomeConfigController extends Controller
             'valor' => $config->$campo,
         ]);
     }
+
+    // ── Variables Globales del Sistema ─────────────────────────────────────────
+    public function editGlobalSettings()
+    {
+        $config = HomeConfiguration::firstOrNew([]);
+        if (!$config->exists) {
+            $config->save();
+        }
+
+        return view('admin.globales.configuracion_global', compact('config'));
+    }
+
+    public function updateGlobalSettings(Request $request)
+    {
+        $request->validate([
+            'site_name'     => 'required|string|max:255',
+            'logo_url'      => 'nullable|string|max:1000',
+            'contact_email' => 'nullable|email|max:255',
+            'contact_phone' => 'nullable|string|max:100',
+            'opening_hours' => 'nullable|string|max:255',
+            'address'       => 'nullable|string|max:500',
+            'footer_text'   => 'nullable|string|max:1000',
+        ]);
+
+        $config = HomeConfiguration::firstOrNew([]);
+        $config->fill($request->only([
+            'site_name',
+            'logo_url',
+            'contact_email',
+            'contact_phone',
+            'opening_hours',
+            'address',
+            'footer_text',
+        ]));
+        $config->save();
+
+        return redirect()->back()->with('success', '¡Variables globales del sistema actualizadas exitosamente!');
+    }
 }

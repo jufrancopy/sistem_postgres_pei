@@ -330,6 +330,9 @@ Route::group(['middleware' => ['auth']], function () {
 
         // ── Globales administrativas: solo Administrador ───────────────────────
         Route::middleware(['role:Administrador'])->group(function () {
+            Route::get('configuracion-sistema',  'Admin\HomeConfigController@editGlobalSettings')->name('configuracion-sistema');
+            Route::post('configuracion-sistema', 'Admin\HomeConfigController@updateGlobalSettings')->name('configuracion-sistema.update');
+
             Route::resource('activities', 'Admin\Globales\ActivityController', ['except' => ['show']]);
             Route::resource('localities', 'Admin\Globales\LocalityController');
             Route::resource('patrimonies', 'Admin\Globales\PatrimonyController');

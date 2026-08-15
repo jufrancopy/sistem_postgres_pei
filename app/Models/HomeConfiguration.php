@@ -16,13 +16,43 @@ class HomeConfiguration extends Model
         'show_foda',
         'show_pei',
         'show_riiss',
+        'site_name',
+        'logo_url',
+        'contact_email',
+        'contact_phone',
+        'opening_hours',
+        'address',
+        'footer_text',
+        'system_parameters',
     ];
 
     protected $casts = [
-        'show_foda' => 'boolean',
-        'show_pei' => 'boolean',
-        'show_riiss' => 'boolean',
+        'show_foda'         => 'boolean',
+        'show_pei'          => 'boolean',
+        'show_riiss'        => 'boolean',
+        'system_parameters' => 'array',
     ];
+
+    /**
+     * Obtener el valor de una variable global del sistema con fallback por defecto.
+     */
+    public static function getSetting($key, $default = null)
+    {
+        $config = static::first();
+        if (!$config) {
+            return $default;
+        }
+
+        if (isset($config->$key) && !is_null($config->$key) && $config->$key !== '') {
+            return $config->$key;
+        }
+
+        if (is_array($config->system_parameters) && isset($config->system_parameters[$key])) {
+            return $config->system_parameters[$key];
+        }
+
+        return $default;
+    }
 
     // Relaciones
     public function fodaProfile()
