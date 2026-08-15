@@ -463,14 +463,23 @@ class FodaPerfilController extends Controller
         // Obtener los aspecto_id de los registros en FodaAnalisis
         $aspectIds = FodaAnalisis::where('perfil_id', $idProfile)->pluck('aspecto_id');
 
-        // Obtener todos los aspectos relacionados directamente de la tabla FodaModelo
-        $aspects = FodaModelo::whereIn('id', $aspectIds)->get();
+        // Obtener todos los aspectos relacionados
+        $aspectNodes = FodaModelo::whereIn('id', $aspectIds)->get();
 
-        // Filtrar los aspectos por entorno (environment)
-        $environments = $aspects->pluck('environment')->unique();
+        // Obtener los IDs de sus categorías padre
+        $parentIds = $aspectNodes->pluck('parent_id')->filter()->unique();
+
+        // Obtener las categorías padre
+        $categoryNodes = FodaModelo::whereIn('id', $parentIds)->get();
+
+        // Combinar aspectos y categorías
+        $aspects = $aspectNodes->concat($categoryNodes);
+
+        // Entornos de análisis
+        $environments = ['Interno', 'Externo'];
 
         // Construir el árbol para cada entorno
-        $tree = $environments->map(function ($environment) use ($aspects, $idProfile) {
+        $tree = collect($environments)->map(function ($environment) use ($aspects, $idProfile) {
             return $this->buildTreeForEnvironment($environment, $aspects, $idProfile);
         })->values();
 

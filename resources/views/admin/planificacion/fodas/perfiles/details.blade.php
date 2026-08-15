@@ -392,10 +392,10 @@ $(function () {
             $('#treeProfile').tree({
                 data: data,
                 autoEscape: false,
-                saveState: true,
-                closedIcon: $('<i class="fas fa-arrow-circle-right text-info"></i>'),
-                openedIcon: $('<i class="fas fa-arrow-circle-down text-info"></i>'),
-                autoOpen: 1,
+                saveState: false,
+                closedIcon: $('<i class="fas fa-plus-circle text-info mr-1"></i>'),
+                openedIcon: $('<i class="fas fa-minus-circle text-info mr-1"></i>'),
+                autoOpen: true,
                 dragAndDrop: false
             });
         },
