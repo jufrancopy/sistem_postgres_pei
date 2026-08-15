@@ -12,22 +12,28 @@ class FodaIpsEstructuradoSeeder extends Seeder
 {
     public function run()
     {
-        $this->command->info('Iniciando Seeder del Modelo FODA Ideal para IPS Paraguay...');
+        $this->command->info('Iniciando Seeder del Modelo FODA Exhaustivo e Integral para IPS Paraguay...');
 
-        // 1. Obtener o verificar el perfil consolidado IPS
-        $perfilId = '9a741ae1-95b2-4519-bb2c-6d4fdcc4b59e';
-        $perfil = FodaPerfil::find($perfilId);
+        // Perfiles objetivo para poblar
+        $targetPerfilIds = [
+            '9a741ae1-95b2-4519-bb2c-6d4fdcc4b59e', // ANÁLISIS FODA IPS (Consolidado)
+            'a0e99967-c8d5-4d27-adac-cf16fc9efbb3', // [DEMO] Análisis FODA — IPS 2025 (Grupal)
+            'a24b1239-b102-410d-be8c-eabc06a5c079', // Nasim Barry (Individual)
+        ];
 
-        if (!$perfil) {
-            $perfil = FodaPerfil::create([
-                'id'          => $perfilId,
-                'name'        => 'ANÁLISIS FODA IPS',
-                'type'        => 'consolidado',
-                'description' => 'Modelo FODA Estructurado con IEA y Fichas MECIP 2015 para IPS Paraguay',
-            ]);
+        foreach ($targetPerfilIds as $pId) {
+            $perfil = FodaPerfil::find($pId);
+            if (!$perfil) {
+                FodaPerfil::create([
+                    'id'          => $pId,
+                    'name'        => 'ANÁLISIS FODA IPS',
+                    'type'        => 'consolidado',
+                    'description' => 'Modelo FODA Exhaustivo con IEA y Fichas MECIP 2015 para IPS Paraguay',
+                ]);
+            }
         }
 
-        // 2. Obtener nodo Raíz
+        // Obtener o actualizar nodo Raíz 'MODELO FODA ESTRUCTURADO — IPS PARAGUAY'
         $root = FodaModelo::find(1);
         if (!$root) {
             $root = FodaModelo::where('type', 'root')->first();
@@ -38,41 +44,55 @@ class FodaIpsEstructuradoSeeder extends Seeder
                 'name'        => 'MODELO FODA ESTRUCTURADO — IPS PARAGUAY',
                 'type'        => 'root',
                 'owner'       => 'Instituto de Previsión Social',
-                'description' => '<p>Modelo FODA Ideal basado en hallazgos post-pandemia, Índice de Eficiencia de Activos (IEA) y Fichas de Gestión de Riesgos MECIP 2015.</p>',
+                'description' => '<p>Modelo FODA Exhaustivo de Alta Complejidad basado en denuncias periodísticas, informes de auditoría Contraloría/MSPBS, Índice de Eficiencia de Activos (IEA) y Gestión de Riesgos MECIP 2015.</p>',
             ]);
         } else {
             $root = FodaModelo::create([
                 'name'        => 'MODELO FODA ESTRUCTURADO — IPS PARAGUAY',
                 'type'        => 'root',
                 'owner'       => 'Instituto de Previsión Social',
-                'description' => '<p>Modelo FODA Ideal basado en hallazgos post-pandemia, Índice de Eficiencia de Activos (IEA) y Fichas de Gestión de Riesgos MECIP 2015.</p>',
+                'description' => '<p>Modelo FODA Exhaustivo de Alta Complejidad basado en denuncias periodísticas, informes de auditoría Contraloría/MSPBS, Índice de Eficiencia de Activos (IEA) y Gestión de Riesgos MECIP 2015.</p>',
             ]);
         }
 
-        // Definición completa de Categorías y Aspectos con Evidencia IEA y MECIP 2015
+        // Matriz Exhaustiva de Categorías y Aspectos
         $estructura = [
-            // ── AMBIENTE INTERNO ──
+
+            // ── CATEGORÍA 1: Talento Humano y Carga Horaria Médica ──
             [
-                'categoria' => 'Abastecimiento y Farmacia (Medicamentos e Insumos)',
+                'categoria' => 'Talento Humano y Carga Horaria Médica',
                 'environment' => 'Interno',
                 'aspectos' => [
                     [
-                        'name'        => 'Stock y Trazabilidad de Medicamentos Oncológicos y Crónicos',
+                        'name'        => 'Reducción de Carga Horaria Médica (Ley 12hs) y Cobertura de Guardias',
                         'environment' => 'Interno',
-                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Desabastecimiento recurrente en el Cuadro Básico IPS afectando a más de 12.000 pacientes oncológicos y crónicos. Licitaciones con retrasos administrativos de hasta 8 meses y cuellos de botella logísticos.</p>',
+                        'description' => '<p><strong>Evidencia/Auditoría:</strong> Exigencia y aplicación progresiva de la carga horaria de 12 horas semanales por vínculo para médicos sin contar con el presupuesto ni el plantel adicional necesario. Genera baches críticos en guardias de Urgencias, UTI y anestesiología en el Hospital Central y clínicas periféricas, provocando suspensión de cirugías y diferimiento de turnos.</p>',
+                        'tipo'        => 'Debilidad',
+                        'desempeno'   => 0.30,
+                        'inversion'   => 1.00,
+                        'ocurrencia'  => 0.90,
+                        'impacto'     => 0.80,
+                        'causa_raiz'  => 'estructural',
+                        'accion'      => 'Crear la carrera administrativa médica del IPS con concursos de méritos para contratación de médicos de refuerzo y reorganización de guardias por red asistencial.',
+                        'control'     => 'Panel de control biométrico de cobertura en tiempo real de guardias críticas en Urgencias y UTI.',
+                    ],
+                    [
+                        'name'        => 'Fuga de Talento Humano de Blanco por Brecha Salarial e Incentivos',
+                        'environment' => 'Interno',
+                        'description' => '<p><strong>Evidencia/Periodística:</strong> Emigración constante de especialistas y subespecialistas (neonatólogos, cirujanos pediátricos, oncólogos) hacia el sector privado y el MSPBS por diferencias salariales, falta de incentivos por desarraigo y sobrecarga laboral asistencial.</p>',
                         'tipo'        => 'Debilidad',
                         'desempeno'   => 0.35,
                         'inversion'   => 1.00,
                         'ocurrencia'  => 0.90,
                         'impacto'     => 0.80,
-                        'causa_raiz'  => 'normativa',
-                        'accion'      => 'Establecer contratos abiertos multianuales con cláusulas de suministro de emergencia e informatización del inventario en tiempo real en la red nacional IPS.',
-                        'control'     => 'Auditoría semanal de quiebre de stock con alerta temprana conectada a la Dirección de Compras e Insumos Médicos.',
+                        'causa_raiz'  => 'estructural',
+                        'accion'      => 'Implementar un esquema de incentivos salariales por especialidad crítica y radicación en hospitales del interior (Alto Paraná, Itapúa, Boquerón).',
+                        'control'     => 'Evaluación semestral de tasa de retención de personal de blanco y clima laboral en especialidades sensibles.',
                     ],
                     [
-                        'name'        => 'Cadena de Frío e Infraestructura Logística en Parques Sanitarios',
+                        'name'        => 'Centro de Formación de Médicos Residentes y Subespecialidades (Hospital Central)',
                         'environment' => 'Interno',
-                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Modernización de la cámara frigorífica principal del Parque Sanitario Central y certificación ISO de trazabilidad térmica para vacunas e insumos biológicos.</p>',
+                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> El Hospital Central del IPS se mantiene como el mayor centro de formación e internado de médicos residentes del país en más de 35 especialidades médicas con acreditación ANEAES.</p>',
                         'tipo'        => 'Fortaleza',
                         'desempeno'   => 0.85,
                         'inversion'   => 0.60,
@@ -84,61 +104,138 @@ class FodaIpsEstructuradoSeeder extends Seeder
                     ],
                 ]
             ],
+
+            // ── CATEGORÍA 2: Abastecimiento, Licitaciones y Cadena Farmacéutica ──
             [
-                'categoria' => 'Atención Asistencial, RR.HH. y Agendamiento',
+                'categoria' => 'Abastecimiento, Licitaciones y Cadena Farmacéutica',
                 'environment' => 'Interno',
                 'aspectos' => [
                     [
-                        'name'        => 'Agendamiento de Turnos Asistenciales y Servicio Call Center',
+                        'name'        => 'Pasivos con Proveedores y Quiebre de Stock de Fármacos Oncológicos y Crónicos',
                         'environment' => 'Interno',
-                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Saturación de líneas de atención telefónica (esperas superiores a 45 min) e ineficiencia en el agendamiento web, generando demoras de hasta 90 días para consultas con especialistas.</p>',
+                        'description' => '<p><strong>Evidencia/Auditoría:</strong> Deuda acumulada con cámaras farmacéuticas (Cifarma/Cimefor) superior a USD 250 millones, generando cortes parciales en el suministro de insumos y fármacos oncológicos. Trámites licitatorios en la DNCP con demoras de 6 a 9 meses.</p>',
                         'tipo'        => 'Debilidad',
                         'desempeno'   => 0.25,
                         'inversion'   => 1.00,
                         'ocurrencia'  => 0.90,
                         'impacto'     => 0.80,
-                        'causa_raiz'  => 'tecnologica',
-                        'accion'      => 'Migración integral a plataforma omnichannel cloud con agendamiento vía WhatsApp institucional, App IPS y kioscos biométricos descentralizados.',
-                        'control'     => 'Monitoreo en tiempo real del nivel de servicio (SLA) del Call Center con panel de control gerencial.',
+                        'causa_raiz'  => 'normativa',
+                        'accion'      => 'Establecer licitaciones con contratos abiertos pluri-anuales, fideicomiso de pagos garantizados e inventario automatizado conectando parques sanitarios con farmacias asistenciales.',
+                        'control'     => 'Auditoría semanal de stock de medicamentos esenciales del Cuadro Básico IPS con alertas automáticas ante niveles mínimos.',
                     ],
                     [
-                        'name'        => 'Productividad Médica y Cobertura de Personal Blanco',
+                        'name'        => 'Alto Costo por Tercerización de Diálisis y Laboratorios Externos',
                         'environment' => 'Interno',
-                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Déficit de perfiles médicos especialistas en hospitales regionales y ausentismo no programado en guardias críticas de Urgencias y Terapias.</p>',
+                        'description' => '<p><strong>Evidencia/Periodística:</strong> Insuficiencia de sillones de hemodiálisis y reactivos de laboratorio propios, obligando a contratos millonarios de tercerización con sanatorios privados con sobrenivel de costo por paciente.</p>',
                         'tipo'        => 'Debilidad',
-                        'desempeno'   => 0.40,
+                        'desempeno'   => 0.38,
                         'inversion'   => 1.00,
                         'ocurrencia'  => 0.70,
                         'impacto'     => 0.80,
-                        'causa_raiz'  => 'estructural',
-                        'accion'      => 'Rediseño del manual de funciones y puestos con incentivos por radicación en el interior y control biométrico de cumplimiento de guardias.',
-                        'control'     => 'Sistema automatizado de marcación de asistencia integrado a la liquidación de haberes y auditorías médicas aleatorias.',
+                        'causa_raiz'  => 'operativa',
+                        'accion'      => 'Plan de expansión de salas de nefrología y automatización de laboratorios centrales en los hospitales periféricos de Ingavi y Luque.',
+                        'control'     => 'Auditoría médica de validación de prestaciones tercerizadas e indicadores de costo por sesión.',
+                    ],
+                    [
+                        'name'        => 'Parque Sanitario Central y Sistema de Cadena de Frío Certificado',
+                        'environment' => 'Interno',
+                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Infraestructura frigorífica principal certificada con control digital continuo de temperatura para conservación de biológicos e insumos sensibles.</p>',
+                        'tipo'        => 'Fortaleza',
+                        'desempeno'   => 0.88,
+                        'inversion'   => 0.60,
+                        'ocurrencia'  => 0.70,
+                        'impacto'     => 0.40,
+                        'causa_raiz'  => null,
+                        'accion'      => null,
+                        'control'     => null,
                     ],
                 ]
             ],
+
+            // ── CATEGORÍA 3: Agendamiento, Tecnología e Historia Clínica Digital ──
             [
-                'categoria' => 'Fondo de Jubilaciones y Pensiones',
+                'categoria' => 'Agendamiento, Tecnología e Historia Clínica Digital',
                 'environment' => 'Interno',
                 'aspectos' => [
                     [
-                        'name'        => 'Cobranza y Combate a la Evasión y Mora Patronal',
+                        'name'        => 'Saturación del Call Center y Fallas del Sistema SIH en Agendamiento',
                         'environment' => 'Interno',
-                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Mora patronal acumulada estimada en más de USD 400 millones por retención o no pago de aportes obrero-patronales de empresas privadas e instituciones.</p>',
+                        'description' => '<p><strong>Evidencia/Denuncias:</strong> Tiempos de espera telefónica superiores a 45 minutos y caídas recurrentes del Sistema de Información Hospitalaria (SIH). Provoca demoras de 3 a 6 meses para agendar especialidades en traumatología, endocrinología y neurología.</p>',
                         'tipo'        => 'Debilidad',
+                        'desempeno'   => 0.20,
+                        'inversion'   => 1.00,
+                        'ocurrencia'  => 0.90,
+                        'impacto'     => 0.80,
+                        'causa_raiz'  => 'tecnologica',
+                        'accion'      => 'Migrar a una plataforma omnicanal en la nube integrando chatbot por WhatsApp, App Mi IPS renovada y kioscos de auto-agendamiento en hospitales.',
+                        'control'     => 'Tablero gerencial de monitoreo de respuesta telefónica e incidencias del sistema informático SIH.',
+                    ],
+                    [
+                        'name'        => 'Despliegue del Expediente Clínico Electrónico y Receta Digital',
+                        'environment' => 'Externo',
+                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Integración gradual de la receta médica electrónica y la ficha clínica digital conectada con el Metic y el MSPBS para reducir fraudes y tiempos en ventanilla.</p>',
+                        'tipo'        => 'Oportunidad',
+                        'desempeno'   => 0.90,
+                        'inversion'   => 0.55,
+                        'ocurrencia'  => 0.70,
+                        'impacto'     => 0.40,
+                        'causa_raiz'  => null,
+                        'accion'      => null,
+                        'control'     => null,
+                    ],
+                ]
+            ],
+
+            // ── CATEGORÍA 4: Fondo de Jubilaciones, Pensiones y Sostenibilidad Financiera ──
+            [
+                'categoria' => 'Fondo de Jubilaciones, Pensiones y Sostenibilidad Financiera',
+                'environment' => 'Interno',
+                'aspectos' => [
+                    [
+                        'name'        => 'Déficit Actuarial y Riesgo en la Reserva del Fondo de Jubilaciones',
+                        'environment' => 'Externo',
+                        'description' => '<p><strong>Evidencia/Informes Actuariales:</strong> Estudios actuariales advierten el agotamiento gradual de las reservas técnicas para el 2030-2038 debido al aumento de la expectativa de vida, envejecimiento de asegurados y rigidez en los parámetros de cálculo jubilatorio.</p>',
+                        'tipo'        => 'Amenaza',
                         'desempeno'   => 0.30,
                         'inversion'   => 1.00,
                         'ocurrencia'  => 0.90,
                         'impacto'     => 0.80,
-                        'causa_raiz'  => 'operativa',
-                        'accion'      => 'Intensificación de fiscalizaciones laborales cruzadas con el Ministerio de Trabajo y Abogacía del Tesoro, e informatización de certificados de no adeudar.',
-                        'control'     => 'Emisión automática de certificados de deuda con fuerza ejecutiva penal y bloqueo de contratos estatales a empresas morosas.',
+                        'causa_raiz'  => 'normativa',
+                        'accion'      => 'Promover una reforma integral de la Ley Orgánica del IPS ajustando la fórmula de cálculo del haber jubilatorio sobre el promedio de los últimos 10 años y diversificando las inversiones.',
+                        'control'     => 'Comité de supervisión actuarial independiente con publicación trimestral del estado de reservas.',
                     ],
                     [
-                        'name'        => 'Rentabilidad e Inversión Técnica del Fondo de Reserva Jubilatorio',
+                        'name'        => 'Mora Patronal Acumulada, Evasión y Subdeclaración de Salarios',
                         'environment' => 'Interno',
-                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Mantenimiento del portafolio inmobiliario y financiero de reservas técnicas con colocación de bonos en el sistema bancario nacional.</p>',
+                        'description' => '<p><strong>Evidencia/Auditoría Contraloría:</strong> Mora patronal acumulada estimada en más de USD 400 millones de empresas e instituciones públicas. Práctica extendida de subdeclaración de salarios de trabajadores para evadir aportes reales.</p>',
+                        'tipo'        => 'Debilidad',
+                        'desempeno'   => 0.28,
+                        'inversion'   => 1.00,
+                        'ocurrencia'  => 0.90,
+                        'impacto'     => 0.80,
+                        'causa_raiz'  => 'operativa',
+                        'accion'      => 'Cruzamiento informático automático de datos con la DNIT (Tributación) y el Ministerio de Trabajo (MTESS) con bloqueos judiciales inmediatos.',
+                        'control'     => 'Sistema de emisión de Certificados de Deuda automatizados con fuerza ejecutiva penal para cobro cobratorio.',
+                    ],
+                    [
+                        'name'        => 'Deuda Histórica del Estado Paraguayo con el Fondo de Salud del IPS',
+                        'environment' => 'Externo',
+                        'description' => '<p><strong>Evidencia/Prensa:</strong> Acumulación de deuda histórica del Estado paraguayo por la atención médica brindada a no asegurados y emergencias nacionales sin la transferencia correspondiente del Tesoro Público.</p>',
+                        'tipo'        => 'Amenaza',
+                        'desempeno'   => 0.32,
+                        'inversion'   => 1.00,
+                        'ocurrencia'  => 0.90,
+                        'impacto'     => 0.80,
+                        'causa_raiz'  => 'normativa',
+                        'accion'      => 'Mesas multipartitarias de negociación con el Ministerio de Economía (MEF) para la consolidación y canje de la deuda con títulos del Tesoro o inmuebles.',
+                        'control'     => 'Comisión interinstitucional de conciliación de cuentas de salud pública vs. seguro social.',
+                    ],
+                    [
+                        'name'        => 'Portafolio Financiero y Rendimiento de Reservas Inmobiliarias',
+                        'environment' => 'Interno',
+                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Inversión en CDA bancarios del sistema financiero nacional generando rendimientos que mitigan la inflación sobre las reservas líquidas.</p>',
                         'tipo'        => 'Fortaleza',
-                        'desempeno'   => 0.80,
+                        'desempeno'   => 0.82,
                         'inversion'   => 0.65,
                         'ocurrencia'  => 0.70,
                         'impacto'     => 0.40,
@@ -148,63 +245,78 @@ class FodaIpsEstructuradoSeeder extends Seeder
                     ],
                 ]
             ],
+
+            // ── CATEGORÍA 5: Infraestructura Hospitalaria, Equipos y Servicios Generales ──
             [
-                'categoria' => 'Equipamiento e Infraestructura Hospitalaria',
+                'categoria' => 'Infraestructura Hospitalaria, Equipos y Servicios Generales',
                 'environment' => 'Interno',
                 'aspectos' => [
                     [
-                        'name'        => 'Mantenimiento Operativo de Equipos Biomédicos de Alta Complejidad',
+                        'name'        => 'Inoperatividad y Mantenimiento Biomédico de Tomógrafos y Resonadores',
                         'environment' => 'Interno',
-                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Parada prolongada de tomógrafos, angiógrafos y aceleradores lineales por retrasos en contratos de mantenimiento preventivo y repuestos importados.</p>',
+                        'description' => '<p><strong>Evidencia/Prensa:</strong> Equipos de imagenología (tomógrafos y resonadores) del Hospital Central e Ingavi fuera de servicio durante semanas por demoras en contratos de mantenimiento preventivo y trabas de importación de repuestos.</p>',
                         'tipo'        => 'Debilidad',
-                        'desempeno'   => 0.35,
+                        'desempeno'   => 0.32,
                         'inversion'   => 1.00,
                         'ocurrencia'  => 0.70,
                         'impacto'     => 0.80,
                         'causa_raiz'  => 'normativa',
-                        'accion'      => 'Licitaciones plurianuales de mantenimiento integral con fabricante original garantizando disponibilidad mínima del 95% operativa.',
-                        'control'     => 'Mesa técnica de monitoreo diario del estado operativo de equipos de imagenología y soporte vital en toda la red.',
+                        'accion'      => 'Contratación de licitaciones plurianuales de mantenimiento integral directamente con fabricantes originales garantizando disponibilidad del 95%.',
+                        'control'     => 'Reporte diario automatizado de disponibilidad técnica de equipos críticos de alta complejidad.',
+                    ],
+                    [
+                        'name'        => 'Gestión de Contratos de Servicios de Limpieza, Higiene y Seguridad Privada',
+                        'environment' => 'Interno',
+                        'description' => '<p><strong>Evidencia/Auditoría:</strong> Reiteradas denuncias por deficiencias en la higiene hospitalaria en clínicas periféricas e irregularidades en la supervisión de empresas de seguridad privada.</p>',
+                        'tipo'        => 'Debilidad',
+                        'desempeno'   => 0.38,
+                        'inversion'   => 1.00,
+                        'ocurrencia'  => 0.70,
+                        'impacto'     => 0.80,
+                        'causa_raiz'  => 'operativa',
+                        'accion'      => 'Revisión del pliego de bases y condiciones incorporando penalidades automáticas por incumplimiento en fiscalización y evaluación por usuarios.',
+                        'control'     => 'Fiscalización sorpresa aleatoria por la Dirección de Servicios Generales y comités de epidemiología hospitalaria.',
                     ],
                 ]
             ],
 
-            // ── AMBIENTE EXTERNO ──
+            // ── CATEGORÍA 6: Marco Regulatorio, Demografía y Coordinación Sectorial ──
             [
-                'categoria' => 'Entorno Normativo, Macroeconómico y Demográfico',
+                'categoria' => 'Marco Regulatorio, Demografía y Coordinación Sectorial',
                 'environment' => 'Externo',
                 'aspectos' => [
                     [
-                        'name'        => 'Alta Informalidad Laboral en el Mercado del Trabajo Nacional',
+                        'name'        => 'Alta Informalidad Laboral en Paraguay (60% de la Fuerza de Trabajo)',
                         'environment' => 'Externo',
-                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Tasa de informalidad laboral superior al 60% en Paraguay, limitando el crecimiento de la base de cotizantes e ingresos del seguro social.</p>',
+                        'description' => '<p><strong>Evidencia/INE:</strong> Tasa de informalidad laboral superior al 60% en la PEA de Paraguay, restringiendo la masa de nuevos aportantes jóvenes para financiar las prestaciones de salud y pensiones.</p>',
                         'tipo'        => 'Amenaza',
                         'desempeno'   => 0.30,
                         'inversion'   => 1.00,
                         'ocurrencia'  => 0.90,
                         'impacto'     => 0.80,
                         'causa_raiz'  => 'normativa',
-                        'accion'      => 'Impulsar reformas legislativas de fiscalización conjunta MTESS/IPS e incentivos a la formalización de MiPyMES.',
-                        'control'     => 'Intercambio automático de bases de datos tributarias con la Dirección Nacional de Ingresos Tributarios (DNIT).',
+                        'accion'      => 'Impulsar proyectos de ley de formalización laboral flexible con alícuotas diferenciadas para MiPyMES e independientes.',
+                        'control'     => 'Mesa de trabajo interinstitucional de formalización MTESS/DNIT/IPS.',
                     ],
                     [
                         'name'        => 'Transición Epidemiológica y Envejecimiento Poblacional',
                         'environment' => 'Externo',
-                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Aumento sostenido en la expectativa de vida y prevalencia de patologías crónicas no transmisibles (cardiovasculares, diabetes, cáncer), incrementando los costos médicos por jubilado.</p>',
+                        'description' => '<p><strong>Evidencia/Salud Pública:</strong> Incremento acelerado de pacientes gerontológicos con múltiples enfermedades crónicas que triplican el costo promedio de atención con respecto a un cotizante joven.</p>',
                         'tipo'        => 'Amenaza',
                         'desempeno'   => 0.40,
                         'inversion'   => 1.00,
                         'ocurrencia'  => 0.90,
                         'impacto'     => 0.80,
                         'causa_raiz'  => 'estructural',
-                        'accion'      => 'Reforzamiento de la atención primaria de salud (APS) y programas preventivos institucionales para reducir complicaciones crónicas.',
-                        'control'     => 'Ficha clínica digital preventiva por asegurado con alertas de seguimiento metabólico.',
+                        'accion'      => 'Fortalecer la red de Atención Primaria de la Salud (APS) con enfoque preventivo en enfermedades no transmisibles.',
+                        'control'     => 'Ficha médica electrónica preventiva con programa de seguimiento domiciliario para adultos mayores.',
                     ],
                     [
-                        'name'        => 'Disponibilidad de Herramientas Tecnológicas y Datos Abiertos',
+                        'name'        => 'Convenios de Salud con MSPBS para Integración de Redes (RIISS)',
                         'environment' => 'Externo',
-                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Evolución de ecosistemas de firma digital, datos abiertos e inteligencia artificial aplicable al diagnóstico médico y auditoría contable.</p>',
+                        'description' => '<p><strong>Evidencia/Referencia IEA:</strong> Posibilidad de firmar acuerdos de complementariedad con el Ministerio de Salud en cabeceras departamentales para evitar duplicación de hospitales y optimizar camas quirúrgicas.</p>',
                         'tipo'        => 'Oportunidad',
-                        'desempeno'   => 0.90,
+                        'desempeno'   => 0.88,
                         'inversion'   => 0.60,
                         'ocurrencia'  => 0.70,
                         'impacto'     => 0.40,
@@ -226,12 +338,12 @@ class FodaIpsEstructuradoSeeder extends Seeder
                 $cat = FodaModelo::create([
                     'name'        => $catData['categoria'],
                     'type'        => 'category',
-                    'owner'       => 'IPS',
+                    'owner'       => 'Instituto de Previsión Social',
                     'environment' => $catData['environment'],
                     'parent_id'   => $root->id,
                 ]);
             } else {
-                $cat->update(['environment' => $catData['environment'], 'owner' => 'IPS']);
+                $cat->update(['environment' => $catData['environment'], 'owner' => 'Instituto de Previsión Social']);
             }
 
             foreach ($catData['aspectos'] as $aspData) {
@@ -244,14 +356,14 @@ class FodaIpsEstructuradoSeeder extends Seeder
                     $aspecto = FodaModelo::create([
                         'name'        => $aspData['name'],
                         'type'        => 'aspect',
-                        'owner'       => 'IPS',
+                        'owner'       => 'Instituto de Previsión Social',
                         'environment' => $aspData['environment'],
                         'description' => $aspData['description'],
                         'parent_id'   => $cat->id,
                     ]);
                 } else {
                     $aspecto->update([
-                        'owner'       => 'IPS',
+                        'owner'       => 'Instituto de Previsión Social',
                         'environment' => $aspData['environment'],
                         'description' => $aspData['description'],
                     ]);
@@ -269,13 +381,7 @@ class FodaIpsEstructuradoSeeder extends Seeder
                     $ieaClasif = 'fortaleza';
                 }
 
-                // Target profiles to populate
-                $targetPerfilIds = [
-                    '9a741ae1-95b2-4519-bb2c-6d4fdcc4b59e', // ANÁLISIS FODA IPS (Consolidado)
-                    'a0e99967-c8d5-4d27-adac-cf16fc9efbb3', // [DEMO] Análisis FODA — IPS 2025 (Grupal)
-                    'a24b1239-b102-410d-be8c-eabc06a5c079', // Nasim Barry (Individual)
-                ];
-
+                // Cargar FodaAnalisis en los perfiles objetivo
                 foreach ($targetPerfilIds as $tPerfilId) {
                     $analisis = FodaAnalisis::where('perfil_id', $tPerfilId)
                         ->where('aspecto_id', $aspecto->id)
@@ -306,6 +412,6 @@ class FodaIpsEstructuradoSeeder extends Seeder
             }
         }
 
-        $this->command->info('¡Seeder del Modelo FODA e IEA para IPS Paraguay completado exitosamente!');
+        $this->command->info('¡Seeder FODA Ultra-Completo para IPS Paraguay cargado exitosamente!');
     }
 }
