@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Planificacion\Foda;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\Controller;
@@ -455,14 +456,27 @@ class FodaCruceAmbienteController extends Controller
 
     public function store(Request $request)
     {
-        $cruce = FodaCruceAmbiente::create($request->except(['fortaleza_id', 'debilidad_id', 'oportunidad_id', 'amenaza_id']));
+        $data = $request->except(['fortaleza_id', 'debilidad_id', 'oportunidad_id', 'amenaza_id']);
+        if (empty($data['user_id']) && Auth::check()) {
+            $data['user_id'] = Auth::id();
+        }
 
-        $cruce->fortalezas()->attach($request->fortaleza_id);
-        $cruce->oportunidades()->attach($request->oportunidad_id);
-        $cruce->debilidades()->attach($request->debilidad_id);
-        $cruce->amenazas()->attach($request->amenaza_id);
+        $cruce = FodaCruceAmbiente::create($data);
 
-        if (Auth::user()) {
+        if (!empty($request->fortaleza_id)) {
+            $cruce->fortalezas()->attach($request->fortaleza_id);
+        }
+        if (!empty($request->oportunidad_id)) {
+            $cruce->oportunidades()->attach($request->oportunidad_id);
+        }
+        if (!empty($request->debilidad_id)) {
+            $cruce->debilidades()->attach($request->debilidad_id);
+        }
+        if (!empty($request->amenaza_id)) {
+            $cruce->amenazas()->attach($request->amenaza_id);
+        }
+
+        if (Auth::check()) {
             app(\App\Services\GamificationService::class)->awardPoints(
                 Auth::user(),
                 'foda_cruce',
