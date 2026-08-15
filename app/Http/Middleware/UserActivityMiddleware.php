@@ -15,6 +15,17 @@ class UserActivityMiddleware
     public function handle($request, Closure $next)
     {
         if (Auth::check()) {
+            // Si el Administrador está navegando en modo Vista Previa (Impersonación):
+            // 1. Mantenemos 'En Línea' al Administrador original.
+            // 2. NO marcamos al usuario simulado 'En Línea'.
+            // 3. NO registramos telemetría/actividades falsas a nombre del usuario simulado.
+            if (session()->has('impersonator_id')) {
+                $adminId = session('impersonator_id');
+                Cache::put('user-is-online-' . $adminId, true, now()->addMinutes(5));
+                Cache::forget('user-is-online-' . Auth::id());
+                return $next($request);
+            }
+
             $userId = Auth::id();
             $expiresAt = now()->addMinutes(5);
             Cache::put('user-is-online-' . $userId, true, $expiresAt);

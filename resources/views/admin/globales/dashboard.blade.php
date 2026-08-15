@@ -485,7 +485,7 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <span class="font-weight-bold text-dark">{{ $u->name }}</span>
-                                            @if($u->isOnline() || auth()->id() == $u->id)
+                                            @if($u->isOnline() || (!session()->has('impersonator_id') && auth()->id() == $u->id))
                                                 <span class="badge badge-success border border-white ml-2 px-2 py-1 shadow-sm" style="font-size: 0.65rem; border-radius: 12px; background-color: #10b981;" title="En Línea (Activo en los últimos 5 min)">
                                                     <i class="fa fa-circle text-white mr-1 pulse-green" style="font-size: 0.45rem;"></i> En Línea
                                                 </span>

@@ -35,6 +35,7 @@ class ImpersonateController extends Controller
         }
 
         Auth::login($targetUser);
+        \Illuminate\Support\Facades\Cache::forget('user-is-online-' . $targetUser->id);
 
         $rolesStr = $targetUser->roles->pluck('name')->implode(', ') ?: 'Sin rol asignado';
 
