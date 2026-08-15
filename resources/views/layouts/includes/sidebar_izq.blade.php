@@ -45,28 +45,32 @@
                 </a>
             </li>
 
+            {{-- ── DEPARTAMENTO 1: PLANIFICACIÓN (Púrpura Estratégico #4f46e5 / PEI) ── --}}
             <li class="nav-item">
                 <a class="nav-link" data-toggle="collapse" href="#planificacionMenu" aria-expanded="{{ $enPlanificacion ? 'true' : 'false' }}">
-                    <i class="material-icons">assignment</i>
-                    <p>Planificación <b class="caret"></b></p>
+                    <i class="material-icons" style="color: #4f46e5 !important; font-weight: bold;">assignment</i>
+                    <p class="font-weight-bold">Planificación
+                        <span class="badge ml-1" style="background: rgba(79, 70, 229, 0.12); color: #4f46e5; font-size: 0.62rem; border-radius: 8px; padding: 2px 6px; font-weight: 700;">PEI</span>
+                        <b class="caret"></b>
+                    </p>
                 </a>
                 <div class="collapse {{ $enPlanificacion ? 'show' : '' }}" id="planificacionMenu">
                     <ul class="nav">
                         <li class="nav-item {{ $isActive('planificacion-dashboard') }}">
                             <a class="nav-link" href="{{ route('planificacion-dashboard') }}">
-                                <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem; color: #4f46e5;"></i></span>
                                 <span class="sidebar-normal">Dashboard</span>
                             </a>
                         </li>
                         <li class="nav-item {{ $isActive('pei-profiles*') }}">
                             <a class="nav-link" href="{{ route('pei-profiles.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-file-alt" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-mini"><i class="fa fa-file-alt" style="font-size:.8rem; color: #4f46e5;"></i></span>
                                 <span class="sidebar-normal">PEI</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ $enFoda ? 'active' : '' }}" data-toggle="collapse" href="#fodaMenu" aria-expanded="{{ $enFoda ? 'true' : 'false' }}">
-                                <span class="sidebar-mini"><i class="fa fa-random" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-mini"><i class="fa fa-random" style="font-size:.8rem; color: #4f46e5;"></i></span>
                                 <span class="sidebar-normal">FODA <b class="caret"></b></span>
                             </a>
                             <div class="collapse {{ $enFoda ? 'show' : '' }}" id="fodaMenu">
@@ -93,19 +97,19 @@
                             </div>
                         <li class="nav-item {{ $isActive('tasks*') }}">
                             <a class="nav-link" href="{{ route('tasks.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-tasks" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-mini"><i class="fa fa-tasks" style="font-size:.8rem; color: #4f46e5;"></i></span>
                                 <span class="sidebar-normal">Tareas</span>
                             </a>
                         </li>
                         <li class="nav-item {{ $isActive('pgn*') }}">
                             <a class="nav-link" href="{{ route('pgn.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-coins" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-mini"><i class="fa fa-coins" style="font-size:.8rem; color: #4f46e5;"></i></span>
                                 <span class="sidebar-normal">PGN</span>
                             </a>
                         </li>
                         <li class="nav-item {{ $isActive('pei/marcos*') }}">
                             <a class="nav-link" href="{{ route('pei.marcos.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-link" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-mini"><i class="fa fa-link" style="font-size:.8rem; color: #4f46e5;"></i></span>
                                 <span class="sidebar-normal">Marcos Referenciales</span>
                             </a>
                         </li>
@@ -118,24 +122,25 @@
         @hasanyrole('Coordinador de Planificación|Analista de Planificación')
             <li class="nav-item {{ request()->is('planificacion-dashboard*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('planificacion-dashboard') }}">
-                    <i class="material-icons">dashboard</i>
+                    <i class="material-icons" style="color: #4f46e5 !important;">dashboard</i>
                     <p>Planificación</p>
                 </a>
             </li>
             <li class="nav-item {{ request()->is('coordinador-planificacion*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('coordinador.index') }}">
-                    <i class="material-icons">groups</i>
+                    <i class="material-icons" style="color: #4f46e5 !important;">groups</i>
                     <p>Coordinación</p>
                 </a>
             </li>
         @endhasanyrole
 
-        {{-- Menú exclusivo para Administrador (globales, SIESS, proyectos, etc.) --}}
+        {{-- ── DEPARTAMENTO 2: PROYECTOS (Verde Esmeralda #10b981 / PMO) ── --}}
         @role('Administrador')
             <li class="nav-item">
                 <a class="nav-link" data-toggle="collapse" href="#proyectosMenu" aria-expanded="{{ $enProyectos ? 'true' : 'false' }}">
-                    <i class="material-icons">account_tree</i>
-                    <p>Proyectos
+                    <i class="material-icons" style="color: #10b981 !important; font-weight: bold;">account_tree</i>
+                    <p class="font-weight-bold">Proyectos
+                        <span class="badge ml-1" style="background: rgba(16, 185, 129, 0.12); color: #059669; font-size: 0.62rem; border-radius: 8px; padding: 2px 6px; font-weight: 700;">PMO</span>
                         @php $sinPei = \App\Models\Proyectos\ProyectoInstitucional::whereNull('pei_profile_id')->activos()->count(); @endphp
                         @if($sinPei > 0)
                             <span class="badge badge-warning ml-1" style="font-size:.65rem">{{ $sinPei }}</span>
@@ -147,7 +152,7 @@
                     <ul class="nav">
                         <li class="nav-item {{ $isActive('proyectos-dashboard') }}">
                             <a class="nav-link" href="{{ route('proyectos-dashboard') }}">
-                                <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem; color: #10b981;"></i></span>
                                 <span class="sidebar-normal">Dashboard</span>
                             </a>
                         </li>
@@ -155,14 +160,15 @@
                 </div>
             </li>
 
-            {{-- ── Estadísticas ── --}}
+            {{-- ── DEPARTAMENTO 3: ESTADÍSTICAS (Ámbar / Naranja Datos #f59e0b / DATA) ── --}}
             @php
                 $pendientesSiess = \App\Models\Estadistica\SiessExtracto::pendientes()->count();
             @endphp
             <li class="nav-item">
                 <a class="nav-link" data-toggle="collapse" href="#siessMenu" aria-expanded="{{ $enEstadisticas ? 'true' : 'false' }}">
-                    <i class="material-icons">bar_chart</i>
-                    <p>Estadísticas
+                    <i class="material-icons" style="color: #f59e0b !important; font-weight: bold;">bar_chart</i>
+                    <p class="font-weight-bold">Estadísticas
+                        <span class="badge ml-1" style="background: rgba(245, 158, 11, 0.12); color: #d97706; font-size: 0.62rem; border-radius: 8px; padding: 2px 6px; font-weight: 700;">DATA</span>
                         @if($pendientesSiess > 0)
                             <span class="badge badge-warning ml-1" style="font-size:.65rem">{{ $pendientesSiess }}</span>
                         @endif
