@@ -57,7 +57,7 @@ class ImpersonateController extends Controller
         $adminUser = User::findOrFail($adminId);
         Auth::login($adminUser);
 
-        return redirect()->route('users.index')
+        return redirect()->route('globales.users.index')
             ->with('info', 'Has vuelto exitosamente a tu cuenta de Administrador.');
     }
 

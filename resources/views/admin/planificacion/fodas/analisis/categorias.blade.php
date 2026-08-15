@@ -25,7 +25,7 @@
                                 <table class="table table-striped table-hover">
                                     <!-- AquiBuscador -->
                                     <div class="float-right">
-                                        {!! Form::open(['route' => 'users.index','method' => 'GET', 'class'=>'navbar-form navbar-left pull-right','role'=>'search']) !!}
+                                        {!! Form::open(['route' => 'globales.users.index','method' => 'GET', 'class'=>'navbar-form navbar-left pull-right','role'=>'search']) !!}
                                         <div class="form-group">
                                             {!! Form::text('ci',null, ['class'=>'form-control','placeholder'=>'Buscar Usuario']) !!}
                                         </div>
