@@ -588,12 +588,6 @@ class FodaAnalisisController extends Controller
         // return view('admin.planificacion.fodas.analisis.edit', get_defined_vars());
 
         $data = FodaAnalisis::with('model')->where('id', $id)->first();
-        if ($data && $data->aspecto_id) {
-            $aspecto = FodaAspecto::find($data->aspecto_id);
-            if ($aspecto && !empty($aspecto->referencia)) {
-                $data->aspecto_referencia = $aspecto->referencia;
-            }
-        }
 
         return response()->json($data);
     }
