@@ -371,27 +371,27 @@
                                     $totalPriorizados   = $totalFortalezas + $totalDebilidades + $totalOportunidades + $totalAmenazas;
                                 @endphp
                                 <div class="col-12 mb-3">
-                                    <div class="card border-0 shadow-sm" style="border-radius: 14px; overflow: hidden; background: #fff;">
-                                        <div class="card-header p-3 d-flex align-items-center justify-content-between flex-wrap"
+                                    <div class="card border shadow-xs" style="border-radius: 12px; overflow: hidden; background: #fff;">
+                                        <div class="card-header p-3 bg-light d-flex align-items-center justify-content-between flex-wrap"
                                              data-toggle="collapse" data-target="#collapseFodaPriorizado" aria-expanded="false" aria-controls="collapseFodaPriorizado"
-                                             style="cursor: pointer; user-select: none; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff;">
+                                             style="cursor: pointer; user-select: none; background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); border-bottom: 1px solid #e2e8f0;">
                                             <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
-                                                <i class="fa fa-th-large text-warning" style="font-size: 1.15rem;"></i>
-                                                <span class="font-weight-bold text-uppercase text-white" style="font-size:.85rem; letter-spacing:.04em">
+                                                <i class="fa fa-th-large text-warning mr-1" style="font-size: 1.1rem;"></i>
+                                                <span class="font-weight-bold text-uppercase" style="font-size:.85rem; letter-spacing:.04em; color: #1e293b;">
                                                     Matriz para el análisis del entorno externo e interno (FODA)
                                                 </span>
                                                 @if($fodaPerfilVinculado)
-                                                <span class="badge badge-success px-2.5 py-1" style="font-size:.7rem; border-radius: 12px; background:#10b981;">
+                                                <span class="badge badge-success px-2.5 py-1" style="font-size:.7rem; border-radius: 12px;">
                                                     <i class="fa fa-layer-group mr-1"></i>Perfil Consolidado: {{ $fodaPerfilVinculado->name }} ({{ $totalPriorizados }} aspectos)
                                                 </span>
                                                 @endif
-                                                <span class="badge badge-light text-dark px-2 py-1 ml-1" style="font-size:.68rem; border-radius: 12px; opacity:.9;">
+                                                <span class="badge badge-light border text-muted px-2 py-1 ml-1" style="font-size:.68rem; border-radius: 12px;">
                                                     <i class="fa fa-chevron-down mr-1"></i>Clic para Desplegar / Ocultar
                                                 </span>
                                             </div>
                                             <div class="d-flex align-items-center ml-auto" style="gap: 8px;">
                                                 @if($fodaPerfilId)
-                                                <button type="button" class="btn btn-xs btn-warning font-weight-bold text-dark btnVerFodaCrossing shadow-xs"
+                                                <button type="button" class="btn btn-xs btn-outline-warning font-weight-bold btnVerFodaCrossing"
                                                         onclick="event.stopPropagation();"
                                                         data-url="{{ route('foda-cruce-ambientes', $fodaPerfilId) }}"
                                                         data-name="{{ addslashes(strip_tags($profile->name)) }}"
@@ -468,10 +468,6 @@
                                                 </div>
                                                 @endif
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-
                                         </div>
                                     </div>
                                 </div>
