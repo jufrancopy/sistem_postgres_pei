@@ -3724,21 +3724,21 @@ function irAIniciativaDesdeModal(iniId) {
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body p-4 bg-light">
-                <div class="row align-items-center mb-3">
-                    <div class="col-md-7 mb-2 mb-md-0">
-                        <div class="input-group shadow-xs" style="border-radius: 10px; overflow: hidden;">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
-                            </div>
-                            <input type="text" class="form-control border-left-0 pl-0" id="inputBuscarIniciativasModal" placeholder="Buscar por código, nombre o responsable..." onkeyup="filtrarIniciativasModal()">
+                <div class="mb-3">
+                    <div class="input-group shadow-xs mb-3" style="border-radius: 10px; overflow: hidden;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
                         </div>
+                        <input type="text" class="form-control border-left-0 pl-0" id="inputBuscarIniciativasModal" placeholder="Buscar por código, nombre o responsable..." onkeyup="filtrarIniciativasModal()">
                     </div>
-                    <div class="col-md-5 d-flex justify-content-md-end" style="gap: 5px;">
-                        <button type="button" class="btn btn-sm btn-dark active btn-filter-ini-modal" data-status="all" onclick="filtrarIniciativasModalStatus(this, 'all')">Todos</button>
-                        <button type="button" class="btn btn-sm btn-outline-success btn-filter-ini-modal" data-status="EJECUTADO" onclick="filtrarIniciativasModalStatus(this, 'EJECUTADO')">Ejecutados</button>
-                        <button type="button" class="btn btn-sm btn-outline-warning btn-filter-ini-modal" data-status="EN CURSO" onclick="filtrarIniciativasModalStatus(this, 'EN CURSO')">En Curso</button>
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-filter-ini-modal" data-status="PENDIENTE" onclick="filtrarIniciativasModalStatus(this, 'PENDIENTE')">Pendientes</button>
+                    <div class="d-flex flex-wrap align-items-center justify-content-between bg-white p-2.5 rounded border shadow-xs" style="border-radius: 10px;">
+                        <span class="text-muted small font-weight-bold mb-2 mb-md-0"><i class="fa fa-filter text-warning mr-1"></i> Filtrar por estado:</span>
+                        <div class="d-flex flex-wrap" style="gap: 5px;">
+                            <button type="button" class="btn btn-sm btn-dark active btn-filter-ini-modal" data-status="all" onclick="filtrarIniciativasModalStatus(this, 'all')">Todos</button>
+                            <button type="button" class="btn btn-sm btn-outline-success btn-filter-ini-modal" data-status="EJECUTADO" onclick="filtrarIniciativasModalStatus(this, 'EJECUTADO')">Ejecutados</button>
+                            <button type="button" class="btn btn-sm btn-outline-warning btn-filter-ini-modal" data-status="EN CURSO" onclick="filtrarIniciativasModalStatus(this, 'EN CURSO')">En Curso</button>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-filter-ini-modal" data-status="PENDIENTE" onclick="filtrarIniciativasModalStatus(this, 'PENDIENTE')">Pendientes</button>
+                        </div>
                     </div>
                 </div>
 
