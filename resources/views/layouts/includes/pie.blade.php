@@ -1,20 +1,13 @@
 <footer class="footer">
     <div class="container-fluid">
         <nav class="float-left">
-            <ul>
-                <li>
-                    <a href="#">
-                        Politicas de Uso
-                    </a>
-                </li>
-            </ul>
+            <small class="text-muted">
+                {{ \App\Models\HomeConfiguration::getSetting('contact_email') ? 'Contacto: ' . \App\Models\HomeConfiguration::getSetting('contact_email') : '' }}
+                {{ \App\Models\HomeConfiguration::getSetting('contact_phone') ? ' · Tel: ' . \App\Models\HomeConfiguration::getSetting('contact_phone') : '' }}
+            </small>
         </nav>
-        <div class="copyright float-right">
-            &copy;
-            <script>
-                document.write(new Date().getFullYear())
-            </script>, Hecho con <i class="material-icons">favorite</i> por
-            <a href="https://www.facebook.com/jucfra" target="_blank">JacEze</a>
+        <div class="copyright float-right small text-muted">
+            {{ \App\Models\HomeConfiguration::getSetting('footer_text', '© ' . date('Y') . ' Instituto de Previsión Social (IPS) — Dirección de Planificación.') }}
         </div>
     </div>
 </footer>

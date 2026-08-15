@@ -334,16 +334,28 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
   .panel{break-inside:avoid;box-shadow:none;border:1px solid #ccc}
 }
 </style>
-</head>
 <body>
+@php
+    $sysLogoUrl  = \App\Models\HomeConfiguration::getSetting('logo_url');
+    $sysSiteName = \App\Models\HomeConfiguration::getSetting('site_name', 'SIPLAN');
+    $sysEmail    = \App\Models\HomeConfiguration::getSetting('contact_email', 'planificacion@ips.gov.py');
+    $sysPhone    = \App\Models\HomeConfiguration::getSetting('contact_phone', '+595 21 219 7000');
+    $sysHours    = \App\Models\HomeConfiguration::getSetting('opening_hours', 'Lunes a Viernes de 07:00 a 15:00 hs');
+    $sysAddress  = \App\Models\HomeConfiguration::getSetting('address', 'Constitución e/ Herrera y Pettirossi, Asunción - Paraguay');
+    $sysFooter   = \App\Models\HomeConfiguration::getSetting('footer_text', '© ' . date('Y') . ' Instituto de Previsión Social (IPS) — Dirección de Planificación. Todos los derechos reservados.');
+@endphp
 
 {{-- NAV --}}
 <nav class="topbar" role="navigation" aria-label="Navegación principal">
     <div class="topbar-left">
         <a href="{{ url('/') }}" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:12px">
-            <div class="topbar-logo" aria-hidden="true">SP</div>
+            @if($sysLogoUrl)
+                <img src="{{ $sysLogoUrl }}" alt="{{ $sysSiteName }}" style="max-height: 38px; object-fit: contain;">
+            @else
+                <div class="topbar-logo" aria-hidden="true">SP</div>
+            @endif
             <div class="topbar-text">
-                <div class="topbar-title">SIPLAN</div>
+                <div class="topbar-title">{{ $sysSiteName }}</div>
                 <div class="topbar-sub">IPS · Planificación Estratégica</div>
             </div>
         </a>
@@ -786,7 +798,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                 </div>
             </div>
         </div>
-        <div class="footer-copy">© {{ date('Y') }} SIPLAN · Instituto de Previsión Social del Paraguay · Todos los derechos reservados</div>
+        <div class="footer-copy">{{ $sysFooter }}</div>
     </div>
 </footer>
 

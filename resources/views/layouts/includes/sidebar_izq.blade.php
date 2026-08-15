@@ -21,9 +21,17 @@
     // Helper para marcar link activo
     $isActive = fn($routePattern) => request()->is($routePattern) ? 'active' : '';
 @endphp
-<div class="logo">
-    <a href="{{ route('planificacion-dashboard') }}" class="simple-text logo-normal">
-        SIPLAN
+@php
+    $sysLogoUrl  = \App\Models\HomeConfiguration::getSetting('logo_url');
+    $sysSiteName = \App\Models\HomeConfiguration::getSetting('site_name', 'SIPLAN');
+@endphp
+<div class="logo text-center py-2">
+    <a href="{{ route('planificacion-dashboard') }}" class="simple-text logo-normal d-block">
+        @if($sysLogoUrl)
+            <img src="{{ $sysLogoUrl }}" alt="{{ $sysSiteName }}" style="max-height: 45px; max-width: 85%; object-fit: contain;">
+        @else
+            {{ $sysSiteName }}
+        @endif
     </a>
 </div>
 <div class="sidebar-wrapper">
