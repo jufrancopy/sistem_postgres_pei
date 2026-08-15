@@ -13,6 +13,7 @@
     $enSiess         = str_contains($path, 'siess') || str_contains($path, 'eph') || str_contains($path, 'dgeec') || str_contains($path, 'contexto');
     $enBioestadistica = str_contains($path, 'bioestadistica');
     $enEstadisticas  = $enSiess || $enBioestadistica;
+    $enOperativa     = str_contains($path, 'riiss') || str_contains($path, 'patrimony') || str_contains($path, 'activities') || str_contains($path, 'surveys');
     $enCronogramas   = str_contains($path, 'cronogramas');
     $enModulosSiess  = str_contains($path, 'siess/modulos');
     $enFoda          = str_contains($path, 'foda');
@@ -321,50 +322,67 @@
                 </div>
             </li>
 
-            {{-- ── RIISS (dentro del menú Administrador) ── --}}
+            {{-- ── DEPARTAMENTO 4: GESTIÓN OPERATIVA & SERVICIOS (Teal/Cyan #06b6d4 / OPS) ── --}}
             @php $enRiiss = str_contains($path, 'riiss'); @endphp
             <li class="nav-item">
-                <a class="nav-link" data-toggle="collapse" href="#riissMenu" aria-expanded="{{ $enRiiss ? 'true' : 'false' }}">
-                    <i class="material-icons">local_hospital</i>
-                    <p>RIISS <b class="caret"></b></p>
+                <a class="nav-link" data-toggle="collapse" href="#operativaServiciosMenu" aria-expanded="{{ $enOperativa ? 'true' : 'false' }}">
+                    <i class="material-icons" style="color: #06b6d4 !important; font-weight: bold;">settings_suggest</i>
+                    <p class="font-weight-bold">Gestión Operativa
+                        <span class="badge ml-1" style="background: rgba(6, 182, 212, 0.12); color: #0891b2; font-size: 0.62rem; border-radius: 8px; padding: 2px 6px; font-weight: 700;">OPS</span>
+                        <b class="caret"></b>
+                    </p>
                 </a>
-                <div class="collapse {{ $enRiiss ? 'show' : '' }}" id="riissMenu">
+                <div class="collapse {{ $enOperativa ? 'show' : '' }}" id="operativaServiciosMenu">
                     <ul class="nav">
-                        <li class="nav-item {{ $path === 'riiss' ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('riiss.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-hospital" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Centro RIISS</span>
+                        {{-- Submenú 1: RIISS --}}
+                        <li class="nav-item">
+                            <a class="nav-link {{ $enRiiss ? 'active' : '' }}" data-toggle="collapse" href="#riissSubMenu" aria-expanded="{{ $enRiiss ? 'true' : 'false' }}">
+                                <span class="sidebar-mini"><i class="fa fa-hospital" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                <span class="sidebar-normal font-weight-bold" style="color: #334155;">RIISS (Red de Salud) <b class="caret"></b></span>
+                            </a>
+                            <div class="collapse {{ $enRiiss ? 'show' : '' }}" id="riissSubMenu">
+                                <ul class="nav" style="padding-left:10px">
+                                    <li class="nav-item {{ $path === 'riiss' ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('riiss.index') }}">
+                                            <span class="sidebar-mini"><i class="fa fa-crosshairs" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                            <span class="sidebar-normal">Centro RIISS</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ str_contains($path, 'riiss/configuracion') || str_contains($path, 'riiss/formularios') || str_contains($path, 'riiss/complejidad') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('riiss.configuracion') }}">
+                                            <span class="sidebar-mini"><i class="fa fa-cog" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                            <span class="sidebar-normal">Configuración</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        {{-- Patrimonios --}}
+                        <li class="nav-item {{ str_contains($path, 'patrimony') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('globales.patrimony-profiles.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-landmark" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                <span class="sidebar-normal">Patrimonios</span>
                             </a>
                         </li>
-                        <li class="nav-item {{ str_contains($path, 'riiss/configuracion') || str_contains($path, 'riiss/formularios') || str_contains($path, 'riiss/complejidad') ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('riiss.configuracion') }}">
-                                <span class="sidebar-mini"><i class="fa fa-cog" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Configuración</span>
+
+                        {{-- Actividades --}}
+                        <li class="nav-item {{ str_contains($path, 'activities') && !str_contains($path, 'mis-actividades') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('globales.activities.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-rocket" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                <span class="sidebar-normal">Actividades</span>
+                            </a>
+                        </li>
+
+                        {{-- Encuestas --}}
+                        <li class="nav-item {{ str_contains($path, 'surveys') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('surveys.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-poll" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                <span class="sidebar-normal">Encuestas & Evaluación</span>
                             </a>
                         </li>
                     </ul>
                 </div>
-            </li>
-
-            <li class="nav-item ">
-                <a class="nav-link" href="{{ route('globales.patrimony-profiles.index') }}">
-                    <i class="material-icons">account_balance</i>
-                    <p>Patrimonios</p>
-                </a>
-            </li>
-
-            <li class="nav-item ">
-                <a class="nav-link" href="{{ route('globales.activities.index') }}">
-                    <i class="material-icons">rocket_launch</i>
-                    <p>Acitividades</p>
-                </a>
-            </li>
-
-            <li class="nav-item ">
-                <a class="nav-link" href="{{ route('surveys.index') }}">
-                    <i class="material-icons">poll </i>
-                    <p>Encuesta</p>
-                </a>
             </li>
         @endrole
 
