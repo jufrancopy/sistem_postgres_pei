@@ -12,6 +12,7 @@
     $enProyectos     = str_contains($path, 'proyectos') || str_contains($path, 'epc');
     $enSiess         = str_contains($path, 'siess') || str_contains($path, 'eph') || str_contains($path, 'dgeec') || str_contains($path, 'contexto');
     $enBioestadistica = str_contains($path, 'bioestadistica');
+    $enEstadisticas  = $enSiess || $enBioestadistica;
     $enCronogramas   = str_contains($path, 'cronogramas');
     $enModulosSiess  = str_contains($path, 'siess/modulos');
     $enFoda          = str_contains($path, 'foda');
@@ -154,12 +155,12 @@
                 </div>
             </li>
 
-            {{-- ── Estadísticas / SIESS ── --}}
+            {{-- ── Estadísticas ── --}}
             @php
                 $pendientesSiess = \App\Models\Estadistica\SiessExtracto::pendientes()->count();
             @endphp
             <li class="nav-item">
-                <a class="nav-link" data-toggle="collapse" href="#siessMenu" aria-expanded="{{ $enSiess ? 'true' : 'false' }}">
+                <a class="nav-link" data-toggle="collapse" href="#siessMenu" aria-expanded="{{ $enEstadisticas ? 'true' : 'false' }}">
                     <i class="material-icons">bar_chart</i>
                     <p>Estadísticas
                         @if($pendientesSiess > 0)
@@ -168,89 +169,102 @@
                         <b class="caret"></b>
                     </p>
                 </a>
-                <div class="collapse {{ $enSiess ? 'show' : '' }}" id="siessMenu">
+                <div class="collapse {{ $enEstadisticas ? 'show' : '' }}" id="siessMenu">
                     <ul class="nav">
-                        <li class="nav-item {{ $isActive('siess') }}">
-                            <a class="nav-link" href="{{ route('siess.dashboard') }}">
-                                <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Dashboard</span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ $isActive('siess/extractos*') }}">
-                            <a class="nav-link" href="{{ route('siess.extractos.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-database" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Extractos
-                                    @if($pendientesSiess > 0)
-                                        <span class="badge badge-warning" style="font-size:.6rem">{{ $pendientesSiess }}</span>
-                                    @endif
-                                </span>
-                            </a>
-                        </li>
+
+                        {{-- ── Submenú 1: Seguridad Social ── --}}
                         <li class="nav-item">
-                            <a class="nav-link {{ $enModulosSiess ? 'active' : '' }}" data-toggle="collapse" href="#siessModulos" aria-expanded="{{ $enModulosSiess ? 'true' : 'false' }}">
-                                <span class="sidebar-mini"><i class="fa fa-layer-group" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Módulos <b class="caret"></b></span>
+                            <a class="nav-link {{ $enSiess ? 'active' : '' }}" data-toggle="collapse" href="#seguridadSocialSubMenu" aria-expanded="{{ $enSiess ? 'true' : 'false' }}">
+                                <span class="sidebar-mini"><i class="fa fa-shield-alt" style="font-size:.8rem"></i></span>
+                                <span class="sidebar-normal">Seguridad Social <b class="caret"></b></span>
                             </a>
-                            <div class="collapse {{ $enModulosSiess ? 'show' : '' }}" id="siessModulos">
+                            <div class="collapse {{ $enSiess ? 'show' : '' }}" id="seguridadSocialSubMenu">
                                 <ul class="nav" style="padding-left:10px">
-                                    <li class="nav-item {{ $isActive('siess/modulos/aop') }}">
-                                        <a class="nav-link" href="{{ route('siess.modulos.aop') }}">
-                                            <span class="sidebar-mini">AOP</span>
-                                            <span class="sidebar-normal">Aportes</span>
+                                    <li class="nav-item {{ $isActive('siess') }}">
+                                        <a class="nav-link" href="{{ route('siess.dashboard') }}">
+                                            <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem"></i></span>
+                                            <span class="sidebar-normal">Dashboard</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $isActive('siess/modulos/ju') }}">
-                                        <a class="nav-link" href="{{ route('siess.modulos.ju') }}">
-                                            <span class="sidebar-mini">JU</span>
-                                            <span class="sidebar-normal">Jubilaciones</span>
+                                    <li class="nav-item {{ $isActive('siess/extractos*') }}">
+                                        <a class="nav-link" href="{{ route('siess.extractos.index') }}">
+                                            <span class="sidebar-mini"><i class="fa fa-database" style="font-size:.8rem"></i></span>
+                                            <span class="sidebar-normal">Extractos
+                                                @if($pendientesSiess > 0)
+                                                    <span class="badge badge-warning" style="font-size:.6rem">{{ $pendientesSiess }}</span>
+                                                @endif
+                                            </span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $isActive('siess/modulos/rl') }}">
-                                        <a class="nav-link" href="{{ route('siess.modulos.rl') }}">
-                                            <span class="sidebar-mini">RL</span>
-                                            <span class="sidebar-normal">Subsidios</span>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ $enModulosSiess ? 'active' : '' }}" data-toggle="collapse" href="#siessModulos" aria-expanded="{{ $enModulosSiess ? 'true' : 'false' }}">
+                                            <span class="sidebar-mini"><i class="fa fa-layer-group" style="font-size:.8rem"></i></span>
+                                            <span class="sidebar-normal">Módulos <b class="caret"></b></span>
+                                        </a>
+                                        <div class="collapse {{ $enModulosSiess ? 'show' : '' }}" id="siessModulos">
+                                            <ul class="nav" style="padding-left:10px">
+                                                <li class="nav-item {{ $isActive('siess/modulos/aop') }}">
+                                                    <a class="nav-link" href="{{ route('siess.modulos.aop') }}">
+                                                        <span class="sidebar-mini">AOP</span>
+                                                        <span class="sidebar-normal">Aportes</span>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item {{ $isActive('siess/modulos/ju') }}">
+                                                    <a class="nav-link" href="{{ route('siess.modulos.ju') }}">
+                                                        <span class="sidebar-mini">JU</span>
+                                                        <span class="sidebar-normal">Jubilaciones</span>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item {{ $isActive('siess/modulos/rl') }}">
+                                                    <a class="nav-link" href="{{ route('siess.modulos.rl') }}">
+                                                        <span class="sidebar-mini">RL</span>
+                                                        <span class="sidebar-normal">Subsidios</span>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item {{ $isActive('siess/modulos/di') }}">
+                                                    <a class="nav-link" href="{{ route('siess.modulos.di') }}">
+                                                        <span class="sidebar-mini">DI</span>
+                                                        <span class="sidebar-normal">Inversiones</span>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item {{ $isActive('siess/modulos/dt') }}">
+                                                    <a class="nav-link" href="{{ route('siess.modulos.dt') }}">
+                                                        <span class="sidebar-mini">DT</span>
+                                                        <span class="sidebar-normal">Tesorería</span>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item {{ $isActive('siess/modulos/rh') }}">
+                                                    <a class="nav-link" href="{{ route('siess.modulos.rh') }}">
+                                                        <span class="sidebar-mini">RH</span>
+                                                        <span class="sidebar-normal">Rec. Humanos</span>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item {{ $isActive('siess/modulos/cau') }}">
+                                                    <a class="nav-link" href="{{ route('siess.modulos.cau') }}">
+                                                        <span class="sidebar-mini">CAU</span>
+                                                        <span class="sidebar-normal">Atención</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                    <li class="nav-item {{ $isActive('siess/reportes*') }}">
+                                        <a class="nav-link" href="{{ route('siess.reportes.index') }}">
+                                            <span class="sidebar-mini"><i class="fa fa-file-pdf" style="font-size:.8rem"></i></span>
+                                            <span class="sidebar-normal">Reportes</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $isActive('siess/modulos/di') }}">
-                                        <a class="nav-link" href="{{ route('siess.modulos.di') }}">
-                                            <span class="sidebar-mini">DI</span>
-                                            <span class="sidebar-normal">Inversiones</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ $isActive('siess/modulos/dt') }}">
-                                        <a class="nav-link" href="{{ route('siess.modulos.dt') }}">
-                                            <span class="sidebar-mini">DT</span>
-                                            <span class="sidebar-normal">Tesorería</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ $isActive('siess/modulos/rh') }}">
-                                        <a class="nav-link" href="{{ route('siess.modulos.rh') }}">
-                                            <span class="sidebar-mini">RH</span>
-                                            <span class="sidebar-normal">Rec. Humanos</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ $isActive('siess/modulos/cau') }}">
-                                        <a class="nav-link" href="{{ route('siess.modulos.cau') }}">
-                                            <span class="sidebar-mini">CAU</span>
-                                            <span class="sidebar-normal">Atención</span>
+                                    <li class="nav-item {{ $isActive('siess/eph*') }}">
+                                        <a class="nav-link" href="{{ route('siess.eph.index') }}">
+                                            <span class="sidebar-mini"><i class="fa fa-globe" style="font-size:.8rem"></i></span>
+                                            <span class="sidebar-normal">EPH / INE</span>
                                         </a>
                                     </li>
                                 </ul>
                             </div>
                         </li>
-                        <li class="nav-item {{ $isActive('siess/reportes*') }}">
-                            <a class="nav-link" href="{{ route('siess.reportes.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-file-pdf" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Reportes</span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ $isActive('siess/eph*') }}">
-                            <a class="nav-link" href="{{ route('siess.eph.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-globe" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">EPH / INE</span>
-                            </a>
-                        </li>
-                        {{-- ── Bioestadísticas (Submenú dentro de Estadísticas) ── --}}
+
+                        {{-- ── Submenú 2: Bioestadísticas ── --}}
                         <li class="nav-item">
                             <a class="nav-link {{ $enBioestadistica ? 'active' : '' }}" data-toggle="collapse" href="#bioestadisticaSubMenu" aria-expanded="{{ $enBioestadistica ? 'true' : 'false' }}">
                                 <span class="sidebar-mini"><i class="fa fa-heartbeat" style="font-size:.8rem"></i></span>
