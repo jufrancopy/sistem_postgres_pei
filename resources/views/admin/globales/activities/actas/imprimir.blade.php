@@ -153,8 +153,11 @@
                         ACTA DE REUNIÓN Nº {{ $acta->numero_acta }}
                     </h4>
                 </div>
-                <div style="width: 80px; text-align: right;">
-                    {{-- Espacio para código o control --}}
+                <div style="width: 100px; text-align: right;">
+                    <div style="display: inline-block; padding: 2px; border: 1px solid #ccc; background: white;">
+                        {!! $qrSvg !!}
+                    </div>
+                    <div style="font-size: 6.5pt; font-weight: bold; margin-top: 2px;">ESCANEAR QR</div>
                 </div>
             </div>
         </div>
