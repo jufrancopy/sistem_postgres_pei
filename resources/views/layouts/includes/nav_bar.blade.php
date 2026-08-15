@@ -1,10 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top" style="box-shadow: none !important; background: transparent !important;">
   <div class="container-fluid">
     <div class="navbar-wrapper">
-      <a class="navbar-brand text-dark font-weight-bold d-flex align-items-center" href="{{ route('home') }}" style="font-size: 0.98rem; letter-spacing: -0.2px;">
-        @if(\App\Models\HomeConfiguration::getSetting('logo_url'))
-          <img src="{{ \App\Models\HomeConfiguration::getSetting('logo_url') }}" alt="Logo" class="mr-2" style="max-height: 28px; object-fit: contain;">
-        @endif
+      <a class="navbar-brand text-dark font-weight-bold" href="{{ route('home') }}" style="font-size: 0.98rem; letter-spacing: -0.2px;">
         <span>{{ \App\Models\HomeConfiguration::getSetting('site_name', 'SIPLAN') }}</span>
       </a>
     </div>
