@@ -221,16 +221,16 @@
 @section('content')
 <div class="container-fluid">
 
-    {{-- ── Breadcrumbs ── --}}
-    <nav aria-label="breadcrumb" class="bg-white rounded shadow-sm p-3 mb-4">
-        <ol class="breadcrumb mb-0 bg-transparent p-0">
-            <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}" class="text-primary font-weight-bold"><i class="fa fa-home mr-1"></i>Inicio</a></li>
-            <li class="breadcrumb-item active text-dark font-weight-bold" aria-current="page">Panel del Administrador Global</li>
-        </ol>
-    </nav>
-
     {{-- ── Banner Hero de Contexto Institucional ── --}}
     <div class="hero-admin-card">
+        {{-- Breadcrumb Integrado al nivel del Card Header --}}
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb mb-0 p-0" style="background: transparent;">
+                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}" class="text-white-50 font-weight-bold text-decoration-none"><i class="fa fa-home mr-1 text-warning"></i>Inicio</a></li>
+                <li class="breadcrumb-item active text-white font-weight-bold" aria-current="page">Panel del Administrador Global</li>
+            </ol>
+        </nav>
+
         <div class="row align-items-center">
             <div class="col-lg-7">
                 <div class="d-flex align-items-center mb-2">
