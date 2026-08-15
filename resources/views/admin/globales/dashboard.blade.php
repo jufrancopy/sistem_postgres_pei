@@ -1402,7 +1402,7 @@
      MODAL: ANÁLISIS Y CRUCE DE AMBIENTES FODA
      ════════════════════════════════════════════════════════════════════════════ --}}
 <div class="modal fade" id="modalFodaCrossing" tabindex="-1" role="dialog" aria-labelledby="modalFodaCrossingTitulo" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1250px; width: 96%;">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1550px; width: 96%;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
             <div class="modal-header text-white d-flex align-items-center justify-content-between p-3" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;">
                 <h5 class="modal-title font-weight-bold text-white mb-0" id="modalFodaCrossingTitulo">
