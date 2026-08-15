@@ -77,19 +77,19 @@
                                 <ul class="nav" style="padding-left:10px">
                                     <li class="nav-item {{ $isActive('foda-list-groups') }}">
                                         <a class="nav-link" href="{{ route('foda-list-groups') }}">
-                                            <span class="sidebar-mini"><i class="fa fa-search" style="font-size:.75rem"></i></span>
+                                            <span class="sidebar-mini"><i class="fa fa-search" style="font-size:.75rem; color: #4f46e5;"></i></span>
                                             <span class="sidebar-normal">Análisis</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('foda-perfiles*') }}">
                                         <a class="nav-link" href="{{ route('foda-perfiles.index') }}">
-                                            <span class="sidebar-mini"><i class="fa fa-layer-group" style="font-size:.75rem"></i></span>
+                                            <span class="sidebar-mini"><i class="fa fa-layer-group" style="font-size:.75rem; color: #4f46e5;"></i></span>
                                             <span class="sidebar-normal">Perfiles</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('foda-models*') }}">
                                         <a class="nav-link" href="{{ route('foda-models.index') }}">
-                                            <span class="sidebar-mini"><i class="fa fa-cubes" style="font-size:.75rem"></i></span>
+                                            <span class="sidebar-mini"><i class="fa fa-cubes" style="font-size:.75rem; color: #4f46e5;"></i></span>
                                             <span class="sidebar-normal">Modelos</span>
                                         </a>
                                     </li>
@@ -178,23 +178,23 @@
                 <div class="collapse {{ $enEstadisticas ? 'show' : '' }}" id="siessMenu">
                     <ul class="nav">
 
-                        {{-- ── Submenú 1: Seguridad Social ── --}}
+                        {{-- ── Submenú 1: Seguridad Social (Color Cascading #f59e0b) ── --}}
                         <li class="nav-item">
                             <a class="nav-link {{ $enSiess ? 'active' : '' }}" data-toggle="collapse" href="#seguridadSocialSubMenu" aria-expanded="{{ $enSiess ? 'true' : 'false' }}">
-                                <span class="sidebar-mini"><i class="fa fa-shield-alt" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Seguridad Social <b class="caret"></b></span>
+                                <span class="sidebar-mini"><i class="fa fa-shield-alt" style="font-size:.8rem; color: #f59e0b;"></i></span>
+                                <span class="sidebar-normal font-weight-bold" style="color: #334155;">Seguridad Social <b class="caret"></b></span>
                             </a>
                             <div class="collapse {{ $enSiess ? 'show' : '' }}" id="seguridadSocialSubMenu">
                                 <ul class="nav" style="padding-left:10px">
                                     <li class="nav-item {{ $isActive('siess') }}">
                                         <a class="nav-link" href="{{ route('siess.dashboard') }}">
-                                            <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem"></i></span>
+                                            <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem; color: #f59e0b;"></i></span>
                                             <span class="sidebar-normal">Dashboard</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('siess/extractos*') }}">
                                         <a class="nav-link" href="{{ route('siess.extractos.index') }}">
-                                            <span class="sidebar-mini"><i class="fa fa-database" style="font-size:.8rem"></i></span>
+                                            <span class="sidebar-mini"><i class="fa fa-database" style="font-size:.8rem; color: #f59e0b;"></i></span>
                                             <span class="sidebar-normal">Extractos
                                                 @if($pendientesSiess > 0)
                                                     <span class="badge badge-warning" style="font-size:.6rem">{{ $pendientesSiess }}</span>
@@ -204,50 +204,50 @@
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link {{ $enModulosSiess ? 'active' : '' }}" data-toggle="collapse" href="#siessModulos" aria-expanded="{{ $enModulosSiess ? 'true' : 'false' }}">
-                                            <span class="sidebar-mini"><i class="fa fa-layer-group" style="font-size:.8rem"></i></span>
+                                            <span class="sidebar-mini"><i class="fa fa-layer-group" style="font-size:.8rem; color: #f59e0b;"></i></span>
                                             <span class="sidebar-normal">Módulos <b class="caret"></b></span>
                                         </a>
                                         <div class="collapse {{ $enModulosSiess ? 'show' : '' }}" id="siessModulos">
                                             <ul class="nav" style="padding-left:10px">
                                                 <li class="nav-item {{ $isActive('siess/modulos/aop') }}">
                                                     <a class="nav-link" href="{{ route('siess.modulos.aop') }}">
-                                                        <span class="sidebar-mini">AOP</span>
+                                                        <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">AOP</span>
                                                         <span class="sidebar-normal">Aportes</span>
                                                     </a>
                                                 </li>
                                                 <li class="nav-item {{ $isActive('siess/modulos/ju') }}">
                                                     <a class="nav-link" href="{{ route('siess.modulos.ju') }}">
-                                                        <span class="sidebar-mini">JU</span>
+                                                        <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">JU</span>
                                                         <span class="sidebar-normal">Jubilaciones</span>
                                                     </a>
                                                 </li>
                                                 <li class="nav-item {{ $isActive('siess/modulos/rl') }}">
                                                     <a class="nav-link" href="{{ route('siess.modulos.rl') }}">
-                                                        <span class="sidebar-mini">RL</span>
+                                                        <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">RL</span>
                                                         <span class="sidebar-normal">Subsidios</span>
                                                     </a>
                                                 </li>
                                                 <li class="nav-item {{ $isActive('siess/modulos/di') }}">
                                                     <a class="nav-link" href="{{ route('siess.modulos.di') }}">
-                                                        <span class="sidebar-mini">DI</span>
+                                                        <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">DI</span>
                                                         <span class="sidebar-normal">Inversiones</span>
                                                     </a>
                                                 </li>
                                                 <li class="nav-item {{ $isActive('siess/modulos/dt') }}">
                                                     <a class="nav-link" href="{{ route('siess.modulos.dt') }}">
-                                                        <span class="sidebar-mini">DT</span>
+                                                        <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">DT</span>
                                                         <span class="sidebar-normal">Tesorería</span>
                                                     </a>
                                                 </li>
                                                 <li class="nav-item {{ $isActive('siess/modulos/rh') }}">
                                                     <a class="nav-link" href="{{ route('siess.modulos.rh') }}">
-                                                        <span class="sidebar-mini">RH</span>
+                                                        <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">RH</span>
                                                         <span class="sidebar-normal">Rec. Humanos</span>
                                                     </a>
                                                 </li>
                                                 <li class="nav-item {{ $isActive('siess/modulos/cau') }}">
                                                     <a class="nav-link" href="{{ route('siess.modulos.cau') }}">
-                                                        <span class="sidebar-mini">CAU</span>
+                                                        <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">CAU</span>
                                                         <span class="sidebar-normal">Atención</span>
                                                     </a>
                                                 </li>
@@ -256,13 +256,13 @@
                                     </li>
                                     <li class="nav-item {{ $isActive('siess/reportes*') }}">
                                         <a class="nav-link" href="{{ route('siess.reportes.index') }}">
-                                            <span class="sidebar-mini"><i class="fa fa-file-pdf" style="font-size:.8rem"></i></span>
+                                            <span class="sidebar-mini"><i class="fa fa-file-pdf" style="font-size:.8rem; color: #f59e0b;"></i></span>
                                             <span class="sidebar-normal">Reportes</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('siess/eph*') }}">
                                         <a class="nav-link" href="{{ route('siess.eph.index') }}">
-                                            <span class="sidebar-mini"><i class="fa fa-globe" style="font-size:.8rem"></i></span>
+                                            <span class="sidebar-mini"><i class="fa fa-globe" style="font-size:.8rem; color: #f59e0b;"></i></span>
                                             <span class="sidebar-normal">EPH / INE</span>
                                         </a>
                                     </li>
@@ -270,48 +270,48 @@
                             </div>
                         </li>
 
-                        {{-- ── Submenú 2: Bioestadísticas ── --}}
+                        {{-- ── Submenú 2: Bioestadísticas (Color Cascading #f59e0b) ── --}}
                         <li class="nav-item">
                             <a class="nav-link {{ $enBioestadistica ? 'active' : '' }}" data-toggle="collapse" href="#bioestadisticaSubMenu" aria-expanded="{{ $enBioestadistica ? 'true' : 'false' }}">
-                                <span class="sidebar-mini"><i class="fa fa-heartbeat" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Bioestadísticas <b class="caret"></b></span>
+                                <span class="sidebar-mini"><i class="fa fa-heartbeat" style="font-size:.8rem; color: #f59e0b;"></i></span>
+                                <span class="sidebar-normal font-weight-bold" style="color: #334155;">Bioestadísticas <b class="caret"></b></span>
                             </a>
                             <div class="collapse {{ $enBioestadistica ? 'show' : '' }}" id="bioestadisticaSubMenu">
                                 <ul class="nav" style="padding-left:10px">
                                     <li class="nav-item {{ $isActive('bioestadistica') || $isActive('bioestadistica/dashboard') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.dashboard') }}">
-                                            <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem"></i></span>
+                                            <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem; color: #f59e0b;"></i></span>
                                             <span class="sidebar-normal">Dashboard</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('bioestadistica/formularios*') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.formularios.index') }}">
-                                            <span class="sidebar-mini">FR</span><span class="sidebar-normal">Formularios</span>
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">FR</span><span class="sidebar-normal">Formularios</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('bioestadistica/catalogos*') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.catalogos.index') }}">
-                                            <span class="sidebar-mini">CA</span><span class="sidebar-normal">Catálogos</span>
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">CA</span><span class="sidebar-normal">Catálogos</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('bioestadistica/captura*') || $isActive('bioestadistica/captura-asignaciones*') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.captura.index') }}">
-                                            <span class="sidebar-mini">CP</span><span class="sidebar-normal">Captura</span>
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">CP</span><span class="sidebar-normal">Captura</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('bioestadistica/captura/pendientes*') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.captura.pending') }}">
-                                            <span class="sidebar-mini">PD</span><span class="sidebar-normal">Pendientes</span>
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">PD</span><span class="sidebar-normal">Pendientes</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('bioestadistica/geografia*') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}">
-                                            <span class="sidebar-mini">GE</span><span class="sidebar-normal">Geografía</span>
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">GE</span><span class="sidebar-normal">Geografía</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('bioestadistica/clasificaciones*') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.clasificaciones.index') }}">
-                                            <span class="sidebar-mini">CL</span><span class="sidebar-normal">Clasificaciones</span>
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">CL</span><span class="sidebar-normal">Clasificaciones</span>
                                         </a>
                                     </li>
                                 </ul>
