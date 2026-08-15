@@ -48,7 +48,7 @@ class ImpersonateController extends Controller
     public function leave()
     {
         if (!session()->has('impersonator_id')) {
-            return redirect()->route('planificacion-dashboard');
+            return redirect()->to(route('globales.dashboard') . '#tab-usuarios');
         }
 
         $adminId = session('impersonator_id');
@@ -57,7 +57,7 @@ class ImpersonateController extends Controller
         $adminUser = User::findOrFail($adminId);
         Auth::login($adminUser);
 
-        return redirect()->route('globales.users.index')
+        return redirect()->to(route('globales.dashboard') . '#tab-usuarios')
             ->with('info', 'Has vuelto exitosamente a tu cuenta de Administrador.');
     }
 

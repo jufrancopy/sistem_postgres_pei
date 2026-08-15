@@ -511,6 +511,11 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 4px;">
+                                            @if(auth()->id() != $u->id)
+                                                <a href="{{ route('impersonate.take', $u->id) }}" class="btn btn-circle btn-warning text-dark font-weight-bold" title="👁️ Ver como {{ $u->name }} (Simular Rol)">
+                                                    <i class="fa fa-eye"></i>
+                                                </a>
+                                            @endif
                                             <button type="button" class="btn btn-circle" style="background:#6366f1; border-color:#6366f1; color:#fff;" onclick="abrirModalTelemetriaUsuario('{{ $u->id }}')" title="Telemetría & Analítica del Funcionario">
                                                 <i class="fa fa-chart-line"></i>
                                             </button>
