@@ -3769,6 +3769,59 @@ function irAIniciativaDesdeModal(iniId) {
     </div>
 </div>
 
+<!-- MODAL: ANÁLISIS Y CRUCE DE AMBIENTES FODA -->
+<div class="modal fade" id="modalFodaCrossing" tabindex="-1" role="dialog" aria-labelledby="modalFodaCrossingTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1550px; width: 96%;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white d-flex align-items-center justify-content-between p-3" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;">
+                <h5 class="modal-title font-weight-bold text-white mb-0" id="modalFodaCrossingTitulo">
+                    <i class="fa fa-random text-warning mr-2"></i> Análisis FODA & Cruce de Ambientes
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.9; text-shadow: none;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4" id="modalFodaCrossingBody" style="background-color: #f8fafc; min-height: 400px; max-height: 85vh; overflow-y: auto;">
+                <div class="text-center py-5 text-muted">
+                    <i class="fa fa-spinner fa-spin fa-2x mb-3 text-warning"></i>
+                    <div>Cargando matriz de análisis y cruce de ambientes FODA...</div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white border-top p-3 d-flex justify-content-between align-items-center">
+                <small class="text-muted"><i class="fa fa-info-circle text-info mr-1"></i> Control total para estructurar y cruzar estrategias FO, DO, FA y DA asociadas al PEI.</small>
+                <button type="button" class="btn btn-secondary btn-round px-4" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var currentFodaUrl = '';
+    window.recargarModalFodaCrossing = function () {
+        if (!currentFodaUrl) return;
+        $.get(currentFodaUrl, { modal: 1 }, function (html) {
+            $('#modalFodaCrossingBody').html(html);
+        });
+    };
+
+    $(document).on('click', '.btnVerFodaCrossing', function () {
+        var url = $(this).data('url');
+        var planName = $(this).data('name') || 'Plan Estratégico';
+        currentFodaUrl = url;
+
+        $('#modalFodaCrossingTitulo').html('<i class="fa fa-random text-warning mr-2"></i> Análisis FODA & Cruce de Ambientes — ' + planName);
+        $('#modalFodaCrossingBody').html('<div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-2x mb-3 text-warning"></i><div>Cargando matriz de análisis y cruce de ambientes FODA...</div></div>');
+        $('#modalFodaCrossing').modal('show');
+
+        $.get(url, { modal: 1 }, function (html) {
+            $('#modalFodaCrossingBody').html(html);
+        }).fail(function (xhr) {
+            var msg = xhr.responseJSON?.message || 'Ocurrió un error al cargar el análisis FODA.';
+            $('#modalFodaCrossingBody').html('<div class="alert alert-danger mb-0"><i class="fa fa-exclamation-circle mr-2"></i> ' + msg + '</div>');
+        });
+    });
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <div id="containerModalReordenarPei"></div>
 @include('admin.planificacion.peis/peis.partials.chat_drawer')
