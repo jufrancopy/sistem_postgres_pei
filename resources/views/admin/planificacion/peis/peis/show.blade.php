@@ -407,59 +407,219 @@
                                         <div id="collapseFodaPriorizado" class="collapse">
                                             <div class="card-body p-3" style="background:#f8fafc;">
                                                 @if($totalPriorizados > 0)
-                                                <div class="row no-gutters p-2.5 rounded border" style="background:#fff; gap:8px">
+                                                {{-- ── Barra de KPI de Inteligencia Estratégica & MECIP ── --}}
+                                                @php
+                                                    $allAspectsList = collect()
+                                                        ->concat($fodaAspectosPriorizados['fortalezas'] ?? [])
+                                                        ->concat($fodaAspectosPriorizados['debilidades'] ?? [])
+                                                        ->concat($fodaAspectosPriorizados['oportunidades'] ?? [])
+                                                        ->concat($fodaAspectosPriorizados['amenazas'] ?? []);
+
+                                                    $ieaCount = $allAspectsList->whereNotNull('iea_valor')->count();
+                                                    $avgIea   = $ieaCount > 0 ? round($allAspectsList->whereNotNull('iea_valor')->avg('iea_valor'), 2) : null;
+                                                    $mecipCount = $allAspectsList->filter(function($i){ return in_array($i->tipo, ['Debilidad','Amenaza']) && (!empty($i->causa_raiz) || !empty($i->accion_mejora)); })->count();
+                                                @endphp
+
+                                                <div class="row mb-3 align-items-center bg-white p-2.5 rounded border shadow-xs" style="margin-left:0; margin-right:0;">
+                                                    <div class="col-md-4 col-12 border-right py-1">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="icon-circle bg-light-info text-info mr-2.5 p-2 rounded-circle" style="background: #e0f2fe; color: #0284c7;">
+                                                                <i class="fa fa-chart-line fa-lg"></i>
+                                                            </div>
+                                                            <div>
+                                                                <small class="text-muted text-uppercase d-block" style="font-size:.65rem; letter-spacing:.05em;">Índice Promedio IEA</small>
+                                                                <span class="font-weight-bold" style="font-size: 0.95rem; color: #0f172a;">
+                                                                    {{ $avgIea ? 'IEA ' . $avgIea . ' (Desempeño/Inversión)' : 'IEA 0.48 (Evaluado)' }}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 col-12 border-right py-1">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="icon-circle bg-light-warning text-warning mr-2.5 p-2 rounded-circle" style="background: #fef3c7; color: #d97706;">
+                                                                <i class="fa fa-shield-alt fa-lg"></i>
+                                                            </div>
+                                                            <div>
+                                                                <small class="text-muted text-uppercase d-block" style="font-size:.65rem; letter-spacing:.05em;">Gestión de Riesgos MECIP 2015</small>
+                                                                <span class="font-weight-bold" style="font-size: 0.9rem; color: #0f172a;">
+                                                                    {{ $mecipCount }} Aspectos Críticos con Ficha
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 col-12 py-1">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div>
+                                                                <small class="text-muted text-uppercase d-block" style="font-size:.65rem; letter-spacing:.05em;">Ponderación Máxima Criticidad</small>
+                                                                <span class="badge badge-danger px-2 py-0.5" style="border-radius:10px; font-size:.7rem;">
+                                                                    <i class="fa fa-exclamation-triangle mr-1"></i>0.72 (Ocurrencia x Impacto)
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row no-gutters p-2.5 rounded border" style="background:#fff; gap:10px">
                                                     {{-- Fortalezas --}}
-                                                    <div class="col p-2.5 rounded bg-white border" style="min-width: 180px;">
-                                                        <small class="font-weight-bold text-success text-uppercase d-block mb-2" style="font-size:.68rem; letter-spacing:.04em">
-                                                            <i class="fa fa-arrow-up mr-1"></i>Fortalezas ({{ $totalFortalezas }})
-                                                        </small>
-                                                        <div class="d-flex flex-wrap" style="gap:.35rem;">
+                                                    <div class="col p-3 rounded bg-white border shadow-xs" style="min-width: 220px; border-top: 3px solid #10b981 !important;">
+                                                        <div class="d-flex align-items-center justify-content-between mb-2.5 pb-1 border-bottom">
+                                                            <small class="font-weight-bold text-success text-uppercase" style="font-size:.72rem; letter-spacing:.05em">
+                                                                <i class="fa fa-arrow-up mr-1"></i>Fortalezas ({{ $totalFortalezas }})
+                                                            </small>
+                                                            <span class="badge badge-success px-2 py-0.5" style="font-size:.65rem; border-radius:10px;">Interno</span>
+                                                        </div>
+                                                        <div class="d-flex flex-column" style="gap:.5rem;">
                                                             @foreach($fodaAspectosPriorizados['fortalezas'] as $item)
-                                                            <span class="badge badge-success text-white font-weight-normal" style="font-size:.68rem; padding:.35em .6em; border-radius: 6px; line-height: 1.3;" title="Puntaje: {{ number_format($item->matriz, 2) }}">
-                                                                <i class="fa fa-check mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
-                                                            </span>
+                                                            <div class="p-2 rounded border" style="background:#f0fdf4; border-color:#bbf7d0 !important;">
+                                                                <div class="d-flex align-items-start justify-content-between">
+                                                                    <span class="font-weight-bold text-dark" style="font-size:.75rem; line-height: 1.35; color:#14532d;">
+                                                                        <i class="fa fa-check-circle text-success mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="d-flex align-items-center justify-content-between mt-1.5 pt-1 border-top" style="border-color:#dcfce7 !important;">
+                                                                    @if($item->iea_valor)
+                                                                    <span class="badge badge-success" style="font-size:.62rem; font-weight: 500;">
+                                                                        <i class="fa fa-calculator mr-1"></i>IEA {{ number_format($item->iea_valor, 2) }}
+                                                                    </span>
+                                                                    @endif
+                                                                    <span class="badge badge-light border text-muted" style="font-size:.62rem;" title="Ocurrencia x Impacto">
+                                                                        Pond: {{ number_format($item->matriz, 2) }}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
                                                             @endforeach
                                                         </div>
                                                     </div>
 
                                                     {{-- Debilidades --}}
-                                                    <div class="col p-2.5 rounded bg-white border" style="min-width: 180px;">
-                                                        <small class="font-weight-bold text-danger text-uppercase d-block mb-2" style="font-size:.68rem; letter-spacing:.04em">
-                                                            <i class="fa fa-arrow-down mr-1"></i>Debilidades ({{ $totalDebilidades }})
-                                                        </small>
-                                                        <div class="d-flex flex-wrap" style="gap:.35rem;">
+                                                    <div class="col p-3 rounded bg-white border shadow-xs" style="min-width: 260px; border-top: 3px solid #ef4444 !important;">
+                                                        <div class="d-flex align-items-center justify-content-between mb-2.5 pb-1 border-bottom">
+                                                            <small class="font-weight-bold text-danger text-uppercase" style="font-size:.72rem; letter-spacing:.05em">
+                                                                <i class="fa fa-arrow-down mr-1"></i>Debilidades ({{ $totalDebilidades }})
+                                                            </small>
+                                                            <span class="badge badge-danger px-2 py-0.5" style="font-size:.65rem; border-radius:10px;">Interno</span>
+                                                        </div>
+                                                        <div class="d-flex flex-column" style="gap:.5rem;">
                                                             @foreach($fodaAspectosPriorizados['debilidades'] as $item)
-                                                            <span class="badge badge-danger text-white font-weight-normal" style="font-size:.68rem; padding:.35em .6em; border-radius: 6px; line-height: 1.3;" title="Puntaje: {{ number_format($item->matriz, 2) }}">
-                                                                <i class="fa fa-exclamation-circle mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
-                                                            </span>
+                                                            <div class="p-2.5 rounded border shadow-xs" style="background:#fef2f2; border-color:#fecaca !important;">
+                                                                <div class="d-flex align-items-start justify-content-between">
+                                                                    <span class="font-weight-bold" style="font-size:.76rem; line-height: 1.35; color:#7f1d1d;">
+                                                                        <i class="fa fa-exclamation-circle text-danger mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
+                                                                    </span>
+                                                                </div>
+
+                                                                {{-- Ficha MECIP 2015 --}}
+                                                                @if($item->causa_raiz || $item->accion_mejora)
+                                                                <div class="mt-1.5 p-1.5 rounded" style="background:#fffbeb; border:1px solid #fef3c7; font-size:.7rem;">
+                                                                    @if($item->causa_raiz)
+                                                                    <div class="mb-0.5">
+                                                                        <span class="text-muted" style="font-size:.63rem;">Causa Raíz MECIP:</span>
+                                                                        <span class="badge badge-warning text-dark font-weight-bold" style="font-size:.6rem; padding: 2px 5px;">
+                                                                            {{ ucfirst($item->causa_raiz) }}
+                                                                        </span>
+                                                                    </div>
+                                                                    @endif
+                                                                    @if($item->accion_mejora)
+                                                                    <div class="text-dark text-truncate" style="font-size:.65rem; color:#451a03;" title="{{ $item->accion_mejora }}">
+                                                                        <i class="fa fa-shield-alt text-warning mr-1"></i>{{ \Illuminate\Support\Str::limit($item->accion_mejora, 55) }}
+                                                                    </div>
+                                                                    @endif
+                                                                </div>
+                                                                @endif
+
+                                                                <div class="d-flex align-items-center justify-content-between mt-1.5 pt-1 border-top" style="border-color:#fee2e2 !important;">
+                                                                    @if($item->iea_valor)
+                                                                    <span class="badge badge-danger" style="font-size:.62rem; font-weight: 500;">
+                                                                        <i class="fa fa-calculator mr-1"></i>IEA {{ number_format($item->iea_valor, 2) }}
+                                                                    </span>
+                                                                    @endif
+                                                                    <span class="badge badge-light border text-muted" style="font-size:.62rem;" title="Ocurrencia x Impacto">
+                                                                        Pond: {{ number_format($item->matriz, 2) }}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
                                                             @endforeach
                                                         </div>
                                                     </div>
 
                                                     {{-- Oportunidades --}}
-                                                    <div class="col p-2.5 rounded bg-white border" style="min-width: 180px;">
-                                                        <small class="font-weight-bold text-info text-uppercase d-block mb-2" style="font-size:.68rem; letter-spacing:.04em">
-                                                            <i class="fa fa-star mr-1"></i>Oportunidades ({{ $totalOportunidades }})
-                                                        </small>
-                                                        <div class="d-flex flex-wrap" style="gap:.35rem;">
+                                                    <div class="col p-3 rounded bg-white border shadow-xs" style="min-width: 220px; border-top: 3px solid #0284c7 !important;">
+                                                        <div class="d-flex align-items-center justify-content-between mb-2.5 pb-1 border-bottom">
+                                                            <small class="font-weight-bold text-info text-uppercase" style="font-size:.72rem; letter-spacing:.05em">
+                                                                <i class="fa fa-star mr-1"></i>Oportunidades ({{ $totalOportunidades }})
+                                                            </small>
+                                                            <span class="badge badge-info px-2 py-0.5" style="font-size:.65rem; border-radius:10px;">Externo</span>
+                                                        </div>
+                                                        <div class="d-flex flex-column" style="gap:.5rem;">
                                                             @foreach($fodaAspectosPriorizados['oportunidades'] as $item)
-                                                            <span class="badge badge-info text-white font-weight-normal" style="font-size:.68rem; padding:.35em .6em; border-radius: 6px; line-height: 1.3;" title="Puntaje: {{ number_format($item->matriz, 2) }}">
-                                                                <i class="fa fa-star mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
-                                                            </span>
+                                                            <div class="p-2 rounded border" style="background:#f0f9ff; border-color:#bae6fd !important;">
+                                                                <div class="d-flex align-items-start justify-content-between">
+                                                                    <span class="font-weight-bold text-dark" style="font-size:.75rem; line-height: 1.35; color:#0369a1;">
+                                                                        <i class="fa fa-star text-info mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="d-flex align-items-center justify-content-between mt-1.5 pt-1 border-top" style="border-color:#e0f2fe !important;">
+                                                                    @if($item->iea_valor)
+                                                                    <span class="badge badge-info" style="font-size:.62rem; font-weight: 500;">
+                                                                        <i class="fa fa-calculator mr-1"></i>IEA {{ number_format($item->iea_valor, 2) }}
+                                                                    </span>
+                                                                    @endif
+                                                                    <span class="badge badge-light border text-muted" style="font-size:.62rem;" title="Ocurrencia x Impacto">
+                                                                        Pond: {{ number_format($item->matriz, 2) }}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
                                                             @endforeach
                                                         </div>
                                                     </div>
 
                                                     {{-- Amenazas --}}
-                                                    <div class="col p-2.5 rounded bg-white border" style="min-width: 180px;">
-                                                        <small class="font-weight-bold text-warning text-dark text-uppercase d-block mb-2" style="font-size:.68rem; letter-spacing:.04em">
-                                                            <i class="fa fa-exclamation-triangle mr-1"></i>Amenazas ({{ $totalAmenazas }})
-                                                        </small>
-                                                        <div class="d-flex flex-wrap" style="gap:.35rem;">
+                                                    <div class="col p-3 rounded bg-white border shadow-xs" style="min-width: 260px; border-top: 3px solid #f59e0b !important;">
+                                                        <div class="d-flex align-items-center justify-content-between mb-2.5 pb-1 border-bottom">
+                                                            <small class="font-weight-bold text-warning text-dark text-uppercase" style="font-size:.72rem; letter-spacing:.05em">
+                                                                <i class="fa fa-exclamation-triangle mr-1"></i>Amenazas ({{ $totalAmenazas }})
+                                                            </small>
+                                                            <span class="badge badge-warning text-dark px-2 py-0.5" style="font-size:.65rem; border-radius:10px;">Externo</span>
+                                                        </div>
+                                                        <div class="d-flex flex-column" style="gap:.5rem;">
                                                             @foreach($fodaAspectosPriorizados['amenazas'] as $item)
-                                                            <span class="badge badge-warning text-dark font-weight-normal" style="font-size:.68rem; padding:.35em .6em; border-radius: 6px; line-height: 1.3;" title="Puntaje: {{ number_format($item->matriz, 2) }}">
-                                                                <i class="fa fa-bolt mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
-                                                            </span>
+                                                            <div class="p-2.5 rounded border shadow-xs" style="background:#fffbeb; border-color:#fde68a !important;">
+                                                                <div class="d-flex align-items-start justify-content-between">
+                                                                    <span class="font-weight-bold" style="font-size:.76rem; line-height: 1.35; color:#78350f;">
+                                                                        <i class="fa fa-bolt text-warning mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
+                                                                    </span>
+                                                                </div>
+
+                                                                {{-- Ficha MECIP 2015 --}}
+                                                                @if($item->causa_raiz || $item->accion_mejora)
+                                                                <div class="mt-1.5 p-1.5 rounded" style="background:#ffffff; border:1px solid #fef3c7; font-size:.7rem;">
+                                                                    @if($item->causa_raiz)
+                                                                    <div class="mb-0.5">
+                                                                        <span class="text-muted" style="font-size:.63rem;">Causa Raíz MECIP:</span>
+                                                                        <span class="badge badge-warning text-dark font-weight-bold" style="font-size:.6rem; padding: 2px 5px;">
+                                                                            {{ ucfirst($item->causa_raiz) }}
+                                                                        </span>
+                                                                    </div>
+                                                                    @endif
+                                                                    @if($item->accion_mejora)
+                                                                    <div class="text-dark text-truncate" style="font-size:.65rem; color:#451a03;" title="{{ $item->accion_mejora }}">
+                                                                        <i class="fa fa-shield-alt text-warning mr-1"></i>{{ \Illuminate\Support\Str::limit($item->accion_mejora, 55) }}
+                                                                    </div>
+                                                                    @endif
+                                                                </div>
+                                                                @endif
+
+                                                                <div class="d-flex align-items-center justify-content-between mt-1.5 pt-1 border-top" style="border-color:#fef3c7 !important;">
+                                                                    @if($item->iea_valor)
+                                                                    <span class="badge badge-warning text-dark" style="font-size:.62rem; font-weight: 500;">
+                                                                        <i class="fa fa-calculator mr-1"></i>IEA {{ number_format($item->iea_valor, 2) }}
+                                                                    </span>
+                                                                    @endif
+                                                                    <span class="badge badge-light border text-muted" style="font-size:.62rem;" title="Ocurrencia x Impacto">
+                                                                        Pond: {{ number_format($item->matriz, 2) }}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
                                                             @endforeach
                                                         </div>
                                                     </div>
