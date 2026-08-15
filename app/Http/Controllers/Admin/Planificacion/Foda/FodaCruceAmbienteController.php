@@ -25,21 +25,35 @@ class FodaCruceAmbienteController extends Controller
 
     public function index(Request $request, $idPerfil)
     {
-        // $idPerfil viene como parámetro de ruta (UUID del perfil consolidado)
+        // 1. Si $idPerfil pertenece a un PeiProfile, resolver su foda_perfil_id vinculado
+        $peiProfile = \App\Admin\Planificacion\Pei\PeiProfile::find($idPerfil);
+        if ($peiProfile && $peiProfile->foda_perfil_id) {
+            $idPerfil = $peiProfile->foda_perfil_id;
+        }
+
+        // $idPerfil viene como parámetro de ruta (UUID del perfil consolidado FODA)
         $perfil  = FodaPerfil::where('id', '=', $idPerfil)->first();
         $profile = $perfil; // alias que espera la vista crossing-environments
         $matriz  = config('foda.umbral_matriz') ?? 0.17;
 
-        // Determinar si es perfil de tipo consolidado / grupal o si tiene group_id
+        // Determinar si es perfil de tipo consolidado / grupal o si tiene group_id o dependencia
         $perfilIds = [$idPerfil];
-        if ($perfil && ($perfil->group_id || in_array($perfil->type, ['consolidado', 'grupal']))) {
-            $groupId = $perfil->group_id;
-            if ($groupId) {
-                $groups = Group::descendantsOf($groupId);
-                $groupIds = array_merge([$groupId], $groups->pluck('id')->toArray());
-                $subPerfilIds = FodaPerfil::whereIn('group_id', $groupIds)->pluck('id')->toArray();
-                if (!empty($subPerfilIds)) {
-                    $perfilIds = array_unique(array_merge($perfilIds, $subPerfilIds));
+        if ($perfil) {
+            if ($perfil->group_id || in_array($perfil->type, ['consolidado', 'grupal'])) {
+                $groupId = $perfil->group_id;
+                if ($groupId) {
+                    $groups = Group::descendantsOf($groupId);
+                    $groupIds = array_merge([$groupId], $groups->pluck('id')->toArray());
+                    $subPerfilIds = FodaPerfil::whereIn('group_id', $groupIds)->pluck('id')->toArray();
+                    if (!empty($subPerfilIds)) {
+                        $perfilIds = array_unique(array_merge($perfilIds, $subPerfilIds));
+                    }
+                }
+            }
+            if ($perfil->dependency_id) {
+                $subPerfilDepIds = FodaPerfil::where('dependency_id', $perfil->dependency_id)->pluck('id')->toArray();
+                if (!empty($subPerfilDepIds)) {
+                    $perfilIds = array_unique(array_merge($perfilIds, $subPerfilDepIds));
                 }
             }
         }

@@ -592,6 +592,12 @@ class PeiController extends Controller
                         }
                     }
                 }
+                if ($fodaPerfilVinculado->dependency_id) {
+                    $subPerfilDepIds = \App\Admin\Planificacion\Foda\FodaPerfil::where('dependency_id', $fodaPerfilVinculado->dependency_id)->pluck('id')->toArray();
+                    if (!empty($subPerfilDepIds)) {
+                        $perfilIds = array_unique(array_merge($perfilIds, $subPerfilDepIds));
+                    }
+                }
 
                 $matrizUmbral = config('foda.umbral_matriz') ?? 0.17;
                 $allAnalisis = \App\Admin\Planificacion\Foda\FodaAnalisis::with('aspecto')
