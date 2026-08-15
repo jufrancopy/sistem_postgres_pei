@@ -1429,16 +1429,19 @@
 {{-- ════════════════════════════════════════════════════════════════════════════
      MODAL DE CREACIÓN Y EDICIÓN ORIGINAL DE PERFIL PEI (ORIGINAL DE PEI-PROFILES)
      ════════════════════════════════════════════════════════════════════════════ --}}
+<!-- MODAL DE CREACIÓN Y EDICIÓN DE PERFIL PEI (DISEÑO PREMIUM) -->
 <div class="modal fade" id="ajaxModal" aria-hidden="true" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content shadow border-0 rounded-lg">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #15803d, #16a34a);">
-                <h4 class="modal-title font-weight-bold text-white mb-0" id="modalHeading"></h4>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white px-4 py-3" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); border-bottom: 2px solid rgba(255,255,255,0.1);">
+                <h5 class="modal-title font-weight-bold text-white mb-0 d-flex align-items-center" id="modalHeading">
+                    <i class="fa fa-edit text-warning mr-2"></i> Perfil de Planificación Estratégica
+                </h5>
+                <button type="button" class="close text-white opacity-8" data-dismiss="modal" aria-label="Cerrar" style="outline: none;">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body p-4 bg-light">
+            <div class="modal-body p-4" style="background: #f8fafc;">
                 <form id="profileForm" name="profileForm" class="form-horizontal">
                     @csrf
                     <input type="hidden" name="profile_id" id="profile_id">
@@ -1456,107 +1459,134 @@
                     <input type="hidden" name="progress" id="progress">
                     <input type="hidden" name="nivel_label" id="nivel_label">
 
-                    <div class="form-group mb-3">
-                        <label for="name" class="control-label font-weight-bold text-dark small">Nombre del Plan Estratégico <span class="text-danger">*</span></label>
-                        <input type="text" name="name" id="name" class="form-control font-weight-bold" required placeholder="Ej: Plan Estratégico 2023-2028">
-                    </div>
-
-                    <div class="form-row mb-3">
-                        <div class="form-group col-md-6">
-                            <label for="year_start" class="font-weight-bold text-dark small">Año de Inicio <span class="text-danger">*</span></label>
-                            <input type="date" name="year_start" id="year_start" class="form-control" required placeholder="2023">
+                    {{-- ── SECCIÓN 1: DATOS PRINCIPALES DEL PLAN ── --}}
+                    <div class="card border-0 shadow-xs mb-3" style="border-radius: 12px; background: #ffffff;">
+                        <div class="card-header py-2.5 px-3 bg-light border-bottom d-flex align-items-center" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                            <i class="fa fa-flag text-primary mr-2"></i>
+                            <span class="font-weight-bold text-dark small text-uppercase" style="letter-spacing: 0.03em;">1. Identificación del Plan Estratégico</span>
                         </div>
-                        <div class="form-group col-md-6">
-                            <label for="year_end" class="font-weight-bold text-dark small">Año de Finalización <span class="text-danger">*</span></label>
-                            <input type="date" name="year_end" id="year_end" class="form-control" required placeholder="2028">
-                        </div>
-                    </div>
+                        <div class="card-body p-3">
+                            <div class="form-group mb-3">
+                                <label for="name" class="font-weight-bold text-dark small">Nombre del Plan Estratégico <span class="text-danger">*</span></label>
+                                <input type="text" name="name" id="name" class="form-control font-weight-bold shadow-none" required placeholder="Ej: Plan Estratégico Institucional IPS 2026-2028" style="border-radius: 8px;">
+                            </div>
 
-                    <div class="form-group type_profile mb-3">
-                        <label for="type_profile" class="font-weight-bold text-dark small">Tipo de Perfil</label>
-                        <select name="type_profile" id="type_profile" class="form-control font-weight-bold" style="width:100%;">
-                            <option value="group" selected>Grupal</option>
-                            <option value="corporative">Corporativo</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group dependencies mb-3" style="display: none;">
-                        <label for="dependencies" class="font-weight-bold text-dark small">Elija Corporación / Dependencia</label>
-                        <select name="dependency_id" id="dependencies" class="form-control" style="width:100%;">
-                        </select>
-                    </div>
-
-                    <div class="form-group group_roots mb-3">
-                        <label for="group_roots" class="font-weight-bold text-dark small">Evento / Grupo Raíz</label>
-                        <select name="group_root_id" id="group_roots" class="form-control" style="width:100%;">
-                        </select>
-                    </div>
-
-                    <div class="form-group groups mb-3">
-                        <label for="groups" class="font-weight-bold text-dark small">Asignar Grupo de Trabajo</label>
-                        <select name="group_id" id="groups" class="form-control" style="width:100%;">
-                        </select>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="analysts" class="font-weight-bold text-dark small">Asignar Analistas Responsables</label>
-                        <select name="analyst_id[]" id="analysts" class="form-control" multiple style="width:100%;">
-                        </select>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="foda_perfil_id" class="font-weight-bold text-dark small">Perfil FODA vinculado</label>
-                        <select name="foda_perfil_id" id="foda_perfil_id" class="form-control" style="width:100%;">
-                        </select>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="modelo_niveles" class="font-weight-bold text-dark small">Modelo de Niveles del Plan</label>
-                        <select name="modelo_niveles" id="modelo_niveles" class="form-control font-weight-bold" style="width:100%;">
-                            <option value="MECIP">MECIP 2015 — Objetivo Estratégico / Meta / Acción</option>
-                            <option value="IPS" selected>IPS 2023-2028 — Eje Estratégico / Objetivo / Acción</option>
-                            <option value="A">Clásico — Eje / Objetivo / Acción</option>
-                            <option value="B">Proyectos — Programa / Proyecto / Actividad</option>
-                            <option value="C">Estratégico — Eje / Meta / Tarea</option>
-                            <option value="D">Institucional — Estrategia / Plan / Acción</option>
-                            <option value="custom">Personalizado...</option>
-                        </select>
-                    </div>
-
-                    <div id="custom_niveles" style="display:none;" class="mb-3">
-                        <div class="card card-body bg-white border">
-                            <small class="text-muted mb-2 font-weight-bold">Definí cómo se llamará cada nivel en este plan:</small>
                             <div class="form-row">
-                                <div class="form-group col-md-4 mb-0">
-                                    <label for="label_axi" class="small font-weight-bold">Nivel 1 (ej: Eje)</label>
-                                    <input type="text" name="label_axi" id="label_axi" class="form-control form-control-sm" placeholder="Eje Estratégico">
+                                <div class="form-group col-md-6 mb-0">
+                                    <label for="year_start" class="font-weight-bold text-dark small">Año de Inicio <span class="text-danger">*</span></label>
+                                    <input type="date" name="year_start" id="year_start" class="form-control shadow-none" required style="border-radius: 8px;">
                                 </div>
-                                <div class="form-group col-md-4 mb-0">
-                                    <label for="label_goal" class="small font-weight-bold">Nivel 2 (ej: Objetivo)</label>
-                                    <input type="text" name="label_goal" id="label_goal" class="form-control form-control-sm" placeholder="Objetivo">
-                                </div>
-                                <div class="form-group col-md-4 mb-0">
-                                    <label for="label_action" class="small font-weight-bold">Nivel 3 (ej: Acción)</label>
-                                    <input type="text" name="label_action" id="label_action" class="form-control form-control-sm" placeholder="Acción">
+                                <div class="form-group col-md-6 mb-0">
+                                    <label for="year_end" class="font-weight-bold text-dark small">Año de Finalización <span class="text-danger">*</span></label>
+                                    <input type="date" name="year_end" id="year_end" class="form-control shadow-none" required style="border-radius: 8px;">
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-group mb-4">
-                        <label for="bsc_level" class="font-weight-bold text-dark small">Nivel de Aplicación del Balanced Scorecard (BSC)</label>
-                        <select name="bsc_level" id="bsc_level" class="form-control" style="width:100%;">
-                            <option value="axi">Nivel 1 — Objetivo Estratégico / Eje</option>
-                            <option value="goal" selected>Nivel 2 — Objetivo Específico / Meta</option>
-                            <option value="both">Ambos Niveles (Nivel 1 y Nivel 2)</option>
-                            <option value="none">Desactivado (Sin Perspectiva BSC)</option>
-                        </select>
-                        <small class="form-text text-muted">Define en qué nivel de la estructura jerárquica se habilitará el selector de las 4 Perspectivas BSC.</small>
+                    {{-- ── SECCIÓN 2: ALCANCE ORGANIZATIVO & ASIGNACIONES ── --}}
+                    <div class="card border-0 shadow-xs mb-3" style="border-radius: 12px; background: #ffffff;">
+                        <div class="card-header py-2.5 px-3 bg-light border-bottom d-flex align-items-center" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                            <i class="fa fa-sitemap text-info mr-2"></i>
+                            <span class="font-weight-bold text-dark small text-uppercase" style="letter-spacing: 0.03em;">2. Alcance Organigrama & Asignaciones</span>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="form-group type_profile mb-3">
+                                <label for="type_profile" class="font-weight-bold text-dark small">Tipo de Perfil</label>
+                                <select name="type_profile" id="type_profile" class="form-control font-weight-bold" style="width:100%;">
+                                    <option value="group">Grupal (Grupo de Trabajo)</option>
+                                    <option value="corporative">Corporativo (Dependencia Institucional)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group dependencies mb-3" style="display: none;">
+                                <label for="dependencies" class="font-weight-bold text-dark small"><i class="fa fa-building text-secondary mr-1"></i> Elija Corporación / Dependencia</label>
+                                <select name="dependency_id" id="dependencies" class="form-control" style="width:100%;">
+                                </select>
+                            </div>
+
+                            <div class="form-group group_roots mb-3">
+                                <label for="group_roots" class="font-weight-bold text-dark small"><i class="fa fa-layer-group text-secondary mr-1"></i> Evento / Grupo Raíz</label>
+                                <select name="group_root_id" id="group_roots" class="form-control" style="width:100%;">
+                                </select>
+                            </div>
+
+                            <div class="form-group groups mb-3">
+                                <label for="groups" class="font-weight-bold text-dark small"><i class="fa fa-users text-secondary mr-1"></i> Asignar Grupo de Trabajo</label>
+                                <select name="group_id" id="groups" class="form-control" style="width:100%;">
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-0">
+                                <label for="analysts" class="font-weight-bold text-dark small"><i class="fa fa-user-shield text-indigo mr-1"></i> Asignar Analistas Responsables</label>
+                                <select name="analyst_id[]" id="analysts" class="form-control" multiple style="width:100%;">
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="d-flex justify-content-end" style="gap:.5rem">
+                    {{-- ── SECCIÓN 3: METODOLOGÍA & BALANCED SCORECARD ── --}}
+                    <div class="card border-0 shadow-xs mb-3" style="border-radius: 12px; background: #ffffff;">
+                        <div class="card-header py-2.5 px-3 bg-light border-bottom d-flex align-items-center" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                            <i class="fa fa-cogs text-warning mr-2"></i>
+                            <span class="font-weight-bold text-dark small text-uppercase" style="letter-spacing: 0.03em;">3. Diagnóstico, Metodología & BSC</span>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="form-group mb-3">
+                                <label for="foda_perfil_id" class="font-weight-bold text-dark small"><i class="fa fa-chart-pie text-success mr-1"></i> Perfil FODA vinculado</label>
+                                <select name="foda_perfil_id" id="foda_perfil_id" class="form-control" style="width:100%;">
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="modelo_niveles" class="font-weight-bold text-dark small"><i class="fa fa-list-ol text-primary mr-1"></i> Modelo de Niveles del Plan</label>
+                                <select name="modelo_niveles" id="modelo_niveles" class="form-control font-weight-bold" style="width:100%;">
+                                    <option value="MECIP">MECIP 2015 — Objetivo Estratégico / Meta / Acción</option>
+                                    <option value="IPS" selected>IPS 2023-2028 — Eje Estratégico / Objetivo / Acción</option>
+                                    <option value="A">Clásico — Eje / Objetivo / Acción</option>
+                                    <option value="B">Proyectos — Programa / Proyecto / Actividad</option>
+                                    <option value="C">Estratégico — Eje / Meta / Tarea</option>
+                                    <option value="D">Institucional — Estrategia / Plan / Acción</option>
+                                    <option value="custom">Personalizado...</option>
+                                </select>
+                            </div>
+
+                            <div id="custom_niveles" style="display:none;" class="mb-3">
+                                <div class="card card-body bg-light border">
+                                    <small class="text-muted mb-2 font-weight-bold">Definí cómo se llamará cada nivel en este plan:</small>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-4 mb-0">
+                                            <label for="label_axi" class="small font-weight-bold">Nivel 1 (ej: Eje)</label>
+                                            <input type="text" name="label_axi" id="label_axi" class="form-control form-control-sm" placeholder="Eje Estratégico">
+                                        </div>
+                                        <div class="form-group col-md-4 mb-0">
+                                            <label for="label_goal" class="small font-weight-bold">Nivel 2 (ej: Objetivo)</label>
+                                            <input type="text" name="label_goal" id="label_goal" class="form-control form-control-sm" placeholder="Objetivo">
+                                        </div>
+                                        <div class="form-group col-md-4 mb-0">
+                                            <label for="label_action" class="small font-weight-bold">Nivel 3 (ej: Acción)</label>
+                                            <input type="text" name="label_action" id="label_action" class="form-control form-control-sm" placeholder="Acción">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-0">
+                                <label for="bsc_level" class="font-weight-bold text-dark small"><i class="fa fa-bullseye text-danger mr-1"></i> Nivel de Aplicación del Balanced Scorecard (BSC)</label>
+                                <select name="bsc_level" id="bsc_level" class="form-control" style="width:100%;">
+                                    <option value="axi">Nivel 1 — Objetivo Estratégico / Eje</option>
+                                    <option value="goal" selected>Nivel 2 — Objetivo Específico / Meta</option>
+                                    <option value="both">Ambos Niveles (Nivel 1 y Nivel 2)</option>
+                                    <option value="none">Desactivado (Sin Perspectiva BSC)</option>
+                                </select>
+                                <small class="form-text text-muted">Define en qué nivel de la estructura jerárquica se habilitará el selector de las 4 Perspectivas BSC.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end pt-2" style="gap:.5rem">
                         <button type="button" class="btn btn-secondary btn-round px-4" data-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-success btn-round px-4 font-weight-bold" id="saveBtn" value="create">
+                        <button type="submit" class="btn btn-primary btn-round px-4 font-weight-bold shadow-sm" id="saveBtn" value="create" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none;">
                             <i class="fa fa-save mr-1"></i> Guardar Cambios
                         </button>
                     </div>
@@ -2142,10 +2172,10 @@ $(document).ready(function() {
                 $('#type').val('group');
             }
 
-            if (data.profile.dependency) {
+            initializeSelect2($('#dependencies'), 'Seleccione la dependencia', '{{ route('globales.get-dependencies') }}');
+            if (data.profile.dependency_id && data.profile.dependency) {
                 initSelect2WithRelationship($('#dependencies'), data.profile.dependency_id, data.profile.dependency.dependency);
             }
-            initializeSelect2($('#dependencies'), 'Seleccione la dependencia', '{{ route('globales.get-dependencies') }}');
 
             if (data.profile.group) {
                 if (data.groupParent) {
@@ -2703,10 +2733,14 @@ $(document).ready(function() {
         }
     });
 
-    // Restaurar pestaña activa al cargar la página
+    // Restaurar pestaña activa al cargar la página (Soporta location.hash o localStorage)
     var activeTab = location.hash || localStorage.getItem('activeDashboardTab');
-    if (activeTab && $('#adminTabs a[href="' + activeTab + '"]').length > 0) {
-        $('#adminTabs a[href="' + activeTab + '"]').tab('show');
+    if (activeTab) {
+        if (!activeTab.startsWith('#')) activeTab = '#' + activeTab;
+        var $tabLink = $('#adminTabs a[href="' + activeTab + '"]');
+        if ($tabLink.length > 0) {
+            $tabLink.tab('show');
+        }
     }
 
     var datatablesSpanish = {
