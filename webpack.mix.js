@@ -12,5 +12,7 @@ const mix = require('laravel-mix');
  */
 
 mix.js('resources/js/app.js', 'public/js')
-    .sass('resources/sass/app.scss', 'public/css')
+    .vue()
+    // Compilar a mix.css para NO pisar public/css/app.css (Material Dashboard del sistema)
+    .sass('resources/sass/app.scss', 'public/css/mix.css')
     .sourceMaps();
