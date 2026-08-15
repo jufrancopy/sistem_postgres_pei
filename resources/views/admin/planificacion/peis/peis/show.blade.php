@@ -390,10 +390,10 @@
                                                 </span>
                                             </div>
                                             <div class="d-flex align-items-center ml-auto" style="gap: 8px;">
-                                                @if($fodaPerfilId)
+                                                @if($fodaPerfilId || (isset($profile) && $profile->id))
                                                 <button type="button" class="btn btn-xs btn-outline-warning font-weight-bold btnVerFodaCrossing"
-                                                        onclick="event.stopPropagation();"
-                                                        data-url="{{ route('foda-cruce-ambientes', $fodaPerfilId) }}"
+                                                        onclick="abrirModalFodaCrossing(this, event);"
+                                                        data-url="{{ route('foda-cruce-ambientes', $fodaPerfilId ?? $profile->id) }}"
                                                         data-name="{{ addslashes(strip_tags($profile->name)) }}"
                                                         title="Ver Cruce de Ambientes">
                                                     <i class="fa fa-random mr-1"></i>Ver Cruce de Ambientes
@@ -3804,9 +3804,14 @@ function irAIniciativaDesdeModal(iniId) {
         });
     };
 
-    $(document).on('click', '.btnVerFodaCrossing', function () {
-        var url = $(this).data('url');
-        var planName = $(this).data('name') || 'Plan Estratégico';
+    function abrirModalFodaCrossing(btn, e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        var $btn = $(btn);
+        var url = $btn.data('url');
+        var planName = $btn.data('name') || 'Plan Estratégico';
         currentFodaUrl = url;
 
         $('#modalFodaCrossingTitulo').html('<i class="fa fa-random text-warning mr-2"></i> Análisis FODA & Cruce de Ambientes — ' + planName);
@@ -3819,6 +3824,10 @@ function irAIniciativaDesdeModal(iniId) {
             var msg = xhr.responseJSON?.message || 'Ocurrió un error al cargar el análisis FODA.';
             $('#modalFodaCrossingBody').html('<div class="alert alert-danger mb-0"><i class="fa fa-exclamation-circle mr-2"></i> ' + msg + '</div>');
         });
+    }
+
+    $(document).on('click', '.btnVerFodaCrossing', function (e) {
+        abrirModalFodaCrossing(this, e);
     });
 </script>
 
