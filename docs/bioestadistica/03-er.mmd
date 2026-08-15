@@ -1,0 +1,167 @@
+erDiagram
+  departamentos ||--o{ distritos : contiene
+  distritos ||--o{ establecimientos : ubica
+  microredes ||--o{ establecimientos : agrupa
+  tipos_establecimiento ||--o{ establecimientos : clasifica
+  grados_complejidad ||--o{ establecimientos : complejidad
+  areas_gestion ||--o{ establecimientos : area
+
+  formularios ||--o{ form_secciones : contiene
+  form_secciones ||--o{ fields : contiene
+  fields ||--o{ fields : subcampos
+  catalogos ||--o{ catalog_items : tiene
+  fields }o--o| catalogos : usa
+  variable_definitions }o--o| catalogos : provee
+  fields }o--o| variable_definitions : define
+
+  formularios ||--o{ records : instancias
+  establecimientos ||--o{ records : reporta
+  records ||--o{ record_values : valores
+  fields ||--o{ record_values : tipifica
+
+  indicadores ||--o{ indicador_formulas : versiona
+  indicadores ||--o{ indicador_cache : resultados
+
+  dashboards ||--o{ dashboard_widgets : layout
+  usuarios ||--o{ dashboards : personaliza
+  reportes }o--o| formularios : opcional
+
+  hosp_episodios }o--|| establecimientos : ocurre_en
+  hosp_episodios }o--o| records : agrega_a
+
+  audit_log }o--|| usuarios : actor
+  import_jobs }o--o| formularios : genera
+  import_jobs }o--|| usuarios : ejecuta
+
+  departamentos {
+    bigserial id
+    varchar codigo
+    varchar nombre
+    boolean activo
+  }
+
+  distritos {
+    bigserial id
+    bigint departamento_id
+    varchar codigo
+    varchar nombre
+    boolean activo
+  }
+
+  establecimientos {
+    bigserial id
+    varchar codigo
+    varchar nombre
+    bigint distrito_id
+    bigint microred_id
+    bigint tipo_establecimiento_id
+    bigint grado_complejidad_id
+    bigint area_gestion_id
+    varchar nivel_atencion
+    varchar prestador
+    varchar situacion_inmueble
+    varchar sistema
+    varchar codigo_sih
+    numeric latitud
+    numeric longitud
+    text observacion
+  }
+
+  formularios {
+    bigserial id
+    varchar codigo
+    varchar nombre
+    text descripcion
+    varchar estado
+    varchar periodicidad
+    varchar layout_type
+    integer version
+  }
+
+  fields {
+    bigserial id
+    bigint seccion_id
+    varchar code
+    varchar label
+    varchar type
+    boolean required
+    numeric min_value
+    numeric max_value
+    varchar validation_regex
+    varchar tooltip
+    text help_text
+    bigint catalogo_id
+    bigint parent_field_id
+    bigint variable_definition_id
+    jsonb config
+    integer orden
+  }
+
+  records {
+    bigserial id
+    bigint formulario_id
+    bigint establecimiento_id
+    smallint periodo_anio
+    smallint periodo_mes
+    varchar estado
+    bigint submitted_by
+    timestamp submitted_at
+    bigint approved_by
+    timestamp approved_at
+  }
+
+  record_values {
+    bigserial id
+    bigint record_id
+    bigint field_id
+    text value_text
+    numeric value_num
+    date value_date
+    boolean value_bool
+    jsonb value_json
+  }
+
+  variable_definitions {
+    bigserial id
+    varchar codigo_dominio
+    varchar dominio
+    varchar tipo_registro
+    varchar prestacion
+    bigint catalogo_id
+    jsonb meta
+  }
+
+  indicador_formulas {
+    bigserial id
+    bigint indicador_id
+    jsonb expresion
+    date vigente_desde
+    date vigente_hasta
+  }
+
+  hosp_episodios {
+    bigserial id
+    bigint establecimiento_id
+    bigint record_id
+    varchar cedula
+    varchar sexo
+    varchar seguro
+    date fecha_ingreso
+    date fecha_egreso
+    varchar servicio
+    varchar cie10
+    varchar tipo_alta
+    boolean cirugia
+  }
+
+  audit_log {
+    bigserial id
+    bigint user_id
+    varchar accion
+    varchar entity_type
+    bigint entity_id
+    jsonb old_values
+    jsonb new_values
+    inet ip
+    timestamp created_at
+  }

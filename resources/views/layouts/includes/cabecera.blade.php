@@ -15,10 +15,9 @@
     <title>@yield('title')</title>
     <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no'
         name='viewport' />
-    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('master/assets/css/fontawesome.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('master/assets/css/material-dashboard.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('master/assets/demo/demo.css') }}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+    <link href="{{ asset('assets/fontawesome/fontawesome-free-6.2.0-web/css/all.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/fontawesome/fontawesome-free-6.2.0-web/css/v4-shims.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/overrides.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">

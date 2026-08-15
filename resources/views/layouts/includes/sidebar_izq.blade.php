@@ -279,6 +279,36 @@
                                 <span class="sidebar-normal">Dashboard</span>
                             </a>
                         </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/formularios*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.formularios.index') }}">
+                                <span class="sidebar-mini">FR</span><span class="sidebar-normal">Formularios</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/catalogos*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.catalogos.index') }}">
+                                <span class="sidebar-mini">CA</span><span class="sidebar-normal">Catálogos</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/captura*') || $isActive('bioestadistica/captura-asignaciones*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.captura.index') }}">
+                                <span class="sidebar-mini">CP</span><span class="sidebar-normal">Captura</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/captura/pendientes*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.captura.pending') }}">
+                                <span class="sidebar-mini">PD</span><span class="sidebar-normal">Pendientes</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/geografia*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}">
+                                <span class="sidebar-mini">GE</span><span class="sidebar-normal">Geografía</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/clasificaciones*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.clasificaciones.index') }}">
+                                <span class="sidebar-mini">CL</span><span class="sidebar-normal">Clasificaciones</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
@@ -404,10 +434,55 @@
                                 <span class="sidebar-normal">Dashboard</span>
                             </a>
                         </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/formularios*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.formularios.index') }}"><span class="sidebar-mini">FR</span><span class="sidebar-normal">Formularios</span></a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/catalogos*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.catalogos.index') }}"><span class="sidebar-mini">CA</span><span class="sidebar-normal">Catálogos</span></a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/captura*') || $isActive('bioestadistica/captura-asignaciones*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.captura.index') }}"><span class="sidebar-mini">CP</span><span class="sidebar-normal">Captura</span></a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/captura/pendientes*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.captura.pending') }}"><span class="sidebar-mini">PD</span><span class="sidebar-normal">Pendientes</span></a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/geografia*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}"><span class="sidebar-mini">GE</span><span class="sidebar-normal">Geografía</span></a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/clasificaciones*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.clasificaciones.index') }}"><span class="sidebar-mini">CL</span><span class="sidebar-normal">Clasificaciones</span></a>
+                        </li>
                     </ul>
                 </div>
             </li>
         @endrole
+
+        @hasanyrole('Digitador Bioestadística|Consultor Bioestadística|Auditor Bioestadística')
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="collapse" href="#bioestadisticaMenuOperativo" aria-expanded="{{ $enBioestadistica ? 'true' : 'false' }}">
+                    <i class="material-icons">healing</i><p>Bioestadísticas <b class="caret"></b></p>
+                </a>
+                <div class="collapse {{ $enBioestadistica ? 'show' : '' }}" id="bioestadisticaMenuOperativo">
+                    <ul class="nav">
+                        <li class="nav-item {{ $isActive('bioestadistica') || $isActive('bioestadistica/dashboard') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.dashboard') }}"><span class="sidebar-mini">DB</span><span class="sidebar-normal">Dashboard</span></a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/formularios*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.formularios.index') }}"><span class="sidebar-mini">FR</span><span class="sidebar-normal">Formularios</span></a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/captura*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.captura.index') }}"><span class="sidebar-mini">CP</span><span class="sidebar-normal">Captura</span></a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/captura/pendientes*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.captura.pending') }}"><span class="sidebar-mini">PD</span><span class="sidebar-normal">Pendientes</span></a>
+                        </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/geografia*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}"><span class="sidebar-mini">GE</span><span class="sidebar-normal">Geografía</span></a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        @endhasanyrole
 
         {{-- Sidebar exclusivo para Analista - RIISS --}}
         @role('Analista - RIISS')
