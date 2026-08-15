@@ -13,6 +13,10 @@ return new class extends Migration
         );
         DB::connection('pgsql')->statement(
             'ALTER TABLE bioestadistica.grados_complejidad
+             DROP CONSTRAINT IF EXISTS bio_grados_codigo_descripcion_unique'
+        );
+        DB::connection('pgsql')->statement(
+            'ALTER TABLE bioestadistica.grados_complejidad
              ADD CONSTRAINT bio_grados_codigo_descripcion_unique UNIQUE (codigo, descripcion)'
         );
     }

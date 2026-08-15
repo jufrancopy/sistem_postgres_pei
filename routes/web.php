@@ -627,7 +627,7 @@ Route::group(['middleware' => 'auth'], function () {
 });
 
 Route::group(['middleware' => 'auth'], function () {
-    Route::resource('user', 'UserController', ['except' => ['show']]);
+    Route::resource('user', 'Admin\UserController', ['except' => ['show']]);
     Route::get('profile', function () { return redirect()->route('user.profile'); })->name('profile.edit');
     Route::post('profile', function () { return redirect()->route('user.profile'); })->name('profile.update');
     Route::post('profile/password', function () { return redirect()->route('user.profile'); })->name('profile.password');
