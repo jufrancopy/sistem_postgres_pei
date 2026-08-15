@@ -26,11 +26,11 @@ class FodaIpsEstructuradoSeeder extends Seeder
             $perfil = FodaPerfil::find($pId);
             if (!$perfil) {
                 FodaPerfil::create([
-                    'id'          => $pId,
-                    'name'        => ($pId === 'a0e99967-c8d5-4d27-adac-cf16fc9efbb3') ? '[DEMO] Análisis FODA — IPS 2025' : 'ANÁLISIS FODA IPS',
-                    'type'        => ($pId === 'a0e99967-c8d5-4d27-adac-cf16fc9efbb3') ? 'grupal' : 'consolidado',
-                    'description' => 'Modelo FODA Arquitectura Completa con IEA y Fichas MECIP 2015 para IPS Paraguay',
-                    'model_id'    => 1,
+                    'id'       => $pId,
+                    'name'     => ($pId === 'a0e99967-c8d5-4d27-adac-cf16fc9efbb3') ? '[DEMO] Análisis FODA — IPS 2025' : 'ANÁLISIS FODA IPS',
+                    'type'     => ($pId === 'a0e99967-c8d5-4d27-adac-cf16fc9efbb3') ? 'grupal' : 'consolidado',
+                    'context'  => 'Modelo FODA Arquitectura Completa con IEA y Fichas MECIP 2015 para IPS Paraguay',
+                    'model_id' => 1,
                 ]);
             } else {
                 $perfil->update(['model_id' => 1]);
