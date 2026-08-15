@@ -69,7 +69,7 @@ $totalEstrategias = count($FOs) + count($DOs) + count($FAs) + count($DAs);
                         <span><i class="fa fa-arrow-up mr-1"></i> Fortalezas</span>
                         <span class="badge badge-light text-success font-weight-bold">{{ count($fortalezas) }}</span>
                     </div>
-                    <div style="padding:10px 14px; max-height: 220px; overflow-y: auto;">
+                    <div style="padding:10px 14px;">
                         @forelse($fortalezas as $v)
                         @php $cuadrantes = $fortalezasCubiertas[$v->aspecto->id] ?? []; @endphp
                         <div class="d-flex align-items-start mb-1">
@@ -93,7 +93,7 @@ $totalEstrategias = count($FOs) + count($DOs) + count($FAs) + count($DAs);
                         <span><i class="fa fa-arrow-down mr-1"></i> Debilidades</span>
                         <span class="badge badge-light text-danger font-weight-bold">{{ count($debilidades) }}</span>
                     </div>
-                    <div style="padding:10px 14px; max-height: 220px; overflow-y: auto;">
+                    <div style="padding:10px 14px;">
                         @forelse($debilidades as $v)
                         @php $cuadrantes = $debilidadesCubiertas[$v->aspecto->id] ?? []; @endphp
                         <div class="d-flex align-items-start mb-1">
@@ -123,7 +123,7 @@ $totalEstrategias = count($FOs) + count($DOs) + count($FAs) + count($DAs);
                         <span><i class="fa fa-star mr-1"></i> Oportunidades</span>
                         <span class="badge badge-light text-info font-weight-bold">{{ count($oportunidades) }}</span>
                     </div>
-                    <div style="padding:10px 14px; max-height: 250px; overflow-y: auto;">
+                    <div style="padding:10px 14px;">
                         @forelse($oportunidades as $v)
                         @php $cuadrantes = $oportunidadesCubiertas[$v->aspecto->id] ?? []; @endphp
                         <div class="d-flex align-items-start mb-1">
@@ -154,7 +154,7 @@ $totalEstrategias = count($FOs) + count($DOs) + count($FAs) + count($DAs);
                             <i class="fa fa-plus" style="font-size:.75rem"></i>
                         </button>
                     </div>
-                    <div style="padding:10px 14px; max-height: 250px; overflow-y: auto;" id="contenedorEstrategiasFO">
+                    <div style="padding:10px 14px;" id="contenedorEstrategiasFO">
                         @forelse($FOs as $vi)
                         <div class="mb-2 pb-2 border-bottom foda-cruce-item" id="cruce-item-{{ $vi->id }}" style="font-size:.82rem">
                             <div class="mb-1">
@@ -198,7 +198,7 @@ $totalEstrategias = count($FOs) + count($DOs) + count($FAs) + count($DAs);
                             <i class="fa fa-plus" style="font-size:.75rem"></i>
                         </button>
                     </div>
-                    <div style="padding:10px 14px; max-height: 250px; overflow-y: auto;" id="contenedorEstrategiasDO">
+                    <div style="padding:10px 14px;" id="contenedorEstrategiasDO">
                         @forelse($DOs as $vi)
                         <div class="mb-2 pb-2 border-bottom foda-cruce-item" id="cruce-item-{{ $vi->id }}" style="font-size:.82rem">
                             <div class="mb-1">
@@ -238,7 +238,7 @@ $totalEstrategias = count($FOs) + count($DOs) + count($FAs) + count($DAs);
                         <span><i class="fa fa-exclamation-triangle mr-1"></i> Amenazas</span>
                         <span class="badge badge-light text-warning font-weight-bold text-dark">{{ count($amenazas) }}</span>
                     </div>
-                    <div style="padding:10px 14px; max-height: 250px; overflow-y: auto;">
+                    <div style="padding:10px 14px;">
                         @forelse($amenazas as $v)
                         @php $cuadrantes = $amenazasCubiertas[$v->aspecto->id] ?? []; @endphp
                         <div class="d-flex align-items-start mb-1">
@@ -272,7 +272,7 @@ $totalEstrategias = count($FOs) + count($DOs) + count($FAs) + count($DAs);
                             <i class="fa fa-plus" style="font-size:.75rem"></i>
                         </button>
                     </div>
-                    <div style="padding:10px 14px; max-height: 250px; overflow-y: auto;" id="contenedorEstrategiasFA">
+                    <div style="padding:10px 14px;" id="contenedorEstrategiasFA">
                         @forelse($FAs as $vi)
                         <div class="mb-2 pb-2 border-bottom foda-cruce-item" id="cruce-item-{{ $vi->id }}" style="font-size:.82rem">
                             <div class="mb-1">
@@ -316,7 +316,7 @@ $totalEstrategias = count($FOs) + count($DOs) + count($FAs) + count($DAs);
                             <i class="fa fa-plus" style="font-size:.75rem"></i>
                         </button>
                     </div>
-                    <div style="padding:10px 14px; max-height: 250px; overflow-y: auto;" id="contenedorEstrategiasDA">
+                    <div style="padding:10px 14px;" id="contenedorEstrategiasDA">
                         @forelse($DAs as $vi)
                         <div class="mb-2 pb-2 border-bottom foda-cruce-item" id="cruce-item-{{ $vi->id }}" style="font-size:.82rem">
                             <div class="mb-1">
