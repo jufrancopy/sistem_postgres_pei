@@ -470,11 +470,28 @@
                                                         </div>
                                                         <div class="d-flex flex-column" style="gap:.5rem;">
                                                             @foreach($fodaAspectosPriorizados['fortalezas'] as $item)
-                                                            <div class="p-2 rounded border" style="background:#f0fdf4; border-color:#bbf7d0 !important;">
+                                                            <div class="p-2 rounded border aspect-card-clickable"
+                                                                 style="background:#f0fdf4; border-color:#bbf7d0 !important; cursor:pointer; transition: transform .15s ease, box-shadow .15s ease;"
+                                                                 onclick="abrirModalAspectoPei(this);"
+                                                                 data-nombre="{{ e($item->aspecto->name ?? 'Aspecto') }}"
+                                                                 data-categoria="{{ e($item->aspecto->parent->name ?? ($item->aspecto->environment ?? '—')) }}"
+                                                                 data-tipo="{{ $item->tipo }}"
+                                                                 data-evidencia="{{ e($item->aspecto->description ?? '') }}"
+                                                                 data-iea="{{ number_format($item->iea_valor ?? 0, 2) }}"
+                                                                 data-desempeno="{{ number_format($item->promedio_desempeno_6m ?? 0, 2) }}"
+                                                                 data-inversion="{{ number_format($item->inversion_historica_6m ?? 0, 2) }}"
+                                                                 data-ocurrencia="{{ $item->ocurrencia }}"
+                                                                 data-impacto="{{ $item->impacto }}"
+                                                                 data-ponderacion="{{ number_format($item->matriz ?? 0, 2) }}"
+                                                                 data-causaraiz="{{ $item->causa_raiz }}"
+                                                                 data-accion="{{ e($item->accion_mejora ?? '') }}"
+                                                                 data-control="{{ e($item->control_preventivo ?? '') }}"
+                                                                 title="Clic para ver detalle completo">
                                                                 <div class="d-flex align-items-start justify-content-between">
                                                                     <span class="font-weight-bold text-dark" style="font-size:.75rem; line-height: 1.35; color:#14532d;">
                                                                         <i class="fa fa-check-circle text-success mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
                                                                     </span>
+                                                                    <i class="fa fa-search-plus text-success ml-1" style="font-size:.7rem; opacity:.7;"></i>
                                                                 </div>
                                                                 <div class="d-flex align-items-center justify-content-between mt-1.5 pt-1 border-top" style="border-color:#dcfce7 !important;">
                                                                     @if($item->iea_valor)
@@ -501,11 +518,28 @@
                                                         </div>
                                                         <div class="d-flex flex-column" style="gap:.5rem;">
                                                             @foreach($fodaAspectosPriorizados['debilidades'] as $item)
-                                                            <div class="p-2.5 rounded border shadow-xs" style="background:#fef2f2; border-color:#fecaca !important;">
+                                                            <div class="p-2.5 rounded border shadow-xs aspect-card-clickable"
+                                                                 style="background:#fef2f2; border-color:#fecaca !important; cursor:pointer; transition: transform .15s ease, box-shadow .15s ease;"
+                                                                 onclick="abrirModalAspectoPei(this);"
+                                                                 data-nombre="{{ e($item->aspecto->name ?? 'Aspecto') }}"
+                                                                 data-categoria="{{ e($item->aspecto->parent->name ?? ($item->aspecto->environment ?? '—')) }}"
+                                                                 data-tipo="{{ $item->tipo }}"
+                                                                 data-evidencia="{{ e($item->aspecto->description ?? '') }}"
+                                                                 data-iea="{{ number_format($item->iea_valor ?? 0, 2) }}"
+                                                                 data-desempeno="{{ number_format($item->promedio_desempeno_6m ?? 0, 2) }}"
+                                                                 data-inversion="{{ number_format($item->inversion_historica_6m ?? 0, 2) }}"
+                                                                 data-ocurrencia="{{ $item->ocurrencia }}"
+                                                                 data-impacto="{{ $item->impacto }}"
+                                                                 data-ponderacion="{{ number_format($item->matriz ?? 0, 2) }}"
+                                                                 data-causaraiz="{{ $item->causa_raiz }}"
+                                                                 data-accion="{{ e($item->accion_mejora ?? '') }}"
+                                                                 data-control="{{ e($item->control_preventivo ?? '') }}"
+                                                                 title="Clic para ver detalle completo">
                                                                 <div class="d-flex align-items-start justify-content-between">
                                                                     <span class="font-weight-bold" style="font-size:.76rem; line-height: 1.35; color:#7f1d1d;">
                                                                         <i class="fa fa-exclamation-circle text-danger mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
                                                                     </span>
+                                                                    <i class="fa fa-search-plus text-danger ml-1" style="font-size:.7rem; opacity:.7;"></i>
                                                                 </div>
 
                                                                 {{-- Ficha MECIP 2015 --}}
@@ -552,11 +586,28 @@
                                                         </div>
                                                         <div class="d-flex flex-column" style="gap:.5rem;">
                                                             @foreach($fodaAspectosPriorizados['oportunidades'] as $item)
-                                                            <div class="p-2 rounded border" style="background:#f0f9ff; border-color:#bae6fd !important;">
+                                                            <div class="p-2 rounded border aspect-card-clickable"
+                                                                 style="background:#f0f9ff; border-color:#bae6fd !important; cursor:pointer; transition: transform .15s ease, box-shadow .15s ease;"
+                                                                 onclick="abrirModalAspectoPei(this);"
+                                                                 data-nombre="{{ e($item->aspecto->name ?? 'Aspecto') }}"
+                                                                 data-categoria="{{ e($item->aspecto->parent->name ?? ($item->aspecto->environment ?? '—')) }}"
+                                                                 data-tipo="{{ $item->tipo }}"
+                                                                 data-evidencia="{{ e($item->aspecto->description ?? '') }}"
+                                                                 data-iea="{{ number_format($item->iea_valor ?? 0, 2) }}"
+                                                                 data-desempeno="{{ number_format($item->promedio_desempeno_6m ?? 0, 2) }}"
+                                                                 data-inversion="{{ number_format($item->inversion_historica_6m ?? 0, 2) }}"
+                                                                 data-ocurrencia="{{ $item->ocurrencia }}"
+                                                                 data-impacto="{{ $item->impacto }}"
+                                                                 data-ponderacion="{{ number_format($item->matriz ?? 0, 2) }}"
+                                                                 data-causaraiz="{{ $item->causa_raiz }}"
+                                                                 data-accion="{{ e($item->accion_mejora ?? '') }}"
+                                                                 data-control="{{ e($item->control_preventivo ?? '') }}"
+                                                                 title="Clic para ver detalle completo">
                                                                 <div class="d-flex align-items-start justify-content-between">
                                                                     <span class="font-weight-bold text-dark" style="font-size:.75rem; line-height: 1.35; color:#0369a1;">
                                                                         <i class="fa fa-star text-info mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
                                                                     </span>
+                                                                    <i class="fa fa-search-plus text-info ml-1" style="font-size:.7rem; opacity:.7;"></i>
                                                                 </div>
                                                                 <div class="d-flex align-items-center justify-content-between mt-1.5 pt-1 border-top" style="border-color:#e0f2fe !important;">
                                                                     @if($item->iea_valor)
@@ -583,11 +634,28 @@
                                                         </div>
                                                         <div class="d-flex flex-column" style="gap:.5rem;">
                                                             @foreach($fodaAspectosPriorizados['amenazas'] as $item)
-                                                            <div class="p-2.5 rounded border shadow-xs" style="background:#fffbeb; border-color:#fde68a !important;">
+                                                            <div class="p-2.5 rounded border shadow-xs aspect-card-clickable"
+                                                                 style="background:#fffbeb; border-color:#fde68a !important; cursor:pointer; transition: transform .15s ease, box-shadow .15s ease;"
+                                                                 onclick="abrirModalAspectoPei(this);"
+                                                                 data-nombre="{{ e($item->aspecto->name ?? 'Aspecto') }}"
+                                                                 data-categoria="{{ e($item->aspecto->parent->name ?? ($item->aspecto->environment ?? '—')) }}"
+                                                                 data-tipo="{{ $item->tipo }}"
+                                                                 data-evidencia="{{ e($item->aspecto->description ?? '') }}"
+                                                                 data-iea="{{ number_format($item->iea_valor ?? 0, 2) }}"
+                                                                 data-desempeno="{{ number_format($item->promedio_desempeno_6m ?? 0, 2) }}"
+                                                                 data-inversion="{{ number_format($item->inversion_historica_6m ?? 0, 2) }}"
+                                                                 data-ocurrencia="{{ $item->ocurrencia }}"
+                                                                 data-impacto="{{ $item->impacto }}"
+                                                                 data-ponderacion="{{ number_format($item->matriz ?? 0, 2) }}"
+                                                                 data-causaraiz="{{ $item->causa_raiz }}"
+                                                                 data-accion="{{ e($item->accion_mejora ?? '') }}"
+                                                                 data-control="{{ e($item->control_preventivo ?? '') }}"
+                                                                 title="Clic para ver detalle completo">
                                                                 <div class="d-flex align-items-start justify-content-between">
                                                                     <span class="font-weight-bold" style="font-size:.76rem; line-height: 1.35; color:#78350f;">
                                                                         <i class="fa fa-bolt text-warning mr-1"></i>{{ $item->aspecto->name ?? 'Aspecto' }}
                                                                     </span>
+                                                                    <i class="fa fa-search-plus text-warning ml-1" style="font-size:.7rem; opacity:.7;"></i>
                                                                 </div>
 
                                                                 {{-- Ficha MECIP 2015 --}}
@@ -3991,7 +4059,159 @@ function irAIniciativaDesdeModal(iniId) {
     $(document).on('click', '.btnVerFodaCrossing', function (e) {
         abrirModalFodaCrossing(this, e);
     });
+
+    function abrirModalAspectoPei(el) {
+        var d = $(el).data();
+        $('#nombreModalAspecto').text(d.nombre);
+        $('#categoriaModalAspecto').text(d.categoria);
+        
+        var $bt = $('#badgeTipoModalAspecto');
+        if (d.tipo === 'Fortaleza')      { $bt.attr('class', 'badge badge-success px-2.5 py-1').text('Fortaleza'); }
+        else if (d.tipo === 'Debilidad') { $bt.attr('class', 'badge badge-danger px-2.5 py-1').text('Debilidad'); }
+        else if (d.tipo === 'Oportunidad') { $bt.attr('class', 'badge badge-info px-2.5 py-1').text('Oportunidad'); }
+        else if (d.tipo === 'Amenaza')   { $bt.attr('class', 'badge badge-warning text-dark px-2.5 py-1').text('Amenaza'); }
+
+        $('#evidenciaModalAspecto').html(d.evidencia || '<em>Sin descripción cargada.</em>');
+
+        $('#desempenoModalAspecto').text(d.desempeno);
+        $('#inversionModalAspecto').text(d.inversion);
+        var ieaVal = parseFloat(d.iea);
+        var $bIea = $('#badgeIeaResultModal');
+        if (ieaVal < 0.40) {
+            $bIea.attr('class', 'badge badge-danger').text('IEA ' + d.iea + ' (Debilidad)');
+        } else if (ieaVal > 0.80) {
+            $bIea.attr('class', 'badge badge-success').text('IEA ' + d.iea + ' (Fortaleza)');
+        } else {
+            $bIea.attr('class', 'badge badge-warning text-dark').text('IEA ' + d.iea + ' (Equilibrio)');
+        }
+
+        $('#ocurrenciaModalAspecto').text(d.ocurrencia);
+        $('#impactoModalAspecto').text(d.impacto);
+        $('#ponderacionModalAspecto').text(d.ponderacion);
+
+        if (d.tipo === 'Debilidad' || d.tipo === 'Amenaza') {
+            $('#containerMecipModalAspecto').show();
+            $('#causaRaizModalAspecto').text((d.causaraiz || 'Operativa').toUpperCase());
+            $('#accionModalAspecto').text(d.accion || 'Sin acción de mejora registrada.');
+            $('#controlModalAspecto').text(d.control || 'Sin control preventivo registrado.');
+        } else {
+            $('#containerMecipModalAspecto').hide();
+        }
+
+        $('#modalAspectoDetallePei').modal('show');
+    }
 </script>
+
+<!-- MODAL: DETALLE DE ASPECTO ANALIZADO EN PEI -->
+<div class="modal fade" id="modalAspectoDetallePei" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white p-3.5" id="headerModalAspectoPei" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span id="badgeTipoModalAspecto" class="badge px-2.5 py-1" style="font-size:.7rem; border-radius:10px;"></span>
+                        <small class="text-white-50 text-uppercase font-weight-bold" id="categoriaModalAspecto" style="font-size:.68rem; letter-spacing:.05em;"></small>
+                    </div>
+                    <h5 class="modal-title font-weight-bold text-white mb-0" id="nombreModalAspecto" style="font-size:1.1rem; line-height: 1.3;"></h5>
+                </div>
+                <button type="button" class="close text-white opacity-8" data-dismiss="modal" aria-label="Close" style="font-size: 1.5rem;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4" style="background: #f8fafc;">
+
+                {{-- ── 1. Referencia & Evidencia Documentada ── --}}
+                <div class="card border-0 mb-3.5 shadow-xs" style="border-radius: 12px; background: #ffffff; border-left: 4px solid #0284c7 !important;">
+                    <div class="card-body p-3.5">
+                        <small class="text-uppercase font-weight-bold d-block mb-1.5" style="font-size:.72rem; letter-spacing:.05em; color: #0284c7;">
+                            <i class="fa fa-file-alt mr-1"></i> Referencia & Evidencia Documentada
+                        </small>
+                        <div id="evidenciaModalAspecto" class="text-secondary small" style="line-height:1.55; color:#334155;"></div>
+                    </div>
+                </div>
+
+                {{-- ── 2. IEA & Matriz de Criticidad (2 Columnas) ── --}}
+                <div class="row mb-3.5">
+                    {{-- IEA Card --}}
+                    <div class="col-md-6 mb-2">
+                        <div class="card border-0 h-100 shadow-xs" style="border-radius: 12px; background: #ffffff; border: 1px solid #e2e8f0;">
+                            <div class="card-body p-3.5">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <small class="text-uppercase font-weight-bold text-dark" style="font-size:.7rem; letter-spacing:.05em;">
+                                        <i class="fa fa-calculator text-info mr-1"></i> Índice IEA
+                                    </small>
+                                    <span id="badgeIeaResultModal" class="badge px-2 py-0.5" style="font-size:.68rem;"></span>
+                                </div>
+                                <div class="row text-center mt-2">
+                                    <div class="col-6 border-right">
+                                        <small class="text-muted d-block" style="font-size:.65rem;">Promedio Desempeño</small>
+                                        <strong id="desempenoModalAspecto" class="text-dark" style="font-size: 1rem;"></strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block" style="font-size:.65rem;">Inversión Histórica</small>
+                                        <strong id="inversionModalAspecto" class="text-dark" style="font-size: 1rem;"></strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Matriz Criticidad Card --}}
+                    <div class="col-md-6 mb-2">
+                        <div class="card border-0 h-100 shadow-xs" style="border-radius: 12px; background: #ffffff; border: 1px solid #e2e8f0;">
+                            <div class="card-body p-3.5">
+                                <small class="text-uppercase font-weight-bold text-dark d-block mb-2" style="font-size:.7rem; letter-spacing:.05em;">
+                                    <i class="fa fa-th-large text-warning mr-1"></i> Matriz Ocurrencia × Impacto
+                                </small>
+                                <div class="d-flex align-items-center justify-content-around text-center mt-1">
+                                    <div>
+                                        <small class="text-muted d-block" style="font-size:.65rem;">Ocurrencia</small>
+                                        <strong id="ocurrenciaModalAspecto" class="text-dark" style="font-size:.9rem;"></strong>
+                                    </div>
+                                    <span class="text-muted font-weight-bold">×</span>
+                                    <div>
+                                        <small class="text-muted d-block" style="font-size:.65rem;">Impacto</small>
+                                        <strong id="impactoModalAspecto" class="text-dark" style="font-size:.9rem;"></strong>
+                                    </div>
+                                    <span class="text-muted font-weight-bold">=</span>
+                                    <div>
+                                        <small class="text-muted d-block" style="font-size:.65rem;">Ponderación</small>
+                                        <span id="ponderacionModalAspecto" class="badge badge-danger px-2 py-0.5" style="font-size:.8rem;"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ── 3. Ficha MECIP 2015 (Solo si aplica) ── --}}
+                <div id="containerMecipModalAspecto" class="card border-0 shadow-xs" style="border-radius: 12px; background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b !important;">
+                    <div class="card-body p-3.5">
+                        <small class="text-uppercase font-weight-bold d-block mb-2" style="font-size:.72rem; letter-spacing:.05em; color: #b45309;">
+                            <i class="fa fa-shield-alt mr-1"></i> Ficha de Gestión de Riesgos MECIP 2015
+                        </small>
+                        <div class="mb-2">
+                            <span class="text-muted small" style="font-size:.72rem;">Causa Raíz Identificada:</span>
+                            <span id="causaRaizModalAspecto" class="badge badge-warning text-dark font-weight-bold ml-1" style="font-size:.7rem;"></span>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted font-weight-bold d-block" style="font-size:.7rem;">Acción de Mejora Preventiva / Correctiva:</small>
+                            <div id="accionModalAspecto" class="text-dark small p-2 rounded bg-white border" style="line-height:1.45;"></div>
+                        </div>
+                        <div>
+                            <small class="text-muted font-weight-bold d-block" style="font-size:.7rem;">Control Preventivo de Seguimiento:</small>
+                            <div id="controlModalAspecto" class="text-dark small p-2 rounded bg-white border" style="line-height:1.45;"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-light p-2.5">
+                <button type="button" class="btn btn-secondary btn-sm px-3" data-dismiss="modal" style="border-radius:8px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <div id="containerModalReordenarPei"></div>

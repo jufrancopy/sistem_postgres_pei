@@ -603,13 +603,49 @@ class FodaIpsEstructuradoSeeder extends Seeder
             // Limpiar estrategias antiguas de este perfil
             FodaCruceAmbiente::where('perfil_id', $tPerfilId)->delete();
 
+            // Aspectos del perfil por tipo
+            $analisisPerfil = FodaAnalisis::where('perfil_id', $tPerfilId)->get();
+
+            $fIds = $analisisPerfil->where('tipo', 'Fortaleza')->pluck('aspecto_id')->toArray();
+            $dIds = $analisisPerfil->where('tipo', 'Debilidad')->pluck('aspecto_id')->toArray();
+            $oIds = $analisisPerfil->where('tipo', 'Oportunidad')->pluck('aspecto_id')->toArray();
+            $aIds = $analisisPerfil->where('tipo', 'Amenaza')->pluck('aspecto_id')->toArray();
+
+            $idxFO = 0; $idxDO = 0; $idxFA = 0; $idxDA = 0;
+
             foreach ($estrategiasCruce as $eData) {
-                FodaCruceAmbiente::create([
+                $cruce = FodaCruceAmbiente::create([
                     'user_id'    => 1,
                     'perfil_id'  => $tPerfilId,
                     'tipo'       => $eData['tipo'],
                     'estrategia' => $eData['estrategia'],
                 ]);
+
+                if ($eData['tipo'] === 'FO') {
+                    $fortSel = !empty($fIds) ? [$fIds[$idxFO % count($fIds)]] : [];
+                    $opSel   = $oIds;
+                    $cruce->fortalezas()->sync($fortSel);
+                    $cruce->oportunidades()->sync($opSel);
+                    $idxFO++;
+                } elseif ($eData['tipo'] === 'DO') {
+                    $debSel = !empty($dIds) ? [$dIds[$idxDO % count($dIds)]] : [];
+                    $opSel  = $oIds;
+                    $cruce->debilidades()->sync($debSel);
+                    $cruce->oportunidades()->sync($opSel);
+                    $idxDO++;
+                } elseif ($eData['tipo'] === 'FA') {
+                    $fortSel = !empty($fIds) ? [$fIds[$idxFA % count($fIds)]] : [];
+                    $amSel   = !empty($aIds) ? [$aIds[$idxFA % count($aIds)]] : [];
+                    $cruce->fortalezas()->sync($fortSel);
+                    $cruce->amenazas()->sync($amSel);
+                    $idxFA++;
+                } elseif ($eData['tipo'] === 'DA') {
+                    $debSel = !empty($dIds) ? [$dIds[$idxDA % count($dIds)]] : [];
+                    $amSel  = !empty($aIds) ? [$aIds[$idxDA % count($aIds)]] : [];
+                    $cruce->debilidades()->sync($debSel);
+                    $cruce->amenazas()->sync($amSel);
+                    $idxDA++;
+                }
             }
         }
 
