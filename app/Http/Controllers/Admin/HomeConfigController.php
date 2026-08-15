@@ -142,6 +142,7 @@ class HomeConfigController extends Controller
     {
         $request->validate([
             'site_name'     => 'required|string|max:255',
+            'logo_file'     => 'nullable|image|mimes:jpeg,png,jpg,svg,gif,webp|max:5120',
             'logo_url'      => 'nullable|string|max:1000',
             'contact_email' => 'nullable|email|max:255',
             'contact_phone' => 'nullable|string|max:100',
@@ -153,15 +154,22 @@ class HomeConfigController extends Controller
         $config = HomeConfiguration::firstOrNew([]);
         $config->fill($request->only([
             'site_name',
-            'logo_url',
             'contact_email',
             'contact_phone',
             'opening_hours',
             'address',
             'footer_text',
         ]));
+
+        if ($request->hasFile('logo_file')) {
+            $path = $request->file('logo_file')->store('logos', 'public');
+            $config->logo_url = asset('storage/' . $path);
+        } elseif ($request->has('logo_url')) {
+            $config->logo_url = $request->logo_url;
+        }
+
         $config->save();
 
-        return redirect()->back()->with('success', '¡Variables globales del sistema actualizadas exitosamente!');
+        return redirect()->back()->with('success', '¡Variables globales del sistema y logo institucional actualizados exitosamente!');
     }
 }

@@ -38,7 +38,7 @@
     </div>
     @endif
 
-    <form action="{{ route('globales.configuracion-sistema.update') }}" method="POST">
+    <form action="{{ route('globales.configuracion-sistema.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
         
         <div class="row">
@@ -49,12 +49,12 @@
                 <div class="card border-0 shadow-sm mb-4" style="border-radius: 14px; overflow: hidden;">
                     <div class="card-header bg-white p-3 border-bottom d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);">
                         <span class="font-weight-bold text-uppercase text-dark" style="font-size: 0.82rem; letter-spacing: 0.05em;">
-                            <i class="fa fa-globe text-info mr-2"></i>Identidad Oficial & Nombre del Sitio
+                            <i class="fa fa-globe text-info mr-2"></i>Identidad Oficial & Logo del Servidor
                         </span>
                         <span class="badge badge-info px-2 py-0.5" style="font-size: 0.65rem; border-radius: 10px;">Identidad</span>
                     </div>
                     <div class="card-body p-4">
-                        <div class="form-group mb-3">
+                        <div class="form-group mb-4">
                             <label class="font-weight-bold text-dark small mb-1">Nombre Oficial del Sitio / Aplicación <span class="text-danger">*</span></label>
                             <input type="text" name="site_name" class="form-control form-control-alternative" 
                                    value="{{ old('site_name', $config->site_name ?? 'Sistema PEI & Gestión Estratégica — IPS') }}" 
@@ -62,20 +62,35 @@
                             <small class="text-muted">Aparece en el título del navegador, membretes y reportes institucionales.</small>
                         </div>
 
-                        <div class="form-group mb-0">
-                            <label class="font-weight-bold text-dark small mb-1">URL del Logo Institucional Oficial</label>
-                            <input type="text" name="logo_url" id="input_logo_url" class="form-control form-control-alternative" 
-                                   value="{{ old('logo_url', $config->logo_url) }}" 
-                                   placeholder="https://... o /img/logo-ips.png">
-                            <small class="text-muted">Ruta o enlace a la imagen del logo en PNG/SVG para encabezados de PDF e informes.</small>
+                        {{-- Subir Imagen del Logo al Servidor --}}
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold text-dark small mb-1">
+                                <i class="fa fa-upload text-info mr-1"></i>Subir Logo Institucional al Servidor (PNG, JPG, SVG, WebP)
+                            </label>
+                            <div class="custom-file" style="cursor: pointer;">
+                                <input type="file" name="logo_file" class="custom-file-input" id="logoFileInput" accept="image/*" onchange="previewLogoFile(this)">
+                                <label class="custom-file-label text-muted" for="logoFileInput" id="logoFileLabel">Seleccionar archivo de imagen...</label>
+                            </div>
+                            <small class="text-muted mt-1 d-block">Sube el archivo directamente a tu servidor. Tamaño máximo recomendado: 5 MB.</small>
                         </div>
 
-                        @if($config->logo_url)
-                        <div class="mt-3 p-3 bg-light rounded text-center border">
-                            <small class="text-muted d-block mb-2 font-weight-bold">Vista Previa del Logo Actual:</small>
-                            <img src="{{ $config->logo_url }}" alt="Logo Institucional" style="max-height: 70px; object-fit: contain;">
+                        {{-- Contenedor de Vista Previa --}}
+                        <div id="logoPreviewContainer" class="mt-3 p-3 bg-light rounded text-center border" style="{{ $config->logo_url ? '' : 'display:none;' }}">
+                            <small class="text-muted d-block mb-2 font-weight-bold">Vista Previa del Logo Oficial:</small>
+                            <img id="logoPreviewImg" src="{{ $config->logo_url }}" alt="Logo Institucional" style="max-height: 85px; object-fit: contain;">
                         </div>
-                        @endif
+
+                        {{-- Enlace Directo Opcional --}}
+                        <div class="mt-3">
+                            <a href="#collapseLogoUrl" data-toggle="collapse" class="small text-info font-weight-bold">
+                                <i class="fa fa-link mr-1"></i>¿Preferís ingresar una URL externa directa?
+                            </a>
+                            <div class="collapse mt-2" id="collapseLogoUrl">
+                                <input type="text" name="logo_url" id="input_logo_url" class="form-control form-control-sm" 
+                                       value="{{ old('logo_url', $config->logo_url) }}" 
+                                       placeholder="https://... o /img/logo-ips.png">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -174,4 +189,22 @@
     </form>
 
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    function previewLogoFile(input) {
+        if (input.files && input.files[0]) {
+            var file = input.files[0];
+            $('#logoFileLabel').text(file.name);
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#logoPreviewImg').attr('src', e.target.result);
+                $('#logoPreviewContainer').slideDown(150);
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+</script>
 @endsection
