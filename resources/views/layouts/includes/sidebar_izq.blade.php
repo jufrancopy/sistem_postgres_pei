@@ -29,24 +29,21 @@
     <ul class="nav">
         {{-- Menú exclusivo para Administrador --}}
         @role('Administrador')
-            <li class="nav-item active  ">
+            <li class="nav-item active">
                 <a class="nav-link" href="{{ url('home') }}">
                     <i class="material-icons">dashboard</i>
                     <p>Administrador</p>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url('/') }}" target="_blank">
-                    <i class="material-icons">public</i>
-                    <p>Ver sitio público</p>
+            <li class="nav-item my-2">
+                <a class="nav-link text-white font-weight-bold shadow-sm" href="{{ url('/') }}" target="_blank" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); border-radius: 10px; margin: 5px 15px; padding: 10px 15px; transition: all 0.3s ease;" title="Abrir Portal Público Institucional (Nueva Pestaña)">
+                    <i class="material-icons text-white mr-2" style="font-size: 1.2rem;">public</i>
+                    <p class="text-white font-weight-bold d-inline-block mb-0" style="font-size: 0.88rem;">
+                        Ver Sitio Público <i class="fa fa-external-link-alt ml-1" style="font-size: 0.7rem; opacity: 0.85;"></i>
+                    </p>
                 </a>
             </li>
-            <li class="nav-item ">
-                <a class="nav-link" href="{{ route('globales.dashboard') }}">
-                    <i class="material-icons">settings_applications</i>
-                    <p>Globales</p>
-                </a>
-            </li>
+        @endrole
 
             <li class="nav-item">
                 <a class="nav-link" data-toggle="collapse" href="#planificacionMenu" aria-expanded="{{ $enPlanificacion ? 'true' : 'false' }}">
