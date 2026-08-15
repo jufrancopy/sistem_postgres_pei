@@ -71,6 +71,19 @@
         padding: 1.75rem;
         margin-bottom: 1.75rem;
     }
+    .hero-admin-card .breadcrumb-item a {
+        color: rgba(255, 255, 255, 0.85) !important;
+    }
+    .hero-admin-card .breadcrumb-item a:hover {
+        color: #ffffff !important;
+        text-decoration: underline !important;
+    }
+    .hero-admin-card .breadcrumb-item.active {
+        color: #ffffff !important;
+    }
+    .hero-admin-card .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255, 255, 255, 0.45) !important;
+    }
     .hero-admin-card .badge-context {
         background: rgba(255, 255, 255, 0.15);
         color: #f8fafc;
