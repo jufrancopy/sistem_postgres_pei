@@ -43,7 +43,6 @@
                     </p>
                 </a>
             </li>
-        @endrole
 
             <li class="nav-item">
                 <a class="nav-link" data-toggle="collapse" href="#planificacionMenu" aria-expanded="{{ $enPlanificacion ? 'true' : 'false' }}">
