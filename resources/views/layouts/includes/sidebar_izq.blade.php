@@ -91,13 +91,6 @@
                                     </li>
                                 </ul>
                             </div>
-                        </li>
-                        <li class="nav-item {{ $isActive('plan-maestro*') }}">
-                            <a class="nav-link" href="{{ route('plan-maestro.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-shield-halved" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Plan Maestro</span>
-                            </a>
-                        </li>
                         <li class="nav-item {{ $isActive('tasks*') }}">
                             <a class="nav-link" href="{{ route('tasks.index') }}">
                                 <span class="sidebar-mini"><i class="fa fa-tasks" style="font-size:.8rem"></i></span>

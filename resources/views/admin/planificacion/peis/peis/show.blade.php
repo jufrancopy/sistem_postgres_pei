@@ -29,6 +29,9 @@
             <a href="{{ route('pei.mee.modulo', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
                 <i class="fa fa-balance-scale mr-1"></i> Marco Estratégico Específico
             </a>
+            <button type="button" class="btn btn-sm btn-warning font-weight-bold ml-2 shadow-xs text-dark" data-toggle="modal" data-target="#modalBuscadorIniciativasPlanMaestro" title="Buscador y Mapa del Plan Maestro / Iniciativas de Mejora Continua">
+                <i class="fa fa-bullseye mr-1 text-dark"></i> Plan Maestro / Iniciativas
+            </button>
             <a href="{{ route('pei-profiles.matriz', $profile->id) }}" class="btn btn-sm btn-outline-primary ml-2" target="_blank">
                 <i class="fa fa-table mr-1"></i> Formulación Estratégica Integrada
             </a>
@@ -3610,8 +3613,148 @@ $(document).on('click', '#btnColapsarTodoTreePei', function() {
     $('#contenedorArbolDraggablePei .nodo-pei-children').slideUp(150);
     $('#contenedorArbolDraggablePei .btn-toggle-pei-children i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
 });
+
+// ── LÓGICA DEL MODAL BUSCADOR DEL PLAN MAESTRO / INICIATIVAS ──
+$('#modalBuscadorIniciativasPlanMaestro').on('show.bs.modal', function () {
+    cargarListaIniciativasModal();
+});
+
+var currentIniModalStatusFilter = 'all';
+
+function cargarListaIniciativasModal() {
+    var $container = $('#listaIniciativasModalContainer');
+    $container.empty();
+
+    var $cards = $('[id^="ini_card_"]');
+    if ($cards.length === 0) {
+        $container.html('<div class="text-center p-4 text-muted font-weight-bold"><i class="fa fa-info-circle mr-1"></i> No hay iniciativas de mejora registradas aún en este perfil PEI.</div>');
+        $('#lblTotalIniciativasModal').text('Total: 0 iniciativas');
+        return;
+    }
+
+    var total = $cards.length;
+    $('#lblTotalIniciativasModal').text('Total: ' + total + ' iniciativas registradas');
+
+    $cards.each(function() {
+        var $c = $(this);
+        var iniId = $c.attr('id').replace('ini_card_', '');
+        var codigo = $c.find('.badge-code-ini, strong, span.font-weight-bold').first().text().trim() || ('#INI-' + iniId);
+        var titulo = $c.find('h6, .ini-title, div.font-weight-bold').first().text().trim() || $c.text().substring(0, 80).trim();
+        var estado = $c.data('estado') || ($c.text().indexOf('EJECUTADO') >= 0 ? 'EJECUTADO' : ($c.text().indexOf('EN CURSO') >= 0 ? 'EN CURSO' : 'PENDIENTE'));
+        
+        var badgeBg = estado === 'EJECUTADO' ? 'badge-success' : (estado === 'EN CURSO' ? 'badge-warning' : 'badge-danger');
+
+        var itemHtml = `
+            <a href="javascript:void(0)" onclick="irAIniciativaDesdeModal('${iniId}')" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center item-ini-modal mb-2 border rounded p-3 shadow-xs" data-status="${estado}" data-search="${(codigo + ' ' + titulo).toLowerCase()}" style="border-radius: 12px; transition: all 0.2s ease;">
+                <div>
+                    <div class="d-flex align-items-center mb-1">
+                        <span class="badge badge-dark mr-2" style="font-size: 0.75rem;">${codigo}</span>
+                        <span class="badge ${badgeBg} font-weight-bold px-2 py-1" style="font-size: 0.7rem;">${estado}</span>
+                    </div>
+                    <div class="font-weight-bold text-dark" style="font-size: 0.9rem;">${titulo}</div>
+                </div>
+                <div class="text-right">
+                    <span class="btn btn-sm btn-outline-primary rounded-circle"><i class="fa fa-arrow-right"></i></span>
+                </div>
+            </a>
+        `;
+        $container.append(itemHtml);
+    });
+}
+
+function filtrarIniciativasModalStatus(btn, status) {
+    $('.btn-filter-ini-modal').removeClass('active btn-dark').addClass('btn-outline-secondary');
+    $(btn).removeClass('btn-outline-secondary btn-outline-success btn-outline-warning btn-outline-danger').addClass('active btn-dark');
+    currentIniModalStatusFilter = status;
+    filtrarIniciativasModal();
+}
+
+function filtrarIniciativasModal() {
+    var query = ($('#inputBuscarIniciativasModal').val() || '').toLowerCase();
+    var countVisible = 0;
+
+    $('.item-ini-modal').each(function() {
+        var $item = $(this);
+        var st = $item.data('status');
+        var searchTxt = $item.data('search');
+
+        var matchesStatus = (currentIniModalStatusFilter === 'all' || st === currentIniModalStatusFilter);
+        var matchesQuery  = (!query || searchTxt.indexOf(query) >= 0);
+
+        if (matchesStatus && matchesQuery) {
+            $item.show();
+            countVisible++;
+        } else {
+            $item.hide();
+        }
+    });
+
+    $('#lblTotalIniciativasModal').text('Mostrando: ' + countVisible + ' iniciativas');
+}
+
+function irAIniciativaDesdeModal(iniId) {
+    $('#modalBuscadorIniciativasPlanMaestro').modal('hide');
+    setTimeout(function() {
+        var $card = $('#ini_card_' + iniId);
+        if ($card.length) {
+            $('html, body').animate({
+                scrollTop: $card.offset().top - 120
+            }, 500);
+            $card.css('transition', 'all 0.4s ease')
+                 .css('box-shadow', '0 0 0 4px #f59e0b')
+                 .css('transform', 'scale(1.02)');
+            setTimeout(function() {
+                $card.css('box-shadow', '').css('transform', '');
+            }, 2000);
+        }
+    }, 300);
+}
 </script>
+
+<!-- MODAL DE MAPA DE INICIATIVAS / PLAN MAESTRO -->
+<div class="modal fade" id="modalBuscadorIniciativasPlanMaestro" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title font-weight-bold d-flex align-items-center mb-0">
+                    <i class="fa fa-bullseye text-warning mr-2" style="font-size: 1.3rem;"></i>
+                    <span>Plan Maestro — Mapa de Iniciativas de Mejora Continua</span>
+                </h5>
+                <button type="button" class="close text-white opacity-9" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="row align-items-center mb-3">
+                    <div class="col-md-7 mb-2 mb-md-0">
+                        <div class="input-group shadow-xs" style="border-radius: 10px; overflow: hidden;">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
+                            </div>
+                            <input type="text" class="form-control border-left-0 pl-0" id="inputBuscarIniciativasModal" placeholder="Buscar por código, nombre o responsable..." onkeyup="filtrarIniciativasModal()">
+                        </div>
+                    </div>
+                    <div class="col-md-5 d-flex justify-content-md-end" style="gap: 5px;">
+                        <button type="button" class="btn btn-sm btn-dark active btn-filter-ini-modal" data-status="all" onclick="filtrarIniciativasModalStatus(this, 'all')">Todos</button>
+                        <button type="button" class="btn btn-sm btn-outline-success btn-filter-ini-modal" data-status="EJECUTADO" onclick="filtrarIniciativasModalStatus(this, 'EJECUTADO')">Ejecutados</button>
+                        <button type="button" class="btn btn-sm btn-outline-warning btn-filter-ini-modal" data-status="EN CURSO" onclick="filtrarIniciativasModalStatus(this, 'EN CURSO')">En Curso</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-filter-ini-modal" data-status="PENDIENTE" onclick="filtrarIniciativasModalStatus(this, 'PENDIENTE')">Pendientes</button>
+                    </div>
+                </div>
+
+                <div id="listaIniciativasModalContainer" class="list-group shadow-xs">
+                    <!-- Dinámico por JS -->
+                </div>
+            </div>
+            <div class="modal-footer bg-white px-4 py-3" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <span class="text-muted small mr-auto" id="lblTotalIniciativasModal">Total: 0 iniciativas</span>
+                <button type="button" class="btn btn-secondary btn-round" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <div id="containerModalReordenarPei"></div>
-@include('admin.planificacion.peis.peis.partials.chat_drawer')
+@include('admin.planificacion.peis/peis.partials.chat_drawer')
 @stop
