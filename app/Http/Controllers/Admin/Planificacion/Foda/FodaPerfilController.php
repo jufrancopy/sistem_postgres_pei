@@ -58,34 +58,24 @@ class FodaPerfilController extends Controller
                     $btn = '<a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-primary btn-circle editProfile" title="Editar"><i class="far fa-edit"></i></a>';
 
                     if ($row->type === 'individual') {
-                        // Lupa → ver todos los perfiles del mismo grupo raíz
-                        $groupRootId = null;
+                        $btn .= ' <a href="/foda-profiles/' . $row->id . '/details" class="btn btn-info btn-circle" title="Ver detalle de análisis"><i class="fa fa-search"></i></a>';
+                        $btn .= ' <a href="' . route('foda-analisis-matriz', $row->id) . '" class="btn btn-warning btn-circle" title="Ver Matriz FODA"><i class="fa fa-th"></i></a>';
+
+                    } elseif ($row->type === 'consolidado') {
+                        $btn .= ' <a href="/foda-profiles/' . $row->id . '/details" class="btn btn-info btn-circle" title="Ver detalle de análisis"><i class="fa fa-search"></i></a>';
+                        $btn .= ' <a href="/foda-cruce-ambientes/' . $row->id . '" class="btn btn-warning btn-circle" title="Ver Cruce de Ambientes"><i class="fa fa-random"></i></a>';
+
+                    } else {
+                        // Grupal
+                        $btn .= ' <a href="/foda-profiles/' . $row->id . '/details" class="btn btn-info btn-circle" title="Ver detalle de análisis"><i class="fa fa-search"></i></a>';
+                        $btn .= ' <a href="' . route('foda-analisis-matriz', $row->id) . '" class="btn btn-warning btn-circle" title="Ver Matriz FODA"><i class="fa fa-th"></i></a>';
                         if ($row->group_id) {
                             $group = \App\Admin\Globales\Group::find($row->group_id);
                             $groupRootId = $group?->parent_id ?? $group?->id;
+                            if ($groupRootId) {
+                                $btn .= ' <a href="' . route('foda-matriz-groups', $groupRootId) . '" class="btn btn-secondary btn-circle" title="Ver Integrantes del Grupo"><i class="fa fa-users"></i></a>';
+                            }
                         }
-
-                        if ($groupRootId) {
-                            $btn .= ' <a href="' . route('foda-matriz-groups', $groupRootId) . '" class="btn btn-info btn-circle" title="Ver todos los perfiles del grupo"><i class="fa fa-users"></i></a>';
-                        } else {
-                            $btn .= ' <a href="/foda-profiles/' . $row->id . '/details" class="btn btn-info btn-circle" title="Ver detalle"><i class="fa fa-search"></i></a>';
-                        }
-
-                        $btn .= ' <a href="' . route('foda-analisis-matriz', $row->id) . '" class="btn btn-warning btn-circle" title="Mi Matriz FODA"><i class="fa fa-th"></i></a>';
-
-                    } elseif ($row->type === 'consolidado') {
-                        $groupRootId = $row->group_id;
-                        if ($groupRootId) {
-                            $btn .= ' <a href="' . route('foda-matriz-groups-crossing', $groupRootId) . '" class="btn btn-warning btn-circle" title="Ver Cruce de Ambientes Consolidado"><i class="fa fa-random"></i></a>';
-                            $btn .= ' <a href="' . route('foda-matriz-groups', $groupRootId) . '" class="btn btn-info btn-circle" title="Ver Matriz Consolidada"><i class="fa fa-layer-group"></i></a>';
-                        } else {
-                            $btn .= ' <a href="/foda-cruce-ambientes/' . $row->id . '" class="btn btn-warning btn-circle" title="Ver Cruce de Ambientes"><i class="fa fa-random"></i></a>';
-                        }
-                    } else {
-                        // Grupal → ver la matriz consolidada del grupo
-                        $groupRootId = $row->group_id;
-                        $btn .= ' <a href="' . route('foda-matriz-groups', $groupRootId) . '" class="btn btn-info btn-circle" title="Ver Matriz Consolidada"><i class="fa fa-layer-group"></i></a>';
-                        $btn .= ' <a href="/foda-profiles/' . $row->id . '/details" class="btn btn-warning btn-circle" title="Ver detalle"><i class="fa fa-search"></i></a>';
                     }
 
                     $btn .= ' <a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-danger btn-circle deleteProfile" title="Eliminar"><i class="fa fa-trash"></i></a>';
