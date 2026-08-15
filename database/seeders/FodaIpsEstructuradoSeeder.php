@@ -27,13 +27,25 @@ class FodaIpsEstructuradoSeeder extends Seeder
             ]);
         }
 
-        // 2. Obtener nodo Raíz 'Analisis FODA'
-        $root = FodaModelo::where('name', 'Analisis FODA')->first();
+        // 2. Obtener nodo Raíz
+        $root = FodaModelo::find(1);
         if (!$root) {
+            $root = FodaModelo::where('type', 'root')->first();
+        }
+
+        if ($root) {
+            $root->update([
+                'name'        => 'MODELO FODA ESTRUCTURADO — IPS PARAGUAY',
+                'type'        => 'root',
+                'owner'       => 'Instituto de Previsión Social',
+                'description' => '<p>Modelo FODA Ideal basado en hallazgos post-pandemia, Índice de Eficiencia de Activos (IEA) y Fichas de Gestión de Riesgos MECIP 2015.</p>',
+            ]);
+        } else {
             $root = FodaModelo::create([
-                'name'  => 'Analisis FODA',
-                'type'  => 'root',
-                'owner' => 'IPS',
+                'name'        => 'MODELO FODA ESTRUCTURADO — IPS PARAGUAY',
+                'type'        => 'root',
+                'owner'       => 'Instituto de Previsión Social',
+                'description' => '<p>Modelo FODA Ideal basado en hallazgos post-pandemia, Índice de Eficiencia de Activos (IEA) y Fichas de Gestión de Riesgos MECIP 2015.</p>',
             ]);
         }
 
