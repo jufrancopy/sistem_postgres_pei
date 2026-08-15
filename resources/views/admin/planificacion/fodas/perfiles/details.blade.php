@@ -188,6 +188,23 @@
                     {{ Form::hidden('perfil_id',   null, ['id' => 'perfil_id']) }}
                     {{ Form::hidden('aspecto_id',  null, ['id' => 'aspecto_id']) }}
 
+                    {{-- ── Tarjeta Elegante: Referencia & Evidencia Documentada ── --}}
+                    <div id="aspectoReferenciaContainer" class="card border-0 mb-3 shadow-xs" style="border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-left: 4px solid #0284c7 !important;">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="font-weight-bold text-uppercase" style="font-size:.72rem; letter-spacing:.05em; color: #1e293b;">
+                                    <i class="fa fa-file-alt text-info mr-1.5"></i> Referencia & Evidencia Documentada
+                                </span>
+                                <span class="badge badge-light border text-info" style="font-size:.65rem; border-radius:10px;">
+                                    <i class="fa fa-shield-alt mr-1"></i>Soporte IEA
+                                </span>
+                            </div>
+                            <div id="aspectoReferenciaTexto" class="text-secondary small mt-1" style="font-size:.83rem; line-height: 1.45; color: #334155;">
+                                <!-- Se carga dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Tipo --}}
                     <div class="form-group" id="tipoContainer">
                         <label class="font-weight-bold">Clasificación del Aspecto</label>
@@ -195,24 +212,31 @@
                     </div>
 
                     {{-- IEA --}}
-                    <div class="card bg-light mb-3">
-                        <div class="card-body py-2">
-                            <small class="text-muted text-uppercase font-weight-bold" style="font-size:.68rem;letter-spacing:.08em;">
-                                <i class="fa fa-chart-bar mr-1 text-info"></i> Índice de Eficiencia de Activos (IEA)
-                            </small>
-                            <div class="row mt-2">
+                    <div class="card border-0 shadow-xs mb-3" style="border-radius: 12px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #e2e8f0;">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <small class="text-uppercase font-weight-bold" style="font-size:.72rem; letter-spacing:.06em; color: #0f172a;">
+                                    <i class="fa fa-chart-line mr-1 text-info"></i> ÍNDICE DE EFICIENCIA DE ACTIVOS (IEA)
+                                </small>
+                                <span class="text-muted" style="font-size:.68rem;" title="Fórmula: Promedio Desempeño / Inversión Histórica">
+                                    <i class="fa fa-calculator mr-1"></i>IEA = Desempeño / Inversión
+                                </span>
+                            </div>
+                            <div class="row mt-2.5">
                                 <div class="col-6">
-                                    <label style="font-size:.8rem;">Promedio Desempeño 6m</label>
-                                    <input type="number" step="0.01" min="0" max="1" class="form-control form-control-sm" id="promedio_desempeno_6m" name="promedio_desempeno_6m" placeholder="0.00 – 1.00">
+                                    <label class="font-weight-normal text-muted mb-1" style="font-size:.78rem;">Promedio Desempeño (6m)</label>
+                                    <input type="number" step="0.01" min="0" max="1" class="form-control form-control-sm" id="promedio_desempeno_6m" name="promedio_desempeno_6m" placeholder="0.00 – 1.00" style="border-radius: 8px;">
                                 </div>
                                 <div class="col-6">
-                                    <label style="font-size:.8rem;">Inversión Histórica 6m</label>
-                                    <input type="number" step="0.01" min="0.0001" class="form-control form-control-sm" id="inversion_historica_6m" name="inversion_historica_6m" placeholder="ej. 1.00">
+                                    <label class="font-weight-normal text-muted mb-1" style="font-size:.78rem;">Inversión Histórica (6m)</label>
+                                    <input type="number" step="0.01" min="0.0001" class="form-control form-control-sm" id="inversion_historica_6m" name="inversion_historica_6m" placeholder="ej. 1.00" style="border-radius: 8px;">
                                 </div>
                             </div>
-                            <div id="ieaResultado" class="mt-2" style="display:none;">
-                                <small>IEA calculado: <strong id="ieaValor"></strong>
-                                <span id="ieaBadge" class="badge ml-1"></span></small>
+                            <div id="ieaResultado" class="mt-2.5 pt-2 border-top" style="display:none;">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <small class="text-muted" style="font-size:.75rem;">Resultado IEA:</small>
+                                    <span id="ieaBadge" class="badge px-2.5 py-1" style="border-radius: 12px; font-size:.72rem;"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -384,15 +408,21 @@ $(function () {
     $('#promedio_desempeno_6m, #inversion_historica_6m').on('input', function() {
         var d = parseFloat($('#promedio_desempeno_6m').val());
         var i = parseFloat($('#inversion_historica_6m').val());
-        if (d > 0 && i > 0) {
-            var iea = (d / i).toFixed(4);
+        if (!isNaN(d) && !isNaN(i) && i > 0) {
+            var iea = (d / i).toFixed(2);
             var cls, label;
-            if (iea < 0.4)      { cls = 'iea-debilidad'; label = 'Debilidad'; }
-            else if (iea > 0.8) { cls = 'iea-fortaleza'; label = 'Fortaleza'; }
-            else                { cls = 'iea-neutro';    label = 'Neutro'; }
-            $('#ieaValor').text(iea);
-            $('#ieaBadge').attr('class', 'badge ml-1 ' + cls).text(label);
-            $('#ieaResultado').show();
+            if (iea > 1.00) {
+                cls = 'badge-success';
+                label = 'IEA ' + iea + ' — Fortaleza (Alto Rendimiento)';
+            } else if (Math.abs(iea - 1.00) <= 0.05) {
+                cls = 'badge-warning text-dark';
+                label = 'IEA ' + iea + ' — Zona de Equilibrio';
+            } else {
+                cls = 'badge-danger';
+                label = 'IEA ' + iea + ' — Debilidad (Baja Eficiencia / Inversión)';
+            }
+            $('#ieaBadge').attr('class', 'badge px-2.5 py-1 ' + cls).html('<i class="fa fa-calculator mr-1"></i>' + label);
+            $('#ieaResultado').slideDown(150);
         } else {
             $('#ieaResultado').hide();
         }
@@ -412,6 +442,14 @@ $(function () {
             $('#aspecto_id').val(data.aspecto_id);
             $('#saveAnalysisBtn').attr('data-node', nodeId);
             $('#headingAnalysis').text('Analizar: ' + (data.model ? data.model.name : ''));
+
+            // Cargar Referencia / Evidencia Documentada del Aspecto
+            var refText = (data.model && data.model.description) ? data.model.description : (data.aspecto_referencia || '');
+            if (refText && refText.trim() !== '') {
+                $('#aspectoReferenciaTexto').html(refText);
+            } else {
+                $('#aspectoReferenciaTexto').html('<em class="text-muted"><i class="fa fa-info-circle mr-1 text-info"></i>Sin descripción documental cargada previamente. Se analizan los registros del periodo operativo.</em>');
+            }
 
             // IEA
             $('#promedio_desempeno_6m').val(data.promedio_desempeno_6m || '');
