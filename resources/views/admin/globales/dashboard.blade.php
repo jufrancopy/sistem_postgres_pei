@@ -3572,5 +3572,119 @@ $(document).ready(function() {
         }
     }
 });
+
+function abrirModalPremiarGrupo(groupId, groupName, membersCount) {
+    $('#premiar_group_id').val(groupId);
+    $('#premiar_group_name').text(groupName);
+    $('#premiar_group_members_count').text(membersCount);
+    $('#premiar_points').val(100);
+    $('#premiar_title').val('Premio por Cierre de Semana Productiva');
+    $('#premiar_description').val('');
+    $('#premiar_is_retroactive').prop('checked', true);
+    $('#modalOtorgarPuntosGrupo').modal('show');
+}
+
+function guardarPremiacionGrupo(e) {
+    e.preventDefault();
+    var groupId = $('#premiar_group_id').val();
+    var $btn = $('#btnSubmitPremiarGrupo');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Acreditando...');
+
+    $.ajax({
+        url: "{{ url('admin/globales/groups') }}/" + groupId + "/otorgar-puntos",
+        type: "POST",
+        data: $('#formOtorgarPuntosGrupo').serialize(),
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(resp) {
+            $btn.prop('disabled', false).html('<i class="fa fa-trophy mr-1"></i> Acreditar Puntos al Equipo');
+            if (resp.success) {
+                $('#modalOtorgarPuntosGrupo').modal('hide');
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Equipo Premiado Exitosamente!',
+                    text: resp.message,
+                    confirmButtonColor: '#f59e0b'
+                }).then(function() {
+                    location.reload();
+                });
+            } else {
+                Swal.fire('Error', resp.message || 'No se pudo procesar la acreditación.', 'error');
+            }
+        },
+        error: function(err) {
+            $btn.prop('disabled', false).html('<i class="fa fa-trophy mr-1"></i> Acreditar Puntos al Equipo');
+            var msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Ocurrió un error inesperado al procesar la acreditación.';
+            Swal.fire('Error', msg, 'error');
+        }
+    });
+}
 </script>
+
+<!-- MODAL DE PREMIACIÓN MASIVA A GRUPO DE TRABAJO -->
+<div class="modal fade" id="modalOtorgarPuntosGrupo" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title font-weight-bold d-flex align-items-center mb-0">
+                    <i class="fa fa-trophy mr-2" style="font-size: 1.3rem;"></i>
+                    <span>Premiar Equipo de Trabajo</span>
+                </h5>
+                <button type="button" class="close text-white opacity-9" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formOtorgarPuntosGrupo" onsubmit="guardarPremiacionGrupo(event)">
+                @csrf
+                <input type="hidden" id="premiar_group_id" name="group_id">
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning border-0 shadow-sm mb-3" style="border-radius: 10px; background-color: #fffbeb; color: #92400e;">
+                        <i class="fa fa-info-circle mr-1"></i>
+                        Vas a premiar a los integrantes del equipo: <strong id="premiar_group_name"></strong> (<span id="premiar_group_members_count">0</span> integrantes registrados).
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark mb-1">Puntos a Otorgar a Cada Integrante <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-light text-warning font-weight-bold">⭐</span>
+                            </div>
+                            <input type="number" class="form-control font-weight-bold" id="premiar_points" name="points" value="100" min="1" max="10000" required style="font-size: 1.1rem;">
+                        </div>
+                        <small class="text-muted">Por defecto: 100 puntos por cerrar una semana productiva.</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark mb-1">Título / Motivo del Premio <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="premiar_title" name="title" value="Premio por Cierre de Semana Productiva" placeholder="Ej: Reconocimiento Semana Productiva 10 al 14 de Agosto" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark mb-1">Observación o Detalles Adicionales</label>
+                        <textarea class="form-control" id="premiar_description" name="description" rows="2" placeholder="Ej: Excelente desempeño en el cierre de metas y coordinación de proyectos."></textarea>
+                    </div>
+
+                    <div class="card border border-warning bg-light p-3 mb-0" style="border-radius: 10px;">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="premiar_is_retroactive" name="is_retroactive" value="1" checked>
+                            <label class="custom-control-label font-weight-bold text-dark cursor-pointer" for="premiar_is_retroactive">
+                                🔄 Aplicar Acreditación Retroactiva Automática
+                            </label>
+                        </div>
+                        <small class="text-muted mt-1 d-block" style="line-height: 1.35;">
+                            Al dejar activada esta casilla, cuando incorpores un nuevo funcionario a este equipo en el futuro, el sistema le acreditará automáticamente este bono de 100 pts para no dejarlo en desventaja.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-secondary btn-round" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning text-dark font-weight-bold btn-round shadow-sm px-4" id="btnSubmitPremiarGrupo">
+                        <i class="fa fa-trophy mr-1"></i> Acreditar Puntos al Equipo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection

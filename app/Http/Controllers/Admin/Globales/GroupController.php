@@ -67,7 +67,18 @@ class GroupController extends Controller
 
             if ($request->has('user_id')) {
                 $members = $request->user_id ?? [];
-                $group->members()->sync($members);
+                $syncResult = $group->members()->sync($members);
+                
+                // Si hubo nuevos integrantes asociados, sincronizar sus bonos retroactivos de equipo
+                if (!empty($syncResult['attached'])) {
+                    $gamificationService = app(\App\Services\GamificationService::class);
+                    foreach ($syncResult['attached'] as $newUserId) {
+                        $newUser = User::find($newUserId);
+                        if ($newUser) {
+                            $gamificationService->syncNewMemberGroupRewards($group, $newUser);
+                        }
+                    }
+                }
             }
 
             return response()->json([
@@ -77,6 +88,46 @@ class GroupController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Otorgar puntos masivos de reconocimiento a todos los miembros de un equipo de trabajo (Grupo).
+     */
+    public function otorgarPuntosGrupo(Request $request, $id)
+    {
+        $group = Group::findOrFail($id);
+
+        $validated = $request->validate([
+            'points'         => 'required|integer|min:1|max:10000',
+            'title'          => 'required|string|max:255',
+            'description'    => 'nullable|string|max:1000',
+            'is_retroactive' => 'nullable|boolean',
+        ], [
+            'points.required' => 'La cantidad de puntos es requerida.',
+            'points.min'      => 'La cantidad mínima es 1 punto.',
+            'title.required'  => 'El título o motivo del premio es requerido.',
+        ]);
+
+        $points        = (int)$validated['points'];
+        $title         = $validated['title'];
+        $description   = $validated['description'] ?? null;
+        $isRetroactive = $request->has('is_retroactive') ? (bool)$request->input('is_retroactive') : true;
+
+        $gamificationService = app(\App\Services\GamificationService::class);
+        $reward = $gamificationService->rewardGroup(
+            $group,
+            $points,
+            $title,
+            $description,
+            $isRetroactive,
+            auth()->user()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "¡Se han otorgado exitosamente {$points} puntos a los integrantes del equipo {$group->name}!",
+            'reward'  => $reward
+        ]);
     }
 
     public function getRootGroups(Request $request)

@@ -571,4 +571,109 @@ class GamificationService
 
         return true;
     }
+
+    /**
+     * Otorgar puntos masivos de reconocimiento a un equipo de trabajo (Grupo).
+     */
+    public function rewardGroup(
+        \App\Admin\Globales\Group $group,
+        int $points,
+        string $title,
+        ?string $description,
+        bool $isRetroactive,
+        User $admin
+    ): \App\Models\Gamification\GroupReward {
+        return DB::transaction(function () use ($group, $points, $title, $description, $isRetroactive, $admin) {
+            $reward = \App\Models\Gamification\GroupReward::create([
+                'group_id'       => $group->id,
+                'created_by'     => $admin->id,
+                'points'         => $points,
+                'title'          => $title,
+                'description'    => $description,
+                'is_retroactive' => $isRetroactive,
+            ]);
+
+            $members = $group->users()->get();
+
+            foreach ($members as $member) {
+                $exists = GamificationPoint::where('user_id', $member->id)
+                    ->where('reference_type', \App\Models\Gamification\GroupReward::class)
+                    ->where('reference_id', (string)$reward->id)
+                    ->exists();
+
+                if (!$exists) {
+                    $point = GamificationPoint::create([
+                        'user_id'        => $member->id,
+                        'pei_profile_id' => null,
+                        'points'         => $points,
+                        'action_type'    => 'group_award',
+                        'description'    => "Premio de Equipo ({$group->name}): {$title}" . ($description ? " — {$description}" : ""),
+                        'reference_type' => \App\Models\Gamification\GroupReward::class,
+                        'reference_id'   => (string)$reward->id,
+                    ]);
+
+                    \App\Models\SystemNotification::crearPuntosManual(
+                        $member->id,
+                        $points,
+                        "Premio de Reconocimiento a tu Equipo {$group->name}: {$title}",
+                        "PEI IPS",
+                        $admin->name,
+                        $point->id
+                    );
+
+                    $this->evaluateBadges($member);
+                }
+            }
+
+            return $reward;
+        });
+    }
+
+    /**
+     * Acredita automáticamente los premios de grupo retroactivos a un nuevo integrante sumado al equipo.
+     */
+    public function syncNewMemberGroupRewards(\App\Admin\Globales\Group $group, User $user): int
+    {
+        $rewards = \App\Models\Gamification\GroupReward::where('group_id', $group->id)
+            ->where('is_retroactive', true)
+            ->get();
+
+        $countAwarded = 0;
+
+        foreach ($rewards as $reward) {
+            $alreadyHas = GamificationPoint::where('user_id', $user->id)
+                ->where('reference_type', \App\Models\Gamification\GroupReward::class)
+                ->where('reference_id', (string)$reward->id)
+                ->exists();
+
+            if (!$alreadyHas) {
+                $point = GamificationPoint::create([
+                    'user_id'        => $user->id,
+                    'pei_profile_id' => null,
+                    'points'         => $reward->points,
+                    'action_type'    => 'group_award',
+                    'description'    => "Premio de Equipo ({$group->name}): {$reward->title} (Acreditación por incorporación al grupo)",
+                    'reference_type' => \App\Models\Gamification\GroupReward::class,
+                    'reference_id'   => (string)$reward->id,
+                ]);
+
+                \App\Models\SystemNotification::crearPuntosManual(
+                    $user->id,
+                    $reward->points,
+                    "Reconocimiento de Equipo ({$group->name}): Acreditado por incorporación al grupo",
+                    "PEI IPS",
+                    "Sistema de Gamificación",
+                    $point->id
+                );
+
+                $countAwarded++;
+            }
+        }
+
+        if ($countAwarded > 0) {
+            $this->evaluateBadges($user);
+        }
+
+        return $countAwarded;
+    }
 }
