@@ -223,14 +223,6 @@
 
     {{-- ── Banner Hero de Contexto Institucional ── --}}
     <div class="hero-admin-card">
-        {{-- Breadcrumb Integrado al nivel del Card Header --}}
-        <nav aria-label="breadcrumb" class="mb-3">
-            <ol class="breadcrumb mb-0 p-0" style="background: transparent;">
-                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}" class="text-white-50 font-weight-bold text-decoration-none"><i class="fa fa-home mr-1 text-warning"></i>Inicio</a></li>
-                <li class="breadcrumb-item active text-white font-weight-bold" aria-current="page">Panel del Administrador Global</li>
-            </ol>
-        </nav>
-
         <div class="row align-items-center">
             <div class="col-lg-7">
                 <div class="d-flex align-items-center mb-2">
@@ -296,6 +288,19 @@
                     </button>
                 </div>
             </div>
+        </div>
+
+        {{-- Breadcrumb Integrado al pie del Card Header --}}
+        <div class="pt-3 mt-3 border-top d-flex align-items-center justify-content-between" style="border-color: rgba(255,255,255,0.18) !important;">
+            <nav aria-label="breadcrumb" class="mb-0">
+                <ol class="breadcrumb mb-0 p-0" style="background: transparent;">
+                    <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}" class="text-white-50 font-weight-bold text-decoration-none"><i class="fa fa-home mr-1 text-warning"></i>Inicio</a></li>
+                    <li class="breadcrumb-item active text-white font-weight-bold" aria-current="page">Panel del Administrador Global</li>
+                </ol>
+            </nav>
+            <span class="text-white-50 small font-weight-bold d-none d-md-inline">
+                <i class="fa fa-shield-alt mr-1 text-warning"></i> Sistema de Planificación Institucional (SIPLAN)
+            </span>
         </div>
     </div>
 
