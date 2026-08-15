@@ -269,31 +269,39 @@ class FodaIpsEstructuradoSeeder extends Seeder
                     $ieaClasif = 'fortaleza';
                 }
 
-                // Crear o actualizar FodaAnalisis
-                $analisis = FodaAnalisis::where('perfil_id', $perfil->id)
-                    ->where('aspecto_id', $aspecto->id)
-                    ->first();
-
-                $datosAnalisis = [
-                    'user_id'                 => 1,
-                    'perfil_id'               => $perfil->id,
-                    'aspecto_id'              => $aspecto->id,
-                    'tipo'                    => $aspData['tipo'],
-                    'ocurrencia'              => $aspData['ocurrencia'],
-                    'impacto'                 => $aspData['impacto'],
-                    'promedio_desempeno_6m'   => $desempeno,
-                    'inversion_historica_6m' => $inversion,
-                    'iea_valor'               => $ieaValor,
-                    'iea_clasificacion'       => $ieaClasif,
-                    'causa_raiz'              => $aspData['causa_raiz'],
-                    'accion_mejora'           => $aspData['accion'],
-                    'control_preventivo'      => $aspData['control'],
+                // Target profiles to populate
+                $targetPerfilIds = [
+                    '9a741ae1-95b2-4519-bb2c-6d4fdcc4b59e', // ANÁLISIS FODA IPS (Consolidado)
+                    'a0e99967-c8d5-4d27-adac-cf16fc9efbb3', // [DEMO] Análisis FODA — IPS 2025 (Grupal)
+                    'a24b1239-b102-410d-be8c-eabc06a5c079', // Nasim Barry (Individual)
                 ];
 
-                if (!$analisis) {
-                    FodaAnalisis::create($datosAnalisis);
-                } else {
-                    $analisis->update($datosAnalisis);
+                foreach ($targetPerfilIds as $tPerfilId) {
+                    $analisis = FodaAnalisis::where('perfil_id', $tPerfilId)
+                        ->where('aspecto_id', $aspecto->id)
+                        ->first();
+
+                    $datosAnalisis = [
+                        'user_id'                 => 1,
+                        'perfil_id'               => $tPerfilId,
+                        'aspecto_id'              => $aspecto->id,
+                        'tipo'                    => $aspData['tipo'],
+                        'ocurrencia'              => $aspData['ocurrencia'],
+                        'impacto'                 => $aspData['impacto'],
+                        'promedio_desempeno_6m'   => $desempeno,
+                        'inversion_historica_6m' => $inversion,
+                        'iea_valor'               => $ieaValor,
+                        'iea_clasificacion'       => $ieaClasif,
+                        'causa_raiz'              => $aspData['causa_raiz'],
+                        'accion_mejora'           => $aspData['accion'],
+                        'control_preventivo'      => $aspData['control'],
+                    ];
+
+                    if (!$analisis) {
+                        FodaAnalisis::create($datosAnalisis);
+                    } else {
+                        $analisis->update($datosAnalisis);
+                    }
                 }
             }
         }
