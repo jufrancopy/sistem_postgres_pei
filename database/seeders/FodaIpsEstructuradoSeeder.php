@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Admin\Planificacion\Foda\FodaPerfil;
 use App\Admin\Planificacion\Foda\FodaModelo;
 use App\Admin\Planificacion\Foda\FodaAnalisis;
+use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
 
 class FodaIpsEstructuradoSeeder extends Seeder
 {
@@ -539,6 +540,79 @@ class FodaIpsEstructuradoSeeder extends Seeder
             }
         }
 
-        $this->command->info('¡Seeder FODA Arquitectura 14 Categorías para IPS Paraguay completado exitosamente!');
+        // ── Población de Estrategias de Cruce (FO, DO, FA, DA) ──
+        $estrategiasCruce = [
+            // Estrategias FO (Fortalezas + Oportunidades)
+            [
+                'tipo'       => 'FO',
+                'estrategia' => 'Aprovechar la avanzada en la receta electrónica e historia clínica unificada para optimizar la dispensación de fármacos y potenciar la Red de Trasplantes y Alta Complejidad en el Hospital Central.',
+            ],
+            [
+                'tipo'       => 'FO',
+                'estrategia' => 'Articular el Centro de Formación de Médicos Residentes e Internado del Hospital Central con convenios interinstitucionales del MSPBS (RIISS) para extender la cobertura médica especializada en el interior.',
+            ],
+            [
+                'tipo'       => 'FO',
+                'estrategia' => 'Utilizar la rentabilidad del portafolio financiero de reservas técnicas para financiar la transformación tecnológica cloud del agendamiento asistencial y App Mi IPS.',
+            ],
+
+            // Estrategias DO (Debilidades + Oportunidades)
+            [
+                'tipo'       => 'DO',
+                'estrategia' => 'Desplegar plataformas omnicanal cloud por WhatsApp y kioscos digitales para eliminar la saturación del Call Center y estabilizar el agendamiento del SIH.',
+            ],
+            [
+                'tipo'       => 'DO',
+                'estrategia' => 'Establecer licitaciones con contratos abiertos multianuales e inventario automatizado en tiempo real para erradicar el quiebre de stock en medicamentos oncológicos.',
+            ],
+            [
+                'tipo'       => 'DO',
+                'estrategia' => 'Interconectar informáticamente las bases tributarias de la DNIT y MTESS para automatizar fiscalizaciones de mora patronal y cobro coactivo.',
+            ],
+
+            // Estrategias FA (Fortalezas + Amenazas)
+            [
+                'tipo'       => 'FA',
+                'estrategia' => 'Apalancar la solidez de las reservas financieras e inmobiliarias para amortiguar el impacto del déficit actuarial proyectado a 2030-2038 y la presión epidemiológica gerontológica.',
+            ],
+            [
+                'tipo'       => 'FA',
+                'estrategia' => 'Utilizar la capacidad asistencial instalada y la red de formación médica para liderar las mesas de negociación con el Tesoro (MEF) en la conciliación de la deuda histórica del Estado.',
+            ],
+            [
+                'tipo'       => 'FA',
+                'estrategia' => 'Aprovechar la estructura de Medicina del Trabajo e Inspección Ocupacional para exigir la formalización gradual de trabajadores en sectores con alta tasa de informalidad.',
+            ],
+
+            // Estrategias DA (Debilidades + Amenazas)
+            [
+                'tipo'       => 'DA',
+                'estrategia' => 'Impulsar una reforma legal integral de la Ley Orgánica del IPS para ajustar la fórmula de cálculo del haber jubilatorio sobre el promedio de los últimos 10 años ante la informalidad del 60%.',
+            ],
+            [
+                'tipo'       => 'DA',
+                'estrategia' => 'Contratar licitaciones plurianuales de mantenimiento biomédico preventivo directamente con fabricantes oficiales para evitar la inoperatividad de tomógrafos y los sobrecostos de derivación.',
+            ],
+            [
+                'tipo'       => 'DA',
+                'estrategia' => 'Establecer la carrera médica institucional con incentivos salariales por especialidad y desarraigo para frenar la fuga de talentos hacia el sector privado ante la Ley de Carga Horaria de 12hs.',
+            ],
+        ];
+
+        foreach ($targetPerfilIds as $tPerfilId) {
+            // Limpiar estrategias antiguas de este perfil
+            FodaCruceAmbiente::where('perfil_id', $tPerfilId)->delete();
+
+            foreach ($estrategiasCruce as $eData) {
+                FodaCruceAmbiente::create([
+                    'user_id'    => 1,
+                    'perfil_id'  => $tPerfilId,
+                    'tipo'       => $eData['tipo'],
+                    'estrategia' => $eData['estrategia'],
+                ]);
+            }
+        }
+
+        $this->command->info('¡Seeder FODA Arquitectura 14 Categorías y Estrategias de Cruce para IPS Paraguay completado exitosamente!');
     }
 }
