@@ -760,14 +760,26 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     <div class="footer-inner">
         <div class="footer-grid">
             <div>
-                <div class="footer-brand">
-                    <div class="footer-logo" aria-hidden="true">SP</div>
+                <div class="footer-brand" style="display:flex; align-items:center; gap:12px;">
+                    @if($sysLogoUrl)
+                        <img src="{{ $sysLogoUrl }}" alt="{{ $sysSiteName }}" style="max-height: 48px; object-fit: contain;">
+                    @else
+                        <div class="footer-logo" aria-hidden="true">SP</div>
+                    @endif
                     <div class="footer-brand-text">
-                        <div class="fb-name">SIPLAN</div>
+                        <div class="fb-name">{{ $sysSiteName }}</div>
                         <div class="fb-sub">Sistema de Planificación Estratégica · IPS Paraguay</div>
                     </div>
                 </div>
-                <p class="footer-desc">Plataforma de monitoreo estratégico institucional para el <strong style="color:rgba(255,255,255,.8)">Instituto de Previsión Social del Paraguay</strong>. Datos en tiempo real.</p>
+                <p class="footer-desc" style="margin-top:12px; line-height:1.6;">
+                    Plataforma de monitoreo estratégico institucional.<br>
+                    <span style="opacity: .85; font-size:11px; display:block; margin-top:6px;">
+                        <i class="fa fa-envelope" style="margin-right: 4px; color:#38bdf8;"></i> {{ $sysEmail }} &nbsp;·&nbsp; 
+                        <i class="fa fa-phone" style="margin-right: 4px; color:#4ade80;"></i> {{ $sysPhone }}<br>
+                        <i class="fa fa-clock" style="margin-right: 4px; color:#fbbf24;"></i> {{ $sysHours }} &nbsp;·&nbsp; 
+                        <i class="fa fa-map-marker-alt" style="margin-right: 4px; color:#f87171;"></i> {{ $sysAddress }}
+                    </span>
+                </p>
             </div>
             <div>
                 <div class="ai-label">Impulsado con asistencia de IA</div>
