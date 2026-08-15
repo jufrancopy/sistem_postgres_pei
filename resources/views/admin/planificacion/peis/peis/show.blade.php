@@ -373,9 +373,10 @@
                                 <div class="col-12 mb-3">
                                     <div class="card border shadow-xs" style="border-radius: 12px; overflow: hidden; background: #fff;">
                                         <div class="card-header p-3 bg-light d-flex align-items-center justify-content-between flex-wrap"
-                                             data-toggle="collapse" data-target="#collapseFodaPriorizado" aria-expanded="false" aria-controls="collapseFodaPriorizado"
-                                             style="cursor: pointer; user-select: none; background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); border-bottom: 1px solid #e2e8f0;">
-                                            <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                                             style="background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); border-bottom: 1px solid #e2e8f0;">
+                                            <div class="d-flex align-items-center flex-wrap"
+                                                 data-toggle="collapse" data-target="#collapseFodaPriorizado" aria-expanded="false" aria-controls="collapseFodaPriorizado"
+                                                 style="cursor: pointer; user-select: none; gap: 10px;">
                                                 <i class="fa fa-th-large text-warning mr-1" style="font-size: 1.1rem;"></i>
                                                 <span class="font-weight-bold text-uppercase" style="font-size:.85rem; letter-spacing:.04em; color: #1e293b;">
                                                     Matriz para el análisis del entorno externo e interno (FODA)
@@ -391,12 +392,13 @@
                                             </div>
                                             <div class="d-flex align-items-center ml-auto" style="gap: 8px;">
                                                 @if($fodaPerfilId || (isset($profile) && $profile->id))
-                                                <button type="button" class="btn btn-xs btn-outline-warning font-weight-bold btnVerFodaCrossing"
+                                                <button type="button" class="btn btn-sm btn-outline-warning font-weight-bold btnVerFodaCrossing shadow-xs px-2.5 py-1"
                                                         onclick="abrirModalFodaCrossing(this, event);"
                                                         data-url="{{ route('foda-cruce-ambientes', $fodaPerfilId ?? $profile->id) }}"
                                                         data-name="{{ addslashes(strip_tags($profile->name)) }}"
-                                                        title="Ver Cruce de Ambientes">
-                                                    <i class="fa fa-random mr-1"></i>Ver Cruce de Ambientes
+                                                        style="border-radius: 20px; font-size: 0.72rem; line-height: 1.2;"
+                                                        title="Análisis FODA & Cruce de Ambientes">
+                                                    <i class="fa fa-random mr-1 text-warning"></i>Cruce FODA
                                                 </button>
                                                 @endif
                                             </div>
