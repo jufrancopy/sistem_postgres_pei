@@ -22,9 +22,7 @@ use App\Admin\Planificacion\Foda\FodaModelo;
 use App\Admin\Globales\Group;
 use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
 
-use App\Admin\Planificacion\Task\Task;
 use App\Admin\Planificacion\Task\TypeTask;
-use Illuminate\Support\Facades\Auth;
 
 class FodaAnalisisController extends Controller
 {
