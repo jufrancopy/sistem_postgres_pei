@@ -626,6 +626,15 @@ class PeiController extends Controller
             }
         }
 
+        // Análisis FODA con IEA (para el modal de Monitoreo)
+        $analisisFoda = \App\Admin\Planificacion\Foda\FodaAnalisis::with('aspecto')
+            ->whereNotNull('iea_valor')
+            ->whereHas('perfil', fn($q) => $q->where('group_id', $profile->group_id))
+            ->get(['id', 'aspecto_id', 'tipo', 'iea_valor', 'iea_clasificacion']);
+
+        $perfilFodaId = \App\Admin\Planificacion\Foda\FodaPerfil::where('group_id', $profile->group_id)
+            ->value('id');
+
         if ($request->ajax()) {
             return response()->json(['profile' => $profile]);
         } else {

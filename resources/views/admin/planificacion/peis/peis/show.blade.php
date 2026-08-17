@@ -20,18 +20,21 @@
         @php
             $actividadVinculada = \App\Admin\Globales\Activity::where('pei_profile_id', $profile->id)->first();
             $urlActividad = $actividadVinculada
-                ? route('activities.show', $actividadVinculada->id)
-                : route('activities.index', ['pei_profile_id' => $profile->id]);
+                ? route('globales.activities.show', $actividadVinculada->id)
+                : route('globales.activities.index', ['pei_profile_id' => $profile->id]);
         @endphp
 
         <div class="d-flex flex-wrap align-items-center mb-3" style="gap: 8px;">
 
             {{-- Botones de navegación principales --}}
-            <a href="{{ route('pei-profiles.dashboard', $profile->id) }}"
-               class="btn btn-sm btn-dark font-weight-bold d-inline-flex align-items-center"
-               style="border-radius: 8px; gap: 5px;" title="Tablero principal de monitoreo">
+            <button type="button"
+                    class="btn btn-sm btn-dark font-weight-bold d-inline-flex align-items-center"
+                    style="border-radius: 8px; gap: 5px;"
+                    data-toggle="modal" data-target="#modalMonitoreoEstrategico"
+                    onclick="iniciarMonitoreoModal()"
+                    title="Tablero de Monitoreo Estratégico">
                 <i class="fa fa-chart-bar text-warning"></i> Monitoreo
-            </a>
+            </button>
 
             <a href="{{ route('pei.bsc', $profile->id) }}"
                class="btn btn-sm btn-outline-dark font-weight-bold d-inline-flex align-items-center"
@@ -131,6 +134,321 @@
             </div>
 
         </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             MODAL TABLERO DE MONITOREO ESTRATÉGICO
+        ════════════════════════════════════════════════════════════ -->
+        <div class="modal fade" id="modalMonitoreoEstrategico" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1300px;">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+
+                    <div class="modal-header" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 0;">
+                        <div>
+                            <h5 class="modal-title font-weight-bold text-white mb-0 d-flex align-items-center">
+                                <i class="fa fa-chart-bar text-warning mr-2"></i> Tablero de Monitoreo Estratégico
+                            </h5>
+                            <small class="text-white-50">{{ strip_tags($profile->name) }}</small>
+                        </div>
+                        <button type="button" class="close text-white opacity-9" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body p-4" style="background: #f8fafc;">
+
+                        {{-- KPI Cards --}}
+                        <div class="row mb-3" id="monitoreoKpiGrid">
+                            <div class="col-12 text-center py-3">
+                                <i class="fa fa-spinner fa-spin fa-2x text-muted"></i>
+                            </div>
+                        </div>
+
+                        {{-- Tabs de contenido --}}
+                        <ul class="nav nav-tabs nav-tabs-simple border-bottom mb-3" id="monitoreoTabs" role="tablist" style="gap: 4px;">
+                            <li class="nav-item">
+                                <a class="nav-link active font-weight-bold" id="tab-semaforo" data-toggle="tab" href="#pane-semaforo" style="border-radius: 8px 8px 0 0; font-size: 0.85rem;">
+                                    <i class="fa fa-circle text-info mr-1"></i> Semáforo de Indicadores
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link font-weight-bold" id="tab-raci" data-toggle="tab" href="#pane-raci" style="border-radius: 8px 8px 0 0; font-size: 0.85rem;">
+                                    <i class="fa fa-sitemap text-primary mr-1"></i> Matriz RACI
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link font-weight-bold" id="tab-alertas" data-toggle="tab" href="#pane-alertas" style="border-radius: 8px 8px 0 0; font-size: 0.85rem;">
+                                    <i class="fa fa-exclamation-triangle text-warning mr-1"></i> Alertas Presupuestarias
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link font-weight-bold" id="tab-iea" data-toggle="tab" href="#pane-iea" style="border-radius: 8px 8px 0 0; font-size: 0.85rem;">
+                                    <i class="fa fa-chart-bar text-secondary mr-1"></i> IEA — FODA
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+
+                            {{-- SEMÁFORO --}}
+                            <div class="tab-pane fade show active" id="pane-semaforo">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm" id="dtMonitoreoSemaforo" style="font-size: 0.85rem; width: 100%;">
+                                        <thead class="bg-dark text-white">
+                                            <tr>
+                                                <th width="40">#</th>
+                                                <th>Acción Estratégica</th>
+                                                <th width="90" class="text-center">Tipo</th>
+                                                <th width="160">Avance</th>
+                                                <th width="120" class="text-center">Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td colspan="5" class="text-center py-3"><i class="fa fa-spinner fa-spin"></i> Cargando...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {{-- RACI --}}
+                            <div class="tab-pane fade" id="pane-raci">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm" id="dtMonitoreoRaci" style="font-size: 0.85rem; width: 100%;">
+                                        <thead class="bg-dark text-white">
+                                            <tr>
+                                                <th width="40">#</th>
+                                                <th>Acción Estratégica</th>
+                                                <th>Responsable</th>
+                                                <th width="80" class="text-center">Rol</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td colspan="4" class="text-center py-3"><i class="fa fa-spinner fa-spin"></i> Cargando...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {{-- ALERTAS --}}
+                            <div class="tab-pane fade" id="pane-alertas">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm" id="dtMonitoreoAlertas" style="font-size: 0.85rem; width: 100%;">
+                                        <thead class="bg-dark text-white">
+                                            <tr>
+                                                <th width="40">#</th>
+                                                <th>Acción</th>
+                                                <th width="140">% Meta</th>
+                                                <th width="180">% Presupuesto Ejecutado</th>
+                                                <th width="120" class="text-center">Diagnóstico</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td colspan="5" class="text-center py-3"><i class="fa fa-spinner fa-spin"></i> Cargando...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {{-- IEA FODA --}}
+                            <div class="tab-pane fade" id="pane-iea">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm" id="dtMonitoreoIea" style="font-size: 0.85rem; width: 100%;">
+                                        <thead class="bg-dark text-white">
+                                            <tr>
+                                                <th width="40">#</th>
+                                                <th>Aspecto FODA</th>
+                                                <th width="110" class="text-center">Tipo</th>
+                                                <th width="100" class="text-center">IEA</th>
+                                                <th width="110" class="text-center">Clasificación</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php $analisis = $analisisFoda ?? collect(); @endphp
+                                            @forelse($analisis as $i => $a)
+                                            @php $tipos = ['Fortaleza'=>'success','Debilidad'=>'danger','Oportunidad'=>'info','Amenaza'=>'warning']; @endphp
+                                            @php $cls = ['fortaleza'=>'success','debilidad'=>'danger','neutro'=>'secondary']; @endphp
+                                            <tr>
+                                                <td>{{ $i + 1 }}</td>
+                                                <td>{{ $a->aspecto->name ?? '—' }}</td>
+                                                <td class="text-center"><span class="badge badge-{{ $tipos[$a->tipo] ?? 'secondary' }}">{{ $a->tipo }}</span></td>
+                                                <td class="text-center"><code>{{ number_format($a->iea_valor, 4) }}</code></td>
+                                                <td class="text-center"><span class="badge badge-{{ $cls[$a->iea_clasificacion] ?? 'secondary' }}">{{ ucfirst($a->iea_clasificacion) }}</span></td>
+                                            </tr>
+                                            @empty
+                                            <tr><td colspan="5" class="text-center text-muted py-3">Sin análisis FODA con IEA calculado para este grupo.</td></tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>{{-- tab-content --}}
+                    </div>{{-- modal-body --}}
+
+                    <div class="modal-footer bg-white px-4 py-3">
+                        <a href="{{ route('pei-profiles.dashboard', $profile->id) }}" class="btn btn-sm btn-outline-secondary" target="_blank">
+                            <i class="fa fa-external-link-alt mr-1"></i> Abrir vista completa
+                        </a>
+                        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            #modalMonitoreoEstrategico .kpi-card { border-radius: 10px; padding: 1rem 1.2rem; text-align: center; color: #fff; }
+            #modalMonitoreoEstrategico .kpi-num  { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+            #modalMonitoreoEstrategico .kpi-label{ font-size: .68rem; opacity: .88; margin-top: .25rem; text-transform: uppercase; letter-spacing: .06em; }
+            #modalMonitoreoEstrategico .semaforo-dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:4px; vertical-align:middle; }
+            #modalMonitoreoEstrategico .dot-verde    { background:#28a745; box-shadow:0 0 5px rgba(40,167,69,.5); }
+            #modalMonitoreoEstrategico .dot-amarillo { background:#ffc107; box-shadow:0 0 5px rgba(255,193,7,.5); }
+            #modalMonitoreoEstrategico .dot-rojo     { background:#dc3545; box-shadow:0 0 5px rgba(220,53,69,.5); }
+            #modalMonitoreoEstrategico .dot-gris     { background:#adb5bd; }
+            #modalMonitoreoEstrategico .raci-pill { display:inline-block; width:22px; height:22px; line-height:22px; border-radius:50%; text-align:center; font-size:.7rem; font-weight:700; color:#fff; }
+            #modalMonitoreoEstrategico .raci-A { background:#dc3545; }
+            #modalMonitoreoEstrategico .raci-R { background:#17a2b8; }
+            #modalMonitoreoEstrategico .raci-C { background:#ffc107; color:#333; }
+            #modalMonitoreoEstrategico .raci-I { background:#6c757d; }
+            #modalMonitoreoEstrategico .progress-wrap { display:flex; align-items:center; gap:6px; }
+            #modalMonitoreoEstrategico .progress-wrap .progress { flex:1; height:5px; border-radius:3px; margin:0; }
+            #modalMonitoreoEstrategico .alert-row td { background:#fff9e6 !important; }
+        </style>
+
+        <script>
+        var _monitoreoLoaded = false;
+
+        function iniciarMonitoreoModal() {
+            if (_monitoreoLoaded) return;
+            _monitoreoLoaded = true;
+
+            var profileId   = '{{ $profile->id }}';
+            var urlSemaforo = '{{ route("pei-profiles.semaforo", ":id") }}'.replace(':id', profileId);
+            var urlRaci     = '{{ route("pei-profiles.index") }}/' + profileId + '/actions-list';
+            var urlAlertas  = '{{ route("pei-profiles.alertas-presupuestarias", ":id") }}'.replace(':id', profileId);
+
+            function barColor(pct) {
+                if (pct >= 85) return '#28a745';
+                if (pct >= 50) return '#ffc107';
+                return '#dc3545';
+            }
+            function progressBar(pct) {
+                if (pct === null || pct === undefined) return '—';
+                var c = barColor(pct);
+                return '<div class="progress-wrap"><div class="progress"><div class="progress-bar" style="width:' + Math.min(pct,100) + '%;background:' + c + '"></div></div>' +
+                       '<small style="color:' + c + ';font-weight:600;white-space:nowrap">' + pct + '%</small></div>';
+            }
+            function semaforoIcon(estado) {
+                var map = { verde:'dot-verde', amarillo:'dot-amarillo', rojo:'dot-rojo' };
+                var cls = map[estado] || 'dot-gris';
+                var label = estado ? (estado.charAt(0).toUpperCase() + estado.slice(1)) : 'Sin datos';
+                return '<span class="semaforo-dot ' + cls + '"></span>' + label;
+            }
+            function raciPill(rol) {
+                return '<span class="raci-pill raci-' + rol + '" title="' + rol + '">' + rol + '</span>';
+            }
+
+            // ── KPI ──
+            function buildKpi(resumen, total, alertas) {
+                var grid = $('#monitoreoKpiGrid');
+                grid.empty();
+                var cards = [
+                    { num: total,            label: 'Acciones totales',        bg: 'linear-gradient(135deg,#17a2b8,#007bff)' },
+                    { num: resumen.verde,    label: 'En verde',                bg: 'linear-gradient(135deg,#28a745,#20c997)' },
+                    { num: resumen.amarillo, label: 'En amarillo',             bg: 'linear-gradient(135deg,#ffc107,#fd7e14)' },
+                    { num: resumen.rojo,     label: 'En rojo',                 bg: 'linear-gradient(135deg,#dc3545,#c82333)' },
+                    { num: alertas,          label: 'Alertas presupuestarias', bg: 'linear-gradient(135deg,#6c757d,#495057)' },
+                ];
+                $.each(cards, function(_, c) {
+                    grid.append(
+                        '<div class="col"><div class="kpi-card" style="background:' + c.bg + '">' +
+                        '<div class="kpi-num">' + c.num + '</div>' +
+                        '<div class="kpi-label">' + c.label + '</div>' +
+                        '</div></div>'
+                    );
+                });
+            }
+
+            // ── Semáforo ──
+            var dtSemaforo = null;
+            $.get(urlSemaforo, function (data) {
+                var tbody = $('#dtMonitoreoSemaforo tbody');
+                tbody.empty();
+                if (!data.acciones || data.acciones.length === 0) {
+                    tbody.html('<tr><td colspan="5" class="text-center text-muted py-3">Sin acciones con indicadores registrados.</td></tr>');
+                    buildKpi({ verde:0, amarillo:0, rojo:0 }, 0, 0);
+                    return;
+                }
+                $.each(data.acciones, function (i, a) {
+                    var tipo = a.tipo_indicador === 'lead'
+                        ? '<span class="badge badge-info" style="font-size:.7rem">Lead</span>'
+                        : '<span class="badge badge-secondary" style="font-size:.7rem">Lag</span>';
+                    tbody.append('<tr><td>' + (i+1) + '</td><td>' + a.name + '</td><td class="text-center">' + tipo + '</td><td>' + progressBar(a.avance_pct) + '</td><td class="text-center">' + semaforoIcon(a.semaforo) + '</td></tr>');
+                });
+                if ($.fn.DataTable) {
+                    if (dtSemaforo) dtSemaforo.destroy();
+                    dtSemaforo = $('#dtMonitoreoSemaforo').DataTable({ pageLength: 15, language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json' }, order: [] });
+                }
+                $.get(urlAlertas, function(dataA) {
+                    buildKpi(data.resumen, data.acciones.length, dataA.total_alertas || 0);
+                }).fail(function() { buildKpi(data.resumen, data.acciones.length, '?'); });
+            }).fail(function () {
+                $('#dtMonitoreoSemaforo tbody').html('<tr><td colspan="5" class="text-danger text-center py-3">Error al cargar semáforo.</td></tr>');
+            });
+
+            // ── RACI ──
+            var dtRaci = null;
+            $('#tab-raci').one('shown.bs.tab', function() {
+                $.get(urlRaci, function (data) {
+                    var tbody = $('#dtMonitoreoRaci tbody');
+                    tbody.empty();
+                    if (!data.actions || data.actions.length === 0) {
+                        tbody.html('<tr><td colspan="4" class="text-center text-muted py-3">Sin acciones registradas.</td></tr>');
+                        return;
+                    }
+                    $.each(data.actions, function (i, action) {
+                        var nombre = $('<div>').html(action.name).text();
+                        if (!action.responsibles || action.responsibles.length === 0) {
+                            tbody.append('<tr><td>' + (i+1) + '</td><td>' + nombre + '</td><td colspan="2" class="text-muted small">Sin responsables</td></tr>');
+                            return;
+                        }
+                        $.each(action.responsibles, function (j, resp) {
+                            var rol = (resp.pivot && resp.pivot.rol) ? resp.pivot.rol : 'R';
+                            var fila = '<tr>';
+                            if (j === 0) {
+                                fila += '<td rowspan="' + action.responsibles.length + '">' + (i+1) + '</td>';
+                                fila += '<td rowspan="' + action.responsibles.length + '">' + nombre + '</td>';
+                            }
+                            fila += '<td>' + resp.dependency + '</td><td class="text-center">' + raciPill(rol) + '</td></tr>';
+                            tbody.append(fila);
+                        });
+                    });
+                    if ($.fn.DataTable) {
+                        if (dtRaci) dtRaci.destroy();
+                        dtRaci = $('#dtMonitoreoRaci').DataTable({ pageLength: 15, language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json' }, order: [] });
+                    }
+                });
+            });
+
+            // ── Alertas ──
+            var dtAlertas = null;
+            $('#tab-alertas').one('shown.bs.tab', function() {
+                $.get(urlAlertas, function (data) {
+                    var tbody = $('#dtMonitoreoAlertas tbody');
+                    tbody.empty();
+                    if (!data.total_alertas) {
+                        tbody.html('<tr><td colspan="5" class="text-center text-success py-3"><i class="fa fa-check-circle mr-1"></i>Sin alertas de subejecución.</td></tr>');
+                        return;
+                    }
+                    $.each(data.acciones, function (i, a) {
+                        tbody.append('<tr class="alert-row"><td>' + (i+1) + '</td><td>' + a.name + '</td><td>' + progressBar(a.pct_meta) + '</td><td>' + progressBar(a.pct_presupuesto) + '</td><td class="text-center"><span class="badge badge-warning text-dark" style="font-size:.72rem"><i class="fa fa-exclamation-triangle mr-1"></i>Subejecución</span></td></tr>');
+                    });
+                    if ($.fn.DataTable) {
+                        if (dtAlertas) dtAlertas.destroy();
+                        dtAlertas = $('#dtMonitoreoAlertas').DataTable({ pageLength: 15, language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json' }, order: [] });
+                    }
+                });
+            });
+        }
+        </script>
 
         <!-- HTML del segundo nav (inicialmente oculto) -->
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4" id="dynamic-nav" style="display: none;">
