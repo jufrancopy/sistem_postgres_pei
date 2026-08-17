@@ -92,10 +92,11 @@
             {{-- Dropdown Más Opciones --}}
             <div class="dropdown">
                 <button class="btn btn-sm btn-outline-secondary font-weight-bold dropdown-toggle d-inline-flex align-items-center px-3"
-                        type="button" data-toggle="dropdown" style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;">
+                        type="button" id="btnDropdownHeaderMas" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                        style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;">
                     <i class="fa fa-ellipsis-h"></i> Más
                 </button>
-                <div class="dropdown-menu dropdown-menu-right shadow border-0" style="border-radius: 12px; min-width: 240px; font-size: 0.87rem;">
+                <div class="dropdown-menu dropdown-menu-right shadow border-0" aria-labelledby="btnDropdownHeaderMas" style="border-radius: 12px; min-width: 240px; font-size: 0.87rem;">
 
                     <h6 class="dropdown-header text-uppercase text-muted small">Estructura &amp; Organización</h6>
                     <a class="dropdown-item py-2" href="javascript:void(0)" id="btnAbrirModalReordenarPei" data-profile="{{ $profile->id }}">
@@ -1746,6 +1747,20 @@
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            // Garantizar apertura al 1er clic en menús desplegables (dropdown-toggle)
+            $(document).on('click', '.dropdown-toggle', function(e) {
+                var $parent = $(this).closest('.dropdown');
+                var $menu = $parent.children('.dropdown-menu');
+                if ($menu.length && !$menu.hasClass('show')) {
+                    $('.dropdown-menu.show').removeClass('show');
+                    $('.dropdown.show').removeClass('show');
+                    $parent.addClass('show');
+                    $menu.addClass('show');
+                    $(this).attr('aria-expanded', 'true');
+                    e.stopPropagation();
                 }
             });
 
