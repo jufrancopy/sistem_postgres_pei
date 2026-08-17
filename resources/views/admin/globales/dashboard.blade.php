@@ -984,7 +984,7 @@
                                             @endif
                                             @if($act->responsibles->isNotEmpty())
                                                 <span class="badge badge-light border text-dark" style="font-size:0.68rem;" title="{{ $act->responsibles->pluck('name')->implode(', ') }}">
-                                                    <i class="fa fa-user-check text-success mr-1"></i> {{ $act->responsibles->first()->name }} {{ $act->responsibles->count() > 1 ? '(+'.$act->responsibles->count()-1.')' : '' }}
+                                                    <i class="fa fa-user-check text-success mr-1"></i> {{ $act->responsibles->first()->name }} {{ $act->responsibles->count() > 1 ? '(+' . ($act->responsibles->count() - 1) . ')' : '' }}
                                                 </span>
                                             @endif
                                         </div>
