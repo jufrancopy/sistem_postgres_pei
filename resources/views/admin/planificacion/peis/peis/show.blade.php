@@ -1798,9 +1798,16 @@
             // ── Abrir Modal Riesgos MECIP 2015 ─────────────────────────────
             $(document).on('click', '.btn-ver-riesgos-mecip', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 var btn = $(this);
-                var title = btn.data('axi-title');
-                var riesgos = btn.data('riesgos');
+                var title = btn.attr('data-axi-title') || btn.data('axi-title') || 'Objetivo Estratégico';
+                var rawData = btn.attr('data-riesgos');
+                var riesgos = [];
+                try {
+                    riesgos = typeof rawData === 'string' ? JSON.parse(rawData) : (btn.data('riesgos') || []);
+                } catch(err) {
+                    riesgos = btn.data('riesgos') || [];
+                }
 
                 $('#modalRiesgosTituloOE').html('<i class="fa fa-shield-alt text-warning mr-2"></i>' + title);
 

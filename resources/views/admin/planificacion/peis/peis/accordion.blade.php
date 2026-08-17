@@ -163,7 +163,7 @@
                             class="btn btn-sm btn-warning text-dark font-weight-bold py-0 px-2 btn-ver-riesgos-mecip"
                             data-axi-id="{{ $axi->id }}"
                             data-axi-title="{{ e(strip_tags($axi->name)) }}"
-                            data-riesgos="{{ json_encode($riesgosMecipAxi) }}"
+                            data-riesgos='@json($riesgosMecipAxi)'
                             title="Ver {{ $countRiesgos }} riesgo(s) MECIP 2015 asociados">
                         <i class="fa fa-shield-alt mr-1"></i> Riesgos MECIP ({{ $countRiesgos }})
                     </button>
