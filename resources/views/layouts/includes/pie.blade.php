@@ -28,6 +28,21 @@
 <script src="{{ asset('js/bootstrap.min.js') }}"></script>
 
 <script src="{{ asset('master/assets/js/core/bootstrap-material-design.min.js') }}" type="text/javascript"></script>
+<script>
+    if (window.jQuery && $.fn && $.fn.modal && $.fn.modal.Constructor) {
+        var _origShowElement = $.fn.modal.Constructor.prototype._showElement;
+        $.fn.modal.Constructor.prototype._showElement = function (relatedTarget) {
+            if (!this._element) return;
+            try {
+                _origShowElement.call(this, relatedTarget);
+            } catch (e) {
+                if (this._element) {
+                    try { this._element.style.display = 'block'; } catch (err) {}
+                }
+            }
+        };
+    }
+</script>
 <script src="{{ asset('master/assets/js/plugins/perfect-scrollbar.jquery.min.js') }}" type="text/javascript"></script>
 
 <!-- Toastr JS -->
