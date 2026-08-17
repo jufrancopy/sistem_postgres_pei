@@ -1764,6 +1764,17 @@
     {{-- My custom scripts --}}
     <script type="text/javascript">
         $(function() {
+            window.dtSpanishEs = {
+                search: "Buscar:",
+                lengthMenu: "Mostrar _MENU_ registros",
+                info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                infoEmpty: "Sin registros cargados",
+                infoFiltered: "(filtrado de _MAX_ registros en total)",
+                zeroRecords: "No se encontraron resultados",
+                paginate: { first: "Primero", previous: "Anterior", next: "Siguiente", last: "Último" }
+            };
+            var dtSpanishEs = window.dtSpanishEs;
+
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
