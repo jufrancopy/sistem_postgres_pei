@@ -67,10 +67,10 @@ class CoordinadorPlanificacionController extends Controller
         // 2. PEI del Ámbito
         $pei = $user->peiActual();
         if (!$pei && !empty($grupoIds)) {
-            $pei = PeiProfile::where('level', 'master')->whereIn('group_id', $grupoIds)->first();
+            $pei = PeiProfile::where('level', 'master')->where('is_active', true)->whereNull('deleted_at')->whereIn('group_id', $grupoIds)->first();
         }
         if (!$pei && $user->hasRole('Administrador')) {
-            $pei = PeiProfile::where('level', 'master')->first();
+            $pei = PeiProfile::where('level', 'master')->where('is_active', true)->whereNull('deleted_at')->first();
         }
 
         // 3. Organigrama de la Rama
@@ -117,8 +117,8 @@ class CoordinadorPlanificacionController extends Controller
         }
         $roles = $rolesQuery->get();
 
-        // 6. Planes Institucionales (PEI) vinculados al grupo padre / dependencias
-        $planesQuery = PeiProfile::where('level', 'master')->with(['dependency', 'group', 'user', 'fodaPerfil']);
+        // 6. Planes Institucionales (PEI) vinculados al grupo padre / dependencias (Solo PEI Activos)
+        $planesQuery = PeiProfile::where('level', 'master')->where('is_active', true)->whereNull('deleted_at')->with(['dependency', 'group', 'user', 'fodaPerfil']);
         if (!empty($grupoIds) || !empty($organigramaIds)) {
             $planesQuery->where(function($q) use ($grupoIds, $organigramaIds) {
                 if (!empty($grupoIds)) {
@@ -131,7 +131,7 @@ class CoordinadorPlanificacionController extends Controller
         }
         $planes = $planesQuery->latest()->get();
         if ($planes->isEmpty() && $user->hasRole('Administrador')) {
-            $planes = PeiProfile::where('level', 'master')->with(['dependency', 'group', 'user', 'fodaPerfil'])->latest()->get();
+            $planes = PeiProfile::where('level', 'master')->where('is_active', true)->whereNull('deleted_at')->with(['dependency', 'group', 'user', 'fodaPerfil'])->latest()->get();
         }
 
         // 7. Todos los usuarios del sistema disponibles para asignar en grupos

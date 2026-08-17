@@ -127,14 +127,14 @@ class User extends Authenticatable
                 : ($group->ancestors()->whereNull('parent_id')->first() ?? $group->ancestors()->first() ?? $group);
 
             if ($root) {
-                $pei = PeiProfile::where('level', 'master')->where('group_id', $root->id)->first();
+                $pei = PeiProfile::where('level', 'master')->where('is_active', true)->where('group_id', $root->id)->first();
                 if ($pei) {
                     return $pei;
                 }
 
                 $descendantIds = $root->descendants()->pluck('id')->toArray();
                 if (!empty($descendantIds)) {
-                    $peiDesc = PeiProfile::where('level', 'master')->whereIn('group_id', $descendantIds)->first();
+                    $peiDesc = PeiProfile::where('level', 'master')->where('is_active', true)->whereIn('group_id', $descendantIds)->first();
                     if ($peiDesc) {
                         return $peiDesc;
                     }
@@ -144,6 +144,7 @@ class User extends Authenticatable
 
         // Si no se encuentra por grupo, buscar por asignación directa de analista o responsable
         $peiAnalyst = PeiProfile::where('level', 'master')
+            ->where('is_active', true)
             ->whereHas('analysts', function($q) {
                 $q->where('users.id', $this->id);
             })->first();
@@ -152,6 +153,7 @@ class User extends Authenticatable
         }
 
         $peiResp = PeiProfile::where('level', 'master')
+            ->where('is_active', true)
             ->whereHas('responsibles', function($q) {
                 $q->where('users.id', $this->id);
             })->first();
