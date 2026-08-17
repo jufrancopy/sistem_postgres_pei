@@ -29,19 +29,37 @@
 
 <script src="{{ asset('master/assets/js/core/bootstrap-material-design.min.js') }}" type="text/javascript"></script>
 <script>
+(function() {
     if (window.jQuery && $.fn && $.fn.modal && $.fn.modal.Constructor) {
-        var _origShowElement = $.fn.modal.Constructor.prototype._showElement;
-        $.fn.modal.Constructor.prototype._showElement = function (relatedTarget) {
+        var Modal = $.fn.modal.Constructor;
+        var origShowElement = Modal.prototype._showElement;
+
+        Modal.prototype._showElement = function(relatedTarget) {
             if (!this._element) return;
+            if (!this._dialog) this._dialog = this._element.querySelector('.modal-dialog');
+            
+            if (this._dialog && $(this._dialog).hasClass('modal-dialog-scrollable')) {
+                var body = this._dialog.querySelector('.modal-body');
+                if (!body) {
+                    $(this._dialog).removeClass('modal-dialog-scrollable');
+                    try {
+                        origShowElement.call(this, relatedTarget);
+                    } finally {
+                        $(this._dialog).addClass('modal-dialog-scrollable');
+                    }
+                    return;
+                }
+            }
             try {
-                _origShowElement.call(this, relatedTarget);
-            } catch (e) {
+                origShowElement.call(this, relatedTarget);
+            } catch (err) {
                 if (this._element) {
-                    try { this._element.style.display = 'block'; } catch (err) {}
+                    try { this._element.style.display = 'block'; } catch (e) {}
                 }
             }
         };
     }
+})();
 </script>
 <script src="{{ asset('master/assets/js/plugins/perfect-scrollbar.jquery.min.js') }}" type="text/javascript"></script>
 
