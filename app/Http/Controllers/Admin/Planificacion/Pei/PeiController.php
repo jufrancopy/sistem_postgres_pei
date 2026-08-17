@@ -635,6 +635,111 @@ class PeiController extends Controller
         $perfilFodaId = \App\Admin\Planificacion\Foda\FodaPerfil::where('group_id', $profile->group_id)
             ->value('id');
 
+        // Balanced Scorecard (BSC) para el modal BSC
+        $perspectivasBsc = [
+            'financiera'  => ['label'=>'Financiera',                  'icon'=>'fa-dollar-sign', 'color'=>'#28a745', 'ejes'=>collect()],
+            'clientes'    => ['label'=>'Clientes / Usuarios',          'icon'=>'fa-users',       'color'=>'#1976d2', 'ejes'=>collect()],
+            'procesos'    => ['label'=>'Procesos Internos',            'icon'=>'fa-cogs',        'color'=>'#f57c00', 'ejes'=>collect()],
+            'aprendizaje' => ['label'=>'Aprendizaje y Crecimiento',    'icon'=>'fa-graduation-cap','color'=>'#7c3aed','ejes'=>collect()],
+            'sin_bsc'     => ['label'=>'Sin perspectiva asignada',     'icon'=>'fa-question',    'color'=>'#6c757d', 'ejes'=>collect()],
+        ];
+
+        $bscLevel = $niveles['bsc_level'] ?? 'axi';
+
+        if ($bscLevel === 'goal') {
+            foreach ($profile->children->sortBy('order_item') as $axi) {
+                foreach ($axi->children->sortBy('order_item') as $goal) {
+                    $key = $goal->bsc_perspectiva ?? 'sin_bsc';
+                    if (!isset($perspectivasBsc[$key])) $key = 'sin_bsc';
+
+                    $acciones = $goal->children;
+                    $total    = $acciones->count();
+                    $verde    = $acciones->where('semaforo','verde')->count();
+                    $amarillo = $acciones->where('semaforo','amarillo')->count();
+                    $rojo     = $acciones->where('semaforo','rojo')->count();
+
+                    $semaforoGoal = 'sin-datos';
+                    if ($total > 0) {
+                        $pct = ($verde + $amarillo * 0.5) / $total * 100;
+                        $semaforoGoal = $pct >= 75 ? 'verde' : ($pct >= 50 ? 'amarillo' : 'rojo');
+                    }
+
+                    $perspectivasBsc[$key]['ejes']->push([
+                        'id'           => $goal->id,
+                        'name'         => strip_tags($goal->name) . ' [' . strip_tags($axi->name) . ']',
+                        'semaforo'     => $semaforoGoal,
+                        'verde'        => $verde,
+                        'amarillo'     => $amarillo,
+                        'rojo'         => $rojo,
+                        'total'        => $total,
+                        'ri'           => null,
+                        'ri_recursos'  => null,
+                        'ri_metas'     => [],
+                        'objetivos'    => [
+                            [
+                                'id'      => $goal->id,
+                                'name'    => strip_tags($goal->name),
+                                'acciones'=> $acciones->map(fn($a) => [
+                                    'id'       => $a->id,
+                                    'name'     => strip_tags($a->name),
+                                    'semaforo' => $a->semaforo ?? 'sin-datos',
+                                    'pct'      => ($a->denominator && $a->denominator > 0)
+                                        ? round(($a->numerator / $a->denominator) * 100, 1)
+                                        : null,
+                                    'indicador'=> $a->indicador ? $a->indicador->codigoCompleto() . ' ' . $a->indicador->nombre : null,
+                                ])->values(),
+                            ]
+                        ],
+                    ]);
+                }
+            }
+        } else {
+            foreach ($profile->children->sortBy('order_item') as $axi) {
+                $key = $axi->bsc_perspectiva ?? 'sin_bsc';
+                if (!isset($perspectivasBsc[$key])) $key = 'sin_bsc';
+
+                $acciones = $axi->descendants()->where('level','action')->get();
+                $total    = $acciones->count();
+                $verde    = $acciones->where('semaforo','verde')->count();
+                $amarillo = $acciones->where('semaforo','amarillo')->count();
+                $rojo     = $acciones->where('semaforo','rojo')->count();
+
+                $semaforoEje = 'sin-datos';
+                if ($total > 0) {
+                    $pct = ($verde + $amarillo * 0.5) / $total * 100;
+                    $semaforoEje = $pct >= 75 ? 'verde' : ($pct >= 50 ? 'amarillo' : 'rojo');
+                }
+
+                $perspectivasBsc[$key]['ejes']->push([
+                    'id'           => $axi->id,
+                    'name'         => strip_tags($axi->name),
+                    'semaforo'     => $semaforoEje,
+                    'verde'        => $verde,
+                    'amarillo'     => $amarillo,
+                    'rojo'         => $rojo,
+                    'total'        => $total,
+                    'ri'           => $axi->resultado_intermedio,
+                    'ri_recursos'  => $axi->ri_recursos_gs,
+                    'ri_metas'     => is_string($axi->ri_metas) ? json_decode($axi->ri_metas, true) : ($axi->ri_metas ?? []),
+                    'objetivos'    => $axi->children->map(fn($goal) => [
+                        'id'      => $goal->id,
+                        'name'    => strip_tags($goal->name),
+                        'acciones'=> $goal->children->map(fn($a) => [
+                            'id'       => $a->id,
+                            'name'     => strip_tags($a->name),
+                            'semaforo' => $a->semaforo ?? 'sin-datos',
+                            'pct'      => ($a->denominator && $a->denominator > 0)
+                                ? round(($a->numerator / $a->denominator) * 100, 1)
+                                : null,
+                            'indicador'=> $a->indicador ? $a->indicador->codigoCompleto() . ' ' . $a->indicador->nombre : null,
+                        ])->values(),
+                    ])->values(),
+                ]);
+            }
+        }
+
+        $perspectivasBsc = array_filter($perspectivasBsc, fn($p) => $p['ejes']->count() > 0);
+
         if ($request->ajax()) {
             return response()->json(['profile' => $profile]);
         } else {

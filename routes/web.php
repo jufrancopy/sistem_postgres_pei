@@ -670,7 +670,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-monitoreo/dashboard',                             'Admin\Planificacion\PeiReporteController@monitoreDashboard')->name('pei.monitoreo.dashboard');
     Route::post('pei-profiles/{profileId}/public-token',              'Admin\Planificacion\PublicPeiController@generateToken')->name('pei.public.token.generate');
     Route::delete('pei-profiles/{profileId}/public-token',            'Admin\Planificacion\PublicPeiController@revokeToken')->name('pei.public.token.revoke');
-    Route::get('pei-profiles/{profileId}/bsc',                       'Admin\Planificacion\PeiReporteController@bsc')->name('pei.bsc');
     Route::post('pei-profiles/{profileId}/notificar-todos',          'Admin\Planificacion\PeiReporteController@notificarTodos')->name('pei.reportes.notificar-todos');
     Route::post('pei-profiles/{profileId}/acciones/{accionId}/notificar', 'Admin\Planificacion\PeiReporteController@notificarAccion')->name('pei.reportes.notificar-accion');
     Route::get('pei-profiles/{accionId}/reportes',                   'Admin\Planificacion\PeiReporteController@index')->name('pei.reportes.index');
