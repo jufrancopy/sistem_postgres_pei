@@ -944,16 +944,13 @@
                                 <button type="button" class="btn btn-sm btn-outline-warning btn-filter-act-tab" data-status="EN CURSO" onclick="filtrarActividadesTabStatus(this, 'EN CURSO')">En Curso ({{ $actividadesEnCursoPei }})</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary btn-filter-act-tab" data-status="PENDIENTE" onclick="filtrarActividadesTabStatus(this, 'PENDIENTE')">Pendientes ({{ $actividadesPendientesPei }})</button>
                             </div>
-                            <div style="min-width:220px;">
-                                <input type="text" id="inputBuscarActividadTab" class="form-control form-control-sm" placeholder="🔍 Buscar actividad o responsable..." onkeyup="buscarActividadesTab(this.value)">
-                            </div>
                         </div>
                     </div>
 
                     {{-- Listado de Actividades --}}
                     @if($actividadesPeiList->isNotEmpty())
                     <div class="table-responsive">
-                        <table class="table table-hover table-custom w-100" id="tablaActividadesPeiDashboard">
+                        <table class="table table-hover table-custom w-100 dataTableInit" id="tablaActividadesPeiDashboard">
                             <thead>
                                 <tr>
                                     <th style="width: 4%;">#</th>
@@ -2120,43 +2117,19 @@ $(document).ready(function() {
         }
     });
 
-    // ── Filtro por Estado en Pestaña Actividades del PEI ──
+    // ── Filtro por Estado en Pestaña Actividades del PEI (Integración con DataTables) ──
     window.filtrarActividadesTabStatus = function(btn, status) {
         $('.btn-filter-act-tab').removeClass('btn-dark active').addClass('btn-outline-secondary btn-outline-success btn-outline-warning');
         $(btn).addClass('btn-dark active');
         
-        var query = ($('#inputBuscarActividadTab').val() || '').toLowerCase().trim();
-        
-        $('#tablaActividadesPeiDashboard tbody tr.act-tab-row').each(function() {
-            var rowStatus = $(this).data('status');
-            var rowText   = $(this).data('text');
-            var matchStatus = (status === 'all' || rowStatus === status);
-            var matchText   = (!query || rowText.indexOf(query) !== -1);
-            
-            if (matchStatus && matchText) {
-                $(this).removeClass('d-none');
+        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tablaActividadesPeiDashboard')) {
+            var dt = $('#tablaActividadesPeiDashboard').DataTable();
+            if (status === 'all') {
+                dt.column(4).search('').draw();
             } else {
-                $(this).addClass('d-none');
+                dt.column(4).search(status).draw();
             }
-        });
-    };
-
-    window.buscarActividadesTab = function(query) {
-        var status = $('.btn-filter-act-tab.active').data('status') || 'all';
-        var queryText = (query || '').toLowerCase().trim();
-
-        $('#tablaActividadesPeiDashboard tbody tr.act-tab-row').each(function() {
-            var rowStatus = $(this).data('status');
-            var rowText   = $(this).data('text');
-            var matchStatus = (status === 'all' || rowStatus === status);
-            var matchText   = (!queryText || rowText.indexOf(queryText) !== -1);
-            
-            if (matchStatus && matchText) {
-                $(this).removeClass('d-none');
-            } else {
-                $(this).addClass('d-none');
-            }
-        });
+        }
     };
 
     // ── Scope Filter para Planes PEI (PEI Seleccionado vs Todos los Planes) ──
