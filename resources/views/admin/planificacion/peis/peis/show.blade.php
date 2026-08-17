@@ -3871,9 +3871,8 @@ $(document).on('click', '#btnColapsarTodoTreePei', function() {
     if ($iniciativasDirectas->isEmpty()) {
         $iniciativasDirectas = \App\Models\PlanMaestro\PlanAccion::with('creator')->orderBy('orden')->get();
     }
-@endphp
-<script>
-    window.iniciativasPlanMaestroData = @json($iniciativasDirectas->map(function($i) {
+
+    $iniciativasArray = $iniciativasDirectas->map(function($i) {
         return [
             'id'          => (string)$i->id,
             'codigo'      => $i->codigo,
@@ -3881,9 +3880,12 @@ $(document).on('click', '#btnColapsarTodoTreePei', function() {
             'estado'      => $i->estado_grupo,
             'responsable' => $i->responsable ?? '—',
             'momento'     => $i->momento ?? 'T0',
-            'creador'     => $i->creator ? $i->creator->name : null
+            'creador'     => $i->creator ? $i->creator->name : null,
         ];
-    }));
+    })->values()->toArray();
+@endphp
+<script>
+    window.iniciativasPlanMaestroData = {!! json_encode($iniciativasArray) !!};
 </script>
 
 // ── LÓGICA DEL MODAL BUSCADOR DEL PLAN MAESTRO / INICIATIVAS ──
