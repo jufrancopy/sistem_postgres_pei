@@ -104,23 +104,39 @@
                                     </li>
                                 </ul>
                             </div>
-                        <li class="nav-item {{ $isActive('tasks*') }}">
-                            <a class="nav-link" href="{{ route('tasks.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-tasks" style="font-size:.8rem; color: #4f46e5;"></i></span>
-                                <span class="sidebar-normal">Tareas</span>
-                            </a>
                         </li>
-                        <li class="nav-item {{ $isActive('pgn*') }}">
-                            <a class="nav-link" href="{{ route('pgn.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-coins" style="font-size:.8rem; color: #4f46e5;"></i></span>
-                                <span class="sidebar-normal">PGN</span>
+
+                        {{-- Submenú: Marcos & Gestión (Empaquetado) --}}
+                        @php
+                            $enMarcosGestion = str_contains($path, 'tasks') || str_contains($path, 'pgn') || str_contains($path, 'pei/marcos');
+                        @endphp
+                        <li class="nav-item">
+                            <a class="nav-link {{ $enMarcosGestion ? 'active' : '' }}" data-toggle="collapse" href="#marcosGestionMenu" aria-expanded="{{ $enMarcosGestion ? 'true' : 'false' }}">
+                                <span class="sidebar-mini"><i class="fa fa-folder-open" style="font-size:.8rem; color: #4f46e5;"></i></span>
+                                <span class="sidebar-normal">Marcos & Gestión <b class="caret"></b></span>
                             </a>
-                        </li>
-                        <li class="nav-item {{ $isActive('pei/marcos*') }}">
-                            <a class="nav-link" href="{{ route('pei.marcos.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-link" style="font-size:.8rem; color: #4f46e5;"></i></span>
-                                <span class="sidebar-normal">Marcos Referenciales</span>
-                            </a>
+                            <div class="collapse {{ $enMarcosGestion ? 'show' : '' }}" id="marcosGestionMenu">
+                                <ul class="nav" style="padding-left:10px">
+                                    <li class="nav-item {{ $isActive('tasks*') }}">
+                                        <a class="nav-link" href="{{ route('tasks.index') }}">
+                                            <span class="sidebar-mini"><i class="fa fa-tasks" style="font-size:.75rem; color: #4f46e5;"></i></span>
+                                            <span class="sidebar-normal">Tareas</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ $isActive('pgn*') }}">
+                                        <a class="nav-link" href="{{ route('pgn.index') }}">
+                                            <span class="sidebar-mini"><i class="fa fa-coins" style="font-size:.75rem; color: #4f46e5;"></i></span>
+                                            <span class="sidebar-normal">PGN</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ $isActive('pei/marcos*') }}">
+                                        <a class="nav-link" href="{{ route('pei.marcos.index') }}">
+                                            <span class="sidebar-mini"><i class="fa fa-link" style="font-size:.75rem; color: #4f46e5;"></i></span>
+                                            <span class="sidebar-normal">Marcos Referenciales</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
                     </ul>
                 </div>
