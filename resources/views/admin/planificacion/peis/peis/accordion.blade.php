@@ -253,19 +253,8 @@
                 </div>
                 @endif
 
-                {{-- Marcos inline --}}
-                @if($marcosAxi->count() > 0)
-                @php $colores=['pnd'=>'badge-danger','ods'=>'badge-success','bsc'=>'badge-primary','mecip'=>'badge-warning','pgn'=>'badge-dark','general'=>'badge-secondary']; @endphp
-                <div class="mt-1" id="marcos-body-{{ $axi->id }}">
-                    @foreach($marcosAxi->groupBy('tipo') as $tipo => $items)
-                        @foreach($items as $marco)
-                            <span class="badge {{ $colores[$tipo] ?? 'badge-secondary' }} mr-1" style="font-size:.65rem">{{ $marco->nombre }}</span>
-                        @endforeach
-                    @endforeach
-                </div>
-                @else
+                {{-- Marcos inline container para actualizaciones JS --}}
                 <div id="marcos-body-{{ $axi->id }}"></div>
-                @endif
 
                 {{-- Estrategias FODA inline --}}
                 @if($estrategiasAxi->count() > 0)
