@@ -1731,6 +1731,11 @@
                     </table>
                 </div>
             </div>
+            <div class="modal-footer" style="background:#f8fafc;">
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 {{-- Modal Riesgos MECIP 2015 --}}
