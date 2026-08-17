@@ -971,21 +971,7 @@ class PeiController extends Controller
         return view('admin.planificacion.peis.peis.accordion', compact('profile', 'niveles'));
     }
 
-    public function dashboard($idProfile)
-    {
-        $profile = PeiProfile::with(['group', 'analysts', 'dependency'])->findOrFail($idProfile);
 
-        // Análisis FODA con IEA del grupo vinculado al PEI
-        $analisisFoda = \App\Admin\Planificacion\Foda\FodaAnalisis::with('aspecto')
-            ->whereNotNull('iea_valor')
-            ->whereHas('perfil', fn($q) => $q->where('group_id', $profile->group_id))
-            ->get(['id', 'aspecto_id', 'tipo', 'iea_valor', 'iea_clasificacion']);
-
-        $perfilFodaId = \App\Admin\Planificacion\Foda\FodaPerfil::where('group_id', $profile->group_id)
-            ->value('id');
-
-        return view('admin.planificacion.peis.peis.dashboard', compact('profile', 'analisisFoda', 'perfilFodaId'));
-    }
 
     public function reordenar(Request $request, $id)
     {

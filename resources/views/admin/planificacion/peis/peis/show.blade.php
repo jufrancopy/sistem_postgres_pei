@@ -285,9 +285,6 @@
                     </div>{{-- modal-body --}}
 
                     <div class="modal-footer bg-white px-4 py-3">
-                        <a href="{{ route('pei-profiles.dashboard', $profile->id) }}" class="btn btn-sm btn-outline-secondary" target="_blank">
-                            <i class="fa fa-external-link-alt mr-1"></i> Abrir vista completa
-                        </a>
                         <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
                     </div>
                 </div>

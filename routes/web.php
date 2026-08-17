@@ -99,7 +99,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('pei-profiles/{idProfile}/parameters',   'Admin\Planificacion\Pei\PeiController@updateParameters')->name('pei-profiles.update-parameters');
     Route::get('pei-profiles/{idProfile}/matriz',        'Admin\Planificacion\Pei\PeiController@matriz')->name('pei-profiles.matriz');
     Route::get('pei-profiles/{idProfile}/matriz/pdf',    'Admin\Planificacion\Pei\PeiController@matrizPdf')->name('pei-profiles.matriz.pdf');
-    Route::get('pei-profiles/{idProfile}/dashboard', 'Admin\Planificacion\Pei\PeiController@dashboard')->name('pei-profiles.dashboard');
+
+
     Route::get('pei-profiles/{idProfile}/vista-asesor', 'Admin\Planificacion\Pei\PeiController@vistaAsesor')->name('pei-profiles.vista-asesor');
     Route::post('pei-profiles/{idProfile}/guardar-comentario-asesor', 'Admin\Planificacion\Pei\PeiController@guardarComentarioAsesor')->name('pei-profiles.guardar-comentario-asesor');
     Route::post('pei-profiles/{idProfile}/asesor-token', 'Admin\Planificacion\Pei\PeiController@generarTokenAsesor')->name('pei.asesor.token.generate');

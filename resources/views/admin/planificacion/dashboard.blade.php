@@ -65,8 +65,8 @@
                     <i class="fa fa-sitemap mr-1"></i> Árbol del Plan
                 </a>
                 @endhasanyrole
-                <a href="{{ route('pei-profiles.dashboard', $peiActual->id) }}" class="btn btn-sm btn-dark mb-1">
-                    <i class="fa fa-chart-bar mr-1"></i> Tablero
+                <a href="{{ route('pei-profiles.show', $peiActual->id) }}" class="btn btn-sm btn-dark mb-1">
+                    <i class="fa fa-chart-bar mr-1"></i> Ver Plan
                 </a>
             </div>
             @endif

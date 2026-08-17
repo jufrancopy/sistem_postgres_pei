@@ -124,9 +124,7 @@ $pctGlobal   = round(($completados / 6) * 100);
                     <i class="fa fa-edit mr-1"></i> Editar Plan
                 </a>
                 @endhasanyrole
-                <a href="{{ route('pei-profiles.dashboard', $profile->id) }}" class="btn btn-sm btn-dark">
-                    <i class="fa fa-chart-bar mr-1"></i> Tablero de Monitoreo
-                </a>
+
                 <button type="button" class="btn btn-sm btn-warning" id="btnProcesoCertMef">
                     <i class="fa fa-certificate mr-1"></i> Certificación MEF
                 </button>
@@ -268,7 +266,7 @@ $pctGlobal   = round(($completados / 6) * 100);
                     ['label' => 'Con indicador', 'valor' => $accionesConSemaforo],
                 ],
                 'acciones' => [
-                    ['url' => route('pei-profiles.dashboard', $profile->id), 'label' => 'Ver Tablero', 'clase' => 'btn-dark'],
+
                 ],
             ])
 
