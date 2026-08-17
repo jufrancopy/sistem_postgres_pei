@@ -154,6 +154,20 @@
                         <i class="fa fa-chess mr-1"></i>{{ $countEstrategias }}
                     </a>
                     @endif
+                    @php
+                        $riesgosMecipAxi = $axi->riesgos_mecip;
+                        $countRiesgos = is_array($riesgosMecipAxi) ? count($riesgosMecipAxi) : 0;
+                    @endphp
+                    @if($countRiesgos > 0)
+                    <button type="button"
+                            class="btn btn-sm btn-warning text-dark font-weight-bold py-0 px-2 btn-ver-riesgos-mecip"
+                            data-axi-id="{{ $axi->id }}"
+                            data-axi-title="{{ e(strip_tags($axi->name)) }}"
+                            data-riesgos="{{ json_encode($riesgosMecipAxi) }}"
+                            title="Ver {{ $countRiesgos }} riesgo(s) MECIP 2015 asociados">
+                        <i class="fa fa-shield-alt mr-1"></i> Riesgos MECIP ({{ $countRiesgos }})
+                    </button>
+                    @endif
                     @if($bscPerspectiva && isset($bscLabels[$bscPerspectiva]))
                     <span class="badge {{ $bscColores[$bscPerspectiva]['badge'] ?? 'badge-secondary' }}"
                           style="font-size:.68rem"

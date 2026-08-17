@@ -1731,8 +1731,28 @@
                     </table>
                 </div>
             </div>
-            <div class="modal-footer" style="background:#f8fafc;">
-                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
+</div>
+
+{{-- Modal Riesgos MECIP 2015 --}}
+<div class="modal fade" id="modalRiesgosMecip" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
+                <div>
+                    <span class="badge badge-light text-dark font-weight-bold mb-1" style="font-size: 0.72rem; letter-spacing: 0.05em; padding: 4px 8px; border-radius: 6px;">
+                        <i class="fa fa-shield-alt text-warning mr-1"></i> MECIP 2015 — GESTIÓN DE RIESGOS
+                    </span>
+                    <h5 class="modal-title font-weight-bold mb-0 text-white" id="modalRiesgosTituloOE" style="font-size: 1.1rem;">
+                        Riesgos por Objetivo Estratégico
+                    </h5>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" style="opacity: 0.9;"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-4" style="background: #f8fafc; max-height: 75vh; overflow-y: auto;">
+                <div id="contenedorRiesgosMecip"></div>
+            </div>
+            <div class="modal-footer bg-white border-top-0 py-2 px-4">
+                <button type="button" class="btn btn-secondary btn-sm px-4 font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">Cerrar</button>
             </div>
         </div>
     </div>
@@ -1762,6 +1782,67 @@
                     $(this).attr('aria-expanded', 'true');
                     e.stopPropagation();
                 }
+            });
+
+            // ── Abrir Modal Riesgos MECIP 2015 ─────────────────────────────
+            $(document).on('click', '.btn-ver-riesgos-mecip', function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var title = btn.data('axi-title');
+                var riesgos = btn.data('riesgos');
+
+                $('#modalRiesgosTituloOE').html('<i class="fa fa-shield-alt text-warning mr-2"></i>' + title);
+
+                var html = '';
+                if (riesgos && riesgos.length > 0) {
+                    var causasMap = {
+                        'operativa':    { label: 'Operativa — Carga admin. / procesos manuales', color: 'badge-info' },
+                        'estructural':  { label: 'Estructural — Falta de perfiles / RRHH', color: 'badge-primary' },
+                        'tecnologica':  { label: 'Tecnológica — Ausencia de sistemas / TI', color: 'badge-purple' },
+                        'normativa':    { label: 'Normativa — Vacío / incumplimiento regulatorio', color: 'badge-danger' },
+                        'otra':         { label: 'Otra causa raíz', color: 'badge-secondary' }
+                    };
+
+                    riesgos.forEach(function(r, idx) {
+                        var causaInfo = causasMap[r.causa_raiz] || { label: r.causa_raiz || 'No definida', color: 'badge-secondary' };
+                        var ocurrencia = r.ocurrencia || 3;
+                        var impacto = r.impacto || 3;
+                        var matriz = ocurrencia * impacto;
+                        var nivelBadge = matriz >= 20 ? 'badge-danger' : (matriz >= 12 ? 'badge-warning text-dark' : 'badge-success');
+                        var nivelTexto = matriz >= 20 ? 'Crítico ('+matriz+'/25)' : (matriz >= 12 ? 'Alto ('+matriz+'/25)' : 'Medio ('+matriz+'/25)');
+
+                        html += '<div class="card border-0 shadow-sm mb-3" style="border-radius: 12px; overflow: hidden; border-left: 5px solid #f59e0b !important;">' +
+                            '<div class="card-header bg-white py-3 px-3 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap: 8px;">' +
+                                '<div>' +
+                                    '<span class="badge badge-dark mr-2" style="font-size: 0.72rem; padding: 4px 8px;">Riesgo #' + (idx + 1) + '</span>' +
+                                    '<span class="font-weight-bold text-dark" style="font-size: 0.95rem;">' + (r.aspecto || 'Riesgo Institucional MECIP') + '</span>' +
+                                '</div>' +
+                                '<div>' +
+                                    '<span class="badge ' + nivelBadge + ' mr-1" style="font-size: 0.72rem; padding: 4px 8px;" title="Nivel de Riesgo = Ocurrencia × Impacto"><i class="fa fa-exclamation-triangle mr-1"></i> ' + nivelTexto + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="card-body p-3 bg-white" style="font-size: 0.88rem; color: #334155;">' +
+                                '<div class="mb-3 p-2 border-left border-info bg-light" style="border-radius: 6px;">' +
+                                    '<div class="font-weight-bold text-uppercase text-muted mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;"><i class="fa fa-microscope mr-1 text-info"></i> 1. Causa Raíz</div>' +
+                                    '<span class="badge ' + causaInfo.color + '" style="font-size: 0.75rem; padding: 4px 8px;">' + causaInfo.label + '</span>' +
+                                '</div>' +
+                                '<div class="mb-3 p-2 border-left border-warning bg-light" style="border-radius: 6px;">' +
+                                    '<div class="font-weight-bold text-uppercase text-warning mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;"><i class="fa fa-lightbulb mr-1"></i> 2. Acción de Mejora (Respuesta al Riesgo)</div>' +
+                                    '<div class="text-dark font-weight-bold">' + (r.accion_mejora || '—') + '</div>' +
+                                '</div>' +
+                                '<div class="p-2 border-left border-success bg-light" style="border-radius: 6px;">' +
+                                    '<div class="font-weight-bold text-uppercase text-success mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;"><i class="fa fa-shield-alt mr-1"></i> 3. Control Preventivo (Evaluación de Control — MECIP)</div>' +
+                                    '<div class="text-dark">' + (r.control_preventivo || '—') + '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
+                    });
+                } else {
+                    html = '<div class="text-center py-5 text-muted"><i class="fa fa-shield-alt fa-3x mb-3 text-warning opacity-50"></i><p class="mb-0">No se encontraron riesgos MECIP 2015 asociados a este objetivo.</p></div>';
+                }
+
+                $('#contenedorRiesgosMecip').html(html);
+                $('#modalRiesgosMecip').modal('show');
             });
 
             // Ranking Talento Humano

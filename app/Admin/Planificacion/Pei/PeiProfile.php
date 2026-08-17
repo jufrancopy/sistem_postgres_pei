@@ -76,7 +76,17 @@ class PeiProfile extends Model
         'is_active'   => 'boolean',
         'ri_metas'    => 'array',
         'public_tabs' => 'array',
+        'parameters'  => 'array',
     ];
+
+    /**
+     * Obtener riesgos MECIP 2015 asociados al Objetivo Estratégico
+     */
+    public function getRiesgosMecipAttribute(): array
+    {
+        $params = is_array($this->parameters) ? $this->parameters : (json_decode($this->parameters ?? '', true) ?: []);
+        return $params['riesgos_mecip'] ?? [];
+    }
 
     /**
      * Relación con las Iniciativas de Mejora Continua (Plan 100 Días)
