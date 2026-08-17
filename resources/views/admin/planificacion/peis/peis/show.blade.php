@@ -37,10 +37,10 @@
             <a href="{{ route('pei-profiles.matriz', $profile->id) }}" class="btn btn-sm btn-outline-primary ml-2" target="_blank">
                 <i class="fa fa-table mr-1"></i> Formulación Estratégica Integrada
             </a>
-            <a href="{{ route('pei-profiles.vista-asesor', $profile->id) }}" class="btn btn-sm text-white font-weight-bold ml-2 shadow-sm d-inline-flex align-items-center" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none; border-radius: 8px; padding: 6px 14px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(245,158,11,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='';" title="Vista de Asesor Externo para revisión y sugerencias de mejora">
-                <i class="fa fa-user-md mr-2 text-dark" style="font-size: 0.95rem;"></i>
-                <span class="text-dark font-weight-bold">Vista Asesor / Validación</span>
-            </a>
+            <button type="button" class="btn btn-sm text-white font-weight-bold ml-2 shadow-sm d-inline-flex align-items-center" data-toggle="modal" data-target="#modalConvocarAsesorExterno" onclick="cargarListaAsesoriasAdmin()" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none; border-radius: 8px; padding: 6px 14px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(245,158,11,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='';" title="Convocar Asesor Externo para revisión remota y validación del plan">
+                <i class="fa fa-user-plus mr-2 text-dark" style="font-size: 0.95rem;"></i>
+                <span class="text-dark font-weight-bold">Convocar Asesor Externo</span>
+            </button>
             <button type="button" class="btn btn-sm btn-dark font-weight-bold ml-2 shadow-xs" id="btnAbrirModalReordenarPei"
                     data-profile="{{ $profile->id }}"
                     title="Reordenar Estructura PEI arrastrando y soltando (Drag & Drop)"
@@ -4343,6 +4343,203 @@ function irAIniciativaDesdeModal(iniId) {
         </div>
     </div>
 </div>
+
+<!-- MODAL CONVOCAR ASESOR EXTERNO -->
+<div class="modal fade" id="modalConvocarAsesorExterno" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document" style="max-width: 900px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title font-weight-bold d-flex align-items-center mb-0">
+                    <i class="fa fa-user-plus text-warning mr-2" style="font-size: 1.3rem;"></i>
+                    <span>Convocar Asesor Externo para Validación Remota</span>
+                </h5>
+                <button type="button" class="close text-white opacity-9" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                
+                {{-- Formulario Convocatoria --}}
+                <div class="card border shadow-xs mb-4" style="border-radius: 12px;">
+                    <div class="card-header bg-white font-weight-bold text-dark border-bottom">
+                        <i class="fa fa-envelope-open text-primary mr-1"></i> Nueva Convocatoria a Asesoría Técnica
+                    </div>
+                    <div class="card-body p-3 bg-white">
+                        <form id="formConvocarAsesorAdmin">
+                            @csrf
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="font-weight-bold small text-dark mb-1">Nombre Completo del Asesor <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="nombre" placeholder="Ej: Dr. Carlos Mendoza" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="font-weight-bold small text-dark mb-1">Correo Electrónico <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" name="email" placeholder="ejemplo@asesoria.gov.py" required>
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label class="font-weight-bold small text-dark mb-1">Institución / Organización (Opcional)</label>
+                                    <input type="text" class="form-control" name="institucion" placeholder="Ej: Consultoría Externa PEI / MEF">
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <button type="submit" class="btn btn-sm btn-primary font-weight-bold rounded-pill px-4 shadow-xs" id="btnSubmitConvocarAsesor">
+                                    <i class="fa fa-paper-plane mr-1"></i> Generar Credenciales y Convocar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {{-- Caja de Credenciales Generadas (Oculta por defecto) --}}
+                <div id="cajaCredencialesGeneradas" class="card border border-success bg-white mb-4 shadow-sm" style="display: none; border-radius: 12px; border-left: 5px solid #10b981 !important;">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <h6 class="font-weight-bold text-success mb-0">
+                                <i class="fa fa-check-circle mr-1"></i> ¡Convocatoria Creada Exitosamente!
+                            </h6>
+                            <span class="badge badge-success">Credenciales Generadas</span>
+                        </div>
+                        <p class="text-muted small mb-2">Compartí las siguientes credenciales con el Asesor Externo para su ingreso al portal:</p>
+                        
+                        <div class="p-3 bg-light rounded border mb-3 font-mono" style="font-size: 0.88rem;">
+                            <div><strong>Correo:</strong> <span id="txtCredEmail" class="text-primary"></span></div>
+                            <div><strong>Código Único:</strong> <span id="txtCredCodigo" class="text-danger font-weight-bold"></span></div>
+                            <div><strong>URL Portal:</strong> <span id="txtCredUrl" class="text-muted"></span></div>
+                        </div>
+
+                        <div class="text-right">
+                            <button type="button" class="btn btn-sm btn-success font-weight-bold rounded-pill px-3" id="btnCopiarCredencialesAsesor">
+                                <i class="fa fa-copy mr-1"></i> Copiar Credenciales para el Asesor
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Listado de Asesores Convocados Previamente --}}
+                <div class="card border shadow-xs" style="border-radius: 12px;">
+                    <div class="card-header bg-white font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between">
+                        <span><i class="fa fa-users text-warning mr-1"></i> Asesores Convocados para este PEI</span>
+                        <span class="badge badge-dark" id="badgeTotalAsesoresCount">0 convocados</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0" style="font-size: 0.85rem;" id="tablaAsesoresAdmin">
+                            <thead class="bg-dark text-white">
+                                <tr>
+                                    <th>Asesor / Institución</th>
+                                    <th>Correo</th>
+                                    <th class="text-center">Código Único</th>
+                                    <th class="text-center">Estado</th>
+                                    <th class="text-center">Sugerencias</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center py-3 text-muted">Cargando convocatorias...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-white px-4 py-3" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-secondary btn-round" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var lastCredencialesTexto = '';
+
+function cargarListaAsesoriasAdmin() {
+    $.ajax({
+        url: "{{ route('pei.asesor.listar', $profile->id) }}",
+        type: "GET",
+        success: function(resp) {
+            var $tbody = $('#tablaAsesoresAdmin tbody');
+            $tbody.empty();
+            if (resp.asesorias && resp.asesorias.length > 0) {
+                $('#badgeTotalAsesoresCount').text(resp.asesorias.length + ' convocados');
+                resp.asesorias.forEach(function(a) {
+                    var stBadge = a.estado === 'COMPLETADO' ? 'badge-success' : (a.estado === 'EN_REVISION' ? 'badge-info' : 'badge-warning text-dark');
+                    var inst = a.institucion ? `<br><small class="text-muted"><i class="fa fa-building mr-1"></i>${a.institucion}</small>` : '';
+                    var tr = `
+                        <tr>
+                            <td class="align-middle">
+                                <div class="font-weight-bold text-dark">${a.nombre}</div>
+                                ${inst}
+                            </td>
+                            <td class="align-middle text-muted">${a.email}</td>
+                            <td class="align-middle text-center font-weight-bold">
+                                <span class="badge badge-dark px-2 py-1">${a.codigo_acceso}</span>
+                            </td>
+                            <td class="align-middle text-center">
+                                <span class="badge ${stBadge} px-2 py-1">${a.estado}</span>
+                            </td>
+                            <td class="align-middle text-center font-weight-bold text-primary">
+                                ${a.comentarios_count || 0}
+                            </td>
+                        </tr>
+                    `;
+                    $tbody.append(tr);
+                });
+            } else {
+                $('#badgeTotalAsesoresCount').text('0 convocados');
+                $tbody.html('<tr><td colspan="5" class="text-center py-3 text-muted">No se han convocado asesores externos para este PEI aún.</td></tr>');
+            }
+        }
+    });
+}
+
+$('#formConvocarAsesorAdmin').submit(function(e) {
+    e.preventDefault();
+    var $btn = $('#btnSubmitConvocarAsesor');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Convocando...');
+
+    $.ajax({
+        url: "{{ route('pei.asesor.convocar', $profile->id) }}",
+        type: "POST",
+        data: $(this).serialize(),
+        success: function(resp) {
+            $btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Generar Credenciales y Convocar');
+            $('#formConvocarAsesorAdmin')[0].reset();
+
+            if (resp.ok && resp.data) {
+                $('#txtCredEmail').text(resp.data.email);
+                $('#txtCredCodigo').text(resp.data.codigo_acceso);
+                $('#txtCredUrl').text(resp.data.login_url);
+
+                lastCredencialesTexto = `📌 ACCESO A ASESORÍA Y VALIDACIÓN PEI\n\nEstimado/a ${resp.data.nombre},\nHa sido convocado/a para la validación del Plan Estratégico Institucional.\n\n🌐 Portal: ${resp.data.login_url}\n📧 Correo: ${resp.data.email}\n🔑 Código Único: ${resp.data.codigo_acceso}\n\nPor favor ingrese al portal con sus credenciales.`;
+
+                $('#cajaCredencialesGeneradas').slideDown(200);
+                cargarListaAsesoriasAdmin();
+
+                if (window.toastr) toastr.success('Asesor Externo convocado exitosamente.');
+            }
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Generar Credenciales y Convocar');
+            if (window.toastr) toastr.error('Error al crear la convocatoria. Verificá los datos.');
+        }
+    });
+});
+
+$('#btnCopiarCredencialesAsesor').click(function() {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(lastCredencialesTexto).then(function() {
+            if (window.toastr) toastr.success('Credenciales copiadas al portapapeles.');
+        });
+    } else {
+        var $temp = $("<textarea>");
+        $("body").append($temp);
+        $temp.val(lastCredencialesTexto).select();
+        document.execCommand("copy");
+        $temp.remove();
+        if (window.toastr) toastr.success('Credenciales copiadas al portapapeles.');
+    }
+});
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <div id="containerModalReordenarPei"></div>

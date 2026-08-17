@@ -17,9 +17,17 @@ Route::put('/home-config', 'Admin\HomeConfigController@update')->name('home-conf
 Route::patch('/home-config/toggle', 'Admin\HomeConfigController@toggle')->name('home-config.toggle');
 Route::patch('/home-config/save',   'Admin\HomeConfigController@save')->name('home-config.save');
 
-// ── Vistas públicas PEI (sin autenticación) ───────────────────────────────────
+// ── Vistas públicas PEI & Asesoría (sin autenticación) ────────────────────────
 Route::get('/public/pei/{token}', 'Admin\Planificacion\PublicPeiController@show')->name('pei.public.show');
 Route::get('/public/pei-asesor/{token}', 'Admin\Planificacion\PublicPeiController@showAsesor')->name('pei.asesor.public.show');
+
+// Portal de Asesoría Externa (Correo + Código Único)
+Route::get('/public/asesoria/login', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'loginForm'])->name('asesoria.public.login');
+Route::post('/public/asesoria/login', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'loginSubmit'])->name('asesoria.public.login.submit');
+Route::get('/public/asesoria/logout', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'logout'])->name('asesoria.public.logout');
+Route::get('/public/asesoria/{id}', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'showPortal'])->name('asesoria.public.portal');
+Route::post('/public/asesoria/{id}/comentario', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'guardarComentario'])->name('asesoria.public.comentario');
+Route::post('/public/asesoria/{id}/finalizar', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'finalizarDictamen'])->name('asesoria.public.finalizar');
 
 // ── Vistas públicas Acta de Reunión MECIP (sin autenticación) ─────────────────
 Route::get('/actas-reunion/{token}', 'Admin\Globales\ActaMecipController@publicView')->name('actas.public.show');
@@ -96,6 +104,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('pei-profiles/{idProfile}/guardar-comentario-asesor', 'Admin\Planificacion\Pei\PeiController@guardarComentarioAsesor')->name('pei-profiles.guardar-comentario-asesor');
     Route::post('pei-profiles/{idProfile}/asesor-token', 'Admin\Planificacion\Pei\PeiController@generarTokenAsesor')->name('pei.asesor.token.generate');
     Route::delete('pei-profiles/{idProfile}/asesor-token', 'Admin\Planificacion\Pei\PeiController@revocarTokenAsesor')->name('pei.asesor.token.revoke');
+    Route::post('pei-profiles/{idProfile}/convocar-asesor', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'convocarStore'])->name('pei.asesor.convocar');
+    Route::get('pei-profiles/{idProfile}/asesorias', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'listarAsesorias'])->name('pei.asesor.listar');
 
     // ── Coordinador de Planificación ─────────────────────────────────────────
     Route::prefix('coordinador-planificacion')->name('coordinador.')->middleware(['role:Coordinador de Planificación|Analista de Planificación|Administrador'])->group(function () {
