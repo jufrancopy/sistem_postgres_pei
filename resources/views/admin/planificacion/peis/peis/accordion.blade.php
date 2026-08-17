@@ -673,7 +673,13 @@
 
                                             {{-- Acciones Operativas (Plan de Gestión 100 Días) --}}
                                             @php
-                                                $iniciativasAccion = $action->iniciativas;
+                                                $iniciativasAccion = \App\Models\PlanMaestro\PlanAccion::where('plan_id', $action->id)
+                                                    ->orWhere('pei_profile_id', $action->id)
+                                                    ->orderBy('orden')
+                                                    ->get();
+                                                if ($iniciativasAccion->isEmpty() && isset($action->iniciativas)) {
+                                                    $iniciativasAccion = $action->iniciativas;
+                                                }
                                             @endphp
                                             <div class="px-3 py-2" style="border-top:1px solid #e2e8f0; background:#f8fafc; font-size:.78rem">
                                                 <div class="d-flex align-items-center justify-content-between mb-2">

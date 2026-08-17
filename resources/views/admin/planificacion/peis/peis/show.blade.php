@@ -3859,6 +3859,33 @@ $(document).on('click', '#btnColapsarTodoTreePei', function() {
     $('#contenedorArbolDraggablePei .btn-toggle-pei-children i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
 });
 
+@php
+    $descendantIds = $profile->descendants->pluck('id')->push($profile->id)->toArray();
+    $iniciativasDirectas = \App\Models\PlanMaestro\PlanAccion::whereIn('pei_profile_id', $descendantIds)
+        ->orWhereIn('plan_id', $descendantIds)
+        ->orWhereIn('eje_id', $descendantIds)
+        ->with('creator')
+        ->orderBy('orden')
+        ->get();
+
+    if ($iniciativasDirectas->isEmpty()) {
+        $iniciativasDirectas = \App\Models\PlanMaestro\PlanAccion::with('creator')->orderBy('orden')->get();
+    }
+@endphp
+<script>
+    window.iniciativasPlanMaestroData = @json($iniciativasDirectas->map(function($i) {
+        return [
+            'id'          => (string)$i->id,
+            'codigo'      => $i->codigo,
+            'accion'      => $i->accion,
+            'estado'      => $i->estado_grupo,
+            'responsable' => $i->responsable ?? '—',
+            'momento'     => $i->momento ?? 'T0',
+            'creador'     => $i->creator ? $i->creator->name : null
+        ];
+    }));
+</script>
+
 // ── LÓGICA DEL MODAL BUSCADOR DEL PLAN MAESTRO / INICIATIVAS ──
 $('#modalBuscadorIniciativasPlanMaestro').on('show.bs.modal', function () {
     cargarListaIniciativasModal();
@@ -3870,33 +3897,59 @@ function cargarListaIniciativasModal() {
     var $container = $('#listaIniciativasModalContainer');
     $container.empty();
 
+    var items = [];
+    var seenIds = {};
+
+    // 1. Escanear elementos DOM presentes
     var $cards = $('[id^="ini_card_"]');
-    if ($cards.length === 0) {
-        $container.html('<div class="text-center p-4 text-muted font-weight-bold"><i class="fa fa-info-circle mr-1"></i> No hay iniciativas de mejora registradas aún en este perfil PEI.</div>');
-        $('#lblTotalIniciativasModal').text('Total: 0 iniciativas');
+    if ($cards.length > 0) {
+        $cards.each(function() {
+            var $c = $(this);
+            var iniId = $c.attr('id').replace('ini_card_', '');
+            var codigo = $c.find('.badge-code-ini, span.badge-dark, strong').first().text().trim() || ('#INI-' + iniId);
+            var titulo = $c.find('.ini-title, div.font-weight-bold').first().text().trim() || $c.text().substring(0, 80).trim();
+            var estado = $c.data('estado') || ($c.text().indexOf('EJECUTADO') >= 0 ? 'EJECUTADO' : ($c.text().indexOf('EN CURSO') >= 0 ? 'EN CURSO' : 'PENDIENTE'));
+            
+            if (!seenIds[iniId]) {
+                seenIds[iniId] = true;
+                items.push({ id: iniId, codigo: codigo, accion: titulo, estado: estado, responsable: '', momento: 'T0' });
+            }
+        });
+    }
+
+    // 2. Complementar con catálogo del Plan Maestro
+    if (window.iniciativasPlanMaestroData && window.iniciativasPlanMaestroData.length > 0) {
+        window.iniciativasPlanMaestroData.forEach(function(i) {
+            if (!seenIds[i.id]) {
+                seenIds[i.id] = true;
+                items.push(i);
+            }
+        });
+    }
+
+    if (items.length === 0) {
+        $container.html('<div class="text-center p-4 text-muted font-weight-bold"><i class="fa fa-info-circle mr-1"></i> No hay acciones operativas registradas aún en este perfil PEI.</div>');
+        $('#lblTotalIniciativasModal').text('Total: 0 acciones operativas');
         return;
     }
 
-    var total = $cards.length;
-    $('#lblTotalIniciativasModal').text('Total: ' + total + ' iniciativas registradas');
+    var total = items.length;
+    $('#lblTotalIniciativasModal').text('Total: ' + total + ' acciones operativas registradas');
 
-    $cards.each(function() {
-        var $c = $(this);
-        var iniId = $c.attr('id').replace('ini_card_', '');
-        var codigo = $c.find('.badge-code-ini, strong, span.font-weight-bold').first().text().trim() || ('#INI-' + iniId);
-        var titulo = $c.find('h6, .ini-title, div.font-weight-bold').first().text().trim() || $c.text().substring(0, 80).trim();
-        var estado = $c.data('estado') || ($c.text().indexOf('EJECUTADO') >= 0 ? 'EJECUTADO' : ($c.text().indexOf('EN CURSO') >= 0 ? 'EN CURSO' : 'PENDIENTE'));
-        
-        var badgeBg = estado === 'EJECUTADO' ? 'badge-success' : (estado === 'EN CURSO' ? 'badge-warning' : 'badge-danger');
+    items.forEach(function(i) {
+        var estado = i.estado || 'PENDIENTE';
+        var badgeBg = estado === 'EJECUTADO' ? 'badge-success' : (estado === 'EN CURSO' ? 'badge-warning text-dark' : 'badge-danger');
+        var respHtml = i.responsable && i.responsable !== '—' ? `<small class="text-muted border-left pl-2 ml-2"><i class="fa fa-building-o mr-1"></i>${i.responsable}</small>` : '';
 
         var itemHtml = `
-            <a href="javascript:void(0)" onclick="irAIniciativaDesdeModal('${iniId}')" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center item-ini-modal mb-2 border rounded p-3 shadow-xs" data-status="${estado}" data-search="${(codigo + ' ' + titulo).toLowerCase()}" style="border-radius: 12px; transition: all 0.2s ease;">
+            <a href="javascript:void(0)" onclick="irAIniciativaDesdeModal('${i.id}')" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center item-ini-modal mb-2 border rounded p-3 shadow-xs" data-status="${estado}" data-search="${(i.codigo + ' ' + i.accion + ' ' + (i.responsable||'')).toLowerCase()}" style="border-radius: 12px; transition: all 0.2s ease;">
                 <div>
-                    <div class="d-flex align-items-center mb-1">
-                        <span class="badge badge-dark mr-2" style="font-size: 0.75rem;">${codigo}</span>
-                        <span class="badge ${badgeBg} font-weight-bold px-2 py-1" style="font-size: 0.7rem;">${estado}</span>
+                    <div class="d-flex align-items-center mb-1 flex-wrap" style="gap:5px">
+                        <span class="badge badge-dark mr-1" style="font-size: 0.75rem;">${i.codigo}</span>
+                        <span class="badge ${badgeBg} font-weight-bold px-2 py-1 mr-1" style="font-size: 0.7rem;">${estado}</span>
+                        ${respHtml}
                     </div>
-                    <div class="font-weight-bold text-dark" style="font-size: 0.9rem;">${titulo}</div>
+                    <div class="font-weight-bold text-dark" style="font-size: 0.9rem;">${i.accion}</div>
                 </div>
                 <div class="text-right">
                     <span class="btn btn-sm btn-outline-primary rounded-circle"><i class="fa fa-arrow-right"></i></span>
@@ -3934,7 +3987,7 @@ function filtrarIniciativasModal() {
         }
     });
 
-    $('#lblTotalIniciativasModal').text('Mostrando: ' + countVisible + ' iniciativas');
+    $('#lblTotalIniciativasModal').text('Mostrando: ' + countVisible + ' acciones operativas');
 }
 
 function irAIniciativaDesdeModal(iniId) {
@@ -3951,6 +4004,8 @@ function irAIniciativaDesdeModal(iniId) {
             setTimeout(function() {
                 $card.css('box-shadow', '').css('transform', '');
             }, 2000);
+        } else if (window.toastr) {
+            toastr.info('Acción Operativa seleccionada del Plan Maestro.');
         }
     }, 300);
 }
