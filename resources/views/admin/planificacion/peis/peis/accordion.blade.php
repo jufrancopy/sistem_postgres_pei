@@ -669,6 +669,7 @@
                                                 </a>
                                                 @endforeach
                                             </div>
+                                            @endif
 
                                             {{-- Acciones Operativas (Plan de Gestión 100 Días) --}}
                                             @php
