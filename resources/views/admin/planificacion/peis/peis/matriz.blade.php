@@ -229,9 +229,7 @@
             {{ \Carbon\Carbon::parse($profile->year_start)->format('Y') }} – {{ \Carbon\Carbon::parse($profile->year_end)->format('Y') }}
         </div>
     </div>
-    <a href="{{ route('pei-profiles.show', $profile->id) }}" class="btn-top btn-back">
-        ← Volver
-    </a>
+
     <a href="{{ route('pei-profiles.matriz.pdf', $profile->id) }}" class="btn-top btn-pdf" target="_blank">
         ⬇ Descargar PDF
     </a>

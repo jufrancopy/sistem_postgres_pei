@@ -65,11 +65,14 @@
                 <i class="fa fa-list-alt"></i> Actividades MECIP
             </a>
 
-            <a href="{{ route('pei-profiles.matriz', $profile->id) }}"
+            <button type="button"
                class="btn btn-sm btn-outline-primary font-weight-bold d-inline-flex align-items-center"
-               style="border-radius: 8px; gap: 5px;" target="_blank">
+               style="border-radius: 8px; gap: 5px;"
+               data-toggle="modal" data-target="#modalFormulacionEstrategica"
+               onclick="abrirMatrizModal()"
+               title="Matriz de Formulación Estratégica Integrada">
                 <i class="fa fa-table"></i> Formulación
-            </a>
+            </button>
 
             {{-- Separador visual --}}
             <div style="width: 1px; height: 28px; background: #e2e8f0; margin: 0 2px;"></div>
@@ -445,6 +448,99 @@
                 });
             });
         }
+        </script>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             MODAL FORMULACIÓN ESTRATÉGICA INTEGRADA
+        ════════════════════════════════════════════════════════════ -->
+        <div class="modal fade" id="modalFormulacionEstrategica" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document"
+                 style="max-width: calc(100vw - 40px); width: calc(100vw - 40px); margin: 20px auto;">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden; height: calc(100vh - 60px);">
+
+                    <div class="modal-header px-4 py-3"
+                         style="background: linear-gradient(135deg, #1a237e 0%, #283593 100%); flex-shrink: 0;">
+                        <div>
+                            <h5 class="modal-title font-weight-bold text-white mb-0 d-flex align-items-center">
+                                <i class="fa fa-table text-warning mr-2"></i> Matriz de Formulación Estratégica Integrada
+                            </h5>
+                            <small class="text-white-50">{{ strip_tags($profile->name) }}</small>
+                        </div>
+                        <div class="d-flex align-items-center" style="gap: 8px;">
+                            <a href="{{ route('pei-profiles.matriz.pdf', $profile->id) }}"
+                               class="btn btn-sm font-weight-bold"
+                               style="background: #c62828; color: #fff; border-radius: 6px; font-size: 0.8rem;"
+                               target="_blank" title="Descargar PDF">
+                                <i class="fa fa-file-pdf mr-1"></i> PDF
+                            </a>
+                            <a href="{{ route('pei-profiles.matriz', $profile->id) }}"
+                               class="btn btn-sm font-weight-bold"
+                               style="background: rgba(255,255,255,.15); color: #fff; border-radius: 6px; font-size: 0.8rem;"
+                               target="_blank" title="Abrir en nueva pestaña">
+                                <i class="fa fa-external-link-alt mr-1"></i> Abrir
+                            </a>
+                            <button type="button" class="close text-white ml-2" data-dismiss="modal" aria-label="Cerrar" style="opacity: .9;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Spinner de carga --}}
+                    <div id="matrizModalSpinner" class="d-flex flex-column align-items-center justify-content-center"
+                         style="background: #f4f6f9; flex: 1; display: flex !important;">
+                        <div class="spinner-border text-primary mb-3" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
+                        <p class="text-muted font-weight-bold mb-0" style="font-size: 0.85rem;">Cargando matriz...</p>
+                    </div>
+
+                    {{-- iframe que carga la vista de la matriz --}}
+                    <iframe id="matrizModalIframe"
+                            src="about:blank"
+                            frameborder="0"
+                            style="flex: 1; width: 100%; border: none; display: none;"
+                            onload="matrizIframeLoaded(this)">
+                    </iframe>
+
+                </div>
+            </div>
+        </div>
+
+        <script>
+        var _matrizUrl = '{{ route('pei-profiles.matriz', $profile->id) }}';
+        var _matrizLoaded = false;
+
+        function abrirMatrizModal() {
+            var iframe = document.getElementById('matrizModalIframe');
+            var spinner = document.getElementById('matrizModalSpinner');
+
+            // Mostrar spinner, ocultar iframe
+            spinner.style.display = 'flex';
+            iframe.style.display  = 'none';
+
+            // Cargar solo la primera vez (no recargar si vuelve a abrir)
+            if (!_matrizLoaded) {
+                iframe.src = _matrizUrl;
+            } else {
+                // Ya cargado: mostrar directamente
+                spinner.style.display = 'none';
+                iframe.style.display  = 'block';
+            }
+        }
+
+        function matrizIframeLoaded(iframe) {
+            _matrizLoaded = true;
+            document.getElementById('matrizModalSpinner').style.display = 'none';
+            iframe.style.display = 'block';
+        }
+
+        // Al cerrar el modal, no destruimos el iframe (mantiene estado de columnas)
+        document.addEventListener('DOMContentLoaded', function() {
+            var modal = document.getElementById('modalFormulacionEstrategica');
+            if (modal) {
+                modal.addEventListener('hidden.bs.modal', function() {
+                    // No reiniciamos — mantenemos el estado (columnas seleccionadas)
+                });
+            }
+        });
         </script>
 
         <!-- HTML del segundo nav (inicialmente oculto) -->
