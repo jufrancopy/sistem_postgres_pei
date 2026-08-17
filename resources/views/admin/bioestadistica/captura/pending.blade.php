@@ -37,7 +37,12 @@
                                 <tr>
                                     <td>{{ $formulario->codigo }} — {{ $formulario->nombre }}</td>
                                     <td class="text-right">
-                                        @can('bio.record.create')
+                                        @if($formulario->codigo === 'SP10' || $formulario->layout_type === 'nominativo')
+                                            @can('bio.hosp.manage')
+                                                <a class="btn btn-info btn-sm" href="{{ route('bioestadistica.hospitalizacion.create', ['establecimiento_id' => $row['establecimiento']->id]) }}">Cargar episodios</a>
+                                            @endcan
+                                        @else
+                                            @can('bio.record.create')
                                             <form method="POST" action="{{ route('bioestadistica.captura.store') }}" class="d-inline">
                                                 @csrf
                                                 <input type="hidden" name="formulario_id" value="{{ $formulario->id }}">
@@ -46,7 +51,8 @@
                                                 <input type="hidden" name="periodo_mes" value="{{ $periodo_mes }}">
                                                 <button class="btn btn-info btn-sm">Iniciar carga</button>
                                             </form>
-                                        @endcan
+                                            @endcan
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

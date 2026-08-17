@@ -2,6 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\Bioestadistica\Dashboard;
+use App\Models\Bioestadistica\HospEpisodio;
+use App\Models\Bioestadistica\ImportJob;
+use App\Models\Bioestadistica\Record;
+use App\Policies\Bioestadistica\DashboardPolicy;
+use App\Policies\Bioestadistica\HospEpisodioPolicy;
+use App\Policies\Bioestadistica\ImportJobPolicy;
+use App\Policies\Bioestadistica\RecordPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -13,7 +21,10 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        // 'App\Model' => 'App\Policies\ModelPolicy',
+        Record::class => RecordPolicy::class,
+        HospEpisodio::class => HospEpisodioPolicy::class,
+        Dashboard::class => DashboardPolicy::class,
+        ImportJob::class => ImportJobPolicy::class,
     ];
 
     /**

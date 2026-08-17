@@ -75,6 +75,20 @@ document.addEventListener('DOMContentLoaded', function () {
         table.addEventListener('input', recalculate);
         recalculate();
     });
+    document.querySelectorAll('.bio-matriz').forEach(function (table) {
+        const recalculate = function () {
+            table.querySelectorAll('[data-row-total]').forEach(function (cell) {
+                const row = cell.getAttribute('data-row-total');
+                let total = 0;
+                table.querySelectorAll('.bio-matriz-input[data-row="' + row + '"]').forEach(function (input) {
+                    total += parseInt(input.value, 10) || 0;
+                });
+                cell.textContent = total.toLocaleString('es-PY');
+            });
+        };
+        table.addEventListener('input', recalculate);
+        recalculate();
+    });
 });
 </script>
 @endsection

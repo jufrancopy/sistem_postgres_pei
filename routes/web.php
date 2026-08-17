@@ -225,12 +225,22 @@ Route::group(['middleware' => ['auth']], function () {
     Route::prefix('bioestadistica')->name('bioestadistica.')->middleware([
         'role:Administrador|Analista de Bioestadística|Digitador Bioestadística|Consultor Bioestadística|Auditor Bioestadística',
     ])->group(function () {
-        Route::get('/', 'Admin\Bioestadistica\BioestadisticaDashboardController@index')->name('dashboard');
-        Route::get('/dashboard', 'Admin\Bioestadistica\BioestadisticaDashboardController@index');
+        Route::get('/', 'Admin\Bioestadistica\BioestadisticaDashboardController@index')
+            ->middleware('permission:bio.dashboard.view')->name('dashboard');
+        Route::get('/dashboard', 'Admin\Bioestadistica\BioestadisticaDashboardController@index')
+            ->middleware('permission:bio.dashboard.view');
 
-        Route::get('/geografia', 'Admin\Bioestadistica\GeografiaController@index')->name('geografia.index');
-        Route::get('/geografia/distritos', 'Admin\Bioestadistica\GeografiaController@distritos')->name('geografia.distritos');
-        Route::get('/geografia/establecimientos', 'Admin\Bioestadistica\GeografiaController@establecimientos')->name('geografia.establecimientos');
+        Route::get('/auditoria', 'Admin\Bioestadistica\AuditoriaController@index')
+            ->middleware('permission:bio.audit.view')->name('auditoria.index');
+        Route::get('/auditoria/{auditoria}', 'Admin\Bioestadistica\AuditoriaController@show')
+            ->middleware('permission:bio.audit.view')->name('auditoria.show');
+
+        Route::get('/geografia', 'Admin\Bioestadistica\GeografiaController@index')
+            ->middleware('permission:bio.geo.view')->name('geografia.index');
+        Route::get('/geografia/distritos', 'Admin\Bioestadistica\GeografiaController@distritos')
+            ->middleware('permission:bio.geo.view')->name('geografia.distritos');
+        Route::get('/geografia/establecimientos', 'Admin\Bioestadistica\GeografiaController@establecimientos')
+            ->middleware('permission:bio.geo.view')->name('geografia.establecimientos');
         Route::get('/geografia/establecimientos/{establecimiento}/editar', 'Admin\Bioestadistica\GeografiaController@editEstablecimiento')
             ->middleware('permission:bio.geo.update')->name('geografia.establecimientos.edit');
         Route::post('/geografia/departamentos', 'Admin\Bioestadistica\GeografiaController@storeDepartamento')
@@ -244,16 +254,19 @@ Route::group(['middleware' => ['auth']], function () {
         Route::delete('/geografia/establecimientos/{establecimiento}', 'Admin\Bioestadistica\GeografiaController@destroyEstablecimiento')
             ->middleware('permission:bio.geo.delete')->name('geografia.establecimientos.destroy');
 
-        Route::get('/clasificaciones', 'Admin\Bioestadistica\ClasificacionController@index')->name('clasificaciones.index');
+        Route::get('/clasificaciones', 'Admin\Bioestadistica\ClasificacionController@index')
+            ->middleware('permission:bio.geo.view')->name('clasificaciones.index');
         Route::post('/clasificaciones/{tipo}', 'Admin\Bioestadistica\ClasificacionController@store')
             ->middleware('permission:bio.geo.create')->name('clasificaciones.store');
         Route::delete('/clasificaciones/{tipo}/{id}', 'Admin\Bioestadistica\ClasificacionController@destroy')
             ->middleware('permission:bio.geo.delete')->name('clasificaciones.destroy');
 
-        Route::get('/formularios', 'Admin\Bioestadistica\FormularioController@index')->name('formularios.index');
+        Route::get('/formularios', 'Admin\Bioestadistica\FormularioController@index')
+            ->middleware('permission:bio.form.view')->name('formularios.index');
         Route::post('/formularios', 'Admin\Bioestadistica\FormularioController@store')
             ->middleware('permission:bio.form.create')->name('formularios.store');
-        Route::get('/formularios/{formulario}/editar', 'Admin\Bioestadistica\FormularioController@edit')->name('formularios.edit');
+        Route::get('/formularios/{formulario}/editar', 'Admin\Bioestadistica\FormularioController@edit')
+            ->middleware('permission:bio.form.view')->name('formularios.edit');
         Route::put('/formularios/{formulario}', 'Admin\Bioestadistica\FormularioController@update')
             ->middleware('permission:bio.form.update')->name('formularios.update');
         Route::delete('/formularios/{formulario}', 'Admin\Bioestadistica\FormularioController@destroy')
@@ -271,10 +284,12 @@ Route::group(['middleware' => ['auth']], function () {
         Route::delete('/campos/{field}', 'Admin\Bioestadistica\FormularioController@destroyField')
             ->middleware('permission:bio.form.update')->name('fields.destroy');
 
-        Route::get('/catalogos', 'Admin\Bioestadistica\CatalogoController@index')->name('catalogos.index');
+        Route::get('/catalogos', 'Admin\Bioestadistica\CatalogoController@index')
+            ->middleware('permission:bio.catalog.view')->name('catalogos.index');
         Route::post('/catalogos', 'Admin\Bioestadistica\CatalogoController@store')
             ->middleware('permission:bio.catalog.create')->name('catalogos.store');
-        Route::get('/catalogos/{catalogo}', 'Admin\Bioestadistica\CatalogoController@show')->name('catalogos.show');
+        Route::get('/catalogos/{catalogo}', 'Admin\Bioestadistica\CatalogoController@show')
+            ->middleware('permission:bio.catalog.view')->name('catalogos.show');
         Route::put('/catalogos/{catalogo}', 'Admin\Bioestadistica\CatalogoController@update')
             ->middleware('permission:bio.catalog.update')->name('catalogos.update');
         Route::delete('/catalogos/{catalogo}', 'Admin\Bioestadistica\CatalogoController@destroy')
@@ -306,6 +321,107 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.record.approve')->name('captura.assignments');
         Route::put('/captura-asignaciones/{user}', 'Admin\Bioestadistica\CapturaController@updateAssignments')
             ->middleware('permission:bio.record.approve')->name('captura.assignments.update');
+
+        Route::get('/indicadores', 'Admin\Bioestadistica\IndicadorController@index')
+            ->middleware('permission:bio.indicator.view')->name('indicadores.index');
+        Route::post('/indicadores', 'Admin\Bioestadistica\IndicadorController@store')
+            ->middleware('permission:bio.indicator.manage')->name('indicadores.store');
+        Route::get('/indicadores/{indicador}', 'Admin\Bioestadistica\IndicadorController@show')
+            ->middleware('permission:bio.indicator.view')->name('indicadores.show');
+        Route::put('/indicadores/{indicador}', 'Admin\Bioestadistica\IndicadorController@update')
+            ->middleware('permission:bio.indicator.manage')->name('indicadores.update');
+        Route::delete('/indicadores/{indicador}', 'Admin\Bioestadistica\IndicadorController@destroy')
+            ->middleware('permission:bio.indicator.manage')->name('indicadores.destroy');
+        Route::post('/indicadores/{indicador}/validar-formula', 'Admin\Bioestadistica\IndicadorController@validateFormula')
+            ->middleware('permission:bio.indicator.manage')->name('indicadores.formulas.validate');
+        Route::post('/indicadores/{indicador}/formulas', 'Admin\Bioestadistica\IndicadorController@storeFormula')
+            ->middleware('permission:bio.indicator.manage')->name('indicadores.formulas.store');
+        Route::delete('/indicadores/{indicador}/formulas/{formula}', 'Admin\Bioestadistica\IndicadorController@destroyFormula')
+            ->middleware('permission:bio.indicator.manage')->name('indicadores.formulas.destroy');
+        Route::post('/indicadores/{indicador}/evaluar', 'Admin\Bioestadistica\IndicadorController@evaluate')
+            ->middleware('permission:bio.indicator.evaluate')->name('indicadores.evaluate');
+
+        Route::get('/reportes', 'Admin\Bioestadistica\ReporteController@index')
+            ->middleware('permission:bio.report.view')->name('reportes.index');
+        Route::get('/reportes/crear', 'Admin\Bioestadistica\ReporteController@create')
+            ->middleware('permission:bio.report.manage')->name('reportes.create');
+        Route::post('/reportes', 'Admin\Bioestadistica\ReporteController@store')
+            ->middleware('permission:bio.report.manage')->name('reportes.store');
+        Route::get('/reportes/{reporte}/editar', 'Admin\Bioestadistica\ReporteController@edit')
+            ->middleware('permission:bio.report.manage')->name('reportes.edit');
+        Route::put('/reportes/{reporte}', 'Admin\Bioestadistica\ReporteController@update')
+            ->middleware('permission:bio.report.manage')->name('reportes.update');
+        Route::delete('/reportes/{reporte}', 'Admin\Bioestadistica\ReporteController@destroy')
+            ->middleware('permission:bio.report.manage')->name('reportes.destroy');
+        Route::get('/reportes/{reporte}', 'Admin\Bioestadistica\ReporteController@run')
+            ->middleware('permission:bio.report.view')->name('reportes.run');
+        Route::get('/reportes/{reporte}/exportar/csv', 'Admin\Bioestadistica\ReporteController@exportCsv')
+            ->middleware('permission:bio.report.export')->name('reportes.export.csv');
+        Route::get('/reportes/{reporte}/exportar/xlsx', 'Admin\Bioestadistica\ReporteController@exportXlsx')
+            ->middleware('permission:bio.report.export')->name('reportes.export.xlsx');
+        Route::get('/reportes/{reporte}/exportar/pdf', 'Admin\Bioestadistica\ReporteController@exportPdf')
+            ->middleware('permission:bio.report.export')->name('reportes.export.pdf');
+
+        Route::get('/dashboards', 'Admin\Bioestadistica\DashboardController@index')
+            ->middleware('permission:bio.dashboard.view')->name('dashboards.index');
+        Route::get('/dashboards/crear', 'Admin\Bioestadistica\DashboardController@create')
+            ->middleware('permission:bio.dashboard.manage')->name('dashboards.create');
+        Route::post('/dashboards', 'Admin\Bioestadistica\DashboardController@store')
+            ->middleware('permission:bio.dashboard.manage')->name('dashboards.store');
+        Route::get('/dashboards/{dashboard}', 'Admin\Bioestadistica\DashboardController@show')
+            ->middleware('permission:bio.dashboard.view')->name('dashboards.show');
+        Route::put('/dashboards/{dashboard}', 'Admin\Bioestadistica\DashboardController@update')
+            ->middleware('permission:bio.dashboard.manage|bio.dashboard.personalize')->name('dashboards.update');
+        Route::delete('/dashboards/{dashboard}', 'Admin\Bioestadistica\DashboardController@destroy')
+            ->middleware('permission:bio.dashboard.manage|bio.dashboard.personalize')->name('dashboards.destroy');
+        Route::post('/dashboards/{dashboard}/clonar', 'Admin\Bioestadistica\DashboardController@cloneTemplate')
+            ->middleware('permission:bio.dashboard.personalize')->name('dashboards.clone');
+        Route::post('/dashboards/{dashboard}/layout', 'Admin\Bioestadistica\DashboardController@layout')
+            ->middleware('permission:bio.dashboard.manage|bio.dashboard.personalize')->name('dashboards.layout');
+        Route::post('/dashboards/{dashboard}/widgets', 'Admin\Bioestadistica\DashboardController@storeWidget')
+            ->middleware('permission:bio.dashboard.manage|bio.dashboard.personalize')->name('dashboards.widgets.store');
+        Route::put('/dashboards/{dashboard}/widgets/{widget}', 'Admin\Bioestadistica\DashboardController@updateWidget')
+            ->middleware('permission:bio.dashboard.manage|bio.dashboard.personalize')->name('dashboards.widgets.update');
+        Route::delete('/dashboards/{dashboard}/widgets/{widget}', 'Admin\Bioestadistica\DashboardController@destroyWidget')
+            ->middleware('permission:bio.dashboard.manage|bio.dashboard.personalize')->name('dashboards.widgets.destroy');
+        Route::get('/dashboards/{dashboard}/widgets/{widget}/datos', 'Admin\Bioestadistica\DashboardController@widgetData')
+            ->middleware('permission:bio.dashboard.view')->name('dashboards.widgets.data');
+
+        Route::get('/importaciones', 'Admin\Bioestadistica\ImportacionController@index')
+            ->middleware('permission:bio.import.view')->name('importaciones.index');
+        Route::post('/importaciones', 'Admin\Bioestadistica\ImportacionController@store')
+            ->middleware('permission:bio.import.execute')->name('importaciones.store');
+        Route::get('/importaciones/{importacion}', 'Admin\Bioestadistica\ImportacionController@show')
+            ->middleware('permission:bio.import.view')->name('importaciones.show');
+        Route::put('/importaciones/{importacion}/mapeo', 'Admin\Bioestadistica\ImportacionController@map')
+            ->middleware('permission:bio.import.execute')->name('importaciones.map');
+        Route::post('/importaciones/{importacion}/confirmar', 'Admin\Bioestadistica\ImportacionController@confirm')
+            ->middleware('permission:bio.import.execute')->name('importaciones.confirm');
+        Route::post('/importaciones/{importacion}/datos', 'Admin\Bioestadistica\ImportacionController@importData')
+            ->middleware('permission:bio.import.execute')->name('importaciones.data');
+
+        Route::get('/hospitalizacion', 'Admin\Bioestadistica\HospitalizacionController@index')
+            ->middleware('permission:bio.hosp.view')->name('hospitalizacion.index');
+        Route::get('/hospitalizacion/panel', 'Admin\Bioestadistica\HospitalizacionController@panel')
+            ->middleware('permission:bio.hosp.view')->name('hospitalizacion.panel');
+        Route::get('/hospitalizacion/exportar', 'Admin\Bioestadistica\HospitalizacionController@export')
+            ->middleware('permission:bio.hosp.export')->name('hospitalizacion.export');
+        Route::get('/hospitalizacion/importar', 'Admin\Bioestadistica\HospitalizacionController@importForm')
+            ->middleware('permission:bio.hosp.manage')->name('hospitalizacion.import');
+        Route::post('/hospitalizacion/importar', 'Admin\Bioestadistica\HospitalizacionController@import')
+            ->middleware('permission:bio.hosp.manage')->name('hospitalizacion.import.store');
+        Route::post('/hospitalizacion/consolidar', 'Admin\Bioestadistica\HospitalizacionController@consolidate')
+            ->middleware('permission:bio.hosp.manage')->name('hospitalizacion.consolidate');
+        Route::get('/hospitalizacion/crear', 'Admin\Bioestadistica\HospitalizacionController@create')
+            ->middleware('permission:bio.hosp.manage')->name('hospitalizacion.create');
+        Route::post('/hospitalizacion', 'Admin\Bioestadistica\HospitalizacionController@store')
+            ->middleware('permission:bio.hosp.manage')->name('hospitalizacion.store');
+        Route::get('/hospitalizacion/{episodio}/editar', 'Admin\Bioestadistica\HospitalizacionController@edit')
+            ->middleware('permission:bio.hosp.view')->name('hospitalizacion.edit');
+        Route::put('/hospitalizacion/{episodio}', 'Admin\Bioestadistica\HospitalizacionController@update')
+            ->middleware('permission:bio.hosp.manage')->name('hospitalizacion.update');
+        Route::delete('/hospitalizacion/{episodio}', 'Admin\Bioestadistica\HospitalizacionController@destroy')
+            ->middleware('permission:bio.hosp.manage')->name('hospitalizacion.destroy');
     });
 
     // Rutas de Proyectos 

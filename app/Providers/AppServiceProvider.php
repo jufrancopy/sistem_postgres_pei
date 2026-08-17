@@ -16,7 +16,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton(\App\Application\Bioestadistica\Audit\AuditService::class);
+        $this->app->singleton(\App\Application\Bioestadistica\Audit\AuditRedactor::class);
     }
 
     /**

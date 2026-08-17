@@ -2,6 +2,7 @@
 
 namespace App\Models\Bioestadistica;
 
+use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -92,6 +93,7 @@ class Record extends BioestadisticaModel
             'submitted_by' => $userId,
             'submitted_at' => now(),
         ]);
+        app(IndicatorCacheService::class)->invalidateForRecord($this);
     }
 
     public function approve(int $userId): void
@@ -107,6 +109,7 @@ class Record extends BioestadisticaModel
             'approved_by' => $userId,
             'approved_at' => now(),
         ]);
+        app(IndicatorCacheService::class)->invalidateForRecord($this);
     }
 
     public function reject(int $userId, string $observacion): void
@@ -123,6 +126,7 @@ class Record extends BioestadisticaModel
             'approved_by' => $userId,
             'approved_at' => now(),
         ]);
+        app(IndicatorCacheService::class)->invalidateForRecord($this);
     }
 
     public static function userHasGlobalAccess(User $user): bool

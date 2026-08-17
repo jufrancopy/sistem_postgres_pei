@@ -2,6 +2,7 @@
 
 namespace App\Application\Bioestadistica;
 
+use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
 use App\Models\Bioestadistica\Field;
 use App\Models\Bioestadistica\Record;
 use Illuminate\Support\Collection;
@@ -10,11 +11,16 @@ use Illuminate\Validation\ValidationException;
 
 class RecordCaptureService
 {
-    public function save(Record $record, array $values): Record
+    public function save(Record $record, array $values, bool $system = false): Record
     {
-        if (! $record->isEditable()) {
+        if (! $system && ! $record->isEditable()) {
             throw ValidationException::withMessages([
                 'record' => 'Solo se pueden editar registros en borrador u objetados.',
+            ]);
+        }
+        if (! $system && $record->formulario?->layout_type === 'nominativo') {
+            throw ValidationException::withMessages([
+                'record' => 'SP10 nominativo se edita en Hospitalización, no como captura EAV.',
             ]);
         }
 
@@ -24,7 +30,7 @@ class RecordCaptureService
             ->flatMap(fn ($section) => $section->fields)
             ->keyBy('code');
 
-        $normalized = $this->validate($fields, $values);
+        $normalized = $this->validate($fields, $values, $record);
 
         DB::transaction(function () use ($record, $fields, $normalized) {
             foreach ($fields as $code => $field) {
@@ -46,11 +52,12 @@ class RecordCaptureService
                 );
             }
         });
+        app(IndicatorCacheService::class)->invalidateForRecord($record);
 
         return $record->fresh(['values.field']);
     }
 
-    public function validate(Collection $fields, array $values): array
+    public function validate(Collection $fields, array $values, ?Record $record = null): array
     {
         $normalized = [];
         $errors = [];
@@ -68,7 +75,7 @@ class RecordCaptureService
             }
 
             try {
-                $normalized[$code] = $this->normalizeValue($field, $value);
+                $normalized[$code] = $this->normalizeValue($field, $value, $record);
             } catch (ValidationException $exception) {
                 $errors["values.{$code}"] = $exception->errors()['value'] ?? [$exception->getMessage()];
             }
@@ -81,7 +88,7 @@ class RecordCaptureService
         return $normalized;
     }
 
-    private function normalizeValue(Field $field, mixed $value): array
+    private function normalizeValue(Field $field, mixed $value, ?Record $record = null): array
     {
         $this->validateCatalog($field, $value);
 
@@ -92,7 +99,8 @@ class RecordCaptureService
             'time' => ['value_text' => $this->time($field, $value)],
             'boolean' => ['value_bool' => filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false],
             'tabla' => ['value_json' => $this->tabla($field, $value)],
-            'multiselect', 'subtabla', 'matriz' => ['value_json' => $this->json($field, $value)],
+            'matriz' => ['value_json' => $this->matriz($field, $value, $record)],
+            'multiselect', 'subtabla' => ['value_json' => $this->json($field, $value)],
             default => ['value_text' => $this->text($field, $value)],
         };
     }
@@ -209,6 +217,18 @@ class RecordCaptureService
         }
 
         return ['rows' => $normalized];
+    }
+
+    private function matriz(Field $field, mixed $value, ?Record $record): array
+    {
+        $payload = $this->json($field, $value);
+        $year = (int) ($record?->periodo_anio ?: now()->year);
+        $month = (int) ($record?->periodo_mes ?: now()->month);
+        if (($field->config['cols'] ?? null) === 'dias_mes' || ($field->config['contract'] ?? null) === 'sp11_v1') {
+            return Sp11Matrix::normalize($payload, $year, $month, true);
+        }
+
+        return $payload;
     }
 
     private function tablaCell(Field $field, array $column, mixed $cell): int|float|string

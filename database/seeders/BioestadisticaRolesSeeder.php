@@ -70,7 +70,9 @@ class BioestadisticaRolesSeeder extends Seeder
 
         Role::findByName('Auditor Bioestadística')->syncPermissions([
             'bio.dashboard.view', 'bio.form.view', 'bio.catalog.view', 'bio.geo.view',
-            'bio.record.view', 'bio.indicator.view', 'bio.report.view',
+            'bio.record.view', 'bio.indicator.view', 'bio.indicator.evaluate',
+            'bio.report.view', 'bio.report.export',
+            'bio.dashboard.personalize',
             'bio.hosp.view', 'bio.hosp.view_pii', 'bio.audit.view',
         ]);
 

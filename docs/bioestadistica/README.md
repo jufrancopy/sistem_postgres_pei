@@ -64,3 +64,7 @@ validación de tipos de campo, contexto de período estadístico, flujo borrador
 alcance de Digitador por establecimiento, índice único parcial de período y panel de períodos pendientes.
 SP1 queda publicado como piloto con su tabla de 58 especialidades y editor tabular real;
 los 13 formularios restantes siguen en borrador y sin campos hasta la Fase 5.
+
+**Fase 3 implementada (17/08/2026)**: motor AST seguro, indicador piloto
+`TOTAL_CONSULTAS`, proyección numérica de tablas JSON, caché por establecimiento/período,
+estadística descriptiva, cobertura y administración web de indicadores.
