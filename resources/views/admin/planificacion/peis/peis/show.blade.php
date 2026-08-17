@@ -3888,6 +3888,8 @@ $(document).on('click', '#btnColapsarTodoTreePei', function() {
             'creador'     => $i->creator ? $i->creator->name : null,
         ];
     })->values()->toArray();
+@endphp
+
     window.iniciativasPlanMaestroData = {!! json_encode($iniciativasArray) !!};
 
 // ── LÓGICA DEL MODAL BUSCADOR DEL PLAN MAESTRO / INICIATIVAS ──
