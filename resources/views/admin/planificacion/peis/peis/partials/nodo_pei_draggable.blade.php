@@ -10,7 +10,7 @@
             'objetivo'           => ['OBJ. ESTRATÉGICO', 'badge-info', 'fa-bullseye'],
             'objetivo_especifico'=> ['OBJ. ESPECÍFICO', 'badge-warning text-dark', 'fa-crosshairs'],
             'accion_estrategica' => ['ACC. ESTRATÉGICA', 'badge-purple text-white', 'fa-bolt'],
-            'accion_operativa'   => ['ACC. OPERATIVA (PLAN 100 DÍAS)', 'badge-success', 'fa-tasks'],
+            'accion_operativa'   => ['ACC. OPERATIVA (MEJORA CONTINUA)', 'badge-success', 'fa-tasks'],
         ];
 
         $nodoLevel = $nodo['level'] ?? 'sub';

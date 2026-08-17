@@ -3906,19 +3906,21 @@ function cargarListaIniciativasModal() {
     var items = [];
     var seenIds = {};
 
-    // 1. Escanear elementos DOM presentes
-    var $cards = $('[id^="ini_card_"]');
+    // 1. Escanear elementos DOM presentes en el árbol
+    var $cards = $('.ini-card-item, [id^="ini_card_"]');
     if ($cards.length > 0) {
         $cards.each(function() {
             var $c = $(this);
-            var iniId = $c.attr('id').replace('ini_card_', '');
-            var codigo = $c.find('.badge-code-ini, span.badge-dark, strong').first().text().trim() || ('#INI-' + iniId);
-            var titulo = $c.find('.ini-title, div.font-weight-bold').first().text().trim() || $c.text().substring(0, 80).trim();
+            var iniId = $c.data('id') || $c.attr('id').replace('ini_card_', '');
+            var codigo = $c.data('codigo') || $c.find('.badge-code-ini, span.badge-dark, strong').first().text().trim() || ('#INI-' + iniId);
+            var titulo = $c.data('accion') || $c.find('.ini-title, div.font-weight-bold').first().text().trim() || $c.text().substring(0, 80).trim();
             var estado = $c.data('estado') || ($c.text().indexOf('EJECUTADO') >= 0 ? 'EJECUTADO' : ($c.text().indexOf('EN CURSO') >= 0 ? 'EN CURSO' : 'PENDIENTE'));
-            
+            var responsable = $c.data('responsable') || '';
+            var momento = $c.data('momento') || 'T0';
+
             if (!seenIds[iniId]) {
                 seenIds[iniId] = true;
-                items.push({ id: iniId, codigo: codigo, accion: titulo, estado: estado, responsable: '', momento: 'T0' });
+                items.push({ id: iniId, codigo: codigo, accion: titulo, estado: estado, responsable: responsable, momento: momento });
             }
         });
     }
@@ -3934,13 +3936,13 @@ function cargarListaIniciativasModal() {
     }
 
     if (items.length === 0) {
-        $container.html('<div class="text-center p-4 text-muted font-weight-bold"><i class="fa fa-info-circle mr-1"></i> No hay acciones operativas registradas aún en este perfil PEI.</div>');
+        $container.html('<div class="text-center p-4 text-muted font-weight-bold"><i class="fa fa-info-circle mr-1"></i> No hay acciones operativas de mejora continua registradas aún en este perfil PEI.</div>');
         $('#lblTotalIniciativasModal').text('Total: 0 acciones operativas');
         return;
     }
 
     var total = items.length;
-    $('#lblTotalIniciativasModal').text('Total: ' + total + ' acciones operativas registradas');
+    $('#lblTotalIniciativasModal').text('Total: ' + total + ' acciones operativas de mejora continua');
 
     items.forEach(function(i) {
         var estado = i.estado || 'PENDIENTE';

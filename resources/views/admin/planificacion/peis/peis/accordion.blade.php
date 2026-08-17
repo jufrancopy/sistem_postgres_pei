@@ -694,10 +694,10 @@
                                             <div class="px-3 py-2" style="border-top:1px solid #e2e8f0; background:#f8fafc; font-size:.78rem">
                                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                                     <span class="font-weight-bold text-uppercase text-dark" style="font-size:.68rem; letter-spacing:.04em">
-                                                        <i class="fa fa-tasks text-info mr-1"></i> Acciones Operativas (Plan 100 Días)
+                                                        <i class="fa fa-tasks text-info mr-1"></i> Acciones Operativas (Mejora Continua)
                                                         <span class="badge badge-info ml-1">{{ $iniciativasAccion->count() }}</span>
                                                     </span>
-                                                    <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size:.68rem; border-radius:12px;" onclick="abrirModalNuevaIniciativa('{{ $action->id }}', '{{ addslashes(strip_tags($action->name)) }}')" title="Agregar nueva Acción Operativa">
+                                                    <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size:.68rem; border-radius:12px;" onclick="abrirModalNuevaIniciativa('{{ $action->id }}', '{{ addslashes(strip_tags($action->name)) }}')" title="Agregar nueva Acción Operativa de Mejora Continua">
                                                         <i class="fa fa-plus-circle mr-1"></i> + Nueva Acción Operativa
                                                     </button>
                                                 </div>
@@ -714,13 +714,13 @@
                                                                 };
                                                                 $mom = \App\Models\PlanMaestro\PlanAccion::MOMENTOS[$ini->momento] ?? ['label' => $ini->momento, 'color' => '#64748b'];
                                                             @endphp
-                                                            <div class="p-2.5 rounded border bg-white shadow-xs" id="ini_card_{{ $ini->id }}" style="border-left: 4px solid {{ $stBadge['color'] }} !important;">
+                                                            <div class="p-2.5 rounded border bg-white shadow-xs ini-card-item" id="ini_card_{{ $ini->id }}" data-id="{{ $ini->id }}" data-codigo="{{ $ini->codigo }}" data-accion="{{ $ini->accion }}" data-estado="{{ $grpState }}" data-responsable="{{ $ini->responsable ?? '' }}" data-momento="{{ $ini->momento }}" style="border-left: 4px solid {{ $stBadge['color'] }} !important;">
                                                                 {{-- Fila Principal --}}
                                                                 <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: .5rem;">
                                                                     <div class="d-flex align-items-center flex-wrap flex-grow-1 mr-2" style="gap: .4rem; min-width: 0;">
-                                                                        <span class="badge badge-dark font-weight-bold" style="font-size:.65rem">{{ $ini->codigo }}</span>
+                                                                        <span class="badge badge-dark font-weight-bold badge-code-ini" style="font-size:.65rem">{{ $ini->codigo }}</span>
                                                                         <span class="badge text-white font-weight-bold" style="font-size:.62rem; background:{{ $mom['color'] }}" title="{{ $mom['label'] }}">{{ $ini->momento }}</span>
-                                                                        <div class="font-weight-bold text-dark" style="font-size:.82rem;" title="{{ $ini->accion }}">
+                                                                        <div class="font-weight-bold text-dark ini-title" style="font-size:.82rem;" title="{{ $ini->accion }}">
                                                                             {{ $ini->accion }}
                                                                         </div>
                                                                     </div>
