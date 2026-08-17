@@ -472,6 +472,8 @@ var storeUrl     = "{{ route('globales.activities.tareas.store', $activity->id) 
 var statusBase   = "{{ url('admin/globales/activities/tareas') }}";
 var notifAllUrl  = "{{ route('globales.activities.notificar-todos', $activity->id) }}";
 var getUsersUrl  = "{{ route('globales.get-users') }}";
+var statusDone   = 2;
+var pendingDrag  = null;
 
 $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
 
