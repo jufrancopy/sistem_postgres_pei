@@ -29,7 +29,7 @@
             <a href="{{ route('pei.mee.modulo', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
                 <i class="fa fa-balance-scale mr-1"></i> Marco Estratégico Específico
             </a>
-            <button type="button" class="btn btn-sm btn-warning font-weight-bold ml-2 shadow-xs text-dark" data-toggle="modal" data-target="#modalBuscadorIniciativasPlanMaestro" title="Buscador y Mapa del Plan Maestro / Iniciativas de Mejora Continua">
+            <button type="button" class="btn btn-sm btn-warning font-weight-bold ml-2 shadow-xs text-dark" data-toggle="modal" data-target="#modalBuscadorIniciativasPlanMaestro" onclick="cargarListaIniciativasModal()" title="Buscador y Mapa del Plan Maestro / Iniciativas de Mejora Continua">
                 <i class="fa fa-bullseye mr-1 text-dark"></i> Plan Maestro / Iniciativas
             </button>
             <a href="{{ route('pei-profiles.matriz', $profile->id) }}" class="btn btn-sm btn-outline-primary ml-2" target="_blank">
@@ -3888,12 +3888,10 @@ $(document).on('click', '#btnColapsarTodoTreePei', function() {
             'creador'     => $i->creator ? $i->creator->name : null,
         ];
     })->values()->toArray();
-@endphp
-<script>
     window.iniciativasPlanMaestroData = {!! json_encode($iniciativasArray) !!};
 
 // ── LÓGICA DEL MODAL BUSCADOR DEL PLAN MAESTRO / INICIATIVAS ──
-$('#modalBuscadorIniciativasPlanMaestro').on('show.bs.modal', function () {
+$(document).on('show.bs.modal shown.bs.modal', '#modalBuscadorIniciativasPlanMaestro', function () {
     cargarListaIniciativasModal();
 });
 
