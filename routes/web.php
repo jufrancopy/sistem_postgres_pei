@@ -106,6 +106,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::delete('pei-profiles/{idProfile}/asesor-token', 'Admin\Planificacion\Pei\PeiController@revocarTokenAsesor')->name('pei.asesor.token.revoke');
     Route::post('pei-profiles/{idProfile}/convocar-asesor', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'convocarStore'])->name('pei.asesor.convocar');
     Route::get('pei-profiles/{idProfile}/asesorias', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'listarAsesorias'])->name('pei.asesor.listar');
+    Route::get('pei-profiles/{idProfile}/basurero', 'Admin\Planificacion\Pei\PeiController@basureroList')->name('pei.basurero.list');
+    Route::post('pei-profiles/{idProfile}/basurero/restaurar-nodo/{nodeId}', 'Admin\Planificacion\Pei\PeiController@restaurarNodo')->name('pei.basurero.restaurar-nodo');
+    Route::post('pei-profiles/{idProfile}/basurero/restaurar-iniciativa/{iniId}', 'Admin\Planificacion\Pei\PeiController@restaurarIniciativa')->name('pei.basurero.restaurar-iniciativa');
 
     // ── Coordinador de Planificación ─────────────────────────────────────────
     Route::prefix('coordinador-planificacion')->name('coordinador.')->middleware(['role:Coordinador de Planificación|Analista de Planificación|Administrador'])->group(function () {

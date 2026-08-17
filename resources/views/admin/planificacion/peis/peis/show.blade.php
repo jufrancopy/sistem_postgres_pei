@@ -41,6 +41,10 @@
                 <i class="fa fa-user-plus mr-2 text-dark" style="font-size: 0.95rem;"></i>
                 <span class="text-dark font-weight-bold">Convocar Asesor Externo</span>
             </button>
+            <button type="button" class="btn btn-sm btn-outline-danger font-weight-bold ml-2 shadow-xs d-inline-flex align-items-center" data-toggle="modal" data-target="#modalBasureroPei" onclick="cargarBasureroPeiAdmin()" title="Basurero de elementos eliminados y papelera de recuperación">
+                <i class="fa fa-trash-alt mr-1.5 text-danger"></i>
+                <span>Basurero PEI</span>
+            </button>
             <button type="button" class="btn btn-sm btn-dark font-weight-bold ml-2 shadow-xs" id="btnAbrirModalReordenarPei"
                     data-profile="{{ $profile->id }}"
                     title="Reordenar Estructura PEI arrastrando y soltando (Drag & Drop)"
@@ -1542,6 +1546,7 @@
                     $('#axisForm').trigger("reset");
 
                     if (typeBtn === 'create') {
+                        $('#axis_profile_id').val('');
                         $('#axis_parent_id').val(data.profile.id);
                         axisEditor.setData('');
                         $('#axis_order_item').val('');
@@ -2066,6 +2071,7 @@
                     $('#goalsForm').trigger("reset");
 
                     if (typeBtn === 'create') {
+                        $('#goals_profile_id').val('');
                         $('#goals_parent_id').val(data.profile.id);
                         $('#goals_order_item').val('');
                         goalsEditor.setData('');
@@ -2193,6 +2199,7 @@
                     $('#actionsForm').trigger("reset");
 
                     if (typeBtn === 'create') {
+                        $('#actions_profile_id').val('');
                         $('#actions_parent_id').val(data.profile.id);
                         actionsEditor.setData('');
                         $('#actions_order_item').val('');
@@ -4539,6 +4546,139 @@ $('#btnCopiarCredencialesAsesor').click(function() {
         if (window.toastr) toastr.success('Credenciales copiadas al portapapeles.');
     }
 });
+</script>
+
+<!-- MODAL BASURERO PEI (RESTAURACIÓN DE ELEMENTOS ELIMINADOS) -->
+<div class="modal fade" id="modalBasureroPei" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1200px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);">
+                <h5 class="modal-title font-weight-bold d-flex align-items-center mb-0">
+                    <i class="fa fa-trash-alt text-warning mr-2" style="font-size: 1.3rem;"></i>
+                    <span>Basurero del PEI — Papelera de Reciclaje y Restauración</span>
+                </h5>
+                <button type="button" class="close text-white opacity-9" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="alert alert-info border-0 shadow-xs mb-3 font-weight-bold" style="border-radius: 10px; background: #e0f2fe; color: #0369a1;">
+                    <i class="fa fa-info-circle mr-1"></i> En el PEI nada se pierde. Todo elemento u Acción Operativa eliminada se conserva aquí para poder recuperarse con un solo clic.
+                </div>
+
+                <div class="card border shadow-xs" style="border-radius: 12px;">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0" id="tablaBasureroPeiAdmin" style="font-size: 0.85rem;">
+                            <thead class="bg-dark text-white">
+                                <tr>
+                                    <th style="width: 160px;">Tipo de Elemento</th>
+                                    <th>Nombre / Descripción del Elemento Eliminado</th>
+                                    <th style="width: 180px;" class="text-center">Fecha Eliminación</th>
+                                    <th style="width: 140px;" class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Cargando elementos del basurero...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white px-4 py-3">
+                <button type="button" class="btn btn-secondary btn-round" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cargarBasureroPeiAdmin() {
+    $.ajax({
+        url: "{{ route('pei.basurero.list', $profile->id) }}",
+        type: "GET",
+        success: function(resp) {
+            var $tbody = $('#tablaBasureroPeiAdmin tbody');
+            $tbody.empty();
+            var count = 0;
+
+            if (resp.trashed_nodes && resp.trashed_nodes.length > 0) {
+                resp.trashed_nodes.forEach(function(n) {
+                    count++;
+                    var dateTxt = n.deleted_at ? n.deleted_at.substring(0, 16).replace('T', ' ') : '—';
+                    var badgeType = n.level === 'axi' ? 'badge-primary' : (n.level === 'goal' ? 'badge-info' : 'badge-purple');
+                    var tr = `
+                        <tr>
+                            <td class="align-middle">
+                                <span class="badge ${badgeType} font-weight-bold px-2 py-1">${(n.level||'Nodo').toUpperCase()}</span>
+                            </td>
+                            <td class="align-middle font-weight-bold text-dark">${n.name}</td>
+                            <td class="align-middle text-center text-muted small">${dateTxt}</td>
+                            <td class="align-middle text-center">
+                                <button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3" onclick="restaurarElementoPei('${n.id}', 'node')">
+                                    <i class="fa fa-undo mr-1"></i> Restaurar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    $tbody.append(tr);
+                });
+            }
+
+            if (resp.trashed_inis && resp.trashed_inis.length > 0) {
+                resp.trashed_inis.forEach(function(i) {
+                    count++;
+                    var dateTxt = i.deleted_at ? i.deleted_at.substring(0, 16).replace('T', ' ') : '—';
+                    var tr = `
+                        <tr>
+                            <td class="align-middle">
+                                <span class="badge badge-success font-weight-bold px-2 py-1">ACCIÓN OPERATIVA</span>
+                            </td>
+                            <td class="align-middle">
+                                <span class="badge badge-dark font-weight-bold mr-1">${i.codigo}</span>
+                                <span class="font-weight-bold text-dark">${i.accion}</span>
+                            </td>
+                            <td class="align-middle text-center text-muted small">${dateTxt}</td>
+                            <td class="align-middle text-center">
+                                <button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3" onclick="restaurarElementoPei('${i.id}', 'iniciativa')">
+                                    <i class="fa fa-undo mr-1"></i> Restaurar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    $tbody.append(tr);
+                });
+            }
+
+            if (count === 0) {
+                $tbody.html('<tr><td colspan="4" class="text-center py-4 text-muted font-weight-bold"><i class="fa fa-check-circle text-success mr-1"></i> El basurero está vacío. No hay elementos ni acciones eliminadas.</td></tr>');
+            }
+        }
+    });
+}
+
+function restaurarElementoPei(id, type) {
+    var url = (type === 'iniciativa')
+        ? "{{ url('admin/planificacion/pei-profiles/' . $profile->id . '/basurero/restaurar-iniciativa') }}/" + id
+        : "{{ url('admin/planificacion/pei-profiles/' . $profile->id . '/basurero/restaurar-nodo') }}/" + id;
+
+    $.ajax({
+        url: url,
+        type: "POST",
+        data: { _token: "{{ csrf_token() }}" },
+        success: function(resp) {
+            if (window.toastr) toastr.success(resp.message || 'Elemento restaurado.');
+            cargarBasureroPeiAdmin();
+            setTimeout(function() {
+                location.reload();
+            }, 1000);
+        },
+        error: function() {
+            if (window.toastr) toastr.error('Error al restaurar el elemento.');
+        }
+    });
+}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>

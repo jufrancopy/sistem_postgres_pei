@@ -281,7 +281,9 @@ class PeiController extends Controller
 
         $user = Auth::user();
 
-        $profileId = $request->profile_id ?? null;
+        $rawProfileId = $request->profile_id ? trim($request->profile_id) : null;
+        $isCreateAction = $request->saveBtn === 'create' || $request->saveBtnGoals === 'create' || $request->saveBtnActions === 'create';
+        $profileId = ($isCreateAction || empty($rawProfileId)) ? null : $rawProfileId;
 
         // Campos exclusivos del nodo master — solo se actualizan si vienen
         // explícitamente en el request (evita que ediciones de nodos hijos los pisen)
@@ -338,7 +340,7 @@ class PeiController extends Controller
             $profile = new PeiProfile($attributes);
             $profile->appendToNode($parent)->save();
         } else {
-            $profile = PeiProfile::updateOrCreate(['id' => $profileId ?? Str::uuid()], $attributes);
+            $profile = PeiProfile::updateOrCreate(['id' => $profileId ?: Str::uuid()], $attributes);
         }
 
         $wasChanged = $profile->wasChanged();
@@ -1409,5 +1411,48 @@ class PeiController extends Controller
         $profile = PeiProfile::where('id', $idProfile)->whereNull('parent_id')->firstOrFail();
         $profile->revokeAsesorToken();
         return redirect()->back()->with('success', 'Enlace Seguro para Asesor Externo revocado.');
+    }
+
+    // ── Basurero de Elementos (SoftDeletes / Recuperación) ───────────────────
+    public function basureroList($idProfile)
+    {
+        $profile = PeiProfile::where('id', $idProfile)->firstOrFail();
+
+        // 1. Nodos soft-deleted en la jerarquía PEI
+        $trashedNodes = PeiProfile::onlyTrashed()
+            ->orderBy('deleted_at', 'desc')
+            ->get(['id', 'name', 'level', 'type', 'deleted_at']);
+
+        // 2. Acciones Operativas soft-deleted
+        $trashedInis = \App\Models\PlanMaestro\PlanAccion::onlyTrashed()
+            ->orderBy('deleted_at', 'desc')
+            ->get(['id', 'codigo', 'accion', 'estado', 'deleted_at']);
+
+        return response()->json([
+            'ok' => true,
+            'trashed_nodes' => $trashedNodes,
+            'trashed_inis'  => $trashedInis,
+            'total'         => $trashedNodes->count() + $trashedInis->count(),
+        ]);
+    }
+
+    public function restaurarNodo(Request $request, $idProfile, $nodeId)
+    {
+        $node = PeiProfile::onlyTrashed()->where('id', $nodeId)->first();
+        if ($node) {
+            $node->restore();
+            return response()->json(['ok' => true, 'message' => 'Elemento del PEI restaurado con éxito.']);
+        }
+        return response()->json(['ok' => false, 'message' => 'No se encontró el elemento eliminado.'], 404);
+    }
+
+    public function restaurarIniciativa(Request $request, $idProfile, $iniId)
+    {
+        $ini = \App\Models\PlanMaestro\PlanAccion::onlyTrashed()->where('id', $iniId)->first();
+        if ($ini) {
+            $ini->restore();
+            return response()->json(['ok' => true, 'message' => 'Acción Operativa restaurada con éxito.']);
+        }
+        return response()->json(['ok' => false, 'message' => 'No se encontró la Acción Operativa eliminada.'], 404);
     }
 }

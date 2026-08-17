@@ -3,9 +3,12 @@
 namespace App\Models\PlanMaestro;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PlanAccion extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'plan_acciones';
 
     protected $fillable = [
