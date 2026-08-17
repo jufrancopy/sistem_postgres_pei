@@ -3891,7 +3891,6 @@ $(document).on('click', '#btnColapsarTodoTreePei', function() {
 @endphp
 <script>
     window.iniciativasPlanMaestroData = {!! json_encode($iniciativasArray) !!};
-</script>
 
 // ── LÓGICA DEL MODAL BUSCADOR DEL PLAN MAESTRO / INICIATIVAS ──
 $('#modalBuscadorIniciativasPlanMaestro').on('show.bs.modal', function () {
