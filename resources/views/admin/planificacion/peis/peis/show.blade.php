@@ -36,11 +36,14 @@
                 <i class="fa fa-chart-bar text-warning"></i> Monitoreo
             </button>
 
-            <a href="{{ route('pei.bsc', $profile->id) }}"
-               class="btn btn-sm btn-outline-dark font-weight-bold d-inline-flex align-items-center"
-               style="border-radius: 8px; gap: 5px;" title="Balanced Scorecard">
+            <button type="button"
+                    class="btn btn-sm btn-outline-dark font-weight-bold d-inline-flex align-items-center"
+                    style="border-radius: 8px; gap: 5px;"
+                    data-toggle="modal" data-target="#modalBscEstrategico"
+                    onclick="abrirBscModal()"
+                    title="Balanced Scorecard (Cuadro de Mando Integral)">
                 <i class="fa fa-th-large text-info"></i> BSC
-            </a>
+            </button>
 
             <button type="button"
                     class="btn btn-sm text-white font-weight-bold d-inline-flex align-items-center"
@@ -544,10 +547,93 @@
             var modal = document.getElementById('modalFormulacionEstrategica');
             if (modal) {
                 modal.addEventListener('hidden.bs.modal', function() {
-                    // No reiniciamos — mantenemos el estado (columnas seleccionadas)
+                    // No reiniciamos — mantenemos el estado
                 });
             }
         });
+        </script>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             MODAL BALANCED SCORECARD (BSC)
+        ════════════════════════════════════════════════════════════ -->
+        <div class="modal fade" id="modalBscEstrategico" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document"
+                 style="max-width: calc(100vw - 40px); width: calc(100vw - 40px); margin: 20px auto;">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden; height: calc(100vh - 60px);">
+
+                    <div class="modal-header px-4 py-3"
+                         style="background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%); flex-shrink: 0;">
+                        <div>
+                            <h5 class="modal-title font-weight-bold text-white mb-0 d-flex align-items-center">
+                                <i class="fa fa-th-large text-warning mr-2"></i> Balanced Scorecard (Cuadro de Mando Integral)
+                            </h5>
+                            <small class="text-white-50">{{ strip_tags($profile->name) }}</small>
+                        </div>
+                        <div class="d-flex align-items-center" style="gap: 8px;">
+                            <a href="{{ route('pei.bsc', $profile->id) }}"
+                               class="btn btn-sm font-weight-bold"
+                               style="background: rgba(255,255,255,.15); color: #fff; border-radius: 6px; font-size: 0.8rem;"
+                               target="_blank" title="Abrir en nueva pestaña">
+                                <i class="fa fa-external-link-alt mr-1"></i> Abrir
+                            </a>
+                            <button type="button" class="close text-white ml-2" data-dismiss="modal" aria-label="Cerrar" style="opacity: .9;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Spinner de carga --}}
+                    <div id="bscModalSpinner" class="d-flex flex-column align-items-center justify-content-center"
+                         style="background: #f4f6f9; flex: 1; display: flex;">
+                        <div class="spinner-border text-info mb-3" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
+                        <p class="text-muted font-weight-bold mb-0" style="font-size: 0.85rem;">Cargando Balanced Scorecard...</p>
+                    </div>
+
+                    {{-- iframe que carga la vista BSC --}}
+                    <iframe id="bscModalIframe"
+                            src="about:blank"
+                            frameborder="0"
+                            style="flex: 1; width: 100%; border: none; display: none;">
+                    </iframe>
+
+                </div>
+            </div>
+        </div>
+
+        <script>
+        var _bscUrl = '{{ route('pei.bsc', [$profile->id, 'iframe' => 1]) }}';
+        var _bscLoaded = false;
+
+        function bscIframeLoaded() {
+            var iframe = document.getElementById('bscModalIframe');
+            if (iframe && iframe.src && iframe.src !== 'about:blank') {
+                _bscLoaded = true;
+                var spinner = document.getElementById('bscModalSpinner');
+                if (spinner) spinner.style.setProperty('display', 'none', 'important');
+                iframe.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var iframe = document.getElementById('bscModalIframe');
+            if (iframe) {
+                iframe.addEventListener('load', bscIframeLoaded);
+            }
+        });
+
+        function abrirBscModal() {
+            var iframe = document.getElementById('bscModalIframe');
+            var spinner = document.getElementById('bscModalSpinner');
+
+            if (!_bscLoaded) {
+                if (spinner) spinner.style.setProperty('display', 'flex', 'important');
+                if (iframe) iframe.style.display = 'none';
+                if (iframe) iframe.src = _bscUrl;
+            } else {
+                if (spinner) spinner.style.setProperty('display', 'none', 'important');
+                if (iframe) iframe.style.display = 'block';
+            }
+        }
         </script>
 
         <!-- HTML del segundo nav (inicialmente oculto) -->

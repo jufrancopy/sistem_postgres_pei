@@ -65,11 +65,13 @@
                 · {{ \Carbon\Carbon::parse($profile->year_start)->format('Y') }}–{{ \Carbon\Carbon::parse($profile->year_end)->format('Y') }}
             </small>
         </div>
+        @if(!request()->has('iframe'))
         <div class="ml-auto d-flex" style="gap:.5rem">
             <a href="{{ route('pei-profiles.show', $profile->id) }}" class="btn btn-sm btn-light">
                 <i class="fa fa-arrow-left mr-1"></i> Volver al PEI
             </a>
         </div>
+        @endif
     </div>
 
     <div class="card-body">
