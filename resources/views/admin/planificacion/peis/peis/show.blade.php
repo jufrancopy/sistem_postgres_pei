@@ -3969,6 +3969,7 @@ function irAIniciativaDesdeModal(iniId) {
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
+            <div class="modal-body p-4">
                 <div class="mb-3">
                     <div class="input-group shadow-xs mb-3" style="border-radius: 10px; overflow: hidden;">
                         <div class="input-group-prepend">
