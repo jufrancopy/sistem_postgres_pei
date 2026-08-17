@@ -29,8 +29,10 @@
             <a href="{{ route('pei.mee.modulo', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
                 <i class="fa fa-balance-scale mr-1"></i> Marco Estratégico Específico
             </a>
-            <button type="button" class="btn btn-sm btn-warning font-weight-bold ml-2 shadow-xs text-dark" data-toggle="modal" data-target="#modalBuscadorIniciativasPlanMaestro" onclick="cargarListaIniciativasModal()" title="Buscador y Mapa del Plan Maestro / Iniciativas de Mejora Continua">
-                <i class="fa fa-bullseye mr-1 text-dark"></i> Plan Maestro / Iniciativas
+            <button type="button" class="btn btn-sm text-white font-weight-bold ml-2 shadow-sm d-inline-flex align-items-center" data-toggle="modal" data-target="#modalBuscadorIniciativasPlanMaestro" onclick="cargarListaIniciativasModal()" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 8px; padding: 6px 14px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(15,23,42,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='';" title="Buscador y Mapa del Plan Maestro — Acciones Operativas de Mejora Continua">
+                <i class="fa fa-tasks text-warning mr-2" style="font-size: 0.9rem;"></i>
+                <span>Plan Maestro / Mejora Continua</span>
+                <span class="badge badge-warning text-dark font-weight-bold ml-2 px-2 py-0.5" id="cntBotonHeaderIniciativas" style="font-size: 0.72rem; border-radius: 10px;">{{ count($iniciativasArray ?? []) }}</span>
             </button>
             <a href="{{ route('pei-profiles.matriz', $profile->id) }}" class="btn btn-sm btn-outline-primary ml-2" target="_blank">
                 <i class="fa fa-table mr-1"></i> Formulación Estratégica Integrada
@@ -3892,17 +3894,20 @@ $(document).on('click', '#btnColapsarTodoTreePei', function() {
 
     window.iniciativasPlanMaestroData = {!! json_encode($iniciativasArray) !!};
 
-// ── LÓGICA DEL MODAL BUSCADOR DEL PLAN MAESTRO / INICIATIVAS ──
-$(document).on('show.bs.modal shown.bs.modal', '#modalBuscadorIniciativasPlanMaestro', function () {
-    cargarListaIniciativasModal();
-});
-
+// ── LÓGICA DEL MODAL BUSCADOR DEL PLAN MAESTRO / INICIATIVAS (DATATABLES) ──
+var dtIniciativasModal = null;
 var currentIniModalStatusFilter = 'all';
 
-function cargarListaIniciativasModal() {
-    var $container = $('#listaIniciativasModalContainer');
-    $container.empty();
+$(document).on('show.bs.modal shown.bs.modal', '#modalBuscadorIniciativasPlanMaestro', function () {
+    cargarListaIniciativasModal();
+    if (dtIniciativasModal) {
+        setTimeout(function() {
+            dtIniciativasModal.columns.adjust().responsive.recalc();
+        }, 150);
+    }
+});
 
+function cargarListaIniciativasModal() {
     var items = [];
     var seenIds = {};
 
@@ -3915,7 +3920,7 @@ function cargarListaIniciativasModal() {
             var codigo = $c.data('codigo') || $c.find('.badge-code-ini, span.badge-dark, strong').first().text().trim() || ('#INI-' + iniId);
             var titulo = $c.data('accion') || $c.find('.ini-title, div.font-weight-bold').first().text().trim() || $c.text().substring(0, 80).trim();
             var estado = $c.data('estado') || ($c.text().indexOf('EJECUTADO') >= 0 ? 'EJECUTADO' : ($c.text().indexOf('EN CURSO') >= 0 ? 'EN CURSO' : 'PENDIENTE'));
-            var responsable = $c.data('responsable') || '';
+            var responsable = $c.data('responsable') || '—';
             var momento = $c.data('momento') || 'T0';
 
             if (!seenIds[iniId]) {
@@ -3935,67 +3940,94 @@ function cargarListaIniciativasModal() {
         });
     }
 
-    if (items.length === 0) {
-        $container.html('<div class="text-center p-4 text-muted font-weight-bold"><i class="fa fa-info-circle mr-1"></i> No hay acciones operativas de mejora continua registradas aún en este perfil PEI.</div>');
-        $('#lblTotalIniciativasModal').text('Total: 0 acciones operativas');
-        return;
+    $('#lblTotalIniciativasModal').text('Total: ' + items.length + ' acciones operativas de mejora continua');
+    if ($('#cntBotonHeaderIniciativas').length) {
+        $('#cntBotonHeaderIniciativas').text(items.length);
     }
 
-    var total = items.length;
-    $('#lblTotalIniciativasModal').text('Total: ' + total + ' acciones operativas de mejora continua');
+    if ($.fn.DataTable.isDataTable('#tablaIniciativasPlanMaestro')) {
+        $('#tablaIniciativasPlanMaestro').DataTable().destroy();
+        $('#tablaIniciativasPlanMaestro tbody').empty();
+    }
+
+    var $tbody = $('#tablaIniciativasPlanMaestro tbody');
+    $tbody.empty();
 
     items.forEach(function(i) {
         var estado = i.estado || 'PENDIENTE';
         var badgeBg = estado === 'EJECUTADO' ? 'badge-success' : (estado === 'EN CURSO' ? 'badge-warning text-dark' : 'badge-danger');
-        var respHtml = i.responsable && i.responsable !== '—' ? `<small class="text-muted border-left pl-2 ml-2"><i class="fa fa-building-o mr-1"></i>${i.responsable}</small>` : '';
+        var respTxt = i.responsable && i.responsable !== '—' ? i.responsable : '—';
+        var momTxt = i.momento || 'T0';
 
-        var itemHtml = `
-            <a href="javascript:void(0)" onclick="irAIniciativaDesdeModal('${i.id}')" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center item-ini-modal mb-2 border rounded p-3 shadow-xs" data-status="${estado}" data-search="${(i.codigo + ' ' + i.accion + ' ' + (i.responsable||'')).toLowerCase()}" style="border-radius: 12px; transition: all 0.2s ease;">
-                <div>
-                    <div class="d-flex align-items-center mb-1 flex-wrap" style="gap:5px">
-                        <span class="badge badge-dark mr-1" style="font-size: 0.75rem;">${i.codigo}</span>
-                        <span class="badge ${badgeBg} font-weight-bold px-2 py-1 mr-1" style="font-size: 0.7rem;">${estado}</span>
-                        ${respHtml}
-                    </div>
-                    <div class="font-weight-bold text-dark" style="font-size: 0.9rem;">${i.accion}</div>
-                </div>
-                <div class="text-right">
-                    <span class="btn btn-sm btn-outline-primary rounded-circle"><i class="fa fa-arrow-right"></i></span>
-                </div>
-            </a>
+        var trHtml = `
+            <tr data-status="${estado}">
+                <td class="text-center font-weight-bold align-middle">
+                    <span class="badge badge-dark px-2 py-1" style="font-size: 0.78rem;">${i.codigo}</span>
+                </td>
+                <td class="text-center align-middle">
+                    <span class="badge badge-secondary px-2 py-1" style="font-size: 0.72rem;">${momTxt}</span>
+                </td>
+                <td class="align-middle">
+                    <div class="font-weight-bold text-dark" style="font-size: 0.88rem;">${i.accion}</div>
+                </td>
+                <td class="align-middle text-muted small">
+                    <i class="fa fa-building-o mr-1"></i>${respTxt}
+                </td>
+                <td class="text-center align-middle">
+                    <span class="badge ${badgeBg} font-weight-bold px-2 py-1" style="font-size: 0.75rem;">${estado}</span>
+                </td>
+                <td class="text-center align-middle">
+                    <button type="button" class="btn btn-xs btn-outline-primary font-weight-bold rounded-pill px-2.5 py-1" onclick="irAIniciativaDesdeModal('${i.id}')" title="Ubicar en el árbol">
+                        <i class="fa fa-crosshairs mr-1"></i> Ver en Árbol
+                    </button>
+                </td>
+            </tr>
         `;
-        $container.append(itemHtml);
+        $tbody.append(trHtml);
     });
+
+    dtIniciativasModal = $('#tablaIniciativasPlanMaestro').DataTable({
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+        responsive: true,
+        autoWidth: false,
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Buscar por código, acción o área...",
+            lengthMenu: "Mostrar _MENU_ registros",
+            info: "Mostrando _START_ a _END_ de _TOTAL_ acciones operativas",
+            infoEmpty: "Sin registros disponibles",
+            infoFiltered: "(filtrado de _MAX_ totales)",
+            zeroRecords: "No se encontraron acciones operativas coincidentes",
+            paginate: {
+                first: '<i class="fa fa-angle-double-left"></i>',
+                last: '<i class="fa fa-angle-double-right"></i>',
+                next: '<i class="fa fa-angle-right"></i>',
+                previous: '<i class="fa fa-angle-left"></i>'
+            }
+        },
+        dom: "<'row mb-2'<'col-sm-6'l><'col-sm-6 text-right'f>>" +
+             "<'row'<'col-sm-12'tr>>" +
+             "<'row mt-2'<'col-sm-5'i><'col-sm-7 text-right'p>>"
+    });
+
+    if (currentIniModalStatusFilter !== 'all') {
+        dtIniciativasModal.column(4).search(currentIniModalStatusFilter).draw();
+    }
 }
 
 function filtrarIniciativasModalStatus(btn, status) {
     $('.btn-filter-ini-modal').removeClass('active btn-dark').addClass('btn-outline-secondary');
     $(btn).removeClass('btn-outline-secondary btn-outline-success btn-outline-warning btn-outline-danger').addClass('active btn-dark');
     currentIniModalStatusFilter = status;
-    filtrarIniciativasModal();
-}
 
-function filtrarIniciativasModal() {
-    var query = ($('#inputBuscarIniciativasModal').val() || '').toLowerCase();
-    var countVisible = 0;
-
-    $('.item-ini-modal').each(function() {
-        var $item = $(this);
-        var st = $item.data('status');
-        var searchTxt = $item.data('search');
-
-        var matchesStatus = (currentIniModalStatusFilter === 'all' || st === currentIniModalStatusFilter);
-        var matchesQuery  = (!query || searchTxt.indexOf(query) >= 0);
-
-        if (matchesStatus && matchesQuery) {
-            $item.show();
-            countVisible++;
+    if (dtIniciativasModal) {
+        if (status === 'all') {
+            dtIniciativasModal.column(4).search('').draw();
         } else {
-            $item.hide();
+            dtIniciativasModal.column(4).search(status).draw();
         }
-    });
-
-    $('#lblTotalIniciativasModal').text('Mostrando: ' + countVisible + ' acciones operativas');
+    }
 }
 
 function irAIniciativaDesdeModal(iniId) {
@@ -4021,42 +4053,50 @@ function irAIniciativaDesdeModal(iniId) {
 
 <!-- MODAL DE MAPA DE INICIATIVAS / PLAN MAESTRO -->
 <div class="modal fade" id="modalBuscadorIniciativasPlanMaestro" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1400px; width: 95%;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
             <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-top-left-radius: 16px; border-top-right-radius: 16px;">
                 <h5 class="modal-title font-weight-bold d-flex align-items-center mb-0">
-                    <i class="fa fa-bullseye text-warning mr-2" style="font-size: 1.3rem;"></i>
-                    <span>Plan Maestro — Mapa de Iniciativas de Mejora Continua</span>
+                    <i class="fa fa-tasks text-warning mr-2" style="font-size: 1.3rem;"></i>
+                    <span>Plan Maestro — Mapa de Acciones Operativas de Mejora Continua</span>
                 </h5>
                 <button type="button" class="close text-white opacity-9" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body p-4">
-                <div class="mb-3">
-                    <div class="input-group shadow-xs mb-3" style="border-radius: 10px; overflow: hidden;">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
-                        </div>
-                        <input type="text" class="form-control border-left-0 pl-0" id="inputBuscarIniciativasModal" placeholder="Buscar por código, nombre o responsable..." onkeyup="filtrarIniciativasModal()">
-                    </div>
-                    <div class="d-flex flex-wrap align-items-center justify-content-between bg-white p-2.5 rounded border shadow-xs" style="border-radius: 10px;">
-                        <span class="text-muted small font-weight-bold mb-2 mb-md-0"><i class="fa fa-filter text-warning mr-1"></i> Filtrar por estado:</span>
-                        <div class="d-flex flex-wrap" style="gap: 5px;">
-                            <button type="button" class="btn btn-sm btn-dark active btn-filter-ini-modal" data-status="all" onclick="filtrarIniciativasModalStatus(this, 'all')">Todos</button>
-                            <button type="button" class="btn btn-sm btn-outline-success btn-filter-ini-modal" data-status="EJECUTADO" onclick="filtrarIniciativasModalStatus(this, 'EJECUTADO')">Ejecutados</button>
-                            <button type="button" class="btn btn-sm btn-outline-warning btn-filter-ini-modal" data-status="EN CURSO" onclick="filtrarIniciativasModalStatus(this, 'EN CURSO')">En Curso</button>
-                            <button type="button" class="btn btn-sm btn-outline-danger btn-filter-ini-modal" data-status="PENDIENTE" onclick="filtrarIniciativasModalStatus(this, 'PENDIENTE')">Pendientes</button>
-                        </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="d-flex flex-wrap align-items-center justify-content-between bg-white p-3 rounded border shadow-xs mb-3" style="border-radius: 12px;">
+                    <span class="text-muted small font-weight-bold mb-2 mb-md-0"><i class="fa fa-filter text-warning mr-1"></i> Filtrar por estado:</span>
+                    <div class="d-flex flex-wrap" style="gap: 6px;">
+                        <button type="button" class="btn btn-sm btn-dark active btn-filter-ini-modal" data-status="all" onclick="filtrarIniciativasModalStatus(this, 'all')">Todos</button>
+                        <button type="button" class="btn btn-sm btn-outline-success btn-filter-ini-modal" data-status="EJECUTADO" onclick="filtrarIniciativasModalStatus(this, 'EJECUTADO')">Ejecutados</button>
+                        <button type="button" class="btn btn-sm btn-outline-warning btn-filter-ini-modal" data-status="EN CURSO" onclick="filtrarIniciativasModalStatus(this, 'EN CURSO')">En Curso</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-filter-ini-modal" data-status="PENDIENTE" onclick="filtrarIniciativasModalStatus(this, 'PENDIENTE')">Pendientes</button>
                     </div>
                 </div>
 
-                <div id="listaIniciativasModalContainer" class="list-group shadow-xs">
-                    <!-- Dinámico por JS -->
+                <div class="card border shadow-xs rounded-lg overflow-hidden p-3 bg-white">
+                    <div class="table-responsive">
+                        <table id="tablaIniciativasPlanMaestro" class="table table-hover table-striped border rounded w-100" style="width:100% !important; font-size: 0.85rem;">
+                            <thead style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+                                <tr>
+                                    <th style="width: 85px;" class="text-center">Código</th>
+                                    <th style="width: 75px;" class="text-center">Momento</th>
+                                    <th>Acción Operativa / Iniciativa de Mejora Continua</th>
+                                    <th>Responsable / Unidad</th>
+                                    <th style="width: 120px;" class="text-center">Estado</th>
+                                    <th style="width: 110px;" class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dinámico por DataTables -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer bg-white px-4 py-3" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                <span class="text-muted small mr-auto" id="lblTotalIniciativasModal">Total: 0 iniciativas</span>
+                <span class="text-muted small mr-auto" id="lblTotalIniciativasModal">Total: 0 acciones operativas</span>
                 <button type="button" class="btn btn-secondary btn-round" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
