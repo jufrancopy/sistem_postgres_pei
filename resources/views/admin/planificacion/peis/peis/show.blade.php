@@ -4035,21 +4035,41 @@ function filtrarIniciativasModalStatus(btn, status) {
 
 function irAIniciativaDesdeModal(iniId) {
     $('#modalBuscadorIniciativasPlanMaestro').modal('hide');
+
     setTimeout(function() {
-        var $card = $('#ini_card_' + iniId);
-        if ($card.length) {
-            $('html, body').animate({
-                scrollTop: $card.offset().top - 120
-            }, 500);
-            $card.css('transition', 'all 0.4s ease')
-                 .css('box-shadow', '0 0 0 4px #f59e0b')
-                 .css('transform', 'scale(1.02)');
-            setTimeout(function() {
-                $card.css('box-shadow', '').css('transform', '');
-            }, 2000);
-        } else if (window.toastr) {
-            toastr.info('Acción Operativa seleccionada del Plan Maestro.');
+        // 1. Abrir todos los acordeones y contenedores jerárquicos del árbol (Nivel 1 al 4)
+        if ($('#btnExpandirTodoTreePei').length) {
+            $('#btnExpandirTodoTreePei').click();
         }
+        $('.nodo-pei-children').show();
+        $('.collapse').addClass('show').collapse('show');
+        $('.btn-toggle-pei-children i').removeClass('fa-chevron-right').addClass('fa-chevron-down');
+
+        // 2. Calcular posición exacta y desplazar suavemente
+        setTimeout(function() {
+            var $card = $('#ini_card_' + iniId);
+            if ($card.length) {
+                $card.parents('.nodo-pei-children').show();
+                $card.parents('.collapse').addClass('show');
+
+                var targetOffset = $card.offset().top - 140;
+                $('html, body').animate({
+                    scrollTop: targetOffset
+                }, 600);
+
+                // 3. Destacar la tarjeta con resalte visual
+                $card.css('transition', 'all 0.4s ease')
+                     .css('box-shadow', '0 0 0 4px #f59e0b, 0 8px 24px rgba(245,158,11,0.3)')
+                     .css('transform', 'scale(1.02)')
+                     .css('background-color', '#fefce8');
+
+                setTimeout(function() {
+                    $card.css('box-shadow', '').css('transform', '').css('background-color', '');
+                }, 3500);
+            } else if (window.toastr) {
+                toastr.info('Acción Operativa de Mejora Continua seleccionada.');
+            }
+        }, 250);
     }, 300);
 }
 </script>
