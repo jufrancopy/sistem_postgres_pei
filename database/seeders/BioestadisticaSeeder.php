@@ -15,6 +15,9 @@ class BioestadisticaSeeder extends Seeder
             BioestadisticaEstablecimientosSeeder::class,
             BioestadisticaFormulariosSeeder::class,
             BioestadisticaSp1Seeder::class,
+            BioestadisticaIndicadoresSeeder::class,
+            BioestadisticaReportesDashboardsSeeder::class,
+            BioestadisticaHospitalizacionSeeder::class,
         ]);
     }
 }

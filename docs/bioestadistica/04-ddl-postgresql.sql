@@ -355,23 +355,26 @@ CREATE TABLE bioestadistica.indicador_formulas (
         REFERENCES bioestadistica.indicadores (id) ON DELETE CASCADE
 );
 CREATE INDEX indicador_formulas_expr_gin ON bioestadistica.indicador_formulas USING gin (expresion);
-COMMENT ON COLUMN bioestadistica.indicador_formulas.expresion IS 'AST JSON: {"op":"pct","args":[{"op":"sum","field":"pacientes_dia"},{"op":"sum","field":"camas_operativas"}]}';
+COMMENT ON COLUMN bioestadistica.indicador_formulas.expresion IS 'AST JSON seguro. Referencias calificadas por form, field y metric opcional.';
 
 CREATE TABLE bioestadistica.indicador_cache (
     id                 bigserial PRIMARY KEY,
     indicador_id       bigint   NOT NULL,
+    formula_id         bigint   NOT NULL,
     periodo_anio       smallint NOT NULL,
-    periodo_mes        smallint,
-    establecimiento_id bigint,
+    periodo_mes        smallint NOT NULL,
+    establecimiento_id bigint   NOT NULL,
     valor              numeric(18,4),
     calculado_at       timestamp,
     CONSTRAINT indicador_cache_indicador_fk FOREIGN KEY (indicador_id)
         REFERENCES bioestadistica.indicadores (id) ON DELETE CASCADE,
+    CONSTRAINT indicador_cache_formula_fk FOREIGN KEY (formula_id)
+        REFERENCES bioestadistica.indicador_formulas (id) ON DELETE CASCADE,
     CONSTRAINT indicador_cache_establecimiento_fk FOREIGN KEY (establecimiento_id)
         REFERENCES bioestadistica.establecimientos (id) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX indicador_cache_unique
-    ON bioestadistica.indicador_cache (indicador_id, periodo_anio, COALESCE(periodo_mes, 0), COALESCE(establecimiento_id, 0));
+    ON bioestadistica.indicador_cache (indicador_id, formula_id, periodo_anio, periodo_mes, establecimiento_id);
 
 -- =====================================================================
 -- 5. REPORTES Y DASHBOARDS
@@ -484,12 +487,14 @@ CREATE TABLE bioestadistica.audit_log (
     new_values  jsonb,
     ip          inet,
     user_agent  varchar(500),
+    metadata    jsonb,
     created_at  timestamp    NOT NULL DEFAULT now()
 );
-CREATE INDEX audit_log_entity_idx  ON bioestadistica.audit_log (entity_type, entity_id);
-CREATE INDEX audit_log_user_idx    ON bioestadistica.audit_log (user_id, created_at);
-CREATE INDEX audit_log_created_idx ON bioestadistica.audit_log (created_at);
-COMMENT ON TABLE bioestadistica.audit_log IS 'Append-only. Registra usuario, fecha, acción, valor anterior y valor nuevo.';
+CREATE INDEX audit_log_entity_idx  ON bioestadistica.audit_log (entity_type, entity_id, created_at DESC);
+CREATE INDEX audit_log_user_idx    ON bioestadistica.audit_log (user_id, created_at DESC);
+CREATE INDEX audit_log_accion_idx  ON bioestadistica.audit_log (accion, created_at DESC);
+CREATE INDEX audit_log_created_idx ON bioestadistica.audit_log (created_at DESC);
+COMMENT ON TABLE bioestadistica.audit_log IS 'Append-only. Retención >24 meses es proceso administrativo, nunca una acción web. Trigger rechaza UPDATE/DELETE.';
 
 CREATE TABLE bioestadistica.import_jobs (
     id              bigserial PRIMARY KEY,
@@ -547,22 +552,32 @@ WHERE e.deleted_at IS NULL;
 
 -- Valores numéricos listos para indicadores y estadística, con período y geografía.
 CREATE OR REPLACE VIEW bioestadistica.v_valores_numericos AS
-SELECT r.id            AS record_id,
-       r.formulario_id,
-       f.codigo        AS formulario_codigo,
-       r.establecimiento_id,
-       r.periodo_anio,
-       r.periodo_mes,
-       r.estado,
-       fl.id           AS field_id,
-       fl.code         AS field_code,
-       rv.value_num
+SELECT r.id AS record_id, r.formulario_id, f.codigo AS formulario_codigo,
+       r.establecimiento_id, r.periodo_anio, r.periodo_mes, r.estado,
+       fl.id AS field_id, fl.code AS field_code,
+       NULL::varchar AS metric_code, NULL::bigint AS catalog_item_id,
+       rv.value_num::numeric AS valor
 FROM bioestadistica.record_values rv
-JOIN bioestadistica.records     r  ON r.id = rv.record_id
-JOIN bioestadistica.formularios f  ON f.id = r.formulario_id
-JOIN bioestadistica.fields      fl ON fl.id = rv.field_id
+JOIN bioestadistica.records r ON r.id = rv.record_id AND r.deleted_at IS NULL
+JOIN bioestadistica.formularios f ON f.id = r.formulario_id AND f.deleted_at IS NULL
+JOIN bioestadistica.fields fl ON fl.id = rv.field_id AND fl.deleted_at IS NULL
 WHERE rv.value_num IS NOT NULL
-  AND r.deleted_at IS NULL;
+UNION ALL
+SELECT r.id, r.formulario_id, f.codigo, r.establecimiento_id,
+       r.periodo_anio, r.periodo_mes, r.estado, fl.id, fl.code,
+       metric.key::varchar,
+       CASE WHEN row_value.key ~ '^[0-9]+$' THEN row_value.key::bigint END,
+       (metric.value #>> '{}')::numeric
+FROM bioestadistica.record_values rv
+JOIN bioestadistica.records r ON r.id = rv.record_id AND r.deleted_at IS NULL
+JOIN bioestadistica.formularios f ON f.id = r.formulario_id AND f.deleted_at IS NULL
+JOIN bioestadistica.fields fl ON fl.id = rv.field_id AND fl.deleted_at IS NULL
+CROSS JOIN LATERAL jsonb_each(COALESCE(rv.value_json->'rows', '{}'::jsonb)) row_value
+CROSS JOIN LATERAL jsonb_each(row_value.value) metric
+WHERE fl.type = 'tabla'
+  AND (jsonb_typeof(metric.value) = 'number'
+       OR (jsonb_typeof(metric.value) = 'string'
+           AND (metric.value #>> '{}') ~ '^-?[0-9]+([.][0-9]+)?$'));
 
 -- =====================================================================
 -- FIN

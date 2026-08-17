@@ -80,9 +80,49 @@
                 </table>
             </div>
         @endif
-    @elseif(in_array($field->type, ['subtabla', 'matriz']))
-        <textarea class="form-control font-monospace" id="field-{{ $field->id }}" name="values[{{ $field->code }}]" rows="6" placeholder='JSON: [{"fila":"...","valor":0}]' @disabled(!$editable)>{{ old("values.{$field->code}", $value ? json_encode($value, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : '') }}</textarea>
-        <small class="form-text text-muted">Estructura JSON temporal; el editor visual de subtabla y matriz llega con los layouts SP11 y SP8.</small>
+    @elseif($field->type === 'matriz')
+        @php
+            $days = \Carbon\Carbon::create($record->periodo_anio, $record->periodo_mes, 1)->daysInMonth;
+            $rowCodes = $field->config['rows'] ?? array_keys(\App\Application\Bioestadistica\Sp11Matrix::ROWS);
+            $rowLabels = $field->config['row_labels'] ?? array_values(\App\Application\Bioestadistica\Sp11Matrix::ROWS);
+            $storedRows = is_array($value) ? ($value['rows'] ?? $value) : [];
+        @endphp
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered bio-matriz mb-0" data-days="{{ $days }}">
+                <thead class="thead-light">
+                    <tr>
+                        <th style="min-width:160px">Indicador</th>
+                        @for($day = 1; $day <= $days; $day++)
+                            <th class="text-center" style="width:42px">{{ $day }}</th>
+                        @endfor
+                        <th class="text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($rowCodes as $index => $rowCode)
+                    <tr>
+                        <td>{{ $rowLabels[$index] ?? $rowCode }}</td>
+                        @for($day = 1; $day <= $days; $day++)
+                            <td>
+                                <input
+                                    class="form-control form-control-sm text-right bio-matriz-input"
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    data-row="{{ $rowCode }}"
+                                    name="values[{{ $field->code }}][rows][{{ $rowCode }}][{{ $day }}]"
+                                    value="{{ old("values.{$field->code}.rows.{$rowCode}.{$day}", $storedRows[$rowCode][$day] ?? $storedRows[$rowCode][(string)$day] ?? null) }}"
+                                    @disabled(!$editable)>
+                            </td>
+                        @endfor
+                        <th class="text-right" data-row-total="{{ $rowCode }}">{{ $storedRows[$rowCode]['total'] ?? 0 }}</th>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+        <small class="form-text text-muted">El mes {{ $record->periodo_mes }}/{{ $record->periodo_anio }} tiene {{ $days }} días. Los totales se calculan al guardar.</small>
+    @elseif(in_array($field->type, ['subtabla']))
     @else
         <input class="form-control" id="field-{{ $field->id }}" type="text" name="values[{{ $field->code }}]" value="{{ old("values.{$field->code}", $value) }}" pattern="{{ $field->validation_regex }}" @disabled(!$editable)>
     @endif

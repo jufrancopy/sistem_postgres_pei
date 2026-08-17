@@ -99,7 +99,12 @@ Administrador, Analista, Consultor y Auditor no tienen esa restricción.
 | `new_values` | Valores nuevos (JSONB) |
 | `ip` | Dirección de origen |
 | `user_agent` | Cliente |
+| `metadata` | JSONB seguro: `correlation_id`, `batch_id`, `phase` (execute/commit/cancel/consolidate) |
 | `created_at` | Fecha y hora del evento |
+
+Fases de importación o consolidación se guardan en `metadata.phase`. El vocabulario de `accion` no se amplía.
+
+Cédula, hash, fingerprint, rutas de archivo, tokens y valores clínicos nunca se copian al log. Un cambio sensible queda como `{redacted: true, changed: true}`. En `record_values`, texto, fecha y JSON se tratan como sensibles por defecto.
 
 ### Implementación
 

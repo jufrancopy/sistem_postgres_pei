@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Bioestadistica;
 
+use App\Application\Bioestadistica\Audit\AuditService;
 use App\Application\Bioestadistica\RecordCaptureService;
 use App\Http\Controllers\Controller;
 use App\Models\Bioestadistica\Establecimiento;
@@ -54,6 +55,12 @@ class CapturaController extends Controller
         $this->ensureCanCapture();
         $data = $this->validateContext($request);
         $this->ensureAllowedEstablishment((int) $data['establecimiento_id']);
+        $formulario = Formulario::findOrFail($data['formulario_id']);
+        if ($formulario->codigo === 'SP10' || $formulario->layout_type === 'nominativo') {
+            return redirect()->route('bioestadistica.hospitalizacion.create', [
+                'establecimiento_id' => $data['establecimiento_id'],
+            ])->with('success', 'SP10 se captura como episodios nominativos en Hospitalización.');
+        }
         abort_unless(
             Establecimiento::whereKey($data['establecimiento_id'])->whereNotNull('distrito_id')->exists(),
             422,
@@ -120,7 +127,7 @@ class CapturaController extends Controller
         ]);
     }
 
-    public function edit(Record $record): View
+    public function edit(Record $record): View|RedirectResponse
     {
         $this->ensureCanView($record);
         $record->load([
@@ -128,6 +135,13 @@ class CapturaController extends Controller
             'establecimiento.distrito.departamento',
             'values.field',
         ]);
+        if ($record->formulario->codigo === 'SP10' || $record->formulario->layout_type === 'nominativo') {
+            return redirect()->route('bioestadistica.hospitalizacion.index', [
+                'establecimiento_id' => $record->establecimiento_id,
+                'periodo_anio' => $record->periodo_anio,
+                'periodo_mes' => $record->periodo_mes,
+            ])->with('success', 'El consolidado SP10 es de solo lectura. El detalle nominativo está en Hospitalización.');
+        }
 
         return view('admin.bioestadistica.captura.edit', [
             'record' => $record,
@@ -138,6 +152,9 @@ class CapturaController extends Controller
     public function update(Request $request, Record $record, RecordCaptureService $capture): RedirectResponse
     {
         $this->ensureCanEdit($record);
+        if ($record->formulario->layout_type === 'nominativo') {
+            abort(422, 'El consolidado SP10 no se edita en captura.');
+        }
         $capture->save($record, $request->input('values', []));
         $record->update(['observacion' => $request->input('observacion')]);
 
@@ -146,6 +163,7 @@ class CapturaController extends Controller
 
     public function submit(Request $request, Record $record, RecordCaptureService $capture): RedirectResponse
     {
+        $this->authorize('submit', $record);
         $this->ensureCanEdit($record);
         $capture->save($record, $this->savedValues($record));
         $record->submit($request->user()->id);
@@ -156,6 +174,7 @@ class CapturaController extends Controller
 
     public function approve(Request $request, Record $record): RedirectResponse
     {
+        $this->authorize('approve', $record);
         abort_unless($request->user()->can('bio.record.approve'), 403);
         $this->ensureCanView($record);
         $record->approve($request->user()->id);
@@ -165,6 +184,7 @@ class CapturaController extends Controller
 
     public function reject(Request $request, Record $record): RedirectResponse
     {
+        $this->authorize('approve', $record);
         abort_unless($request->user()->can('bio.record.approve'), 403);
         $this->ensureCanView($record);
         $data = $request->validate(['observacion' => ['required', 'string', 'max:2000']]);
@@ -187,7 +207,7 @@ class CapturaController extends Controller
         ]);
     }
 
-    public function updateAssignments(Request $request, User $user): RedirectResponse
+    public function updateAssignments(Request $request, User $user, AuditService $audit): RedirectResponse
     {
         abort_unless($this->managesAssignments(), 403);
         abort_unless($user->hasRole('Digitador Bioestadística'), 422, 'El usuario debe tener el rol Digitador Bioestadística.');
@@ -196,10 +216,19 @@ class CapturaController extends Controller
             'establecimiento_ids.*' => ['integer', Rule::exists(Establecimiento::class, 'id')->withoutTrashed()],
         ]);
 
-        UsuarioEstablecimiento::where('user_id', $user->id)->delete();
-        foreach ($data['establecimiento_ids'] ?? [] as $establishmentId) {
-            UsuarioEstablecimiento::create(['user_id' => $user->id, 'establecimiento_id' => $establishmentId]);
-        }
+        $previous = UsuarioEstablecimiento::where('user_id', $user->id)->pluck('establecimiento_id')->map(fn ($id) => (int) $id)->all();
+        $next = array_map('intval', $data['establecimiento_ids'] ?? []);
+        $audit->withoutAuditing(function () use ($user, $next) {
+            UsuarioEstablecimiento::where('user_id', $user->id)->delete();
+            foreach ($next as $establishmentId) {
+                UsuarioEstablecimiento::create(['user_id' => $user->id, 'establecimiento_id' => $establishmentId]);
+            }
+        });
+        $audit->recordExplicit('update', UsuarioEstablecimiento::class, (int) $user->id, [
+            'establecimiento_ids' => $previous,
+        ], [
+            'establecimiento_ids' => $next,
+        ], ['phase' => 'assignment']);
 
         return back()->with('success', 'Asignaciones actualizadas.');
     }
@@ -246,17 +275,20 @@ class CapturaController extends Controller
 
     private function ensureCanView(Record $record): void
     {
+        $this->authorize('view', $record);
         abort_unless($record->isAccessibleBy(request()->user()), 403, 'No tiene alcance sobre este registro.');
     }
 
     private function ensureCanCapture(): void
     {
+        $this->authorize('create', Record::class);
         abort_unless(request()->user()->can('bio.record.create'), 403);
     }
 
     private function ensureCanEdit(Record $record): void
     {
         $this->ensureCanView($record);
+        $this->authorize('update', $record);
         abort_unless(request()->user()->can('bio.record.update'), 403);
         abort_unless($record->isEditable(), 422, 'El registro no está disponible para edición.');
     }

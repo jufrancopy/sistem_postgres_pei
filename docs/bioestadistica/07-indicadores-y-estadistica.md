@@ -27,8 +27,12 @@ Nodo base:
 Toman un nodo de referencia y un filtro opcional:
 
 ```json
-{ "op": "sum", "field": "pacientes_dia", "filter": { "form": "SP11" } }
+{ "op": "sum", "form": "SP11", "field": "paciente_dia", "metric": "pacientes_dia" }
 ```
+
+Las referencias se califican por `form` + `field` y, para campos `tabla`, por `metric`.
+Esto evita ambigüedad porque el código de campo no es único en todo el sistema.
+`v_valores_numericos` desanida `value_json.rows` y expone también `catalog_item_id`.
 
 ### Operadores aritméticos
 
@@ -49,14 +53,19 @@ Toman un nodo de referencia y un filtro opcional:
 | Campo | `{ "field": "consultas" }` |
 | Constante | `{ "const": 100 }` |
 | Otro indicador | `{ "indicator": "TOTAL_CONSULTAS" }` |
-| Conteo de episodios SP10 | `{ "hosp_count": { "tipo_alta": "FALLECIDO" } }` |
+| Conteo de episodios SP10 | `{ "hosp_count": { "tipo_alta": "FALLECIDO" } }` — reservado para F6 |
 
 ## Ejemplos
 
 Total de consultas médicas:
 
 ```json
-{ "op": "sum", "field": "consultas", "filter": { "form": "SP1" } }
+{
+  "op": "sum",
+  "form": "SP1",
+  "field": "consultas_por_especialidad",
+  "metric": "total_consultas"
+}
 ```
 
 Ocupación hospitalaria:
@@ -65,8 +74,8 @@ Ocupación hospitalaria:
 {
   "op": "pct",
   "args": [
-    { "op": "sum", "field": "pacientes_dia",    "filter": { "form": "SP11" } },
-    { "op": "sum", "field": "camas_operativas", "filter": { "form": "SP11" } }
+    { "op": "sum", "form": "SP11", "field": "paciente_dia", "metric": "pacientes_dia" },
+    { "op": "sum", "form": "SP11", "field": "paciente_dia", "metric": "camas_operativas" }
   ]
 }
 ```

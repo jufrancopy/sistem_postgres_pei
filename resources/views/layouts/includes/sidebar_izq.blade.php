@@ -329,6 +329,46 @@
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">PD</span><span class="sidebar-normal">Pendientes</span>
                                         </a>
                                     </li>
+                                    <li class="nav-item {{ $isActive('bioestadistica/indicadores*') }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.indicadores.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">IN</span><span class="sidebar-normal">Indicadores</span>
+                                        </a>
+                                    </li>
+                                    @can('bio.report.view')
+                                    <li class="nav-item {{ $isActive('bioestadistica/reportes*') }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.reportes.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">RP</span><span class="sidebar-normal">Reportes</span>
+                                        </a>
+                                    </li>
+                                    @endcan
+                                    @can('bio.dashboard.view')
+                                    <li class="nav-item {{ $isActive('bioestadistica/dashboards*') }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.dashboards.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">TB</span><span class="sidebar-normal">Dashboards</span>
+                                        </a>
+                                    </li>
+                                    @endcan
+                                    @can('bio.import.view')
+                                    <li class="nav-item {{ $isActive('bioestadistica/importaciones*') }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.importaciones.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">IM</span><span class="sidebar-normal">Importaciones</span>
+                                        </a>
+                                    </li>
+                                    @endcan
+                                    @can('bio.hosp.view')
+                                    <li class="nav-item {{ $isActive('bioestadistica/hospitalizacion*') }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.hospitalizacion.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">HO</span><span class="sidebar-normal">Hospitalización</span>
+                                        </a>
+                                    </li>
+                                    @endcan
+                                    @can('bio.audit.view')
+                                    <li class="nav-item {{ $isActive('bioestadistica/auditoria*') }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.auditoria.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">AU</span><span class="sidebar-normal">Auditoría</span>
+                                        </a>
+                                    </li>
+                                    @endcan
                                     <li class="nav-item {{ $isActive('bioestadistica/geografia*') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">GE</span><span class="sidebar-normal">Geografía</span>
@@ -504,6 +544,34 @@
                         <li class="nav-item {{ $isActive('bioestadistica/captura/pendientes*') }}">
                             <a class="nav-link" href="{{ route('bioestadistica.captura.pending') }}"><span class="sidebar-mini">PD</span><span class="sidebar-normal">Pendientes</span></a>
                         </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/indicadores*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.indicadores.index') }}"><span class="sidebar-mini">IN</span><span class="sidebar-normal">Indicadores</span></a>
+                        </li>
+                        @can('bio.report.view')
+                        <li class="nav-item {{ $isActive('bioestadistica/reportes*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.reportes.index') }}"><span class="sidebar-mini">RP</span><span class="sidebar-normal">Reportes</span></a>
+                        </li>
+                        @endcan
+                        @can('bio.dashboard.view')
+                        <li class="nav-item {{ $isActive('bioestadistica/dashboards*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.dashboards.index') }}"><span class="sidebar-mini">TB</span><span class="sidebar-normal">Dashboards</span></a>
+                        </li>
+                        @endcan
+                        @can('bio.import.view')
+                        <li class="nav-item {{ $isActive('bioestadistica/importaciones*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.importaciones.index') }}"><span class="sidebar-mini">IM</span><span class="sidebar-normal">Importaciones</span></a>
+                        </li>
+                        @endcan
+                        @can('bio.hosp.view')
+                        <li class="nav-item {{ $isActive('bioestadistica/hospitalizacion*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.hospitalizacion.index') }}"><span class="sidebar-mini">HO</span><span class="sidebar-normal">Hospitalización</span></a>
+                        </li>
+                        @endcan
+                        @can('bio.audit.view')
+                        <li class="nav-item {{ $isActive('bioestadistica/auditoria*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.auditoria.index') }}"><span class="sidebar-mini">AU</span><span class="sidebar-normal">Auditoría</span></a>
+                        </li>
+                        @endcan
                         <li class="nav-item {{ $isActive('bioestadistica/geografia*') }}">
                             <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}"><span class="sidebar-mini">GE</span><span class="sidebar-normal">Geografía</span></a>
                         </li>
@@ -534,6 +602,34 @@
                         <li class="nav-item {{ $isActive('bioestadistica/captura/pendientes*') }}">
                             <a class="nav-link" href="{{ route('bioestadistica.captura.pending') }}"><span class="sidebar-mini">PD</span><span class="sidebar-normal">Pendientes</span></a>
                         </li>
+                        <li class="nav-item {{ $isActive('bioestadistica/indicadores*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.indicadores.index') }}"><span class="sidebar-mini">IN</span><span class="sidebar-normal">Indicadores</span></a>
+                        </li>
+                        @can('bio.report.view')
+                        <li class="nav-item {{ $isActive('bioestadistica/reportes*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.reportes.index') }}"><span class="sidebar-mini">RP</span><span class="sidebar-normal">Reportes</span></a>
+                        </li>
+                        @endcan
+                        @can('bio.dashboard.view')
+                        <li class="nav-item {{ $isActive('bioestadistica/dashboards*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.dashboards.index') }}"><span class="sidebar-mini">TB</span><span class="sidebar-normal">Dashboards</span></a>
+                        </li>
+                        @endcan
+                        @can('bio.import.view')
+                        <li class="nav-item {{ $isActive('bioestadistica/importaciones*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.importaciones.index') }}"><span class="sidebar-mini">IM</span><span class="sidebar-normal">Importaciones</span></a>
+                        </li>
+                        @endcan
+                        @can('bio.hosp.view')
+                        <li class="nav-item {{ $isActive('bioestadistica/hospitalizacion*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.hospitalizacion.index') }}"><span class="sidebar-mini">HO</span><span class="sidebar-normal">Hospitalización</span></a>
+                        </li>
+                        @endcan
+                        @can('bio.audit.view')
+                        <li class="nav-item {{ $isActive('bioestadistica/auditoria*') }}">
+                            <a class="nav-link" href="{{ route('bioestadistica.auditoria.index') }}"><span class="sidebar-mini">AU</span><span class="sidebar-normal">Auditoría</span></a>
+                        </li>
+                        @endcan
                         <li class="nav-item {{ $isActive('bioestadistica/geografia*') }}">
                             <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}"><span class="sidebar-mini">GE</span><span class="sidebar-normal">Geografía</span></a>
                         </li>

@@ -83,6 +83,13 @@ Criterios de aceptación:
 
 ## F3 — Indicadores y estadística
 
+**Estado: implementado (núcleo funcional, 17/08/2026).** Incluye tablas y modelos de
+indicadores, fórmulas AST versionadas, caché por establecimiento/período, vistas numéricas
+PostgreSQL para valores escalares y tablas JSON, validación de operadores/profundidad/ciclos,
+evaluación por período y geografía, estadísticas descriptivas, cobertura, ABM y constructor
+visual. `TOTAL_CONSULTAS` queda sembrado como piloto sobre SP1. Ocupación hospitalaria queda
+pendiente de configurar SP11 y `hosp_count` del módulo SP10.
+
 | Paso | Detalle |
 |---|---|
 | 1 | Migraciones `indicadores`, `indicador_formulas`, `indicador_cache` |
@@ -153,6 +160,8 @@ Criterios de aceptación:
 - Sin `bio.hosp.view_pii` la cédula aparece enmascarada.
 
 ## F7 — Auditoría y hardening
+
+Implementado: `audit_log` append-only con trigger PostgreSQL, trait `Auditable`, UI en `/bioestadistica/auditoria`, policies contextuales, redirección del Analista y caché transitiva.
 
 | Paso | Detalle |
 |---|---|
