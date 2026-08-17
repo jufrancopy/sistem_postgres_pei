@@ -1337,4 +1337,77 @@ class PeiController extends Controller
 
         return redirect()->back()->with('success', 'Variables del plan y Actas de Reunión actualizadas correctamente.');
     }
+
+    // ── Vista de Asesor Externo (Admin / Validaciones) ──────────────────────
+    public function vistaAsesor($idProfile)
+    {
+        $profile = PeiProfile::where('id', $idProfile)
+            ->whereNull('parent_id')
+            ->where('level', 'master')
+            ->firstOrFail();
+
+        $descendants = $profile->descendants()->get();
+        $treeNodes   = $descendants->toTree();
+
+        // Mapear iniciativas (Acciones Operativas)
+        $nodeIds = $descendants->pluck('id')->push($profile->id)->map(fn($v) => (string)$v)->toArray();
+        $stringIds = array_values(array_filter($nodeIds, fn($id) => !is_numeric($id)));
+        $numericIds = array_values(array_filter($nodeIds, 'is_numeric'));
+
+        $query = \App\Models\PlanMaestro\PlanAccion::query();
+        if (!empty($stringIds)) {
+            $query->whereIn('pei_profile_id', $stringIds);
+        }
+        if (!empty($numericIds)) {
+            $query->orWhereIn('plan_id', $numericIds)->orWhereIn('eje_id', $numericIds);
+        }
+        $iniciativas = $query->orderBy('orden')->get();
+
+        return view('admin.planificacion.peis.peis.vista_asesor', compact('profile', 'treeNodes', 'descendants', 'iniciativas'));
+    }
+
+    public function guardarComentarioAsesor(Request $request, $idProfile)
+    {
+        $request->validate([
+            'node_id' => 'required',
+            'comentario' => 'nullable|string',
+            'type' => 'nullable|string'
+        ]);
+
+        $nodeId = $request->input('node_id');
+        $comentario = trim($request->input('comentario') ?? '');
+        $type = $request->input('type', 'node');
+
+        if ($type === 'iniciativa' || is_numeric($nodeId)) {
+            $ini = \App\Models\PlanMaestro\PlanAccion::find($nodeId);
+            if ($ini) {
+                $ini->comentario_asesor = $comentario;
+                $ini->save();
+                return response()->json(['success' => true, 'message' => 'Comentario del Asesor guardado en la Acción Operativa.']);
+            }
+        }
+
+        $node = PeiProfile::find($nodeId);
+        if ($node) {
+            $node->comentario_asesor = $comentario;
+            $node->save();
+            return response()->json(['success' => true, 'message' => 'Comentario del Asesor guardado en el elemento.']);
+        }
+
+        return response()->json(['success' => false, 'message' => 'No se encontró el elemento a comentar.'], 404);
+    }
+
+    public function generarTokenAsesor($idProfile)
+    {
+        $profile = PeiProfile::where('id', $idProfile)->whereNull('parent_id')->firstOrFail();
+        $token = $profile->generateAsesorToken();
+        return redirect()->back()->with('success', 'Enlace Seguro para Asesor Externo generado exitosamente.');
+    }
+
+    public function revocarTokenAsesor($idProfile)
+    {
+        $profile = PeiProfile::where('id', $idProfile)->whereNull('parent_id')->firstOrFail();
+        $profile->revokeAsesorToken();
+        return redirect()->back()->with('success', 'Enlace Seguro para Asesor Externo revocado.');
+    }
 }

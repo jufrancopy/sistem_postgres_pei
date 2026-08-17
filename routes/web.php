@@ -19,6 +19,7 @@ Route::patch('/home-config/save',   'Admin\HomeConfigController@save')->name('ho
 
 // ── Vistas públicas PEI (sin autenticación) ───────────────────────────────────
 Route::get('/public/pei/{token}', 'Admin\Planificacion\PublicPeiController@show')->name('pei.public.show');
+Route::get('/public/pei-asesor/{token}', 'Admin\Planificacion\PublicPeiController@showAsesor')->name('pei.asesor.public.show');
 
 // ── Vistas públicas Acta de Reunión MECIP (sin autenticación) ─────────────────
 Route::get('/actas-reunion/{token}', 'Admin\Globales\ActaMecipController@publicView')->name('actas.public.show');
@@ -91,6 +92,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/matriz',        'Admin\Planificacion\Pei\PeiController@matriz')->name('pei-profiles.matriz');
     Route::get('pei-profiles/{idProfile}/matriz/pdf',    'Admin\Planificacion\Pei\PeiController@matrizPdf')->name('pei-profiles.matriz.pdf');
     Route::get('pei-profiles/{idProfile}/dashboard', 'Admin\Planificacion\Pei\PeiController@dashboard')->name('pei-profiles.dashboard');
+    Route::get('pei-profiles/{idProfile}/vista-asesor', 'Admin\Planificacion\Pei\PeiController@vistaAsesor')->name('pei-profiles.vista-asesor');
+    Route::post('pei-profiles/{idProfile}/guardar-comentario-asesor', 'Admin\Planificacion\Pei\PeiController@guardarComentarioAsesor')->name('pei-profiles.guardar-comentario-asesor');
+    Route::post('pei-profiles/{idProfile}/asesor-token', 'Admin\Planificacion\Pei\PeiController@generarTokenAsesor')->name('pei.asesor.token.generate');
+    Route::delete('pei-profiles/{idProfile}/asesor-token', 'Admin\Planificacion\Pei\PeiController@revocarTokenAsesor')->name('pei.asesor.token.revoke');
 
     // ── Coordinador de Planificación ─────────────────────────────────────────
     Route::prefix('coordinador-planificacion')->name('coordinador.')->middleware(['role:Coordinador de Planificación|Analista de Planificación|Administrador'])->group(function () {

@@ -126,6 +126,18 @@ class PeiProfile extends Model
         $this->update(['public_token' => null]);
     }
 
+    public function generateAsesorToken(): string
+    {
+        $token = 'asesor_' . bin2hex(random_bytes(24));
+        $this->update(['asesor_token' => $token]);
+        return $token;
+    }
+
+    public function revokeAsesorToken(): void
+    {
+        $this->update(['asesor_token' => null]);
+    }
+
     public function getLabelNivel(): string
     {
         if ($this->nivel_label) {

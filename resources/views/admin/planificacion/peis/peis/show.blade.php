@@ -37,6 +37,10 @@
             <a href="{{ route('pei-profiles.matriz', $profile->id) }}" class="btn btn-sm btn-outline-primary ml-2" target="_blank">
                 <i class="fa fa-table mr-1"></i> Formulación Estratégica Integrada
             </a>
+            <a href="{{ route('pei-profiles.vista-asesor', $profile->id) }}" class="btn btn-sm text-white font-weight-bold ml-2 shadow-sm d-inline-flex align-items-center" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none; border-radius: 8px; padding: 6px 14px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(245,158,11,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='';" title="Vista de Asesor Externo para revisión y sugerencias de mejora">
+                <i class="fa fa-user-md mr-2 text-dark" style="font-size: 0.95rem;"></i>
+                <span class="text-dark font-weight-bold">Vista Asesor / Validación</span>
+            </a>
             <button type="button" class="btn btn-sm btn-dark font-weight-bold ml-2 shadow-xs" id="btnAbrirModalReordenarPei"
                     data-profile="{{ $profile->id }}"
                     title="Reordenar Estructura PEI arrastrando y soltando (Drag & Drop)"

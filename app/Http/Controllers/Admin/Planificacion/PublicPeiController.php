@@ -202,4 +202,32 @@ class PublicPeiController extends Controller
 
         return response()->json(['ok' => true, 'message' => 'Acceso público revocado.']);
     }
+
+    // ── Vista pública de Asesor Externo por Token ────────────────────────────
+    public function showAsesor(string $token)
+    {
+        $profile = PeiProfile::where('asesor_token', $token)
+            ->where('level', 'master')
+            ->firstOrFail();
+
+        $descendants = $profile->descendants()->get();
+        $treeNodes   = $descendants->toTree();
+
+        $nodeIds = $descendants->pluck('id')->push($profile->id)->map(fn($v) => (string)$v)->toArray();
+        $stringIds = array_values(array_filter($nodeIds, fn($id) => !is_numeric($id)));
+        $numericIds = array_values(array_filter($nodeIds, 'is_numeric'));
+
+        $query = \App\Models\PlanMaestro\PlanAccion::query();
+        if (!empty($stringIds)) {
+            $query->whereIn('pei_profile_id', $stringIds);
+        }
+        if (!empty($numericIds)) {
+            $query->orWhereIn('plan_id', $numericIds)->orWhereIn('eje_id', $numericIds);
+        }
+        $iniciativas = $query->orderBy('orden')->get();
+
+        $isPublicAccess = true;
+
+        return view('admin.planificacion.peis.peis.vista_asesor', compact('profile', 'treeNodes', 'descendants', 'iniciativas', 'isPublicAccess'));
+    }
 }
