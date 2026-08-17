@@ -5065,15 +5065,18 @@ function irAIniciativaDesdeModal(iniId) {
                         <p class="text-muted small mb-2">Compartí las siguientes credenciales con el Asesor Externo para su ingreso al portal:</p>
                         
                         <div class="p-3 bg-light rounded border mb-3 font-mono" style="font-size: 0.88rem;">
-                            <div><strong>Correo:</strong> <span id="txtCredEmail" class="text-primary"></span></div>
-                            <div><strong>Código Único:</strong> <span id="txtCredCodigo" class="text-danger font-weight-bold"></span></div>
-                            <div><strong>URL Portal:</strong> <span id="txtCredUrl" class="text-muted"></span></div>
+                            <div><strong>Correo:</strong> <span id="txtCredEmail" class="text-primary font-weight-bold"></span></div>
+                            <div><strong>Código Único:</strong> <span id="txtCredCodigo" class="text-danger font-weight-bold" style="font-size: 1rem;"></span></div>
+                            <div><strong>URL Portal:</strong> <span id="txtCredUrl" class="text-muted font-weight-bold"></span></div>
                         </div>
 
-                        <div class="text-right">
-                            <button type="button" class="btn btn-sm btn-success font-weight-bold rounded-pill px-3" id="btnCopiarCredencialesAsesor">
-                                <i class="fa fa-copy mr-1"></i> Copiar Credenciales para el Asesor
+                        <div class="d-flex align-items-center justify-content-end" style="gap: 8px;">
+                            <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold rounded-pill px-3" id="btnCopiarCredencialesAsesor">
+                                <i class="fa fa-copy mr-1"></i> Copiar Credenciales
                             </button>
+                            <a href="#" target="_blank" class="btn btn-sm btn-success font-weight-bold rounded-pill px-3" id="btnWhatsappCredencialesAsesor">
+                                <i class="fab fa-whatsapp mr-1"></i> Enviar por WhatsApp
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -5093,11 +5096,12 @@ function irAIniciativaDesdeModal(iniId) {
                                     <th class="text-center">Código Único</th>
                                     <th class="text-center">Estado</th>
                                     <th class="text-center">Sugerencias</th>
+                                    <th class="text-center">Acciones / Compartir</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="5" class="text-center py-3 text-muted">Cargando convocatorias...</td>
+                                    <td colspan="6" class="text-center py-3 text-muted">Cargando convocatorias...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -5114,6 +5118,22 @@ function irAIniciativaDesdeModal(iniId) {
 
 <script>
 var lastCredencialesTexto = '';
+var loginUrlAsesor = "{{ route('asesoria.public.login') }}";
+
+function copiarTextoGenerico(texto, msgSuccess) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function() {
+            if (window.toastr) toastr.success(msgSuccess || 'Texto copiado al portapapeles.');
+        });
+    } else {
+        var $temp = $("<textarea>");
+        $("body").append($temp);
+        $temp.val(texto).select();
+        document.execCommand("copy");
+        $temp.remove();
+        if (window.toastr) toastr.success(msgSuccess || 'Texto copiado al portapapeles.');
+    }
+}
 
 function cargarListaAsesoriasAdmin() {
     $.ajax({
@@ -5127,6 +5147,10 @@ function cargarListaAsesoriasAdmin() {
                 resp.asesorias.forEach(function(a) {
                     var stBadge = a.estado === 'COMPLETADO' ? 'badge-success' : (a.estado === 'EN_REVISION' ? 'badge-info' : 'badge-warning text-dark');
                     var inst = a.institucion ? `<br><small class="text-muted"><i class="fa fa-building mr-1"></i>${a.institucion}</small>` : '';
+                    
+                    var msgAsesor = `📌 CONVOCATORIA A ASESORÍA TÉCNICA - PEI\n\nEstimado/a ${a.nombre},\nHa sido convocado/a para la validación y evaluación del Plan Estratégico Institucional.\n\n🌐 Portal de Acceso: ${loginUrlAsesor}\n📧 Correo Registrado: ${a.email}\n🔑 Código Único: ${a.codigo_acceso}\n\nPor favor ingrese al portal con sus credenciales.`;
+                    var waLink = "https://api.whatsapp.com/send?text=" + encodeURIComponent(msgAsesor);
+
                     var tr = `
                         <tr>
                             <td class="align-middle">
@@ -5135,7 +5159,7 @@ function cargarListaAsesoriasAdmin() {
                             </td>
                             <td class="align-middle text-muted">${a.email}</td>
                             <td class="align-middle text-center font-weight-bold">
-                                <span class="badge badge-dark px-2 py-1">${a.codigo_acceso}</span>
+                                <span class="badge badge-dark px-2 py-1" style="font-size:0.85rem;">${a.codigo_acceso}</span>
                             </td>
                             <td class="align-middle text-center">
                                 <span class="badge ${stBadge} px-2 py-1">${a.estado}</span>
@@ -5143,17 +5167,33 @@ function cargarListaAsesoriasAdmin() {
                             <td class="align-middle text-center font-weight-bold text-primary">
                                 ${a.comentarios_count || 0}
                             </td>
+                            <td class="align-middle text-center">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold btn-copiar-asesor-row"
+                                            data-msg="${encodeURIComponent(msgAsesor)}" title="Copiar Credenciales">
+                                        <i class="fa fa-copy mr-1"></i> Copiar
+                                    </button>
+                                    <a href="${waLink}" target="_blank" class="btn btn-sm btn-outline-success font-weight-bold" title="Compartir por WhatsApp">
+                                        <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
                     `;
                     $tbody.append(tr);
                 });
             } else {
                 $('#badgeTotalAsesoresCount').text('0 convocados');
-                $tbody.html('<tr><td colspan="5" class="text-center py-3 text-muted">No se han convocado asesores externos para este PEI aún.</td></tr>');
+                $tbody.html('<tr><td colspan="6" class="text-center py-3 text-muted">No se han convocado asesores externos para este PEI aún.</td></tr>');
             }
         }
     });
 }
+
+$(document).on('click', '.btn-copiar-asesor-row', function() {
+    var msg = decodeURIComponent($(this).data('msg'));
+    copiarTextoGenerico(msg, 'Credenciales del asesor copiadas al portapapeles.');
+});
 
 $('#formConvocarAsesorAdmin').submit(function(e) {
     e.preventDefault();
@@ -5173,7 +5213,10 @@ $('#formConvocarAsesorAdmin').submit(function(e) {
                 $('#txtCredCodigo').text(resp.data.codigo_acceso);
                 $('#txtCredUrl').text(resp.data.login_url);
 
-                lastCredencialesTexto = `📌 ACCESO A ASESORÍA Y VALIDACIÓN PEI\n\nEstimado/a ${resp.data.nombre},\nHa sido convocado/a para la validación del Plan Estratégico Institucional.\n\n🌐 Portal: ${resp.data.login_url}\n📧 Correo: ${resp.data.email}\n🔑 Código Único: ${resp.data.codigo_acceso}\n\nPor favor ingrese al portal con sus credenciales.`;
+                lastCredencialesTexto = `📌 CONVOCATORIA A ASESORÍA TÉCNICA - PEI\n\nEstimado/a ${resp.data.nombre},\nHa sido convocado/a para la validación y evaluación del Plan Estratégico Institucional.\n\n🌐 Portal de Acceso: ${resp.data.login_url}\n📧 Correo Registrado: ${resp.data.email}\n🔑 Código Único: ${resp.data.codigo_acceso}\n\nPor favor ingrese al portal con sus credenciales.`;
+
+                var waUrlGenerado = "https://api.whatsapp.com/send?text=" + encodeURIComponent(lastCredencialesTexto);
+                $('#btnWhatsappCredencialesAsesor').attr('href', waUrlGenerado);
 
                 $('#cajaCredencialesGeneradas').slideDown(200);
                 cargarListaAsesoriasAdmin();
@@ -5189,18 +5232,7 @@ $('#formConvocarAsesorAdmin').submit(function(e) {
 });
 
 $('#btnCopiarCredencialesAsesor').click(function() {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(lastCredencialesTexto).then(function() {
-            if (window.toastr) toastr.success('Credenciales copiadas al portapapeles.');
-        });
-    } else {
-        var $temp = $("<textarea>");
-        $("body").append($temp);
-        $temp.val(lastCredencialesTexto).select();
-        document.execCommand("copy");
-        $temp.remove();
-        if (window.toastr) toastr.success('Credenciales copiadas al portapapeles.');
-    }
+    copiarTextoGenerico(lastCredencialesTexto, 'Credenciales del asesor copiadas al portapapeles.');
 });
 </script>
 
