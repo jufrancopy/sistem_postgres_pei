@@ -124,13 +124,25 @@
                         <i class="fa fa-rocket mr-1"></i>{{ $totalAcciones }}
                     </span>
                     @if($marcosAxi->count() > 0)
-                    <a href="javascript:void(0)" id="marcos-pill-{{ $axi->id }}"
-                       class="badge badge-info"
-                       data-toggle="popover" data-trigger="click" data-placement="left"
-                       data-html="true" data-title="Marcos Referenciales"
-                       data-content="{{ $marcosPopover }}">
-                        <i class="fa fa-link mr-1"></i>{{ $marcosAxi->count() }}
-                    </a>
+                        @php 
+                            $badgeStyles = [
+                                'pnd'     => 'background:#dc3545; color:#fff;',
+                                'ods'     => 'background:#10b981; color:#fff;',
+                                'bsc'     => 'background:#3b82f6; color:#fff;',
+                                'mecip'   => 'background:#f59e0b; color:#1e293b; font-weight:700;',
+                                'pgn'     => 'background:#1e293b; color:#fff;',
+                                'general' => 'background:#64748b; color:#fff;'
+                            ];
+                        @endphp
+                        @foreach($marcosAxi->groupBy('tipo') as $tipo => $items)
+                            @foreach($items as $marco)
+                                <span class="badge shadow-xs mr-1" 
+                                      style="{{ $badgeStyles[$tipo] ?? 'background:#64748b; color:#fff;' }} font-size:.68rem; padding: 4px 8px; border-radius: 6px;"
+                                      title="{{ $marco->descripcion ?? $marco->nombre }}">
+                                    {{ $marco->nombre }}
+                                </span>
+                            @endforeach
+                        @endforeach
                     @endif
                     @if($countEstrategias > 0)
                     <a href="javascript:void(0)"
