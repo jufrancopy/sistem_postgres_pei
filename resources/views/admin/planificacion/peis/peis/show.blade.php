@@ -3777,11 +3777,16 @@
             $('#ind_nombre').val(ind.nombre);
             $('#ind_codigo_letras').val(ind.codigo_letras);
             $('#ind_codigo_numeros').val(ind.codigo_numeros);
-            // Radios
+            // Radios (búsqueda case-insensitive)
             $.each(['dimension','ambito','frecuencia','cobertura','sentido'], function(i, campo) {
-                var val = ind[campo];
-                var radio = $('input[name="ind_' + campo + '"][value="' + val + '"]');
-                radio.prop('checked', true).trigger('change');
+                var rawVal = (ind[campo] || '').toString().toLowerCase().trim();
+                if (!rawVal) return;
+                var $radio = $('input[name="ind_' + campo + '"]').filter(function() {
+                    return $(this).val().toLowerCase() === rawVal;
+                });
+                if ($radio.length) {
+                    $radio.prop('checked', true).trigger('change');
+                }
             });
             if (ind.frecuencia === 'otro') $('#ind_frecuencia_otro').val(ind.frecuencia_otro);
             $('#ind_descripcion').val(ind.descripcion);
@@ -4201,11 +4206,16 @@ $(document).on('click', '.btn-ver-indicador', function() {
         $('#ind_codigo_letras').val(ind.codigo_letras);
         $('#ind_codigo_numeros').val(ind.codigo_numeros);
 
-        // Radios
+        // Radios (búsqueda case-insensitive)
         $.each(['dimension','ambito','frecuencia','cobertura','sentido'], function(i, campo) {
-            var val = ind[campo];
-            var radio = $('input[name="ind_' + campo + '"][value="' + val + '"]');
-            radio.prop('checked', true).trigger('change');
+            var rawVal = (ind[campo] || '').toString().toLowerCase().trim();
+            if (!rawVal) return;
+            var $radio = $('input[name="ind_' + campo + '"]').filter(function() {
+                return $(this).val().toLowerCase() === rawVal;
+            });
+            if ($radio.length) {
+                $radio.prop('checked', true).trigger('change');
+            }
         });
         if (ind.frecuencia === 'otro') $('#ind_frecuencia_otro').val(ind.frecuencia_otro);
 

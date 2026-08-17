@@ -284,8 +284,11 @@ $(function() {
         $('#ind_descripcion,#ind_variables,#ind_formula,#ind_unidad_medida').val('');
         $('#ind_frecuencia_otro,#ind_linea_base_anio,#ind_linea_base_valor').val('');
         $('#ind_fuente,#ind_dependencia_responsable,#ind_comentarios').val('');
-        $('#container_frecuencia_otro').hide();
-        $('.modal-select2').val('').trigger('change');
+        $('[name^="ind_"]').filter(':radio').prop('checked', false);
+        $('.ind-radio-card').each(function() {
+            var color = $(this).data('color') || 'secondary';
+            $(this).removeClass('ind-selected-' + color);
+        });
         $('#metasContainer').empty();
         _metaIndex = 0;
     }
@@ -298,11 +301,16 @@ $(function() {
         $('#ind_codigo_letras').val(ind.codigo_letras);
         $('#ind_codigo_numeros').val(ind.codigo_numeros);
 
-        $('#form_ind_dimension').val(ind.dimension).trigger('change');
-        $('#form_ind_ambito').val(ind.ambito).trigger('change');
-        $('#form_ind_frecuencia').val(ind.frecuencia).trigger('change');
-        $('#form_ind_cobertura').val(ind.cobertura).trigger('change');
-        $('#form_ind_sentido').val(ind.sentido).trigger('change');
+        $.each(['dimension','ambito','frecuencia','cobertura','sentido'], function(i, c) {
+            var rawVal = (ind[c] || '').toString().toLowerCase().trim();
+            if (!rawVal) return;
+            var $radio = $('input[name="ind_' + c + '"]').filter(function() {
+                return $(this).val().toLowerCase() === rawVal;
+            });
+            if ($radio.length) {
+                $radio.prop('checked', true).trigger('change');
+            }
+        });
 
         if (ind.frecuencia === 'otro') {
             $('#ind_frecuencia_otro').val(ind.frecuencia_otro);
