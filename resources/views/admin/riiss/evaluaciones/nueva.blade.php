@@ -332,6 +332,19 @@
         {{-- Secciones del formulario --}}
         <div id="seccionesFormulario"></div>
 
+        {{-- Aspectos Positivos Observados --}}
+        <div class="card shadow-sm mb-4 border-success" id="panelAspectosPositivos" style="display:none">
+            <div class="card-header bg-success text-white py-2">
+                <h6 class="mb-0 font-weight-bold text-uppercase text-white" style="font-size:0.85rem">
+                    <i class="fa fa-star mr-1"></i>Aspectos Positivos Observados
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-2">Registrá las prácticas destacadas, fortalezas, innovaciones o aspectos positivos observados en el establecimiento.</p>
+                <textarea id="evalAspectosPositivos" class="form-control"></textarea>
+            </div>
+        </div>
+
         {{-- Observaciones Generales --}}
         <div class="card shadow-sm mb-4" id="panelObservaciones" style="display:none">
             <div class="card-header bg-light py-2 border-bottom">
@@ -344,7 +357,7 @@
                 <textarea id="evalObservaciones" class="form-control"></textarea>
                 <div class="mt-3 text-right">
                     <button class="btn btn-sm btn-info" id="btnGuardarObs" onclick="guardarObservaciones()">
-                        <i class="fa fa-save mr-1"></i>Guardar Observaciones
+                        <i class="fa fa-save mr-1"></i>Guardar Observaciones y Aspectos Positivos
                     </button>
                 </div>
             </div>
@@ -657,6 +670,13 @@ function recuperarEvaluacionExistente(id) {
                     $('#evalObservaciones').val(ev.observaciones_generales);
                 }
             }
+            if (ev.aspectos_positivos) {
+                if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalAspectosPositivos) {
+                    CKEDITOR.instances.evalAspectosPositivos.setData(ev.aspectos_positivos);
+                } else {
+                    $('#evalAspectosPositivos').val(ev.aspectos_positivos);
+                }
+            }
         });
     });
 }
@@ -703,8 +723,12 @@ function actualizarDatosVisita() {
     if (!evaluacionId) return;
     const evalData   = $('#evalEvaluadores').select2('data');
     const evaluadores = evalData.map(function(e) { return { id: e.id, text: e.text }; });
-    const ubicacion  = typeof evalGetLocalidad === 'function' ? evalGetLocalidad() : null;
-    const obs        = typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalObservaciones ? CKEDITOR.instances.evalObservaciones.getData() : $('#evalObservaciones').val();
+
+    const ubicacion = {
+        departamento: { cod: $('#eval-depto').val(), text: $('#eval-depto option:selected').text() },
+        distrito:     { cod: $('#eval-dist').val(),  text: $('#eval-dist option:selected').text() },
+        barrio:       { id:  $('#eval-barrio').val(), text: $('#eval-barrio option:selected').text() },
+    };
 
     $.ajax({
         url: '/riiss/evaluaciones/' + evaluacionId + '/datos-visita',
@@ -715,7 +739,6 @@ function actualizarDatosVisita() {
             fecha_evaluacion:   $('#evalFecha').val(),
             evaluadores:        evaluadores,
             evaluador_telefono: $('#evalTelefono').val(),
-            observaciones_generales: obs,
             metadata: {
                 ubicacion:    ubicacion,
                 email:        $('#estEmail').val(),
@@ -734,6 +757,7 @@ function guardarObservaciones() {
     btn.html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
     
     var obs = typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalObservaciones ? CKEDITOR.instances.evalObservaciones.getData() : $('#evalObservaciones').val();
+    var asp = typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalAspectosPositivos ? CKEDITOR.instances.evalAspectosPositivos.getData() : $('#evalAspectosPositivos').val();
     
     $.ajax({
         url: '/riiss/evaluaciones/' + evaluacionId + '/datos-visita',
@@ -741,14 +765,15 @@ function guardarObservaciones() {
         contentType: 'application/json',
         data: JSON.stringify({
             _token: '{{ csrf_token() }}',
-            observaciones_generales: obs
+            observaciones_generales: obs,
+            aspectos_positivos: asp
         }),
         success: function() { 
-            btn.html('<i class="fa fa-save mr-1"></i>Guardar Observaciones');
-            mostrarToast('Observaciones guardadas con éxito', 'success'); 
+            btn.html('<i class="fa fa-save mr-1"></i>Guardar Observaciones y Aspectos Positivos');
+            mostrarToast('Observaciones y aspectos positivos guardados con éxito', 'success'); 
         },
         error: function() {
-            btn.html('<i class="fa fa-save mr-1"></i>Guardar Observaciones');
+            btn.html('<i class="fa fa-save mr-1"></i>Guardar Observaciones y Aspectos Positivos');
             mostrarToast('Error al guardar observaciones', 'error');
         }
     });
@@ -756,12 +781,14 @@ function guardarObservaciones() {
 
 // Autoguardado al salir de la página
 window.addEventListener('beforeunload', function() {
-    if (evaluacionId && $('#evalObservaciones').length) {
+    if (evaluacionId && ($('#evalObservaciones').length || $('#evalAspectosPositivos').length)) {
         var obs = typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalObservaciones ? CKEDITOR.instances.evalObservaciones.getData() : $('#evalObservaciones').val();
+        var asp = typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalAspectosPositivos ? CKEDITOR.instances.evalAspectosPositivos.getData() : $('#evalAspectosPositivos').val();
         navigator.sendBeacon('/riiss/evaluaciones/' + evaluacionId + '/datos-visita', new Blob([JSON.stringify({
             _token: '{{ csrf_token() }}',
             _method: 'PATCH',
-            observaciones_generales: obs
+            observaciones_generales: obs,
+            aspectos_positivos: asp
         })], {type: 'application/json'}));
     }
 });
@@ -782,10 +809,11 @@ function cargarFormulario(callback) {
         renderSecciones(formulario.secciones);
         $('#botonesAccion').show();
         $('#panelObservaciones').show();
+        $('#panelAspectosPositivos').show();
         actualizarProgreso();
         initBuscadorPreguntas();
 
-        // Inicializar CKEditor para observaciones si está disponible
+        // Inicializar CKEditor para observaciones y aspectos positivos deshabilitando aviso de versión
         if (typeof CKEDITOR !== 'undefined') {
             CKEDITOR.replace('evalObservaciones', {
                 height: 150,

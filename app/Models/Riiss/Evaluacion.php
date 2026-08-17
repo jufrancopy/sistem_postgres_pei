@@ -20,7 +20,7 @@ class Evaluacion extends Model
         'evaluadores', 'evaluador_telefono', 'evaluador_usuario_institucional',
         'estado', 'porcentaje_cumplimiento', 'clasificacion_resultado',
         'pct_habilitacion', 'clasificacion_habilitacion',
-        'observaciones_generales', 'metadata', 'pei_profile_id',
+        'observaciones_generales', 'aspectos_positivos', 'metadata', 'pei_profile_id',
     ];
 
     protected $casts = [

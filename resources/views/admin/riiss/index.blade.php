@@ -267,16 +267,27 @@
         <div class="card shadow-sm">
             <div class="card-header bg-light py-3 d-flex align-items-center justify-content-between">
                 <h6 class="font-weight-bold mb-0 text-dark">
-                    <i class="fa fa-sync-alt mr-2 text-danger"></i>Evaluaciones en tiempo real
+                    <i class="fa fa-sync-alt mr-2 text-danger"></i>Evaluaciones en Tiempo Real
                 </h6>
                 <small class="text-muted">Actualiza automáticamente cada 30s</small>
             </div>
             <div class="card-body">
-                <div id="evalCards">
-                    <div class="text-center py-5">
-                        <div class="spinner-border text-danger mb-2"></div>
-                        <p class="text-muted">Cargando monitoreo...</p>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm w-100" id="tablaMonitoreoEvaluaciones">
+                        <thead class="thead-light">
+                            <tr>
+                                <th width="30">#</th>
+                                <th>Establecimiento</th>
+                                <th>Tipología / Complejidad</th>
+                                <th>Evaluador Asignado</th>
+                                <th width="170">Nivel de Avance</th>
+                                <th width="110" class="text-center">Estado</th>
+                                <th width="120" class="text-center">Última Act.</th>
+                                <th width="130" class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -935,79 +946,85 @@ function cargarHistorial() {
     });
 }
 
+var _dtMonitoreo = null;
+var _datosEvaluacionesGlobal = [];
+
 function cargarDashboard() {
     $.get(DASH_URL, function(r) {
         if (!r || !r.ok) return;
         var res = r.resumen || {};
         var evs = r.evaluaciones || [];
+        _datosEvaluacionesGlobal = evs;
 
         $('#kpi-total').text(res.total || 0);
         $('#kpi-progreso').text(res.en_progreso || 0);
         $('#kpi-completadas').text(res.completadas || 0);
         $('#kpi-promedio').text((res.promedio_pct || 0) + '%');
 
-        if (!evs.length) {
-            $('#evalCards').html('<div class="text-center py-4 text-muted">Sin evaluaciones registradas</div>');
-            return;
-        }
-
-        
-        var html = '<div class="row">';
-        evs.forEach(function(ev) {
+        var rowsData = evs.map(function(ev, idx) {
             var pct = ev.progreso || ev.porcentaje_cumplimiento || 0;
             var estadoLabel = (ev.estado || '').replace(/_/g,' ');
             var evalNombre = ev.evaluador && ev.evaluador !== '—' ? ev.evaluador : 'Sin evaluador asignado';
             var badgeClass = '';
-            if (ev.estado === 'pendiente') badgeClass = 'estado-pendiente';
-            else if (ev.estado === 'en_progreso') badgeClass = 'estado-en_progreso';
-            else badgeClass = 'estado-completada';
+            if (ev.estado === 'pendiente' || ev.estado === 'borrador') badgeClass = 'badge-warning text-dark';
+            else if (ev.estado === 'en_progreso') badgeClass = 'badge-primary';
+            else badgeClass = 'badge-success';
 
             var nombreEsc = addslashes(ev.establecimiento || '');
-
-            html += `
-            <div class="col-12 col-sm-6 col-lg-4 col-xl-3 mb-4">
-                <div class="card eval-card h-100">
-                    <div class="eval-card-accent"></div>
-                    <div class="card-body eval-card-body d-flex flex-column justify-content-between">
-                        <div class="eval-card-info">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div>
-                                    <h5 class="font-weight-bold text-dark mb-1" style="font-size:1.05rem; line-height:1.2;">${ev.establecimiento}</h5>
-                                    <small class="text-muted" style="font-size:0.82rem;">${ev.tipologia || ''}</small>
-                                </div>
-                                <span class="estado-badge ${badgeClass} text-capitalize">${estadoLabel}</span>
-                            </div>
-                            <div class="eval-card-meta mb-3 d-flex align-items-center">
-                                <div class="rounded-circle bg-info d-flex align-items-center justify-content-center mr-3" style="width:38px; height:38px; color:#0369a1;">
-                                    <i class="fa fa-user" style="font-size:0.9rem;"></i>
-                                </div>
-                                <div>
-                                    <div class="font-weight-bold text-dark" style="font-size:0.9rem;">${evalNombre}</div>
-                                    <small class="text-muted" style="font-size:0.78rem; letter-spacing:0.3px;">Evaluador asignado</small>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="text-uppercase text-muted small" style="letter-spacing:0.6px;">Nivel de avance</span>
-                                    <span class="font-weight-bold text-primary" style="font-size:1rem;">${pct}%</span>
-                                </div>
-                                <div class="eval-card-progress mb-3"><div class="progress-bar" role="progressbar" style="width:${Math.min(Math.max(pct,0),100)}%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div></div>
-                            </div>
-                        </div>
-                        <div class="mt-2 d-flex justify-content-between align-items-center" style="gap:8px">
-                            <div>
-                                <a href="/riiss/evaluaciones/${ev.id}" class="circle-btn circle-btn-primary" title="Ingresar a Evaluación"><i class="fa fa-arrow-right"></i></a>
-                            </div>
-                            <div>
-                                <button type="button" class="riiss-action-btn riiss-action-btn-view" onclick="verDetalle('${ev.id_establecimiento || ''}', '${nombreEsc}', '${ev.id || ''}')" title="Ver detalle"><i class="fa fa-edit mr-1"></i>Detalle</button>
-                            </div>
-                        </div>
-                    </div>
+            
+            var progresoHtml = `
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="font-weight-bold text-primary small">${pct}%</span>
+                    <small class="text-muted" style="font-size:.7rem">${ev.respondidas||0}/${ev.total_preguntas||0}</small>
                 </div>
-            </div>`;
+                <div class="progress" style="height:6px;border-radius:10px">
+                    <div class="progress-bar bg-info" style="width:${Math.min(Math.max(pct,0),100)}%"></div>
+                </div>
+            `;
+
+            var accionesHtml = `
+                <div class="d-flex justify-content-center align-items-center" style="gap:4px">
+                    <a href="/riiss/evaluaciones/nueva/${ev.id_establecimiento}?evaluacion=${ev.id}" class="btn btn-circle btn-primary" title="Continuar Evaluación"><i class="fa fa-arrow-right"></i></a>
+                    <button type="button" class="btn btn-circle btn-info" onclick="verDetalle('${ev.id_establecimiento || ''}', '${nombreEsc}', '${ev.id || ''}')" title="Ver Detalle"><i class="fa fa-eye"></i></button>
+                </div>
+            `;
+
+            return {
+                num: idx + 1,
+                establecimiento: `<div class="font-weight-bold text-dark" style="font-size:.9rem">${ev.establecimiento}</div><small class="text-muted">${ev.fecha || '—'}</small>`,
+                complejidad: `<div><span class="badge" style="background:${ev.complejidad_color || '#64748b'};color:#fff">${ev.complejidad || 'N/A'}</span></div><small class="text-muted">${ev.tipologia || '—'}</small>`,
+                evaluador: `<div class="d-flex align-items-center"><i class="fa fa-user-circle text-info mr-1"></i><span class="small font-weight-bold text-dark">${evalNombre}</span></div>`,
+                progreso: progresoHtml,
+                estado: `<span class="badge ${badgeClass} text-capitalize px-2 py-1">${estadoLabel}</span>`,
+                updated_at: `<span class="small text-muted">${ev.updated_at || '—'}</span>`,
+                acciones: accionesHtml
+            };
         });
-        html += '</div>';
-        $('#evalCards').html(html);
+
+        if ($.fn.DataTable.isDataTable('#tablaMonitoreoEvaluaciones')) {
+            _dtMonitoreo.clear().rows.add(rowsData).draw(false);
+        } else {
+            _dtMonitoreo = $('#tablaMonitoreoEvaluaciones').DataTable({
+                data: rowsData,
+                language: {
+                    search: 'Buscar en monitoreo:',
+                    zeroRecords: 'No se encontraron evaluaciones registradas.',
+                    emptyTable: 'No hay evaluaciones activas en tiempo real.'
+                },
+                columns: [
+                    { data: 'num', className: 'text-center' },
+                    { data: 'establecimiento' },
+                    { data: 'complejidad' },
+                    { data: 'evaluador' },
+                    { data: 'progreso' },
+                    { data: 'estado', className: 'text-center' },
+                    { data: 'updated_at', className: 'text-center' },
+                    { data: 'acciones', className: 'text-center', orderable: false }
+                ],
+                dom: '<"d-flex align-items-center justify-content-between mb-2"f>t<"d-flex align-items-center justify-content-between mt-2"ip>',
+                pageLength: 10
+            });
+        }
     });
 }
 
@@ -1438,8 +1455,15 @@ function addslashes(str) {
 function verDetalle(id, nombre, evaluacionId) {
     $('#modalEstNombre').text(nombre || '—');
     $('#modalEstBody').html('<div class="text-center py-4"><div class="spinner-border text-danger"></div></div>');
-    if (evaluacionId && evaluacionId !== '') {
-        $('#btnIniciarEval').attr('href', `/riiss/evaluaciones/nueva/${id}?evaluacion=${evaluacionId}`).removeClass('btn-danger').addClass('btn-info').html('<i class="fa fa-eye mr-1"></i>Ver evaluación');
+
+    var activeEvalId = evaluacionId;
+    if ((!activeEvalId || activeEvalId === '') && typeof _datosEvaluacionesGlobal !== 'undefined') {
+        var found = _datosEvaluacionesGlobal.find(function(ev) { return ev.id_establecimiento === id; });
+        if (found) activeEvalId = found.id;
+    }
+
+    if (activeEvalId && activeEvalId !== '') {
+        $('#btnIniciarEval').attr('href', `/riiss/evaluaciones/nueva/${id}?evaluacion=${activeEvalId}`).removeClass('btn-danger').addClass('btn-info').html('<i class="fa fa-eye mr-1"></i>Ver evaluación');
     } else {
         $('#btnIniciarEval').attr('href', `/riiss/evaluaciones/nueva/${id}`).removeClass('btn-info').addClass('btn-danger').html('<i class="fa fa-clipboard-check mr-1"></i>Iniciar evaluación ahora');
     }
