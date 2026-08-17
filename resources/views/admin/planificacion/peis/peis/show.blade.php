@@ -3902,7 +3902,10 @@ $(document).on('show.bs.modal shown.bs.modal', '#modalBuscadorIniciativasPlanMae
     cargarListaIniciativasModal();
     if (dtIniciativasModal) {
         setTimeout(function() {
-            dtIniciativasModal.columns.adjust().responsive.recalc();
+            dtIniciativasModal.columns.adjust();
+            if (dtIniciativasModal.responsive) {
+                dtIniciativasModal.responsive.recalc();
+            }
         }, 150);
     }
 });
