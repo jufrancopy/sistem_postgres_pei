@@ -487,7 +487,7 @@
 
                     {{-- Spinner de carga --}}
                     <div id="matrizModalSpinner" class="d-flex flex-column align-items-center justify-content-center"
-                         style="background: #f4f6f9; flex: 1; display: flex !important;">
+                         style="background: #f4f6f9; flex: 1; display: flex;">
                         <div class="spinner-border text-primary mb-3" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
                         <p class="text-muted font-weight-bold mb-0" style="font-size: 0.85rem;">Cargando matriz...</p>
                     </div>
@@ -512,7 +512,7 @@
             if (iframe && iframe.src && iframe.src !== 'about:blank') {
                 _matrizLoaded = true;
                 var spinner = document.getElementById('matrizModalSpinner');
-                if (spinner) spinner.style.display = 'none';
+                if (spinner) spinner.style.setProperty('display', 'none', 'important');
                 iframe.style.display = 'block';
             }
         }
@@ -528,16 +528,13 @@
             var iframe = document.getElementById('matrizModalIframe');
             var spinner = document.getElementById('matrizModalSpinner');
 
-            // Mostrar spinner, ocultar iframe
-            if (spinner) spinner.style.display = 'flex';
-            if (iframe) iframe.style.display  = 'none';
-
-            // Cargar solo la primera vez (no recargar si vuelve a abrir)
             if (!_matrizLoaded) {
+                if (spinner) spinner.style.setProperty('display', 'flex', 'important');
+                if (iframe) iframe.style.display  = 'none';
                 if (iframe) iframe.src = _matrizUrl;
             } else {
                 // Ya cargado: mostrar directamente
-                if (spinner) spinner.style.display = 'none';
+                if (spinner) spinner.style.setProperty('display', 'none', 'important');
                 if (iframe) iframe.style.display  = 'block';
             }
         }
