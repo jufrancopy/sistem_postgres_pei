@@ -433,6 +433,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" id="tab-actividades-link" data-toggle="pill" href="#tab-actividades" role="tab" aria-selected="false">
+                        <i class="fa fa-rocket mr-2"></i> Actividades del PEI
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalActividadesPei }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" id="tab-publico-link" data-toggle="pill" href="#tab-publico" role="tab" aria-selected="false">
                         <i class="fa fa-globe mr-2"></i> Visibilidad & Sitio Público
                     </a>
@@ -877,6 +883,161 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                {{-- ════════════════════════════════════════════════════════════════════════════
+                     PESTAÑA 6: ACTIVIDADES DEL PEI (CONTEXTO PEI ACTIVO)
+                     ════════════════════════════════════════════════════════════════════════════ --}}
+                <div class="tab-pane fade" id="tab-actividades" role="tabpanel">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                        <div>
+                            <h4 class="font-weight-bold text-dark mb-1">
+                                <i class="fa fa-rocket text-primary mr-2"></i> Actividades Institucionales del PEI
+                            </h4>
+                            <p class="text-muted mb-0 small">
+                                Monitoreo operativo de actividades, tareas y responsables vinculados al plan: 
+                                <strong class="text-primary">{{ $selectedPei ? strip_tags($selectedPei->name) : 'Todos los Planes' }}</strong>
+                            </p>
+                        </div>
+                        <div class="d-flex align-items-center mt-3 mt-md-0" style="gap: 10px;">
+                            <a href="{{ route('globales.activities.create') }}{{ $selectedPei ? '?pei_profile_id='.$selectedPei->id : '' }}" class="btn btn-primary btn-round px-3 text-white font-weight-bold shadow-sm">
+                                <i class="fa fa-plus-circle mr-1"></i> NUEVA ACTIVIDAD PEI
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Cards de Resumen de Estado de Actividades --}}
+                    <div class="row mb-4">
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="card border-0 shadow-xs p-3 text-center" style="background:#f8fafc; border-radius:12px; border-left:4px solid #2563eb !important;">
+                                <small class="text-muted text-uppercase font-weight-bold" style="font-size:0.68rem;">Total Actividades PEI</small>
+                                <div class="h3 font-weight-bold text-dark mb-0">{{ $totalActividadesPei }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="card border-0 shadow-xs p-3 text-center" style="background:#ecfdf5; border-radius:12px; border-left:4px solid #059669 !important;">
+                                <small class="text-uppercase font-weight-bold" style="font-size:0.68rem; color:#047857;">Ejecutadas / Completadas</small>
+                                <div class="h3 font-weight-bold text-success mb-0">{{ $actividadesEjecutadasPei }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="card border-0 shadow-xs p-3 text-center" style="background:#fffbeb; border-radius:12px; border-left:4px solid #f59e0b !important;">
+                                <small class="text-uppercase font-weight-bold" style="font-size:0.68rem; color:#b45309;">En Curso / En Proceso</small>
+                                <div class="h3 font-weight-bold text-warning mb-0">{{ $actividadesEnCursoPei }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="card border-0 shadow-xs p-3 text-center" style="background:#f1f5f9; border-radius:12px; border-left:4px solid #64748b !important;">
+                                <small class="text-muted text-uppercase font-weight-bold" style="font-size:0.68rem;">Pendientes</small>
+                                <div class="h3 font-weight-bold text-secondary mb-0">{{ $actividadesPendientesPei }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Barra de Filtros In-Situ --}}
+                    <div class="card shadow-xs border mb-3" style="border-radius:12px; background:#ffffff;">
+                        <div class="card-body p-2.5 d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
+                            <div class="d-flex align-items-center flex-wrap" style="gap:5px;">
+                                <span class="text-muted small font-weight-bold mr-2"><i class="fa fa-filter text-warning mr-1"></i> Estado:</span>
+                                <button type="button" class="btn btn-sm btn-dark active btn-filter-act-tab" data-status="all" onclick="filtrarActividadesTabStatus(this, 'all')">Todas ({{ $totalActividadesPei }})</button>
+                                <button type="button" class="btn btn-sm btn-outline-success btn-filter-act-tab" data-status="EJECUTADO" onclick="filtrarActividadesTabStatus(this, 'EJECUTADO')">Ejecutadas ({{ $actividadesEjecutadasPei }})</button>
+                                <button type="button" class="btn btn-sm btn-outline-warning btn-filter-act-tab" data-status="EN CURSO" onclick="filtrarActividadesTabStatus(this, 'EN CURSO')">En Curso ({{ $actividadesEnCursoPei }})</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary btn-filter-act-tab" data-status="PENDIENTE" onclick="filtrarActividadesTabStatus(this, 'PENDIENTE')">Pendientes ({{ $actividadesPendientesPei }})</button>
+                            </div>
+                            <div style="min-width:220px;">
+                                <input type="text" id="inputBuscarActividadTab" class="form-control form-control-sm" placeholder="🔍 Buscar actividad o responsable..." onkeyup="buscarActividadesTab(this.value)">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Listado de Actividades --}}
+                    @if($actividadesPeiList->isNotEmpty())
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom w-100" id="tablaActividadesPeiDashboard">
+                            <thead>
+                                <tr>
+                                    <th style="width: 4%;">#</th>
+                                    <th style="width: 32%;">ACTIVIDAD INSTITUCIONAL / DESCRIPCIÓN</th>
+                                    <th style="width: 20%;">PLAN / GRUPO VINCULADO</th>
+                                    <th style="width: 16%;">AVANCE DE TAREAS</th>
+                                    <th style="width: 10%;">ESTADO</th>
+                                    <th style="width: 18%; text-align: center;">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($actividadesPeiList as $aIdx => $act)
+                                <tr class="act-tab-row" data-status="{{ $act->estado_label }}" data-text="{{ strtolower($act->name . ' ' . $act->description . ' ' . ($act->peiProfile->name ?? '') . ' ' . ($act->group->name ?? '')) }}">
+                                    <td class="font-weight-bold text-center">{{ $aIdx + 1 }}</td>
+                                    <td>
+                                        <a href="{{ route('globales.activities.show', $act->id) }}" class="font-weight-bold text-dark d-block" style="font-size:0.92rem; text-decoration:none;">
+                                            <i class="fa fa-rocket text-primary mr-1"></i> {{ $act->name }}
+                                        </a>
+                                        @if($act->description)
+                                            <small class="text-muted d-block mt-0.5 text-truncate" style="max-width:400px;">{{ strip_tags($act->description) }}</small>
+                                        @endif
+                                        <div class="d-flex align-items-center mt-1 flex-wrap" style="gap:6px;">
+                                            @if($act->date_start)
+                                                <span class="badge badge-light border text-muted" style="font-size:0.68rem;">
+                                                    <i class="fa fa-calendar-alt mr-1 text-info"></i>{{ \Carbon\Carbon::parse($act->date_start)->format('d/m/Y') }}
+                                                    {{ $act->date_end ? ' - ' . \Carbon\Carbon::parse($act->date_end)->format('d/m/Y') : '' }}
+                                                </span>
+                                            @endif
+                                            @if($act->responsibles->isNotEmpty())
+                                                <span class="badge badge-light border text-dark" style="font-size:0.68rem;" title="{{ $act->responsibles->pluck('name')->implode(', ') }}">
+                                                    <i class="fa fa-user-check text-success mr-1"></i> {{ $act->responsibles->first()->name }} {{ $act->responsibles->count() > 1 ? '(+'.$act->responsibles->count()-1.')' : '' }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="badge badge-light border text-primary p-1.5 mb-1 d-block text-truncate" style="font-size:0.72rem; max-width:240px;" title="{{ $act->peiProfile->name ?? 'Sin PEI asignado' }}">
+                                            <i class="fa fa-chart-line mr-1"></i> {{ $act->peiProfile ? strip_tags($act->peiProfile->name) : 'Sin PEI' }}
+                                        </div>
+                                        <small class="text-muted font-weight-bold d-block">
+                                            <i class="fa fa-users text-info mr-1"></i> {{ $act->group->name ?? 'Sin grupo' }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <small class="font-weight-bold text-dark" style="font-size:0.75rem;">{{ $act->tasks_completed_count }} de {{ $act->tasks_count }} tareas</small>
+                                            <strong class="small text-info">{{ $act->progreso_pct }}%</strong>
+                                        </div>
+                                        <div class="progress" style="height: 7px; border-radius: 10px; background-color: #e2e8f0;">
+                                            <div class="progress-bar {{ $act->progreso_pct == 100 ? 'bg-success' : 'bg-info' }}" role="progressbar" style="width: {{ $act->progreso_pct }}%;"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ $act->estado_badge }} px-2 py-1 font-weight-bold" style="font-size: 0.73rem;">
+                                            {{ $act->estado_label }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center" style="white-space: nowrap;">
+                                        <div class="d-flex justify-content-center align-items-center flex-nowrap" style="gap: 4px;">
+                                            <a href="{{ route('globales.activities.show', $act->id) }}" class="btn btn-circle btn-info" title="Ver Actividad y Tareas Operativas">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            <a href="{{ route('globales.activities.edit', $act->id) }}" class="btn btn-circle btn-warning text-dark" title="Editar Actividad">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="card border-0 shadow-xs p-5 text-center bg-white" style="border-radius:12px;">
+                        <div class="text-muted mb-3" style="font-size:3rem;"><i class="fa fa-rocket text-primary" style="opacity:0.5;"></i></div>
+                        <h5 class="font-weight-bold text-dark">No hay actividades vinculadas a este plan PEI aún</h5>
+                        <p class="text-muted small max-w-md mx-auto">Creá la primera actividad institucional para comenzar a cargar tareas y dar seguimiento operativo al PEI.</p>
+                        <div>
+                            <a href="{{ route('globales.activities.create') }}{{ $selectedPei ? '?pei_profile_id='.$selectedPei->id : '' }}" class="btn btn-primary btn-round px-4 font-weight-bold">
+                                <i class="fa fa-plus-circle mr-1"></i> Crear Actividad PEI
+                            </a>
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
                 {{-- ════════════════════════════════════════════════════════════════════════════
@@ -1943,6 +2104,61 @@
 
 <script>
 $(document).ready(function() {
+    // ── Toggle Acordeón / Expandir / Colapsar Árbol de Organigrama ──
+    $(document).on('click', '.btn-toggle', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $btn = $(this);
+        var $icon = $btn.find('i');
+        var $children = $btn.closest('.nodo-item').find('> .nodo-children');
+
+        $children.slideToggle(150);
+        if ($icon.hasClass('fa-chevron-down')) {
+            $icon.removeClass('fa-chevron-down').addClass('fa-chevron-right');
+        } else {
+            $icon.removeClass('fa-chevron-right').addClass('fa-chevron-down');
+        }
+    });
+
+    // ── Filtro por Estado en Pestaña Actividades del PEI ──
+    window.filtrarActividadesTabStatus = function(btn, status) {
+        $('.btn-filter-act-tab').removeClass('btn-dark active').addClass('btn-outline-secondary btn-outline-success btn-outline-warning');
+        $(btn).addClass('btn-dark active');
+        
+        var query = ($('#inputBuscarActividadTab').val() || '').toLowerCase().trim();
+        
+        $('#tablaActividadesPeiDashboard tbody tr.act-tab-row').each(function() {
+            var rowStatus = $(this).data('status');
+            var rowText   = $(this).data('text');
+            var matchStatus = (status === 'all' || rowStatus === status);
+            var matchText   = (!query || rowText.indexOf(query) !== -1);
+            
+            if (matchStatus && matchText) {
+                $(this).removeClass('d-none');
+            } else {
+                $(this).addClass('d-none');
+            }
+        });
+    };
+
+    window.buscarActividadesTab = function(query) {
+        var status = $('.btn-filter-act-tab.active').data('status') || 'all';
+        var queryText = (query || '').toLowerCase().trim();
+
+        $('#tablaActividadesPeiDashboard tbody tr.act-tab-row').each(function() {
+            var rowStatus = $(this).data('status');
+            var rowText   = $(this).data('text');
+            var matchStatus = (status === 'all' || rowStatus === status);
+            var matchText   = (!queryText || rowText.indexOf(queryText) !== -1);
+            
+            if (matchStatus && matchText) {
+                $(this).removeClass('d-none');
+            } else {
+                $(this).addClass('d-none');
+            }
+        });
+    };
+
     // ── Scope Filter para Planes PEI (PEI Seleccionado vs Todos los Planes) ──
     window.filtrarPlanesScope = function(scope) {
         if (scope === 0) {

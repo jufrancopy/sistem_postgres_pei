@@ -181,14 +181,53 @@ class GlobalesController extends Controller
                 ->get();
         }
 
-        // Data de Listados para Pestañas y Modales
+        // ── Actividades del PEI (Filtradas por Contexto PEI Activo) ────────────
+        if ($selectedPei) {
+            $peiProfileIds = $selectedPei->descendants()->pluck('id')->push($selectedPei->id)->toArray();
+            $actividadesPeiList = \App\Admin\Globales\Activity::whereIn('pei_profile_id', $peiProfileIds)
+                ->with(['peiProfile', 'group', 'responsibles', 'tasks'])
+                ->withCount(['tasks', 'tasks as tasks_completed_count' => function($q) {
+                    $q->where('status', 2);
+                }])
+                ->orderBy('id', 'desc')
+                ->get();
+        } else {
+            $actividadesPeiList = \App\Admin\Globales\Activity::with(['peiProfile', 'group', 'responsibles', 'tasks'])
+                ->withCount(['tasks', 'tasks as tasks_completed_count' => function($q) {
+                    $q->where('status', 2);
+                }])
+                ->orderBy('id', 'desc')
+                ->get();
+        }
+
+        $actividadesPeiList->each(function($act) {
+            $totalT = $act->tasks_count;
+            $compT  = $act->tasks_completed_count;
+            $act->progreso_pct = $totalT > 0 ? round(($compT / $totalT) * 100) : 0;
+            
+            if ($totalT > 0 && $compT === $totalT) {
+                $act->estado_label = 'EJECUTADO';
+                $act->estado_badge = 'badge-success';
+            } elseif ($compT > 0 || ($totalT > 0 && $compT < $totalT)) {
+                $act->estado_label = 'EN CURSO';
+                $act->estado_badge = 'badge-warning text-dark';
+            } else {
+                $act->estado_label = 'PENDIENTE';
+                $act->estado_badge = 'badge-secondary';
+            }
+        });
+
+        $totalActividadesPei      = $actividadesPeiList->count();
+        $actividadesEjecutadasPei = $actividadesPeiList->where('estado_label', 'EJECUTADO')->count();
+        $actividadesEnCursoPei    = $actividadesPeiList->where('estado_label', 'EN CURSO')->count();
+        $actividadesPendientesPei = $actividadesPeiList->where('estado_label', 'PENDIENTE')->count();
+
         $rolesList            = Role::withCount('permissions', 'users')->orderBy('id', 'desc')->get();
         $rolesWithPermissions = Role::with('permissions')->orderBy('id', 'desc')->get();
         $permissionsList      = Permission::orderBy('id', 'desc')->get();
         $allRoles             = Role::orderBy('name')->get();
         $allPermissions       = Permission::orderBy('name')->get();
         $allGroups            = \App\Admin\Globales\Group::orderBy('name')->get(['id', 'name']);
-        $organigramaRaiz      = Organigrama::whereIsRoot()->first();
 
         return view('admin.globales.dashboard', get_defined_vars());
     }
