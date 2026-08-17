@@ -24,12 +24,12 @@
                 : route('globales.activities.index', ['pei_profile_id' => $profile->id]);
         @endphp
 
-        <div class="d-flex flex-wrap align-items-center mb-3" style="gap: 8px;">
+        <div class="d-flex flex-wrap align-items-center mb-3 px-3" style="gap: 8px;">
 
             {{-- Botones de navegación principales --}}
             <button type="button"
-                    class="btn btn-sm btn-dark font-weight-bold d-inline-flex align-items-center"
-                    style="border-radius: 8px; gap: 5px;"
+                    class="btn btn-sm btn-dark font-weight-bold d-inline-flex align-items-center px-3"
+                    style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
                     data-toggle="modal" data-target="#modalMonitoreoEstrategico"
                     onclick="iniciarMonitoreoModal()"
                     title="Tablero de Monitoreo Estratégico">
@@ -37,39 +37,39 @@
             </button>
 
             <button type="button"
-                    class="btn btn-sm btn-outline-dark font-weight-bold d-inline-flex align-items-center"
-                    style="border-radius: 8px; gap: 5px;"
+                    class="btn btn-sm btn-outline-dark font-weight-bold d-inline-flex align-items-center px-3"
+                    style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
                     data-toggle="modal" data-target="#modalBscEstrategico"
                     title="Balanced Scorecard (Cuadro de Mando Integral)">
                 <i class="fa fa-th-large text-info"></i> BSC
             </button>
 
             <button type="button"
-                    class="btn btn-sm text-white font-weight-bold d-inline-flex align-items-center"
+                    class="btn btn-sm text-white font-weight-bold d-inline-flex align-items-center px-3"
                     data-toggle="modal" data-target="#modalBuscadorIniciativasPlanMaestro"
                     onclick="cargarListaIniciativasModal()"
-                    style="background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 8px; border: none; gap: 5px;"
+                    style="background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 8px; border: none; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
                     title="Plan Maestro / Mejora Continua">
                 <i class="fa fa-tasks text-warning"></i> Plan Maestro
-                <span class="badge badge-warning text-dark font-weight-bold" id="cntBotonHeaderIniciativas"
+                <span class="badge badge-warning text-dark font-weight-bold ml-1" id="cntBotonHeaderIniciativas"
                       style="border-radius: 10px; font-size: 0.68rem;">{{ count($iniciativasArray ?? []) }}</span>
             </button>
 
             <a href="{{ route('proyectos-institucionales.index', $profile->id) }}"
-               class="btn btn-sm btn-success font-weight-bold d-inline-flex align-items-center"
-               style="border-radius: 8px; gap: 5px;">
+               class="btn btn-sm btn-success font-weight-bold d-inline-flex align-items-center px-3"
+               style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;">
                 <i class="fa fa-project-diagram"></i> Proyectos
             </a>
 
             <a href="{{ $urlActividad }}"
-               class="btn btn-sm btn-info font-weight-bold d-inline-flex align-items-center"
-               style="border-radius: 8px; gap: 5px;" title="Módulo de Actividades MECIP">
+               class="btn btn-sm btn-info font-weight-bold d-inline-flex align-items-center px-3"
+               style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;" title="Módulo de Actividades MECIP">
                 <i class="fa fa-list-alt"></i> Actividades MECIP
             </a>
 
             <button type="button"
-               class="btn btn-sm btn-outline-primary font-weight-bold d-inline-flex align-items-center"
-               style="border-radius: 8px; gap: 5px;"
+               class="btn btn-sm btn-outline-primary font-weight-bold d-inline-flex align-items-center px-3"
+               style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
                data-toggle="modal" data-target="#modalFormulacionEstrategica"
                onclick="abrirMatrizModal()"
                title="Matriz de Formulación Estratégica Integrada">
@@ -77,22 +77,22 @@
             </button>
 
             {{-- Separador visual --}}
-            <div style="width: 1px; height: 28px; background: #e2e8f0; margin: 0 2px;"></div>
+            <div style="width: 1px; height: 28px; background: #e2e8f0; margin: 0 4px;"></div>
 
             {{-- Botón de Asesor Externo --}}
             <button type="button"
-                    class="btn btn-sm font-weight-bold text-dark d-inline-flex align-items-center"
+                    class="btn btn-sm font-weight-bold text-dark d-inline-flex align-items-center px-3"
                     data-toggle="modal" data-target="#modalConvocarAsesorExterno"
                     onclick="cargarListaAsesoriasAdmin()"
-                    style="background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 8px; border: none; gap: 5px;"
+                    style="background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 8px; border: none; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
                     title="Convocar Asesor Externo para validación remota">
                 <i class="fa fa-user-plus"></i> Convocar Asesor
             </button>
 
             {{-- Dropdown Más Opciones --}}
             <div class="dropdown">
-                <button class="btn btn-sm btn-outline-secondary font-weight-bold dropdown-toggle d-inline-flex align-items-center"
-                        type="button" data-toggle="dropdown" style="border-radius: 8px; gap: 5px;">
+                <button class="btn btn-sm btn-outline-secondary font-weight-bold dropdown-toggle d-inline-flex align-items-center px-3"
+                        type="button" data-toggle="dropdown" style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;">
                     <i class="fa fa-ellipsis-h"></i> Más
                 </button>
                 <div class="dropdown-menu dropdown-menu-right shadow border-0" style="border-radius: 12px; min-width: 240px; font-size: 0.87rem;">
