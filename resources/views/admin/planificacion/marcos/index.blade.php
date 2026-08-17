@@ -43,9 +43,9 @@ function colorTexto(string $hex): string {
             @endforeach
         </div>
 
-        {{-- Tabla --}}
+        {{-- Tabla DataTables --}}
         <div class="table-responsive">
-            <table class="table table-hover table-sm">
+            <table class="table table-hover table-sm" id="tablaMarcos">
                 <thead class="thead-light">
                     <tr>
                         <th style="width:120px">Tipo</th>
@@ -106,7 +106,6 @@ function colorTexto(string $hex): string {
                 </tbody>
             </table>
         </div>
-        <div class="d-flex justify-content-end">{{ $marcos->links() }}</div>
     </div>
 </div>
 
@@ -236,6 +235,22 @@ function colorTexto(string $hex): string {
 <script>
 $(function() {
     $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
+
+    // ── DataTable Marcos ──
+    if ($('#tablaMarcos').length) {
+        $('#tablaMarcos').DataTable({
+            pageLength: 25,
+            order: [[0, 'asc'], [1, 'asc']],
+            language: {
+                search: "Buscar:",
+                lengthMenu: "Mostrar _MENU_ marcos",
+                info: "Mostrando _START_ a _END_ de _TOTAL_ marcos",
+                infoEmpty: "Sin marcos registrados",
+                zeroRecords: "No se encontraron marcos",
+                paginate: { previous: "‹", next: "›" }
+            }
+        });
+    }
 
     var tiposMap = {};
 
