@@ -16,85 +16,104 @@
             </ol>
         </nav>
 
-        <div class="px-3 pb-2">
-            <a href="{{ route('pei-profiles.dashboard', $profile->id) }}" class="btn btn-sm btn-dark">
-                <i class="fa fa-chart-bar mr-1"></i> Tablero de Monitoreo
-            </a>
-            <a href="{{ route('pei.bsc', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
-                <i class="fa fa-th-large mr-1"></i> Balanced Scorecard
-            </a>
-            <a href="{{ route('pei.indicadores.modulo', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
-                <i class="fa fa-ruler-combined mr-1"></i> Indicadores
-            </a>
-            <a href="{{ route('pei.mee.modulo', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
-                <i class="fa fa-balance-scale mr-1"></i> Marco Estratégico Específico
-            </a>
-            <button type="button" class="btn btn-sm text-white font-weight-bold ml-2 shadow-sm d-inline-flex align-items-center" data-toggle="modal" data-target="#modalBuscadorIniciativasPlanMaestro" onclick="cargarListaIniciativasModal()" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 8px; padding: 6px 14px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(15,23,42,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='';" title="Buscador y Mapa del Plan Maestro — Acciones Operativas de Mejora Continua">
-                <i class="fa fa-tasks text-warning mr-2" style="font-size: 0.9rem;"></i>
-                <span>Plan Maestro / Mejora Continua</span>
-                <span class="badge badge-warning text-dark font-weight-bold ml-2 px-2 py-0.5" id="cntBotonHeaderIniciativas" style="font-size: 0.72rem; border-radius: 10px;">{{ count($iniciativasArray ?? []) }}</span>
-            </button>
-            <a href="{{ route('pei-profiles.matriz', $profile->id) }}" class="btn btn-sm btn-outline-primary ml-2" target="_blank">
-                <i class="fa fa-table mr-1"></i> Formulación Estratégica Integrada
-            </a>
-            <button type="button" class="btn btn-sm text-white font-weight-bold ml-2 shadow-sm d-inline-flex align-items-center" data-toggle="modal" data-target="#modalConvocarAsesorExterno" onclick="cargarListaAsesoriasAdmin()" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none; border-radius: 8px; padding: 6px 14px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(245,158,11,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='';" title="Convocar Asesor Externo para revisión remota y validación del plan">
-                <i class="fa fa-user-plus mr-2 text-dark" style="font-size: 0.95rem;"></i>
-                <span class="text-dark font-weight-bold">Convocar Asesor Externo</span>
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-danger font-weight-bold ml-2 shadow-xs d-inline-flex align-items-center" data-toggle="modal" data-target="#modalBasureroPei" onclick="cargarBasureroPeiAdmin()" title="Basurero de elementos eliminados y papelera de recuperación">
-                <i class="fa fa-trash-alt mr-1.5 text-danger"></i>
-                <span>Basurero PEI</span>
-            </button>
-            <button type="button" class="btn btn-sm btn-dark font-weight-bold ml-2 shadow-xs" id="btnAbrirModalReordenarPei"
-                    data-profile="{{ $profile->id }}"
-                    title="Reordenar Estructura PEI arrastrando y soltando (Drag & Drop)"
-                    style="background: #1e293b; color: #f8fafc; border: none;">
-                <i class="fa fa-sort-amount-asc mr-1 text-warning"></i> REORDENAR PEI
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-success ml-2" id="btnNotificarTodosPei"
-                    data-profile="{{ $profile->id }}"
-                    title="Enviar email a todos los responsables de acciones del plan">
-                <i class="fa fa-paper-plane mr-1"></i> Notificar Responsables
-            </button>
-            {{-- Botón Vista Pública --}}
-            <button type="button" class="btn btn-sm btn-outline-secondary ml-2" id="btnPublicLink"
-                    data-profile="{{ $profile->id }}"
-                    data-token="{{ $profile->public_token }}"
-                    title="Generar y compartir enlace público del plan">
-                <i class="fa fa-share-alt mr-1"></i>
-                {{ $profile->public_token ? 'Enlace público' : 'Generar enlace público' }}
-            </button>
-            <a href="{{ route('proyectos-institucionales.index', $profile->id) }}" class="btn btn-sm btn-success ml-2">
-                <i class="fa fa-project-diagram mr-1"></i> Proyectos
-            </a>
-            @php
-                $actividadVinculada = \App\Admin\Globales\Activity::where('pei_profile_id', $profile->id)->first();
-                $urlActividad = $actividadVinculada 
-                    ? route('globales.activities.show', $actividadVinculada->id) 
-                    : route('globales.activities.create', ['pei_profile_id' => $profile->id]);
-            @endphp
-            <a href="{{ $urlActividad }}" class="btn btn-sm btn-info ml-2">
-                <i class="fa fa-tasks mr-1"></i> Actividades
-            </a>
-            <button type="button" class="btn btn-sm btn-outline-secondary ml-2" data-toggle="modal" data-target="#modalQrSolicitud">
-                <i class="fa fa-qrcode mr-1"></i> QR Solicitud
-            </button>
-            @role('Administrador')
-            <button type="button" class="btn btn-sm ml-2" data-toggle="modal" data-target="#modalPuntosManuales"
-                    style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none"
-                    title="Otorgar puntos manuales a un funcionario en este plan">
-                <i class="fa fa-star mr-1"></i> Otorgar Puntos
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-warning ml-2 font-weight-bold" id="btnRankingPei"
-                    data-toggle="modal" data-target="#modalRankingPei"
-                    title="Ver ranking de talento humano por puntos en este plan">
-                <i class="fa fa-trophy mr-1"></i> Ranking
-            </button>
-            <button type="button" id="btnRecalcularGamificacionPei" class="btn btn-sm btn-outline-warning ml-2 font-weight-bold"
-                    title="Recalcular retroactivamente los puntos e insignias de este plan">
-                <i class="fa fa-sync-alt mr-1"></i> Recalcular Puntos
-            </button>
-            @endrole
+        {{-- ── BARRA SUPERIOR DE ACCIONES Y NAVEGACIÓN EJECUTIVA ── --}}
+        @php
+            $actividadVinculada = \App\Admin\Globales\Activity::where('pei_profile_id', $profile->id)->first();
+            $urlActividad = $actividadVinculada 
+                ? route('globales.activities.show', $actividadVinculada->id) 
+                : route('globales.activities.create', ['pei_profile_id' => $profile->id]);
+        @endphp
+
+        <div class="card border-0 shadow-xs mb-3" style="border-radius: 14px; background: #ffffff; border: 1px solid #e2e8f0;">
+            <div class="card-body p-2.5 d-flex flex-wrap align-items-center justify-content-between" style="gap: 10px;">
+                
+                {{-- GRUPO 1: VISTAS PRINCIPALES DEL PLAN --}}
+                <div class="d-flex flex-wrap align-items-center" style="gap: 6px;">
+                    <a href="{{ route('pei-profiles.dashboard', $profile->id) }}" class="btn btn-sm btn-dark font-weight-bold px-3 py-1.5" style="border-radius: 8px;" title="Tablero principal de monitoreo">
+                        <i class="fa fa-chart-bar mr-1.5 text-warning"></i> Tablero Monitoreo
+                    </a>
+                    <a href="{{ route('pei.bsc', $profile->id) }}" class="btn btn-sm btn-outline-dark font-weight-bold px-3 py-1.5" style="border-radius: 8px;" title="Matriz de Cuadro de Mando Integral">
+                        <i class="fa fa-th-large mr-1.5 text-info"></i> Balanced Scorecard
+                    </a>
+                    <button type="button" class="btn btn-sm text-white font-weight-bold px-3 py-1.5 shadow-xs d-inline-flex align-items-center" data-toggle="modal" data-target="#modalBuscadorIniciativasPlanMaestro" onclick="cargarListaIniciativasModal()" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 8px; border: 1px solid #334155;" title="Buscador y Mapa del Plan Maestro">
+                        <i class="fa fa-tasks text-warning mr-1.5"></i>
+                        <span>Plan Maestro</span>
+                        <span class="badge badge-warning text-dark font-weight-bold ml-2 px-2 py-0.5" id="cntBotonHeaderIniciativas" style="border-radius: 10px; font-size: 0.7rem;">{{ count($iniciativasArray ?? []) }}</span>
+                    </button>
+                    <a href="{{ route('pei-profiles.matriz', $profile->id) }}" class="btn btn-sm btn-outline-primary font-weight-bold px-3 py-1.5" style="border-radius: 8px;" target="_blank" title="Vista tabular de formulación integrativa">
+                        <i class="fa fa-table mr-1.5"></i> Formulación Estratégica
+                    </a>
+                </div>
+
+                {{-- GRUPO 2: MÓDULOS DE EJECUCIÓN (PROYECTOS & ACTIVIDADES) --}}
+                <div class="d-flex flex-wrap align-items-center" style="gap: 6px;">
+                    <a href="{{ route('proyectos-institucionales.index', $profile->id) }}" class="btn btn-sm btn-success font-weight-bold px-3 py-1.5" style="border-radius: 8px;">
+                        <i class="fa fa-project-diagram mr-1.5"></i> Proyectos
+                    </a>
+                    <a href="{{ $urlActividad }}" class="btn btn-sm btn-info font-weight-bold px-3 py-1.5" style="border-radius: 8px;">
+                        <i class="fa fa-tasks mr-1.5"></i> Actividades MECIP
+                    </a>
+                </div>
+
+                {{-- GRUPO 3: DROPDOWNS DESPLEGABLES DE GESTIÓN Y GAMIFICACIÓN --}}
+                <div class="d-flex flex-wrap align-items-center" style="gap: 6px;">
+                    
+                    {{-- Dropdown Herramientas y Asesoría --}}
+                    <div class="dropdown">
+                        <button class="btn btn-sm text-dark font-weight-bold dropdown-toggle px-3 py-1.5" type="button" id="dropdownGestionPei" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 8px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none;">
+                            <i class="fa fa-cogs mr-1.5"></i> Gestión &amp; Asesoría
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right shadow-lg border-0" aria-labelledby="dropdownGestionPei" style="border-radius: 12px; font-size: 0.88rem;">
+                            <h6 class="dropdown-header text-uppercase font-weight-bold text-muted small">Validación &amp; Control</h6>
+                            <a class="dropdown-item py-2 text-dark font-weight-bold" href="javascript:void(0)" data-toggle="modal" data-target="#modalConvocarAsesorExterno" onclick="cargarListaAsesoriasAdmin()">
+                                <i class="fa fa-user-plus text-warning mr-2"></i> Convocar Asesor Externo
+                            </a>
+                            <a class="dropdown-item py-2 text-dark font-weight-bold" href="javascript:void(0)" data-toggle="modal" data-target="#modalBasureroPei" onclick="cargarBasureroPeiAdmin()">
+                                <i class="fa fa-trash-alt text-danger mr-2"></i> Basurero PEI (Restaurar)
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <h6 class="dropdown-header text-uppercase font-weight-bold text-muted small">Estructura &amp; Difusión</h6>
+                            <a class="dropdown-item py-2 text-dark" href="javascript:void(0)" id="btnAbrirModalReordenarPei" data-profile="{{ $profile->id }}">
+                                <i class="fa fa-sort-amount-asc text-dark mr-2"></i> Reordenar Estructura PEI
+                            </a>
+                            <a class="dropdown-item py-2 text-dark" href="javascript:void(0)" id="btnNotificarTodosPei" data-profile="{{ $profile->id }}">
+                                <i class="fa fa-paper-plane text-success mr-2"></i> Notificar a Responsables
+                            </a>
+                            <a class="dropdown-item py-2 text-dark" href="javascript:void(0)" id="btnPublicLink" data-profile="{{ $profile->id }}" data-token="{{ $profile->public_token }}">
+                                <i class="fa fa-share-alt text-primary mr-2"></i> {{ $profile->public_token ? 'Enlace público' : 'Generar enlace público' }}
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item py-2 text-dark" href="{{ route('pei.indicadores.modulo', $profile->id) }}">
+                                <i class="fa fa-ruler-combined text-info mr-2"></i> Indicadores del Plan
+                            </a>
+                            <a class="dropdown-item py-2 text-dark" href="{{ route('pei.mee.modulo', $profile->id) }}">
+                                <i class="fa fa-balance-scale text-secondary mr-2"></i> Marco Estratégico Específico
+                            </a>
+                        </div>
+                    </div>
+
+                    @role('Administrador')
+                    {{-- Dropdown Gamificación & Puntos --}}
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-purple font-weight-bold dropdown-toggle px-3 py-1.5" type="button" id="dropdownGamificacionPei" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 8px; border: 1px solid #7c3aed; color: #7c3aed;">
+                            <i class="fa fa-star text-warning mr-1.5"></i> Gamificación
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right shadow-lg border-0" aria-labelledby="dropdownGamificacionPei" style="border-radius: 12px; font-size: 0.88rem;">
+                            <a class="dropdown-item py-2 font-weight-bold" href="javascript:void(0)" data-toggle="modal" data-target="#modalPuntosManuales" style="color: #7c3aed;">
+                                <i class="fa fa-star text-warning mr-2"></i> Otorgar Puntos Manuales
+                            </a>
+                            <a class="dropdown-item py-2 text-dark" href="javascript:void(0)" id="btnRankingPei" data-toggle="modal" data-target="#modalRankingPei">
+                                <i class="fa fa-trophy text-warning mr-2"></i> Ranking de Talento Humano
+                            </a>
+                            <a class="dropdown-item py-2 text-dark" href="javascript:void(0)" id="btnRecalcularGamificacionPei">
+                                <i class="fa fa-sync-alt text-info mr-2"></i> Recalcular Puntos
+                            </a>
+                        </div>
+                    </div>
+                    @endrole
+
+                </div>
+            </div>
         </div>
 
         <!-- HTML del segundo nav (inicialmente oculto) -->
