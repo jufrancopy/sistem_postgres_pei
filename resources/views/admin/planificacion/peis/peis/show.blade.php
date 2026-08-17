@@ -1978,11 +1978,14 @@
                             setTimeout(function() {
                                 var $el = $('#ini_card_' + highlightIniciativaId);
                                 if ($el.length) {
-                                    $el[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    $el.addClass('highlight-target-edited');
+                                    $el.parents('.collapse').addClass('show').collapse('show');
                                     setTimeout(function() {
-                                        $el.removeClass('highlight-target-edited');
-                                    }, 2800);
+                                        $el[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        $el.addClass('highlight-target-edited');
+                                        setTimeout(function() {
+                                            $el.removeClass('highlight-target-edited');
+                                        }, 2800);
+                                    }, 100);
                                 }
                             }, 150);
                         }
