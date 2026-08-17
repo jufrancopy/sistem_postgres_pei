@@ -3860,13 +3860,18 @@ $(document).on('click', '#btnColapsarTodoTreePei', function() {
 });
 
 @php
-    $descendantIds = $profile->descendants->pluck('id')->push($profile->id)->toArray();
-    $iniciativasDirectas = \App\Models\PlanMaestro\PlanAccion::whereIn('pei_profile_id', $descendantIds)
-        ->orWhereIn('plan_id', $descendantIds)
-        ->orWhereIn('eje_id', $descendantIds)
-        ->with('creator')
-        ->orderBy('orden')
-        ->get();
+    $descendantIds = $profile->descendants->pluck('id')->push($profile->id)->map(fn($v) => (string)$v)->toArray();
+    $numericIds    = array_values(array_filter($descendantIds, 'is_numeric'));
+    $stringIds     = array_values(array_filter($descendantIds, fn($id) => !is_numeric($id)));
+
+    $query = \App\Models\PlanMaestro\PlanAccion::query();
+    if (!empty($stringIds)) {
+        $query->whereIn('pei_profile_id', $stringIds);
+    }
+    if (!empty($numericIds)) {
+        $query->orWhereIn('plan_id', $numericIds)->orWhereIn('eje_id', $numericIds);
+    }
+    $iniciativasDirectas = $query->with('creator')->orderBy('orden')->get();
 
     if ($iniciativasDirectas->isEmpty()) {
         $iniciativasDirectas = \App\Models\PlanMaestro\PlanAccion::with('creator')->orderBy('orden')->get();

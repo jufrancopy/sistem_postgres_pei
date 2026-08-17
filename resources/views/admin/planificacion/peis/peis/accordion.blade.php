@@ -664,21 +664,30 @@
                                                         {{ \App\Models\Proyectos\ProyectoInstitucional::estadoLabel($proy->estado) }}
                                                     </span>
                                                     @if($proy->avance_pct > 0)
-                                                    <span style="font-size:.62rem;color:#6d28d9;font-weight:600">{{ $proy->avance_pct }}%</span>
+                                                        <span style="font-size:.62rem;color:#6d28d9;font-weight:600">{{ $proy->avance_pct }}%</span>
                                                     @endif
                                                 </a>
                                                 @endforeach
                                             </div>
-                                            @endif
 
                                             {{-- Acciones Operativas (Plan de Gestión 100 Días) --}}
                                             @php
-                                                $iniciativasAccion = \App\Models\PlanMaestro\PlanAccion::where('plan_id', $action->id)
-                                                    ->orWhere('pei_profile_id', $action->id)
-                                                    ->orderBy('orden')
-                                                    ->get();
-                                                if ($iniciativasAccion->isEmpty() && isset($action->iniciativas)) {
-                                                    $iniciativasAccion = $action->iniciativas;
+                                                if (is_numeric($action->id)) {
+                                                    $iniciativasAccion = \App\Models\PlanMaestro\PlanAccion::where('plan_id', (string)$action->id)
+                                                        ->orWhere('pei_profile_id', (string)$action->id)
+                                                        ->orderBy('orden')
+                                                        ->get();
+                                                } else {
+                                                    $iniciativasAccion = \App\Models\PlanMaestro\PlanAccion::where('pei_profile_id', (string)$action->id)
+                                                        ->orderBy('orden')
+                                                        ->get();
+                                                }
+                                                if ($iniciativasAccion->isEmpty() && method_exists($action, 'iniciativas')) {
+                                                    try {
+                                                        $iniciativasAccion = $action->iniciativas;
+                                                    } catch (\Throwable $e) {
+                                                        $iniciativasAccion = collect();
+                                                    }
                                                 }
                                             @endphp
                                             <div class="px-3 py-2" style="border-top:1px solid #e2e8f0; background:#f8fafc; font-size:.78rem">
