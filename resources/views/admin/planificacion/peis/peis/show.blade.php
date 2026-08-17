@@ -496,8 +496,7 @@
                     <iframe id="matrizModalIframe"
                             src="about:blank"
                             frameborder="0"
-                            style="flex: 1; width: 100%; border: none; display: none;"
-                            onload="matrizIframeLoaded(this)">
+                            style="flex: 1; width: 100%; border: none; display: none;">
                     </iframe>
 
                 </div>
@@ -508,28 +507,39 @@
         var _matrizUrl = '{{ route('pei-profiles.matriz', $profile->id) }}';
         var _matrizLoaded = false;
 
+        function matrizIframeLoaded() {
+            var iframe = document.getElementById('matrizModalIframe');
+            if (iframe && iframe.src && iframe.src !== 'about:blank') {
+                _matrizLoaded = true;
+                var spinner = document.getElementById('matrizModalSpinner');
+                if (spinner) spinner.style.display = 'none';
+                iframe.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var iframe = document.getElementById('matrizModalIframe');
+            if (iframe) {
+                iframe.addEventListener('load', matrizIframeLoaded);
+            }
+        });
+
         function abrirMatrizModal() {
             var iframe = document.getElementById('matrizModalIframe');
             var spinner = document.getElementById('matrizModalSpinner');
 
             // Mostrar spinner, ocultar iframe
-            spinner.style.display = 'flex';
-            iframe.style.display  = 'none';
+            if (spinner) spinner.style.display = 'flex';
+            if (iframe) iframe.style.display  = 'none';
 
             // Cargar solo la primera vez (no recargar si vuelve a abrir)
             if (!_matrizLoaded) {
-                iframe.src = _matrizUrl;
+                if (iframe) iframe.src = _matrizUrl;
             } else {
                 // Ya cargado: mostrar directamente
-                spinner.style.display = 'none';
-                iframe.style.display  = 'block';
+                if (spinner) spinner.style.display = 'none';
+                if (iframe) iframe.style.display  = 'block';
             }
-        }
-
-        function matrizIframeLoaded(iframe) {
-            _matrizLoaded = true;
-            document.getElementById('matrizModalSpinner').style.display = 'none';
-            iframe.style.display = 'block';
         }
 
         // Al cerrar el modal, no destruimos el iframe (mantiene estado de columnas)
