@@ -111,7 +111,7 @@ class PeiAsesoriaController extends Controller
             abort(404, 'Perfil PEI no encontrado.');
         }
 
-        $descendants = $profile->descendants()->get();
+        $descendants = $profile->descendants()->with('indicador')->get();
         $treeNodes   = $descendants->toTree();
 
         // Mapear Acciones Operativas de Mejora Continua

@@ -210,7 +210,7 @@ class PublicPeiController extends Controller
             ->where('level', 'master')
             ->firstOrFail();
 
-        $descendants = $profile->descendants()->get();
+        $descendants = $profile->descendants()->with('indicador')->get();
         $treeNodes   = $descendants->toTree();
 
         $nodeIds = $descendants->pluck('id')->push($profile->id)->map(fn($v) => (string)$v)->toArray();

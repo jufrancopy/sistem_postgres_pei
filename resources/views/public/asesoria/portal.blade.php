@@ -59,7 +59,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .tree-node{border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;background:#fff;overflow:hidden;transition:all .2s ease}
 .tree-node-header{padding:12px 16px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:#fff;user-select:none;transition:background .15s ease}
 .tree-node-header:hover{background:#f8fafc}
-.tree-node-header-top{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
+.tree-node-header-top{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px;flex-wrap:wrap}
 .tree-node-title-text{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.45;word-break:break-word;padding-left:26px}
 .tree-node-body{display:none;padding:16px;background:#f8fafc;border-top:1px solid var(--border)}
 
@@ -73,6 +73,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .status-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
 .status-has{background:var(--green-50);color:var(--green-700);border:1px solid #a7f3d0}
 .status-no{background:#f1f5f9;color:var(--muted);border:1px solid var(--border)}
+
+/* Indicador Modal Trigger Button */
+.btn-ver-ind{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#e0f2fe,#dbeafe);color:#0369a1;border:1px solid #bae6fd;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s ease}
+.btn-ver-ind:hover{background:#0284c7;color:#fff;border-color:#0284c7;transform:scale(1.02)}
 
 /* Comment Box */
 .comment-box{background:#fff;border:1px solid var(--border);border-radius:var(--radius-xs);padding:14px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
@@ -96,6 +100,25 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 /* Toast Notification */
 .toast-msg{position:fixed;bottom:24px;right:24px;z-index:999;background:#0f172a;color:#fff;padding:12px 20px;border-radius:var(--radius-xs);font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);display:none;align-items:center;gap:8px}
 
+/* Modal Ficha Técnica Indicador */
+.modal-bg-ind{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,.65);backdrop-filter:blur(6px);z-index:999;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-card-ind{background:#fff;border-radius:20px;max-width:720px;width:100%;max-height:85vh;overflow:hidden;box-shadow:var(--shadow-lg);display:flex;flex-direction:column}
+.modal-header-ind{background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px 24px;color:#fff;display:flex;align-items:center;justify-content:space-between}
+.modal-x-ind{background:none;border:none;color:#94a3b8;font-size:24px;cursor:pointer;line-height:1}
+.modal-x-ind:hover{color:#fff}
+.modal-body-ind{padding:24px;overflow-y:auto;background:#f8fafc}
+
+.ind-grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+.ind-info-box{background:#fff;border:1px solid var(--border);border-radius:var(--radius-xs);padding:10px 12px}
+.ind-info-box small{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.ind-info-box strong{font-size:12.5px;color:var(--text);display:block;margin-top:2px}
+
+.ind-section{background:#fff;border:1px solid var(--border);border-radius:var(--radius-xs);padding:14px;margin-bottom:12px}
+.ind-section label{display:block;font-size:11px;font-weight:800;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px}
+.ind-val-box{font-size:12.5px;color:var(--text);line-height:1.5}
+.ind-metas-grid{display:flex;flex-wrap:wrap;gap:8px}
+.ind-meta-pill{background:var(--blue-50);border:1px solid var(--blue-100);color:var(--blue-700);padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700}
+
 .page-footer{text-align:center;padding:32px 16px;font-size:12px;color:var(--muted)}
 </style>
 </head>
@@ -109,6 +132,13 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
   } else {
       $sysLogoUrl = asset('material/img/new_logo.png');
   }
+
+  // Helper para desinfectar y limpiar entidades HTML (&nbsp;) y etiquetas
+  $cleanName = function($name) {
+      if (empty($name)) return '';
+      $decoded = html_entity_decode(strip_tags($name), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+      return trim(preg_replace('/\s+/', ' ', $decoded));
+  };
 @endphp
 
 {{-- TOPBAR --}}
@@ -137,7 +167,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 {{-- HERO --}}
 <div class="hero">
   <div class="hero-badge"><i class="fa fa-clipboard-check"></i> Asesoría Externa &amp; Validación de Plan</div>
-  <h1>{{ $profile->name }}</h1>
+  <h1>{{ $cleanName($profile->name) }}</h1>
   <p>Explorá la jerarquía del plan haciendo clic en los elementos para desplegar sus componentes. Redactá tus sugerencias de mejora técnicas en cada campo.</p>
 
   <div class="metrics-row">
@@ -210,15 +240,21 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         @foreach($treeNodes as $axi)
           @php
             $hasCommentAxi = isset($comentariosMap[$axi->id]) && !empty($comentariosMap[$axi->id]);
+            $indAxi = $axi->indicador;
           @endphp
 
           {{-- NIVEL 1: OBJETIVO ESTRATÉGICO --}}
           <div class="tree-node" style="border-left: 4px solid var(--blue);">
             <div class="tree-node-header" onclick="toggleNode(this)">
               <div class="tree-node-header-top">
-                <div style="display:flex; align-items:center; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                   <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
                   <span class="badge-node badge-eje">OBJETIVO ESTRATÉGICO</span>
+                  @if($indAxi)
+                    <button type="button" class="btn-ver-ind" onclick="event.stopPropagation(); abrirModalIndicadorAsesor({{ json_encode($indAxi) }});">
+                      <i class="fa fa-ruler-combined"></i> Indicador: {{ $indAxi->codigoCompleto() }}
+                    </button>
+                  @endif
                 </div>
                 <span class="status-badge {{ $hasCommentAxi ? 'status-has' : 'status-no' }}" id="status_badge_{{ $axi->id }}">
                   <i class="fa {{ $hasCommentAxi ? 'fa-check-circle' : 'fa-circle' }}"></i>
@@ -226,7 +262,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                 </span>
               </div>
               <div class="tree-node-title-text">
-                {{ strip_tags($axi->name) }}
+                {{ $cleanName($axi->name) }}
               </div>
             </div>
 
@@ -248,14 +284,20 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                   @foreach($axi->children as $goal)
                     @php
                       $hasCommentGoal = isset($comentariosMap[$goal->id]) && !empty($comentariosMap[$goal->id]);
+                      $indGoal = $goal->indicador;
                     @endphp
 
                     <div class="tree-node" style="border-left: 4px solid #0284c7;">
                       <div class="tree-node-header" onclick="toggleNode(this)">
                         <div class="tree-node-header-top">
-                          <div style="display:flex; align-items:center; gap:8px;">
+                          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                             <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
                             <span class="badge-node badge-obj">OBJ. ESPECÍFICO</span>
+                            @if($indGoal)
+                              <button type="button" class="btn-ver-ind" onclick="event.stopPropagation(); abrirModalIndicadorAsesor({{ json_encode($indGoal) }});">
+                                <i class="fa fa-ruler-combined"></i> Indicador: {{ $indGoal->codigoCompleto() }}
+                              </button>
+                            @endif
                           </div>
                           <span class="status-badge {{ $hasCommentGoal ? 'status-has' : 'status-no' }}" id="status_badge_{{ $goal->id }}">
                             <i class="fa {{ $hasCommentGoal ? 'fa-check-circle' : 'fa-circle' }}"></i>
@@ -263,7 +305,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                           </span>
                         </div>
                         <div class="tree-node-title-text">
-                          {{ strip_tags($goal->name) }}
+                          {{ $cleanName($goal->name) }}
                         </div>
                       </div>
 
@@ -286,14 +328,20 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                               @php
                                 $hasCommentAction = isset($comentariosMap[$action->id]) && !empty($comentariosMap[$action->id]);
                                 $inisDeAccion = $iniciativas->where('pei_profile_id', $action->id);
+                                $indAction = $action->indicador;
                               @endphp
 
                               <div class="tree-node" style="border-left: 4px solid var(--purple);">
                                 <div class="tree-node-header" onclick="toggleNode(this)">
                                   <div class="tree-node-header-top">
-                                    <div style="display:flex; align-items:center; gap:8px;">
+                                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                                       <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
                                       <span class="badge-node badge-acc">ACC. ESTRATÉGICA</span>
+                                      @if($indAction)
+                                        <button type="button" class="btn-ver-ind" onclick="event.stopPropagation(); abrirModalIndicadorAsesor({{ json_encode($indAction) }});">
+                                          <i class="fa fa-ruler-combined"></i> Indicador: {{ $indAction->codigoCompleto() }}
+                                        </button>
+                                      @endif
                                     </div>
                                     <span class="status-badge {{ $hasCommentAction ? 'status-has' : 'status-no' }}" id="status_badge_{{ $action->id }}">
                                       <i class="fa {{ $hasCommentAction ? 'fa-check-circle' : 'fa-circle' }}"></i>
@@ -301,7 +349,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                                     </span>
                                   </div>
                                   <div class="tree-node-title-text">
-                                    {{ strip_tags($action->name) }}
+                                    {{ $cleanName($action->name) }}
                                   </div>
                                 </div>
 
@@ -331,9 +379,9 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                                         <div class="tree-node" style="border-left: 4px solid var(--green); margin-bottom: 8px;">
                                           <div class="tree-node-header" onclick="toggleNode(this)">
                                             <div class="tree-node-header-top">
-                                              <div style="display:flex; align-items:center; gap:8px;">
+                                              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                                                 <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
-                                                <span class="badge-node badge-ini">{{ $ini->codigo }}</span>
+                                                <span class="badge-node badge-ini">{{ $cleanName($ini->codigo) }}</span>
                                               </div>
                                               <span class="status-badge {{ $hasCommentIni ? 'status-has' : 'status-no' }}" id="status_badge_{{ $ini->id }}">
                                                 <i class="fa {{ $hasCommentIni ? 'fa-check-circle' : 'fa-circle' }}"></i>
@@ -341,7 +389,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                                               </span>
                                             </div>
                                             <div class="tree-node-title-text">
-                                              {{ $ini->accion }}
+                                              {{ $cleanName($ini->accion) }}
                                             </div>
                                           </div>
 
@@ -379,6 +427,55 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 
 </div>
 
+{{-- MODAL FICHA TÉCNICA DE INDICADOR ASOCIADO PARA ASESOR --}}
+<div class="modal-bg-ind" id="modalIndicadorAsesor">
+  <div class="modal-card-ind">
+    <div class="modal-header-ind">
+      <div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="badge-node badge-eje" id="mIndCodigo" style="background:#38bdf8; color:#0f172a; font-weight:800;">-</span>
+          <span class="badge-node" id="mIndDimension" style="background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.25);">-</span>
+        </div>
+        <h3 id="mIndNombre" style="font-size:15px; font-weight:800; color:#fff; margin-top:6px; line-height:1.35;">-</h3>
+      </div>
+      <button type="button" class="modal-x-ind" onclick="cerrarModalIndicadorAsesor()">&times;</button>
+    </div>
+    <div class="modal-body-ind">
+      <div class="ind-grid-4">
+        <div class="ind-info-box"><small>Dimensión</small><strong id="mIndDimTxt">-</strong></div>
+        <div class="ind-info-box"><small>Frecuencia</small><strong id="mIndFrecTxt">-</strong></div>
+        <div class="ind-info-box"><small>Cobertura</small><strong id="mIndCobTxt">-</strong></div>
+        <div class="ind-info-box"><small>Sentido</small><strong id="mIndSentTxt">-</strong></div>
+      </div>
+
+      <div class="ind-section">
+        <label><i class="fa fa-chart-line" style="color:var(--blue);"></i> Línea de Base</label>
+        <div id="mIndLineaBase" class="ind-val-box">-</div>
+      </div>
+
+      <div class="ind-section">
+        <label><i class="fa fa-bullseye" style="color:var(--green);"></i> Metas Anuales Programadas</label>
+        <div id="mIndMetasBox" class="ind-metas-grid">-</div>
+      </div>
+
+      <div class="ind-section">
+        <label><i class="fa fa-calculator" style="color:var(--purple);"></i> Fórmula de Cálculo</label>
+        <div id="mIndFormula" class="ind-val-box">-</div>
+      </div>
+
+      <div class="ind-section">
+        <label><i class="fa fa-database" style="color:var(--amber);"></i> Variables &amp; Fuente de Información</label>
+        <div id="mIndFuente" class="ind-val-box">-</div>
+      </div>
+
+      <div class="ind-section">
+        <label><i class="fa fa-building" style="color:var(--text-secondary);"></i> Unidad de Medida &amp; Responsable</label>
+        <div id="mIndResponsable" class="ind-val-box">-</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {{-- TOAST NOTIFICATION --}}
 <div class="toast-msg" id="toastAsesor">
   <i class="fa fa-check-circle text-green" style="color: var(--green);"></i>
@@ -406,6 +503,68 @@ function showToast(msg) {
     $t.fadeOut(300);
   }, 2500);
 }
+
+function abrirModalIndicadorAsesor(ind) {
+  if (!ind) return;
+  var codLetters = (ind.codigo_letras || '').toUpperCase();
+  var codNumbers = ind.codigo_numeros || '';
+  var codigo = (codLetters || codNumbers) ? (codLetters + '-' + codNumbers) : 'IND-' + ind.id;
+
+  $('#mIndCodigo').text(codigo);
+  $('#mIndDimension').text((ind.dimension || 'Eficacia').toUpperCase());
+  $('#mIndNombre').text(ind.nombre || '-');
+
+  $('#mIndDimTxt').text((ind.dimension || '—').toUpperCase());
+  $('#mIndFrecTxt').text((ind.frecuencia || '—').toUpperCase());
+  $('#mIndCobTxt').text((ind.cobertura || '—').toUpperCase());
+  $('#mIndSentTxt').text(ind.sentido === 'descendente' ? '▼ Descendente (Menor es mejor)' : '▲ Ascendente (Mayor es mejor)');
+
+  var lbAnio = ind.linea_base_anio || '';
+  var lbVal = ind.linea_base_valor || '';
+  $('#mIndLineaBase').html(lbVal ? ('<strong>Año ' + (lbAnio || 'Base') + ':</strong> ' + lbVal) : 'Sin Línea de Base especificada.');
+
+  // Metas
+  var $metas = $('#mIndMetasBox').empty();
+  var metasArr = ind.metas;
+  if (typeof metasArr === 'string') {
+    try { metasArr = JSON.parse(metasArr); } catch(e) { metasArr = []; }
+  }
+  if (Array.isArray(metasArr) && metasArr.length > 0) {
+    metasArr.forEach(function(m) {
+      if (m.anio && m.valor) {
+        $metas.append('<div class="ind-meta-pill"><strong>' + m.anio + ':</strong> ' + m.valor + '</div>');
+      }
+    });
+  } else {
+    $metas.html('<span style="font-size:12px; color:var(--muted);">Sin metas programadas.</span>');
+  }
+
+  $('#mIndFormula').text(ind.formula || 'Sin fórmula de cálculo cargada.');
+  
+  var fuenteTxt = '';
+  if (ind.variables) fuenteTxt += '<strong>Variables:</strong> ' + ind.variables + '<br>';
+  if (ind.fuente) fuenteTxt += '<strong>Fuente:</strong> ' + ind.fuente;
+  $('#mIndFuente').html(fuenteTxt || 'Sin fuente o variables detalladas.');
+
+  var respTxt = '';
+  if (ind.unidad_medida) respTxt += '<strong>Unidad de Medida:</strong> ' + ind.unidad_medida + '<br>';
+  if (ind.dependencia_responsable) respTxt += '<strong>Responsable:</strong> ' + ind.dependencia_responsable;
+  $('#mIndResponsable').html(respTxt || 'Sin unidad de medida ni dependencia especificada.');
+
+  $('#modalIndicadorAsesor').css('display', 'flex').hide().fadeIn(200);
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarModalIndicadorAsesor() {
+  $('#modalIndicadorAsesor').fadeOut(200);
+  document.body.style.overflow = '';
+}
+
+$(document).on('click', function(e) {
+  if (e.target.id === 'modalIndicadorAsesor') {
+    cerrarModalIndicadorAsesor();
+  }
+});
 
 function guardarComentarioNodo(nodeId, type, btnEl) {
   var $btn = $(btnEl);
