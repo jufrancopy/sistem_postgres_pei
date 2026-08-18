@@ -25,7 +25,7 @@ html{scroll-behavior:smooth}
 body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh}
 
 /* Topbar */
-.topbar{position:sticky;top:0;z-index:300;background:rgba(255,255,255,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);height:60px;display:flex;align-items:center;padding:0 clamp(16px,4vw,40px);gap:12px}
+.topbar{position:sticky;top:0;z-index:300;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);height:60px;display:flex;align-items:center;padding:0 clamp(16px,4vw,40px);gap:12px}
 .topbar-logo{width:36px;height:36px;border-radius:var(--radius-xs);background:linear-gradient(135deg,#0f172a,#1e293b);display:grid;place-items:center;color:#fff;font-weight:900;font-size:14px;flex-shrink:0}
 .topbar-title{font-size:13px;font-weight:700;color:var(--text)}
 .topbar-sub{font-size:11px;color:var(--muted)}
@@ -35,33 +35,33 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .btn-logout:hover{background:#f1f5f9;color:var(--text)}
 
 /* Hero */
-.hero{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#fff;padding:clamp(28px,4vw,48px) clamp(16px,4vw,40px);position:relative;overflow:hidden}
+.hero{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#fff;padding:clamp(24px,4vw,40px) clamp(16px,4vw,40px);position:relative;overflow:hidden}
 .hero-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--amber);background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);padding:4px 14px;border-radius:100px;margin-bottom:12px}
-.hero h1{font-size:clamp(1.4rem,3vw,2rem);font-weight:900;color:#fff;line-height:1.2;margin-bottom:8px}
-.hero p{font-size:13px;color:#cbd5e1;max-width:680px;line-height:1.6}
+.hero h1{font-size:clamp(1.3rem,3vw,1.8rem);font-weight:900;color:#fff;line-height:1.25;margin-bottom:8px}
+.hero p{font-size:13px;color:#cbd5e1;max-width:720px;line-height:1.6}
 
 /* Metrics Bar */
-.metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1)}
-.metric-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-xs);padding:10px 14px;text-align:center}
+.metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1)}
+.metric-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-xs);padding:8px 12px;text-align:center}
 .metric-num{font-size:18px;font-weight:800;color:var(--amber)}
 .metric-lbl{font-size:11px;color:#94a3b8}
 
 /* Page Container */
-.page-wrap{max-width:1100px;margin:0 auto;padding:clamp(20px,3vw,36px) clamp(16px,4vw,32px)}
+.page-wrap{max-width:1100px;margin:0 auto;padding:clamp(16px,3vw,32px) clamp(12px,4vw,28px)}
 
 /* Section Card */
 .card-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);margin-bottom:24px;overflow:hidden}
-.card-box-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:between;gap:12px;background:#fff}
+.card-box-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;flex-wrap:wrap}
 .card-box-title{font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}
-.card-box-body{padding:24px}
+.card-box-body{padding:20px}
 
-/* Accordion Tree Styling (Closed by default) */
+/* Accordion Tree Styling (Responsive Stacked Header) */
 .tree-node{border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;background:#fff;overflow:hidden;transition:all .2s ease}
-.tree-node-header{padding:14px 18px;display:flex;align-items:center;justify-content:between;cursor:pointer;background:#fff;user-select:none;gap:10px;transition:background .15s ease}
+.tree-node-header{padding:12px 16px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:#fff;user-select:none;transition:background .15s ease}
 .tree-node-header:hover{background:#f8fafc}
-.tree-node-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;flex:1;min-width:0}
-.tree-node-title .text-trunc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tree-node-body{display:none;padding:16px 18px;background:#f8fafc;border-top:1px solid var(--border)}
+.tree-node-header-top{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
+.tree-node-title-text{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.45;word-break:break-word;padding-left:26px}
+.tree-node-body{display:none;padding:16px;background:#f8fafc;border-top:1px solid var(--border)}
 
 /* Badges */
 .badge-node{font-size:10px;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.3px;flex-shrink:0}
@@ -77,7 +77,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 /* Comment Box */
 .comment-box{background:#fff;border:1px solid var(--border);border-radius:var(--radius-xs);padding:14px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
 .comment-box label{display:block;font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:6px}
-.comment-box textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-xs);font-family:inherit;font-size:12px;color:var(--text);outline:none;transition:all .15s ease;resize:vertical;min-height:70px}
+.comment-box textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-xs);font-family:inherit;font-size:12.5px;color:var(--text);outline:none;transition:all .15s ease;resize:vertical;min-height:70px}
 .comment-box textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
 .comment-box-footer{display:flex;justify-content:flex-end;margin-top:8px}
 
@@ -85,11 +85,11 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .btn-save-comment:hover{background:var(--blue-700);transform:translateY(-1px)}
 
 /* Chevron Animation */
-.chevron-icon{transition:transform .2s ease;font-size:11px;color:var(--muted);width:20px;height:20px;display:grid;place-items:center}
+.chevron-icon{transition:transform .2s ease;font-size:11px;color:var(--muted);width:18px;height:18px;display:grid;place-items:center}
 .tree-node-header.active .chevron-icon{transform:rotate(90deg);color:var(--blue)}
 
 /* Buttons Bar */
-.toolbar-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.toolbar-bar{display:flex;gap:8px;margin-bottom:0;flex-wrap:wrap}
 .btn-tool{padding:6px 14px;border-radius:100px;font-size:12px;font-weight:600;background:#fff;border:1px solid var(--border);color:var(--text-secondary);cursor:pointer;transition:all .15s}
 .btn-tool:hover{background:#f1f5f9;color:var(--text)}
 
@@ -150,6 +150,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
       <div class="metric-lbl">Objetivos Específicos</div>
     </div>
     <div class="metric-card">
+      <div class="metric-num">{{ $descendants->where('level', 'action')->count() }}</div>
+      <div class="metric-lbl">Acciones Estratégicas</div>
+    </div>
+    <div class="metric-card">
       <div class="metric-num">{{ $iniciativas->count() }}</div>
       <div class="metric-lbl">Acciones Operativas (Mejora)</div>
     </div>
@@ -195,7 +199,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         <i class="fa fa-sitemap" style="color: var(--blue);"></i>
         <span>Estructura del Plan Estratégico — Sugerencias por Elemento</span>
       </div>
-      <div class="toolbar-bar" style="margin-bottom: 0;">
+      <div class="toolbar-bar">
         <button type="button" class="btn-tool" id="btnExpandirTodo"><i class="fa fa-expand-alt mr-1"></i> Expandir Todo</button>
         <button type="button" class="btn-tool" id="btnColapsarTodo"><i class="fa fa-compress-alt mr-1"></i> Colapsar Todo</button>
       </div>
@@ -211,15 +215,19 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
           {{-- NIVEL 1: OBJETIVO ESTRATÉGICO --}}
           <div class="tree-node" style="border-left: 4px solid var(--blue);">
             <div class="tree-node-header" onclick="toggleNode(this)">
-              <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
-              <div class="tree-node-title">
-                <span class="badge-node badge-eje">OBJETIVO ESTRATÉGICO</span>
-                <span class="text-trunc">{{ strip_tags($axi->name) }}</span>
+              <div class="tree-node-header-top">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
+                  <span class="badge-node badge-eje">OBJETIVO ESTRATÉGICO</span>
+                </div>
+                <span class="status-badge {{ $hasCommentAxi ? 'status-has' : 'status-no' }}" id="status_badge_{{ $axi->id }}">
+                  <i class="fa {{ $hasCommentAxi ? 'fa-check-circle' : 'fa-circle' }}"></i>
+                  <span>{{ $hasCommentAxi ? 'Sugerencia Registrada' : 'Sin comentarios' }}</span>
+                </span>
               </div>
-              <span class="status-badge {{ $hasCommentAxi ? 'status-has' : 'status-no' }}" id="status_badge_{{ $axi->id }}">
-                <i class="fa {{ $hasCommentAxi ? 'fa-check-circle' : 'fa-circle' }}"></i>
-                <span>{{ $hasCommentAxi ? 'Sugerencia Registrada' : 'Sin comentarios' }}</span>
-              </span>
+              <div class="tree-node-title-text">
+                {{ strip_tags($axi->name) }}
+              </div>
             </div>
 
             <div class="tree-node-body">
@@ -236,7 +244,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 
               {{-- OBJETIVOS ESPECÍFICOS --}}
               @if($axi->children->count() > 0)
-                <div style="padding-left: 12px; margin-top: 12px; border-left: 2px solid var(--border);">
+                <div style="padding-left: 8px; margin-top: 12px; border-left: 2px solid var(--border);">
                   @foreach($axi->children as $goal)
                     @php
                       $hasCommentGoal = isset($comentariosMap[$goal->id]) && !empty($comentariosMap[$goal->id]);
@@ -244,15 +252,19 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 
                     <div class="tree-node" style="border-left: 4px solid #0284c7;">
                       <div class="tree-node-header" onclick="toggleNode(this)">
-                        <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
-                        <div class="tree-node-title">
-                          <span class="badge-node badge-obj">OBJ. ESPECÍFICO</span>
-                          <span class="text-trunc">{{ strip_tags($goal->name) }}</span>
+                        <div class="tree-node-header-top">
+                          <div style="display:flex; align-items:center; gap:8px;">
+                            <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
+                            <span class="badge-node badge-obj">OBJ. ESPECÍFICO</span>
+                          </div>
+                          <span class="status-badge {{ $hasCommentGoal ? 'status-has' : 'status-no' }}" id="status_badge_{{ $goal->id }}">
+                            <i class="fa {{ $hasCommentGoal ? 'fa-check-circle' : 'fa-circle' }}"></i>
+                            <span>{{ $hasCommentGoal ? 'Sugerencia Registrada' : 'Sin comentarios' }}</span>
+                          </span>
                         </div>
-                        <span class="status-badge {{ $hasCommentGoal ? 'status-has' : 'status-no' }}" id="status_badge_{{ $goal->id }}">
-                          <i class="fa {{ $hasCommentGoal ? 'fa-check-circle' : 'fa-circle' }}"></i>
-                          <span>{{ $hasCommentGoal ? 'Sugerencia Registrada' : 'Sin comentarios' }}</span>
-                        </span>
+                        <div class="tree-node-title-text">
+                          {{ strip_tags($goal->name) }}
+                        </div>
                       </div>
 
                       <div class="tree-node-body">
@@ -269,7 +281,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 
                         {{-- ACCIONES ESTRATÉGICAS / HIJOS --}}
                         @if($goal->children->count() > 0)
-                          <div style="padding-left: 12px; margin-top: 12px; border-left: 2px solid var(--border);">
+                          <div style="padding-left: 8px; margin-top: 12px; border-left: 2px solid var(--border);">
                             @foreach($goal->children as $action)
                               @php
                                 $hasCommentAction = isset($comentariosMap[$action->id]) && !empty($comentariosMap[$action->id]);
@@ -278,15 +290,19 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 
                               <div class="tree-node" style="border-left: 4px solid var(--purple);">
                                 <div class="tree-node-header" onclick="toggleNode(this)">
-                                  <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
-                                  <div class="tree-node-title">
-                                    <span class="badge-node badge-acc">ACC. ESTRATÉGICA</span>
-                                    <span class="text-trunc">{{ strip_tags($action->name) }}</span>
+                                  <div class="tree-node-header-top">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                      <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
+                                      <span class="badge-node badge-acc">ACC. ESTRATÉGICA</span>
+                                    </div>
+                                    <span class="status-badge {{ $hasCommentAction ? 'status-has' : 'status-no' }}" id="status_badge_{{ $action->id }}">
+                                      <i class="fa {{ $hasCommentAction ? 'fa-check-circle' : 'fa-circle' }}"></i>
+                                      <span>{{ $hasCommentAction ? 'Sugerencia Registrada' : 'Sin comentarios' }}</span>
+                                    </span>
                                   </div>
-                                  <span class="status-badge {{ $hasCommentAction ? 'status-has' : 'status-no' }}" id="status_badge_{{ $action->id }}">
-                                    <i class="fa {{ $hasCommentAction ? 'fa-check-circle' : 'fa-circle' }}"></i>
-                                    <span>{{ $hasCommentAction ? 'Sugerencia Registrada' : 'Sin comentarios' }}</span>
-                                  </span>
+                                  <div class="tree-node-title-text">
+                                    {{ strip_tags($action->name) }}
+                                  </div>
                                 </div>
 
                                 <div class="tree-node-body">
@@ -314,15 +330,19 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                                         @endphp
                                         <div class="tree-node" style="border-left: 4px solid var(--green); margin-bottom: 8px;">
                                           <div class="tree-node-header" onclick="toggleNode(this)">
-                                            <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
-                                            <div class="tree-node-title">
-                                              <span class="badge-node badge-ini">{{ $ini->codigo }}</span>
-                                              <span class="text-trunc">{{ $ini->accion }}</span>
+                                            <div class="tree-node-header-top">
+                                              <div style="display:flex; align-items:center; gap:8px;">
+                                                <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
+                                                <span class="badge-node badge-ini">{{ $ini->codigo }}</span>
+                                              </div>
+                                              <span class="status-badge {{ $hasCommentIni ? 'status-has' : 'status-no' }}" id="status_badge_{{ $ini->id }}">
+                                                <i class="fa {{ $hasCommentIni ? 'fa-check-circle' : 'fa-circle' }}"></i>
+                                                <span>{{ $hasCommentIni ? 'Sugerencia Registrada' : 'Sin comentarios' }}</span>
+                                              </span>
                                             </div>
-                                            <span class="status-badge {{ $hasCommentIni ? 'status-has' : 'status-no' }}" id="status_badge_{{ $ini->id }}">
-                                              <i class="fa {{ $hasCommentIni ? 'fa-check-circle' : 'fa-circle' }}"></i>
-                                              <span>{{ $hasCommentIni ? 'Sugerencia Registrada' : 'Sin comentarios' }}</span>
-                                            </span>
+                                            <div class="tree-node-title-text">
+                                              {{ $ini->accion }}
+                                            </div>
                                           </div>
 
                                           <div class="tree-node-body">
@@ -360,33 +380,39 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 </div>
 
 {{-- TOAST NOTIFICATION --}}
-<div class="toast-msg" id="toastMsg">
-  <i class="fa fa-check-circle text-green" style="color: var(--green); font-size: 16px;"></i>
-  <span id="toastText">Sugerencia guardada correctamente.</span>
+<div class="toast-msg" id="toastAsesor">
+  <i class="fa fa-check-circle text-green" style="color: var(--green);"></i>
+  <span id="toastAsesorTxt">Sugerencia guardada correctamente</span>
 </div>
 
 <div class="page-footer">
-  &copy; {{ date('Y') }} Sistema de Planificación Estratégica Institucional. Portal de Asesoría Externa.
+  SIPLAN GO — {{ $sysSiteName }} &copy; {{ date('Y') }}
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
-// Toggle de árbol (CERRADO POR DEFECTO)
 function toggleNode(headerEl) {
   var $header = $(headerEl);
   var $body = $header.next('.tree-node-body');
-
   $header.toggleClass('active');
   $body.slideToggle(180);
 }
 
-// Guardar Comentario por Nodo vía AJAX
-function guardarComentarioNodo(nodeId, nodeType, btnEl) {
+function showToast(msg) {
+  var $t = $('#toastAsesor');
+  $('#toastAsesorTxt').text(msg || 'Sugerencia guardada correctamente.');
+  $t.css('display', 'flex').hide().fadeIn(200);
+  setTimeout(function() {
+    $t.fadeOut(300);
+  }, 2500);
+}
+
+function guardarComentarioNodo(nodeId, type, btnEl) {
   var $btn = $(btnEl);
   var $container = $btn.closest('.comment-box');
-  var comentario = $container.find('.area-comentario').val();
+  var comentario = $container.find('textarea').val();
 
-  $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
+  $btn.prop('disabled', true).css('opacity', '0.7');
 
   $.ajax({
     url: "{{ route('asesoria.public.comentario', $asesoria->id) }}",
@@ -394,17 +420,16 @@ function guardarComentarioNodo(nodeId, nodeType, btnEl) {
     data: {
       _token: "{{ csrf_token() }}",
       node_id: nodeId,
-      node_type: nodeType,
-      comentario: comentario
+      comentario: comentario,
+      type: type
     },
     success: function(resp) {
-      $btn.prop('disabled', false).html('<i class="fa fa-check"></i> Guardado');
-      setTimeout(function() {
-        $btn.html('<i class="fa fa-save"></i> Guardar Sugerencia');
-      }, 1800);
+      $btn.prop('disabled', false).css('opacity', '1');
+      showToast(resp.message || 'Sugerencia guardada correctamente.');
 
+      // Actualizar badge de estado
       var $badge = $('#status_badge_' + nodeId);
-      if (resp.has_comment) {
+      if (comentario.trim() !== '') {
         $badge.removeClass('status-no').addClass('status-has')
               .html('<i class="fa fa-check-circle"></i><span>Sugerencia Registrada</span>');
       } else {
@@ -412,73 +437,55 @@ function guardarComentarioNodo(nodeId, nodeType, btnEl) {
               .html('<i class="fa fa-circle"></i><span>Sin comentarios</span>');
       }
 
-      // Actualizar contador
-      actualizarContadorComentarios();
-      showToast(resp.message || 'Sugerencia registrada con éxito.');
+      if (resp.total_comentarios !== undefined) {
+        $('#cntComentariosRegistrados').text(resp.total_comentarios);
+      }
     },
     error: function() {
-      $btn.prop('disabled', false).html('<i class="fa fa-save"></i> Guardar Sugerencia');
-      showToast('Error al guardar la sugerencia.', true);
+      $btn.prop('disabled', false).css('opacity', '1');
+      showToast('Error al guardar la sugerencia.');
     }
   });
 }
 
-// Finalizar Dictamen General
-$('#btnFinalizarDictamen').click(function() {
-  var $btn = $(this);
-  var dictamen = $('#areaDictamenGeneral').val();
+$(document).ready(function() {
+  // Expandir Todo
+  $('#btnExpandirTodo').click(function() {
+    $('.tree-node-header').addClass('active');
+    $('.tree-node-body').slideDown(180);
+  });
 
-  $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Guardando Dictamen...');
+  // Colapsar Todo
+  $('#btnColapsarTodo').click(function() {
+    $('.tree-node-header').removeClass('active');
+    $('.tree-node-body').slideUp(180);
+  });
 
-  $.ajax({
-    url: "{{ route('asesoria.public.finalizar', $asesoria->id) }}",
-    type: "POST",
-    data: {
-      _token: "{{ csrf_token() }}",
-      dictamen_general: dictamen
-    },
-    success: function(resp) {
-      $btn.prop('disabled', false).html('<i class="fa fa-check-circle"></i> Dictamen Completado');
-      showToast(resp.message || 'Dictamen general guardado exitosamente.');
-    },
-    error: function() {
-      $btn.prop('disabled', false).html('<i class="fa fa-check-circle"></i> Finalizar Dictamen de Asesoría');
-      showToast('Error al guardar el dictamen.', true);
-    }
+  // Finalizar Dictamen General
+  $('#btnFinalizarDictamen').click(function() {
+    var dictamen = $('#areaDictamenGeneral').val();
+    var $btn = $(this);
+
+    $btn.prop('disabled', true).css('opacity', '0.7');
+
+    $.ajax({
+      url: "{{ route('asesoria.public.finalizar', $asesoria->id) }}",
+      type: "POST",
+      data: {
+        _token: "{{ csrf_token() }}",
+        dictamen_general: dictamen
+      },
+      success: function(resp) {
+        $btn.prop('disabled', false).css('opacity', '1');
+        showToast(resp.message || 'Dictamen finalizado y guardado.');
+      },
+      error: function() {
+        $btn.prop('disabled', false).css('opacity', '1');
+        showToast('Error al guardar el dictamen.');
+      }
+    });
   });
 });
-
-// Contar sugerencias registradas activas
-function actualizarContadorComentarios() {
-  var count = $('.status-badge.status-has').length;
-  $('#cntComentariosRegistrados').text(count);
-}
-
-// Expandir / Colapsar Todo
-$('#btnExpandirTodo').click(function() {
-  $('.tree-node-header').addClass('active');
-  $('.tree-node-body').slideDown(180);
-});
-
-$('#btnColapsarTodo').click(function() {
-  $('.tree-node-header').removeClass('active');
-  $('.tree-node-body').slideUp(180);
-});
-
-function showToast(msg, isError) {
-  var $toast = $('#toastMsg');
-  $('#toastText').text(msg);
-  if (isError) {
-    $toast.css('background', '#991b1b');
-  } else {
-    $toast.css('background', '#0f172a');
-  }
-  $toast.css('display', 'flex').hide().fadeIn(200);
-  setTimeout(function() {
-    $toast.fadeOut(200);
-  }, 3000);
-}
 </script>
-
 </body>
 </html>
