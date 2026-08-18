@@ -5544,29 +5544,49 @@ function restaurarElementoPei(id, type) {
     });
 }
 
+function parseCommentsData(raw) {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'object') return [raw];
+    if (typeof raw !== 'string') return [];
+
+    var trimmed = raw.trim();
+    if (!trimmed) return [];
+
+    if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+        try {
+            return JSON.parse(trimmed);
+        } catch (e) {
+            try {
+                var txt = document.createElement('textarea');
+                txt.innerHTML = trimmed;
+                return JSON.parse(txt.value);
+            } catch (e2) {}
+        }
+    }
+
+    try {
+        var decoded = atob(trimmed);
+        if (decoded.startsWith('[') || decoded.startsWith('{')) {
+            return JSON.parse(decoded);
+        }
+    } catch (e3) {}
+
+    try {
+        return JSON.parse(trimmed);
+    } catch (e4) {
+        console.error('Error al decodificar comentarios:', e4, raw);
+        return [];
+    }
+}
+
 window.verComentariosNodo = function(btn) {
     var $btn = $(btn);
     var title = $btn.attr('data-title') || $btn.data('title') || '';
     var level = $btn.attr('data-level') || $btn.data('level') || 'Elemento del PEI';
     var rawComments = $btn.attr('data-comments') || $btn.data('comments');
     
-    var comments = [];
-    if (typeof rawComments === 'string' && rawComments.length > 0) {
-        try {
-            var decoded = atob(rawComments);
-            comments = JSON.parse(decoded);
-        } catch (err) {
-            try {
-                var txt = document.createElement('textarea');
-                txt.innerHTML = rawComments;
-                comments = JSON.parse(txt.value);
-            } catch (e2) {
-                console.error('Error al decodificar comentarios:', e2, rawComments);
-            }
-        }
-    } else if (Array.isArray(rawComments)) {
-        comments = rawComments;
-    }
+    var comments = parseCommentsData(rawComments);
 
     $('#modalVerComentariosNodoTitle').text(title);
     $('#modalVerComentariosNodoSubtitle').text(level);
@@ -5615,8 +5635,10 @@ $(document).on('click', '.btn-integrar-aporte', function(e) {
 
     btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Integrando y notificando por correo...');
 
+    var targetUrl = "{{ route('pei.asesor.comentario.integrar', ':id') }}".replace(':id', commentId);
+
     $.ajax({
-        url: "{{ url('admin/planificacion/pei-asesorias/comentarios') }}/" + commentId + "/integrar",
+        url: targetUrl,
         type: "POST",
         data: { _token: "{{ csrf_token() }}" },
         success: function(resp) {
