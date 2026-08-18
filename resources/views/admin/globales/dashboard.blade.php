@@ -862,6 +862,11 @@
                                                 <i class="fa fa-certificate"></i>
                                             </button>
 
+                                            {{-- Lectura Cómoda de Aportes de Asesoría --}}
+                                            <button type="button" class="btn btn-circle btn-dark text-warning btnVerReporteAportes" data-pei-id="{{ $plan->id }}" title="Lectura Cómoda de Aportes y Dictámenes de Asesoría">
+                                                <i class="fa fa-book-open"></i>
+                                            </button>
+
                                             {{-- 5. Cruce de Ambientes FODA --}}
                                             <button type="button" class="btn btn-circle btn-warning text-white btnVerFodaCrossing" data-url="{{ route('foda-cruce-ambientes', $plan->id) }}" data-name="{{ addslashes(strip_tags($plan->name)) }}" title="Análisis FODA & Cruce de Ambientes">
                                                 <i class="fa fa-random"></i>
@@ -2169,6 +2174,22 @@ $(document).ready(function() {
             $('#tablaPlanesGlobal').DataTable().draw();
         }
     };
+
+    // ── Lectura Cómoda de Aportes de Asesoría Handler ──
+    $(document).on('click', '.btnVerReporteAportes', function () {
+        var peiId = $(this).data('pei-id');
+        if (!peiId) return;
+        var url = "{{ url('pei-profiles') }}/" + peiId + "/asesorias/reporte";
+
+        $('#modalLecturaAportesBody').html('<div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-2x mb-3 text-warning"></i><div>Cargando reporte consolidado de aportes...</div></div>');
+        $('#modalLecturaAportes').modal('show');
+
+        $.get(url, function (html) {
+            $('#modalLecturaAportesBody').html(html);
+        }).fail(function () {
+            $('#modalLecturaAportesBody').html('<div class="alert alert-danger mb-0 p-4">Ocurrió un error al cargar el reporte de aportes.</div>');
+        });
+    });
 
     // ── Certificación MEF Modal Handler ──
     $(document).on('click', '.btnVerCertificacionMef', function () {
@@ -3948,6 +3969,14 @@ function guardarPremiacionGrupo(e) {
                     </button>
                 </div>
             </form>
+</div>
+</div>
+
+{{-- Modal Lectura Cómoda de Aportes de Asesoría --}}
+<div class="modal fade" id="modalLecturaAportes" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="max-width: 1100px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div id="modalLecturaAportesBody" class="p-0"></div>
         </div>
     </div>
 </div>

@@ -89,6 +89,15 @@
                 <i class="fa fa-user-plus"></i> Convocar Asesor
             </button>
 
+            {{-- Botón de Lectura de Aportes de Asesoría --}}
+            <button type="button"
+                    class="btn btn-sm font-weight-bold text-white btnVerReporteAportes d-inline-flex align-items-center px-3"
+                    data-pei-id="{{ $profile->id }}"
+                    style="background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 8px; border: none; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+                    title="Lectura cómoda de aportes y dictámenes de Asesoría Externa">
+                <i class="fa fa-book-open text-warning"></i> Lectura de Aportes
+            </button>
+
             {{-- Dropdown Más Opciones --}}
             <div class="dropdown">
                 <button class="btn btn-sm btn-outline-secondary font-weight-bold dropdown-toggle d-inline-flex align-items-center px-3"
@@ -5489,6 +5498,20 @@ function cargarBasureroPeiAdmin() {
     });
 }
 
+$(document).on('click', '.btnVerReporteAportes', function () {
+    var peiId = $(this).data('pei-id') || "{{ $profile->id }}";
+    var url = "{{ url('pei-profiles') }}/" + peiId + "/asesorias/reporte";
+
+    $('#modalLecturaAportesBody').html('<div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-2x mb-3 text-warning"></i><div>Cargando reporte consolidado de aportes...</div></div>');
+    $('#modalLecturaAportes').modal('show');
+
+    $.get(url, function (html) {
+        $('#modalLecturaAportesBody').html(html);
+    }).fail(function () {
+        $('#modalLecturaAportesBody').html('<div class="alert alert-danger mb-0 p-4">Ocurrió un error al cargar el reporte de aportes.</div>');
+    });
+});
+
 function restaurarElementoPei(id, type) {
     var url = (type === 'iniciativa')
         ? "{{ url('admin/planificacion/pei-profiles/' . $profile->id . '/basurero/restaurar-iniciativa') }}/" + id
@@ -5511,6 +5534,15 @@ function restaurarElementoPei(id, type) {
     });
 }
 </script>
+
+{{-- Modal Lectura Cómoda de Aportes de Asesoría --}}
+<div class="modal fade" id="modalLecturaAportes" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="max-width: 1100px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div id="modalLecturaAportesBody" class="p-0"></div>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <div id="containerModalReordenarPei"></div>

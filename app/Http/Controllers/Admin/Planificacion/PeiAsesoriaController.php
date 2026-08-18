@@ -171,6 +171,12 @@ class PeiAsesoriaController extends Controller
             $asesoria->update(['estado' => 'EN_REVISION']);
         }
 
+        $this->notificarRedis($asesoria, 'sugerencia.guardada', [
+            'node_id'    => $nodeId,
+            'node_type'  => $nodeType,
+            'comentario' => $comentario
+        ]);
+
         return response()->json(['ok' => true, 'message' => 'Sugerencia guardada correctamente.', 'has_comment' => true]);
     }
 
@@ -187,6 +193,74 @@ class PeiAsesoriaController extends Controller
             'estado'           => 'COMPLETADO',
         ]);
 
+        $this->notificarRedis($asesoria, 'dictamen.finalizado', [
+            'dictamen_general' => $asesoria->dictamen_general
+        ]);
+
         return response()->json(['ok' => true, 'message' => 'Dictamen de Validación completado con éxito. ¡Gracias por sus sugerencias!']);
+    }
+
+    /**
+     * Publica notificación en tiempo real a Redis al actualizar la asesoría.
+     */
+    private function notificarRedis(PeiAsesoria $asesoria, string $tipoEvento, array $extra = [])
+    {
+        try {
+            \Illuminate\Support\Facades\Redis::publish('canal-asesoria-pei', json_encode(array_merge([
+                'event'          => $tipoEvento,
+                'pei_profile_id' => (string)$asesoria->pei_profile_id,
+                'asesor_id'      => $asesoria->id,
+                'asesor_nombre'  => $asesoria->nombre,
+                'asesor_email'   => $asesoria->email,
+                'institucion'    => $asesoria->institucion,
+                'estado'         => $asesoria->estado,
+                'dictamen'       => $asesoria->dictamen_general,
+                'timestamp'      => now()->toIso8601String(),
+                'mensaje'        => "Actualización de Asesoría por {$asesoria->nombre}: " . ($tipoEvento === 'dictamen.finalizado' ? 'Dictamen Macro Finalizado' : 'Sugerencia Guardada')
+            ], $extra)));
+        } catch (\Throwable $e) {
+            // Continuar limpiamente si Redis daemon no está activo en el entorno
+        }
+    }
+
+    /**
+     * Genera la vista/HTML de lectura cómoda de aportes y dictámenes de asesorías.
+     */
+    public function reporteAportes($profileId)
+    {
+        $profile = PeiProfile::findOrFail($profileId);
+
+        $asesorias = PeiAsesoria::where('pei_profile_id', $profileId)
+            ->with(['comentarios'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $descendants = $profile->descendants()->get();
+
+        $nodeIds = $descendants->pluck('id')->push($profile->id)->map(fn($v) => (string)$v)->toArray();
+        $stringIds = array_values(array_filter($nodeIds, fn($v) => !is_numeric($v)));
+        $numericIds = array_values(array_filter($nodeIds, 'is_numeric'));
+
+        $query = \App\Models\PlanMaestro\PlanAccion::query();
+        if (!empty($stringIds)) {
+            $query->whereIn('pei_profile_id', $stringIds);
+        }
+        if (!empty($numericIds)) {
+            $query->orWhereIn('plan_id', $numericIds)->orWhereIn('eje_id', $numericIds);
+        }
+        $iniciativas = $query->orderBy('orden')->get();
+
+        $nodosMap = $descendants->keyBy('id');
+        $nodosMap[$profile->id] = $profile;
+        $iniciativasMap = $iniciativas->keyBy('id');
+
+        return view('admin.planificacion.peis.peis.reporte_aportes', compact(
+            'profile',
+            'asesorias',
+            'descendants',
+            'iniciativas',
+            'nodosMap',
+            'iniciativasMap'
+        ));
     }
 }
