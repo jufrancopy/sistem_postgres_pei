@@ -414,6 +414,12 @@
                                    title="Agregar {{ $niveles['action'] ?? 'Acción' }}">
                                     <i class="fa fa-plus" style="font-size:.7rem"></i>
                                 </a>
+                                <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold py-0 px-2 ml-1 createActionsButton shadow-xs"
+                                        data-id="{{ $goal->id }}" data-type="create"
+                                        title="Crear nueva Acción Estratégica e Indicador con Inteligencia Artificial (Llama 3.3 70B)"
+                                        style="border-radius: 12px; font-size: 0.72rem;">
+                                    <i class="fa fa-robot text-warning mr-1"></i> + Acción IA
+                                </button>
                                  @role('Administrador')
                                  <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
                                     data-id="{{ $goal->id }}" href="javascript:void(0)"
