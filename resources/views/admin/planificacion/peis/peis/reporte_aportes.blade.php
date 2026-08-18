@@ -210,40 +210,60 @@ if (typeof window.btnIntegrarAporteHandlerLoaded === 'undefined') {
         var commentId = btn.data('id');
         if (!commentId) return;
 
-        if (!confirm('¿Estás seguro de que deseas eliminar este aporte? Esta acción no se puede deshacer.')) {
-            return;
-        }
+        var doDelete = function() {
+            if (btn.data('processing')) return;
+            btn.data('processing', true);
+            btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Eliminando...');
 
-        if (btn.data('processing')) return;
-        btn.data('processing', true);
-        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Eliminando...');
+            var targetUrl = "{{ route('pei.asesor.comentario.eliminar', ':id') }}".replace(':id', commentId);
 
-        var targetUrl = "{{ route('pei.asesor.comentario.eliminar', ':id') }}".replace(':id', commentId);
-
-        $.ajax({
-            url: targetUrl,
-            type: "DELETE",
-            data: { _token: "{{ csrf_token() }}" },
-            success: function(resp) {
-                if (resp.success) {
-                    if (window.toastr) toastr.success(resp.message);
-                    var $item = btn.closest('.list-group-item');
-                    if ($item.length > 0) {
-                        $item.fadeOut(300, function() { $(this).remove(); });
+            $.ajax({
+                url: targetUrl,
+                type: "DELETE",
+                data: { _token: "{{ csrf_token() }}" },
+                success: function(resp) {
+                    if (resp.success) {
+                        if (window.toastr) toastr.success(resp.message);
+                        var $item = btn.closest('.list-group-item');
+                        if ($item.length > 0) {
+                            $item.fadeOut(300, function() { $(this).remove(); });
+                        } else {
+                            btn.replaceWith('<span class="badge badge-danger font-weight-bold px-2 py-1"><i class="fa fa-trash mr-1"></i> Eliminado</span>');
+                        }
                     } else {
-                        btn.replaceWith('<span class="badge badge-danger font-weight-bold px-2 py-1"><i class="fa fa-trash mr-1"></i> Eliminado</span>');
+                        if (window.toastr) toastr.error(resp.message || 'Error al eliminar el aporte.');
+                        btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-trash mr-1"></i> Eliminar');
                     }
-                } else {
-                    if (window.toastr) toastr.error(resp.message || 'Error al eliminar el aporte.');
+                },
+                error: function(err) {
+                    var msg = (err.responseJSON && err.responseJSON.message) ? err.responseJSON.message : 'Error al comunicarse con el servidor.';
+                    if (window.toastr) toastr.error(msg);
                     btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-trash mr-1"></i> Eliminar');
                 }
-            },
-            error: function(err) {
-                var msg = (err.responseJSON && err.responseJSON.message) ? err.responseJSON.message : 'Error al comunicarse con el servidor.';
-                if (window.toastr) toastr.error(msg);
-                btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-trash mr-1"></i> Eliminar');
+            });
+        };
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: '¿Eliminar este aporte?',
+                text: 'Esta acción no se puede deshacer y la sugerencia técnica será removida permanentemente.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fa fa-trash mr-1"></i> Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then(function(res) {
+                if (res.isConfirmed) {
+                    doDelete();
+                }
+            });
+        } else {
+            if (confirm('¿Estás seguro de que deseas eliminar este aporte? Esta acción no se puede deshacer.')) {
+                doDelete();
             }
-        });
+        }
     });
 }
 </script>
