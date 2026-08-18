@@ -376,7 +376,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         <div class="hero-content">
             <div class="hero-badge anim"><i class="fa fa-shield-alt"></i> Instituto de Previsión Social</div>
             <h1 class="anim d1" style="font-family:'Outfit',sans-serif;">SIPLAN <span style="color:#2563eb;">GO</span> · <span>Planificar con Propósito</span></h1>
-            <p class="anim d2" style="font-size: 0.98rem; line-height: 1.65; color: #475569;">Monitoreo en tiempo real de la Red de Salud IPS, gestión estratégica e inteligencia de datos para transformar la atención a nuestros asegurados.</p>
+            <p class="anim d2" style="font-size: 0.98rem; line-height: 1.65; color: #475569;">Monitoreo en tiempo real de la Red de Salud IPS, gestión estratégica e inteligencia de datos para transformar la seguridad social y la atención a nuestros asegurados.</p>
             
             {{-- Flyer Manifiesto & Red Social Laboral Banner --}}
             <div class="anim d3" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; border-left: 5px solid #38bdf8; border-radius: 16px; padding: 18px 20px; margin-top: 20px; box-shadow: 0 12px 28px rgba(15,23,42,0.22); position: relative; overflow: hidden;">
@@ -393,10 +393,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                         @endif
                         <div>
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 3px; flex-wrap: wrap;">
-                                <strong style="font-size: 0.95rem; color: #fff; line-height: 1.2;">SIPLAN GO — Red Social & Laboral</strong>
+                                <strong style="font-size: 0.95rem; color: #fff; line-height: 1.2;">SIPLAN GO — Red Social & Laboral IPS</strong>
                                 <span style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px;">Inteligencia Colectiva</span>
                             </div>
-                            <span style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.4; display: block;">Una red viva donde todos aportamos, colaboramos e incentivamos el talento humano para cambiar la historia.</span>
+                            <span style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.4; display: block;">Funcionarios del IPS sumando esfuerzos para transformar la seguridad social con tecnología y trabajo mancomunado.</span>
                         </div>
                     </div>
                     <button type="button" onclick="abrirModalFlyerManifiesto()" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border-radius: 20px; border: none; font-size: 0.8rem; font-weight: 800; padding: 8px 20px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(37,99,235,0.4); transition: all 0.2s ease;">
@@ -1040,7 +1040,7 @@ document.addEventListener('click', function(e) {
             {{-- QUOTE BANNER --}}
             <div style="background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); border-left: 6px solid #2563eb; padding: 24px; border-radius: 18px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); margin-bottom: 26px;">
                 <p style="font-size: 1.08rem; font-weight: 600; color: #0f172a; font-style: italic; line-height: 1.65; margin-bottom: 14px;">
-                    “No nacimos en escritorios distantes ni en burocracia aislada. SIPLAN GO es una Red Social y Laboral donde todos los paraguayos —profesionales, analistas, médicos y coordinadores— nos conectamos para aportar nuestro talento, colaborar en tiempo real y transformar la salud pública de nuestro país.”
+                    “No nacimos en escritorios distantes ni en burocracia aislada. Somos funcionarios del IPS que sumamos nuestros esfuerzos para transformar la seguridad social de nuestro país. SIPLAN GO es una Red Social y Laboral donde profesionales, analistas, médicos y coordinadores nos conectamos para aportar nuestro talento, colaborar en tiempo real y cambiar la vida de nuestros asegurados con tecnología y trabajo mancomunado.”
                 </p>
                 <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
                     <small style="color: #64748b; font-weight: 800;">— Equipo Técnico de Planificación & Desarrollo · IPS Paraguay</small>

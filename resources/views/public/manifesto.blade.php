@@ -113,20 +113,20 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 
 {{-- HERO --}}
 <div class="hero">
-  <div class="hero-badge"><i class="fa fa-flag-checkered"></i> Gente común cambiando la historia</div>
+  <div class="hero-badge"><i class="fa fa-flag-checkered"></i> Funcionarios del IPS cambiando la historia</div>
   <h1>SIPLAN <span style="color:#60a5fa;">GO</span> · <span>Planificar con Propósito</span></h1>
-  <p class="lead">Planificar con propósito no es llenar formularios ni cumplir con burocracia: es transformar la gestión pública para que cada guaraní invertido se traduzca en salud, medicamentos a tiempo y dignidad para los asegurados del IPS.</p>
+  <p class="lead">Somos funcionarios del IPS que sumamos nuestros esfuerzos para transformar la seguridad social de nuestro país, asegurando que la tecnología y el trabajo mancomunado se traduzcan en atención digna, medicamentos a tiempo y valor para nuestros asegurados.</p>
 </div>
 
 <div class="page-container">
 
   {{-- QUOTE MANIFESTO --}}
   <div class="quote-card">
-    <p>“Nos negamos a aceptar que la gestión de la salud y la previsión social deba ser lenta u opaca. SIPLAN es la prueba de que cuando los paraguayos ponemos capacidad técnica, patriotismo y corazón, podemos crear herramientas de estándar internacional para salvar vidas y proteger a nuestras familias.”</p>
+    <p>“No nacimos en escritorios distantes ni en burocracia aislada. Somos funcionarios del IPS que sumamos nuestros esfuerzos para transformar la seguridad social de nuestro país. SIPLAN GO es una Red Social y Laboral donde profesionales, analistas, médicos y coordinadores nos conectamos para aportar nuestro talento, colaborar en tiempo real y cambiar la vida de nuestros asegurados con tecnología y trabajo mancomunado.”</p>
     <div class="quote-author">
       <div class="quote-author-avatar"><i class="fa fa-heart"></i></div>
       <div class="quote-author-info">
-        <strong>Equipo Técnico de Planificación & Desarrollo</strong>
+        <strong>Equipo Técnico & Funcionarios de Planificación</strong>
         <span>Instituto de Previsión Social (IPS) — República del Paraguay</span>
       </div>
     </div>
