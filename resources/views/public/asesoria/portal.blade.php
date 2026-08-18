@@ -129,7 +129,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
   <div class="metrics-row">
     <div class="metric-card">
       <div class="metric-num">{{ $descendants->where('level', 'axi')->count() }}</div>
-      <div class="metric-lbl">Ejes Estratégicos</div>
+      <div class="metric-lbl">Objetivos Estratégicos</div>
     </div>
     <div class="metric-card">
       <div class="metric-num">{{ $descendants->whereIn('level', ['goal', 'objetivo_especifico'])->count() }}</div>
@@ -194,12 +194,12 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
             $hasCommentAxi = isset($comentariosMap[$axi->id]) && !empty($comentariosMap[$axi->id]);
           @endphp
 
-          {{-- NIVEL 1: EJE ESTRATÉGICO --}}
+          {{-- NIVEL 1: OBJETIVO ESTRATÉGICO --}}
           <div class="tree-node" style="border-left: 4px solid var(--blue);">
             <div class="tree-node-header" onclick="toggleNode(this)">
               <div class="chevron-icon"><i class="fa fa-chevron-right"></i></div>
               <div class="tree-node-title">
-                <span class="badge-node badge-eje">EJE ESTRATÉGICO</span>
+                <span class="badge-node badge-eje">OBJETIVO ESTRATÉGICO</span>
                 <span class="text-trunc">{{ strip_tags($axi->name) }}</span>
               </div>
               <span class="status-badge {{ $hasCommentAxi ? 'status-has' : 'status-no' }}" id="status_badge_{{ $axi->id }}">
@@ -209,13 +209,13 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
             </div>
 
             <div class="tree-node-body">
-              {{-- Comentario del Eje --}}
+              {{-- Comentario del Objetivo Estratégico --}}
               <div class="comment-box">
-                <label><i class="fa fa-pencil-alt text-amber" style="color:var(--amber);"></i> Sugerencia técnica sobre este Eje Estratégico:</label>
+                <label><i class="fa fa-pencil-alt text-amber" style="color:var(--amber);"></i> Sugerencia técnica sobre este Objetivo Estratégico:</label>
                 <textarea class="area-comentario" data-node-id="{{ $axi->id }}" data-node-type="node" placeholder="Escribí aquí tus observaciones o sugerencias de mejora...">{{ $comentariosMap[$axi->id] ?? '' }}</textarea>
                 <div class="comment-box-footer">
                   <button type="button" class="btn-save-comment" onclick="guardarComentarioNodo('{{ $axi->id }}', 'node', this)">
-                    <i class="fa fa-save"></i> Guardar Sugerencia Eje
+                    <i class="fa fa-save"></i> Guardar Sugerencia
                   </button>
                 </div>
               </div>
