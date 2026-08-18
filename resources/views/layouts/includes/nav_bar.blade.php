@@ -143,6 +143,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        var ultimasNoLeidasCount = 0;
+
         function cargarNotificaciones() {
             $.ajax({
                 url: '{{ route('siess.notificaciones') }}',
@@ -150,10 +152,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 success: function(res) {
                     var badge = $('#siessNotifBadge');
                     if (res.no_leidas > 0) {
+                        if (res.no_leidas > ultimasNoLeidasCount && typeof toastr !== 'undefined') {
+                            toastr.info('Tenés nuevas notificaciones en el sistema.', '🔔 Notificación de Asesoría', { timeOut: 6000 });
+                        }
                         badge.text(res.no_leidas).show();
                     } else {
                         badge.hide();
                     }
+                    ultimasNoLeidasCount = res.no_leidas;
 
                     var lista = $('#siessNotifLista');
                     if (!res.notificaciones || res.notificaciones.length === 0) {
@@ -166,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         var cursor = n.url ? 'cursor:pointer' : '';
                         html += '<div class="px-3 py-2 border-bottom ' + (n.leida ? '' : 'bg-light') + '" style="' + cursor + '" data-id="' + n.id + '" data-url="' + (n.url || '') + '">';
                         html += '<div class="d-flex align-items-start">';
-                        html += '<i class="fa ' + n.icono + ' mr-2 mt-1" style="font-size:.9rem"></i>';
+                        html += '<i class="fa ' + (n.icono || 'fa-bell text-info') + ' mr-2 mt-1" style="font-size:.9rem"></i>';
                         html += '<div style="flex:1">';
                         html += '<div style="font-size:.8rem;font-weight:' + (n.leida ? 'normal' : 'bold') + '">' + n.titulo + '</div>';
                         html += '<div style="font-size:.75rem;color:#6c757d">' + n.mensaje + '</div>';
@@ -202,20 +208,8 @@ document.addEventListener('DOMContentLoaded', function() {
         cargarNotificaciones();
 
         setInterval(function() {
-            $.ajax({
-                url: '{{ route('siess.notificaciones') }}',
-                type: 'GET',
-                success: function(res) {
-                    var badge = $('#siessNotifBadge');
-                    if (res.no_leidas > 0) {
-                        badge.text(res.no_leidas).show();
-                    } else {
-                        badge.hide();
-                    }
-                },
-                error: function() {}
-            });
-        }, 120000);
+            cargarNotificaciones();
+        }, 10000);
 
         // Click Handler para Diagnóstico Servidor en cualquier vista
         $(document).on('click', '.btn-trigger-diagnostico-global', function(e) {

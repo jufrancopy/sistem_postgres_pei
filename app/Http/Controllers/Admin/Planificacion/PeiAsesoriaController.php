@@ -171,7 +171,7 @@ class PeiAsesoriaController extends Controller
             $asesoria->update(['estado' => 'EN_REVISION']);
         }
 
-        $this->notificarRedis($asesoria, 'sugerencia.guardada', [
+        $this->notificarSistemas($asesoria, 'sugerencia.guardada', [
             'node_id'    => $nodeId,
             'node_type'  => $nodeType,
             'comentario' => $comentario
@@ -193,7 +193,7 @@ class PeiAsesoriaController extends Controller
             'estado'           => 'COMPLETADO',
         ]);
 
-        $this->notificarRedis($asesoria, 'dictamen.finalizado', [
+        $this->notificarSistemas($asesoria, 'dictamen.finalizado', [
             'dictamen_general' => $asesoria->dictamen_general
         ]);
 
@@ -201,10 +201,11 @@ class PeiAsesoriaController extends Controller
     }
 
     /**
-     * Publica notificación en tiempo real a Redis al actualizar la asesoría.
+     * Publica notificación en tiempo real a Redis y crea registros en SystemNotification para la campanita del nav.
      */
-    private function notificarRedis(PeiAsesoria $asesoria, string $tipoEvento, array $extra = [])
+    private function notificarSistemas(PeiAsesoria $asesoria, string $tipoEvento, array $extra = [])
     {
+        // 1. Redis Publish
         try {
             \Illuminate\Support\Facades\Redis::publish('canal-asesoria-pei', json_encode(array_merge([
                 'event'          => $tipoEvento,
@@ -219,7 +220,42 @@ class PeiAsesoriaController extends Controller
                 'mensaje'        => "Actualización de Asesoría por {$asesoria->nombre}: " . ($tipoEvento === 'dictamen.finalizado' ? 'Dictamen Macro Finalizado' : 'Sugerencia Guardada')
             ], $extra)));
         } catch (\Throwable $e) {
-            // Continuar limpiamente si Redis daemon no está activo en el entorno
+            // Ignorar limpiamente si Redis no está activo
+        }
+
+        // 2. SystemNotification para la campanita de Administradores y Coordinadores
+        try {
+            $profile = PeiProfile::find($asesoria->pei_profile_id);
+            $peiNombre = $profile ? strip_tags($profile->name) : 'PEI';
+
+            $titulo = ($tipoEvento === 'dictamen.finalizado')
+                ? "📋 Dictamen Finalizado de Asesoría Técnica"
+                : "💬 Nueva Sugerencia de Asesor Externo";
+
+            $instStr = $asesoria->institucion ? " ({$asesoria->institucion})" : "";
+            $mensaje = ($tipoEvento === 'dictamen.finalizado')
+                ? "El Asesor <b>{$asesoria->nombre}</b>{$instStr} completó el Dictamen General para <i>{$peiNombre}</i>."
+                : "El Asesor <b>{$asesoria->nombre}</b>{$instStr} registró observaciones técnicas en el plan <i>{$peiNombre}</i>.";
+
+            $url = route('pei-profiles.show', $asesoria->pei_profile_id);
+
+            $userIds = \App\Models\User::role(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Analista de Planificación'])
+                ->pluck('id')
+                ->unique();
+
+            foreach ($userIds as $uid) {
+                \App\Models\SystemNotification::create([
+                    'user_id' => $uid,
+                    'tipo'    => 'asesoria_tecnica',
+                    'titulo'  => $titulo,
+                    'mensaje' => $mensaje,
+                    'icono'   => 'fa-user-check text-warning',
+                    'url'     => $url,
+                    'leida'   => false,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // Ignorar errores no críticos
         }
     }
 
