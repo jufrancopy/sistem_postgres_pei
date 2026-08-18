@@ -225,5 +225,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
   <div>© {{ date('Y') }} Instituto de Previsión Social (IPS) — República del Paraguay. Todos los derechos reservados.</div>
 </div>
 
+@include('layouts.includes.ticket_modal')
+
 </body>
 </html>

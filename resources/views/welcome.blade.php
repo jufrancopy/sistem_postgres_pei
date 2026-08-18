@@ -1088,5 +1088,8 @@ document.addEventListener('click', function(e) {
         </div>
     </div>
 </div>
+
+@include('layouts.includes.ticket_modal')
+
 </body>
 </html>

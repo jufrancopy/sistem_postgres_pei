@@ -646,5 +646,8 @@ $(document).ready(function() {
   });
 });
 </script>
+
+@include('layouts.includes.ticket_modal')
+
 </body>
 </html>
