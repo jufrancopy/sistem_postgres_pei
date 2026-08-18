@@ -2,6 +2,23 @@
 @section('title', 'Planificación Estratégica')
 
 @section('content')
+    <style>
+    /* Modo Pantalla Completa (Full Width PEI Workspace) */
+    body.pei-full-width-mode .sidebar {
+        display: none !important;
+    }
+    body.pei-full-width-mode .main-panel {
+        width: 100% !important;
+        margin-left: 0 !important;
+        float: none !important;
+        transition: all 0.25s ease-in-out;
+    }
+    body.pei-full-width-mode .content {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    </style>
+
     <div class="card">
         <div class="card-header card-header-info">
             <h4 class="card-title ">Módulo de Planificación Estratégica</h4>
@@ -99,6 +116,15 @@
                 <i class="fa fa-book-open text-warning"></i> Lectura de Aportes
             </button>
             @endhasanyrole
+
+            {{-- Botón Modo Pantalla Completa --}}
+            <button type="button"
+                    id="btnToggleFullWidth"
+                    class="btn btn-sm btn-outline-secondary font-weight-bold d-inline-flex align-items-center px-3"
+                    style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+                    title="Alternar Modo Pantalla Completa (Ocultar Menú Lateral)">
+                <i class="fa fa-expand" id="iconToggleFullWidth"></i> <span id="lblToggleFullWidth">Pantalla Completa</span>
+            </button>
 
             {{-- Dropdown Más Opciones --}}
             <div class="dropdown">
@@ -5722,6 +5748,35 @@ $(document).off('click', '.btn-eliminar-aporte').on('click', '.btn-eliminar-apor
             doDelete();
         }
     }
+});
+
+function applyFullWidthMode(enable) {
+    if (enable) {
+        $('body').addClass('pei-full-width-mode');
+        $('#lblToggleFullWidth').text('Vista Normal');
+        $('#iconToggleFullWidth').removeClass('fa-expand').addClass('fa-compress');
+        $('#btnToggleFullWidth').removeClass('btn-outline-secondary').addClass('btn-success text-white');
+        localStorage.setItem('pei_full_width_mode', 'true');
+    } else {
+        $('body').removeClass('pei-full-width-mode');
+        $('#lblToggleFullWidth').text('Pantalla Completa');
+        $('#iconToggleFullWidth').removeClass('fa-compress').addClass('fa-expand');
+        $('#btnToggleFullWidth').removeClass('btn-success text-white').addClass('btn-outline-secondary');
+        localStorage.setItem('pei_full_width_mode', 'false');
+    }
+}
+
+$(document).ready(function() {
+    if (localStorage.getItem('pei_full_width_mode') === 'true') {
+        applyFullWidthMode(true);
+    }
+});
+
+$(document).off('click', '#btnToggleFullWidth').on('click', '#btnToggleFullWidth', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var isFull = $('body').hasClass('pei-full-width-mode');
+    applyFullWidthMode(!isFull);
 });
 </script>
 
