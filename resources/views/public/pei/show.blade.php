@@ -99,6 +99,9 @@ body{background:#f0f2f8;font-family:'Inter',sans-serif;color:#1e293b;min-height:
 .mecip-task-badge.done{background:#f0fdf4;border-color:#bbf7d0;color:#15803d}
 .mecip-task-badge.progress{background:#fffbeb;border-color:#fde68a;color:#92400e}
 
+/* Planilla Mobile Cards (ocultas en escritorio) */
+.planilla-cards{display:none}
+
 /* ── Footer ── */
 .pub-footer{text-align:center;padding:2rem 1rem;color:#94a3b8;font-size:.72rem;border-top:1px solid #e2e8f0;margin-top:2rem}
 .pub-footer strong{color:#64748b}
