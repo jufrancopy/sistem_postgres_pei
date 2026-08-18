@@ -5542,7 +5542,46 @@ function restaurarElementoPei(id, type) {
             if (window.toastr) toastr.error('Error al restaurar el elemento.');
         }
     });
-}
+$(document).on('click', '.btnVerComentariosNodo', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var title = $(this).attr('data-title') || $(this).data('title');
+    var level = $(this).attr('data-level') || $(this).data('level') || 'Elemento del PEI';
+    var rawComments = $(this).attr('data-comments') || $(this).data('comments');
+    
+    var comments = [];
+    if (typeof rawComments === 'string') {
+        try {
+            comments = JSON.parse(rawComments);
+        } catch (err) {
+            console.error('Error al decodificar comentarios JSON:', err);
+        }
+    } else if (Array.isArray(rawComments)) {
+        comments = rawComments;
+    }
+
+    $('#modalVerComentariosNodoTitle').text(title);
+    $('#modalVerComentariosNodoSubtitle').text(level);
+
+    var html = '';
+    if (comments && comments.length > 0) {
+        comments.forEach(function(c) {
+            var instHtml = c.institucion ? ' <span class="badge badge-light border text-muted ml-1" style="font-size:0.75rem;">' + c.institucion + '</span>' : '';
+            html += '<div class="card border-0 shadow-xs mb-3" style="border-radius: 12px; overflow: hidden; border-left: 5px solid #8b5cf6 !important; background: #f8fafc;">';
+            html += '<div class="card-header bg-white py-2.5 px-3 border-bottom d-flex align-items-center justify-content-between">';
+            html += '<div class="font-weight-bold text-dark" style="font-size: 0.88rem;"><i class="fa fa-user-check text-purple mr-1.5" style="color:#7e22ce"></i>' + c.asesor + instHtml + '</div>';
+            html += '<span class="text-muted small">' + (c.fecha || '') + '</span>';
+            html += '</div>';
+            html += '<div class="card-body p-3 text-dark" style="font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap;">' + c.comentario + '</div>';
+            html += '</div>';
+        });
+    } else {
+        html = '<div class="text-center py-4 text-muted">No se encontraron observaciones registradas para este elemento.</div>';
+    }
+
+    $('#modalVerComentariosNodoBody').html(html);
+    $('#modalVerComentariosNodo').modal('show');
+});
 </script>
 
 {{-- Modal Lectura Cómoda de Aportes de Asesoría --}}
@@ -5550,6 +5589,28 @@ function restaurarElementoPei(id, type) {
     <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="max-width: 1100px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
             <div id="modalLecturaAportesBody" class="p-0"></div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Ver Observaciones Puntuales por Nodo/Iniciativa --}}
+<div class="modal fade" id="modalVerComentariosNodo" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white p-3" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                <div>
+                    <span class="badge badge-warning text-dark font-weight-bold mb-1" id="modalVerComentariosNodoSubtitle" style="font-size: 0.72rem;"></span>
+                    <h5 class="modal-title font-weight-bold text-white mb-0" id="modalVerComentariosNodoTitle" style="font-size: 1rem;"></h5>
+                </div>
+                <button type="button" class="close text-white opacity-75" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-light" id="modalVerComentariosNodoBody" style="max-height: 70vh; overflow-y: auto;">
+            </div>
+            <div class="modal-footer bg-white border-top p-2.5">
+                <button type="button" class="btn btn-sm btn-secondary px-4 font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">Cerrar</button>
+            </div>
         </div>
     </div>
 </div>

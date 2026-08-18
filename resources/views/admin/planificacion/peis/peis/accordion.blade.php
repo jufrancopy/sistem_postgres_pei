@@ -158,17 +158,22 @@
                         $comentariosAxi = isset($comentariosAsesoria) ? ($comentariosAsesoria->get('node_' . $axi->id) ?? collect()) : collect();
                     @endphp
                     @if($comentariosAxi->count() > 0)
-                    <button type="button" class="btn btn-xs btn-warning text-dark font-weight-bold btnVerComentariosNodo shadow-xs"
+                    @php
+                        $comentariosAxiArray = $comentariosAxi->map(fn($c) => [
+                            'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
+                            'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
+                            'comentario' => $c->comentario ?? '',
+                            'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
+                        ])->values()->all();
+                        $comentariosAxiJson = htmlspecialchars(json_encode($comentariosAxiArray, JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+                    @endphp
+                    <button type="button" class="btn btn-xs text-white font-weight-bold btnVerComentariosNodo shadow-sm"
                             data-title="{{ e(strip_tags($axi->name)) }}"
                             data-level="{{ $niveles['axi'] ?? 'Objetivo Estratégico' }}"
-                            data-comments="{{ json_encode($comentariosAxi->map(fn($c) => [
-                                'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
-                                'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
-                                'comentario' => e($c->comentario),
-                                'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
-                            ])) }}"
-                            style="border-radius: 12px; padding: 2px 9px; font-size: 0.72rem; cursor: pointer;">
-                        💬 {{ $comentariosAxi->count() }} {{ $comentariosAxi->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
+                            data-comments="{{ $comentariosAxiJson }}"
+                            onclick="event.stopPropagation();"
+                            style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 20px; padding: 3px 11px; font-size: 0.73rem; cursor: pointer; box-shadow: 0 2px 6px rgba(126, 34, 206, 0.45);">
+                        <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosAxi->count() }} {{ $comentariosAxi->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
                     </button>
                     @endif
                     @php
@@ -341,17 +346,22 @@
                                      $comentariosGoal = isset($comentariosAsesoria) ? ($comentariosAsesoria->get('node_' . $goal->id) ?? collect()) : collect();
                                  @endphp
                                  @if($comentariosGoal->count() > 0)
-                                 <button type="button" class="btn btn-xs btn-warning text-dark font-weight-bold btnVerComentariosNodo shadow-xs"
+                                 @php
+                                     $comentariosGoalArray = $comentariosGoal->map(fn($c) => [
+                                         'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
+                                         'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
+                                         'comentario' => $c->comentario ?? '',
+                                         'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
+                                     ])->values()->all();
+                                     $comentariosGoalJson = htmlspecialchars(json_encode($comentariosGoalArray, JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+                                 @endphp
+                                 <button type="button" class="btn btn-xs text-white font-weight-bold btnVerComentariosNodo shadow-sm"
                                          data-title="{{ e(strip_tags($goal->name)) }}"
                                          data-level="{{ $niveles['goal'] ?? 'Objetivo Específico' }}"
-                                         data-comments="{{ json_encode($comentariosGoal->map(fn($c) => [
-                                             'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
-                                             'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
-                                             'comentario' => e($c->comentario),
-                                             'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
-                                         ])) }}"
-                                         style="border-radius: 12px; padding: 2px 8px; font-size: 0.68rem; cursor: pointer;">
-                                     💬 {{ $comentariosGoal->count() }} {{ $comentariosGoal->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
+                                         data-comments="{{ $comentariosGoalJson }}"
+                                         onclick="event.stopPropagation();"
+                                         style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 20px; padding: 2px 10px; font-size: 0.71rem; cursor: pointer; box-shadow: 0 2px 5px rgba(126, 34, 206, 0.4);">
+                                     <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosGoal->count() }} {{ $comentariosGoal->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
                                  </button>
                                  @endif
                                 <a class="btn btn-sm btn-outline-primary py-0 px-2" data-id="{{ $goal->id }}"
@@ -484,17 +494,22 @@
                                                             $comentariosAction = isset($comentariosAsesoria) ? ($comentariosAsesoria->get('node_' . $action->id) ?? collect()) : collect();
                                                         @endphp
                                                         @if($comentariosAction->count() > 0)
-                                                        <button type="button" class="btn btn-xs btn-warning text-dark font-weight-bold btnVerComentariosNodo shadow-xs"
+                                                        @php
+                                                            $comentariosActionArray = $comentariosAction->map(fn($c) => [
+                                                                'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
+                                                                'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
+                                                                'comentario' => $c->comentario ?? '',
+                                                                'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
+                                                            ])->values()->all();
+                                                            $comentariosActionJson = htmlspecialchars(json_encode($comentariosActionArray, JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+                                                        @endphp
+                                                        <button type="button" class="btn btn-xs text-white font-weight-bold btnVerComentariosNodo shadow-sm"
                                                                 data-title="{{ e(strip_tags($action->name)) }}"
                                                                 data-level="{{ $niveles['action'] ?? 'Acción Estratégica' }}"
-                                                                data-comments="{{ json_encode($comentariosAction->map(fn($c) => [
-                                                                    'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
-                                                                    'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
-                                                                    'comentario' => e($c->comentario),
-                                                                    'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
-                                                                ])) }}"
-                                                                style="border-radius: 12px; padding: 2px 8px; font-size: 0.68rem; cursor: pointer;">
-                                                            💬 {{ $comentariosAction->count() }} {{ $comentariosAction->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
+                                                                data-comments="{{ $comentariosActionJson }}"
+                                                                onclick="event.stopPropagation();"
+                                                                style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 20px; padding: 2px 10px; font-size: 0.71rem; cursor: pointer; box-shadow: 0 2px 5px rgba(126, 34, 206, 0.4);">
+                                                            <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosAction->count() }} {{ $comentariosAction->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
                                                         </button>
                                                         @endif
                                                     </div>
@@ -798,23 +813,28 @@
                                                                         <span class="badge badge-light border text-dark" style="font-size:.64rem" title="Responsable Institucional">
                                                                             <i class="fa fa-building-o mr-1 text-muted"></i>{{ \Illuminate\Support\Str::limit($ini->responsable, 22) }}
                                                                         </span>
-                                                                        @endif
                                                                         @php
-                                                                            $comentariosIni = isset($comentariosAsesoria) ? ($comentariosAsesoria->get('iniciativa_' . $ini->id) ?? collect()) : collect();
-                                                                        @endphp
-                                                                        @if($comentariosIni->count() > 0)
-                                                                        <button type="button" class="btn btn-xs btn-warning text-dark font-weight-bold btnVerComentariosNodo shadow-xs"
-                                                                                data-title="{{ e(strip_tags($ini->accion)) }}"
-                                                                                data-level="Acción Operativa (Iniciativa)"
-                                                                                data-comments="{{ json_encode($comentariosIni->map(fn($c) => [
-                                                                                    'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
-                                                                                    'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
-                                                                                    'comentario' => e($c->comentario),
-                                                                                    'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
-                                                                                ])) }}"
-                                                                                style="border-radius: 12px; padding: 2px 8px; font-size: 0.68rem; cursor: pointer;">
-                                                                            💬 {{ $comentariosIni->count() }} {{ $comentariosIni->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
-                                                                        </button>
+                                                                             $comentariosIni = isset($comentariosAsesoria) ? ($comentariosAsesoria->get('iniciativa_' . $ini->id) ?? collect()) : collect();
+                                                                         @endphp
+                                                                         @if($comentariosIni->count() > 0)
+                                                                         @php
+                                                                             $comentariosIniArray = $comentariosIni->map(fn($c) => [
+                                                                                 'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
+                                                                                 'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
+                                                                                 'comentario' => $c->comentario ?? '',
+                                                                                 'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
+                                                                             ])->values()->all();
+                                                                             $comentariosIniJson = htmlspecialchars(json_encode($comentariosIniArray, JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+                                                                         @endphp
+                                                                         <button type="button" class="btn btn-xs text-white font-weight-bold btnVerComentariosNodo shadow-sm"
+                                                                                 data-title="{{ e(strip_tags($ini->accion)) }}"
+                                                                                 data-level="Acción Operativa (Iniciativa)"
+                                                                                 data-comments="{{ $comentariosIniJson }}"
+                                                                                 onclick="event.stopPropagation();"
+                                                                                 style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 20px; padding: 2px 10px; font-size: 0.7rem; cursor: pointer; box-shadow: 0 2px 5px rgba(126, 34, 206, 0.4);">
+                                                                             <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosIni->count() }} {{ $comentariosIni->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
+                                                                         </button>
+                                                                         @endif
                                                                         @endif
 
                                                                         {{-- Grupo Indivisible de Controles --}}
