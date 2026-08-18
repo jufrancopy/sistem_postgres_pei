@@ -833,8 +833,11 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span id="badge_status_pei_{{ $plan->id }}" class="badge {{ $plan->show_riiss ? 'badge-success' : 'badge-warning' }} px-2 py-1 font-weight-bold" style="font-size: 0.75rem;">
-                                            <i class="fa {{ $plan->show_riiss ? 'fa-check-circle' : 'fa-eye-slash' }} mr-1"></i> {{ $plan->show_riiss ? 'Activo' : 'Oculto' }}
+                                        @php
+                                            $isActive = isset($plan->is_active) ? (bool)$plan->is_active : true;
+                                        @endphp
+                                        <span id="badge_status_pei_{{ $plan->id }}" class="badge {{ $isActive ? 'badge-success' : 'badge-warning' }} px-2 py-1 font-weight-bold" style="font-size: 0.75rem;">
+                                            <i class="fa {{ $isActive ? 'fa-check-circle' : 'fa-eye-slash' }} mr-1"></i> {{ $isActive ? 'Activo' : 'Oculto' }}
                                         </span>
                                     </td>
                                     <td class="text-center" style="white-space: nowrap;">
@@ -866,9 +869,9 @@
 
                                             {{-- 6. Visibilidad / Alternar Estado --}}
                                             @php
-                                                $isVis = $plan->is_active ?? $plan->show_riiss;
+                                                $isVis = isset($plan->is_active) ? (bool)$plan->is_active : true;
                                             @endphp
-                                            <button type="button" class="btn btn-circle toggleShowRiiss" style="background: {{ $isVis ? '#06b6d4' : '#f59e0b' }}; border-color: {{ $isVis ? '#06b6d4' : '#f59e0b' }}; color:#fff;" data-id="{{ $plan->id }}" title="{{ $isVis ? 'Visible — Clic para Ocultar' : 'Oculto — Clic para Activar' }}">
+                                            <button type="button" class="btn btn-circle toggleShowRiiss" style="background: {{ $isVis ? '#06b6d4' : '#f59e0b' }}; border-color: {{ $isVis ? '#06b6d4' : '#f59e0b' }}; color:#fff;" data-id="{{ $plan->id }}" title="{{ $isVis ? 'Visible / Activo — Clic para Ocultar' : 'Oculto — Clic para Activar' }}">
                                                 <i class="fa {{ $isVis ? 'fa-eye' : 'fa-eye-slash' }}"></i>
                                             </button>
 
