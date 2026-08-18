@@ -380,12 +380,11 @@ function generarFichaIndicadorIa() {
         dataType: 'json',
         success: function(res) {
             $btn.prop('disabled', false).html('<i class="fa fa-magic text-warning mr-1"></i> Autocompletar Ficha con IA');
-            if (!res.success || !res.indicador) {
+            var ind = res.data || res.indicador;
+            if (!res.success || !ind) {
                 if (typeof toastr !== 'undefined') toastr.error('No se pudo obtener la sugerencia.');
                 return;
             }
-
-            var ind = res.indicador;
             if (ind.nombre) $('#ind_nombre').val(ind.nombre);
             if (ind.codigo_letras) $('#ind_codigo_letras').val(ind.codigo_letras);
             if (ind.codigo_numeros) $('#ind_codigo_numeros').val(ind.codigo_numeros);

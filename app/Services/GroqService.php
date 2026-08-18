@@ -280,4 +280,53 @@ PROMPT;
             'dependencia_responsable' => 'Unidad Ejecutora IPS',
         ];
     }
+
+    /**
+     * Generar la Acción Estratégica Completa con su Resultado Intermedio e Indicador idóneo.
+     */
+    public function generarAccionCompleta(string $ideaBorrador): array
+    {
+        $prompt = <<<PROMPT
+Eres un consultor senior especializado en Planificación Estratégica de Salud Pública para el Instituto de Previsión Social (IPS) de Paraguay y el Plan Nacional de Desarrollo PND 2050.
+
+A partir del siguiente borrador o idea simple:
+Idea/Borrador: "{$ideaBorrador}"
+
+Genera ÚNICAMENTE un objeto JSON estricto sin bloques markdown ni comillas exteriores con la siguiente estructura:
+{
+  "accion_nombre": "Redacción técnica, formal y SMART de la Acción Estratégica de salud o gestión pública IPS",
+  "resultado_intermedio": "Logro superior/resultado intermedio al que contribuye esta acción",
+  "programa_presupuestario": "Programa y Actividad presupuestaria relacionada al IPS",
+  "indicador": {
+    "nombre": "Nombre técnico y preciso del indicador idóneo para medir esta Acción",
+    "codigo_letras": "IND",
+    "codigo_numeros": "001",
+    "dimension": "eficacia",
+    "ambito": "accion_estrategica",
+    "frecuencia": "trimestral",
+    "cobertura": "nacional",
+    "sentido": "ascendente",
+    "formula": "(N° de metas logradas / Total de metas programadas) * 100",
+    "unidad_medida": "%",
+    "fuente": "Sistema Informático Hospitalario (SIH / SIESS IPS)",
+    "dependencia_responsable": "Dirección de Planificación y Gestión IPS"
+  }
+}
+
+Valores posibles de dimensión: eficacia, eficiencia, calidad, economia
+Valores posibles de sentido: ascendente, descendente
+Valores posibles de frecuencia: mensual, trimestral, semestral, anual
+PROMPT;
+
+        try {
+            $raw = $this->generarTextoLibre($prompt, 1000);
+            preg_match('/\{.*\}/s', $raw, $matches);
+            $clean = $matches[0] ?? '{}';
+            $data = json_decode($clean, true);
+
+            return is_array($data) ? $data : [];
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
 }

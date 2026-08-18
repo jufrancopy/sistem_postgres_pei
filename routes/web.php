@@ -961,5 +961,6 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('admin/ai')->name('admin.ai.')->group(function() {
         Route::post('/redactar-smart', [\App\Http\Controllers\Admin\Ai\AiAssistantController::class, 'redactarSmart'])->name('redactarSmart');
         Route::post('/sugerir-indicador', [\App\Http\Controllers\Admin\Ai\AiAssistantController::class, 'sugerirIndicador'])->name('sugerirIndicador');
+        Route::post('/generar-accion-completa', [\App\Http\Controllers\Admin\Ai\AiAssistantController::class, 'generarAccionCompleta'])->name('generarAccionCompleta');
     });
 });

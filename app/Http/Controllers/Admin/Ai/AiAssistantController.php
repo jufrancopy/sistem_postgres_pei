@@ -59,13 +59,37 @@ class AiAssistantController extends Controller
             );
 
             return response()->json([
-                'success'   => true,
-                'indicador' => $indicador,
+                'success' => true,
+                'data'    => $indicador,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al generar sugerencia de indicador: ' . $e->getMessage(),
+                'message' => 'Error al generar indicador: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Generar la Acción Estratégica Completa con su Resultado Intermedio e Indicador idóneo.
+     */
+    public function generarAccionCompleta(Request $request)
+    {
+        $request->validate([
+            'borrador' => 'required|string|min:3',
+        ]);
+
+        try {
+            $data = $this->groqService->generarAccionCompleta($request->input('borrador'));
+
+            return response()->json([
+                'success' => true,
+                'data'    => $data,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de la IA: ' . $e->getMessage(),
             ], 500);
         }
     }
