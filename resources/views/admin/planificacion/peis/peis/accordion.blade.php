@@ -499,13 +499,18 @@
                                                         border-left-color:{{ $colorFisico === 'success' ? '#28a745' : ($colorFisico === 'warning' ? '#ffc107' : ($colorFisico === 'danger' ? '#dc3545' : '#6c757d')) }}">
                                                 <div class="d-flex align-items-start flex-wrap" style="gap:.3rem">
                                                     <div style="flex:1 1 180px; min-width:0">
-                                                        <div class="d-flex align-items-center mb-1">
-                                                            <span class="badge badge-{{ $colorFisico }} mr-2" style="font-size:.65rem">
+                                                        <div class="d-flex align-items-center mb-1 flex-wrap" style="gap:4px;">
+                                                            <span class="badge badge-{{ $colorFisico }}" style="font-size:.65rem">
                                                                 <i class="fa fa-circle mr-1"></i>{{ strtoupper($semaforoFisico) }}
                                                             </span>
                                                             <span class="badge badge-light text-muted border" style="font-size:.65rem">
                                                                 #{{ $action->order_item }}
                                                             </span>
+                                                            @if(!empty($action->creado_con_ia))
+                                                                <span class="badge badge-pill shadow-xs" title="Esta Acción fue concebida y redactada con Inteligencia Artificial (Llama 3.3 70B / Groq)" style="background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%); color: #fff; font-size: 0.68rem; padding: 3px 8px; font-weight:600;">
+                                                                    <i class="fa fa-robot mr-1 text-warning"></i> Generado con IA
+                                                                </span>
+                                                            @endif
                                                         </div>
                                                         <div class="font-weight-bold text-dark" style="font-size:.88rem; word-break:break-word;">
                                                             {!! $action->name !!}

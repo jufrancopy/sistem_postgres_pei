@@ -559,6 +559,7 @@
                     {{ Form::hidden('goal', null, ['class' => 'form-control', 'id' => 'actions_goal']) }}
                     {{ Form::hidden('progress', null, ['class' => 'form-control', 'id' => 'actions_progress']) }}
                     {{ Form::hidden('dependency_id', null, ['class' => 'form-control', 'id' => 'actions_dependency']) }}
+                    {{ Form::hidden('creado_con_ia', '0', ['id' => 'action_creado_con_ia']) }}
 
                     {{-- Banner Asistente IA SIPLAN --}}
                     <div class="p-3 mb-3 rounded shadow-xs text-white d-flex align-items-center justify-content-between flex-wrap" style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%); gap:10px; border-radius:12px;">
@@ -1221,6 +1222,7 @@ function mejorarTextoSmartIaActions() {
             $btn.prop('disabled', false).html('<i class="fa fa-magic text-warning mr-1"></i> Mejorar Redacción SMART con IA');
             if (res.success && res.resultado) {
                 setValToEditor('actions', 'ajaxActionsModal', res.resultado);
+                if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val('1');
                 if (typeof toastr !== 'undefined') toastr.success('¡Texto mejorado y formateado a metodología SMART por la IA!');
             }
         },
@@ -1251,6 +1253,7 @@ function generarAccionEIndicadorConIaActions() {
         success: function(res) {
             $btn.prop('disabled', false).html('<i class="fa fa-bolt mr-1"></i> Generar Acción e Indicador con IA');
             if (res.success && res.data) {
+                if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val('1');
                 var d = res.data;
                 if (d.accion_nombre) {
                     setValToEditor('actions', 'ajaxActionsModal', d.accion_nombre);

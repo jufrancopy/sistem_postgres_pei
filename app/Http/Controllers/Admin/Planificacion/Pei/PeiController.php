@@ -331,6 +331,7 @@ class PeiController extends Controller
                 'ri_programa'          => $request->ri_programa ?: null,
                 'ri_recursos_gs'       => $request->ri_recursos_gs ?: null,
                 'ri_metas'             => json_encode($request->input('ri_metas', [])),
+                'creado_con_ia'        => $request->has('creado_con_ia') ? filter_var($request->creado_con_ia, FILTER_VALIDATE_BOOLEAN) : ($existing?->creado_con_ia ?? false),
         ];
 
         // Si es un nodo nuevo con parent_id, lo insertamos directamente en el

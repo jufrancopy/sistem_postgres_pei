@@ -3054,6 +3054,7 @@
                     if (typeBtn === 'create') {
                         $('#actions_profile_id').val('');
                         $('#actions_parent_id').val(data.profile.id);
+                        if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val('0');
                         actionsEditor.setData('');
                         $('#actions_order_item').val('');
                         $('#saveBtnActions').val('create');
@@ -3061,6 +3062,7 @@
                     } else if (typeBtn === 'edit') {
                         $('#actions_profile_id').val(data.profile.id);
                         $('#actions_parent_id').val(data.profile.parent_id);
+                        if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val(data.profile.creado_con_ia ? '1' : '0');
                         actionsEditor.setData(data.profile.name)
                         $('#actions_order_item').val(data.profile.order_item);
                         $('#saveBtnActions').val('edit');
