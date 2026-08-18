@@ -407,18 +407,18 @@ $(function() {
     // ── Guardar ──
     $('#btnGuardarIndicador').on('click', function() {
         var nombre = $.trim($('#ind_nombre').val());
-        var dim    = $('#form_ind_dimension').val();
-        var amb    = $('#form_ind_ambito').val();
-        var frec   = $('#form_ind_frecuencia').val();
-        var cob    = $('#form_ind_cobertura').val();
-        var sent   = $('#form_ind_sentido').val();
+        var dim    = getRadioValue('ind_dimension');
+        var amb    = getRadioValue('ind_ambito');
+        var frec   = getRadioValue('ind_frecuencia');
+        var cob    = getRadioValue('ind_cobertura');
+        var sent   = getRadioValue('ind_sentido');
 
         if (!nombre) { toastr.warning('El nombre es obligatorio.'); return; }
-        if (!dim)    { toastr.warning('Seleccioná la dimensión.'); return; }
-        if (!amb)    { toastr.warning('Seleccioná el ámbito.'); return; }
-        if (!frec)   { toastr.warning('Seleccioná la frecuencia.'); return; }
-        if (!cob)    { toastr.warning('Seleccioná la cobertura.'); return; }
-        if (!sent)   { toastr.warning('Seleccioná el sentido.'); return; }
+        if (!dim)    { toastr.warning('Seleccioná la dimensión del indicador.'); return; }
+        if (!amb)    { toastr.warning('Seleccioná el ámbito del indicador.'); return; }
+        if (!frec)   { toastr.warning('Seleccioná la frecuencia de medición.'); return; }
+        if (!cob)    { toastr.warning('Seleccioná la cobertura geográfica.'); return; }
+        if (!sent)   { toastr.warning('Seleccioná el sentido del indicador.'); return; }
 
         var payload = {
             nombre, dimension: dim, ambito: amb,

@@ -299,3 +299,59 @@
 .ind-radio-card.ind-selected-teal      .ind-card-inner { background:#e0f2f1; border-color:#0e7490!important; color:#0e7490; font-weight:600; }
 .ind-radio-card.ind-selected-danger    .ind-card-inner { background:#fdecea; border-color:#dc3545!important; color:#dc3545; font-weight:600; }
 </style>
+
+<script>
+if (typeof window.getRadioValue !== 'function') {
+    window.getRadioValue = function(name) {
+        // 1. Intentar por input checked nativo
+        var $checked = $('input[name="' + name + '"]:checked');
+        if ($checked.length && $checked.val()) return $checked.val();
+        
+        // 2. Intentar por ID directo si existiera (ej: #form_ind_dimension)
+        var $byFormId = $('#form_' + name);
+        if ($byFormId.length && $byFormId.val()) return $byFormId.val();
+
+        // 3. Fallback: buscar por clase ind-selected-* en las cards si radio check se desincronizó
+        var $selectedCard = $('input[name="' + name + '"]').closest('.ind-radio-card').filter(function() {
+            var cls = $(this).attr('class') || '';
+            return cls.indexOf('ind-selected-') >= 0;
+        });
+        if ($selectedCard.length) {
+            var $r = $selectedCard.find('input[type="radio"]');
+            $r.prop('checked', true);
+            return $r.val();
+        }
+        return null;
+    };
+}
+
+$(document).ready(function() {
+    $(document).off('click.indRadioCard', '.ind-radio-card').on('click.indRadioCard', '.ind-radio-card', function(e) {
+        var $radio = $(this).find('input[type="radio"]');
+        if ($radio.length) {
+            var name = $radio.attr('name');
+            $('input[name="' + name + '"]').each(function() {
+                $(this).prop('checked', false);
+                var card = $(this).closest('.ind-radio-card');
+                var color = card.data('color') || 'secondary';
+                card.removeClass('ind-selected-' + color);
+            });
+            $radio.prop('checked', true).trigger('change');
+            var color = $(this).data('color') || 'secondary';
+            $(this).addClass('ind-selected-' + color);
+        }
+    });
+
+    $(document).off('change.indRadio', '.ind-radio').on('change.indRadio', '.ind-radio', function() {
+        var name  = $(this).attr('name');
+        $('input[name="' + name + '"]').each(function() {
+            var card  = $(this).closest('.ind-radio-card');
+            var color = card.data('color') || 'secondary';
+            card.removeClass('ind-selected-' + color);
+        });
+        var card  = $(this).closest('.ind-radio-card');
+        var color = card.data('color') || 'secondary';
+        card.addClass('ind-selected-' + color);
+    });
+});
+</script>
