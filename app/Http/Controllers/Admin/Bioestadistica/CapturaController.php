@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin\Bioestadistica;
 
 use App\Application\Bioestadistica\Audit\AuditService;
+use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
 use App\Application\Bioestadistica\RecordCaptureService;
+use App\Application\Bioestadistica\Sp11Matrix;
 use App\Http\Controllers\Controller;
 use App\Models\Bioestadistica\Establecimiento;
 use App\Models\Bioestadistica\Formulario;
@@ -13,7 +15,9 @@ use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class CapturaController extends Controller
@@ -146,6 +150,7 @@ class CapturaController extends Controller
         return view('admin.bioestadistica.captura.edit', [
             'record' => $record,
             'valuesByField' => $record->values->keyBy('field_id'),
+            'months' => $this->months(),
         ]);
     }
 
@@ -159,6 +164,62 @@ class CapturaController extends Controller
         $record->update(['observacion' => $request->input('observacion')]);
 
         return back()->with('success', 'Borrador guardado.');
+    }
+
+    public function updatePeriod(
+        Request $request,
+        Record $record,
+        IndicatorCacheService $cache
+    ): RedirectResponse {
+        $this->ensureCanView($record);
+        $this->authorize('update', $record);
+        if ($record->formulario->layout_type === 'nominativo') {
+            abort(422, 'El período de SP10 se edita desde la planilla de Hospitalización.');
+        }
+
+        $period = $request->validate([
+            'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
+            'periodo_mes' => ['required', 'integer', 'between:1,12'],
+        ]);
+        $duplicate = Record::query()
+            ->where('formulario_id', $record->formulario_id)
+            ->where('establecimiento_id', $record->establecimiento_id)
+            ->where('periodo_anio', $period['periodo_anio'])
+            ->where('periodo_mes', $period['periodo_mes'])
+            ->where('id', '<>', $record->id)
+            ->exists();
+        if ($duplicate) {
+            return back()->withErrors([
+                'periodo_mes' => 'Ya existe un registro de este formulario y establecimiento para el período seleccionado.',
+            ])->withInput();
+        }
+
+        $previousContext = $record->replicate();
+
+        try {
+            DB::transaction(function () use ($record, $period) {
+                $locked = Record::query()->whereKey($record->id)->lockForUpdate()->firstOrFail();
+                $this->realignMatrices(
+                    $locked,
+                    (int) $period['periodo_anio'],
+                    (int) $period['periodo_mes']
+                );
+                $locked->update([
+                    'periodo_anio' => (int) $period['periodo_anio'],
+                    'periodo_mes' => (int) $period['periodo_mes'],
+                ]);
+                $record->refresh();
+            });
+        } catch (UniqueConstraintViolationException) {
+            return back()->withErrors([
+                'periodo_mes' => 'Ya existe un registro de este formulario y establecimiento para el período seleccionado.',
+            ])->withInput();
+        }
+
+        $cache->invalidateForRecord($previousContext);
+        $cache->invalidateForRecord($record);
+
+        return back()->with('success', 'Período estadístico actualizado.');
     }
 
     public function submit(Request $request, Record $record, RecordCaptureService $capture): RedirectResponse
@@ -300,6 +361,53 @@ class CapturaController extends Controller
             5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
             9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
         ];
+    }
+
+    private function realignMatrices(Record $record, int $year, int $month): void
+    {
+        $record->loadMissing('values.field');
+        $days = Sp11Matrix::daysInPeriod($year, $month);
+
+        foreach ($record->values as $value) {
+            $field = $value->field;
+            if (! $field) {
+                continue;
+            }
+            $isMatrix = $field->type === 'matriz'
+                || ($field->config['cols'] ?? null) === 'dias_mes'
+                || ($field->config['contract'] ?? null) === 'sp11_v1';
+            if (! $isMatrix) {
+                continue;
+            }
+
+            $payload = is_array($value->value_json) ? $value->value_json : [];
+            $incoming = $payload['rows'] ?? $payload;
+            if (! is_array($incoming)) {
+                continue;
+            }
+
+            foreach ($incoming as $cells) {
+                if (! is_array($cells)) {
+                    continue;
+                }
+                foreach ($cells as $key => $cell) {
+                    if ($key === 'total' || ! ctype_digit((string) $key)) {
+                        continue;
+                    }
+                    $day = (int) $key;
+                    if ($day <= $days || $cell === null || $cell === '' || (int) $cell === 0) {
+                        continue;
+                    }
+                    throw ValidationException::withMessages([
+                        'periodo_mes' => "La matriz «{$field->label}» tiene datos en el día {$day}, que no existe en {$month}/{$year}. Corrija esos valores antes de cambiar el período.",
+                    ]);
+                }
+            }
+
+            $value->update([
+                'value_json' => Sp11Matrix::normalize($payload, $year, $month, false),
+            ]);
+        }
     }
 
     private function savedValues(Record $record): array

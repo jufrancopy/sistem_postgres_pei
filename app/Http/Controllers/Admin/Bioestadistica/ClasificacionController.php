@@ -9,6 +9,7 @@ use App\Models\Bioestadistica\Microred;
 use App\Models\Bioestadistica\TipoEstablecimiento;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ClasificacionController extends Controller
@@ -33,29 +34,31 @@ class ClasificacionController extends Controller
     public function store(Request $request, string $tipo): RedirectResponse
     {
         $model = $this->modelFor($tipo);
-        $rules = match ($tipo) {
-            'grados-complejidad' => [
-                'codigo' => ['required', 'string', 'max:10'],
-                'descripcion' => ['required', 'string', 'max:200'],
-            ],
-            'tipos-establecimiento' => [
-                'nombre' => ['required', 'string', 'max:150'],
-                'descripcion' => ['nullable', 'string', 'max:1000'],
-            ],
-            default => ['nombre' => ['required', 'string', 'max:150']],
-        };
+        $validated = $request->validate($this->rules($tipo));
+        $validated['activo'] = $request->boolean('activo', true);
 
-        $validated = $request->validate($rules);
         if ($tipo === 'grados-complejidad') {
             $model::firstOrCreate(
                 ['codigo' => $validated['codigo'], 'descripcion' => $validated['descripcion']],
-                ['activo' => true]
+                ['activo' => $validated['activo']]
             );
         } else {
-            $model::updateOrCreate(['nombre' => $validated['nombre']], $validated);
+            $model::create($validated);
         }
 
-        return back()->with('success', 'Clasificación guardada.');
+        return back()->with('success', 'Clasificación creada.');
+    }
+
+    public function update(Request $request, string $tipo, int $id): RedirectResponse
+    {
+        $model = $this->modelFor($tipo);
+        $item = $model::findOrFail($id);
+        $validated = $request->validate($this->rules($tipo, $id));
+        $validated['activo'] = $request->boolean('activo');
+
+        $item->update($validated);
+
+        return back()->with('success', 'Clasificación actualizada.');
     }
 
     public function destroy(string $tipo, int $id): RedirectResponse
@@ -64,6 +67,46 @@ class ClasificacionController extends Controller
         $model::findOrFail($id)->delete();
 
         return back()->with('success', 'Clasificación eliminada.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function rules(string $tipo, ?int $id = null): array
+    {
+        $model = $this->modelFor($tipo);
+
+        return match ($tipo) {
+            'grados-complejidad' => [
+                'codigo' => ['required', 'string', 'max:10'],
+                'descripcion' => [
+                    'required',
+                    'string',
+                    'max:200',
+                    Rule::unique($model, 'descripcion')
+                        ->where(fn ($query) => $query->where('codigo', (string) request('codigo')))
+                        ->ignore($id)
+                        ->withoutTrashed(),
+                ],
+            ],
+            'tipos-establecimiento' => [
+                'nombre' => [
+                    'required',
+                    'string',
+                    'max:150',
+                    Rule::unique($model, 'nombre')->ignore($id)->withoutTrashed(),
+                ],
+                'descripcion' => ['nullable', 'string', 'max:1000'],
+            ],
+            default => [
+                'nombre' => [
+                    'required',
+                    'string',
+                    'max:150',
+                    Rule::unique($model, 'nombre')->ignore($id)->withoutTrashed(),
+                ],
+            ],
+        };
     }
 
     private function modelFor(string $tipo): string

@@ -26,6 +26,8 @@ class HospEpisodioRequest extends FormRequest
     {
         return [
             'establecimiento_id' => ['required', 'integer', Rule::exists(Establecimiento::class, 'id')->withoutTrashed()],
+            'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
+            'periodo_mes' => ['required', 'integer', 'between:1,12'],
             'cedula' => ['nullable', 'string', 'max:30'],
             'sexo' => ['nullable', 'string'],
             'seguro' => ['nullable', 'string', 'max:80'],

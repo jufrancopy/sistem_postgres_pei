@@ -6,6 +6,7 @@ use App\Application\Bioestadistica\Audit\AuditService;
 use App\Application\Bioestadistica\Hospitalization\HospitalizationService;
 use App\Application\Bioestadistica\Imports\HospEpisodioImporter;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Bioestadistica\HospEpisodioBatchRequest;
 use App\Http\Requests\Bioestadistica\HospEpisodioRequest;
 use App\Models\Bioestadistica\Establecimiento;
 use App\Models\Bioestadistica\HospEpisodio;
@@ -54,16 +55,20 @@ class HospitalizacionController extends Controller
     public function create(Request $request): View
     {
         abort_unless($request->user()->can('bio.hosp.manage'), 403);
+        $defaultPeriod = now()->subMonth();
 
         return view('admin.bioestadistica.hospitalizacion.form', [
             'episodio' => new HospEpisodio([
                 'establecimiento_id' => $request->integer('establecimiento_id') ?: null,
+                'periodo_anio' => $request->integer('periodo_anio', (int) $defaultPeriod->year),
+                'periodo_mes' => $request->integer('periodo_mes', (int) $defaultPeriod->month),
                 'fecha_ingreso' => now()->toDateString(),
             ]),
             'establecimientos' => $this->allowedEstablishments(),
             'servicios' => HospEpisodio::SERVICIOS,
             'tiposAlta' => HospEpisodio::TIPOS_ALTA,
             'tiposCirugia' => HospEpisodio::TIPOS_CIRUGIA,
+            'months' => $this->months(),
         ]);
     }
 
@@ -73,7 +78,7 @@ class HospitalizacionController extends Controller
         $episodio = $service->save($request->validated(), $request->user());
 
         return redirect()->route('bioestadistica.hospitalizacion.edit', $episodio)
-            ->with('success', 'Episodio guardado. El consolidado SP10 se actualizó para el período derivado de las fechas.');
+            ->with('success', 'Episodio guardado. El consolidado SP10 se actualizó para el período seleccionado.');
     }
 
     public function edit(Request $request, HospEpisodio $episodio, AuditService $audit): View
@@ -92,7 +97,84 @@ class HospitalizacionController extends Controller
             'servicios' => HospEpisodio::SERVICIOS,
             'tiposAlta' => HospEpisodio::TIPOS_ALTA,
             'tiposCirugia' => HospEpisodio::TIPOS_CIRUGIA,
+            'months' => $this->months(),
         ]);
+    }
+
+    public function spreadsheet(Request $request): View
+    {
+        abort_unless($request->user()->can('bio.hosp.manage'), 403);
+        $establishments = $this->allowedEstablishments();
+        $defaultPeriod = now()->subMonth();
+        $establishmentId = $request->integer(
+            'establecimiento_id',
+            (int) $establishments->first()?->id
+        );
+        $year = $request->integer('periodo_anio', (int) $defaultPeriod->year);
+        $month = $request->integer('periodo_mes', (int) $defaultPeriod->month);
+
+        abort_unless(
+            ! $establishmentId || $establishments->contains('id', $establishmentId),
+            403
+        );
+
+        $episodes = collect();
+        if ($establishmentId) {
+            $episodes = HospEpisodio::query()
+                ->where('establecimiento_id', $establishmentId)
+                ->where('periodo_anio', $year)
+                ->where('periodo_mes', $month)
+                ->orderBy('fecha_ingreso')
+                ->orderBy('id')
+                ->limit(200)
+                ->get();
+            $episodes->each(function (HospEpisodio $episode) use ($request) {
+                $episode->setAttribute('cedula_visible', $episode->visibleCedula($request->user()));
+            });
+        }
+
+        return view('admin.bioestadistica.hospitalizacion.spreadsheet', [
+            'episodios' => $episodes,
+            'establecimientos' => $establishments,
+            'establecimientoId' => $establishmentId,
+            'periodo_anio' => $year,
+            'periodo_mes' => $month,
+            'months' => $this->months(),
+            'servicios' => HospEpisodio::SERVICIOS,
+            'tiposAlta' => HospEpisodio::TIPOS_ALTA,
+            'tiposCirugia' => HospEpisodio::TIPOS_CIRUGIA,
+        ]);
+    }
+
+    public function saveSpreadsheet(
+        HospEpisodioBatchRequest $request,
+        HospitalizationService $service,
+        AuditService $audit
+    ): RedirectResponse {
+        $data = $request->validated();
+        $summary = $service->saveBatch(
+            (int) $data['establecimiento_id'],
+            (int) $data['periodo_anio'],
+            (int) $data['periodo_mes'],
+            $data['rows'],
+            $request->user()
+        );
+
+        $audit->recordBatch('import', HospEpisodio::class, null, $summary, [
+            'establecimiento_id' => (int) $data['establecimiento_id'],
+            'periodo_anio' => (int) $data['periodo_anio'],
+            'periodo_mes' => (int) $data['periodo_mes'],
+        ], ['phase' => 'spreadsheet']);
+
+        return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', [
+            'establecimiento_id' => $data['establecimiento_id'],
+            'periodo_anio' => $data['periodo_anio'],
+            'periodo_mes' => $data['periodo_mes'],
+        ])->with(
+            'success',
+            "Planilla guardada: {$summary['creados']} creados, "
+            ."{$summary['actualizados']} actualizados y {$summary['eliminados']} eliminados."
+        );
     }
 
     public function update(HospEpisodioRequest $request, HospEpisodio $episodio, HospitalizationService $service): RedirectResponse

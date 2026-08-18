@@ -5,7 +5,7 @@
 <div class="card">
     <div class="card-header card-header-info">
         <h4 class="card-title">{{ $episodio->exists ? 'Editar episodio' : 'Nuevo episodio hospitalario' }}</h4>
-        <p class="card-category">La cédula se almacena cifrada. El período se calcula por la fecha de egreso.</p>
+        <p class="card-category">La cédula se almacena cifrada. El período estadístico puede ajustarse independientemente de las fechas clínicas.</p>
     </div>
     <div class="card-body">
         @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
@@ -14,7 +14,7 @@
             @csrf
             @if($episodio->exists) @method('PUT') @endif
             <div class="form-row">
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-4">
                     <label>Establecimiento *</label>
                     <select class="form-control" name="establecimiento_id" required @disabled(!auth()->user()->can('bio.hosp.manage'))>
                         <option value="">Seleccione</option>
@@ -23,7 +23,21 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group col-md-3">
+                <div class="form-group col-md-2">
+                    <label>Año del período *</label>
+                    <input class="form-control" type="number" name="periodo_anio" min="1990" max="2100"
+                        value="{{ old('periodo_anio', $episodio->periodo_anio) }}" required
+                        @disabled(!auth()->user()->can('bio.hosp.manage'))>
+                </div>
+                <div class="form-group col-md-2">
+                    <label>Mes del período *</label>
+                    <select class="form-control" name="periodo_mes" required @disabled(!auth()->user()->can('bio.hosp.manage'))>
+                        @foreach($months as $number => $month)
+                            <option value="{{ $number }}" @selected((int) old('periodo_mes', $episodio->periodo_mes) === $number)>{{ $month }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group col-md-2">
                     <label>Cédula @can('bio.hosp.view_pii')*@else (enmascarada)@endcan</label>
                     @can('bio.hosp.view_pii')
                         <input class="form-control" name="cedula" value="{{ old('cedula', $episodio->exists ? $episodio->cedula : '') }}" maxlength="30" @disabled(!auth()->user()->can('bio.hosp.manage'))>
@@ -32,7 +46,7 @@
                         <input type="hidden" name="cedula" value="">
                     @endcan
                 </div>
-                <div class="form-group col-md-3">
+                <div class="form-group col-md-2">
                     <label>Sexo</label>
                     <select class="form-control" name="sexo" @disabled(!auth()->user()->can('bio.hosp.manage'))>
                         <option value="">Seleccione</option>

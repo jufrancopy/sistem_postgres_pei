@@ -2,6 +2,7 @@
 @section('title', "Captura {$record->formulario->codigo}")
 
 @section('content')
+@php $canEditPeriod = auth()->user()->can('update', $record); @endphp
 <div class="card">
     <div class="card-header card-header-info">
         <h4 class="card-title">{{ $record->formulario->codigo }} — {{ $record->formulario->nombre }}</h4>
@@ -15,6 +16,42 @@
         @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
         @if($record->estado === 'objetado')<div class="alert alert-warning"><strong>Observación de la objeción:</strong> {{ $record->observacion }}</div>@endif
+
+        <div class="card border mb-3">
+            <div class="card-header bg-light"><strong>Período estadístico</strong></div>
+            <div class="card-body py-2">
+                <form method="POST" action="{{ route('bioestadistica.captura.period.update', $record) }}">
+                    @csrf @method('PUT')
+                    <div class="form-row align-items-end">
+                        <div class="form-group col-md-2 mb-0">
+                            <label>Año</label>
+                            <input class="form-control" type="number" name="periodo_anio" min="1990" max="2100"
+                                value="{{ old('periodo_anio', $record->periodo_anio) }}" required
+                                @disabled(!$canEditPeriod)>
+                        </div>
+                        <div class="form-group col-md-3 mb-0">
+                            <label>Mes</label>
+                            <select class="form-control" name="periodo_mes" required @disabled(!$canEditPeriod)>
+                                @foreach($months as $number => $month)
+                                    <option value="{{ $number }}" @selected((int) old('periodo_mes', $record->periodo_mes) === $number)>{{ $month }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            @if($canEditPeriod)
+                                <button class="btn btn-info btn-sm mb-0">Aplicar período</button>
+                            @endif
+                        </div>
+                        <div class="col-md-5">
+                            <small class="text-muted">Al aplicarlo se recarga el formulario; esto ajusta correctamente calendarios como SP11.</small>
+                            @if($record->formulario->codigo === 'SP11')
+                                <br><small class="text-warning">Si el mes destino tiene menos días, primero quite los valores de los días que dejarían de existir.</small>
+                            @endif
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <form method="POST" action="{{ route('bioestadistica.captura.update', $record) }}">
             @csrf @method('PUT')
