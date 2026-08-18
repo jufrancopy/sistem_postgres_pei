@@ -17,6 +17,10 @@ Route::put('/home-config', 'Admin\HomeConfigController@update')->name('home-conf
 Route::patch('/home-config/toggle', 'Admin\HomeConfigController@toggle')->name('home-config.toggle');
 Route::patch('/home-config/save',   'Admin\HomeConfigController@save')->name('home-config.save');
 
+// ── Manifiesto & Propósito Institucional SIPLAN ─────────────────────────────────
+Route::get('/nosotros', [\App\Http\Controllers\Admin\Planificacion\PublicPeiController::class, 'manifesto'])->name('siplan.manifesto');
+Route::get('/public/nosotros', [\App\Http\Controllers\Admin\Planificacion\PublicPeiController::class, 'manifesto']);
+
 // ── Vistas públicas PEI & Asesoría (sin autenticación) ────────────────────────
 Route::get('/public/pei/{token}', 'Admin\Planificacion\PublicPeiController@show')->name('pei.public.show');
 Route::get('/public/pei-asesor/{token}', 'Admin\Planificacion\PublicPeiController@showAsesor')->name('pei.asesor.public.show');

@@ -22,6 +22,14 @@
             $userPts = app(\App\Services\GamificationService::class)->getUserTotalPoints(Auth::user());
         @endphp
 
+        {{-- ── Manifiesto & Propósito SIPLAN ── --}}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ route('siplan.manifesto') }}" target="_blank" title="El Manifiesto & Propósito Institucional de SIPLAN">
+            <i class="material-icons text-info" style="font-size: 22px;">auto_awesome</i>
+            <p class="d-lg-none mb-0">Manifiesto SIPLAN</p>
+          </a>
+        </li>
+
         {{-- ── Inspiración Diaria / Código de Ética ── --}}
         <li class="nav-item">
           <a class="nav-link" href="javascript:void(0)" id="btnOpenReflexion" title="Inspiración Diaria & Código de Ética IPS">

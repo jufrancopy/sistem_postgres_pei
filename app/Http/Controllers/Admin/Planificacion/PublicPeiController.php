@@ -230,4 +230,18 @@ class PublicPeiController extends Controller
 
         return view('admin.planificacion.peis.peis.vista_asesor', compact('profile', 'treeNodes', 'descendants', 'iniciativas', 'isPublicAccess'));
     }
+
+    // ── Vista pública del Manifiesto & Propósito de SIPLAN ─────────────────────
+    public function manifesto()
+    {
+        $sysSiteName = \App\Models\HomeConfiguration::getSetting('site_name', 'SIPLAN — Sistema Integrado de Planificación');
+        $sysLogoRaw  = \App\Models\HomeConfiguration::getSetting('logo_url');
+        if (!empty($sysLogoRaw)) {
+            $sysLogoUrl = (str_starts_with($sysLogoRaw, 'http://') || str_starts_with($sysLogoRaw, 'https://')) ? $sysLogoRaw : url($sysLogoRaw);
+        } else {
+            $sysLogoUrl = asset('material/img/new_logo.png');
+        }
+
+        return view('public.manifesto', compact('sysSiteName', 'sysLogoUrl'));
+    }
 }
