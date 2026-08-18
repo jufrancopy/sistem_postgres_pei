@@ -79,6 +79,7 @@
             {{-- Separador visual --}}
             <div style="width: 1px; height: 28px; background: #e2e8f0; margin: 0 4px;"></div>
 
+            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación')
             {{-- Botón de Asesor Externo --}}
             <button type="button"
                     class="btn btn-sm font-weight-bold text-dark d-inline-flex align-items-center px-3"
@@ -97,6 +98,7 @@
                     title="Lectura cómoda de aportes y dictámenes de Asesoría Externa">
                 <i class="fa fa-book-open text-warning"></i> Lectura de Aportes
             </button>
+            @endhasanyrole
 
             {{-- Dropdown Más Opciones --}}
             <div class="dropdown">

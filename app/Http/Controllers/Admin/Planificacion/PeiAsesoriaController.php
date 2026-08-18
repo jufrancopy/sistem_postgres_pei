@@ -239,14 +239,10 @@ class PeiAsesoriaController extends Controller
 
             $url = route('pei-profiles.show', $asesoria->pei_profile_id);
 
-            $targetRoles = ['Administrador', 'Coordinador de Planificación', 'Analista de Planificación', 'Coordinación de Planificación', 'Analista PEI'];
+            $targetRoles = ['Administrador', 'Coordinador de Planificación', 'Coordinación de Planificación'];
             $userIds = \App\Models\User::whereHas('roles', function($q) use ($targetRoles) {
                 $q->whereIn('name', $targetRoles);
             })->pluck('id')->unique();
-
-            if ($userIds->isEmpty()) {
-                $userIds = \App\Models\User::pluck('id')->take(5);
-            }
 
             foreach ($userIds as $uid) {
                 \App\Models\SystemNotification::create([
@@ -269,6 +265,10 @@ class PeiAsesoriaController extends Controller
      */
     public function reporteAportes($profileId)
     {
+        if (!auth()->user() || !auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Coordinación de Planificación'])) {
+            abort(403, 'Acceso restringido únicamente a Administradores y Coordinadores de Planificación.');
+        }
+
         $profile = PeiProfile::findOrFail($profileId);
 
         $asesorias = PeiAsesoria::where('pei_profile_id', $profileId)

@@ -862,10 +862,12 @@
                                                 <i class="fa fa-certificate"></i>
                                             </button>
 
+                                            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación')
                                             {{-- Lectura Cómoda de Aportes de Asesoría --}}
                                             <button type="button" class="btn btn-circle btn-dark text-warning btnVerReporteAportes" data-pei-id="{{ $plan->id }}" title="Lectura Cómoda de Aportes y Dictámenes de Asesoría">
                                                 <i class="fa fa-book-open"></i>
                                             </button>
+                                            @endhasanyrole
 
                                             {{-- 5. Cruce de Ambientes FODA --}}
                                             <button type="button" class="btn btn-circle btn-warning text-white btnVerFodaCrossing" data-url="{{ route('foda-cruce-ambientes', $plan->id) }}" data-name="{{ addslashes(strip_tags($plan->name)) }}" title="Análisis FODA & Cruce de Ambientes">
