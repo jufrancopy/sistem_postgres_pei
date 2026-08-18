@@ -26,8 +26,7 @@ class MarcoReferencialController extends Controller
 
         $marcos = MarcoReferencial::when($filtro, fn($q) => $q->where('tipo', $filtro))
             ->orderBy('tipo')->orderBy('nombre')
-            ->paginate(20)
-            ->withQueryString();
+            ->get();
 
         return view('admin.planificacion.marcos.index', compact('marcos', 'tipos', 'filtro'));
     }

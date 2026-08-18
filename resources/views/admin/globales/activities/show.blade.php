@@ -472,6 +472,8 @@ var storeUrl     = "{{ route('globales.activities.tareas.store', $activity->id) 
 var statusBase   = "{{ url('admin/globales/activities/tareas') }}";
 var notifAllUrl  = "{{ route('globales.activities.notificar-todos', $activity->id) }}";
 var getUsersUrl  = "{{ route('globales.get-users') }}";
+var statusDone   = 2;
+var pendingDrag  = null;
 
 $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
 
@@ -1590,8 +1592,8 @@ $('#btnLimpiarFiltro').on('click', function(e) {
 
     function buildAccionesSeguimiento(row) {
         var html = '<div class="d-flex align-items-center justify-content-center" style="gap:4px">';
-        html += '<button type="button" class="btn btn-xs btn-outline-primary editTaskBtn" data-id="' + row.id + '" title="Editar Trámite"><i class="fa fa-pencil-alt"></i></button>';
-        html += '<button type="button" class="btn btn-xs btn-outline-info" onclick="abrirDetalleTask(' + row.id + ')" title="Ver Detalle"><i class="fa fa-eye"></i></button>';
+        html += '<button type="button" class="btn btn-circle btn-warning text-dark editTaskBtn" data-id="' + row.id + '" title="Editar Trámite"><i class="fa fa-edit"></i></button>';
+        html += '<button type="button" class="btn btn-circle btn-info" onclick="abrirDetalleTask(' + row.id + ')" title="Ver Detalle"><i class="fa fa-eye"></i></button>';
         html += '</div>';
         return html;
     }
@@ -1710,6 +1712,26 @@ $('#btnLimpiarFiltro').on('click', function(e) {
         $(this).addClass('btn-success active').removeClass('btn-outline-success');
         $('#filtroSeguimientoTodos,#filtroSeguimientoVencidos,#filtroSeguimientoPendientes').removeClass('btn-dark btn-danger btn-warning active').addClass('btn-outline-dark btn-outline-danger btn-outline-warning');
         filtrarDtSeguimientos('finalizados');
+    });
+
+    // ── Manejador Genérico Multi-Modal (Evita que modales hijo queden detrás del modal o backdrop padre) ──
+    $(document).on('show.bs.modal', '.modal', function () {
+        var visibleModals = $('.modal:visible').length;
+        if (visibleModals > 0) {
+            var zIndex = 1050 + (20 * visibleModals);
+            $(this).css('z-index', zIndex);
+            setTimeout(function() {
+                $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 5).addClass('modal-stack');
+            }, 0);
+        }
+    });
+
+    $(document).on('hidden.bs.modal', '.modal', function () {
+        if ($('.modal:visible').length > 0) {
+            setTimeout(function() {
+                $(document.body).addClass('modal-open');
+            }, 0);
+        }
     });
 })();
 </script>

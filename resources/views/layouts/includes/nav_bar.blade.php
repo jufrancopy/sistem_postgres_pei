@@ -1,8 +1,9 @@
 <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top" style="box-shadow: none !important; background: transparent !important;">
   <div class="container-fluid">
     <div class="navbar-wrapper">
-      <a class="navbar-brand text-dark font-weight-bold" href="{{ route('home') }}" style="font-size: 0.98rem; letter-spacing: -0.2px;">
-        <span>{{ \App\Models\HomeConfiguration::getSetting('site_name', 'SIPLAN') }}</span>
+      <a class="navbar-brand text-dark font-weight-bold d-inline-flex align-items-center" href="{{ route('home') }}" style="font-size: 0.98rem; letter-spacing: -0.2px; gap: 8px;">
+        <span class="font-weight-bold text-dark">SIPLAN <span class="text-primary font-weight-bold">GO</span></span>
+        <span class="badge badge-primary font-weight-bold px-2 py-1" style="font-size: 0.7rem; border-radius: 6px; letter-spacing: 0.2px;">Planificar con Propósito</span>
       </a>
     </div>
 
@@ -22,6 +23,14 @@
             $userPts = app(\App\Services\GamificationService::class)->getUserTotalPoints(Auth::user());
         @endphp
 
+        {{-- ── Manifiesto & Propósito SIPLAN ── --}}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ route('siplan.manifesto') }}" target="_blank" title="El Manifiesto & Propósito Institucional de SIPLAN">
+            <i class="material-icons text-info" style="font-size: 22px;">auto_awesome</i>
+            <p class="d-lg-none mb-0">Manifiesto SIPLAN</p>
+          </a>
+        </li>
+
         {{-- ── Inspiración Diaria / Código de Ética ── --}}
         <li class="nav-item">
           <a class="nav-link" href="javascript:void(0)" id="btnOpenReflexion" title="Inspiración Diaria & Código de Ética IPS">
@@ -32,10 +41,10 @@
 
         {{-- ── Notificaciones SIESS ── --}}
         <li class="nav-item dropdown">
-          <a class="nav-link" href="#" id="siessNotifBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones SIESS">
-            <i class="material-icons">notifications</i>
-            <span id="siessNotifBadge" class="notification bg-danger" style="display:none">0</span>
-            <p class="d-lg-none mb-0">Notificaciones</p>
+          <a class="nav-link dropdown-toggle" href="javascript:void(0)" id="siessNotifBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones SIESS" style="cursor: pointer;">
+            <i class="material-icons" style="pointer-events: none;">notifications</i>
+            <span id="siessNotifBadge" class="notification bg-danger" style="display:none; pointer-events: none;">0</span>
+            <p class="d-lg-none mb-0" style="pointer-events: none;">Notificaciones</p>
           </a>
           <div class="dropdown-menu dropdown-menu-right shadow-lg border-0" id="siessNotifMenu" style="width:340px; max-height:420px; overflow-y:auto; padding:0; border-radius:10px;">
             <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light">
@@ -143,6 +152,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        var ultimasNoLeidasCount = 0;
+
         function cargarNotificaciones() {
             $.ajax({
                 url: '{{ route('siess.notificaciones') }}',
@@ -150,10 +161,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 success: function(res) {
                     var badge = $('#siessNotifBadge');
                     if (res.no_leidas > 0) {
+                        if (res.no_leidas > ultimasNoLeidasCount && typeof toastr !== 'undefined') {
+                            toastr.info('Tenés nuevas notificaciones en el sistema.', '🔔 Notificación de Asesoría', { timeOut: 6000 });
+                        }
                         badge.text(res.no_leidas).show();
                     } else {
                         badge.hide();
                     }
+                    ultimasNoLeidasCount = res.no_leidas;
 
                     var lista = $('#siessNotifLista');
                     if (!res.notificaciones || res.notificaciones.length === 0) {
@@ -166,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         var cursor = n.url ? 'cursor:pointer' : '';
                         html += '<div class="px-3 py-2 border-bottom ' + (n.leida ? '' : 'bg-light') + '" style="' + cursor + '" data-id="' + n.id + '" data-url="' + (n.url || '') + '">';
                         html += '<div class="d-flex align-items-start">';
-                        html += '<i class="fa ' + n.icono + ' mr-2 mt-1" style="font-size:.9rem"></i>';
+                        html += '<i class="fa ' + (n.icono || 'fa-bell text-info') + ' mr-2 mt-1" style="font-size:.9rem"></i>';
                         html += '<div style="flex:1">';
                         html += '<div style="font-size:.8rem;font-weight:' + (n.leida ? 'normal' : 'bold') + '">' + n.titulo + '</div>';
                         html += '<div style="font-size:.75rem;color:#6c757d">' + n.mensaje + '</div>';
@@ -182,6 +197,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         $('#siessNotifBtn').closest('.dropdown').on('show.bs.dropdown', function() { cargarNotificaciones(); });
+        $(document).on('click', '#siessNotifBtn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).dropdown('toggle');
+        });
 
         $(document).on('click', '#siessNotifLista [data-id]', function() {
             var id  = $(this).data('id');
@@ -202,20 +222,8 @@ document.addEventListener('DOMContentLoaded', function() {
         cargarNotificaciones();
 
         setInterval(function() {
-            $.ajax({
-                url: '{{ route('siess.notificaciones') }}',
-                type: 'GET',
-                success: function(res) {
-                    var badge = $('#siessNotifBadge');
-                    if (res.no_leidas > 0) {
-                        badge.text(res.no_leidas).show();
-                    } else {
-                        badge.hide();
-                    }
-                },
-                error: function() {}
-            });
-        }, 120000);
+            cargarNotificaciones();
+        }, 10000);
 
         // Click Handler para Diagnóstico Servidor en cualquier vista
         $(document).on('click', '.btn-trigger-diagnostico-global', function(e) {

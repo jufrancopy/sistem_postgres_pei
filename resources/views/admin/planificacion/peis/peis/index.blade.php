@@ -41,17 +41,17 @@
 
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-bordered data-table display nowrap" id="data-table">
-                                <thead>
+                            <table class="table table-bordered table-hover data-table" id="data-table" style="width:100%;">
+                                <thead class="thead-dark">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Nombre</th>
-                                        <th>Periodo</th>
-                                        <th>Tipo</th>
-                                        <th>Grupo</th>
-                                        <th>Analista</th>
-                                        <th>Estado</th>
-                                        <th width="280px">Acciones</th>
+                                        <th style="width:40px;" class="text-center">#</th>
+                                        <th style="max-width:280px;">Nombre del Plan PEI</th>
+                                        <th style="width:85px;" class="text-center">Periodo</th>
+                                        <th style="width:90px;" class="text-center">Tipo</th>
+                                        <th style="max-width:140px;">Grupo</th>
+                                        <th style="max-width:180px;">Analista(s)</th>
+                                        <th style="width:80px;" class="text-center">Estado</th>
+                                        <th style="width:200px;" class="text-center">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -314,49 +314,74 @@
                 },
                 columns: [{
                     data: 'DT_RowIndex',
-                    name: 'DT_RowIndex'
+                    name: 'DT_RowIndex',
+                    width: '40px',
+                    className: 'text-center'
                 }, {
                     data: 'name',
-                    name: 'name'
+                    name: 'name',
+                    render: function(data, type, full, meta) {
+                        if (!data) return '—';
+                        var cleanText = $('<div>').html(data).text();
+                        var shortText = cleanText.length > 55 ? cleanText.substring(0, 52) + '...' : cleanText;
+                        var titleAttr = $('<div>').text(cleanText).html();
+                        return '<span title="' + titleAttr + '" style="font-weight:600; font-size:.88rem; display:block; max-width:280px; white-space:normal; line-height:1.25;">' + shortText + '</span>';
+                    }
                 }, {
                     data: 'period',
-                    name: 'period'
+                    name: 'period',
+                    className: 'text-center',
+                    width: '85px'
                 }, {
                     data: 'type',
                     name: 'type',
+                    className: 'text-center',
+                    width: '90px',
                     render: function(data, type, full, meta) {
                         if (data === 'group') {
-                            return 'Grupal';
+                            return '<span class="badge badge-info" style="font-size:.72rem">Grupal</span>';
                         } else if (data === 'corporative') {
-                            return 'Corporación';
+                            return '<span class="badge badge-primary" style="font-size:.72rem">Corporativo</span>';
                         } else {
-                            return data;
+                            return '<span class="badge badge-secondary" style="font-size:.72rem">' + (data || '—') + '</span>';
                         }
                     }
                 }, {
                     data: 'group',
-                    name: 'group'
+                    name: 'group',
+                    render: function(data) {
+                        if (!data) return '<span class="text-muted">—</span>';
+                        var clean = $('<div>').html(data).text();
+                        return '<span style="display:block; max-width:140px; white-space:normal; font-size:.82rem;">' + clean + '</span>';
+                    }
                 }, {
                     data: 'analysts',
                     name: 'analysts',
                     render: function(data, type, full, meta) {
                         var analystsArray = data ? data.split(', ') : [];
-                        var analystsHtml = '';
+                        if (analystsArray.length === 0 || !data) return '<span class="text-muted small">Sin asignar</span>';
+
+                        var html = '<div style="max-width:180px; display:flex; flex-wrap:wrap; gap:3px;">';
                         analystsArray.forEach(function(analyst) {
-                            if (analyst) {
-                                analystsHtml += '<span class="badge badge-secondary">' + analyst + '</span> ';
+                            if (analyst && analyst.trim()) {
+                                html += '<span class="badge badge-secondary" style="font-size:.7rem; padding:3px 6px; white-space:normal; text-align:left;">' + analyst.trim() + '</span>';
                             }
                         });
-                        return analystsHtml;
+                        html += '</div>';
+                        return html;
                     }
                 }, {
                     data: 'status',
-                    name: 'status'
+                    name: 'status',
+                    className: 'text-center',
+                    width: '80px'
                 }, {
                     data: 'action',
                     name: 'action',
                     orderable: false,
-                    searchable: false
+                    searchable: false,
+                    className: 'text-center',
+                    width: '200px'
                 }, ]
             });
 

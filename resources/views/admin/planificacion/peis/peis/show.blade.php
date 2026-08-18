@@ -2,6 +2,51 @@
 @section('title', 'Planificación Estratégica')
 
 @section('content')
+    <style>
+    /* Modo Pantalla Completa (Full Width PEI Workspace) */
+    body.pei-full-width-mode .sidebar {
+        display: none !important;
+    }
+    body.pei-full-width-mode .main-panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        float: none !important;
+        padding: 0 !important;
+        transition: all 0.25s ease-in-out;
+    }
+    body.pei-full-width-mode .content {
+        padding: 10px 5px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    body.pei-full-width-mode .container,
+    body.pei-full-width-mode .container-fluid {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+        margin: 0 !important;
+    }
+    body.pei-full-width-mode .card {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    body.pei-full-width-mode .card-body {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    body.pei-full-width-mode .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    body.pei-full-width-mode nav.navbar {
+        width: 100% !important;
+    }
+    </style>
+
     <div class="card">
         <div class="card-header card-header-info">
             <h4 class="card-title ">Módulo de Planificación Estratégica</h4>
@@ -16,76 +61,763 @@
             </ol>
         </nav>
 
-        <div class="px-3 pb-2">
-            <a href="{{ route('pei-profiles.dashboard', $profile->id) }}" class="btn btn-sm btn-dark">
-                <i class="fa fa-chart-bar mr-1"></i> Tablero de Monitoreo
+        {{-- ── BARRA DE NAVEGACIÓN EJECUTIVA ── --}}
+        @php
+            $actividadVinculada = \App\Admin\Globales\Activity::where('pei_profile_id', $profile->id)->first();
+            $urlActividad = $actividadVinculada
+                ? route('globales.activities.show', $actividadVinculada->id)
+                : route('globales.activities.index', ['pei_profile_id' => $profile->id]);
+        @endphp
+
+        <div class="d-flex flex-wrap align-items-center mb-3 px-3" style="gap: 8px;">
+
+            {{-- Botones de navegación principales --}}
+            <button type="button"
+                    class="btn btn-sm btn-dark font-weight-bold d-inline-flex align-items-center px-3"
+                    style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+                    data-toggle="modal" data-target="#modalMonitoreoEstrategico"
+                    onclick="iniciarMonitoreoModal()"
+                    title="Tablero de Monitoreo Estratégico">
+                <i class="fa fa-chart-bar text-warning"></i> Monitoreo
+            </button>
+
+            <button type="button"
+                    class="btn btn-sm btn-outline-dark font-weight-bold d-inline-flex align-items-center px-3"
+                    style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+                    data-toggle="modal" data-target="#modalBscEstrategico"
+                    title="Balanced Scorecard (Cuadro de Mando Integral)">
+                <i class="fa fa-th-large text-info"></i> BSC
+            </button>
+
+            <button type="button"
+                    class="btn btn-sm text-white font-weight-bold d-inline-flex align-items-center px-3"
+                    data-toggle="modal" data-target="#modalBuscadorIniciativasPlanMaestro"
+                    onclick="cargarListaIniciativasModal()"
+                    style="background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 8px; border: none; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+                    title="Plan Maestro / Mejora Continua">
+                <i class="fa fa-tasks text-warning"></i> Plan Maestro
+                <span class="badge badge-warning text-dark font-weight-bold ml-1" id="cntBotonHeaderIniciativas"
+                      style="border-radius: 10px; font-size: 0.68rem;">{{ count($iniciativasArray ?? []) }}</span>
+            </button>
+
+            <a href="{{ route('proyectos-institucionales.index', $profile->id) }}"
+               class="btn btn-sm btn-success font-weight-bold d-inline-flex align-items-center px-3"
+               style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;">
+                <i class="fa fa-project-diagram"></i> Proyectos
             </a>
-            <a href="{{ route('pei.bsc', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
-                <i class="fa fa-th-large mr-1"></i> Balanced Scorecard
+
+            <a href="{{ $urlActividad }}"
+               class="btn btn-sm btn-info font-weight-bold d-inline-flex align-items-center px-3"
+               style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;" title="Módulo de Actividades MECIP">
+                <i class="fa fa-list-alt"></i> Actividades MECIP
             </a>
-            <a href="{{ route('pei.indicadores.modulo', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
-                <i class="fa fa-ruler-combined mr-1"></i> Indicadores
-            </a>
-            <a href="{{ route('pei.mee.modulo', $profile->id) }}" class="btn btn-sm btn-outline-dark ml-2">
-                <i class="fa fa-balance-scale mr-1"></i> Marco Estratégico Específico
-            </a>
-            <button type="button" class="btn btn-sm btn-warning font-weight-bold ml-2 shadow-xs text-dark" data-toggle="modal" data-target="#modalBuscadorIniciativasPlanMaestro" title="Buscador y Mapa del Plan Maestro / Iniciativas de Mejora Continua">
-                <i class="fa fa-bullseye mr-1 text-dark"></i> Plan Maestro / Iniciativas
+
+            <button type="button"
+               class="btn btn-sm btn-outline-primary font-weight-bold d-inline-flex align-items-center px-3"
+               style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+               data-toggle="modal" data-target="#modalFormulacionEstrategica"
+               onclick="abrirMatrizModal()"
+               title="Matriz de Formulación Estratégica Integrada">
+                <i class="fa fa-table"></i> Formulación
             </button>
-            <a href="{{ route('pei-profiles.matriz', $profile->id) }}" class="btn btn-sm btn-outline-primary ml-2" target="_blank">
-                <i class="fa fa-table mr-1"></i> Formulación Estratégica Integrada
-            </a>
-            <button type="button" class="btn btn-sm btn-dark font-weight-bold ml-2 shadow-xs" id="btnAbrirModalReordenarPei"
-                    data-profile="{{ $profile->id }}"
-                    title="Reordenar Estructura PEI arrastrando y soltando (Drag & Drop)"
-                    style="background: #1e293b; color: #f8fafc; border: none;">
-                <i class="fa fa-sort-amount-asc mr-1 text-warning"></i> REORDENAR PEI
+
+            {{-- Separador visual --}}
+            <div style="width: 1px; height: 28px; background: #e2e8f0; margin: 0 4px;"></div>
+
+            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI')
+            {{-- Botón de Asesor Externo --}}
+            <button type="button"
+                    class="btn btn-sm font-weight-bold text-dark d-inline-flex align-items-center px-3"
+                    data-toggle="modal" data-target="#modalConvocarAsesorExterno"
+                    onclick="cargarListaAsesoriasAdmin()"
+                    style="background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 8px; border: none; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+                    title="Convocar Asesor Externo para validación remota">
+                <i class="fa fa-user-plus"></i> Convocar Asesor
             </button>
-            <button type="button" class="btn btn-sm btn-outline-success ml-2" id="btnNotificarTodosPei"
-                    data-profile="{{ $profile->id }}"
-                    title="Enviar email a todos los responsables de acciones del plan">
-                <i class="fa fa-paper-plane mr-1"></i> Notificar Responsables
+
+            {{-- Botón de Lectura de Aportes de Asesoría --}}
+            <button type="button"
+                    class="btn btn-sm font-weight-bold text-white btnVerReporteAportes d-inline-flex align-items-center px-3"
+                    data-pei-id="{{ $profile->id }}"
+                    style="background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 8px; border: none; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+                    title="Lectura cómoda de aportes y dictámenes de Asesoría Externa">
+                <i class="fa fa-book-open text-warning"></i> Lectura de Aportes
             </button>
-            {{-- Botón Vista Pública --}}
-            <button type="button" class="btn btn-sm btn-outline-secondary ml-2" id="btnPublicLink"
-                    data-profile="{{ $profile->id }}"
-                    data-token="{{ $profile->public_token }}"
-                    title="Generar y compartir enlace público del plan">
-                <i class="fa fa-share-alt mr-1"></i>
-                {{ $profile->public_token ? 'Enlace público' : 'Generar enlace público' }}
+            @endhasanyrole
+
+            {{-- Botón Modo Pantalla Completa --}}
+            <button type="button"
+                    id="btnToggleFullWidth"
+                    class="btn btn-sm btn-outline-secondary font-weight-bold d-inline-flex align-items-center px-3"
+                    style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+                    title="Alternar Modo Pantalla Completa (Ocultar Menú Lateral)">
+                <i class="fa fa-expand" id="iconToggleFullWidth"></i> <span id="lblToggleFullWidth">Pantalla Completa</span>
             </button>
-            <a href="{{ route('proyectos-institucionales.index', $profile->id) }}" class="btn btn-sm btn-success ml-2">
-                <i class="fa fa-project-diagram mr-1"></i> Proyectos
-            </a>
-            @php
-                $actividadVinculada = \App\Admin\Globales\Activity::where('pei_profile_id', $profile->id)->first();
-                $urlActividad = $actividadVinculada 
-                    ? route('globales.activities.show', $actividadVinculada->id) 
-                    : route('globales.activities.create', ['pei_profile_id' => $profile->id]);
-            @endphp
-            <a href="{{ $urlActividad }}" class="btn btn-sm btn-info ml-2">
-                <i class="fa fa-tasks mr-1"></i> Actividades
-            </a>
-            <button type="button" class="btn btn-sm btn-outline-secondary ml-2" data-toggle="modal" data-target="#modalQrSolicitud">
-                <i class="fa fa-qrcode mr-1"></i> QR Solicitud
-            </button>
-            @role('Administrador')
-            <button type="button" class="btn btn-sm ml-2" data-toggle="modal" data-target="#modalPuntosManuales"
-                    style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none"
-                    title="Otorgar puntos manuales a un funcionario en este plan">
-                <i class="fa fa-star mr-1"></i> Otorgar Puntos
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-warning ml-2 font-weight-bold" id="btnRankingPei"
-                    data-toggle="modal" data-target="#modalRankingPei"
-                    title="Ver ranking de talento humano por puntos en este plan">
-                <i class="fa fa-trophy mr-1"></i> Ranking
-            </button>
-            <button type="button" id="btnRecalcularGamificacionPei" class="btn btn-sm btn-outline-warning ml-2 font-weight-bold"
-                    title="Recalcular retroactivamente los puntos e insignias de este plan">
-                <i class="fa fa-sync-alt mr-1"></i> Recalcular Puntos
-            </button>
-            @endrole
+
+            {{-- Dropdown Más Opciones --}}
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary font-weight-bold dropdown-toggle d-inline-flex align-items-center px-3"
+                        type="button" id="btnDropdownHeaderMas" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                        style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;">
+                    <i class="fa fa-ellipsis-h"></i> Más
+                </button>
+                <div class="dropdown-menu dropdown-menu-right shadow border-0" aria-labelledby="btnDropdownHeaderMas" style="border-radius: 12px; min-width: 240px; font-size: 0.87rem;">
+
+                    <h6 class="dropdown-header text-uppercase text-muted small">Estructura &amp; Organización</h6>
+                    <a class="dropdown-item py-2" href="javascript:void(0)" id="btnAbrirModalReordenarPei" data-profile="{{ $profile->id }}">
+                        <i class="fa fa-sort-amount-asc text-secondary mr-2"></i> Reordenar Estructura PEI
+                    </a>
+                    <a class="dropdown-item py-2" href="javascript:void(0)" id="btnNotificarTodosPei" data-profile="{{ $profile->id }}">
+                        <i class="fa fa-paper-plane text-success mr-2"></i> Notificar a Responsables
+                    </a>
+                    <a class="dropdown-item py-2" href="javascript:void(0)" id="btnPublicLink" data-profile="{{ $profile->id }}" data-token="{{ $profile->public_token }}">
+                        <i class="fa fa-share-alt text-primary mr-2"></i>
+                        {{ $profile->public_token ? 'Ver Enlace Público' : 'Generar Enlace Público' }}
+                    </a>
+                    <a class="dropdown-item py-2" href="javascript:void(0)" data-toggle="modal" data-target="#modalBasureroPei" onclick="cargarBasureroPeiAdmin()">
+                        <i class="fa fa-trash-alt text-danger mr-2"></i> Basurero PEI (Restaurar)
+                    </a>
+
+                    <div class="dropdown-divider"></div>
+                    <h6 class="dropdown-header text-uppercase text-muted small">Análisis Complementario</h6>
+                    <a class="dropdown-item py-2" href="{{ route('pei.indicadores.modulo', $profile->id) }}">
+                        <i class="fa fa-ruler-combined text-info mr-2"></i> Indicadores del Plan
+                    </a>
+                    <a class="dropdown-item py-2" href="{{ route('pei.mee.modulo', $profile->id) }}">
+                        <i class="fa fa-balance-scale text-secondary mr-2"></i> Marco Estratégico Específico
+                    </a>
+
+                    @role('Administrador')
+                    <div class="dropdown-divider"></div>
+                    <h6 class="dropdown-header text-uppercase text-muted small">Gamificación</h6>
+                    <a class="dropdown-item py-2" href="javascript:void(0)" data-toggle="modal" data-target="#modalPuntosManuales" style="color: #7c3aed; font-weight: 600;">
+                        <i class="fa fa-star text-warning mr-2"></i> Otorgar Puntos Manuales
+                    </a>
+                    <a class="dropdown-item py-2" href="javascript:void(0)" id="btnRankingPei" data-toggle="modal" data-target="#modalRankingPei">
+                        <i class="fa fa-trophy text-warning mr-2"></i> Ranking de Talento Humano
+                    </a>
+                    <a class="dropdown-item py-2" href="javascript:void(0)" id="btnRecalcularGamificacionPei">
+                        <i class="fa fa-sync-alt text-info mr-2"></i> Recalcular Puntos
+                    </a>
+                    @endrole
+
+                </div>
+            </div>
+
         </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             MODAL TABLERO DE MONITOREO ESTRATÉGICO
+        ════════════════════════════════════════════════════════════ -->
+        <div class="modal fade" id="modalMonitoreoEstrategico" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1300px;">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+
+                    <div class="modal-header" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 0;">
+                        <div>
+                            <h5 class="modal-title font-weight-bold text-white mb-0 d-flex align-items-center">
+                                <i class="fa fa-chart-bar text-warning mr-2"></i> Tablero de Monitoreo Estratégico
+                            </h5>
+                            <small class="text-white-50">{{ strip_tags($profile->name) }}</small>
+                        </div>
+                        <button type="button" class="close text-white opacity-9" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body p-4" style="background: #f8fafc;">
+
+                        {{-- KPI Cards --}}
+                        <div class="row mb-3" id="monitoreoKpiGrid">
+                            <div class="col-12 text-center py-3">
+                                <i class="fa fa-spinner fa-spin fa-2x text-muted"></i>
+                            </div>
+                        </div>
+
+                        {{-- Tabs de contenido --}}
+                        <ul class="nav nav-tabs nav-tabs-simple border-bottom mb-3" id="monitoreoTabs" role="tablist" style="gap: 4px;">
+                            <li class="nav-item">
+                                <a class="nav-link active font-weight-bold" id="tab-semaforo" data-toggle="tab" href="#pane-semaforo" style="border-radius: 8px 8px 0 0; font-size: 0.85rem;">
+                                    <i class="fa fa-circle text-info mr-1"></i> Semáforo de Indicadores
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link font-weight-bold" id="tab-raci" data-toggle="tab" href="#pane-raci" style="border-radius: 8px 8px 0 0; font-size: 0.85rem;">
+                                    <i class="fa fa-sitemap text-primary mr-1"></i> Matriz RACI
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link font-weight-bold" id="tab-alertas" data-toggle="tab" href="#pane-alertas" style="border-radius: 8px 8px 0 0; font-size: 0.85rem;">
+                                    <i class="fa fa-exclamation-triangle text-warning mr-1"></i> Alertas Presupuestarias
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link font-weight-bold" id="tab-iea" data-toggle="tab" href="#pane-iea" style="border-radius: 8px 8px 0 0; font-size: 0.85rem;">
+                                    <i class="fa fa-chart-bar text-secondary mr-1"></i> IEA — FODA
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+
+                            {{-- SEMÁFORO --}}
+                            <div class="tab-pane fade show active" id="pane-semaforo">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm" id="dtMonitoreoSemaforo" style="font-size: 0.85rem; width: 100%;">
+                                        <thead class="bg-dark text-white">
+                                            <tr>
+                                                <th width="40">#</th>
+                                                <th>Acción Estratégica</th>
+                                                <th width="90" class="text-center">Tipo</th>
+                                                <th width="160">Avance</th>
+                                                <th width="120" class="text-center">Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td colspan="5" class="text-center py-3"><i class="fa fa-spinner fa-spin"></i> Cargando...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {{-- RACI --}}
+                            <div class="tab-pane fade" id="pane-raci">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm" id="dtMonitoreoRaci" style="font-size: 0.85rem; width: 100%;">
+                                        <thead class="bg-dark text-white">
+                                            <tr>
+                                                <th width="40">#</th>
+                                                <th>Acción Estratégica</th>
+                                                <th>Responsable</th>
+                                                <th width="80" class="text-center">Rol</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td colspan="4" class="text-center py-3"><i class="fa fa-spinner fa-spin"></i> Cargando...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {{-- ALERTAS --}}
+                            <div class="tab-pane fade" id="pane-alertas">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm" id="dtMonitoreoAlertas" style="font-size: 0.85rem; width: 100%;">
+                                        <thead class="bg-dark text-white">
+                                            <tr>
+                                                <th width="40">#</th>
+                                                <th>Acción</th>
+                                                <th width="140">% Meta</th>
+                                                <th width="180">% Presupuesto Ejecutado</th>
+                                                <th width="120" class="text-center">Diagnóstico</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td colspan="5" class="text-center py-3"><i class="fa fa-spinner fa-spin"></i> Cargando...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {{-- IEA FODA --}}
+                            <div class="tab-pane fade" id="pane-iea">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm" id="dtMonitoreoIea" style="font-size: 0.85rem; width: 100%;">
+                                        <thead class="bg-dark text-white">
+                                            <tr>
+                                                <th width="40">#</th>
+                                                <th>Aspecto FODA</th>
+                                                <th width="110" class="text-center">Tipo</th>
+                                                <th width="100" class="text-center">IEA</th>
+                                                <th width="110" class="text-center">Clasificación</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php $analisis = $analisisFoda ?? collect(); @endphp
+                                            @forelse($analisis as $i => $a)
+                                            @php $tipos = ['Fortaleza'=>'success','Debilidad'=>'danger','Oportunidad'=>'info','Amenaza'=>'warning']; @endphp
+                                            @php $cls = ['fortaleza'=>'success','debilidad'=>'danger','neutro'=>'secondary']; @endphp
+                                            <tr>
+                                                <td>{{ $i + 1 }}</td>
+                                                <td>{{ $a->aspecto->name ?? '—' }}</td>
+                                                <td class="text-center"><span class="badge badge-{{ $tipos[$a->tipo] ?? 'secondary' }}">{{ $a->tipo }}</span></td>
+                                                <td class="text-center"><code>{{ number_format($a->iea_valor, 4) }}</code></td>
+                                                <td class="text-center"><span class="badge badge-{{ $cls[$a->iea_clasificacion] ?? 'secondary' }}">{{ ucfirst($a->iea_clasificacion) }}</span></td>
+                                            </tr>
+                                            @empty
+                                            <tr><td colspan="5" class="text-center text-muted py-3">Sin análisis FODA con IEA calculado para este grupo.</td></tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>{{-- tab-content --}}
+                    </div>{{-- modal-body --}}
+
+                    <div class="modal-footer bg-white px-4 py-3">
+                        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            #modalMonitoreoEstrategico .kpi-card { border-radius: 10px; padding: 1rem 1.2rem; text-align: center; color: #fff; }
+            #modalMonitoreoEstrategico .kpi-num  { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+            #modalMonitoreoEstrategico .kpi-label{ font-size: .68rem; opacity: .88; margin-top: .25rem; text-transform: uppercase; letter-spacing: .06em; }
+            #modalMonitoreoEstrategico .semaforo-dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:4px; vertical-align:middle; }
+            #modalMonitoreoEstrategico .dot-verde    { background:#28a745; box-shadow:0 0 5px rgba(40,167,69,.5); }
+            #modalMonitoreoEstrategico .dot-amarillo { background:#ffc107; box-shadow:0 0 5px rgba(255,193,7,.5); }
+            #modalMonitoreoEstrategico .dot-rojo     { background:#dc3545; box-shadow:0 0 5px rgba(220,53,69,.5); }
+            #modalMonitoreoEstrategico .dot-gris     { background:#adb5bd; }
+            #modalMonitoreoEstrategico .raci-pill { display:inline-block; width:22px; height:22px; line-height:22px; border-radius:50%; text-align:center; font-size:.7rem; font-weight:700; color:#fff; }
+            #modalMonitoreoEstrategico .raci-A { background:#dc3545; }
+            #modalMonitoreoEstrategico .raci-R { background:#17a2b8; }
+            #modalMonitoreoEstrategico .raci-C { background:#ffc107; color:#333; }
+            #modalMonitoreoEstrategico .raci-I { background:#6c757d; }
+            #modalMonitoreoEstrategico .progress-wrap { display:flex; align-items:center; gap:6px; }
+            #modalMonitoreoEstrategico .progress-wrap .progress { flex:1; height:5px; border-radius:3px; margin:0; }
+            #modalMonitoreoEstrategico .alert-row td { background:#fff9e6 !important; }
+        </style>
+
+        <script>
+        var _monitoreoLoaded = false;
+
+        function iniciarMonitoreoModal() {
+            if (_monitoreoLoaded) return;
+            _monitoreoLoaded = true;
+
+            var profileId   = '{{ $profile->id }}';
+            var urlSemaforo = '{{ route("pei-profiles.semaforo", ":id") }}'.replace(':id', profileId);
+            var urlRaci     = '{{ route("pei-profiles.index") }}/' + profileId + '/actions-list';
+            var urlAlertas  = '{{ route("pei-profiles.alertas-presupuestarias", ":id") }}'.replace(':id', profileId);
+
+            function barColor(pct) {
+                if (pct >= 85) return '#28a745';
+                if (pct >= 50) return '#ffc107';
+                return '#dc3545';
+            }
+            function progressBar(pct) {
+                if (pct === null || pct === undefined) return '—';
+                var c = barColor(pct);
+                return '<div class="progress-wrap"><div class="progress"><div class="progress-bar" style="width:' + Math.min(pct,100) + '%;background:' + c + '"></div></div>' +
+                       '<small style="color:' + c + ';font-weight:600;white-space:nowrap">' + pct + '%</small></div>';
+            }
+            function semaforoIcon(estado) {
+                var map = { verde:'dot-verde', amarillo:'dot-amarillo', rojo:'dot-rojo' };
+                var cls = map[estado] || 'dot-gris';
+                var label = estado ? (estado.charAt(0).toUpperCase() + estado.slice(1)) : 'Sin datos';
+                return '<span class="semaforo-dot ' + cls + '"></span>' + label;
+            }
+            function raciPill(rol) {
+                return '<span class="raci-pill raci-' + rol + '" title="' + rol + '">' + rol + '</span>';
+            }
+
+            // ── KPI ──
+            function buildKpi(resumen, total, alertas) {
+                var grid = $('#monitoreoKpiGrid');
+                grid.empty();
+                var cards = [
+                    { num: total,            label: 'Acciones totales',        bg: 'linear-gradient(135deg,#17a2b8,#007bff)' },
+                    { num: resumen.verde,    label: 'En verde',                bg: 'linear-gradient(135deg,#28a745,#20c997)' },
+                    { num: resumen.amarillo, label: 'En amarillo',             bg: 'linear-gradient(135deg,#ffc107,#fd7e14)' },
+                    { num: resumen.rojo,     label: 'En rojo',                 bg: 'linear-gradient(135deg,#dc3545,#c82333)' },
+                    { num: alertas,          label: 'Alertas presupuestarias', bg: 'linear-gradient(135deg,#6c757d,#495057)' },
+                ];
+                $.each(cards, function(_, c) {
+                    grid.append(
+                        '<div class="col"><div class="kpi-card" style="background:' + c.bg + '">' +
+                        '<div class="kpi-num">' + c.num + '</div>' +
+                        '<div class="kpi-label">' + c.label + '</div>' +
+                        '</div></div>'
+                    );
+                });
+            }
+
+            // ── Semáforo ──
+            var dtSemaforo = null;
+            $.get(urlSemaforo, function (data) {
+                var tbody = $('#dtMonitoreoSemaforo tbody');
+                tbody.empty();
+                if (!data.acciones || data.acciones.length === 0) {
+                    tbody.html('<tr><td colspan="5" class="text-center text-muted py-3">Sin acciones con indicadores registrados.</td></tr>');
+                    buildKpi({ verde:0, amarillo:0, rojo:0 }, 0, 0);
+                    return;
+                }
+                $.each(data.acciones, function (i, a) {
+                    var tipo = a.tipo_indicador === 'lead'
+                        ? '<span class="badge badge-info" style="font-size:.7rem">Lead</span>'
+                        : '<span class="badge badge-secondary" style="font-size:.7rem">Lag</span>';
+                    tbody.append('<tr><td>' + (i+1) + '</td><td>' + a.name + '</td><td class="text-center">' + tipo + '</td><td>' + progressBar(a.avance_pct) + '</td><td class="text-center">' + semaforoIcon(a.semaforo) + '</td></tr>');
+                });
+                if ($.fn.DataTable) {
+                    if (dtSemaforo) dtSemaforo.destroy();
+                    dtSemaforo = $('#dtMonitoreoSemaforo').DataTable({ pageLength: 15, language: dtSpanishEs, order: [] });
+                }
+                $.get(urlAlertas, function(dataA) {
+                    buildKpi(data.resumen, data.acciones.length, dataA.total_alertas || 0);
+                }).fail(function() { buildKpi(data.resumen, data.acciones.length, '?'); });
+            }).fail(function () {
+                $('#dtMonitoreoSemaforo tbody').html('<tr><td colspan="5" class="text-danger text-center py-3">Error al cargar semáforo.</td></tr>');
+            });
+
+            // ── RACI ──
+            var dtRaci = null;
+            $('#tab-raci').one('shown.bs.tab', function() {
+                $.get(urlRaci, function (data) {
+                    var tbody = $('#dtMonitoreoRaci tbody');
+                    tbody.empty();
+                    if (!data.actions || data.actions.length === 0) {
+                        tbody.html('<tr><td colspan="4" class="text-center text-muted py-3">Sin acciones registradas.</td></tr>');
+                        return;
+                    }
+                    $.each(data.actions, function (i, action) {
+                        var nombre = $('<div>').html(action.name).text();
+                        if (!action.responsibles || action.responsibles.length === 0) {
+                            tbody.append('<tr><td>' + (i+1) + '</td><td>' + nombre + '</td><td colspan="2" class="text-muted small">Sin responsables</td></tr>');
+                            return;
+                        }
+                        $.each(action.responsibles, function (j, resp) {
+                            var rol = (resp.pivot && resp.pivot.rol) ? resp.pivot.rol : 'R';
+                            var fila = '<tr>';
+                            if (j === 0) {
+                                fila += '<td rowspan="' + action.responsibles.length + '">' + (i+1) + '</td>';
+                                fila += '<td rowspan="' + action.responsibles.length + '">' + nombre + '</td>';
+                            }
+                            fila += '<td>' + resp.dependency + '</td><td class="text-center">' + raciPill(rol) + '</td></tr>';
+                            tbody.append(fila);
+                        });
+                    });
+                    if ($.fn.DataTable) {
+                        if (dtRaci) dtRaci.destroy();
+                        dtRaci = $('#dtMonitoreoRaci').DataTable({ pageLength: 15, language: dtSpanishEs, order: [] });
+                    }
+                });
+            });
+
+            // ── Alertas ──
+            var dtAlertas = null;
+            $('#tab-alertas').one('shown.bs.tab', function() {
+                $.get(urlAlertas, function (data) {
+                    var tbody = $('#dtMonitoreoAlertas tbody');
+                    tbody.empty();
+                    if (!data.total_alertas) {
+                        tbody.html('<tr><td colspan="5" class="text-center text-success py-3"><i class="fa fa-check-circle mr-1"></i>Sin alertas de subejecución.</td></tr>');
+                        return;
+                    }
+                    $.each(data.acciones, function (i, a) {
+                        tbody.append('<tr class="alert-row"><td>' + (i+1) + '</td><td>' + a.name + '</td><td>' + progressBar(a.pct_meta) + '</td><td>' + progressBar(a.pct_presupuesto) + '</td><td class="text-center"><span class="badge badge-warning text-dark" style="font-size:.72rem"><i class="fa fa-exclamation-triangle mr-1"></i>Subejecución</span></td></tr>');
+                    });
+                    if ($.fn.DataTable) {
+                        if (dtAlertas) dtAlertas.destroy();
+                        dtAlertas = $('#dtMonitoreoAlertas').DataTable({ pageLength: 15, language: dtSpanishEs, order: [] });
+                    }
+                });
+            });
+        }
+        </script>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             MODAL FORMULACIÓN ESTRATÉGICA INTEGRADA
+        ════════════════════════════════════════════════════════════ -->
+        <div class="modal fade" id="modalFormulacionEstrategica" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document"
+                 style="max-width: calc(100vw - 40px); width: calc(100vw - 40px); margin: 20px auto;">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden; height: calc(100vh - 60px);">
+
+                    <div class="modal-header px-4 py-3"
+                         style="background: linear-gradient(135deg, #1a237e 0%, #283593 100%); flex-shrink: 0;">
+                        <div>
+                            <h5 class="modal-title font-weight-bold text-white mb-0 d-flex align-items-center">
+                                <i class="fa fa-table text-warning mr-2"></i> Matriz de Formulación Estratégica Integrada
+                            </h5>
+                            <small class="text-white-50">{{ strip_tags($profile->name) }}</small>
+                        </div>
+                        <div class="d-flex align-items-center" style="gap: 8px;">
+                            <a href="{{ route('pei-profiles.matriz.pdf', $profile->id) }}"
+                               class="btn btn-sm font-weight-bold"
+                               style="background: #c62828; color: #fff; border-radius: 6px; font-size: 0.8rem;"
+                               target="_blank" title="Descargar PDF">
+                                <i class="fa fa-file-pdf mr-1"></i> PDF
+                            </a>
+                            <a href="{{ route('pei-profiles.matriz', $profile->id) }}"
+                               class="btn btn-sm font-weight-bold"
+                               style="background: rgba(255,255,255,.15); color: #fff; border-radius: 6px; font-size: 0.8rem;"
+                               target="_blank" title="Abrir en nueva pestaña">
+                                <i class="fa fa-external-link-alt mr-1"></i> Abrir
+                            </a>
+                            <button type="button" class="close text-white ml-2" data-dismiss="modal" aria-label="Cerrar" style="opacity: .9;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Spinner de carga --}}
+                    <div id="matrizModalSpinner" class="d-flex flex-column align-items-center justify-content-center"
+                         style="background: #f4f6f9; flex: 1; display: flex;">
+                        <div class="spinner-border text-primary mb-3" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
+                        <p class="text-muted font-weight-bold mb-0" style="font-size: 0.85rem;">Cargando matriz...</p>
+                    </div>
+
+                    {{-- iframe que carga la vista de la matriz --}}
+                    <iframe id="matrizModalIframe"
+                            src="about:blank"
+                            frameborder="0"
+                            style="flex: 1; width: 100%; border: none; display: none;">
+                    </iframe>
+
+                </div>
+            </div>
+        </div>
+
+        <script>
+        var _matrizUrl = '{{ route('pei-profiles.matriz', $profile->id) }}';
+        var _matrizLoaded = false;
+
+        function matrizIframeLoaded() {
+            var iframe = document.getElementById('matrizModalIframe');
+            if (iframe && iframe.src && iframe.src !== 'about:blank') {
+                _matrizLoaded = true;
+                var spinner = document.getElementById('matrizModalSpinner');
+                if (spinner) spinner.style.setProperty('display', 'none', 'important');
+                iframe.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var iframe = document.getElementById('matrizModalIframe');
+            if (iframe) {
+                iframe.addEventListener('load', matrizIframeLoaded);
+            }
+        });
+
+        function abrirMatrizModal() {
+            var iframe = document.getElementById('matrizModalIframe');
+            var spinner = document.getElementById('matrizModalSpinner');
+
+            if (!_matrizLoaded) {
+                if (spinner) spinner.style.setProperty('display', 'flex', 'important');
+                if (iframe) iframe.style.display  = 'none';
+                if (iframe) iframe.src = _matrizUrl;
+            } else {
+                // Ya cargado: mostrar directamente
+                if (spinner) spinner.style.setProperty('display', 'none', 'important');
+                if (iframe) iframe.style.display  = 'block';
+            }
+        }
+
+        // Al cerrar el modal, no destruimos el iframe (mantiene estado de columnas)
+        document.addEventListener('DOMContentLoaded', function() {
+            var modal = document.getElementById('modalFormulacionEstrategica');
+            if (modal) {
+                modal.addEventListener('hidden.bs.modal', function() {
+                    // No reiniciamos — mantenemos el estado
+                });
+            }
+        });
+        </script>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             MODAL BALANCED SCORECARD (BSC)
+        ════════════════════════════════════════════════════════════ -->
+        <div class="modal fade" id="modalBscEstrategico" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1300px;">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+
+                    <div class="modal-header px-4 py-3" style="background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%); flex-shrink: 0;">
+                        <div>
+                            <h5 class="modal-title font-weight-bold text-white mb-0 d-flex align-items-center">
+                                <i class="fa fa-th-large text-warning mr-2"></i> Mapa Estratégico (Balanced Scorecard)
+                            </h5>
+                            <small class="text-white-50">{{ strip_tags($profile->name) }} · {{ \Carbon\Carbon::parse($profile->year_start)->format('Y') }}–{{ \Carbon\Carbon::parse($profile->year_end)->format('Y') }}</small>
+                        </div>
+                        <button type="button" class="close text-white ml-2" data-dismiss="modal" aria-label="Cerrar" style="opacity: .9;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body p-4" style="background: #f8fafc;">
+
+                        {{-- Cabecera del mapa --}}
+                        <div class="text-center mb-4">
+                            <div class="d-inline-block px-4 py-2 rounded" style="background:#1a237e;color:#fff;font-size:.85rem;font-weight:600;letter-spacing:.04em">
+                                <i class="fa fa-bullseye mr-2"></i>MAPA ESTRATÉGICO INSTITUCIONAL
+                            </div>
+                            <div class="mt-2 text-muted" style="font-size:.8rem">
+                                Cuatro perspectivas del Balanced Scorecard · Kaplan & Norton
+                            </div>
+                        </div>
+
+                        {{-- Grid de cuadrantes --}}
+                        <div class="bsc-modal-grid">
+                            @php
+                            $orden = ['financiera','clientes','procesos','aprendizaje','sin_bsc'];
+                            $perspectivasModal = $perspectivasBsc ?? [];
+                            @endphp
+
+                            @foreach($orden as $clave)
+                            @if(!isset($perspectivasModal[$clave])) @continue @endif
+                            @php $p = $perspectivasModal[$clave]; @endphp
+
+                            <div class="bsc-cuadrante mb-3">
+                                {{-- Header del cuadrante --}}
+                                <div class="bsc-cuadrante-header" style="background:{{ $p['color'] }}">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa {{ $p['icon'] }} fa-lg mr-2"></i>
+                                        <div>
+                                            <div class="font-weight-bold" style="font-size:.95rem">
+                                                {{ $p['label'] }}
+                                            </div>
+                                            <small style="opacity:.8;font-size:.72rem">
+                                                {{ $p['ejes']->count() }} eje(s) estratégico(s)
+                                            </small>
+                                        </div>
+                                        @php
+                                            $totV = $p['ejes']->sum('verde');
+                                            $totA = $p['ejes']->sum('amarillo');
+                                            $totR = $p['ejes']->sum('rojo');
+                                            $totT = $p['ejes']->sum('total');
+                                        @endphp
+                                        @if($totT > 0)
+                                        <div class="ml-auto text-right">
+                                            <div class="d-flex" style="gap:.25rem">
+                                                @if($totV > 0)<span class="badge" style="background:rgba(255,255,255,.25);font-size:.65rem">✅ {{ $totV }}</span>@endif
+                                                @if($totA > 0)<span class="badge" style="background:rgba(255,255,255,.25);font-size:.65rem">⚠️ {{ $totA }}</span>@endif
+                                                @if($totR > 0)<span class="badge" style="background:rgba(255,255,255,.25);font-size:.65rem">🔴 {{ $totR }}</span>@endif
+                                            </div>
+                                            <small style="opacity:.7;font-size:.65rem">{{ $totT }} acción(es)</small>
+                                        </div>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                {{-- Ejes del cuadrante --}}
+                                <div class="bsc-cuadrante-body">
+                                    @foreach($p['ejes'] as $eje)
+                                    @php
+                                        $scColors = ['verde'=>'#28a745','amarillo'=>'#ffc107','rojo'=>'#dc3545','sin-datos'=>'#adb5bd'];
+                                        $scColor  = $scColors[$eje['semaforo']] ?? '#adb5bd';
+                                    @endphp
+                                    <div class="bsc-eje" style="border-left-color:{{ $scColor }}">
+                                        <div class="d-flex align-items-start" style="gap:.4rem">
+                                            <span class="semaforo-dot mt-1 flex-shrink-0" style="background:{{ $scColor }}"></span>
+                                            <div style="flex:1;min-width:0">
+                                                <div class="font-weight-bold" style="font-size:.82rem;color:#1a237e;line-height:1.3">
+                                                    {{ $eje['name'] }}
+                                                </div>
+
+                                                @if($eje['ri'])
+                                                <div class="text-muted mt-1" style="font-size:.72rem;font-style:italic">
+                                                    <i class="fa fa-flag mr-1" style="color:{{ $p['color'] }}"></i>{{ $eje['ri'] }}
+                                                </div>
+                                                @endif
+
+                                                @if($eje['total'] > 0)
+                                                <div class="bsc-stats mt-1">
+                                                    @if($eje['verde']   > 0)<span class="badge badge-success"   style="font-size:.6rem">{{ $eje['verde'] }} verde</span>@endif
+                                                    @if($eje['amarillo']> 0)<span class="badge badge-warning"   style="font-size:.6rem">{{ $eje['amarillo'] }} amarillo</span>@endif
+                                                    @if($eje['rojo']    > 0)<span class="badge badge-danger"    style="font-size:.6rem">{{ $eje['rojo'] }} rojo</span>@endif
+                                                    <span class="text-muted" style="font-size:.65rem">/ {{ $eje['total'] }} acciones</span>
+                                                </div>
+                                                @endif
+
+                                                @if($eje['ri_recursos'])
+                                                <div class="mt-1" style="font-size:.68rem;color:#6c757d">
+                                                    <i class="fa fa-coins mr-1"></i>Gs. {{ number_format($eje['ri_recursos'], 0, ',', '.') }}
+                                                </div>
+                                                @endif
+
+                                                @if($eje['ri_metas'] && count($eje['ri_metas']) > 0)
+                                                <div class="d-flex flex-wrap mt-1" style="gap:.2rem">
+                                                    @foreach($eje['ri_metas'] as $meta)
+                                                    <span class="badge" style="background:{{ $p['color'] }}22;color:{{ $p['color'] }};font-size:.62rem;border:1px solid {{ $p['color'] }}44">
+                                                        {{ $meta['anio'] }}: {{ $meta['valor'] }}
+                                                    </span>
+                                                    @endforeach
+                                                </div>
+                                                @endif
+
+                                                @php
+                                                    $totalAccEje = collect($eje['objetivos'])->sum(fn($o) => count($o['acciones']));
+                                                @endphp
+                                                @if($totalAccEje > 0)
+                                                <div class="mt-2">
+                                                    <a href="javascript:void(0)"
+                                                       data-toggle="collapse"
+                                                       data-target="#bsc-modal-eje-{{ $eje['id'] }}"
+                                                       style="font-size:.68rem;color:{{ $p['color'] }};text-decoration:none">
+                                                        <i class="fa fa-chevron-down mr-1"></i>
+                                                        Ver {{ $totalAccEje }} acción(es)
+                                                    </a>
+                                                    <div class="collapse mt-1" id="bsc-modal-eje-{{ $eje['id'] }}">
+                                                        @foreach($eje['objetivos'] as $obj)
+                                                        <div class="bsc-objetivo">
+                                                            <div class="font-weight-bold" style="color:#343a40">{{ $obj['name'] }}</div>
+                                                            @foreach($obj['acciones'] as $acc)
+                                                            @php
+                                                                $asc = ['verde'=>'#28a745','amarillo'=>'#ffc107','rojo'=>'#dc3545','sin-datos'=>'#adb5bd'][$acc['semaforo']] ?? '#adb5bd';
+                                                            @endphp
+                                                            <div class="bsc-accion">
+                                                                <span class="semaforo-dot" style="background:{{ $asc }};width:7px;height:7px"></span>
+                                                                {{ $acc['name'] }}
+                                                                @if($acc['pct'] !== null)
+                                                                <span class="badge badge-light border ml-1" style="font-size:.6rem">{{ $acc['pct'] }}%</span>
+                                                                @endif
+                                                            </div>
+                                                            @endforeach
+                                                        </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+
+                        {{-- Leyenda --}}
+                        <div class="d-flex justify-content-center mt-3" style="gap:1rem;flex-wrap:wrap">
+                            <small class="text-muted d-flex align-items-center" style="gap:.3rem;font-size:.75rem">
+                                <span class="semaforo-dot" style="background:#28a745"></span> Verde — ≥85% de avance
+                            </small>
+                            <small class="text-muted d-flex align-items-center" style="gap:.3rem;font-size:.75rem">
+                                <span class="semaforo-dot" style="background:#ffc107"></span> Amarillo — 50–84%
+                            </small>
+                            <small class="text-muted d-flex align-items-center" style="gap:.3rem;font-size:.75rem">
+                                <span class="semaforo-dot" style="background:#dc3545"></span> Rojo — &lt;50%
+                            </small>
+                            <small class="text-muted d-flex align-items-center" style="gap:.3rem;font-size:.75rem">
+                                <span class="semaforo-dot" style="background:#adb5bd"></span> Sin datos
+                            </small>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer bg-white px-4 py-3">
+                        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .bsc-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+            @media (max-width: 768px) { .bsc-modal-grid { grid-template-columns: 1fr; } }
+            #modalBscEstrategico .bsc-cuadrante { border-radius: .75rem; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+            #modalBscEstrategico .bsc-cuadrante-header { padding: 1rem 1.25rem .75rem; color: #fff; }
+            #modalBscEstrategico .bsc-cuadrante-body { background: #fff; padding: .75rem 1rem; }
+            #modalBscEstrategico .bsc-eje { border-left: 4px solid transparent; border-radius: 0 .5rem .5rem 0; background: #f8f9fa; padding: .6rem .75rem; margin-bottom: .5rem; }
+            #modalBscEstrategico .bsc-eje:last-child { margin-bottom: 0; }
+            #modalBscEstrategico .semaforo-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+            #modalBscEstrategico .bsc-objetivo { font-size: .78rem; color: #495057; padding: .2rem 0 .2rem .5rem; border-left: 2px solid #dee2e6; margin-bottom: .2rem; }
+            #modalBscEstrategico .bsc-accion { font-size: .72rem; color: #6c757d; padding-left: .75rem; display: flex; align-items: center; gap: .3rem; }
+            #modalBscEstrategico .bsc-stats { display: flex; gap: .3rem; align-items: center; flex-wrap: wrap; margin-top: .3rem; }
+        </style>
 
         <!-- HTML del segundo nav (inicialmente oculto) -->
         <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4" id="dynamic-nav" style="display: none;">
@@ -1071,16 +1803,134 @@
     </div>
 </div>
 
+{{-- Modal Riesgos MECIP 2015 --}}
+<div class="modal fade" id="modalRiesgosMecip" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
+                <div>
+                    <span class="badge badge-light text-dark font-weight-bold mb-1" style="font-size: 0.72rem; letter-spacing: 0.05em; padding: 4px 8px; border-radius: 6px;">
+                        <i class="fa fa-shield-alt text-warning mr-1"></i> MECIP 2015 — GESTIÓN DE RIESGOS
+                    </span>
+                    <h5 class="modal-title font-weight-bold mb-0 text-white" id="modalRiesgosTituloOE" style="font-size: 1.1rem;">
+                        Riesgos por Objetivo Estratégico
+                    </h5>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" style="opacity: 0.9;"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-4" style="background: #f8fafc; max-height: 75vh; overflow-y: auto;">
+                <div id="contenedorRiesgosMecip"></div>
+            </div>
+            <div class="modal-footer bg-white border-top-0 py-2 px-4">
+                <button type="button" class="btn btn-secondary btn-sm px-4 font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @stop
 
 @section('scripts')
     {{-- My custom scripts --}}
     <script type="text/javascript">
         $(function() {
+            window.dtSpanishEs = {
+                search: "Buscar:",
+                lengthMenu: "Mostrar _MENU_ registros",
+                info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                infoEmpty: "Sin registros cargados",
+                infoFiltered: "(filtrado de _MAX_ registros en total)",
+                zeroRecords: "No se encontraron resultados",
+                paginate: { first: "Primero", previous: "Anterior", next: "Siguiente", last: "Último" }
+            };
+            var dtSpanishEs = window.dtSpanishEs;
+
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
+            });
+
+            // Garantizar apertura al 1er clic en menús desplegables (dropdown-toggle)
+            $(document).on('click', '.dropdown-toggle', function(e) {
+                var $parent = $(this).closest('.dropdown');
+                var $menu = $parent.children('.dropdown-menu');
+                if ($menu.length && !$menu.hasClass('show')) {
+                    $('.dropdown-menu.show').removeClass('show');
+                    $('.dropdown.show').removeClass('show');
+                    $parent.addClass('show');
+                    $menu.addClass('show');
+                    $(this).attr('aria-expanded', 'true');
+                    e.stopPropagation();
+                }
+            });
+
+            // ── Abrir Modal Riesgos MECIP 2015 ─────────────────────────────
+            $(document).on('click', '.btn-ver-riesgos-mecip', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var btn = $(this);
+                var title = btn.attr('data-axi-title') || btn.data('axi-title') || 'Objetivo Estratégico';
+                var rawData = btn.attr('data-riesgos');
+                var riesgos = [];
+                try {
+                    riesgos = typeof rawData === 'string' ? JSON.parse(rawData) : (btn.data('riesgos') || []);
+                } catch(err) {
+                    riesgos = btn.data('riesgos') || [];
+                }
+
+                $('#modalRiesgosTituloOE').html('<i class="fa fa-shield-alt text-warning mr-2"></i>' + title);
+
+                var html = '';
+                if (riesgos && riesgos.length > 0) {
+                    var causasMap = {
+                        'operativa':    { label: 'Operativa — Carga admin. / procesos manuales', color: 'badge-info' },
+                        'estructural':  { label: 'Estructural — Falta de perfiles / RRHH', color: 'badge-primary' },
+                        'tecnologica':  { label: 'Tecnológica — Ausencia de sistemas / TI', color: 'badge-purple' },
+                        'normativa':    { label: 'Normativa — Vacío / incumplimiento regulatorio', color: 'badge-danger' },
+                        'otra':         { label: 'Otra causa raíz', color: 'badge-secondary' }
+                    };
+
+                    riesgos.forEach(function(r, idx) {
+                        var causaInfo = causasMap[r.causa_raiz] || { label: r.causa_raiz || 'No definida', color: 'badge-secondary' };
+                        var ocurrencia = r.ocurrencia || 3;
+                        var impacto = r.impacto || 3;
+                        var matriz = ocurrencia * impacto;
+                        var nivelBadge = matriz >= 20 ? 'badge-danger' : (matriz >= 12 ? 'badge-warning text-dark' : 'badge-success');
+                        var nivelTexto = matriz >= 20 ? 'Crítico ('+matriz+'/25)' : (matriz >= 12 ? 'Alto ('+matriz+'/25)' : 'Medio ('+matriz+'/25)');
+
+                        html += '<div class="card border-0 shadow-sm mb-3" style="border-radius: 12px; overflow: hidden; border-left: 5px solid #f59e0b !important;">' +
+                            '<div class="card-header bg-white py-3 px-3 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap: 8px;">' +
+                                '<div>' +
+                                    '<span class="badge badge-dark mr-2" style="font-size: 0.72rem; padding: 4px 8px;">Riesgo #' + (idx + 1) + '</span>' +
+                                    '<span class="font-weight-bold text-dark" style="font-size: 0.95rem;">' + (r.aspecto || 'Riesgo Institucional MECIP') + '</span>' +
+                                '</div>' +
+                                '<div>' +
+                                    '<span class="badge ' + nivelBadge + ' mr-1" style="font-size: 0.72rem; padding: 4px 8px;" title="Nivel de Riesgo = Ocurrencia × Impacto"><i class="fa fa-exclamation-triangle mr-1"></i> ' + nivelTexto + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="card-body p-3 bg-white" style="font-size: 0.88rem; color: #334155;">' +
+                                '<div class="mb-3 p-2 border-left border-info bg-light" style="border-radius: 6px;">' +
+                                    '<div class="font-weight-bold text-uppercase text-muted mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;"><i class="fa fa-microscope mr-1 text-info"></i> 1. Causa Raíz</div>' +
+                                    '<span class="badge ' + causaInfo.color + '" style="font-size: 0.75rem; padding: 4px 8px;">' + causaInfo.label + '</span>' +
+                                '</div>' +
+                                '<div class="mb-3 p-2 border-left border-warning bg-light" style="border-radius: 6px;">' +
+                                    '<div class="font-weight-bold text-uppercase text-warning mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;"><i class="fa fa-lightbulb mr-1"></i> 2. Acción de Mejora (Respuesta al Riesgo)</div>' +
+                                    '<div class="text-dark font-weight-bold">' + (r.accion_mejora || '—') + '</div>' +
+                                '</div>' +
+                                '<div class="p-2 border-left border-success bg-light" style="border-radius: 6px;">' +
+                                    '<div class="font-weight-bold text-uppercase text-success mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;"><i class="fa fa-shield-alt mr-1"></i> 3. Control Preventivo (Evaluación de Control — MECIP)</div>' +
+                                    '<div class="text-dark">' + (r.control_preventivo || '—') + '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
+                    });
+                } else {
+                    html = '<div class="text-center py-5 text-muted"><i class="fa fa-shield-alt fa-3x mb-3 text-warning opacity-50"></i><p class="mb-0">No se encontraron riesgos MECIP 2015 asociados a este objetivo.</p></div>';
+                }
+
+                $('#contenedorRiesgosMecip').html(html);
+                $('#modalRiesgosMecip').modal('show');
             });
 
             // Ranking Talento Humano
@@ -1104,7 +1954,7 @@
                             return '<span class="badge badge-light border text-dark" style="font-size:.78rem">'+data+'</span>';
                         }},
                     ],
-                    language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json' },
+                    language: dtSpanishEs,
                     pageLength: 10,
                     order: [[2, 'desc']],
                 });
@@ -1297,11 +2147,14 @@
                             setTimeout(function() {
                                 var $el = $('#ini_card_' + highlightIniciativaId);
                                 if ($el.length) {
-                                    $el[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    $el.addClass('highlight-target-edited');
+                                    $el.parents('.collapse').addClass('show').collapse('show');
                                     setTimeout(function() {
-                                        $el.removeClass('highlight-target-edited');
-                                    }, 2800);
+                                        $el[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        $el.addClass('highlight-target-edited');
+                                        setTimeout(function() {
+                                            $el.removeClass('highlight-target-edited');
+                                        }, 2800);
+                                    }, 100);
                                 }
                             }, 150);
                         }
@@ -1536,6 +2389,7 @@
                     $('#axisForm').trigger("reset");
 
                     if (typeBtn === 'create') {
+                        $('#axis_profile_id').val('');
                         $('#axis_parent_id').val(data.profile.id);
                         axisEditor.setData('');
                         $('#axis_order_item').val('');
@@ -2060,6 +2914,7 @@
                     $('#goalsForm').trigger("reset");
 
                     if (typeBtn === 'create') {
+                        $('#goals_profile_id').val('');
                         $('#goals_parent_id').val(data.profile.id);
                         $('#goals_order_item').val('');
                         goalsEditor.setData('');
@@ -2187,6 +3042,7 @@
                     $('#actionsForm').trigger("reset");
 
                     if (typeBtn === 'create') {
+                        $('#actions_profile_id').val('');
                         $('#actions_parent_id').val(data.profile.id);
                         actionsEditor.setData('');
                         $('#actions_order_item').val('');
@@ -3050,19 +3906,16 @@
         // ── Agregar fila de meta ───────────────────────────────────────────
         function agregarMeta(anio, valor) {
             var idx = _metaIndex++;
-            var row = '<tr class="meta-row border-bottom align-middle" data-idx="' + idx + '">' +
-                '<td class="py-1.5 pl-3 pr-2" style="vertical-align:middle;">' +
-                    '<input type="number" class="form-control form-control-sm meta-anio font-weight-bold" placeholder="Ej: 2026" value="' + (anio||'') + '" min="2020" max="2100" style="font-size:.78rem; height: 30px; border-radius: 6px;">' +
-                '</td>' +
-                '<td class="py-1.5 px-2" style="vertical-align:middle;">' +
-                    '<input type="text" class="form-control form-control-sm meta-valor" placeholder="Ej: 2, 85%, 1500" value="' + (valor||'') + '" style="font-size:.78rem; height: 30px; border-radius: 6px;">' +
-                '</td>' +
-                '<td class="text-center py-1.5 pr-3" style="vertical-align:middle;">' +
-                    '<button type="button" class="btn btn-sm btn-circle btn-remove-meta" title="Eliminar Meta" style="width: 28px; height: 28px; border-radius: 50%; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: #ffe4e6; color: #e11d48; border: none; cursor: pointer; transition: all 0.2s;">' +
-                        '<i class="fas fa-trash-alt" style="font-size: 0.72rem;"></i>' +
-                    '</button>' +
-                '</td>' +
-            '</tr>';
+            var row = '<div class="col-12 mb-1.5 meta-row" data-idx="' + idx + '">' +
+                '<div class="input-group input-group-sm">' +
+                    '<div class="input-group-prepend"><span class="input-group-text bg-light text-muted font-weight-bold" style="font-size:.7rem">📅 Año</span></div>' +
+                    '<input type="number" class="form-control meta-anio font-weight-bold" placeholder="' + new Date().getFullYear() + '" value="' + (anio||'') + '" min="2020" max="2100" style="max-width:85px">' +
+                    '<input type="text" class="form-control meta-valor ml-1" placeholder="Ej: 2, 85%, 1500" value="' + (valor||'') + '">' +
+                    '<div class="input-group-append">' +
+                        '<button type="button" class="btn btn-outline-danger btn-remove-meta" title="Eliminar Meta"><i class="fa fa-times"></i></button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
             $('#metasContainer').append(row);
         }
 
@@ -3111,11 +3964,16 @@
             $('#ind_nombre').val(ind.nombre);
             $('#ind_codigo_letras').val(ind.codigo_letras);
             $('#ind_codigo_numeros').val(ind.codigo_numeros);
-            // Radios
+            // Radios (búsqueda case-insensitive)
             $.each(['dimension','ambito','frecuencia','cobertura','sentido'], function(i, campo) {
-                var val = ind[campo];
-                var radio = $('input[name="ind_' + campo + '"][value="' + val + '"]');
-                radio.prop('checked', true).trigger('change');
+                var rawVal = (ind[campo] || '').toString().toLowerCase().trim();
+                if (!rawVal) return;
+                var $radio = $('input[name="ind_' + campo + '"]').filter(function() {
+                    return $(this).val().toLowerCase() === rawVal;
+                });
+                if ($radio.length) {
+                    $radio.prop('checked', true).trigger('change');
+                }
             });
             if (ind.frecuencia === 'otro') $('#ind_frecuencia_otro').val(ind.frecuencia_otro);
             $('#ind_descripcion').val(ind.descripcion);
@@ -3535,11 +4393,16 @@ $(document).on('click', '.btn-ver-indicador', function() {
         $('#ind_codigo_letras').val(ind.codigo_letras);
         $('#ind_codigo_numeros').val(ind.codigo_numeros);
 
-        // Radios
+        // Radios (búsqueda case-insensitive)
         $.each(['dimension','ambito','frecuencia','cobertura','sentido'], function(i, campo) {
-            var val = ind[campo];
-            var radio = $('input[name="ind_' + campo + '"][value="' + val + '"]');
-            radio.prop('checked', true).trigger('change');
+            var rawVal = (ind[campo] || '').toString().toLowerCase().trim();
+            if (!rawVal) return;
+            var $radio = $('input[name="ind_' + campo + '"]').filter(function() {
+                return $(this).val().toLowerCase() === rawVal;
+            });
+            if ($radio.length) {
+                $radio.prop('checked', true).trigger('change');
+            }
         });
         if (ind.frecuencia === 'otro') $('#ind_frecuencia_otro').val(ind.frecuencia_otro);
 
@@ -3859,140 +4722,265 @@ $(document).on('click', '#btnColapsarTodoTreePei', function() {
     $('#contenedorArbolDraggablePei .btn-toggle-pei-children i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
 });
 
-// ── LÓGICA DEL MODAL BUSCADOR DEL PLAN MAESTRO / INICIATIVAS ──
-$('#modalBuscadorIniciativasPlanMaestro').on('show.bs.modal', function () {
-    cargarListaIniciativasModal();
-});
+@php
+    $descendantIds = $profile->descendants->pluck('id')->push($profile->id)->map(fn($v) => (string)$v)->toArray();
+    $numericIds    = array_values(array_filter($descendantIds, 'is_numeric'));
+    $stringIds     = array_values(array_filter($descendantIds, fn($id) => !is_numeric($id)));
 
-var currentIniModalStatusFilter = 'all';
+    $query = \App\Models\PlanMaestro\PlanAccion::query();
+    if (!empty($stringIds)) {
+        $query->whereIn('pei_profile_id', $stringIds);
+    }
+    if (!empty($numericIds)) {
+        $query->orWhereIn('plan_id', $numericIds)->orWhereIn('eje_id', $numericIds);
+    }
+    $iniciativasDirectas = $query->with('creator')->orderBy('orden')->get();
 
-function cargarListaIniciativasModal() {
-    var $container = $('#listaIniciativasModalContainer');
-    $container.empty();
-
-    var $cards = $('[id^="ini_card_"]');
-    if ($cards.length === 0) {
-        $container.html('<div class="text-center p-4 text-muted font-weight-bold"><i class="fa fa-info-circle mr-1"></i> No hay iniciativas de mejora registradas aún en este perfil PEI.</div>');
-        $('#lblTotalIniciativasModal').text('Total: 0 iniciativas');
-        return;
+    if ($iniciativasDirectas->isEmpty()) {
+        $iniciativasDirectas = \App\Models\PlanMaestro\PlanAccion::with('creator')->orderBy('orden')->get();
     }
 
-    var total = $cards.length;
-    $('#lblTotalIniciativasModal').text('Total: ' + total + ' iniciativas registradas');
+    $iniciativasArray = $iniciativasDirectas->map(function($i) {
+        return [
+            'id'          => (string)$i->id,
+            'codigo'      => $i->codigo,
+            'accion'      => $i->accion,
+            'estado'      => $i->estado_grupo,
+            'responsable' => $i->responsable ?? '—',
+            'momento'     => $i->momento ?? 'T0',
+            'creador'     => $i->creator ? $i->creator->name : null,
+        ];
+    })->values()->toArray();
+@endphp
 
-    $cards.each(function() {
-        var $c = $(this);
-        var iniId = $c.attr('id').replace('ini_card_', '');
-        var codigo = $c.find('.badge-code-ini, strong, span.font-weight-bold').first().text().trim() || ('#INI-' + iniId);
-        var titulo = $c.find('h6, .ini-title, div.font-weight-bold').first().text().trim() || $c.text().substring(0, 80).trim();
-        var estado = $c.data('estado') || ($c.text().indexOf('EJECUTADO') >= 0 ? 'EJECUTADO' : ($c.text().indexOf('EN CURSO') >= 0 ? 'EN CURSO' : 'PENDIENTE'));
-        
-        var badgeBg = estado === 'EJECUTADO' ? 'badge-success' : (estado === 'EN CURSO' ? 'badge-warning' : 'badge-danger');
+    window.iniciativasPlanMaestroData = {!! json_encode($iniciativasArray) !!};
 
-        var itemHtml = `
-            <a href="javascript:void(0)" onclick="irAIniciativaDesdeModal('${iniId}')" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center item-ini-modal mb-2 border rounded p-3 shadow-xs" data-status="${estado}" data-search="${(codigo + ' ' + titulo).toLowerCase()}" style="border-radius: 12px; transition: all 0.2s ease;">
-                <div>
-                    <div class="d-flex align-items-center mb-1">
-                        <span class="badge badge-dark mr-2" style="font-size: 0.75rem;">${codigo}</span>
-                        <span class="badge ${badgeBg} font-weight-bold px-2 py-1" style="font-size: 0.7rem;">${estado}</span>
-                    </div>
-                    <div class="font-weight-bold text-dark" style="font-size: 0.9rem;">${titulo}</div>
-                </div>
-                <div class="text-right">
-                    <span class="btn btn-sm btn-outline-primary rounded-circle"><i class="fa fa-arrow-right"></i></span>
-                </div>
-            </a>
+// ── LÓGICA DEL MODAL BUSCADOR DEL PLAN MAESTRO / INICIATIVAS (DATATABLES) ──
+var dtIniciativasModal = null;
+var currentIniModalStatusFilter = 'all';
+
+$(document).on('show.bs.modal shown.bs.modal', '#modalBuscadorIniciativasPlanMaestro', function () {
+    cargarListaIniciativasModal();
+    if (dtIniciativasModal) {
+        setTimeout(function() {
+            dtIniciativasModal.columns.adjust();
+            if (dtIniciativasModal.responsive) {
+                dtIniciativasModal.responsive.recalc();
+            }
+        }, 150);
+    }
+});
+
+function cargarListaIniciativasModal() {
+    var items = [];
+    var seenIds = {};
+
+    // 1. Escanear elementos DOM presentes en el árbol
+    var $cards = $('.ini-card-item, [id^="ini_card_"]');
+    if ($cards.length > 0) {
+        $cards.each(function() {
+            var $c = $(this);
+            var iniId = $c.data('id') || $c.attr('id').replace('ini_card_', '');
+            var codigo = $c.data('codigo') || $c.find('.badge-code-ini, span.badge-dark, strong').first().text().trim() || ('#INI-' + iniId);
+            var titulo = $c.data('accion') || $c.find('.ini-title, div.font-weight-bold').first().text().trim() || $c.text().substring(0, 80).trim();
+            var estado = $c.data('estado') || ($c.text().indexOf('EJECUTADO') >= 0 ? 'EJECUTADO' : ($c.text().indexOf('EN CURSO') >= 0 ? 'EN CURSO' : 'PENDIENTE'));
+            var responsable = $c.data('responsable') || '—';
+            var momento = $c.data('momento') || 'T0';
+
+            if (!seenIds[iniId]) {
+                seenIds[iniId] = true;
+                items.push({ id: iniId, codigo: codigo, accion: titulo, estado: estado, responsable: responsable, momento: momento });
+            }
+        });
+    }
+
+    // 2. Complementar con catálogo del Plan Maestro
+    if (window.iniciativasPlanMaestroData && window.iniciativasPlanMaestroData.length > 0) {
+        window.iniciativasPlanMaestroData.forEach(function(i) {
+            if (!seenIds[i.id]) {
+                seenIds[i.id] = true;
+                items.push(i);
+            }
+        });
+    }
+
+    $('#lblTotalIniciativasModal').text('Total: ' + items.length + ' acciones operativas de mejora continua');
+    if ($('#cntBotonHeaderIniciativas').length) {
+        $('#cntBotonHeaderIniciativas').text(items.length);
+    }
+
+    if ($.fn.DataTable.isDataTable('#tablaIniciativasPlanMaestro')) {
+        $('#tablaIniciativasPlanMaestro').DataTable().destroy();
+        $('#tablaIniciativasPlanMaestro tbody').empty();
+    }
+
+    var $tbody = $('#tablaIniciativasPlanMaestro tbody');
+    $tbody.empty();
+
+    items.forEach(function(i) {
+        var estado = i.estado || 'PENDIENTE';
+        var badgeBg = estado === 'EJECUTADO' ? 'badge-success' : (estado === 'EN CURSO' ? 'badge-warning text-dark' : 'badge-danger');
+        var respTxt = i.responsable && i.responsable !== '—' ? i.responsable : '—';
+        var momTxt = i.momento || 'T0';
+
+        var trHtml = `
+            <tr data-status="${estado}">
+                <td class="text-center font-weight-bold align-middle">
+                    <span class="badge badge-dark px-2 py-1" style="font-size: 0.78rem;">${i.codigo}</span>
+                </td>
+                <td class="text-center align-middle">
+                    <span class="badge badge-secondary px-2 py-1" style="font-size: 0.72rem;">${momTxt}</span>
+                </td>
+                <td class="align-middle">
+                    <div class="font-weight-bold text-dark" style="font-size: 0.88rem;">${i.accion}</div>
+                </td>
+                <td class="align-middle text-muted small">
+                    <i class="fa fa-building-o mr-1"></i>${respTxt}
+                </td>
+                <td class="text-center align-middle">
+                    <span class="badge ${badgeBg} font-weight-bold px-2 py-1" style="font-size: 0.75rem;">${estado}</span>
+                </td>
+                <td class="text-center align-middle">
+                    <button type="button" class="btn btn-xs btn-outline-primary font-weight-bold rounded-pill px-2.5 py-1" onclick="irAIniciativaDesdeModal('${i.id}')" title="Ubicar en el árbol">
+                        <i class="fa fa-crosshairs mr-1"></i> Ver en Árbol
+                    </button>
+                </td>
+            </tr>
         `;
-        $container.append(itemHtml);
+        $tbody.append(trHtml);
     });
+
+    dtIniciativasModal = $('#tablaIniciativasPlanMaestro').DataTable({
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+        responsive: true,
+        autoWidth: false,
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Buscar por código, acción o área...",
+            lengthMenu: "Mostrar _MENU_ registros",
+            info: "Mostrando _START_ a _END_ de _TOTAL_ acciones operativas",
+            infoEmpty: "Sin registros disponibles",
+            infoFiltered: "(filtrado de _MAX_ totales)",
+            zeroRecords: "No se encontraron acciones operativas coincidentes",
+            paginate: {
+                first: '<i class="fa fa-angle-double-left"></i>',
+                last: '<i class="fa fa-angle-double-right"></i>',
+                next: '<i class="fa fa-angle-right"></i>',
+                previous: '<i class="fa fa-angle-left"></i>'
+            }
+        },
+        dom: "<'row mb-2'<'col-sm-6'l><'col-sm-6 text-right'f>>" +
+             "<'row'<'col-sm-12'tr>>" +
+             "<'row mt-2'<'col-sm-5'i><'col-sm-7 text-right'p>>"
+    });
+
+    if (currentIniModalStatusFilter !== 'all') {
+        dtIniciativasModal.column(4).search(currentIniModalStatusFilter).draw();
+    }
 }
 
 function filtrarIniciativasModalStatus(btn, status) {
     $('.btn-filter-ini-modal').removeClass('active btn-dark').addClass('btn-outline-secondary');
     $(btn).removeClass('btn-outline-secondary btn-outline-success btn-outline-warning btn-outline-danger').addClass('active btn-dark');
     currentIniModalStatusFilter = status;
-    filtrarIniciativasModal();
-}
 
-function filtrarIniciativasModal() {
-    var query = ($('#inputBuscarIniciativasModal').val() || '').toLowerCase();
-    var countVisible = 0;
-
-    $('.item-ini-modal').each(function() {
-        var $item = $(this);
-        var st = $item.data('status');
-        var searchTxt = $item.data('search');
-
-        var matchesStatus = (currentIniModalStatusFilter === 'all' || st === currentIniModalStatusFilter);
-        var matchesQuery  = (!query || searchTxt.indexOf(query) >= 0);
-
-        if (matchesStatus && matchesQuery) {
-            $item.show();
-            countVisible++;
+    if (dtIniciativasModal) {
+        if (status === 'all') {
+            dtIniciativasModal.column(4).search('').draw();
         } else {
-            $item.hide();
+            dtIniciativasModal.column(4).search(status).draw();
         }
-    });
-
-    $('#lblTotalIniciativasModal').text('Mostrando: ' + countVisible + ' iniciativas');
+    }
 }
 
 function irAIniciativaDesdeModal(iniId) {
     $('#modalBuscadorIniciativasPlanMaestro').modal('hide');
+
     setTimeout(function() {
-        var $card = $('#ini_card_' + iniId);
-        if ($card.length) {
-            $('html, body').animate({
-                scrollTop: $card.offset().top - 120
-            }, 500);
-            $card.css('transition', 'all 0.4s ease')
-                 .css('box-shadow', '0 0 0 4px #f59e0b')
-                 .css('transform', 'scale(1.02)');
-            setTimeout(function() {
-                $card.css('box-shadow', '').css('transform', '');
-            }, 2000);
+        // 1. Abrir todos los acordeones y contenedores jerárquicos del árbol (Nivel 1 al 4)
+        if ($('#btnExpandirTodoTreePei').length) {
+            $('#btnExpandirTodoTreePei').click();
         }
+        $('.nodo-pei-children').show();
+        $('.collapse').addClass('show').collapse('show');
+        $('.btn-toggle-pei-children i').removeClass('fa-chevron-right').addClass('fa-chevron-down');
+
+        // 2. Calcular posición exacta y desplazar suavemente
+        setTimeout(function() {
+            var $card = $('#ini_card_' + iniId);
+            if ($card.length) {
+                $card.parents('.nodo-pei-children').show();
+                $card.parents('.collapse').addClass('show');
+
+                var targetOffset = $card.offset().top - 140;
+                $('html, body').animate({
+                    scrollTop: targetOffset
+                }, 600);
+
+                // 3. Destacar la tarjeta con resalte visual
+                $card.css('transition', 'all 0.4s ease')
+                     .css('box-shadow', '0 0 0 4px #f59e0b, 0 8px 24px rgba(245,158,11,0.3)')
+                     .css('transform', 'scale(1.02)')
+                     .css('background-color', '#fefce8');
+
+                setTimeout(function() {
+                    $card.css('box-shadow', '').css('transform', '').css('background-color', '');
+                }, 3500);
+            } else if (window.toastr) {
+                toastr.info('Acción Operativa de Mejora Continua seleccionada.');
+            }
+        }, 250);
     }, 300);
 }
 </script>
 
 <!-- MODAL DE MAPA DE INICIATIVAS / PLAN MAESTRO -->
 <div class="modal fade" id="modalBuscadorIniciativasPlanMaestro" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1400px; width: 95%;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
             <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-top-left-radius: 16px; border-top-right-radius: 16px;">
                 <h5 class="modal-title font-weight-bold d-flex align-items-center mb-0">
-                    <i class="fa fa-bullseye text-warning mr-2" style="font-size: 1.3rem;"></i>
-                    <span>Plan Maestro — Mapa de Iniciativas de Mejora Continua</span>
+                    <i class="fa fa-tasks text-warning mr-2" style="font-size: 1.3rem;"></i>
+                    <span>Plan Maestro — Mapa de Acciones Operativas de Mejora Continua</span>
                 </h5>
                 <button type="button" class="close text-white opacity-9" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-                <div class="mb-3">
-                    <div class="input-group shadow-xs mb-3" style="border-radius: 10px; overflow: hidden;">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
-                        </div>
-                        <input type="text" class="form-control border-left-0 pl-0" id="inputBuscarIniciativasModal" placeholder="Buscar por código, nombre o responsable..." onkeyup="filtrarIniciativasModal()">
-                    </div>
-                    <div class="d-flex flex-wrap align-items-center justify-content-between bg-white p-2.5 rounded border shadow-xs" style="border-radius: 10px;">
-                        <span class="text-muted small font-weight-bold mb-2 mb-md-0"><i class="fa fa-filter text-warning mr-1"></i> Filtrar por estado:</span>
-                        <div class="d-flex flex-wrap" style="gap: 5px;">
-                            <button type="button" class="btn btn-sm btn-dark active btn-filter-ini-modal" data-status="all" onclick="filtrarIniciativasModalStatus(this, 'all')">Todos</button>
-                            <button type="button" class="btn btn-sm btn-outline-success btn-filter-ini-modal" data-status="EJECUTADO" onclick="filtrarIniciativasModalStatus(this, 'EJECUTADO')">Ejecutados</button>
-                            <button type="button" class="btn btn-sm btn-outline-warning btn-filter-ini-modal" data-status="EN CURSO" onclick="filtrarIniciativasModalStatus(this, 'EN CURSO')">En Curso</button>
-                            <button type="button" class="btn btn-sm btn-outline-danger btn-filter-ini-modal" data-status="PENDIENTE" onclick="filtrarIniciativasModalStatus(this, 'PENDIENTE')">Pendientes</button>
-                        </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="d-flex flex-wrap align-items-center justify-content-between bg-white p-3 rounded border shadow-xs mb-3" style="border-radius: 12px;">
+                    <span class="text-muted small font-weight-bold mb-2 mb-md-0"><i class="fa fa-filter text-warning mr-1"></i> Filtrar por estado:</span>
+                    <div class="d-flex flex-wrap" style="gap: 6px;">
+                        <button type="button" class="btn btn-sm btn-dark active btn-filter-ini-modal" data-status="all" onclick="filtrarIniciativasModalStatus(this, 'all')">Todos</button>
+                        <button type="button" class="btn btn-sm btn-outline-success btn-filter-ini-modal" data-status="EJECUTADO" onclick="filtrarIniciativasModalStatus(this, 'EJECUTADO')">Ejecutados</button>
+                        <button type="button" class="btn btn-sm btn-outline-warning btn-filter-ini-modal" data-status="EN CURSO" onclick="filtrarIniciativasModalStatus(this, 'EN CURSO')">En Curso</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-filter-ini-modal" data-status="PENDIENTE" onclick="filtrarIniciativasModalStatus(this, 'PENDIENTE')">Pendientes</button>
                     </div>
                 </div>
 
-                <div id="listaIniciativasModalContainer" class="list-group shadow-xs">
-                    <!-- Dinámico por JS -->
+                <div class="card border shadow-xs rounded-lg overflow-hidden p-3 bg-white">
+                    <div class="table-responsive">
+                        <table id="tablaIniciativasPlanMaestro" class="table table-hover table-striped border rounded w-100" style="width:100% !important; font-size: 0.85rem;">
+                            <thead style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+                                <tr>
+                                    <th style="width: 85px;" class="text-center">Código</th>
+                                    <th style="width: 75px;" class="text-center">Momento</th>
+                                    <th>Acción Operativa / Iniciativa de Mejora Continua</th>
+                                    <th>Responsable / Unidad</th>
+                                    <th style="width: 120px;" class="text-center">Estado</th>
+                                    <th style="width: 110px;" class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dinámico por DataTables -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer bg-white px-4 py-3" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                <span class="text-muted small mr-auto" id="lblTotalIniciativasModal">Total: 0 iniciativas</span>
+                <span class="text-muted small mr-auto" id="lblTotalIniciativasModal">Total: 0 acciones operativas</span>
                 <button type="button" class="btn btn-secondary btn-round" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
@@ -4208,6 +5196,644 @@ function irAIniciativaDesdeModal(iniId) {
             </div>
             <div class="modal-footer bg-light p-2.5">
                 <button type="button" class="btn btn-secondary btn-sm px-3" data-dismiss="modal" style="border-radius:8px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONVOCAR ASESOR EXTERNO -->
+<div class="modal fade" id="modalConvocarAsesorExterno" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document" style="max-width: 900px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title font-weight-bold d-flex align-items-center mb-0">
+                    <i class="fa fa-user-plus text-warning mr-2" style="font-size: 1.3rem;"></i>
+                    <span>Convocar Asesor Externo para Validación Remota</span>
+                </h5>
+                <button type="button" class="close text-white opacity-9" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                
+                {{-- Formulario Convocatoria --}}
+                <div class="card border shadow-xs mb-4" style="border-radius: 12px;">
+                    <div class="card-header bg-white font-weight-bold text-dark border-bottom">
+                        <i class="fa fa-envelope-open text-primary mr-1"></i> Nueva Convocatoria a Asesoría Técnica
+                    </div>
+                    <div class="card-body p-3 bg-white">
+                        <form id="formConvocarAsesorAdmin">
+                            @csrf
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="font-weight-bold small text-dark mb-1">Nombre Completo del Asesor <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="nombre" placeholder="Ej: Dr. Carlos Mendoza" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="font-weight-bold small text-dark mb-1">Correo Electrónico <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" name="email" placeholder="ejemplo@asesoria.gov.py" required>
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label class="font-weight-bold small text-dark mb-1">Institución / Organización (Opcional)</label>
+                                    <input type="text" class="form-control" name="institucion" placeholder="Ej: Consultoría Externa PEI / MEF">
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <button type="submit" class="btn btn-sm btn-primary font-weight-bold rounded-pill px-4 shadow-xs" id="btnSubmitConvocarAsesor">
+                                    <i class="fa fa-paper-plane mr-1"></i> Generar Credenciales y Convocar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {{-- Caja de Credenciales Generadas (Oculta por defecto) --}}
+                <div id="cajaCredencialesGeneradas" class="card border border-success bg-white mb-4 shadow-sm" style="display: none; border-radius: 12px; border-left: 5px solid #10b981 !important;">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <h6 class="font-weight-bold text-success mb-0">
+                                <i class="fa fa-check-circle mr-1"></i> ¡Convocatoria Creada Exitosamente!
+                            </h6>
+                            <span class="badge badge-success">Credenciales Generadas</span>
+                        </div>
+                        <p class="text-muted small mb-2">Compartí las siguientes credenciales con el Asesor Externo para su ingreso al portal:</p>
+                        
+                        <div class="p-3 bg-light rounded border mb-3 font-mono" style="font-size: 0.88rem;">
+                            <div><strong>Correo:</strong> <span id="txtCredEmail" class="text-primary font-weight-bold"></span></div>
+                            <div><strong>Código Único:</strong> <span id="txtCredCodigo" class="text-danger font-weight-bold" style="font-size: 1rem;"></span></div>
+                            <div><strong>URL Portal:</strong> <span id="txtCredUrl" class="text-muted font-weight-bold"></span></div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-end" style="gap: 8px;">
+                            <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold rounded-pill px-3" id="btnCopiarCredencialesAsesor">
+                                <i class="fa fa-copy mr-1"></i> Copiar Credenciales
+                            </button>
+                            <a href="#" target="_blank" class="btn btn-sm btn-success font-weight-bold rounded-pill px-3" id="btnWhatsappCredencialesAsesor">
+                                <i class="fab fa-whatsapp mr-1"></i> Enviar por WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Listado de Asesores Convocados Previamente --}}
+                <div class="card border shadow-xs" style="border-radius: 12px;">
+                    <div class="card-header bg-white font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between">
+                        <span><i class="fa fa-users text-warning mr-1"></i> Asesores Convocados para este PEI</span>
+                        <span class="badge badge-dark" id="badgeTotalAsesoresCount">0 convocados</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0" style="font-size: 0.85rem;" id="tablaAsesoresAdmin">
+                            <thead class="bg-dark text-white">
+                                <tr>
+                                    <th>Asesor / Institución</th>
+                                    <th>Correo</th>
+                                    <th class="text-center">Código Único</th>
+                                    <th class="text-center">Estado</th>
+                                    <th class="text-center">Sugerencias</th>
+                                    <th class="text-center">Acciones / Compartir</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="text-center py-3 text-muted">Cargando convocatorias...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-white px-4 py-3" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-secondary btn-round" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var lastCredencialesTexto = '';
+var loginUrlAsesor = "{{ route('asesoria.public.login') }}";
+
+function copiarTextoGenerico(texto, msgSuccess) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function() {
+            if (window.toastr) toastr.success(msgSuccess || 'Texto copiado al portapapeles.');
+        });
+    } else {
+        var $temp = $("<textarea>");
+        $("body").append($temp);
+        $temp.val(texto).select();
+        document.execCommand("copy");
+        $temp.remove();
+        if (window.toastr) toastr.success(msgSuccess || 'Texto copiado al portapapeles.');
+    }
+}
+
+function cargarListaAsesoriasAdmin() {
+    $.ajax({
+        url: "{{ route('pei.asesor.listar', $profile->id) }}",
+        type: "GET",
+        success: function(resp) {
+            var $tbody = $('#tablaAsesoresAdmin tbody');
+            $tbody.empty();
+            if (resp.asesorias && resp.asesorias.length > 0) {
+                $('#badgeTotalAsesoresCount').text(resp.asesorias.length + ' convocados');
+                resp.asesorias.forEach(function(a) {
+                    var stBadge = a.estado === 'COMPLETADO' ? 'badge-success' : (a.estado === 'EN_REVISION' ? 'badge-info' : 'badge-warning text-dark');
+                    var inst = a.institucion ? `<br><small class="text-muted"><i class="fa fa-building mr-1"></i>${a.institucion}</small>` : '';
+                    
+                    var msgAsesor = `📌 CONVOCATORIA A ASESORÍA TÉCNICA - PEI\n\nEstimado/a ${a.nombre},\nHa sido convocado/a para la validación y evaluación del Plan Estratégico Institucional.\n\n🌐 Portal de Acceso: ${loginUrlAsesor}\n📧 Correo Registrado: ${a.email}\n🔑 Código Único: ${a.codigo_acceso}\n\nPor favor ingrese al portal con sus credenciales.`;
+                    var waLink = "https://api.whatsapp.com/send?text=" + encodeURIComponent(msgAsesor);
+
+                    var dictamenHtml = '';
+                    if (a.dictamen_general && a.dictamen_general.trim() !== '') {
+                        var cleanDictamen = $('<div>').text(a.dictamen_general).html();
+                        dictamenHtml = `
+                            <div class="mt-2 p-2.5 rounded shadow-sm" style="font-size:0.83rem; line-height:1.4; background:#fffbeb; border-left:4px solid #d97706; color:#78350f;">
+                                <div class="font-weight-bold mb-1 text-warning" style="font-size:0.78rem; letter-spacing:0.03em;">
+                                    <i class="fa fa-comment-alt mr-1"></i> DICTAMEN / CONCLUSIONES GENERALES DEL ASESOR:
+                                </div>
+                                <div style="white-space:pre-wrap;">${cleanDictamen}</div>
+                            </div>
+                        `;
+                    }
+
+                    var tr = `
+                        <tr>
+                            <td class="align-middle">
+                                <div class="font-weight-bold text-dark" style="font-size:0.92rem;">${a.nombre}</div>
+                                ${inst}
+                                ${dictamenHtml}
+                            </td>
+                            <td class="align-middle text-muted">${a.email}</td>
+                            <td class="align-middle text-center font-weight-bold">
+                                <span class="badge badge-dark px-2 py-1" style="font-size:0.85rem;">${a.codigo_acceso}</span>
+                            </td>
+                            <td class="align-middle text-center">
+                                <span class="badge ${stBadge} px-2 py-1">${a.estado}</span>
+                            </td>
+                            <td class="align-middle text-center font-weight-bold text-primary">
+                                <span class="badge badge-pill badge-primary px-2 py-1">${a.comentarios_count || 0}</span>
+                            </td>
+                            <td class="align-middle text-center">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold btn-copiar-asesor-row"
+                                            data-msg="${encodeURIComponent(msgAsesor)}" title="Copiar Credenciales">
+                                        <i class="fa fa-copy mr-1"></i> Copiar
+                                    </button>
+                                    <a href="${waLink}" target="_blank" class="btn btn-sm btn-outline-success font-weight-bold" title="Compartir por WhatsApp">
+                                        <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    $tbody.append(tr);
+                });
+            } else {
+                $('#badgeTotalAsesoresCount').text('0 convocados');
+                $tbody.html('<tr><td colspan="6" class="text-center py-3 text-muted">No se han convocado asesores externos para este PEI aún.</td></tr>');
+            }
+        }
+    });
+}
+
+$(document).on('click', '.btn-copiar-asesor-row', function() {
+    var msg = decodeURIComponent($(this).data('msg'));
+    copiarTextoGenerico(msg, 'Credenciales del asesor copiadas al portapapeles.');
+});
+
+$('#formConvocarAsesorAdmin').submit(function(e) {
+    e.preventDefault();
+    var $btn = $('#btnSubmitConvocarAsesor');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Convocando...');
+
+    $.ajax({
+        url: "{{ route('pei.asesor.convocar', $profile->id) }}",
+        type: "POST",
+        data: $(this).serialize(),
+        success: function(resp) {
+            $btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Generar Credenciales y Convocar');
+            $('#formConvocarAsesorAdmin')[0].reset();
+
+            if (resp.ok && resp.data) {
+                $('#txtCredEmail').text(resp.data.email);
+                $('#txtCredCodigo').text(resp.data.codigo_acceso);
+                $('#txtCredUrl').text(resp.data.login_url);
+
+                lastCredencialesTexto = `📌 CONVOCATORIA A ASESORÍA TÉCNICA - PEI\n\nEstimado/a ${resp.data.nombre},\nHa sido convocado/a para la validación y evaluación del Plan Estratégico Institucional.\n\n🌐 Portal de Acceso: ${resp.data.login_url}\n📧 Correo Registrado: ${resp.data.email}\n🔑 Código Único: ${resp.data.codigo_acceso}\n\nPor favor ingrese al portal con sus credenciales.`;
+
+                var waUrlGenerado = "https://api.whatsapp.com/send?text=" + encodeURIComponent(lastCredencialesTexto);
+                $('#btnWhatsappCredencialesAsesor').attr('href', waUrlGenerado);
+
+                $('#cajaCredencialesGeneradas').slideDown(200);
+                cargarListaAsesoriasAdmin();
+
+                if (window.toastr) toastr.success('Asesor Externo convocado exitosamente.');
+            }
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Generar Credenciales y Convocar');
+            if (window.toastr) toastr.error('Error al crear la convocatoria. Verificá los datos.');
+        }
+    });
+});
+
+$('#btnCopiarCredencialesAsesor').click(function() {
+    copiarTextoGenerico(lastCredencialesTexto, 'Credenciales del asesor copiadas al portapapeles.');
+});
+</script>
+
+<!-- MODAL BASURERO PEI (RESTAURACIÓN DE ELEMENTOS ELIMINADOS) -->
+<div class="modal fade" id="modalBasureroPei" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1200px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);">
+                <h5 class="modal-title font-weight-bold d-flex align-items-center mb-0">
+                    <i class="fa fa-trash-alt text-warning mr-2" style="font-size: 1.3rem;"></i>
+                    <span>Basurero del PEI — Papelera de Reciclaje y Restauración</span>
+                </h5>
+                <button type="button" class="close text-white opacity-9" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="alert alert-info border-0 shadow-xs mb-3 font-weight-bold" style="border-radius: 10px; background: #e0f2fe; color: #0369a1;">
+                    <i class="fa fa-info-circle mr-1"></i> En el PEI nada se pierde. Todo elemento u Acción Operativa eliminada se conserva aquí para poder recuperarse con un solo clic.
+                </div>
+
+                <div class="card border shadow-xs" style="border-radius: 12px;">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0" id="tablaBasureroPeiAdmin" style="font-size: 0.85rem;">
+                            <thead class="bg-dark text-white">
+                                <tr>
+                                    <th style="width: 160px;">Tipo de Elemento</th>
+                                    <th>Nombre / Descripción del Elemento Eliminado</th>
+                                    <th style="width: 180px;" class="text-center">Fecha Eliminación</th>
+                                    <th style="width: 140px;" class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Cargando elementos del basurero...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white px-4 py-3">
+                <button type="button" class="btn btn-secondary btn-round" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cargarBasureroPeiAdmin() {
+    $.ajax({
+        url: "{{ route('pei.basurero.list', $profile->id) }}",
+        type: "GET",
+        success: function(resp) {
+            var $tbody = $('#tablaBasureroPeiAdmin tbody');
+            $tbody.empty();
+            var count = 0;
+
+            if (resp.trashed_nodes && resp.trashed_nodes.length > 0) {
+                resp.trashed_nodes.forEach(function(n) {
+                    count++;
+                    var dateTxt = n.deleted_at ? n.deleted_at.substring(0, 16).replace('T', ' ') : '—';
+                    var badgeType = n.level === 'axi' ? 'badge-primary' : (n.level === 'goal' ? 'badge-info' : 'badge-purple');
+                    var tr = `
+                        <tr>
+                            <td class="align-middle">
+                                <span class="badge ${badgeType} font-weight-bold px-2 py-1">${(n.level||'Nodo').toUpperCase()}</span>
+                            </td>
+                            <td class="align-middle font-weight-bold text-dark">${n.name}</td>
+                            <td class="align-middle text-center text-muted small">${dateTxt}</td>
+                            <td class="align-middle text-center">
+                                <button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3" onclick="restaurarElementoPei('${n.id}', 'node')">
+                                    <i class="fa fa-undo mr-1"></i> Restaurar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    $tbody.append(tr);
+                });
+            }
+
+            if (resp.trashed_inis && resp.trashed_inis.length > 0) {
+                resp.trashed_inis.forEach(function(i) {
+                    count++;
+                    var dateTxt = i.deleted_at ? i.deleted_at.substring(0, 16).replace('T', ' ') : '—';
+                    var tr = `
+                        <tr>
+                            <td class="align-middle">
+                                <span class="badge badge-success font-weight-bold px-2 py-1">ACCIÓN OPERATIVA</span>
+                            </td>
+                            <td class="align-middle">
+                                <span class="badge badge-dark font-weight-bold mr-1">${i.codigo}</span>
+                                <span class="font-weight-bold text-dark">${i.accion}</span>
+                            </td>
+                            <td class="align-middle text-center text-muted small">${dateTxt}</td>
+                            <td class="align-middle text-center">
+                                <button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3" onclick="restaurarElementoPei('${i.id}', 'iniciativa')">
+                                    <i class="fa fa-undo mr-1"></i> Restaurar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    $tbody.append(tr);
+                });
+            }
+
+            if (count === 0) {
+                $tbody.html('<tr><td colspan="4" class="text-center py-4 text-muted font-weight-bold"><i class="fa fa-check-circle text-success mr-1"></i> El basurero está vacío. No hay elementos ni acciones eliminadas.</td></tr>');
+            }
+        }
+    });
+}
+
+$(document).on('click', '.btnVerReporteAportes', function () {
+    var peiId = $(this).data('pei-id') || "{{ $profile->id }}";
+    var url = "{{ url('pei-profiles') }}/" + peiId + "/asesorias/reporte";
+
+    $('#modalLecturaAportesBody').html('<div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-2x mb-3 text-warning"></i><div>Cargando reporte consolidado de aportes...</div></div>');
+    $('#modalLecturaAportes').modal('show');
+
+    $.get(url, function (html) {
+        $('#modalLecturaAportesBody').html(html);
+    }).fail(function () {
+        $('#modalLecturaAportesBody').html('<div class="alert alert-danger mb-0 p-4">Ocurrió un error al cargar el reporte de aportes.</div>');
+    });
+});
+
+$(document).ready(function() {
+    if (new URLSearchParams(window.location.search).get('reporte_aportes') === '1') {
+        setTimeout(function() {
+            $('.btnVerReporteAportes').first().trigger('click');
+        }, 500);
+    }
+});
+
+function restaurarElementoPei(id, type) {
+    var url = (type === 'iniciativa')
+        ? "{{ url('admin/planificacion/pei-profiles/' . $profile->id . '/basurero/restaurar-iniciativa') }}/" + id
+        : "{{ url('admin/planificacion/pei-profiles/' . $profile->id . '/basurero/restaurar-nodo') }}/" + id;
+
+    $.ajax({
+        url: url,
+        type: "POST",
+        data: { _token: "{{ csrf_token() }}" },
+        success: function(resp) {
+            if (window.toastr) toastr.success(resp.message || 'Elemento restaurado.');
+            cargarBasureroPeiAdmin();
+            setTimeout(function() {
+                location.reload();
+            }, 1000);
+        },
+        error: function() {
+            if (window.toastr) toastr.error('Error al restaurar el elemento.');
+        }
+    });
+}
+
+function parseCommentsData(raw) {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'object') return [raw];
+    if (typeof raw !== 'string') return [];
+
+    var trimmed = raw.trim();
+    if (!trimmed) return [];
+
+    if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+        try {
+            return JSON.parse(trimmed);
+        } catch (e) {
+            try {
+                var txt = document.createElement('textarea');
+                txt.innerHTML = trimmed;
+                return JSON.parse(txt.value);
+            } catch (e2) {}
+        }
+    }
+
+    try {
+        var decoded = atob(trimmed);
+        if (decoded.startsWith('[') || decoded.startsWith('{')) {
+            return JSON.parse(decoded);
+        }
+    } catch (e3) {}
+
+    try {
+        return JSON.parse(trimmed);
+    } catch (e4) {
+        console.error('Error al decodificar comentarios:', e4, raw);
+        return [];
+    }
+}
+
+window.verComentariosNodo = function(btn) {
+    var $btn = $(btn);
+    var title = $btn.attr('data-title') || $btn.data('title') || '';
+    var level = $btn.attr('data-level') || $btn.data('level') || 'Elemento del PEI';
+    var rawComments = $btn.attr('data-comments') || $btn.data('comments');
+    
+    var comments = parseCommentsData(rawComments);
+
+    $('#modalVerComentariosNodoTitle').text(title);
+    $('#modalVerComentariosNodoSubtitle').text(level);
+
+    var html = '';
+    if (comments && comments.length > 0) {
+        comments.forEach(function(c) {
+            var instHtml = c.institucion ? ' <span class="badge badge-light border text-muted ml-1" style="font-size:0.75rem;">' + c.institucion + '</span>' : '';
+            var btnAction = '';
+            var btnDelete = c.id ? '<button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-aporte px-2.5 py-1 ml-2" data-id="' + c.id + '" title="Eliminar este aporte" style="border-radius: 20px;"><i class="fa fa-trash mr-1"></i> Eliminar</button>' : '';
+
+            html += '<div class="card border-0 shadow-xs mb-3 aporte-card-item" style="border-radius: 12px; overflow: hidden; border-left: 5px solid #8b5cf6 !important; background: #f8fafc;">';
+            html += '<div class="card-header bg-white py-2.5 px-3 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap: 0.5rem;">';
+            html += '<div class="font-weight-bold text-dark" style="font-size: 0.88rem;"><i class="fa fa-user-check text-purple mr-1.5" style="color:#7e22ce"></i>' + (c.asesor || 'Asesor Externo') + instHtml + '</div>';
+            html += '<span class="text-muted small">' + (c.fecha || '') + '</span>';
+            html += '</div>';
+            html += '<div class="card-body p-3 text-dark" style="font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap;">' + (c.comentario || '') + '</div>';
+            if (btnAction || btnDelete) {
+                html += '<div class="card-footer bg-white p-2.5 d-flex justify-content-end align-items-center border-top">' + btnAction + btnDelete + '</div>';
+            }
+            html += '</div>';
+        });
+    } else {
+        html = '<div class="text-center py-4 text-muted">No se encontraron observaciones registradas para este elemento.</div>';
+    }
+
+    $('#modalVerComentariosNodoBody').html(html);
+    $('#modalVerComentariosNodo').modal('show');
+};
+
+$(document).on('click', '.btnVerComentariosNodo', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.verComentariosNodo(this);
+});
+
+$(document).off('click', '.btn-integrar-aporte').on('click', '.btn-integrar-aporte', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var btn = $(this);
+    if (btn.data('processing')) return;
+    btn.data('processing', true);
+
+    var commentId = btn.data('id');
+    if (!commentId) {
+        btn.data('processing', false);
+        return;
+    }
+
+    btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Integrando y notificando por correo...');
+
+    var targetUrl = "{{ route('pei.asesor.comentario.integrar', ':id') }}".replace(':id', commentId);
+
+    $.ajax({
+        url: targetUrl,
+        type: "POST",
+        data: { _token: "{{ csrf_token() }}" },
+        success: function(resp) {
+            if (resp.success) {
+                if (window.toastr) toastr.success(resp.message);
+                btn.replaceWith('<span class="badge badge-success font-weight-bold px-2.5 py-1.5" style="font-size:0.75rem;"><i class="fa fa-check-circle mr-1"></i> Aporte Integrado</span>');
+            } else {
+                if (window.toastr) toastr.error(resp.message || 'Error al integrar el aporte.');
+                btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Integrar Aporte y Notificar');
+            }
+        },
+        error: function(err) {
+            var msg = (err.responseJSON && err.responseJSON.message) ? err.responseJSON.message : 'Error al comunicarse con el servidor.';
+            if (window.toastr) toastr.error(msg);
+            btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Integrar Aporte y Notificar');
+        }
+    });
+});
+
+$(document).off('click', '.btn-eliminar-aporte').on('click', '.btn-eliminar-aporte', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var btn = $(this);
+    var commentId = btn.data('id');
+    if (!commentId) return;
+
+    var doDelete = function() {
+        if (btn.data('processing')) return;
+        btn.data('processing', true);
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Eliminando...');
+
+        var targetUrl = "{{ route('pei.asesor.comentario.eliminar', ':id') }}".replace(':id', commentId);
+
+        $.ajax({
+            url: targetUrl,
+            type: "DELETE",
+            data: { _token: "{{ csrf_token() }}" },
+            success: function(resp) {
+                if (resp.success) {
+                    if (window.toastr) toastr.success(resp.message);
+                    var $card = btn.closest('.card, .aporte-card-item');
+                    if ($card.length > 0) {
+                        $card.fadeOut(300, function() { $(this).remove(); });
+                    } else {
+                        btn.replaceWith('<span class="badge badge-danger font-weight-bold px-2 py-1"><i class="fa fa-trash mr-1"></i> Eliminado</span>');
+                    }
+                } else {
+                    if (window.toastr) toastr.error(resp.message || 'Error al eliminar el aporte.');
+                    btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-trash mr-1"></i> Eliminar');
+                }
+            },
+            error: function(err) {
+                var msg = (err.responseJSON && err.responseJSON.message) ? err.responseJSON.message : 'Error al comunicarse con el servidor.';
+                if (window.toastr) toastr.error(msg);
+                btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-trash mr-1"></i> Eliminar');
+            }
+        });
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '¿Eliminar este aporte?',
+            text: 'Esta acción no se puede deshacer y la sugerencia técnica será removida permanentemente.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fa fa-trash mr-1"></i> Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then(function(res) {
+            if (res.isConfirmed) {
+                doDelete();
+            }
+        });
+    } else {
+        if (confirm('¿Estás seguro de que deseas eliminar este aporte? Esta acción no se puede deshacer.')) {
+            doDelete();
+        }
+    }
+});
+
+function applyFullWidthMode(enable) {
+    if (enable) {
+        $('body').addClass('pei-full-width-mode');
+        $('#lblToggleFullWidth').text('Vista Normal');
+        $('#iconToggleFullWidth').removeClass('fa-expand').addClass('fa-compress');
+        $('#btnToggleFullWidth').removeClass('btn-outline-secondary').addClass('btn-success text-white');
+        localStorage.setItem('pei_full_width_mode', 'true');
+    } else {
+        $('body').removeClass('pei-full-width-mode');
+        $('#lblToggleFullWidth').text('Pantalla Completa');
+        $('#iconToggleFullWidth').removeClass('fa-compress').addClass('fa-expand');
+        $('#btnToggleFullWidth').removeClass('btn-success text-white').addClass('btn-outline-secondary');
+        localStorage.setItem('pei_full_width_mode', 'false');
+    }
+}
+
+$(document).ready(function() {
+    if (localStorage.getItem('pei_full_width_mode') === 'true') {
+        applyFullWidthMode(true);
+    }
+});
+
+$(document).off('click', '#btnToggleFullWidth').on('click', '#btnToggleFullWidth', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var isFull = $('body').hasClass('pei-full-width-mode');
+    applyFullWidthMode(!isFull);
+});
+</script>
+
+{{-- Modal Lectura Cómoda de Aportes de Asesoría --}}
+<div class="modal fade" id="modalLecturaAportes" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="max-width: 1100px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div id="modalLecturaAportesBody" class="p-0"></div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Ver Observaciones Puntuales por Nodo/Iniciativa --}}
+<div class="modal fade" id="modalVerComentariosNodo" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white p-3" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                <div>
+                    <span class="badge badge-warning text-dark font-weight-bold mb-1" id="modalVerComentariosNodoSubtitle" style="font-size: 0.72rem;"></span>
+                    <h5 class="modal-title font-weight-bold text-white mb-0" id="modalVerComentariosNodoTitle" style="font-size: 1rem;"></h5>
+                </div>
+                <button type="button" class="close text-white opacity-75" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-light" id="modalVerComentariosNodoBody" style="max-height: 70vh; overflow-y: auto;">
+            </div>
+            <div class="modal-footer bg-white border-top p-2.5">
+                <button type="button" class="btn btn-sm btn-secondary px-4 font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">Cerrar</button>
             </div>
         </div>
     </div>

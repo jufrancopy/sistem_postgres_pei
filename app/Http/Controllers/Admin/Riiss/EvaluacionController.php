@@ -200,10 +200,8 @@ class EvaluacionController extends Controller
         ]);
 
         // 1. Buscar si ya existe una evaluación activa (borrador o en progreso) para este establecimiento
-        // que haya sido creada hoy por el mismo usuario (o equipo)
         $evaluacion = Evaluacion::where('id_establecimiento', $validated['id_establecimiento'])
             ->whereIn('estado', ['borrador', 'en_progreso'])
-            ->whereDate('fecha_evaluacion', $validated['fecha_evaluacion'])
             ->latest()
             ->first();
 
@@ -240,10 +238,12 @@ class EvaluacionController extends Controller
     public function actualizarDatosVisita(Request $request, Evaluacion $evaluacion): JsonResponse
     {
         $validated = $request->validate([
-            'fecha_evaluacion'   => 'nullable|date',
-            'evaluadores'        => 'nullable|array',
-            'evaluador_telefono' => 'nullable|string|max:50',
-            'metadata'           => 'nullable|array',
+            'fecha_evaluacion'        => 'nullable|date',
+            'evaluadores'             => 'nullable|array',
+            'evaluador_telefono'      => 'nullable|string|max:50',
+            'metadata'                => 'nullable|array',
+            'observaciones_generales' => 'nullable|string',
+            'aspectos_positivos'      => 'nullable|string',
         ]);
 
         if (!empty($validated['evaluadores'])) {

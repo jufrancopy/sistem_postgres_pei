@@ -3,6 +3,14 @@
 <!-- Fin de Cabecera-->
 
 <body>
+    @if(request()->has('iframe'))
+    <style>
+        .sidebar, .main-panel > nav.navbar, #impersonationBanner, footer.footer { display: none !important; }
+        .main-panel { float: none !important; width: 100% !important; }
+        .content { padding-top: 10px !important; margin-top: 0 !important; }
+        body, html { background: #f8fafc !important; }
+    </style>
+    @endif
     @if(session()->has('impersonator_id'))
         <div id="impersonationBanner" style="background: linear-gradient(135deg, #d97706, #b45309); color: #ffffff; padding: 9px 24px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 999999; box-shadow: 0 4px 14px rgba(0,0,0,0.25); font-size: 0.88rem;">
             <div class="d-flex align-items-center" style="gap: 12px;">

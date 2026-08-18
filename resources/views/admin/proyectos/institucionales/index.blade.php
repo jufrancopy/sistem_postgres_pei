@@ -42,10 +42,15 @@
                 </div>
             </div>
             @endforeach
-            <div class="col-xl-2 col-md-4 col-sm-6 mb-3 d-flex align-items-center">
-                <a href="{{ route('proyectos-institucionales.create-for-perfil', $peiProfileId) }}" class="btn btn-success btn-block">
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3 d-flex flex-column justify-content-center">
+                <a href="{{ route('proyectos-institucionales.create-for-perfil', $peiProfileId) }}" class="btn btn-success btn-block mb-1">
                     <i class="fa fa-plus mr-1"></i> Nuevo Proyecto
                 </a>
+                @if($peiProfileId)
+                <button type="button" class="btn btn-sm btn-outline-info btn-block" data-toggle="modal" data-target="#modalQrSolicitud">
+                    <i class="fa fa-qrcode mr-1"></i> QR Solicitud PEI
+                </button>
+                @endif
             </div>
         </div>
 
@@ -123,4 +128,28 @@ $(function() {
     $('#filtroEstado, #filtroBuscar').on('change keyup', function() { table.draw(); });
 });
 </script>
+
+@if($peiProfileId)
+{{-- Modal QR Solicitud de Proyecto --}}
+<div class="modal fade" id="modalQrSolicitud" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h6 class="modal-title text-white"><i class="fa fa-qrcode mr-1"></i> Solicitud de Proyecto PEI</h6>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="text-muted mb-3" style="font-size:.85rem">Escaneá el QR para acceder al formulario público de solicitud de proyecto para este plan.</p>
+                {!! QrCode::size(200)->generate(route('proyectos.solicitar.form', $peiProfileId)) !!}
+                <div class="mt-3">
+                    <a href="{{ route('proyectos.solicitar.form', $peiProfileId) }}" target="_blank"
+                       class="btn btn-sm btn-outline-primary btn-block">
+                        <i class="fa fa-external-link-alt mr-1"></i> Abrir Formulario
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 @stop

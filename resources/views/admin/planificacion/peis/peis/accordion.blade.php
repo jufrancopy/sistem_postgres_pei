@@ -124,13 +124,25 @@
                         <i class="fa fa-rocket mr-1"></i>{{ $totalAcciones }}
                     </span>
                     @if($marcosAxi->count() > 0)
-                    <a href="javascript:void(0)" id="marcos-pill-{{ $axi->id }}"
-                       class="badge badge-info"
-                       data-toggle="popover" data-trigger="click" data-placement="left"
-                       data-html="true" data-title="Marcos Referenciales"
-                       data-content="{{ $marcosPopover }}">
-                        <i class="fa fa-link mr-1"></i>{{ $marcosAxi->count() }}
-                    </a>
+                        @php 
+                            $badgeStyles = [
+                                'pnd'     => 'background:#dc3545; color:#fff;',
+                                'ods'     => 'background:#10b981; color:#fff;',
+                                'bsc'     => 'background:#3b82f6; color:#fff;',
+                                'mecip'   => 'background:#f59e0b; color:#1e293b; font-weight:700;',
+                                'pgn'     => 'background:#1e293b; color:#fff;',
+                                'general' => 'background:#64748b; color:#fff;'
+                            ];
+                        @endphp
+                        @foreach($marcosAxi->groupBy('tipo') as $tipo => $items)
+                            @foreach($items as $marco)
+                                <span class="badge shadow-xs mr-1" 
+                                      style="{{ $badgeStyles[$tipo] ?? 'background:#64748b; color:#fff;' }} font-size:.68rem; padding: 4px 8px; border-radius: 6px;"
+                                      title="{{ $marco->descripcion ?? $marco->nombre }}">
+                                    {{ $marco->nombre }}
+                                </span>
+                            @endforeach
+                        @endforeach
                     @endif
                     @if($countEstrategias > 0)
                     <a href="javascript:void(0)"
@@ -142,6 +154,58 @@
                         <i class="fa fa-chess mr-1"></i>{{ $countEstrategias }}
                     </a>
                     @endif
+                    @php
+                        $comentariosAxi = isset($comentariosAsesoria) ? (
+                            $comentariosAsesoria->get('node_' . $axi->id)
+                            ?? $comentariosAsesoria->get('axi_' . $axi->id)
+                            ?? $comentariosAsesoria->get($axi->id)
+                            ?? collect()
+                        ) : collect();
+
+                        if (!empty($axi->comentario_asesor) && $comentariosAxi->where('comentario', $axi->comentario_asesor)->isEmpty()) {
+                            $dummy = (object)[
+                                'id' => null,
+                                'comentario' => $axi->comentario_asesor,
+                                'estado' => 'PENDIENTE',
+                                'created_at' => $axi->updated_at,
+                                'asesoria' => (object)['nombre' => 'Asesor Técnico', 'institucion' => 'Asesoría Remota']
+                            ];
+                            $comentariosAxi = $comentariosAxi->concat([$dummy]);
+                        }
+                    @endphp
+                    @if($comentariosAxi->count() > 0)
+                    @php
+                        $comentariosAxiArray = $comentariosAxi->map(fn($c) => [
+                            'id' => $c->id ?? null,
+                            'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
+                            'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
+                            'comentario' => $c->comentario ?? '',
+                            'estado' => $c->estado ?? 'PENDIENTE',
+                            'fecha' => isset($c->created_at) && $c->created_at ? (is_string($c->created_at) ? $c->created_at : $c->created_at->format('d/m/Y H:i')) : ''
+                        ])->values()->all();
+                        $comentariosAxiJson = base64_encode(json_encode($comentariosAxiArray));
+                    @endphp
+                    <button type="button" class="btn btn-xs text-white font-weight-bold btnVerComentariosNodo shadow-sm"
+                            data-title="{{ e(strip_tags($axi->name)) }}"
+                            data-level="{{ $niveles['axi'] ?? 'Objetivo Estratégico' }}"
+                            data-comments="{{ $comentariosAxiJson }}"
+                            onclick="event.preventDefault(); event.stopPropagation(); verComentariosNodo(this);"
+                            style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 20px; padding: 3px 11px; font-size: 0.73rem; cursor: pointer; box-shadow: 0 2px 6px rgba(126, 34, 206, 0.45);">
+                        <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosAxi->count() }} {{ $comentariosAxi->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
+                    </button>
+                    @endif
+                    @php
+                        $riesgosMecipAxi = $axi->riesgos_mecip;
+                        $countRiesgos = is_array($riesgosMecipAxi) ? count($riesgosMecipAxi) : 0;
+                    @endphp
+                    <button type="button"
+                            class="btn btn-sm {{ $countRiesgos > 0 ? 'btn-warning text-dark font-weight-bold' : 'btn-outline-light text-warning' }} py-0 px-2 btn-ver-riesgos-mecip"
+                            data-axi-id="{{ $axi->id }}"
+                            data-axi-title="{{ e(strip_tags($axi->name)) }}"
+                            data-riesgos='@json($riesgosMecipAxi)'
+                            title="Ver / Gestionar {{ $countRiesgos }} riesgo(s) MECIP 2015 asociados">
+                        <i class="fa fa-shield-alt mr-1"></i> Riesgos MECIP ({{ $countRiesgos }})
+                    </button>
                     @if($bscPerspectiva && isset($bscLabels[$bscPerspectiva]))
                     <span class="badge {{ $bscColores[$bscPerspectiva]['badge'] ?? 'badge-secondary' }}"
                           style="font-size:.68rem"
@@ -227,19 +291,8 @@
                 </div>
                 @endif
 
-                {{-- Marcos inline --}}
-                @if($marcosAxi->count() > 0)
-                @php $colores=['pnd'=>'badge-danger','ods'=>'badge-success','bsc'=>'badge-primary','mecip'=>'badge-warning','pgn'=>'badge-dark','general'=>'badge-secondary']; @endphp
-                <div class="mt-1" id="marcos-body-{{ $axi->id }}">
-                    @foreach($marcosAxi->groupBy('tipo') as $tipo => $items)
-                        @foreach($items as $marco)
-                            <span class="badge {{ $colores[$tipo] ?? 'badge-secondary' }} mr-1" style="font-size:.65rem">{{ $marco->nombre }}</span>
-                        @endforeach
-                    @endforeach
-                </div>
-                @else
+                {{-- Marcos inline container para actualizaciones JS --}}
                 <div id="marcos-body-{{ $axi->id }}"></div>
-                @endif
 
                 {{-- Estrategias FODA inline --}}
                 @if($estrategiasAxi->count() > 0)
@@ -307,6 +360,46 @@
                                         title="Consultar sobre esta meta en el chat">
                                     <i class="fa fa-comment-dots mr-1" style="font-size:.7rem"></i> Consultar
                                 </button>
+                                 @php
+                                     $comentariosGoal = isset($comentariosAsesoria) ? (
+                                         $comentariosAsesoria->get('node_' . $goal->id)
+                                         ?? $comentariosAsesoria->get('goal_' . $goal->id)
+                                         ?? $comentariosAsesoria->get($goal->id)
+                                         ?? collect()
+                                     ) : collect();
+
+                                     if (!empty($goal->comentario_asesor) && $comentariosGoal->where('comentario', $goal->comentario_asesor)->isEmpty()) {
+                                         $dummy = (object)[
+                                             'id' => null,
+                                             'comentario' => $goal->comentario_asesor,
+                                             'estado' => 'PENDIENTE',
+                                             'created_at' => $goal->updated_at,
+                                             'asesoria' => (object)['nombre' => 'Asesor Técnico', 'institucion' => 'Asesoría Remota']
+                                         ];
+                                         $comentariosGoal = $comentariosGoal->concat([$dummy]);
+                                     }
+                                 @endphp
+                                 @if($comentariosGoal->count() > 0)
+                                 @php
+                                     $comentariosGoalArray = $comentariosGoal->map(fn($c) => [
+                                         'id' => $c->id ?? null,
+                                         'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
+                                         'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
+                                         'comentario' => $c->comentario ?? '',
+                                         'estado' => $c->estado ?? 'PENDIENTE',
+                                         'fecha' => isset($c->created_at) && $c->created_at ? (is_string($c->created_at) ? $c->created_at : $c->created_at->format('d/m/Y H:i')) : ''
+                                     ])->values()->all();
+                                     $comentariosGoalJson = base64_encode(json_encode($comentariosGoalArray));
+                                 @endphp
+                                 <button type="button" class="btn btn-xs text-white font-weight-bold btnVerComentariosNodo shadow-sm"
+                                         data-title="{{ e(strip_tags($goal->name)) }}"
+                                         data-level="{{ $niveles['goal'] ?? 'Objetivo Específico' }}"
+                                         data-comments="{{ $comentariosGoalJson }}"
+                                         onclick="event.preventDefault(); event.stopPropagation(); verComentariosNodo(this);"
+                                         style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 20px; padding: 2px 10px; font-size: 0.71rem; cursor: pointer; box-shadow: 0 2px 5px rgba(126, 34, 206, 0.4);">
+                                     <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosGoal->count() }} {{ $comentariosGoal->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
+                                 </button>
+                                 @endif
                                 <a class="btn btn-sm btn-outline-primary py-0 px-2" data-id="{{ $goal->id }}"
                                    data-type="edit" href="javascript:void(0)" id="createGoals" title="Editar">
                                     <i class="fa fa-edit" style="font-size:.7rem"></i>
@@ -433,6 +526,46 @@
                                                                 style="font-size:.7rem">
                                                             <i class="fa fa-paper-plane"></i>
                                                         </button>
+                                                        @php
+                                                            $comentariosAction = isset($comentariosAsesoria) ? (
+                                                                $comentariosAsesoria->get('node_' . $action->id)
+                                                                ?? $comentariosAsesoria->get('action_' . $action->id)
+                                                                ?? $comentariosAsesoria->get($action->id)
+                                                                ?? collect()
+                                                            ) : collect();
+
+                                                            if (!empty($action->comentario_asesor) && $comentariosAction->where('comentario', $action->comentario_asesor)->isEmpty()) {
+                                                                $dummy = (object)[
+                                                                    'id' => null,
+                                                                    'comentario' => $action->comentario_asesor,
+                                                                    'estado' => 'PENDIENTE',
+                                                                    'created_at' => $action->updated_at,
+                                                                    'asesoria' => (object)['nombre' => 'Asesor Técnico', 'institucion' => 'Asesoría Remota']
+                                                                ];
+                                                                $comentariosAction = $comentariosAction->concat([$dummy]);
+                                                            }
+                                                        @endphp
+                                                        @if($comentariosAction->count() > 0)
+                                                        @php
+                                                            $comentariosActionArray = $comentariosAction->map(fn($c) => [
+                                                                'id' => $c->id ?? null,
+                                                                'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
+                                                                'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
+                                                                'comentario' => $c->comentario ?? '',
+                                                                'estado' => $c->estado ?? 'PENDIENTE',
+                                                                'fecha' => isset($c->created_at) && $c->created_at ? (is_string($c->created_at) ? $c->created_at : $c->created_at->format('d/m/Y H:i')) : ''
+                                                            ])->values()->all();
+                                                            $comentariosActionJson = base64_encode(json_encode($comentariosActionArray));
+                                                        @endphp
+                                                        <button type="button" class="btn btn-xs text-white font-weight-bold btnVerComentariosNodo shadow-sm"
+                                                                data-title="{{ e(strip_tags($action->name)) }}"
+                                                                data-level="{{ $niveles['action'] ?? 'Acción Estratégica' }}"
+                                                                data-comments="{{ $comentariosActionJson }}"
+                                                                onclick="event.preventDefault(); event.stopPropagation(); verComentariosNodo(this);"
+                                                                style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 20px; padding: 2px 10px; font-size: 0.71rem; cursor: pointer; box-shadow: 0 2px 5px rgba(126, 34, 206, 0.4);">
+                                                            <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosAction->count() }} {{ $comentariosAction->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
+                                                        </button>
+                                                        @endif
                                                     </div>
                                                 </div>
                                                 {{-- Editores de la Acción --}}
@@ -664,7 +797,7 @@
                                                         {{ \App\Models\Proyectos\ProyectoInstitucional::estadoLabel($proy->estado) }}
                                                     </span>
                                                     @if($proy->avance_pct > 0)
-                                                    <span style="font-size:.62rem;color:#6d28d9;font-weight:600">{{ $proy->avance_pct }}%</span>
+                                                        <span style="font-size:.62rem;color:#6d28d9;font-weight:600">{{ $proy->avance_pct }}%</span>
                                                     @endif
                                                 </a>
                                                 @endforeach
@@ -673,15 +806,31 @@
 
                                             {{-- Acciones Operativas (Plan de Gestión 100 Días) --}}
                                             @php
-                                                $iniciativasAccion = $action->iniciativas;
+                                                if (is_numeric($action->id)) {
+                                                    $iniciativasAccion = \App\Models\PlanMaestro\PlanAccion::where('plan_id', (string)$action->id)
+                                                        ->orWhere('pei_profile_id', (string)$action->id)
+                                                        ->orderBy('orden')
+                                                        ->get();
+                                                } else {
+                                                    $iniciativasAccion = \App\Models\PlanMaestro\PlanAccion::where('pei_profile_id', (string)$action->id)
+                                                        ->orderBy('orden')
+                                                        ->get();
+                                                }
+                                                if ($iniciativasAccion->isEmpty() && method_exists($action, 'iniciativas')) {
+                                                    try {
+                                                        $iniciativasAccion = $action->iniciativas;
+                                                    } catch (\Throwable $e) {
+                                                        $iniciativasAccion = collect();
+                                                    }
+                                                }
                                             @endphp
                                             <div class="px-3 py-2" style="border-top:1px solid #e2e8f0; background:#f8fafc; font-size:.78rem">
                                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                                     <span class="font-weight-bold text-uppercase text-dark" style="font-size:.68rem; letter-spacing:.04em">
-                                                        <i class="fa fa-tasks text-info mr-1"></i> Acciones Operativas (Plan 100 Días)
+                                                        <i class="fa fa-tasks text-info mr-1"></i> Acciones Operativas (Mejora Continua)
                                                         <span class="badge badge-info ml-1">{{ $iniciativasAccion->count() }}</span>
                                                     </span>
-                                                    <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size:.68rem; border-radius:12px;" onclick="abrirModalNuevaIniciativa('{{ $action->id }}', '{{ addslashes(strip_tags($action->name)) }}')" title="Agregar nueva Acción Operativa">
+                                                    <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size:.68rem; border-radius:12px;" onclick="abrirModalNuevaIniciativa('{{ $action->id }}', '{{ addslashes(strip_tags($action->name)) }}')" title="Agregar nueva Acción Operativa de Mejora Continua">
                                                         <i class="fa fa-plus-circle mr-1"></i> + Nueva Acción Operativa
                                                     </button>
                                                 </div>
@@ -698,13 +847,13 @@
                                                                 };
                                                                 $mom = \App\Models\PlanMaestro\PlanAccion::MOMENTOS[$ini->momento] ?? ['label' => $ini->momento, 'color' => '#64748b'];
                                                             @endphp
-                                                            <div class="p-2.5 rounded border bg-white shadow-xs" id="ini_card_{{ $ini->id }}" style="border-left: 4px solid {{ $stBadge['color'] }} !important;">
+                                                            <div class="p-2.5 rounded border bg-white shadow-xs ini-card-item" id="ini_card_{{ $ini->id }}" data-id="{{ $ini->id }}" data-codigo="{{ $ini->codigo }}" data-accion="{{ $ini->accion }}" data-estado="{{ $grpState }}" data-responsable="{{ $ini->responsable ?? '' }}" data-momento="{{ $ini->momento }}" style="border-left: 4px solid {{ $stBadge['color'] }} !important;">
                                                                 {{-- Fila Principal --}}
                                                                 <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: .5rem;">
                                                                     <div class="d-flex align-items-center flex-wrap flex-grow-1 mr-2" style="gap: .4rem; min-width: 0;">
-                                                                        <span class="badge badge-dark font-weight-bold" style="font-size:.65rem">{{ $ini->codigo }}</span>
+                                                                        <span class="badge badge-dark font-weight-bold badge-code-ini" style="font-size:.65rem">{{ $ini->codigo }}</span>
                                                                         <span class="badge text-white font-weight-bold" style="font-size:.62rem; background:{{ $mom['color'] }}" title="{{ $mom['label'] }}">{{ $ini->momento }}</span>
-                                                                        <div class="font-weight-bold text-dark" style="font-size:.82rem;" title="{{ $ini->accion }}">
+                                                                        <div class="font-weight-bold text-dark ini-title" style="font-size:.82rem;" title="{{ $ini->accion }}">
                                                                             {{ $ini->accion }}
                                                                         </div>
                                                                     </div>
@@ -717,6 +866,46 @@
                                                                         @if($ini->responsable)
                                                                         <span class="badge badge-light border text-dark" style="font-size:.64rem" title="Responsable Institucional">
                                                                             <i class="fa fa-building-o mr-1 text-muted"></i>{{ \Illuminate\Support\Str::limit($ini->responsable, 22) }}
+                                                                            @php
+                                                                             $comentariosIni = isset($comentariosAsesoria) ? (
+                                                                                 $comentariosAsesoria->get('iniciativa_' . $ini->id)
+                                                                                 ?? $comentariosAsesoria->get('ini_' . $ini->id)
+                                                                                 ?? $comentariosAsesoria->get($ini->id)
+                                                                                 ?? collect()
+                                                                             ) : collect();
+
+                                                                             if (!empty($ini->comentario_asesor) && $comentariosIni->where('comentario', $ini->comentario_asesor)->isEmpty()) {
+                                                                                 $dummy = (object)[
+                                                                                     'id' => null,
+                                                                                     'comentario' => $ini->comentario_asesor,
+                                                                                     'estado' => 'PENDIENTE',
+                                                                                     'created_at' => $ini->updated_at,
+                                                                                     'asesoria' => (object)['nombre' => 'Asesor Técnico', 'institucion' => 'Asesoría Remota']
+                                                                                 ];
+                                                                                 $comentariosIni = $comentariosIni->concat([$dummy]);
+                                                                             }
+                                                                         @endphp
+                                                                         @if($comentariosIni->count() > 0)
+                                                                         @php
+                                                                             $comentariosIniArray = $comentariosIni->map(fn($c) => [
+                                                                                 'id' => $c->id ?? null,
+                                                                                 'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
+                                                                                 'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
+                                                                                 'comentario' => $c->comentario ?? '',
+                                                                                 'estado' => $c->estado ?? 'PENDIENTE',
+                                                                                 'fecha' => isset($c->created_at) && $c->created_at ? (is_string($c->created_at) ? $c->created_at : $c->created_at->format('d/m/Y H:i')) : ''
+                                                                             ])->values()->all();
+                                                                             $comentariosIniJson = base64_encode(json_encode($comentariosIniArray));
+                                                                         @endphp
+                                                                         <button type="button" class="btn btn-xs text-white font-weight-bold btnVerComentariosNodo shadow-sm"
+                                                                                 data-title="{{ e(strip_tags($ini->accion)) }}"
+                                                                                 data-level="Acción Operativa (Iniciativa)"
+                                                                                 data-comments="{{ $comentariosIniJson }}"
+                                                                                 onclick="event.preventDefault(); event.stopPropagation(); verComentariosNodo(this);"
+                                                                                 style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 20px; padding: 2px 10px; font-size: 0.7rem; cursor: pointer; box-shadow: 0 2px 5px rgba(126, 34, 206, 0.4);">
+                                                                             <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosIni->count() }} {{ $comentariosIni->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
+                                                                         </button>
+                                                                         @endif
                                                                         </span>
                                                                         @endif
 

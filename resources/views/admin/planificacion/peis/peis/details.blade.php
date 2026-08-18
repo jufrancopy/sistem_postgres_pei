@@ -69,9 +69,7 @@
                 <a href="{{ route('pei-profiles.proceso', $root->id) }}" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size:.72rem">
                     <i class="fa fa-tasks mr-1"></i> Proceso
                 </a>
-                <a href="{{ route('pei-profiles.dashboard', $root->id) }}" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size:.72rem">
-                    <i class="fa fa-chart-bar mr-1"></i> Tablero
-                </a>
+
                 <a href="{{ route('pei-profiles.details.pdf', $root->id) }}" class="btn btn-sm btn-warning py-0 px-2" style="font-size:.72rem" target="_blank">
                     <i class="fa fa-file-pdf mr-1"></i> PDF
                 </a>

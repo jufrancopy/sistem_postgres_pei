@@ -104,6 +104,35 @@
             </div>
         </div>
 
+        @if($evaluacion->aspectos_positivos || $evaluacion->observaciones_generales)
+        <div class="row mb-4">
+            @if($evaluacion->aspectos_positivos)
+            <div class="col-md-{{ $evaluacion->observaciones_generales ? '6' : '12' }}">
+                <div class="card border-success shadow-sm">
+                    <div class="card-header bg-success text-white py-2">
+                        <h6 class="mb-0 font-weight-bold text-white" style="font-size:0.88rem"><i class="fa fa-star mr-1"></i>Aspectos Positivos Observados</h6>
+                    </div>
+                    <div class="card-body py-3" style="font-size:.9rem;line-height:1.6">
+                        {!! $evaluacion->aspectos_positivos !!}
+                    </div>
+                </div>
+            </div>
+            @endif
+            @if($evaluacion->observaciones_generales)
+            <div class="col-md-{{ $evaluacion->aspectos_positivos ? '6' : '12' }}">
+                <div class="card border-info shadow-sm">
+                    <div class="card-header bg-light py-2">
+                        <h6 class="mb-0 font-weight-bold text-dark" style="font-size:0.88rem"><i class="fa fa-comment-dots mr-1 text-info"></i>Sugerencias u Observaciones Generales</h6>
+                    </div>
+                    <div class="card-body py-3" style="font-size:.9rem;line-height:1.6">
+                        {!! $evaluacion->observaciones_generales !!}
+                    </div>
+                </div>
+            </div>
+            @endif
+        </div>
+        @endif
+
         {{-- Tabs --}}
         <ul class="nav nav-tabs mb-4" id="evalTabs" style="border-bottom:2px solid #dee2e6">
             <li class="nav-item">

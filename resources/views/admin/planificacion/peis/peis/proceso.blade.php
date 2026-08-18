@@ -124,9 +124,7 @@ $pctGlobal   = round(($completados / 6) * 100);
                     <i class="fa fa-edit mr-1"></i> Editar Plan
                 </a>
                 @endhasanyrole
-                <a href="{{ route('pei-profiles.dashboard', $profile->id) }}" class="btn btn-sm btn-dark">
-                    <i class="fa fa-chart-bar mr-1"></i> Tablero de Monitoreo
-                </a>
+
                 <button type="button" class="btn btn-sm btn-warning" id="btnProcesoCertMef">
                     <i class="fa fa-certificate mr-1"></i> Certificación MEF
                 </button>
@@ -268,7 +266,7 @@ $pctGlobal   = round(($completados / 6) * 100);
                     ['label' => 'Con indicador', 'valor' => $accionesConSemaforo],
                 ],
                 'acciones' => [
-                    ['url' => route('pei-profiles.dashboard', $profile->id), 'label' => 'Ver Tablero', 'clase' => 'btn-dark'],
+
                 ],
             ])
 
@@ -318,7 +316,7 @@ $pctGlobal   = round(($completados / 6) * 100);
                 </div>
                 <div class="modal-body p-4">
                     @php
-                        $params = json_decode($profile->parameters, true) ?? [];
+                        $params = is_array($profile->parameters) ? $profile->parameters : (json_decode($profile->parameters, true) ?? []);
                         $actaLogoUrl = $params['acta_logo_url'] ?? '';
                         $actaInstitucion = $params['acta_institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL';
                         $actaDependencia = $params['acta_dependencia'] ?? 'DIRECCIÓN DE PLANIFICACIÓN';

@@ -281,7 +281,9 @@ class PeiController extends Controller
 
         $user = Auth::user();
 
-        $profileId = $request->profile_id ?? null;
+        $rawProfileId = $request->profile_id ? trim($request->profile_id) : null;
+        $isCreateAction = $request->saveBtn === 'create' || $request->saveBtnGoals === 'create' || $request->saveBtnActions === 'create';
+        $profileId = ($isCreateAction || empty($rawProfileId)) ? null : $rawProfileId;
 
         // Campos exclusivos del nodo master — solo se actualizan si vienen
         // explícitamente en el request (evita que ediciones de nodos hijos los pisen)
@@ -338,7 +340,7 @@ class PeiController extends Controller
             $profile = new PeiProfile($attributes);
             $profile->appendToNode($parent)->save();
         } else {
-            $profile = PeiProfile::updateOrCreate(['id' => $profileId ?? Str::uuid()], $attributes);
+            $profile = PeiProfile::updateOrCreate(['id' => $profileId ?: Str::uuid()], $attributes);
         }
 
         $wasChanged = $profile->wasChanged();
@@ -517,9 +519,19 @@ class PeiController extends Controller
 
     public function show(Request $request, $id)
     {
-        if (!auth()->user()->hasAnyRole(['Administrador', 'Coordinador de Planificación'])) {
+        if (!auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Coordinación de Planificación', 'Analista de Planificación', 'Analista PEI'])) {
             return redirect()->route('pei-profiles.proceso', $id);
         }
+
+        // Cargar comentarios de asesoría técnica externa agrupados por nodo/iniciativa
+        $comentariosAsesoria = \App\Models\Planificacion\PeiAsesoriaComentario::whereHas('asesoria', function($q) use ($id) {
+                $q->where('pei_profile_id', $id);
+            })
+            ->with('asesoria')
+            ->get()
+            ->groupBy(function($c) {
+                return $c->node_type . '_' . $c->node_id;
+            });
 
         $profile = PeiProfile::with([
                 'analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies',
@@ -623,6 +635,120 @@ class PeiController extends Controller
                 }
             }
         }
+
+        // Análisis FODA con IEA (para el modal de Monitoreo)
+        $analisisFoda = \App\Admin\Planificacion\Foda\FodaAnalisis::with('aspecto')
+            ->whereNotNull('iea_valor')
+            ->whereHas('perfil', fn($q) => $q->where('group_id', $profile->group_id))
+            ->get(['id', 'aspecto_id', 'tipo', 'iea_valor', 'iea_clasificacion']);
+
+        $perfilFodaId = \App\Admin\Planificacion\Foda\FodaPerfil::where('group_id', $profile->group_id)
+            ->value('id');
+
+        // Balanced Scorecard (BSC) para el modal BSC
+        $perspectivasBsc = [
+            'financiera'  => ['label'=>'Financiera',                  'icon'=>'fa-dollar-sign', 'color'=>'#28a745', 'ejes'=>collect()],
+            'clientes'    => ['label'=>'Clientes / Usuarios',          'icon'=>'fa-users',       'color'=>'#1976d2', 'ejes'=>collect()],
+            'procesos'    => ['label'=>'Procesos Internos',            'icon'=>'fa-cogs',        'color'=>'#f57c00', 'ejes'=>collect()],
+            'aprendizaje' => ['label'=>'Aprendizaje y Crecimiento',    'icon'=>'fa-graduation-cap','color'=>'#7c3aed','ejes'=>collect()],
+            'sin_bsc'     => ['label'=>'Sin perspectiva asignada',     'icon'=>'fa-question',    'color'=>'#6c757d', 'ejes'=>collect()],
+        ];
+
+        $bscLevel = $niveles['bsc_level'] ?? 'axi';
+
+        if ($bscLevel === 'goal') {
+            foreach ($profile->children->sortBy('order_item') as $axi) {
+                foreach ($axi->children->sortBy('order_item') as $goal) {
+                    $key = $goal->bsc_perspectiva ?? 'sin_bsc';
+                    if (!isset($perspectivasBsc[$key])) $key = 'sin_bsc';
+
+                    $acciones = $goal->children;
+                    $total    = $acciones->count();
+                    $verde    = $acciones->where('semaforo','verde')->count();
+                    $amarillo = $acciones->where('semaforo','amarillo')->count();
+                    $rojo     = $acciones->where('semaforo','rojo')->count();
+
+                    $semaforoGoal = 'sin-datos';
+                    if ($total > 0) {
+                        $pct = ($verde + $amarillo * 0.5) / $total * 100;
+                        $semaforoGoal = $pct >= 75 ? 'verde' : ($pct >= 50 ? 'amarillo' : 'rojo');
+                    }
+
+                    $perspectivasBsc[$key]['ejes']->push([
+                        'id'           => $goal->id,
+                        'name'         => strip_tags($goal->name) . ' [' . strip_tags($axi->name) . ']',
+                        'semaforo'     => $semaforoGoal,
+                        'verde'        => $verde,
+                        'amarillo'     => $amarillo,
+                        'rojo'         => $rojo,
+                        'total'        => $total,
+                        'ri'           => null,
+                        'ri_recursos'  => null,
+                        'ri_metas'     => [],
+                        'objetivos'    => [
+                            [
+                                'id'      => $goal->id,
+                                'name'    => strip_tags($goal->name),
+                                'acciones'=> $acciones->map(fn($a) => [
+                                    'id'       => $a->id,
+                                    'name'     => strip_tags($a->name),
+                                    'semaforo' => $a->semaforo ?? 'sin-datos',
+                                    'pct'      => ($a->denominator && $a->denominator > 0)
+                                        ? round(($a->numerator / $a->denominator) * 100, 1)
+                                        : null,
+                                    'indicador'=> $a->indicador ? $a->indicador->codigoCompleto() . ' ' . $a->indicador->nombre : null,
+                                ])->values(),
+                            ]
+                        ],
+                    ]);
+                }
+            }
+        } else {
+            foreach ($profile->children->sortBy('order_item') as $axi) {
+                $key = $axi->bsc_perspectiva ?? 'sin_bsc';
+                if (!isset($perspectivasBsc[$key])) $key = 'sin_bsc';
+
+                $acciones = $axi->descendants()->where('level','action')->get();
+                $total    = $acciones->count();
+                $verde    = $acciones->where('semaforo','verde')->count();
+                $amarillo = $acciones->where('semaforo','amarillo')->count();
+                $rojo     = $acciones->where('semaforo','rojo')->count();
+
+                $semaforoEje = 'sin-datos';
+                if ($total > 0) {
+                    $pct = ($verde + $amarillo * 0.5) / $total * 100;
+                    $semaforoEje = $pct >= 75 ? 'verde' : ($pct >= 50 ? 'amarillo' : 'rojo');
+                }
+
+                $perspectivasBsc[$key]['ejes']->push([
+                    'id'           => $axi->id,
+                    'name'         => strip_tags($axi->name),
+                    'semaforo'     => $semaforoEje,
+                    'verde'        => $verde,
+                    'amarillo'     => $amarillo,
+                    'rojo'         => $rojo,
+                    'total'        => $total,
+                    'ri'           => $axi->resultado_intermedio,
+                    'ri_recursos'  => $axi->ri_recursos_gs,
+                    'ri_metas'     => is_string($axi->ri_metas) ? json_decode($axi->ri_metas, true) : ($axi->ri_metas ?? []),
+                    'objetivos'    => $axi->children->map(fn($goal) => [
+                        'id'      => $goal->id,
+                        'name'    => strip_tags($goal->name),
+                        'acciones'=> $goal->children->map(fn($a) => [
+                            'id'       => $a->id,
+                            'name'     => strip_tags($a->name),
+                            'semaforo' => $a->semaforo ?? 'sin-datos',
+                            'pct'      => ($a->denominator && $a->denominator > 0)
+                                ? round(($a->numerator / $a->denominator) * 100, 1)
+                                : null,
+                            'indicador'=> $a->indicador ? $a->indicador->codigoCompleto() . ' ' . $a->indicador->nombre : null,
+                        ])->values(),
+                    ])->values(),
+                ]);
+            }
+        }
+
+        $perspectivasBsc = array_filter($perspectivasBsc, fn($p) => $p['ejes']->count() > 0);
 
         if ($request->ajax()) {
             return response()->json(['profile' => $profile]);
@@ -960,21 +1086,7 @@ class PeiController extends Controller
         return view('admin.planificacion.peis.peis.accordion', compact('profile', 'niveles'));
     }
 
-    public function dashboard($idProfile)
-    {
-        $profile = PeiProfile::with(['group', 'analysts', 'dependency'])->findOrFail($idProfile);
 
-        // Análisis FODA con IEA del grupo vinculado al PEI
-        $analisisFoda = \App\Admin\Planificacion\Foda\FodaAnalisis::with('aspecto')
-            ->whereNotNull('iea_valor')
-            ->whereHas('perfil', fn($q) => $q->where('group_id', $profile->group_id))
-            ->get(['id', 'aspecto_id', 'tipo', 'iea_valor', 'iea_clasificacion']);
-
-        $perfilFodaId = \App\Admin\Planificacion\Foda\FodaPerfil::where('group_id', $profile->group_id)
-            ->value('id');
-
-        return view('admin.planificacion.peis.peis.dashboard', compact('profile', 'analisisFoda', 'perfilFodaId'));
-    }
 
     public function reordenar(Request $request, $id)
     {
@@ -1291,7 +1403,7 @@ class PeiController extends Controller
     {
         $profile = PeiProfile::findOrFail($id);
         
-        $params = json_decode($profile->parameters, true) ?? [];
+        $params = is_array($profile->parameters) ? $profile->parameters : (json_decode($profile->parameters, true) ?? []);
         
         if ($request->has('acta_logo_url')) {
             $params['acta_logo_url'] = $request->input('acta_logo_url');
@@ -1303,7 +1415,7 @@ class PeiController extends Controller
             $params['acta_dependencia'] = $request->input('acta_dependencia');
         }
         
-        $profile->parameters = json_encode($params);
+        $profile->parameters = $params;
         $profile->save();
 
         // ── Sincronizar masivamente con todas las Actas MECIP del plan ──
@@ -1336,5 +1448,121 @@ class PeiController extends Controller
         }
 
         return redirect()->back()->with('success', 'Variables del plan y Actas de Reunión actualizadas correctamente.');
+    }
+
+    // ── Vista de Asesor Externo (Admin / Validaciones) ──────────────────────
+    public function vistaAsesor($idProfile)
+    {
+        $profile = PeiProfile::where('id', $idProfile)
+            ->whereNull('parent_id')
+            ->where('level', 'master')
+            ->firstOrFail();
+
+        $descendants = $profile->descendants()->get();
+        $treeNodes   = $descendants->toTree();
+
+        // Mapear iniciativas (Acciones Operativas)
+        $nodeIds = $descendants->pluck('id')->push($profile->id)->map(fn($v) => (string)$v)->toArray();
+        $stringIds = array_values(array_filter($nodeIds, fn($id) => !is_numeric($id)));
+        $numericIds = array_values(array_filter($nodeIds, 'is_numeric'));
+
+        $query = \App\Models\PlanMaestro\PlanAccion::query();
+        if (!empty($stringIds)) {
+            $query->whereIn('pei_profile_id', $stringIds);
+        }
+        if (!empty($numericIds)) {
+            $query->orWhereIn('plan_id', $numericIds)->orWhereIn('eje_id', $numericIds);
+        }
+        $iniciativas = $query->orderBy('orden')->get();
+
+        return view('admin.planificacion.peis.peis.vista_asesor', compact('profile', 'treeNodes', 'descendants', 'iniciativas'));
+    }
+
+    public function guardarComentarioAsesor(Request $request, $idProfile)
+    {
+        $request->validate([
+            'node_id' => 'required',
+            'comentario' => 'nullable|string',
+            'type' => 'nullable|string'
+        ]);
+
+        $nodeId = $request->input('node_id');
+        $comentario = trim($request->input('comentario') ?? '');
+        $type = $request->input('type', 'node');
+
+        if ($type === 'iniciativa' || is_numeric($nodeId)) {
+            $ini = \App\Models\PlanMaestro\PlanAccion::find($nodeId);
+            if ($ini) {
+                $ini->comentario_asesor = $comentario;
+                $ini->save();
+                return response()->json(['success' => true, 'message' => 'Comentario del Asesor guardado en la Acción Operativa.']);
+            }
+        }
+
+        $node = PeiProfile::find($nodeId);
+        if ($node) {
+            $node->comentario_asesor = $comentario;
+            $node->save();
+            return response()->json(['success' => true, 'message' => 'Comentario del Asesor guardado en el elemento.']);
+        }
+
+        return response()->json(['success' => false, 'message' => 'No se encontró el elemento a comentar.'], 404);
+    }
+
+    public function generarTokenAsesor($idProfile)
+    {
+        $profile = PeiProfile::where('id', $idProfile)->whereNull('parent_id')->firstOrFail();
+        $token = $profile->generateAsesorToken();
+        return redirect()->back()->with('success', 'Enlace Seguro para Asesor Externo generado exitosamente.');
+    }
+
+    public function revocarTokenAsesor($idProfile)
+    {
+        $profile = PeiProfile::where('id', $idProfile)->whereNull('parent_id')->firstOrFail();
+        $profile->revokeAsesorToken();
+        return redirect()->back()->with('success', 'Enlace Seguro para Asesor Externo revocado.');
+    }
+
+    // ── Basurero de Elementos (SoftDeletes / Recuperación) ───────────────────
+    public function basureroList($idProfile)
+    {
+        $profile = PeiProfile::where('id', $idProfile)->firstOrFail();
+
+        // 1. Nodos soft-deleted en la jerarquía PEI
+        $trashedNodes = PeiProfile::onlyTrashed()
+            ->orderBy('deleted_at', 'desc')
+            ->get(['id', 'name', 'level', 'type', 'deleted_at']);
+
+        // 2. Acciones Operativas soft-deleted
+        $trashedInis = \App\Models\PlanMaestro\PlanAccion::onlyTrashed()
+            ->orderBy('deleted_at', 'desc')
+            ->get(['id', 'codigo', 'accion', 'estado', 'deleted_at']);
+
+        return response()->json([
+            'ok' => true,
+            'trashed_nodes' => $trashedNodes,
+            'trashed_inis'  => $trashedInis,
+            'total'         => $trashedNodes->count() + $trashedInis->count(),
+        ]);
+    }
+
+    public function restaurarNodo(Request $request, $idProfile, $nodeId)
+    {
+        $node = PeiProfile::onlyTrashed()->where('id', $nodeId)->first();
+        if ($node) {
+            $node->restore();
+            return response()->json(['ok' => true, 'message' => 'Elemento del PEI restaurado con éxito.']);
+        }
+        return response()->json(['ok' => false, 'message' => 'No se encontró el elemento eliminado.'], 404);
+    }
+
+    public function restaurarIniciativa(Request $request, $idProfile, $iniId)
+    {
+        $ini = \App\Models\PlanMaestro\PlanAccion::onlyTrashed()->where('id', $iniId)->first();
+        if ($ini) {
+            $ini->restore();
+            return response()->json(['ok' => true, 'message' => 'Acción Operativa restaurada con éxito.']);
+        }
+        return response()->json(['ok' => false, 'message' => 'No se encontró la Acción Operativa eliminada.'], 404);
     }
 }

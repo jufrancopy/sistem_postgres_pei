@@ -68,7 +68,7 @@
                     <span class="badge badge-info px-2 py-1"><i class="fa fa-bullseye mr-1"></i>Obj. Estratégicos</span>
                     <span class="badge badge-warning text-dark px-2 py-1"><i class="fa fa-crosshairs mr-1"></i>Obj. Específicos</span>
                     <span class="badge badge-purple text-white px-2 py-1"><i class="fa fa-bolt mr-1"></i>Acc. Estratégicas</span>
-                    <span class="badge badge-success px-2 py-1"><i class="fa fa-tasks mr-1"></i>Acc. Operativas (Plan 100 Días)</span>
+                    <span class="badge badge-success px-2 py-1"><i class="fa fa-tasks mr-1"></i>Acc. Operativas (Mejora Continua)</span>
                 </div>
 
                 {{-- Árbol Draggable --}}

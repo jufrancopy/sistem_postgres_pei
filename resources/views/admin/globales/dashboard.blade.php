@@ -798,7 +798,7 @@
                             </thead>
                             <tbody>
                                 @foreach($peiPerfiles as $pIdx => $plan)
-                                <tr id="pei_row_{{ $plan->id }}" class="pei-row {{ ($selectedPei && $selectedPei->id != $plan->id) ? 'pei-row-other d-none' : 'pei-row-active' }}">
+                                <tr id="pei_row_{{ $plan->id }}" class="pei-row {{ ($selectedPei && $selectedPei->id == $plan->id) ? 'pei-row-active' : 'pei-row-other' }}">
                                     <td class="font-weight-bold text-center">{{ $pIdx + 1 }}</td>
                                     <td>
                                         <div class="font-weight-bold text-dark" style="font-size:0.93rem;">{{ strip_tags($plan->name) }}</div>
@@ -833,8 +833,11 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span id="badge_status_pei_{{ $plan->id }}" class="badge {{ $plan->show_riiss ? 'badge-success' : 'badge-warning' }} px-2 py-1 font-weight-bold" style="font-size: 0.75rem;">
-                                            <i class="fa {{ $plan->show_riiss ? 'fa-check-circle' : 'fa-eye-slash' }} mr-1"></i> {{ $plan->show_riiss ? 'Activo' : 'Oculto' }}
+                                        @php
+                                            $isActive = isset($plan->is_active) ? (bool)$plan->is_active : true;
+                                        @endphp
+                                        <span id="badge_status_pei_{{ $plan->id }}" class="badge {{ $isActive ? 'badge-success' : 'badge-warning' }} px-2 py-1 font-weight-bold" style="font-size: 0.75rem;">
+                                            <i class="fa {{ $isActive ? 'fa-check-circle' : 'fa-eye-slash' }} mr-1"></i> {{ $isActive ? 'Activo' : 'Oculto' }}
                                         </span>
                                     </td>
                                     <td class="text-center" style="white-space: nowrap;">
@@ -859,6 +862,13 @@
                                                 <i class="fa fa-certificate"></i>
                                             </button>
 
+                                            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI')
+                                            {{-- Lectura Cómoda de Aportes de Asesoría --}}
+                                            <button type="button" class="btn btn-circle btn-dark text-warning btnVerReporteAportes" data-pei-id="{{ $plan->id }}" title="Lectura Cómoda de Aportes y Dictámenes de Asesoría">
+                                                <i class="fa fa-book-open"></i>
+                                            </button>
+                                            @endhasanyrole
+
                                             {{-- 5. Cruce de Ambientes FODA --}}
                                             <button type="button" class="btn btn-circle btn-warning text-white btnVerFodaCrossing" data-url="{{ route('foda-cruce-ambientes', $plan->id) }}" data-name="{{ addslashes(strip_tags($plan->name)) }}" title="Análisis FODA & Cruce de Ambientes">
                                                 <i class="fa fa-random"></i>
@@ -866,9 +876,9 @@
 
                                             {{-- 6. Visibilidad / Alternar Estado --}}
                                             @php
-                                                $isVis = $plan->is_active ?? $plan->show_riiss;
+                                                $isVis = isset($plan->is_active) ? (bool)$plan->is_active : true;
                                             @endphp
-                                            <button type="button" class="btn btn-circle toggleShowRiiss" style="background: {{ $isVis ? '#06b6d4' : '#f59e0b' }}; border-color: {{ $isVis ? '#06b6d4' : '#f59e0b' }}; color:#fff;" data-id="{{ $plan->id }}" title="{{ $isVis ? 'Visible — Clic para Ocultar' : 'Oculto — Clic para Activar' }}">
+                                            <button type="button" class="btn btn-circle toggleShowRiiss" style="background: {{ $isVis ? '#06b6d4' : '#f59e0b' }}; border-color: {{ $isVis ? '#06b6d4' : '#f59e0b' }}; color:#fff;" data-id="{{ $plan->id }}" title="{{ $isVis ? 'Visible / Activo — Clic para Ocultar' : 'Oculto — Clic para Activar' }}">
                                                 <i class="fa {{ $isVis ? 'fa-eye' : 'fa-eye-slash' }}"></i>
                                             </button>
 
@@ -2133,19 +2143,55 @@ $(document).ready(function() {
     };
 
     // ── Scope Filter para Planes PEI (PEI Seleccionado vs Todos los Planes) ──
+    var currentPlanesScope = 0; // 0 = solo PEI seleccionado, 1 = todos los planes
+
+    if ($.fn.dataTable) {
+        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+            if (settings.nTable && settings.nTable.id === 'tablaPlanesGlobal') {
+                if (currentPlanesScope === 1) {
+                    return true;
+                }
+                var rowNode = settings.aoData[dataIndex] ? settings.aoData[dataIndex].nTr : null;
+                if (!rowNode) return true;
+                if ($('#tablaPlanesGlobal tr.pei-row-active').length > 0) {
+                    return $(rowNode).hasClass('pei-row-active');
+                }
+                return true;
+            }
+            return true;
+        });
+    }
+
     window.filtrarPlanesScope = function(scope) {
+        currentPlanesScope = scope;
         if (scope === 0) {
-            $('.pei-row-other').addClass('d-none');
-            $('.pei-row-active').removeClass('d-none');
-            $('#lblScopePeiSelected').addClass('active');
-            $('#lblScopePeiAll').removeClass('active');
+            $('#lblScopePeiSelected').addClass('active btn-primary').removeClass('btn-outline-primary');
+            $('#lblScopePeiAll').removeClass('active btn-primary').addClass('btn-outline-primary');
         } else {
-            $('.pei-row-other').removeClass('d-none');
-            $('.pei-row-active').removeClass('d-none');
-            $('#lblScopePeiSelected').removeClass('active');
-            $('#lblScopePeiAll').addClass('active');
+            $('#lblScopePeiSelected').removeClass('active btn-primary').addClass('btn-outline-primary');
+            $('#lblScopePeiAll').addClass('active btn-primary').removeClass('btn-outline-primary');
+        }
+
+        if ($.fn.dataTable && $.fn.dataTable.isDataTable('#tablaPlanesGlobal')) {
+            $('#tablaPlanesGlobal').DataTable().draw();
         }
     };
+
+    // ── Lectura Cómoda de Aportes de Asesoría Handler ──
+    $(document).on('click', '.btnVerReporteAportes', function () {
+        var peiId = $(this).data('pei-id');
+        if (!peiId) return;
+        var url = "{{ url('pei-profiles') }}/" + peiId + "/asesorias/reporte";
+
+        $('#modalLecturaAportesBody').html('<div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-2x mb-3 text-warning"></i><div>Cargando reporte consolidado de aportes...</div></div>');
+        $('#modalLecturaAportes').modal('show');
+
+        $.get(url, function (html) {
+            $('#modalLecturaAportesBody').html(html);
+        }).fail(function () {
+            $('#modalLecturaAportesBody').html('<div class="alert alert-danger mb-0 p-4">Ocurrió un error al cargar el reporte de aportes.</div>');
+        });
+    });
 
     // ── Certificación MEF Modal Handler ──
     $(document).on('click', '.btnVerCertificacionMef', function () {
@@ -3925,6 +3971,14 @@ function guardarPremiacionGrupo(e) {
                     </button>
                 </div>
             </form>
+</div>
+</div>
+
+{{-- Modal Lectura Cómoda de Aportes de Asesoría --}}
+<div class="modal fade" id="modalLecturaAportes" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="max-width: 1100px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div id="modalLecturaAportesBody" class="p-0"></div>
         </div>
     </div>
 </div>

@@ -348,15 +348,15 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 {{-- NAV --}}
 <nav class="topbar" role="navigation" aria-label="Navegación principal">
     <div class="topbar-left">
-        <a href="{{ url('/') }}" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:12px">
+        <a href="{{ url('/') }}" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:14px">
             @if($sysLogoUrl)
-                <img src="{{ $sysLogoUrl }}" alt="{{ $sysSiteName }}" style="max-height: 38px; object-fit: contain;">
+                <img src="{{ $sysLogoUrl }}" alt="SIPLAN GO" style="max-height: 52px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
             @else
-                <div class="topbar-logo" aria-hidden="true">SP</div>
+                <div class="topbar-logo" aria-hidden="true" style="width:44px;height:44px;font-size:14px;border-radius:12px;background:linear-gradient(135deg,#0f172a,#2563eb);">GO</div>
             @endif
             <div class="topbar-text">
-                <div class="topbar-title">{{ $sysSiteName }}</div>
-                <div class="topbar-sub">IPS · Planificación Estratégica</div>
+                <div class="topbar-title" style="font-size: 1.15rem; font-weight: 900; letter-spacing: -0.5px;">SIPLAN <span style="color:#2563eb; font-weight:900;">GO</span></div>
+                <div class="topbar-sub" style="font-weight: 700; color: #2563eb; font-size: 10.5px; letter-spacing: 0.2px;">Planificar con Propósito</div>
             </div>
         </a>
     </div>
@@ -375,8 +375,35 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     <div class="hero-inner">
         <div class="hero-content">
             <div class="hero-badge anim"><i class="fa fa-shield-alt"></i> Instituto de Previsión Social</div>
-            <h1 class="anim d1">Sistema de <span>Planificación</span> Estratégica</h1>
-            <p class="anim d2">Monitoreo en tiempo real de la Red de Salud IPS, planificación estratégica y estadísticas institucionales.</p>
+            <h1 class="anim d1" style="font-family:'Outfit',sans-serif;">SIPLAN <span style="color:#2563eb;">GO</span> · <span>Planificar con Propósito</span></h1>
+            <p class="anim d2" style="font-size: 0.98rem; line-height: 1.65; color: #475569;">Monitoreo en tiempo real de la Red de Salud IPS, gestión estratégica e inteligencia de datos para transformar la seguridad social y la atención a nuestros asegurados.</p>
+            
+            {{-- Flyer Manifiesto & Red Social Laboral Banner --}}
+            <div class="anim d3" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; border-left: 5px solid #38bdf8; border-radius: 16px; padding: 18px 20px; margin-top: 20px; box-shadow: 0 12px 28px rgba(15,23,42,0.22); position: relative; overflow: hidden;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; position: relative; z-index: 1;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        @if(!empty($sysLogoUrl))
+                            <div style="background: rgba(255,255,255,0.08); backdrop-filter: blur(8px); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0;">
+                                <img src="{{ $sysLogoUrl }}" alt="SIPLAN GO Logo" style="max-height: 48px; width: auto; object-fit: contain;">
+                            </div>
+                        @else
+                            <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; display: grid; place-items: center; font-size: 18px; font-weight: 900; flex-shrink: 0; box-shadow: 0 4px 12px rgba(37,99,235,0.4);">
+                                GO
+                            </div>
+                        @endif
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 3px; flex-wrap: wrap;">
+                                <strong style="font-size: 0.95rem; color: #fff; line-height: 1.2;">SIPLAN GO — Red Social & Laboral IPS</strong>
+                                <span style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px;">Inteligencia Colectiva</span>
+                            </div>
+                            <span style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.4; display: block;">Funcionarios del IPS sumando esfuerzos para transformar la seguridad social con tecnología y trabajo mancomunado.</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="abrirModalFlyerManifiesto()" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border-radius: 20px; border: none; font-size: 0.8rem; font-weight: 800; padding: 8px 20px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(37,99,235,0.4); transition: all 0.2s ease;">
+                        <i class="fa fa-users text-warning"></i> <span>Conocer la Red & Manifiesto</span>
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="hero-stats-grid">
             @php $gV=$peiSemaforo->get('verde',0);$gA=$peiSemaforo->get('amarillo',0);$gR=$peiSemaforo->get('rojo',0); @endphp
@@ -965,6 +992,101 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         document.querySelectorAll('.eval-list').forEach(function(el){ io.observe(el); });
     }
 })();
+
+function abrirModalFlyerManifiesto() {
+    var modal = document.getElementById('modalFlyerManifiesto');
+    if (modal) {
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+}
+function cerrarModalFlyerManifiesto() {
+    var modal = document.getElementById('modalFlyerManifiesto');
+    if (modal) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+}
+
+document.addEventListener('click', function(e) {
+    var m = document.getElementById('modalFlyerManifiesto');
+    if (m && e.target === m) cerrarModalFlyerManifiesto();
+});
 </script>
+
+{{-- MODAL FLYER MANIFIESTO SIPLAN --}}
+<div class="modal-bg" id="modalFlyerManifiesto">
+    <div class="modal-card" style="max-width: 860px; border-radius: 26px; overflow: hidden; box-shadow: 0 25px 65px rgba(0,0,0,0.4);">
+        <div class="modal-top" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 22px 30px;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                @if(!empty($sysLogoUrl))
+                    <img src="{{ $sysLogoUrl }}" alt="SIPLAN GO Logo" style="max-height: 52px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));">
+                @else
+                    <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; display: grid; place-items: center; font-size: 20px; font-weight: 900; box-shadow: 0 4px 14px rgba(37,99,235,0.4);">
+                        GO
+                    </div>
+                @endif
+                <div>
+                    <h5 style="font-size: 1.25rem; font-weight: 900; color: #fff; margin: 0; font-family: 'Outfit', sans-serif; letter-spacing: -0.3px;">
+                        SIPLAN <span style="color:#60a5fa;">GO</span> — Red Laboral & Colaborativa
+                    </h5>
+                    <small style="color: #38bdf8; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.3px;">Planificar con Propósito · Inteligencia Colectiva IPS</small>
+                </div>
+            </div>
+            <button type="button" class="modal-x" onclick="cerrarModalFlyerManifiesto()">&times;</button>
+        </div>
+        <div class="modal-content" style="padding: 30px; background: #f8fafc; max-height: 75vh; overflow-y: auto;">
+            
+            {{-- QUOTE BANNER --}}
+            <div style="background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); border-left: 6px solid #2563eb; padding: 24px; border-radius: 18px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); margin-bottom: 26px;">
+                <p style="font-size: 1.08rem; font-weight: 600; color: #0f172a; font-style: italic; line-height: 1.65; margin-bottom: 14px;">
+                    “No nacimos en escritorios distantes ni en burocracia aislada. Somos funcionarios del IPS que sumamos nuestros esfuerzos para transformar la seguridad social de nuestro país. SIPLAN GO es una Red Social y Laboral donde profesionales, analistas, médicos y coordinadores nos conectamos para aportar nuestro talento, colaborar en tiempo real y cambiar la vida de nuestros asegurados con tecnología y trabajo mancomunado.”
+                </p>
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                    <small style="color: #64748b; font-weight: 800;">— Equipo Técnico de Planificación & Desarrollo · IPS Paraguay</small>
+                    <span class="badge badge-info" style="background: #e0f2fe; color: #0369a1; font-weight: 800; padding: 4px 10px; border-radius: 12px; font-size: 0.72rem;">
+                        <i class="fa fa-users mr-1"></i> Red de Inteligencia Colectiva
+                    </span>
+                </div>
+            </div>
+
+            <h6 style="font-weight: 900; color: #0f172a; margin-bottom: 14px; font-size: 0.98rem; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Outfit', sans-serif;">
+                <i class="fa fa-share-alt text-primary mr-1"></i> Una Red de Trabajo Renovada y Participativa
+            </h6>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 28px;">
+                <div style="background: #fff; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 3px 10px rgba(0,0,0,0.03);">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: #eff6ff; color: #2563eb; display: grid; place-items: center; font-size: 16px; margin-bottom: 10px;">
+                        <i class="fa fa-comments"></i>
+                    </div>
+                    <strong style="color: #0f172a; font-size: 0.95rem; display: block; margin-bottom: 6px;">Colaboración en Tiempo Real</strong>
+                    <span style="font-size: 0.8rem; color: #64748b; line-height: 1.55;">Chat contextual, debates técnicos por objetivo y canal directo de asesoría libre de jerarquías rígidas.</span>
+                </div>
+
+                <div style="background: #fff; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 3px 10px rgba(0,0,0,0.03);">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: #f5f3ff; color: #7c3aed; display: grid; place-items: center; font-size: 16px; margin-bottom: 10px;">
+                        <i class="fa fa-trophy"></i>
+                    </div>
+                    <strong style="color: #0f172a; font-size: 0.95rem; display: block; margin-bottom: 6px;">Reconocimiento al Talento Humano</strong>
+                    <span style="font-size: 0.8rem; color: #64748b; line-height: 1.55;">Sistema de gamificación con puntos, medallas de mérito y ranking público para destacar el verdadero esfuerzo.</span>
+                </div>
+
+                <div style="background: #fff; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 3px 10px rgba(0,0,0,0.03);">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: #ecfdf5; color: #10b981; display: grid; place-items: center; font-size: 16px; margin-bottom: 10px;">
+                        <i class="fa fa-hospital-user"></i>
+                    </div>
+                    <strong style="color: #0f172a; font-size: 0.95rem; display: block; margin-bottom: 6px;">Impacto Directo al Asegurado</strong>
+                    <span style="font-size: 0.8rem; color: #64748b; line-height: 1.55;">Medicamentos a tiempo, reducción de esperas para cirugías y trato digno a jubilados y familias.</span>
+                </div>
+            </div>
+
+            <div style="text-align: center; border-top: 1px solid #e2e8f0; padding-top: 22px; margin-top: 10px;">
+                <a href="{{ route('siplan.manifesto') }}" target="_blank" style="display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; font-weight: 800; padding: 12px 28px; border-radius: 100px; text-decoration: none; font-size: 0.88rem; box-shadow: 0 6px 20px rgba(15,23,42,0.3); transition: all 0.25s ease;">
+                    <i class="fa fa-book-open text-warning"></i> Leer la Declaración Completa de la Red en /nosotros
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

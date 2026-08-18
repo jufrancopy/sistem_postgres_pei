@@ -944,6 +944,7 @@ class CoordinadorPlanificacionController extends Controller
 
                 return '<div class="d-flex justify-content-center" style="gap:4px;">' .
                     '<a href="' . $urlPei . '" class="btn btn-primary btn-circle" target="_blank" title="Ver PEI"><i class="fa fa-external-link-alt"></i></a>' .
+                    '<button type="button" class="btn btn-dark btn-circle btnVerReporteAportes text-warning" data-pei-id="' . $p->id . '" title="Lectura Cómoda de Aportes y Dictámenes de Asesoría"><i class="fa fa-book-open"></i></button>' .
                     '<button type="button" class="btn btn-info btn-circle btnVerCertificacionMef" data-id="' . $p->id . '" data-name="' . e($p->name) . '" title="Certificación MEF"><i class="fa fa-certificate"></i></button>' .
                     '<button type="button" class="btn btn-warning btn-circle text-dark btnVerFodaCrossing" data-url="' . $urlFoda . '" data-name="' . e($p->name) . '" title="Análisis FODA"><i class="fa fa-random"></i></button>' .
                     '</div>';
