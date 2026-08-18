@@ -109,6 +109,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/asesorias', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'listarAsesorias'])->name('pei.asesor.listar');
     Route::get('pei-profiles/{idProfile}/asesorias/reporte', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'reporteAportes'])->name('pei.asesor.reporte');
     Route::post('pei-asesorias/comentarios/{commentId}/integrar', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'integrarAporte'])->name('pei.asesor.comentario.integrar');
+    Route::delete('pei-asesorias/comentarios/{commentId}', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'eliminarAporte'])->name('pei.asesor.comentario.eliminar');
     Route::get('pei-profiles/{idProfile}/basurero', 'Admin\Planificacion\Pei\PeiController@basureroList')->name('pei.basurero.list');
     Route::post('pei-profiles/{idProfile}/basurero/restaurar-nodo/{nodeId}', 'Admin\Planificacion\Pei\PeiController@restaurarNodo')->name('pei.basurero.restaurar-nodo');
     Route::post('pei-profiles/{idProfile}/basurero/restaurar-iniciativa/{iniId}', 'Admin\Planificacion\Pei\PeiController@restaurarIniciativa')->name('pei.basurero.restaurar-iniciativa');

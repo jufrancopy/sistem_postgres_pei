@@ -5596,20 +5596,16 @@ window.verComentariosNodo = function(btn) {
         comments.forEach(function(c) {
             var instHtml = c.institucion ? ' <span class="badge badge-light border text-muted ml-1" style="font-size:0.75rem;">' + c.institucion + '</span>' : '';
             var btnAction = '';
-            if (c.estado === 'INTEGRADO') {
-                btnAction = '<span class="badge badge-success font-weight-bold px-2.5 py-1.5" style="font-size:0.75rem;"><i class="fa fa-check-circle mr-1"></i> Aporte Integrado</span>';
-            } else if (c.id) {
-                btnAction = '<button type="button" class="btn btn-sm btn-outline-success font-weight-bold btn-integrar-aporte px-3 py-1" data-id="' + c.id + '" style="border-radius: 20px;"><i class="fa fa-paper-plane mr-1"></i> Integrar Aporte y Notificar</button>';
-            }
+            var btnDelete = c.id ? '<button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-aporte px-2.5 py-1 ml-2" data-id="' + c.id + '" title="Eliminar este aporte" style="border-radius: 20px;"><i class="fa fa-trash mr-1"></i> Eliminar</button>' : '';
 
-            html += '<div class="card border-0 shadow-xs mb-3" style="border-radius: 12px; overflow: hidden; border-left: 5px solid #8b5cf6 !important; background: #f8fafc;">';
+            html += '<div class="card border-0 shadow-xs mb-3 aporte-card-item" style="border-radius: 12px; overflow: hidden; border-left: 5px solid #8b5cf6 !important; background: #f8fafc;">';
             html += '<div class="card-header bg-white py-2.5 px-3 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap: 0.5rem;">';
             html += '<div class="font-weight-bold text-dark" style="font-size: 0.88rem;"><i class="fa fa-user-check text-purple mr-1.5" style="color:#7e22ce"></i>' + (c.asesor || 'Asesor Externo') + instHtml + '</div>';
             html += '<span class="text-muted small">' + (c.fecha || '') + '</span>';
             html += '</div>';
             html += '<div class="card-body p-3 text-dark" style="font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap;">' + (c.comentario || '') + '</div>';
-            if (btnAction) {
-                html += '<div class="card-footer bg-white p-2.5 d-flex justify-content-end border-top">' + btnAction + '</div>';
+            if (btnAction || btnDelete) {
+                html += '<div class="card-footer bg-white p-2.5 d-flex justify-content-end align-items-center border-top">' + btnAction + btnDelete + '</div>';
             }
             html += '</div>';
         });
@@ -5661,6 +5657,49 @@ $(document).off('click', '.btn-integrar-aporte').on('click', '.btn-integrar-apor
             var msg = (err.responseJSON && err.responseJSON.message) ? err.responseJSON.message : 'Error al comunicarse con el servidor.';
             if (window.toastr) toastr.error(msg);
             btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Integrar Aporte y Notificar');
+        }
+    });
+});
+
+$(document).off('click', '.btn-eliminar-aporte').on('click', '.btn-eliminar-aporte', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var btn = $(this);
+    var commentId = btn.data('id');
+    if (!commentId) return;
+
+    if (!confirm('¿Estás seguro de que deseas eliminar este aporte? Esta acción no se puede deshacer.')) {
+        return;
+    }
+
+    if (btn.data('processing')) return;
+    btn.data('processing', true);
+    btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Eliminando...');
+
+    var targetUrl = "{{ route('pei.asesor.comentario.eliminar', ':id') }}".replace(':id', commentId);
+
+    $.ajax({
+        url: targetUrl,
+        type: "DELETE",
+        data: { _token: "{{ csrf_token() }}" },
+        success: function(resp) {
+            if (resp.success) {
+                if (window.toastr) toastr.success(resp.message);
+                var $card = btn.closest('.card, .aporte-card-item');
+                if ($card.length > 0) {
+                    $card.fadeOut(300, function() { $(this).remove(); });
+                } else {
+                    btn.replaceWith('<span class="badge badge-danger font-weight-bold px-2 py-1"><i class="fa fa-trash mr-1"></i> Eliminado</span>');
+                }
+            } else {
+                if (window.toastr) toastr.error(resp.message || 'Error al eliminar el aporte.');
+                btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-trash mr-1"></i> Eliminar');
+            }
+        },
+        error: function(err) {
+            var msg = (err.responseJSON && err.responseJSON.message) ? err.responseJSON.message : 'Error al comunicarse con el servidor.';
+            if (window.toastr) toastr.error(msg);
+            btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-trash mr-1"></i> Eliminar');
         }
     });
 });

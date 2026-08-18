@@ -129,15 +129,22 @@
                                         <small class="text-muted" style="font-size:0.75rem;">
                                             <i class="fa fa-clock mr-1"></i> {{ $comItem->created_at ? $comItem->created_at->format('d/m/Y H:i') : '' }}
                                         </small>
-                                        @if(($comItem->estado ?? 'PENDIENTE') === 'INTEGRADO')
-                                            <span class="badge badge-success font-weight-bold px-2.5 py-1" style="font-size:0.75rem;">
-                                                <i class="fa fa-check-circle mr-1"></i> Aporte Integrado
-                                            </span>
-                                        @else
-                                            <button type="button" class="btn btn-sm btn-outline-success font-weight-bold btn-integrar-aporte px-3 py-1" data-id="{{ $comItem->id }}" style="border-radius: 20px;">
-                                                <i class="fa fa-paper-plane mr-1"></i> Integrar Aporte y Notificar por Correo
-                                            </button>
-                                        @endif
+                                        <div class="d-flex align-items-center">
+                                            @if(($comItem->estado ?? 'PENDIENTE') === 'INTEGRADO')
+                                                <span class="badge badge-success font-weight-bold px-2.5 py-1" style="font-size:0.75rem;">
+                                                    <i class="fa fa-check-circle mr-1"></i> Aporte Integrado
+                                                </span>
+                                            @else
+                                                <button type="button" class="btn btn-sm btn-outline-success font-weight-bold btn-integrar-aporte px-3 py-1" data-id="{{ $comItem->id }}" style="border-radius: 20px;">
+                                                    <i class="fa fa-paper-plane mr-1"></i> Integrar Aporte y Notificar por Correo
+                                                </button>
+                                            @endif
+                                            @if(isset($comItem->id) && $comItem->id)
+                                                <button type="button" class="btn btn-sm btn-outline-danger font-weight-bold btn-eliminar-aporte px-2.5 py-1 ml-2" data-id="{{ $comItem->id }}" style="border-radius: 20px;" title="Eliminar este aporte">
+                                                    <i class="fa fa-trash mr-1"></i> Eliminar
+                                                </button>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
@@ -192,6 +199,49 @@ if (typeof window.btnIntegrarAporteHandlerLoaded === 'undefined') {
                 var msg = (err.responseJSON && err.responseJSON.message) ? err.responseJSON.message : 'Error al comunicarse con el servidor.';
                 if (window.toastr) toastr.error(msg);
                 btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Integrar Aporte y Notificar por Correo');
+            }
+        });
+    });
+
+    $(document).off('click', '.btn-eliminar-aporte').on('click', '.btn-eliminar-aporte', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var btn = $(this);
+        var commentId = btn.data('id');
+        if (!commentId) return;
+
+        if (!confirm('¿Estás seguro de que deseas eliminar este aporte? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        if (btn.data('processing')) return;
+        btn.data('processing', true);
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Eliminando...');
+
+        var targetUrl = "{{ route('pei.asesor.comentario.eliminar', ':id') }}".replace(':id', commentId);
+
+        $.ajax({
+            url: targetUrl,
+            type: "DELETE",
+            data: { _token: "{{ csrf_token() }}" },
+            success: function(resp) {
+                if (resp.success) {
+                    if (window.toastr) toastr.success(resp.message);
+                    var $item = btn.closest('.list-group-item');
+                    if ($item.length > 0) {
+                        $item.fadeOut(300, function() { $(this).remove(); });
+                    } else {
+                        btn.replaceWith('<span class="badge badge-danger font-weight-bold px-2 py-1"><i class="fa fa-trash mr-1"></i> Eliminado</span>');
+                    }
+                } else {
+                    if (window.toastr) toastr.error(resp.message || 'Error al eliminar el aporte.');
+                    btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-trash mr-1"></i> Eliminar');
+                }
+            },
+            error: function(err) {
+                var msg = (err.responseJSON && err.responseJSON.message) ? err.responseJSON.message : 'Error al comunicarse con el servidor.';
+                if (window.toastr) toastr.error(msg);
+                btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-trash mr-1"></i> Eliminar');
             }
         });
     });

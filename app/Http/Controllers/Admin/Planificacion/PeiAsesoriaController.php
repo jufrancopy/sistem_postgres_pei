@@ -419,4 +419,31 @@ class PeiAsesoriaController extends Controller
             return response()->json(['success' => false, 'message' => 'Error en el servidor: ' . $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Eliminar un comentario / aporte de asesoría.
+     */
+    public function eliminarAporte(Request $request, $commentId)
+    {
+        try {
+            if (!auth()->user() || !auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Coordinación de Planificación', 'Analista de Planificación', 'Analista PEI'])) {
+                return response()->json(['success' => false, 'message' => 'Acción restringida.'], 403);
+            }
+
+            $comentario = PeiAsesoriaComentario::find($commentId);
+            if (!$comentario) {
+                return response()->json(['success' => false, 'message' => 'El comentario no fue encontrado o ya fue eliminado.'], 404);
+            }
+
+            $comentario->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'El aporte ha sido eliminado correctamente.'
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Error al eliminar aporte: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error al eliminar el aporte: ' . $e->getMessage()], 500);
+        }
+    }
 }
