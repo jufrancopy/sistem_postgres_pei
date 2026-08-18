@@ -13,6 +13,8 @@ class PeiAsesoriaComentario extends Model
         'node_id',
         'node_type',
         'comentario',
+        'estado',
+        'integrated_at',
     ];
 
     public function asesoria()

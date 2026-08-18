@@ -125,6 +125,20 @@
                                     <div class="p-2.5 rounded text-dark mt-2" style="background: #f1f5f9; border-left: 4px solid #2563eb; font-size: 0.88rem; line-height: 1.4; white-space: pre-wrap;">
                                         {{ $comItem->comentario }}
                                     </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                                        <small class="text-muted" style="font-size:0.75rem;">
+                                            <i class="fa fa-clock mr-1"></i> {{ $comItem->created_at ? $comItem->created_at->format('d/m/Y H:i') : '' }}
+                                        </small>
+                                        @if(($comItem->estado ?? 'PENDIENTE') === 'INTEGRADO')
+                                            <span class="badge badge-success font-weight-bold px-2.5 py-1" style="font-size:0.75rem;">
+                                                <i class="fa fa-check-circle mr-1"></i> Aporte Integrado
+                                            </span>
+                                        @else
+                                            <button type="button" class="btn btn-sm btn-outline-success font-weight-bold btn-integrar-aporte px-3 py-1" data-id="{{ $comItem->id }}" style="border-radius: 20px;">
+                                                <i class="fa fa-paper-plane mr-1"></i> Integrar Aporte y Notificar por Correo
+                                            </button>
+                                        @endif
+                                    </div>
                                 </div>
                             @endforeach
                         @endforeach

@@ -304,4 +304,76 @@ class PeiAsesoriaController extends Controller
             'iniciativasMap'
         ));
     }
+
+    /**
+     * Marcar un aporte como INTEGRADO y notificar por correo al aportante.
+     */
+    public function integrarAporte(Request $request, $commentId)
+    {
+        if (!auth()->user() || !auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Coordinación de Planificación', 'Analista de Planificación', 'Analista PEI'])) {
+            return response()->json(['success' => false, 'message' => 'Acción restringida.'], 403);
+        }
+
+        $comentario = PeiAsesoriaComentario::with('asesoria')->findOrFail($commentId);
+        $comentario->estado = 'INTEGRADO';
+        $comentario->integrated_at = now();
+        $comentario->save();
+
+        $asesoria = $comentario->asesoria;
+        $emailEnviado = false;
+
+        if ($asesoria && filter_var($asesoria->email, FILTER_VALIDATE_EMAIL)) {
+            $destinatario = $asesoria->email;
+            $nombreAsesor = $asesoria->nombre ?? 'Asesor Técnico';
+            $textoComentario = $comentario->comentario;
+
+            $htmlEmail = "
+                <div style='font-family: Arial, sans-serif; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);'>
+                    <div style='background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: #ffffff; padding: 24px; text-align: center;'>
+                        <h2 style='margin: 0; font-size: 20px; font-weight: bold;'>Notificación de Integración de Aporte</h2>
+                        <p style='margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;'>Sistema de Planificación Estratégica Institucional (PEI)</p>
+                    </div>
+                    <div style='padding: 24px; background-color: #ffffff;'>
+                        <p style='font-size: 15px; margin-top: 0;'>Estimado/a <strong>{$nombreAsesor}</strong>,</p>
+                        <p style='font-size: 14px; line-height: 1.6; color: #334155;'>
+                            Nos complace informarle que su aporte y recomendación técnica sobre el Plan Estratégico Institucional (PEI) ha sido <strong>INTEGRADO exitosamente</strong> en el sistema por el equipo de planificación.
+                        </p>
+                        
+                        <div style='background: #f8fafc; border-left: 4px solid #6366f1; padding: 16px; margin: 20px 0; border-radius: 6px;'>
+                            <strong style='display: block; font-size: 12px; color: #64748b; text-transform: uppercase; margin-bottom: 6px;'>Su Aporte Registrado:</strong>
+                            <em style='font-size: 14px; color: #1e293b; line-height: 1.5;'>\"" . e($textoComentario) . "\"</em>
+                        </div>
+
+                        <p style='font-size: 14px; line-height: 1.6; color: #334155;'>
+                            La <strong>Dirección de Planificación y su Equipo Técnico</strong> procederán a analizar su sugerencia para incorporarla formalmente en el diseño de las metas y acciones estratégicas de la institución.
+                        </p>
+                        <p style='font-size: 14px; color: #334155;'>Agradecemos valiosamente su compromiso y valiosa contribución técnica.</p>
+                    </div>
+                    <div style='background: #f1f5f9; padding: 16px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;'>
+                        <strong>Dirección de Planificación y Equipo Técnico Institucional</strong><br>
+                        Sistema de Gestión PEI / Paraguay
+                    </div>
+                </div>
+            ";
+
+            try {
+                \Illuminate\Support\Facades\Mail::html($htmlEmail, function ($message) use ($destinatario) {
+                    $message->to($destinatario)
+                            ->subject("Su aporte al PEI ha sido integrado para análisis técnico — Dirección de Planificación");
+                });
+                $emailEnviado = true;
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Fallo al enviar correo de integración a asesor ({$destinatario}): " . $e->getMessage());
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $emailEnviado 
+                ? 'El aporte ha sido integrado y se notificó por correo al aportante.' 
+                : 'El aporte ha sido marcado como integrado exitosamente.',
+            'estado' => 'INTEGRADO',
+            'fecha' => $comentario->integrated_at->format('d/m/Y H:i')
+        ]);
+    }
 }

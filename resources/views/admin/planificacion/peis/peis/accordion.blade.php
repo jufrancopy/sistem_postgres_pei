@@ -160,9 +160,11 @@
                     @if($comentariosAxi->count() > 0)
                     @php
                         $comentariosAxiArray = $comentariosAxi->map(fn($c) => [
+                            'id' => $c->id,
                             'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
                             'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
                             'comentario' => $c->comentario ?? '',
+                            'estado' => $c->estado ?? 'PENDIENTE',
                             'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
                         ])->values()->all();
                         $comentariosAxiJson = htmlspecialchars(json_encode($comentariosAxiArray, JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
@@ -348,9 +350,11 @@
                                  @if($comentariosGoal->count() > 0)
                                  @php
                                      $comentariosGoalArray = $comentariosGoal->map(fn($c) => [
+                                         'id' => $c->id,
                                          'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
                                          'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
                                          'comentario' => $c->comentario ?? '',
+                                         'estado' => $c->estado ?? 'PENDIENTE',
                                          'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
                                      ])->values()->all();
                                      $comentariosGoalJson = htmlspecialchars(json_encode($comentariosGoalArray, JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
@@ -496,9 +500,11 @@
                                                         @if($comentariosAction->count() > 0)
                                                         @php
                                                             $comentariosActionArray = $comentariosAction->map(fn($c) => [
+                                                                'id' => $c->id,
                                                                 'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
                                                                 'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
                                                                 'comentario' => $c->comentario ?? '',
+                                                                'estado' => $c->estado ?? 'PENDIENTE',
                                                                 'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
                                                             ])->values()->all();
                                                             $comentariosActionJson = htmlspecialchars(json_encode($comentariosActionArray, JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
@@ -819,9 +825,11 @@
                                                                          @if($comentariosIni->count() > 0)
                                                                          @php
                                                                              $comentariosIniArray = $comentariosIni->map(fn($c) => [
+                                                                                 'id' => $c->id,
                                                                                  'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
                                                                                  'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
                                                                                  'comentario' => $c->comentario ?? '',
+                                                                                 'estado' => $c->estado ?? 'PENDIENTE',
                                                                                  'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
                                                                              ])->values()->all();
                                                                              $comentariosIniJson = htmlspecialchars(json_encode($comentariosIniArray, JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
