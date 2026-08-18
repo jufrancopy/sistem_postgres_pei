@@ -5627,11 +5627,18 @@ $(document).on('click', '.btnVerComentariosNodo', function(e) {
     window.verComentariosNodo(this);
 });
 
-$(document).on('click', '.btn-integrar-aporte', function(e) {
+$(document).off('click', '.btn-integrar-aporte').on('click', '.btn-integrar-aporte', function(e) {
     e.preventDefault();
+    e.stopPropagation();
     var btn = $(this);
+    if (btn.data('processing')) return;
+    btn.data('processing', true);
+
     var commentId = btn.data('id');
-    if (!commentId) return;
+    if (!commentId) {
+        btn.data('processing', false);
+        return;
+    }
 
     btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Integrando y notificando por correo...');
 
@@ -5647,12 +5654,13 @@ $(document).on('click', '.btn-integrar-aporte', function(e) {
                 btn.replaceWith('<span class="badge badge-success font-weight-bold px-2.5 py-1.5" style="font-size:0.75rem;"><i class="fa fa-check-circle mr-1"></i> Aporte Integrado</span>');
             } else {
                 if (window.toastr) toastr.error(resp.message || 'Error al integrar el aporte.');
-                btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Integrar Aporte y Notificar');
+                btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Integrar Aporte y Notificar');
             }
         },
         error: function(err) {
-            if (window.toastr) toastr.error('Error al comunicarse con el servidor.');
-            btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Integrar Aporte y Notificar');
+            var msg = (err.responseJSON && err.responseJSON.message) ? err.responseJSON.message : 'Error al comunicarse con el servidor.';
+            if (window.toastr) toastr.error(msg);
+            btn.data('processing', false).prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Integrar Aporte y Notificar');
         }
     });
 });
