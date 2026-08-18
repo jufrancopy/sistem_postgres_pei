@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http/Controllers/Admin/Soporte;
+namespace App\Http\Controllers\Admin\Soporte;
 
 use App\Http\Controllers\Controller;
 use App\Models\Soporte\SoporteTicket;

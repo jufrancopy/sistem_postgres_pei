@@ -948,12 +948,13 @@ Route::get('/debug-patrimonies', function() { return Illuminate\Support\Facades\
 Route::middleware(['auth'])->group(function () {
     Route::post('/soporte/tickets', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'store'])
         ->name('soporte.tickets.store');
+    Route::get('/admin/soporte/tickets/count-pending', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'countPending'])
+        ->name('admin.soporte.tickets.countPending');
 
     Route::middleware(['role:Administrador'])->prefix('admin/soporte')->name('admin.soporte.')->group(function() {
         Route::get('/tickets', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'index'])->name('tickets.index');
         Route::put('/tickets/{ticket}/status', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'updateStatus'])->name('tickets.updateStatus');
         Route::delete('/tickets/{ticket}', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'destroy'])->name('tickets.destroy');
-        Route::get('/tickets/count-pending', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'countPending'])->name('tickets.countPending');
     });
 
     // ── Asistente de IA (Groq / Llama 3.3 70B) ─────────────────────────────
