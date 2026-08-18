@@ -3894,6 +3894,21 @@
         var _sentidoLabels   = { ascendente:'▲ Asc.', descendente:'▼ Desc.' };
 
         // ── Estilos radio como card seleccionable ──────────────────────────
+        $(document).on('click', '.ind-radio-card', function(e) {
+            var $radio = $(this).find('input[type="radio"]');
+            if ($radio.length) {
+                $radio.prop('checked', true);
+                var name = $radio.attr('name');
+                $('input[name="' + name + '"]').each(function() {
+                    var card = $(this).closest('.ind-radio-card');
+                    var color = card.data('color') || 'secondary';
+                    card.removeClass('ind-selected-' + color);
+                });
+                var color = $(this).data('color') || 'secondary';
+                $(this).addClass('ind-selected-' + color);
+            }
+        });
+
         $(document).on('change', '.ind-radio', function() {
             var name  = $(this).attr('name');
             // Desmarcar todas las del mismo grupo
@@ -3907,6 +3922,23 @@
             var color = card.data('color') || 'secondary';
             card.addClass('ind-selected-' + color);
         });
+
+        function getRadioValue(name) {
+            var $checked = $('input[name="' + name + '"]:checked');
+            if ($checked.length && $checked.val()) return $checked.val();
+            
+            // Fallback: buscar por clase ind-selected-* en las cards si radio check se desincronizó
+            var $selectedCard = $('input[name="' + name + '"]').closest('.ind-radio-card').filter(function() {
+                var cls = $(this).attr('class') || '';
+                return cls.indexOf('ind-selected-') >= 0;
+            });
+            if ($selectedCard.length) {
+                var $r = $selectedCard.find('input[type="radio"]');
+                $r.prop('checked', true);
+                return $r.val();
+            }
+            return null;
+        }
 
         // ── Agregar fila de meta ───────────────────────────────────────────
         function agregarMeta(anio, valor) {
@@ -4100,11 +4132,11 @@
         // ── Guardar ficha ──────────────────────────────────────────────────
         $('#btnGuardarIndicador').on('click', function() {
             var nombre = $.trim($('#ind_nombre').val());
-            var dim    = $('input[name="ind_dimension"]:checked').val();
-            var amb    = $('input[name="ind_ambito"]:checked').val();
-            var frec   = $('input[name="ind_frecuencia"]:checked').val();
-            var cob    = $('input[name="ind_cobertura"]:checked').val();
-            var sent   = $('input[name="ind_sentido"]:checked').val();
+            var dim    = getRadioValue('ind_dimension');
+            var amb    = getRadioValue('ind_ambito');
+            var frec   = getRadioValue('ind_frecuencia');
+            var cob    = getRadioValue('ind_cobertura');
+            var sent   = getRadioValue('ind_sentido');
 
             if (!nombre)  { toastr.warning('El nombre del indicador es obligatorio.'); return; }
             if (!dim)     { toastr.warning('Seleccioná la dimensión del indicador.'); return; }
