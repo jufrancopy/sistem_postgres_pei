@@ -526,6 +526,14 @@
                                                                 style="font-size:.7rem">
                                                             <i class="fa fa-paper-plane"></i>
                                                         </button>
+                                                        @role('Administrador')
+                                                        <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
+                                                           data-id="{{ $action->id }}"
+                                                           href="javascript:void(0)"
+                                                           title="Enviar a la Papelera">
+                                                            <i class="fa fa-trash" style="font-size:.7rem"></i>
+                                                        </a>
+                                                        @endrole
                                                         @php
                                                             $comentariosAction = isset($comentariosAsesoria) ? (
                                                                 $comentariosAsesoria->get('node_' . $action->id)

@@ -3826,42 +3826,47 @@
 
                 // ══ FIN MÓDULO REPORTAR AVANCE ═══════════════════════════════
             });
-            // Agregar un controlador de eventos para el botón de eliminación
-            $('.contentMain').on('click', '.deleteItem', function() {
+            $(document).on('click', '.deleteItem', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 var axisId = $(this).data('id');
+                var $btn = $(this);
 
-                // Muestra una confirmación en SweetAlert
                 Swal.fire({
-                    title: '¿Estás seguro de eliminarlo?',
-                    text: "Si lo haces, no podrás revertirlo",
+                    title: '¿Enviar a la Papelera?',
+                    text: 'El elemento será movido al basurero del PEI.',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Estoy seguro!'
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, enviar a la papelera',
+                    cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Si el usuario confirma, procede con la eliminación
                         $.ajax({
                             type: "DELETE",
-                            url: "{{ route('pei-profiles.store') }}" + '/' + axisId,
+                            url: "{{ url('pei-profiles') }}/" + axisId,
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
                             success: function(data) {
-
+                                var $actionBlock = $('#actionsBlock_' + axisId);
+                                if ($actionBlock.length) {
+                                    $actionBlock.fadeOut(300, function(){ $(this).remove(); });
+                                } else {
+                                    $btn.closest('.card, .accordion-item').fadeOut(300, function(){ $(this).remove(); });
+                                }
+                                Swal.fire(
+                                    'Movido a la Papelera',
+                                    'El elemento fue enviado al basurero correctamente.',
+                                    'success'
+                                );
                             },
                             error: function(data) {
                                 console.log('Error:', data);
+                                toastr.error('No se pudo enviar el registro a la papelera.');
                             }
                         });
-
-                        // Elimina la tarjeta del DOM
-                        $(this).closest('.card').remove();
-
-                        // Muestra una notificación de éxito después de la eliminación
-                        Swal.fire(
-                            'Borrado',
-                            'El registro ha sido eliminado correctamente',
-                            'success'
-                        );
                     }
                 });
             });
@@ -4136,21 +4141,30 @@
                 payload['metas[' + i + '][valor]'] = m.valor;
             });
 
-            var url    = _indicadorEditId
+            if (_indicadorEditId) {
+                payload._method = 'PUT';
+            }
+
+            var url = _indicadorEditId
                 ? '{{ url("pei-profiles") }}/' + _peiProfileId + '/indicadores/' + _indicadorEditId
                 : '{{ url("pei-profiles") }}/' + _peiProfileId + '/indicadores';
-            var method = _indicadorEditId ? 'PUT' : 'POST';
 
             $.ajax({
-                url: url, type: method, data: payload,
+                url: url,
+                type: 'POST',
+                data: payload,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
                 success: function(res) {
-                    toastr.success(_indicadorEditId ? 'Indicador actualizado.' : 'Indicador creado.');
+                    toastr.success(_indicadorEditId ? 'Ficha de Indicador actualizada correctamente.' : 'Ficha de Indicador creada correctamente.');
                     $('#modalIndicador').modal('hide');
+                    if (typeof cargarListaIndicadores === 'function') cargarListaIndicadores();
                 },
                 error: function(xhr) {
                     var e = xhr.responseJSON?.errors;
                     if (e) $.each(e, (k,v) => toastr.error(v[0]));
-                    else toastr.error(xhr.responseJSON?.message || 'Error al guardar.');
+                    else toastr.error(xhr.responseJSON?.message || 'Error al guardar la Ficha de Indicador.');
                 }
             });
         });
