@@ -955,4 +955,10 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/tickets/{ticket}', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'destroy'])->name('tickets.destroy');
         Route::get('/tickets/count-pending', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'countPending'])->name('tickets.countPending');
     });
+
+    // ── Asistente de IA (Groq / Llama 3.3 70B) ─────────────────────────────
+    Route::prefix('admin/ai')->name('admin.ai.')->group(function() {
+        Route::post('/redactar-smart', [\App\Http\Controllers\Admin\Ai\AiAssistantController::class, 'redactarSmart'])->name('redactarSmart');
+        Route::post('/sugerir-indicador', [\App\Http\Controllers\Admin\Ai\AiAssistantController::class, 'sugerirIndicador'])->name('sugerirIndicador');
+    });
 });

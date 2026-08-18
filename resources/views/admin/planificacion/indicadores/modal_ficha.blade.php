@@ -21,7 +21,12 @@
                 <div class="px-4 pt-3 pb-3" style="background:#f0f4ff;border-bottom:2px solid #c5cae9">
                     <div class="row align-items-end">
                         <div class="col-md-8 mb-2 mb-md-0">
-                            <label class="ind-label"><span class="ind-num">1</span> Nombre del Indicador <span class="text-danger">*</span></label>
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <label class="ind-label mb-0"><span class="ind-num">1</span> Nombre del Indicador <span class="text-danger">*</span></label>
+                                <button type="button" class="btn btn-xs btn-outline-primary font-weight-bold rounded-pill px-2.5 shadow-xs" id="btnAutocompletarIaIndicador" onclick="generarFichaIndicadorIa();" title="Usar la IA de Llama 3.3 para proponer una Ficha Técnica completa">
+                                    <i class="fa fa-magic text-warning mr-1"></i> Autocompletar Ficha con IA
+                                </button>
+                            </div>
                             <input type="text" id="ind_nombre" class="form-control form-control-sm"
                                    placeholder="Nombre completo del indicador">
                         </div>
@@ -354,4 +359,60 @@ $(document).ready(function() {
         card.addClass('ind-selected-' + color);
     });
 });
+
+function generarFichaIndicadorIa() {
+    var titulo = $.trim($('#ind_nombre').val()) || $('#modalIndicadorSubtitulo').text();
+    if (!titulo) {
+        if (typeof toastr !== 'undefined') toastr.warning('Escribí al menos una palabra en el nombre para generar la sugerencia con IA.');
+        return;
+    }
+
+    var $btn = $('#btnAutocompletarIaIndicador');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Analizando con IA...');
+
+    $.ajax({
+        url: '{{ route("admin.ai.sugerirIndicador") }}',
+        type: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            titulo: titulo
+        },
+        dataType: 'json',
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-magic text-warning mr-1"></i> Autocompletar Ficha con IA');
+            if (!res.success || !res.indicador) {
+                if (typeof toastr !== 'undefined') toastr.error('No se pudo obtener la sugerencia.');
+                return;
+            }
+
+            var ind = res.indicador;
+            if (ind.nombre) $('#ind_nombre').val(ind.nombre);
+            if (ind.codigo_letras) $('#ind_codigo_letras').val(ind.codigo_letras);
+            if (ind.codigo_numeros) $('#ind_codigo_numeros').val(ind.codigo_numeros);
+            if (ind.formula) $('#ind_formula').val(ind.formula);
+            if (ind.unidad_medida) $('#ind_unidad_medida').val(ind.unidad_medida);
+            if (ind.fuente) $('#ind_fuente').val(ind.fuente);
+            if (ind.dependencia_responsable) $('#ind_dependencia_responsable').val(ind.dependencia_responsable);
+
+            // Seleccionar radio cards
+            $.each(['dimension', 'ambito', 'frecuencia', 'cobertura', 'sentido'], function(i, campo) {
+                var val = ind[campo];
+                if (val) {
+                    var $r = $('input[name="ind_' + campo + '"]').filter(function() {
+                        return $(this).val().toLowerCase() === val.toLowerCase();
+                    });
+                    if ($r.length) {
+                        $r.prop('checked', true).trigger('change');
+                    }
+                }
+            });
+
+            if (typeof toastr !== 'undefined') toastr.success('¡Ficha de Indicador autocompletada inteligentemente por la IA!');
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false).html('<i class="fa fa-magic text-warning mr-1"></i> Autocompletar Ficha con IA');
+            if (typeof toastr !== 'undefined') toastr.error('Error al conectar con la IA de Groq.');
+        }
+    });
+}
 </script>

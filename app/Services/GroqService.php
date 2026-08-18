@@ -194,4 +194,90 @@ PROMPT;
             throw new \Exception($body['error']['message'] ?? 'Error al conectar con Groq API.');
         }
     }
+
+    /**
+     * Mejorar la redacción de un borrador según la metodología SMART y tono institucional IPS.
+     */
+    public function redactarSmart(string $texto, string $tipo = 'Objetivo'): string
+    {
+        $prompt = <<<PROMPT
+Eres un experto consultor internacional en planificación estratégica pública y metodología SMART para el Instituto de Previsión Social (IPS) de Paraguay y el Plan Nacional de Desarrollo PND 2050.
+
+Tu tarea es recibir el siguiente borrador o texto simple de un {$tipo} y reescribirlo en un texto claro, técnico, formal, medible y orientado a resultados de salud y gestión pública en el Paraguay.
+
+Borrador: "{$texto}"
+
+Reglas:
+- Responde ÚNICAMENTE con el texto de la propuesta mejorada.
+- No agregues introducciones, saludos ni explicaciones.
+- Mantén la brevedad (máximo 2 a 3 oraciones).
+PROMPT;
+
+        return $this->generarTextoLibre($prompt, 500);
+    }
+
+    /**
+     * Generar Ficha Técnica de Indicador con IA.
+     */
+    public function sugerirIndicador(string $accionTitulo, string $contexto = 'IPS Paraguay'): array
+    {
+        $prompt = <<<PROMPT
+Eres un especialista en diseño de indicadores de gestión pública y de salud para el IPS de Paraguay.
+
+Tu tarea es diseñar la Ficha Técnica de un Indicador idóneo para la siguiente Acción u Objetivo Estratégico:
+- Título: "{$accionTitulo}"
+- Contexto: "{$contexto}"
+
+Genera ÚNICAMENTE un objeto JSON estricto con la siguiente estructura (sin bloque markdown ni texto extra):
+{
+  "nombre": "Nombre técnico y preciso del indicador",
+  "codigo_letras": "IND",
+  "codigo_numeros": "001",
+  "dimension": "eficacia",
+  "ambito": "accion_estrategica",
+  "frecuencia": "trimestral",
+  "cobertura": "nacional",
+  "sentido": "ascendente",
+  "formula": "Fórmula matemática clara (Ej: (N° de atenciones / Total programado) * 100)",
+  "unidad_medida": "%",
+  "fuente": "Sistema SIESS / Registro Hospitalario IPS",
+  "dependencia_responsable": "Dirección de Planificación y Gestión Hospitalaria"
+}
+
+Nota de valores posibles:
+- dimension: eficacia, eficiencia, calidad, economia
+- ambito: objetivo_estrategico, objetivo_especifico, accion_estrategica, accion_operativa
+- frecuencia: mensual, trimestral, semestral, anual
+- cobertura: nacional, regional, departamental, municipal
+- sentido: ascendente, descendente
+PROMPT;
+
+        try {
+            $raw = $this->generarTextoLibre($prompt, 800);
+            preg_match('/\{.*\}/s', $raw, $matches);
+            $clean = $matches[0] ?? '{}';
+            $data = json_decode($clean, true);
+
+            if (isset($data['nombre'])) {
+                return $data;
+            }
+        } catch (\Exception $e) {
+            // fallback
+        }
+
+        return [
+            'nombre'                  => 'Porcentaje de ejecución de la acción: ' . $accionTitulo,
+            'codigo_letras'           => 'IND',
+            'codigo_numeros'          => '001',
+            'dimension'               => 'eficacia',
+            'ambito'                  => 'accion_estrategica',
+            'frecuencia'              => 'trimestral',
+            'cobertura'               => 'nacional',
+            'sentido'                 => 'ascendente',
+            'formula'                 => '(N° de metas cumplidas / Total de metas programadas) * 100',
+            'unidad_medida'           => '%',
+            'fuente'                  => 'Sistema SIPLAN GO IPS',
+            'dependencia_responsable' => 'Unidad Ejecutora IPS',
+        ];
+    }
 }

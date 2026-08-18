@@ -205,7 +205,12 @@
                     {{ Form::hidden('dependency_id', null, ['class' => 'form-control', 'id' => 'axis_dependency']) }}
 
                     <div class="axis mb-3">
-                        {{ Form::label('name', 'Descripción del Objetivo Estratégico:', ['class' => 'control-label font-weight-bold']) }}
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            {{ Form::label('name', 'Descripción del Objetivo Estratégico / Acción:', ['class' => 'control-label font-weight-bold mb-0']) }}
+                            <button type="button" class="btn btn-xs btn-outline-success font-weight-bold rounded-pill px-2.5 shadow-xs" id="btnMejorarSmartIa" onclick="mejorarTextoSmartIa();" title="Usar la IA de Llama 3.3 para perfeccionar la redacción bajo metodología SMART e IPS">
+                                <i class="fa fa-magic text-warning mr-1"></i> Mejorar Redacción SMART con IA
+                            </button>
+                        </div>
                         {{ Form::textarea('name', null, [
                             'class' => 'form-control editor',
                             'id' => 'axis',
@@ -1004,3 +1009,47 @@
     </div>
 </div>
 {{-- /Modal Lista --}}
+
+<script>
+function mejorarTextoSmartIa() {
+    var rawText = $('#axis').val();
+    if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances['axis']) {
+        rawText = CKEDITOR.instances['axis'].getData();
+    }
+
+    var plainText = $('<div>').html(rawText).text().trim();
+    if (!plainText) {
+        if (typeof toastr !== 'undefined') toastr.warning('Ingresá una idea o borrador primero para que la IA lo redacte en formato SMART.');
+        return;
+    }
+
+    var $btn = $('#btnMejorarSmartIa');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Redactando con IA...');
+
+    $.ajax({
+        url: '{{ route("admin.ai.redactarSmart") }}',
+        type: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            texto: plainText,
+            tipo: 'Objetivo/Acción Estratégica IPS'
+        },
+        dataType: 'json',
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-magic text-warning mr-1"></i> Mejorar Redacción SMART con IA');
+            if (res.success && res.resultado) {
+                if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances['axis']) {
+                    CKEDITOR.instances['axis'].setData(res.resultado);
+                } else {
+                    $('#axis').val(res.resultado);
+                }
+                if (typeof toastr !== 'undefined') toastr.success('¡Texto mejorado y formateado a metodología SMART por la IA!');
+            }
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false).html('<i class="fa fa-magic text-warning mr-1"></i> Mejorar Redacción SMART con IA');
+            if (typeof toastr !== 'undefined') toastr.error('Error al conectar con la IA.');
+        }
+    });
+}
+</script>
