@@ -9,13 +9,41 @@
     }
     body.pei-full-width-mode .main-panel {
         width: 100% !important;
+        max-width: 100% !important;
         margin-left: 0 !important;
         float: none !important;
+        padding: 0 !important;
         transition: all 0.25s ease-in-out;
     }
     body.pei-full-width-mode .content {
+        padding: 10px 5px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    body.pei-full-width-mode .container,
+    body.pei-full-width-mode .container-fluid {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+        margin: 0 !important;
+    }
+    body.pei-full-width-mode .card {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    body.pei-full-width-mode .card-body {
         padding-left: 10px !important;
         padding-right: 10px !important;
+    }
+    body.pei-full-width-mode .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    body.pei-full-width-mode nav.navbar {
+        width: 100% !important;
     }
     </style>
 
