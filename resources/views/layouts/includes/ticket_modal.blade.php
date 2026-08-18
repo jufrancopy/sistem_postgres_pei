@@ -28,6 +28,12 @@
     font-size: 1.05rem;
 }
 /* Material Dashboard Form Reset para evitar encimado de labels e inputs */
+#modalReportarFalla {
+    z-index: 100050 !important;
+}
+.modal-backdrop.show {
+    z-index: 100040 !important;
+}
 #modalReportarFalla .form-group,
 #modalGestionarTicket .form-group {
     position: relative !important;
@@ -90,7 +96,7 @@
 </button>
 
 {{-- Modal de Ticket de Falla --}}
-<div class="modal fade" id="modalReportarFalla" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 100000;">
+<div class="modal fade" id="modalReportarFalla" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 100050;">
     <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 650px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
             
@@ -183,6 +189,16 @@
 
 <script>
 function abrirModalReportarFalla(peiProfileId, nodoContexto) {
+    // 1. Cerrar menú desplegable/sidebar si estuviera abierto en móviles
+    $('html, body').removeClass('nav-open');
+    $('.navbar-collapse').collapse('hide');
+    $('.dropdown-menu').removeClass('show');
+
+    // 2. Mover modal directamente a body para evitar problemas de z-index
+    if ($('#modalReportarFalla').parent().is(':not(body)')) {
+        $('#modalReportarFalla').appendTo('body');
+    }
+
     var currentUrl = window.location.href;
     $('#ticket_url_origen').val(currentUrl);
     $('#ticket_url_display').val(currentUrl);
@@ -197,6 +213,10 @@ function abrirModalReportarFalla(peiProfileId, nodoContexto) {
 }
 
 $(document).ready(function() {
+    if ($('#modalReportarFalla').length) {
+        $('#modalReportarFalla').appendTo('body');
+    }
+
     $('#formReportarFalla').on('submit', function(e) {
         e.preventDefault();
         var $btn = $('#btnSubmitTicket');
