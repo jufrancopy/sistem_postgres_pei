@@ -5544,15 +5544,14 @@ function restaurarElementoPei(id, type) {
     });
 }
 
-$(document).on('click', '.btnVerComentariosNodo', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    var title = $(this).attr('data-title') || $(this).data('title');
-    var level = $(this).attr('data-level') || $(this).data('level') || 'Elemento del PEI';
-    var rawComments = $(this).attr('data-comments') || $(this).data('comments');
+window.verComentariosNodo = function(btn) {
+    var $btn = $(btn);
+    var title = $btn.attr('data-title') || $btn.data('title') || '';
+    var level = $btn.attr('data-level') || $btn.data('level') || 'Elemento del PEI';
+    var rawComments = $btn.attr('data-comments') || $btn.data('comments');
     
     var comments = [];
-    if (typeof rawComments === 'string') {
+    if (typeof rawComments === 'string' && rawComments.length > 0) {
         try {
             comments = JSON.parse(rawComments);
         } catch (err) {
@@ -5571,10 +5570,10 @@ $(document).on('click', '.btnVerComentariosNodo', function(e) {
             var instHtml = c.institucion ? ' <span class="badge badge-light border text-muted ml-1" style="font-size:0.75rem;">' + c.institucion + '</span>' : '';
             html += '<div class="card border-0 shadow-xs mb-3" style="border-radius: 12px; overflow: hidden; border-left: 5px solid #8b5cf6 !important; background: #f8fafc;">';
             html += '<div class="card-header bg-white py-2.5 px-3 border-bottom d-flex align-items-center justify-content-between">';
-            html += '<div class="font-weight-bold text-dark" style="font-size: 0.88rem;"><i class="fa fa-user-check text-purple mr-1.5" style="color:#7e22ce"></i>' + c.asesor + instHtml + '</div>';
+            html += '<div class="font-weight-bold text-dark" style="font-size: 0.88rem;"><i class="fa fa-user-check text-purple mr-1.5" style="color:#7e22ce"></i>' + (c.asesor || 'Asesor Externo') + instHtml + '</div>';
             html += '<span class="text-muted small">' + (c.fecha || '') + '</span>';
             html += '</div>';
-            html += '<div class="card-body p-3 text-dark" style="font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap;">' + c.comentario + '</div>';
+            html += '<div class="card-body p-3 text-dark" style="font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap;">' + (c.comentario || '') + '</div>';
             html += '</div>';
         });
     } else {
@@ -5583,6 +5582,12 @@ $(document).on('click', '.btnVerComentariosNodo', function(e) {
 
     $('#modalVerComentariosNodoBody').html(html);
     $('#modalVerComentariosNodo').modal('show');
+};
+
+$(document).on('click', '.btnVerComentariosNodo', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.verComentariosNodo(this);
 });
 </script>
 

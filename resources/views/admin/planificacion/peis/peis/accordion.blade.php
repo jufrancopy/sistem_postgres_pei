@@ -171,7 +171,7 @@
                             data-title="{{ e(strip_tags($axi->name)) }}"
                             data-level="{{ $niveles['axi'] ?? 'Objetivo Estratégico' }}"
                             data-comments="{{ $comentariosAxiJson }}"
-                            onclick="event.stopPropagation();"
+                            onclick="event.preventDefault(); event.stopPropagation(); verComentariosNodo(this);"
                             style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 20px; padding: 3px 11px; font-size: 0.73rem; cursor: pointer; box-shadow: 0 2px 6px rgba(126, 34, 206, 0.45);">
                         <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosAxi->count() }} {{ $comentariosAxi->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
                     </button>
@@ -359,7 +359,7 @@
                                          data-title="{{ e(strip_tags($goal->name)) }}"
                                          data-level="{{ $niveles['goal'] ?? 'Objetivo Específico' }}"
                                          data-comments="{{ $comentariosGoalJson }}"
-                                         onclick="event.stopPropagation();"
+                                         onclick="event.preventDefault(); event.stopPropagation(); verComentariosNodo(this);"
                                          style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 20px; padding: 2px 10px; font-size: 0.71rem; cursor: pointer; box-shadow: 0 2px 5px rgba(126, 34, 206, 0.4);">
                                      <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosGoal->count() }} {{ $comentariosGoal->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
                                  </button>
@@ -507,7 +507,7 @@
                                                                 data-title="{{ e(strip_tags($action->name)) }}"
                                                                 data-level="{{ $niveles['action'] ?? 'Acción Estratégica' }}"
                                                                 data-comments="{{ $comentariosActionJson }}"
-                                                                onclick="event.stopPropagation();"
+                                                                onclick="event.preventDefault(); event.stopPropagation(); verComentariosNodo(this);"
                                                                 style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 20px; padding: 2px 10px; font-size: 0.71rem; cursor: pointer; box-shadow: 0 2px 5px rgba(126, 34, 206, 0.4);">
                                                             <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosAction->count() }} {{ $comentariosAction->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
                                                         </button>
@@ -830,7 +830,7 @@
                                                                                  data-title="{{ e(strip_tags($ini->accion)) }}"
                                                                                  data-level="Acción Operativa (Iniciativa)"
                                                                                  data-comments="{{ $comentariosIniJson }}"
-                                                                                 onclick="event.stopPropagation();"
+                                                                                 onclick="event.preventDefault(); event.stopPropagation(); verComentariosNodo(this);"
                                                                                  style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 20px; padding: 2px 10px; font-size: 0.7rem; cursor: pointer; box-shadow: 0 2px 5px rgba(126, 34, 206, 0.4);">
                                                                              <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosIni->count() }} {{ $comentariosIni->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
                                                                          </button>
