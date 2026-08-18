@@ -82,6 +82,7 @@
                     <!-- Fin Pie -->
 
                     @include('layouts.includes.reflexion_modal')
+                    @include('layouts.includes.ticket_modal')
 </body>
 
 </html>

@@ -943,3 +943,16 @@ Route::get('pei-profiles/{profileId}/proyectos/acciones-publico',
     [\App\Http\Controllers\Admin\Proyectos\ProyectoInstitucionalController::class, 'getAccionesDePerfil'])
     ->name('proyectos.solicitar.acciones');
 Route::get('/debug-patrimonies', function() { return Illuminate\Support\Facades\Schema::getColumnListing('patrimonies'); });
+
+// ── Módulo de Soporte Técnico y Reporte de Fallas ─────────────────────────
+Route::middleware(['auth'])->group(function () {
+    Route::post('/soporte/tickets', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'store'])
+        ->name('soporte.tickets.store');
+
+    Route::middleware(['role:Administrador'])->prefix('admin/soporte')->name('admin.soporte.')->group(function() {
+        Route::get('/tickets', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'index'])->name('tickets.index');
+        Route::put('/tickets/{ticket}/status', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'updateStatus'])->name('tickets.updateStatus');
+        Route::delete('/tickets/{ticket}', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'destroy'])->name('tickets.destroy');
+        Route::get('/tickets/count-pending', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'countPending'])->name('tickets.countPending');
+    });
+});
