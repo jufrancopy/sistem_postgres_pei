@@ -1011,14 +1011,17 @@
                                                 ];
                                             @endphp
                                             <div class="mt-3 px-1">
-                                                <div class="d-flex align-items-center mb-2">
-                                                    <i class="fa fa-sitemap text-muted mr-2"></i>
+                                                <div class="d-flex align-items-center mb-2 flex-wrap" style="gap:.5rem">
+                                                    <i class="fa fa-sitemap text-muted mr-1"></i>
                                                     <span class="font-weight-bold text-uppercase" style="font-size:.75rem; letter-spacing:.05em; color:#495057">
                                                         Marco Estratégico General
                                                     </span>
-                                                    <span class="badge badge-light border ml-2" style="font-size:.68rem">
+                                                    <span class="badge badge-light border ml-1" style="font-size:.68rem">
                                                         {{ $marcosGenerales->count() }} referencial(es)
                                                     </span>
+                                                    <button type="button" class="btn btn-xs btn-outline-success font-weight-bold rounded-pill ml-auto shadow-xs" onclick="abrirModalInspiracionOds(3);">
+                                                        <i class="fa fa-lightbulb text-warning mr-1"></i> Banco de Ideas ODS 2030 (ONU)
+                                                    </button>
                                                 </div>
                                                 <div class="d-flex flex-wrap" style="gap:.35rem">
                                                     @foreach($marcosGenerales->groupBy('tipo') as $tipo => $items)
@@ -1026,9 +1029,13 @@
                                                             $cfg = $coloresMeg[$tipo] ?? $coloresMeg['general'];
                                                         @endphp
                                                         @foreach($items as $marco)
+                                                        @php
+                                                            $odsNum = (preg_match('/(\d+)/', $marco->nombre, $matches)) ? (int)$matches[1] : 3;
+                                                        @endphp
                                                         <span class="badge {{ $cfg['bg'] }}"
-                                                              style="font-size:.72rem; padding:.35em .6em"
-                                                              title="{{ ucfirst($tipo) }}">
+                                                              style="font-size:.72rem; padding:.35em .6em; cursor:pointer;"
+                                                              title="Haz clic para ver ideas de inspiración sobre este marco"
+                                                              onclick="abrirModalInspiracionOds({{ $odsNum }});">
                                                             <i class="fa {{ $cfg['icon'] }} mr-1"></i>{{ $marco->nombre }}
                                                         </span>
                                                         @endforeach
@@ -1571,6 +1578,7 @@
 
                 {{-- Star Modals --}}
                 @include('admin.planificacion.peis.peis.modals')
+                @include('admin.planificacion.ods.modal_inspiracion')
                 @role('Administrador')
                 @include('admin.planificacion.peis.peis.partials.modal_puntos_manuales')
                 @endrole

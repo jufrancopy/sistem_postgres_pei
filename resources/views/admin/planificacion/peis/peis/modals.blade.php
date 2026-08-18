@@ -320,8 +320,11 @@
 
                     {{-- ── Marcos Referenciales (PND, ODS, etc.) ── --}}
                     <div class="form-group mb-3 position-relative">
-                        <label class="control-label font-weight-bold">
-                            <i class="fa fa-link mr-1"></i> Marcos Referenciales
+                        <label class="control-label font-weight-bold d-flex align-items-center justify-content-between">
+                            <span><i class="fa fa-link mr-1"></i> Marcos Referenciales</span>
+                            <button type="button" class="btn btn-xs btn-outline-success font-weight-bold rounded-pill px-2.5 shadow-xs" onclick="abrirModalInspiracionOds(3);">
+                                <i class="fa fa-lightbulb text-warning mr-1"></i> Banco de Ideas ODS (ONU)
+                            </button>
                         </label>
                         <small class="form-text text-muted mb-1">
                             Vinculá este objetivo a PND 2050, ODS u otro marco normativo.

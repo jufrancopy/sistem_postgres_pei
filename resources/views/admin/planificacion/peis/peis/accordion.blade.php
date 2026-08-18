@@ -136,9 +136,13 @@
                         @endphp
                         @foreach($marcosAxi->groupBy('tipo') as $tipo => $items)
                             @foreach($items as $marco)
+                                @php
+                                    $odsVal = (preg_match('/(\d+)/', $marco->nombre, $matches)) ? (int)$matches[1] : 3;
+                                @endphp
                                 <span class="badge shadow-xs mr-1" 
-                                      style="{{ $badgeStyles[$tipo] ?? 'background:#64748b; color:#fff;' }} font-size:.68rem; padding: 4px 8px; border-radius: 6px;"
-                                      title="{{ $marco->descripcion ?? $marco->nombre }}">
+                                      style="{{ $badgeStyles[$tipo] ?? 'background:#64748b; color:#fff;' }} font-size:.68rem; padding: 4px 8px; border-radius: 6px; cursor: pointer;"
+                                      title="Haz clic para ver ideas e inspiración de las Naciones Unidas (ODS {{ $odsVal }})"
+                                      onclick="event.stopPropagation(); abrirModalInspiracionOds({{ $odsVal }});">
                                     {{ $marco->nombre }}
                                 </span>
                             @endforeach
