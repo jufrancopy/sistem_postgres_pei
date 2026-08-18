@@ -114,5 +114,35 @@
                 if ($field.length) $field.first().focus();
             }, 50);
         });
+
+        // ── Gestor Global de Modales (Resuelve congelamiento de pantalla y apilamiento de backdrops) ──
+        $(document).on('show.bs.modal', '.modal', function () {
+            // 1. Mover siempre el modal a document.body para evitar trampas de z-index y overflow:hidden
+            if ($(this).parent()[0] !== document.body) {
+                $(this).appendTo('body');
+            }
+
+            // 2. Apilar z-index para soportar múltiples modales abiertos simultáneamente
+            var openModals = $('.modal:visible').length;
+            var zIndex = 1050 + (10 * openModals);
+            $(this).css('z-index', zIndex);
+
+            setTimeout(function() {
+                $('.modal-backdrop').not('.modal-stack').each(function() {
+                    $(this).css('z-index', zIndex - 5).addClass('modal-stack');
+                });
+            }, 10);
+        });
+
+        $(document).on('hidden.bs.modal', '.modal', function () {
+            // 3. Al cerrar un modal, verificar si quedan otros abiertos
+            if ($('.modal:visible').length > 0) {
+                $(document.body).addClass('modal-open');
+            } else {
+                // Limpiar todos los backdrops huérfanos y desbloquear el scroll del body
+                $('.modal-backdrop').remove();
+                $(document.body).removeClass('modal-open').css('padding-right', '');
+            }
+        });
     });
 </script>
