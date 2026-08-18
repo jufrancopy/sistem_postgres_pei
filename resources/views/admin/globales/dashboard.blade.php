@@ -798,7 +798,7 @@
                             </thead>
                             <tbody>
                                 @foreach($peiPerfiles as $pIdx => $plan)
-                                <tr id="pei_row_{{ $plan->id }}" class="pei-row {{ ($selectedPei && $selectedPei->id != $plan->id) ? 'pei-row-other d-none' : 'pei-row-active' }}">
+                                <tr id="pei_row_{{ $plan->id }}" class="pei-row {{ ($selectedPei && $selectedPei->id == $plan->id) ? 'pei-row-active' : 'pei-row-other' }}">
                                     <td class="font-weight-bold text-center">{{ $pIdx + 1 }}</td>
                                     <td>
                                         <div class="font-weight-bold text-dark" style="font-size:0.93rem;">{{ strip_tags($plan->name) }}</div>
@@ -2133,17 +2133,37 @@ $(document).ready(function() {
     };
 
     // ── Scope Filter para Planes PEI (PEI Seleccionado vs Todos los Planes) ──
+    var currentPlanesScope = 0; // 0 = solo PEI seleccionado, 1 = todos los planes
+
+    if ($.fn.dataTable) {
+        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+            if (settings.nTable && settings.nTable.id === 'tablaPlanesGlobal') {
+                if (currentPlanesScope === 1) {
+                    return true;
+                }
+                var rowNode = settings.aoData[dataIndex] ? settings.aoData[dataIndex].nTr : null;
+                if (!rowNode) return true;
+                if ($('#tablaPlanesGlobal tr.pei-row-active').length > 0) {
+                    return $(rowNode).hasClass('pei-row-active');
+                }
+                return true;
+            }
+            return true;
+        });
+    }
+
     window.filtrarPlanesScope = function(scope) {
+        currentPlanesScope = scope;
         if (scope === 0) {
-            $('.pei-row-other').addClass('d-none');
-            $('.pei-row-active').removeClass('d-none');
-            $('#lblScopePeiSelected').addClass('active');
-            $('#lblScopePeiAll').removeClass('active');
+            $('#lblScopePeiSelected').addClass('active btn-primary').removeClass('btn-outline-primary');
+            $('#lblScopePeiAll').removeClass('active btn-primary').addClass('btn-outline-primary');
         } else {
-            $('.pei-row-other').removeClass('d-none');
-            $('.pei-row-active').removeClass('d-none');
-            $('#lblScopePeiSelected').removeClass('active');
-            $('#lblScopePeiAll').addClass('active');
+            $('#lblScopePeiSelected').removeClass('active btn-primary').addClass('btn-outline-primary');
+            $('#lblScopePeiAll').addClass('active btn-primary').removeClass('btn-outline-primary');
+        }
+
+        if ($.fn.dataTable && $.fn.dataTable.isDataTable('#tablaPlanesGlobal')) {
+            $('#tablaPlanesGlobal').DataTable().draw();
         }
     };
 
