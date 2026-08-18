@@ -1,8 +1,9 @@
 <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top" style="box-shadow: none !important; background: transparent !important;">
   <div class="container-fluid">
     <div class="navbar-wrapper">
-      <a class="navbar-brand text-dark font-weight-bold" href="{{ route('home') }}" style="font-size: 0.98rem; letter-spacing: -0.2px;">
-        <span>{{ \App\Models\HomeConfiguration::getSetting('site_name', 'SIPLAN') }}</span>
+      <a class="navbar-brand text-dark font-weight-bold d-inline-flex align-items-center" href="{{ route('home') }}" style="font-size: 0.98rem; letter-spacing: -0.2px; gap: 8px;">
+        <span class="font-weight-bold text-dark">SIPLAN <span class="text-primary font-weight-bold">GO</span></span>
+        <span class="badge badge-primary font-weight-bold px-2 py-1" style="font-size: 0.7rem; border-radius: 6px; letter-spacing: 0.2px;">Planificar con Propósito</span>
       </a>
     </div>
 

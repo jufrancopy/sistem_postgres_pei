@@ -94,13 +94,13 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 <div class="topbar">
   <a href="{{ url('/') }}" class="brand-group">
     @if(!empty($sysLogoUrl))
-      <img src="{{ $sysLogoUrl }}" alt="SIPLAN Logo" class="brand-logo">
+      <img src="{{ $sysLogoUrl }}" alt="SIPLAN GO Logo" class="brand-logo" style="max-height: 52px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
     @else
-      <div style="width:40px;height:40px;border-radius:12px;background:#0f172a;color:#fff;display:grid;place-items:center;font-weight:900;font-size:18px;">S</div>
+      <div style="width:44px;height:44px;border-radius:12px;background:#0f172a;color:#fff;display:grid;place-items:center;font-weight:900;font-size:16px;">GO</div>
     @endif
     <div>
-      <div class="brand-title">{{ $sysSiteName }}</div>
-      <div class="brand-sub">Manifiesto & Propósito Institucional</div>
+      <div class="brand-title" style="font-size: 1.15rem; font-weight: 900;">SIPLAN <span style="color:#2563eb;">GO</span></div>
+      <div class="brand-sub" style="font-weight: 700; color: #2563eb;">Planificar con Propósito</div>
     </div>
   </a>
 
@@ -114,8 +114,8 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 {{-- HERO --}}
 <div class="hero">
   <div class="hero-badge"><i class="fa fa-flag-checkered"></i> Gente común cambiando la historia</div>
-  <h1>Construyendo Transparencia y Futuro para los <span>Asegurados del IPS</span></h1>
-  <p class="lead">SIPLAN no nació en escritorios distantes ni en teorías frías. Nació de la convicción de paraguayos comunes —trabajadores y profesionales apasionados— que decidieron transformar la gestión pública con tecnología, orden y compromiso real.</p>
+  <h1>SIPLAN <span style="color:#60a5fa;">GO</span> · <span>Planificar con Propósito</span></h1>
+  <p class="lead">Planificar con propósito no es llenar formularios ni cumplir con burocracia: es transformar la gestión pública para que cada guaraní invertido se traduzca en salud, medicamentos a tiempo y dignidad para los asegurados del IPS.</p>
 </div>
 
 <div class="page-container">

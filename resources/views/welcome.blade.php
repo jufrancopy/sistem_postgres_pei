@@ -348,15 +348,15 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 {{-- NAV --}}
 <nav class="topbar" role="navigation" aria-label="Navegación principal">
     <div class="topbar-left">
-        <a href="{{ url('/') }}" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:12px">
+        <a href="{{ url('/') }}" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:14px">
             @if($sysLogoUrl)
-                <img src="{{ $sysLogoUrl }}" alt="{{ $sysSiteName }}" style="max-height: 38px; object-fit: contain;">
+                <img src="{{ $sysLogoUrl }}" alt="SIPLAN GO" style="max-height: 52px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
             @else
-                <div class="topbar-logo" aria-hidden="true">SP</div>
+                <div class="topbar-logo" aria-hidden="true" style="width:44px;height:44px;font-size:14px;border-radius:12px;background:linear-gradient(135deg,#0f172a,#2563eb);">GO</div>
             @endif
             <div class="topbar-text">
-                <div class="topbar-title">{{ $sysSiteName }}</div>
-                <div class="topbar-sub">IPS · Planificación Estratégica</div>
+                <div class="topbar-title" style="font-size: 1.15rem; font-weight: 900; letter-spacing: -0.5px;">SIPLAN <span style="color:#2563eb; font-weight:900;">GO</span></div>
+                <div class="topbar-sub" style="font-weight: 700; color: #2563eb; font-size: 10.5px; letter-spacing: 0.2px;">Planificar con Propósito</div>
             </div>
         </a>
     </div>
@@ -375,22 +375,22 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     <div class="hero-inner">
         <div class="hero-content">
             <div class="hero-badge anim"><i class="fa fa-shield-alt"></i> Instituto de Previsión Social</div>
-            <h1 class="anim d1">Sistema de <span>Planificación</span> Estratégica</h1>
-            <p class="anim d2">Monitoreo en tiempo real de la Red de Salud IPS, planificación estratégica y estadísticas institucionales.</p>
+            <h1 class="anim d1" style="font-family:'Outfit',sans-serif;">SIPLAN <span style="color:#2563eb;">GO</span> · <span>Planificar con Propósito</span></h1>
+            <p class="anim d2" style="font-size: 0.98rem; line-height: 1.65; color: #475569;">Monitoreo en tiempo real de la Red de Salud IPS, gestión estratégica e inteligencia de datos para transformar la atención a nuestros asegurados.</p>
             
             {{-- Flyer Manifiesto Banner --}}
-            <div class="anim d3" style="background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; border-left: 4px solid #38bdf8; border-radius: 14px; padding: 14px 16px; margin-top: 16px; box-shadow: 0 8px 20px rgba(15,23,42,0.15);">
-                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56,189,248,0.15); color: #38bdf8; display: grid; place-items: center; font-size: 16px; flex-shrink: 0;">
+            <div class="anim d3" style="background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; border-left: 4px solid #38bdf8; border-radius: 14px; padding: 16px 18px; margin-top: 18px; box-shadow: 0 10px 24px rgba(15,23,42,0.18);">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(56,189,248,0.15); color: #38bdf8; display: grid; place-items: center; font-size: 18px; flex-shrink: 0;">
                             <i class="fa fa-flag-checkered"></i>
                         </div>
                         <div>
-                            <strong style="font-size: 0.85rem; color: #fff; display: block; line-height: 1.2;">Gente común cambiando la historia</strong>
-                            <span style="font-size: 0.74rem; color: #cbd5e1;">Conocé la misión y el manifiesto institucional de SIPLAN.</span>
+                            <strong style="font-size: 0.9rem; color: #fff; display: block; line-height: 1.25;">SIPLAN GO — Planificar con Propósito</strong>
+                            <span style="font-size: 0.76rem; color: #cbd5e1;">Gente común cambiando la historia de la previsión social en Paraguay.</span>
                         </div>
                     </div>
-                    <button type="button" onclick="abrirModalFlyerManifiesto()" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border-radius: 20px; border: none; font-size: 0.76rem; font-weight: 700; padding: 6px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+                    <button type="button" onclick="abrirModalFlyerManifiesto()" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border-radius: 20px; border: none; font-size: 0.78rem; font-weight: 700; padding: 7px 18px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(37,99,235,0.35);">
                         <i class="fa fa-book-open"></i> Leer Manifiesto
                     </button>
                 </div>
