@@ -79,7 +79,7 @@
             {{-- Separador visual --}}
             <div style="width: 1px; height: 28px; background: #e2e8f0; margin: 0 4px;"></div>
 
-            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación')
+            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI')
             {{-- Botón de Asesor Externo --}}
             <button type="button"
                     class="btn btn-sm font-weight-bold text-dark d-inline-flex align-items-center px-3"

@@ -265,8 +265,8 @@ class PeiAsesoriaController extends Controller
      */
     public function reporteAportes($profileId)
     {
-        if (!auth()->user() || !auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Coordinación de Planificación'])) {
-            abort(403, 'Acceso restringido únicamente a Administradores y Coordinadores de Planificación.');
+        if (!auth()->user() || !auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Coordinación de Planificación', 'Analista de Planificación', 'Analista PEI'])) {
+            abort(403, 'Acceso restringido.');
         }
 
         $profile = PeiProfile::findOrFail($profileId);

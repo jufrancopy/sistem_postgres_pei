@@ -862,7 +862,7 @@
                                                 <i class="fa fa-certificate"></i>
                                             </button>
 
-                                            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación')
+                                            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI')
                                             {{-- Lectura Cómoda de Aportes de Asesoría --}}
                                             <button type="button" class="btn btn-circle btn-dark text-warning btnVerReporteAportes" data-pei-id="{{ $plan->id }}" title="Lectura Cómoda de Aportes y Dictámenes de Asesoría">
                                                 <i class="fa fa-book-open"></i>

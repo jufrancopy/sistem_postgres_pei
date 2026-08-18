@@ -519,9 +519,19 @@ class PeiController extends Controller
 
     public function show(Request $request, $id)
     {
-        if (!auth()->user()->hasAnyRole(['Administrador', 'Coordinador de Planificación'])) {
+        if (!auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Coordinación de Planificación', 'Analista de Planificación', 'Analista PEI'])) {
             return redirect()->route('pei-profiles.proceso', $id);
         }
+
+        // Cargar comentarios de asesoría técnica externa agrupados por nodo/iniciativa
+        $comentariosAsesoria = \App\Models\Planificacion\PeiAsesoriaComentario::whereHas('asesoria', function($q) use ($id) {
+                $q->where('pei_profile_id', $id);
+            })
+            ->with('asesoria')
+            ->get()
+            ->groupBy(function($c) {
+                return $c->node_type . '_' . $c->node_id;
+            });
 
         $profile = PeiProfile::with([
                 'analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies',
