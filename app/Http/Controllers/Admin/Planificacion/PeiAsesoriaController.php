@@ -332,39 +332,73 @@ class PeiAsesoriaController extends Controller
                 $nombreAsesor = $asesoria->nombre ?? 'Asesor Técnico';
                 $textoComentario = $comentario->comentario;
 
+                // Cargar variables globales institucionales desde HomeConfiguration
+                $sysSiteName = \App\Models\HomeConfiguration::getSetting('site_name', 'Sistema de Planificación Estratégica Institucional (PEI)');
+                $sysFooter   = \App\Models\HomeConfiguration::getSetting('footer_text', '© 2026 Instituto de Previsión Social (IPS) — Dirección de Planificación. Todos los derechos reservados.');
+                $sysEmail    = \App\Models\HomeConfiguration::getSetting('contact_email', 'planificacion@ips.gov.py');
+                $sysLogoRaw  = \App\Models\HomeConfiguration::getSetting('logo_url');
+
+                if (!empty($sysLogoRaw)) {
+                    $sysLogoUrl = (str_starts_with($sysLogoRaw, 'http://') || str_starts_with($sysLogoRaw, 'https://')) ? $sysLogoRaw : url($sysLogoRaw);
+                } else {
+                    $sysLogoUrl = asset('material/img/new_logo.png');
+                }
+
+                $logoHtml = !empty($sysLogoUrl) 
+                    ? "<div style='margin-bottom: 16px;'><img src='" . e($sysLogoUrl) . "' alt='" . e($sysSiteName) . "' style='max-height: 65px; max-width: 220px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));'></div>"
+                    : "";
+
+                $contactoHtml = !empty($sysEmail)
+                    ? "<div style='margin-top: 6px; font-size: 11.5px;'>Contacto: <a href='mailto:" . e($sysEmail) . "' style='color: #4f46e5; text-decoration: none; font-weight: 600;'>" . e($sysEmail) . "</a></div>"
+                    : "";
+
                 $htmlEmail = "
-                    <div style='font-family: Arial, sans-serif; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);'>
-                        <div style='background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: #ffffff; padding: 24px; text-align: center;'>
-                            <h2 style='margin: 0; font-size: 20px; font-weight: bold;'>Notificación de Integración de Aporte</h2>
-                            <p style='margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;'>Sistema de Planificación Estratégica Institucional (PEI)</p>
+                    <div style='font-family: \"Segoe UI\", Helvetica, Arial, sans-serif; color: #1e293b; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background-color: #ffffff; box-shadow: 0 10px 25px rgba(0,0,0,0.08);'>
+                        <div style='background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%); padding: 32px 24px; text-align: center; border-bottom: 3px solid #6366f1;'>
+                            {$logoHtml}
+                            <h2 style='margin: 0; font-size: 21px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px; line-height: 1.3;'>
+                                Notificación de Integración de Aporte Técnico
+                            </h2>
+                            <p style='margin: 8px 0 0 0; font-size: 13px; color: #cbd5e1; font-weight: 500;'>
+                                " . e($sysSiteName) . "
+                            </p>
                         </div>
-                        <div style='padding: 24px; background-color: #ffffff;'>
-                            <p style='font-size: 15px; margin-top: 0;'>Estimado/a <strong>{$nombreAsesor}</strong>,</p>
-                            <p style='font-size: 14px; line-height: 1.6; color: #334155;'>
-                                Nos complace informarle que su aporte y recomendación técnica sobre el Plan Estratégico Institucional (PEI) ha sido <strong>INTEGRADO exitosamente</strong> en el sistema por el equipo de planificación.
+                        <div style='padding: 32px 28px; background-color: #ffffff;'>
+                            <p style='font-size: 16px; margin-top: 0; color: #0f172a;'>
+                                Estimado/a <strong>" . e($nombreAsesor) . "</strong>,
+                            </p>
+                            <p style='font-size: 14.5px; line-height: 1.65; color: #334155; margin-bottom: 24px;'>
+                                Nos complace informarle que su recomendación y aporte técnico sobre el <strong>Plan Estratégico Institucional (PEI)</strong> ha sido <span style='background-color: #dcfce7; color: #166534; font-weight: 700; padding: 2px 8px; border-radius: 6px; border: 1px solid #bbf7d0; font-size: 13px;'>✓ INTEGRADO EXITOSAMENTE</span> en la plataforma por la Dirección de Planificación.
                             </p>
                             
-                            <div style='background: #f8fafc; border-left: 4px solid #6366f1; padding: 16px; margin: 20px 0; border-radius: 6px;'>
-                                <strong style='display: block; font-size: 12px; color: #64748b; text-transform: uppercase; margin-bottom: 6px;'>Su Aporte Registrado:</strong>
-                                <em style='font-size: 14px; color: #1e293b; line-height: 1.5;'>\"" . e($textoComentario) . "\"</em>
+                            <div style='background: #f8fafc; border-left: 4px solid #6366f1; padding: 20px; margin: 24px 0; border-radius: 8px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);'>
+                                <strong style='display: block; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;'>
+                                    💬 SU APORTE TÉCNICO REGISTRADO:
+                                </strong>
+                                <div style='font-size: 14.5px; color: #0f172a; line-height: 1.6; font-style: italic; white-space: pre-wrap;'>
+                                    \"" . e($textoComentario) . "\"
+                                </div>
                             </div>
 
-                            <p style='font-size: 14px; line-height: 1.6; color: #334155;'>
-                                La <strong>Dirección de Planificación y su Equipo Técnico</strong> procederán a analizar su sugerencia para incorporarla formalmente en el diseño de las metas y acciones estratégicas de la institución.
+                            <p style='font-size: 14px; line-height: 1.65; color: #334155;'>
+                                La <strong>Dirección de Planificación y su Equipo Técnico</strong> procederán a analizar su propuesta en las mesas de trabajo institucionales para incorporarla formalmente en la matriz de objetivos, metas y acciones estratégicas de la institución.
                             </p>
-                            <p style='font-size: 14px; color: #334155;'>Agradecemos valiosamente su compromiso y valiosa contribución técnica.</p>
+                            <p style='font-size: 14px; line-height: 1.6; color: #334155; margin-bottom: 0;'>
+                                Agradecemos sinceramente su valioso compromiso y contribución para el fortalecimiento institucional.
+                            </p>
                         </div>
-                        <div style='background: #f1f5f9; padding: 16px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;'>
-                            <strong>Dirección de Planificación y Equipo Técnico Institucional</strong><br>
-                            Sistema de Gestión PEI / Paraguay
+                        <div style='background-color: #f1f5f9; padding: 20px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; line-height: 1.5;'>
+                            <strong style='color: #334155; font-size: 13px; display: block; margin-bottom: 4px;'>" . e($sysSiteName) . "</strong>
+                            <div>" . e($sysFooter) . "</div>
+                            {$contactoHtml}
                         </div>
                     </div>
                 ";
 
                 try {
-                    \Illuminate\Support\Facades\Mail::html($htmlEmail, function ($message) use ($destinatario) {
+                    \Illuminate\Support\Facades\Mail::html($htmlEmail, function ($message) use ($destinatario, $sysSiteName) {
                         $message->to($destinatario)
-                                ->subject("Su aporte al PEI ha sido integrado para análisis técnico — Dirección de Planificación");
+                                ->subject("Su aporte al PEI ha sido integrado para análisis técnico — " . $sysSiteName);
                     });
                     $emailEnviado = true;
                 } catch (\Throwable $me) {
