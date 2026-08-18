@@ -1,5 +1,5 @@
 {{-- ══ MODAL REFLEXIÓN DEL DÍA Y CÓDIGO DE ÉTICA IPS ══════════════════════════ --}}
-<div class="modal fade" id="modalReflexionDiaria" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1075;">
+<div class="modal fade" id="modalReflexionDiaria" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg" style="border-radius:1rem; overflow:hidden; background:#fafbff;">
             
@@ -76,11 +76,16 @@
 {{-- Script de la Reflexión Diaria --}}
 <script>
 $(document).ready(function() {
-    // Al cargar el documento, verificar si se debe mostrar automáticamente hoy
+    // Mover modal al body raíz para evitar atrapamiento de z-index
+    if ($('#modalReflexionDiaria').length) {
+        $('#modalReflexionDiaria').appendTo('body');
+    }
+
     var hoyStr = new Date().toISOString().slice(0, 10);
     var userId = "{{ Auth::id() }}";
     var storageKey = 'ips_reflexion_fecha_' + userId;
     var ultimaFecha = localStorage.getItem(storageKey);
+    var isImpersonating = {{ session()->has('impersonator_id') ? 'true' : 'false' }};
 
     function cargarReflexion(random = 0) {
         var url = "{{ route('globales.reflexion.diaria') }}";
@@ -160,8 +165,8 @@ $(document).ready(function() {
         localStorage.setItem(storageKey, hoyStr);
     });
 
-    // Auto-mostrar la primera vez que ingresa en el día
-    if (ultimaFecha !== hoyStr) {
+    // Auto-mostrar la primera vez que ingresa en el día (solo si NO está simulando rol)
+    if (!isImpersonating && ultimaFecha !== hoyStr) {
         setTimeout(function() {
             cargarReflexion(0);
             $('#modalReflexionDiaria').modal('show');
