@@ -28,12 +28,6 @@
     font-size: 1.05rem;
 }
 /* Material Dashboard Form Reset para evitar encimado de labels e inputs */
-#modalReportarFalla {
-    z-index: 100050 !important;
-}
-.modal-backdrop.show {
-    z-index: 100040 !important;
-}
 #modalReportarFalla .form-group,
 #modalGestionarTicket .form-group {
     position: relative !important;
