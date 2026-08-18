@@ -5514,6 +5514,14 @@ $(document).on('click', '.btnVerReporteAportes', function () {
     });
 });
 
+$(document).ready(function() {
+    if (new URLSearchParams(window.location.search).get('reporte_aportes') === '1') {
+        setTimeout(function() {
+            $('.btnVerReporteAportes').first().trigger('click');
+        }, 500);
+    }
+});
+
 function restaurarElementoPei(id, type) {
     var url = (type === 'iniciativa')
         ? "{{ url('admin/planificacion/pei-profiles/' . $profile->id . '/basurero/restaurar-iniciativa') }}/" + id

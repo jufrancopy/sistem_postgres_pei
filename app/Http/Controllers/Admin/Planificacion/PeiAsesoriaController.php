@@ -237,7 +237,7 @@ class PeiAsesoriaController extends Controller
                 ? "El Asesor <b>{$asesoria->nombre}</b>{$instStr} completó el Dictamen General para <i>{$peiNombre}</i>."
                 : "El Asesor <b>{$asesoria->nombre}</b>{$instStr} registró observaciones técnicas en el plan <i>{$peiNombre}</i>.";
 
-            $url = route('pei-profiles.show', $asesoria->pei_profile_id);
+            $url = route('pei-profiles.show', $asesoria->pei_profile_id) . '?reporte_aportes=1';
 
             $targetRoles = ['Administrador', 'Coordinador de Planificación', 'Coordinación de Planificación'];
             $userIds = \App\Models\User::whereHas('roles', function($q) use ($targetRoles) {
