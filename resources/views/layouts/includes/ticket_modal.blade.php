@@ -27,6 +27,60 @@
 .btn-ticket-float i {
     font-size: 1.05rem;
 }
+/* Material Dashboard Form Reset para evitar encimado de labels e inputs */
+#modalReportarFalla .form-group,
+#modalGestionarTicket .form-group {
+    position: relative !important;
+    margin-bottom: 1.1rem !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+#modalReportarFalla label,
+#modalGestionarTicket label {
+    position: static !important;
+    display: block !important;
+    margin-bottom: 0.35rem !important;
+    top: auto !important;
+    left: auto !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    transform: none !important;
+    pointer-events: auto !important;
+    line-height: 1.3 !important;
+}
+#modalReportarFalla input.form-control,
+#modalReportarFalla select.form-control,
+#modalReportarFalla textarea.form-control,
+#modalGestionarTicket input.form-control,
+#modalGestionarTicket select.form-control,
+#modalGestionarTicket textarea.form-control {
+    position: static !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    height: auto !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    font-size: 0.85rem !important;
+}
+#modalReportarFalla input.form-control[readonly],
+#modalGestionarTicket input.form-control[readonly] {
+    background-color: #f1f5f9 !important;
+    color: #2563eb !important;
+}
+#modalReportarFalla input.form-control:focus,
+#modalReportarFalla select.form-control:focus,
+#modalReportarFalla textarea.form-control:focus,
+#modalGestionarTicket input.form-control:focus,
+#modalGestionarTicket select.form-control:focus,
+#modalGestionarTicket textarea.form-control:focus {
+    border-color: #ef4444 !important;
+    background-color: #ffffff !important;
+    outline: none !important;
+}
 </style>
 
 {{-- Botón Flotante en la esquina inferior izquierda --}}
