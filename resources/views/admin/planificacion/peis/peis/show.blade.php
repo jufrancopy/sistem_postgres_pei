@@ -5542,6 +5542,8 @@ function restaurarElementoPei(id, type) {
             if (window.toastr) toastr.error('Error al restaurar el elemento.');
         }
     });
+}
+
 $(document).on('click', '.btnVerComentariosNodo', function(e) {
     e.preventDefault();
     e.stopPropagation();
