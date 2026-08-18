@@ -5280,11 +5280,25 @@ function cargarListaAsesoriasAdmin() {
                     var msgAsesor = `📌 CONVOCATORIA A ASESORÍA TÉCNICA - PEI\n\nEstimado/a ${a.nombre},\nHa sido convocado/a para la validación y evaluación del Plan Estratégico Institucional.\n\n🌐 Portal de Acceso: ${loginUrlAsesor}\n📧 Correo Registrado: ${a.email}\n🔑 Código Único: ${a.codigo_acceso}\n\nPor favor ingrese al portal con sus credenciales.`;
                     var waLink = "https://api.whatsapp.com/send?text=" + encodeURIComponent(msgAsesor);
 
+                    var dictamenHtml = '';
+                    if (a.dictamen_general && a.dictamen_general.trim() !== '') {
+                        var cleanDictamen = $('<div>').text(a.dictamen_general).html();
+                        dictamenHtml = `
+                            <div class="mt-2 p-2.5 rounded shadow-sm" style="font-size:0.83rem; line-height:1.4; background:#fffbeb; border-left:4px solid #d97706; color:#78350f;">
+                                <div class="font-weight-bold mb-1 text-warning" style="font-size:0.78rem; letter-spacing:0.03em;">
+                                    <i class="fa fa-comment-alt mr-1"></i> DICTAMEN / CONCLUSIONES GENERALES DEL ASESOR:
+                                </div>
+                                <div style="white-space:pre-wrap;">${cleanDictamen}</div>
+                            </div>
+                        `;
+                    }
+
                     var tr = `
                         <tr>
                             <td class="align-middle">
-                                <div class="font-weight-bold text-dark">${a.nombre}</div>
+                                <div class="font-weight-bold text-dark" style="font-size:0.92rem;">${a.nombre}</div>
                                 ${inst}
+                                ${dictamenHtml}
                             </td>
                             <td class="align-middle text-muted">${a.email}</td>
                             <td class="align-middle text-center font-weight-bold">
@@ -5294,7 +5308,7 @@ function cargarListaAsesoriasAdmin() {
                                 <span class="badge ${stBadge} px-2 py-1">${a.estado}</span>
                             </td>
                             <td class="align-middle text-center font-weight-bold text-primary">
-                                ${a.comentarios_count || 0}
+                                <span class="badge badge-pill badge-primary px-2 py-1">${a.comentarios_count || 0}</span>
                             </td>
                             <td class="align-middle text-center">
                                 <div class="btn-group" role="group">
