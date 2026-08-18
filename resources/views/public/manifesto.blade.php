@@ -132,35 +132,35 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     </div>
   </div>
 
-  {{-- SECCIÓN ¿QUÉ ES SIPLAN? --}}
+  {{-- SECCIÓN ¿QUÉ ES SIPLAN GO? --}}
   <div class="section-title">
-    <h2>¿Qué es SIPLAN y Por Qué Existe?</h2>
-    <p>Es la plataforma integral que conecta la visión estratégica del país con la gestión operativa diaria del hospital, el presupuesto y los servicios al asegurado.</p>
+    <h2>Una Red Social & Laboral para Transformar la Gestión</h2>
+    <p>SIPLAN GO es el punto de encuentro donde el talento humano de la institución colabora, comparte ideas e impulsa cambios reales con transparencia y reconocimiento.</p>
   </div>
 
   <div class="cards-grid">
     <div class="feature-card">
-      <div class="icon-box icon-blue"><i class="fa fa-bullseye"></i></div>
-      <h3>Planificación Estratégica Real (PEI)</h3>
-      <p>Organiza los Objetivos Estratégicos, Ejes y Acciones Operativas con responsables asignados, cronogramas estrictos y metas medibles de forma transparente.</p>
+      <div class="icon-box icon-blue"><i class="fa fa-users"></i></div>
+      <h3>Red Laboral & Inteligencia Colectiva</h3>
+      <p>Un espacio donde todos los profesionales, médicos, analistas y coordinadores aportamos ideas desde nuestro lugar, superando la burocracia con colaboración activa.</p>
     </div>
 
     <div class="feature-card">
-      <div class="icon-box icon-amber"><i class="fa fa-coins"></i></div>
-      <h3>Vinculación Presupuestaria (PGN)</h3>
-      <p>Asegura que cada guaraní asignado en el Presupuesto General de la Nación esté directamente atado a un resultado concreto de salud y bienestar social.</p>
+      <div class="icon-box icon-purple"><i class="fa fa-trophy"></i></div>
+      <h3>Reconocimiento al Talento Humano</h3>
+      <p>Premia la excelencia mediante un sistema de gamificación con puntos, medallas de mérito y ranking público de colaboradores destacados en la institución.</p>
     </div>
 
     <div class="feature-card">
-      <div class="icon-box icon-purple"><i class="fa fa-user-check"></i></div>
-      <h3>Asesoría Externa & Apertura Técnica</h3>
-      <p>Abre las puertas de la institución a expertos independientes para recibir recomendaciones técnicas y auditorías de viabilidad sin sesgos ni presiones.</p>
+      <div class="icon-box icon-amber"><i class="fa fa-comments"></i></div>
+      <h3>Interacción en Tiempo Real</h3>
+      <p>Debates contextuales, chat de colaboración directa por objetivo estratégicos y portal abierto para asesoría técnica independiente.</p>
     </div>
 
     <div class="feature-card">
-      <div class="icon-box icon-emerald"><i class="fa fa-shield-alt"></i></div>
-      <h3>Transparencia & Control Interno (MECIP)</h3>
-      <p>Mantiene la trazabilidad inmutable de cada decisión, edición y cambio en el plan, protegiendo a la institución y garantizando ética pública.</p>
+      <div class="icon-box icon-emerald"><i class="fa fa-bullseye"></i></div>
+      <h3>Planificación con Propósito (PEI + PGN)</h3>
+      <p>Asegura que cada meta física del PEI y cada guaraní asignado en el Presupuesto se traduzcan en soluciones reales para los asegurados.</p>
     </div>
   </div>
 
