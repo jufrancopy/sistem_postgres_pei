@@ -15,7 +15,7 @@ class GroqService
     {
         $this->client = new Client(['timeout' => 30]);
         $this->apiKey = env('GROQ_API_KEY');
-        $this->model  = env('GROQ_MODEL', 'llama-3.3-70b-versatile');
+        $this->model  = env('GROQ_MODEL', 'openai/gpt-oss-120b');
     }
 
     public function generarTextoLibre(string $prompt, int $maxTokens = 1500): string

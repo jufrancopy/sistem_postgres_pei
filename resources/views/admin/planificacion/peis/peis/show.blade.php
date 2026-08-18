@@ -2220,6 +2220,7 @@
                 .create(document.querySelector('#ajaxGoalsModal #goalsForm #goals'))
                 .then(editor => {
                     goalsEditor = editor;
+                    window.goalsEditor = editor;
                 })
                 .catch(err => {
                     console.error(err.stack);
@@ -2230,6 +2231,7 @@
                 .create(document.querySelector('#ajaxActionsModal #actionsForm #actions'))
                 .then(editor => {
                     actionsEditor = editor;
+                    window.actionsEditor = editor;
                 })
                 .catch(err => {
                     console.error(err.stack);
@@ -3038,7 +3040,7 @@
                 });
             });
 
-            $('body').on('click', '#createActions', function() {
+            $('body').on('click', '#createActions, .createActionsButton', function() {
                 var profileID = $(this).data('id');
                 var typeBtn = $(this).data('type');
 
