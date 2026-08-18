@@ -334,7 +334,7 @@ class SiessController extends Controller
                     'fecha'   => $n->created_at->diffForHumans(),
                 ]);
 
-            $noLeidas = $sysNotifs->where('leida', false)->count();
+            $noLeidas = \App\Models\SystemNotification::where('user_id', $userId)->where('leida', false)->count();
 
             return response()->json([
                 'notificaciones' => $sysNotifs->values(),

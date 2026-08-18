@@ -239,9 +239,14 @@ class PeiAsesoriaController extends Controller
 
             $url = route('pei-profiles.show', $asesoria->pei_profile_id);
 
-            $userIds = \App\Models\User::role(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Analista de Planificación'])
-                ->pluck('id')
-                ->unique();
+            $targetRoles = ['Administrador', 'Coordinador de Planificación', 'Analista de Planificación', 'Coordinación de Planificación', 'Analista PEI'];
+            $userIds = \App\Models\User::whereHas('roles', function($q) use ($targetRoles) {
+                $q->whereIn('name', $targetRoles);
+            })->pluck('id')->unique();
+
+            if ($userIds->isEmpty()) {
+                $userIds = \App\Models\User::pluck('id')->take(5);
+            }
 
             foreach ($userIds as $uid) {
                 \App\Models\SystemNotification::create([
