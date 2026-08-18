@@ -38,6 +38,21 @@ class SoporteTicketController extends Controller
             'estado'         => 'pendiente',
         ]);
 
+        // Notificación en tiempo real a Redis
+        try {
+            \Illuminate\Support\Facades\Redis::publish('soporte:ticket:creado', json_encode([
+                'id'         => $ticket->id,
+                'codigo'     => $ticket->codigo,
+                'titulo'     => $ticket->titulo,
+                'prioridad'  => $ticket->prioridad,
+                'user_name'  => Auth::user()->name ?? 'Usuario',
+                'url_origen' => $ticket->url_origen,
+                'created_at' => $ticket->created_at->format('Y-m-d H:i:s'),
+            ]));
+        } catch (\Exception $e) {
+            // Manejo silencioso en caso de Redis sin servicio
+        }
+
         return response()->json([
             'success' => true,
             'message' => '¡Ticket ' . $ticket->codigo . ' registrado exitosamente! El administrador lo atenderá a la brevedad.',
