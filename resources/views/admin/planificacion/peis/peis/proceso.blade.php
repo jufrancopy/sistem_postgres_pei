@@ -316,7 +316,7 @@ $pctGlobal   = round(($completados / 6) * 100);
                 </div>
                 <div class="modal-body p-4">
                     @php
-                        $params = json_decode($profile->parameters, true) ?? [];
+                        $params = is_array($profile->parameters) ? $profile->parameters : (json_decode($profile->parameters, true) ?? []);
                         $actaLogoUrl = $params['acta_logo_url'] ?? '';
                         $actaInstitucion = $params['acta_institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL';
                         $actaDependencia = $params['acta_dependencia'] ?? 'DIRECCIÓN DE PLANIFICACIÓN';

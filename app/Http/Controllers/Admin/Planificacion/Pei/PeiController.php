@@ -1393,7 +1393,7 @@ class PeiController extends Controller
     {
         $profile = PeiProfile::findOrFail($id);
         
-        $params = json_decode($profile->parameters, true) ?? [];
+        $params = is_array($profile->parameters) ? $profile->parameters : (json_decode($profile->parameters, true) ?? []);
         
         if ($request->has('acta_logo_url')) {
             $params['acta_logo_url'] = $request->input('acta_logo_url');
@@ -1405,7 +1405,7 @@ class PeiController extends Controller
             $params['acta_dependencia'] = $request->input('acta_dependencia');
         }
         
-        $profile->parameters = json_encode($params);
+        $profile->parameters = $params;
         $profile->save();
 
         // ── Sincronizar masivamente con todas las Actas MECIP del plan ──
