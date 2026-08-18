@@ -32,10 +32,10 @@
 
         {{-- ── Notificaciones SIESS ── --}}
         <li class="nav-item dropdown">
-          <a class="nav-link" href="#" id="siessNotifBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones SIESS">
-            <i class="material-icons">notifications</i>
-            <span id="siessNotifBadge" class="notification bg-danger" style="display:none">0</span>
-            <p class="d-lg-none mb-0">Notificaciones</p>
+          <a class="nav-link dropdown-toggle" href="javascript:void(0)" id="siessNotifBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones SIESS" style="cursor: pointer;">
+            <i class="material-icons" style="pointer-events: none;">notifications</i>
+            <span id="siessNotifBadge" class="notification bg-danger" style="display:none; pointer-events: none;">0</span>
+            <p class="d-lg-none mb-0" style="pointer-events: none;">Notificaciones</p>
           </a>
           <div class="dropdown-menu dropdown-menu-right shadow-lg border-0" id="siessNotifMenu" style="width:340px; max-height:420px; overflow-y:auto; padding:0; border-radius:10px;">
             <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light">
@@ -188,6 +188,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         $('#siessNotifBtn').closest('.dropdown').on('show.bs.dropdown', function() { cargarNotificaciones(); });
+        $(document).on('click', '#siessNotifBtn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).dropdown('toggle');
+        });
 
         $(document).on('click', '#siessNotifLista [data-id]', function() {
             var id  = $(this).data('id');

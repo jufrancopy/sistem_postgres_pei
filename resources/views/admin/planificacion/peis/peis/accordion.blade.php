@@ -155,19 +155,35 @@
                     </a>
                     @endif
                     @php
-                        $comentariosAxi = isset($comentariosAsesoria) ? ($comentariosAsesoria->get('node_' . $axi->id) ?? collect()) : collect();
+                        $comentariosAxi = isset($comentariosAsesoria) ? (
+                            $comentariosAsesoria->get('node_' . $axi->id)
+                            ?? $comentariosAsesoria->get('axi_' . $axi->id)
+                            ?? $comentariosAsesoria->get($axi->id)
+                            ?? collect()
+                        ) : collect();
+
+                        if (!empty($axi->comentario_asesor) && $comentariosAxi->where('comentario', $axi->comentario_asesor)->isEmpty()) {
+                            $dummy = (object)[
+                                'id' => null,
+                                'comentario' => $axi->comentario_asesor,
+                                'estado' => 'PENDIENTE',
+                                'created_at' => $axi->updated_at,
+                                'asesoria' => (object)['nombre' => 'Asesor Técnico', 'institucion' => 'Asesoría Remota']
+                            ];
+                            $comentariosAxi = $comentariosAxi->concat([$dummy]);
+                        }
                     @endphp
                     @if($comentariosAxi->count() > 0)
                     @php
                         $comentariosAxiArray = $comentariosAxi->map(fn($c) => [
-                            'id' => $c->id,
+                            'id' => $c->id ?? null,
                             'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
                             'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
                             'comentario' => $c->comentario ?? '',
                             'estado' => $c->estado ?? 'PENDIENTE',
-                            'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
+                            'fecha' => isset($c->created_at) && $c->created_at ? (is_string($c->created_at) ? $c->created_at : $c->created_at->format('d/m/Y H:i')) : ''
                         ])->values()->all();
-                        $comentariosAxiJson = htmlspecialchars(json_encode($comentariosAxiArray, JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+                        $comentariosAxiJson = base64_encode(json_encode($comentariosAxiArray));
                     @endphp
                     <button type="button" class="btn btn-xs text-white font-weight-bold btnVerComentariosNodo shadow-sm"
                             data-title="{{ e(strip_tags($axi->name)) }}"
@@ -345,19 +361,35 @@
                                     <i class="fa fa-comment-dots mr-1" style="font-size:.7rem"></i> Consultar
                                 </button>
                                  @php
-                                     $comentariosGoal = isset($comentariosAsesoria) ? ($comentariosAsesoria->get('node_' . $goal->id) ?? collect()) : collect();
+                                     $comentariosGoal = isset($comentariosAsesoria) ? (
+                                         $comentariosAsesoria->get('node_' . $goal->id)
+                                         ?? $comentariosAsesoria->get('goal_' . $goal->id)
+                                         ?? $comentariosAsesoria->get($goal->id)
+                                         ?? collect()
+                                     ) : collect();
+
+                                     if (!empty($goal->comentario_asesor) && $comentariosGoal->where('comentario', $goal->comentario_asesor)->isEmpty()) {
+                                         $dummy = (object)[
+                                             'id' => null,
+                                             'comentario' => $goal->comentario_asesor,
+                                             'estado' => 'PENDIENTE',
+                                             'created_at' => $goal->updated_at,
+                                             'asesoria' => (object)['nombre' => 'Asesor Técnico', 'institucion' => 'Asesoría Remota']
+                                         ];
+                                         $comentariosGoal = $comentariosGoal->concat([$dummy]);
+                                     }
                                  @endphp
                                  @if($comentariosGoal->count() > 0)
                                  @php
                                      $comentariosGoalArray = $comentariosGoal->map(fn($c) => [
-                                         'id' => $c->id,
+                                         'id' => $c->id ?? null,
                                          'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
                                          'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
                                          'comentario' => $c->comentario ?? '',
                                          'estado' => $c->estado ?? 'PENDIENTE',
-                                         'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
+                                         'fecha' => isset($c->created_at) && $c->created_at ? (is_string($c->created_at) ? $c->created_at : $c->created_at->format('d/m/Y H:i')) : ''
                                      ])->values()->all();
-                                     $comentariosGoalJson = htmlspecialchars(json_encode($comentariosGoalArray, JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+                                     $comentariosGoalJson = base64_encode(json_encode($comentariosGoalArray));
                                  @endphp
                                  <button type="button" class="btn btn-xs text-white font-weight-bold btnVerComentariosNodo shadow-sm"
                                          data-title="{{ e(strip_tags($goal->name)) }}"
@@ -495,19 +527,35 @@
                                                             <i class="fa fa-paper-plane"></i>
                                                         </button>
                                                         @php
-                                                            $comentariosAction = isset($comentariosAsesoria) ? ($comentariosAsesoria->get('node_' . $action->id) ?? collect()) : collect();
+                                                            $comentariosAction = isset($comentariosAsesoria) ? (
+                                                                $comentariosAsesoria->get('node_' . $action->id)
+                                                                ?? $comentariosAsesoria->get('action_' . $action->id)
+                                                                ?? $comentariosAsesoria->get($action->id)
+                                                                ?? collect()
+                                                            ) : collect();
+
+                                                            if (!empty($action->comentario_asesor) && $comentariosAction->where('comentario', $action->comentario_asesor)->isEmpty()) {
+                                                                $dummy = (object)[
+                                                                    'id' => null,
+                                                                    'comentario' => $action->comentario_asesor,
+                                                                    'estado' => 'PENDIENTE',
+                                                                    'created_at' => $action->updated_at,
+                                                                    'asesoria' => (object)['nombre' => 'Asesor Técnico', 'institucion' => 'Asesoría Remota']
+                                                                ];
+                                                                $comentariosAction = $comentariosAction->concat([$dummy]);
+                                                            }
                                                         @endphp
                                                         @if($comentariosAction->count() > 0)
                                                         @php
                                                             $comentariosActionArray = $comentariosAction->map(fn($c) => [
-                                                                'id' => $c->id,
+                                                                'id' => $c->id ?? null,
                                                                 'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
                                                                 'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
                                                                 'comentario' => $c->comentario ?? '',
                                                                 'estado' => $c->estado ?? 'PENDIENTE',
-                                                                'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
+                                                                'fecha' => isset($c->created_at) && $c->created_at ? (is_string($c->created_at) ? $c->created_at : $c->created_at->format('d/m/Y H:i')) : ''
                                                             ])->values()->all();
-                                                            $comentariosActionJson = htmlspecialchars(json_encode($comentariosActionArray, JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+                                                            $comentariosActionJson = base64_encode(json_encode($comentariosActionArray));
                                                         @endphp
                                                         <button type="button" class="btn btn-xs text-white font-weight-bold btnVerComentariosNodo shadow-sm"
                                                                 data-title="{{ e(strip_tags($action->name)) }}"
@@ -818,21 +866,36 @@
                                                                         @if($ini->responsable)
                                                                         <span class="badge badge-light border text-dark" style="font-size:.64rem" title="Responsable Institucional">
                                                                             <i class="fa fa-building-o mr-1 text-muted"></i>{{ \Illuminate\Support\Str::limit($ini->responsable, 22) }}
-                                                                        </span>
-                                                                        @php
-                                                                             $comentariosIni = isset($comentariosAsesoria) ? ($comentariosAsesoria->get('iniciativa_' . $ini->id) ?? collect()) : collect();
+                                                                            @php
+                                                                             $comentariosIni = isset($comentariosAsesoria) ? (
+                                                                                 $comentariosAsesoria->get('iniciativa_' . $ini->id)
+                                                                                 ?? $comentariosAsesoria->get('ini_' . $ini->id)
+                                                                                 ?? $comentariosAsesoria->get($ini->id)
+                                                                                 ?? collect()
+                                                                             ) : collect();
+
+                                                                             if (!empty($ini->comentario_asesor) && $comentariosIni->where('comentario', $ini->comentario_asesor)->isEmpty()) {
+                                                                                 $dummy = (object)[
+                                                                                     'id' => null,
+                                                                                     'comentario' => $ini->comentario_asesor,
+                                                                                     'estado' => 'PENDIENTE',
+                                                                                     'created_at' => $ini->updated_at,
+                                                                                     'asesoria' => (object)['nombre' => 'Asesor Técnico', 'institucion' => 'Asesoría Remota']
+                                                                                 ];
+                                                                                 $comentariosIni = $comentariosIni->concat([$dummy]);
+                                                                             }
                                                                          @endphp
                                                                          @if($comentariosIni->count() > 0)
                                                                          @php
                                                                              $comentariosIniArray = $comentariosIni->map(fn($c) => [
-                                                                                 'id' => $c->id,
+                                                                                 'id' => $c->id ?? null,
                                                                                  'asesor' => $c->asesoria->nombre ?? 'Asesor Externo',
                                                                                  'institucion' => $c->asesoria->institucion ?? 'Asesoría Técnica',
                                                                                  'comentario' => $c->comentario ?? '',
                                                                                  'estado' => $c->estado ?? 'PENDIENTE',
-                                                                                 'fecha' => $c->created_at ? $c->created_at->format('d/m/Y H:i') : ''
+                                                                                 'fecha' => isset($c->created_at) && $c->created_at ? (is_string($c->created_at) ? $c->created_at : $c->created_at->format('d/m/Y H:i')) : ''
                                                                              ])->values()->all();
-                                                                             $comentariosIniJson = htmlspecialchars(json_encode($comentariosIniArray, JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+                                                                             $comentariosIniJson = base64_encode(json_encode($comentariosIniArray));
                                                                          @endphp
                                                                          <button type="button" class="btn btn-xs text-white font-weight-bold btnVerComentariosNodo shadow-sm"
                                                                                  data-title="{{ e(strip_tags($ini->accion)) }}"
@@ -843,6 +906,7 @@
                                                                              <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosIni->count() }} {{ $comentariosIni->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
                                                                          </button>
                                                                          @endif
+                                                                        </span>
                                                                         @endif
 
                                                                         {{-- Grupo Indivisible de Controles --}}

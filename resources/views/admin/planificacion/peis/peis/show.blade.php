@@ -5553,9 +5553,16 @@ window.verComentariosNodo = function(btn) {
     var comments = [];
     if (typeof rawComments === 'string' && rawComments.length > 0) {
         try {
-            comments = JSON.parse(rawComments);
+            var decoded = atob(rawComments);
+            comments = JSON.parse(decoded);
         } catch (err) {
-            console.error('Error al decodificar comentarios JSON:', err);
+            try {
+                var txt = document.createElement('textarea');
+                txt.innerHTML = rawComments;
+                comments = JSON.parse(txt.value);
+            } catch (e2) {
+                console.error('Error al decodificar comentarios:', e2, rawComments);
+            }
         }
     } else if (Array.isArray(rawComments)) {
         comments = rawComments;
