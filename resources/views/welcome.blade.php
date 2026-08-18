@@ -377,6 +377,24 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
             <div class="hero-badge anim"><i class="fa fa-shield-alt"></i> Instituto de Previsión Social</div>
             <h1 class="anim d1">Sistema de <span>Planificación</span> Estratégica</h1>
             <p class="anim d2">Monitoreo en tiempo real de la Red de Salud IPS, planificación estratégica y estadísticas institucionales.</p>
+            
+            {{-- Flyer Manifiesto Banner --}}
+            <div class="anim d3" style="background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; border-left: 4px solid #38bdf8; border-radius: 14px; padding: 14px 16px; margin-top: 16px; box-shadow: 0 8px 20px rgba(15,23,42,0.15);">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56,189,248,0.15); color: #38bdf8; display: grid; place-items: center; font-size: 16px; flex-shrink: 0;">
+                            <i class="fa fa-flag-checkered"></i>
+                        </div>
+                        <div>
+                            <strong style="font-size: 0.85rem; color: #fff; display: block; line-height: 1.2;">Gente común cambiando la historia</strong>
+                            <span style="font-size: 0.74rem; color: #cbd5e1;">Conocé la misión y el manifiesto institucional de SIPLAN.</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="abrirModalFlyerManifiesto()" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border-radius: 20px; border: none; font-size: 0.76rem; font-weight: 700; padding: 6px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+                        <i class="fa fa-book-open"></i> Leer Manifiesto
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="hero-stats-grid">
             @php $gV=$peiSemaforo->get('verde',0);$gA=$peiSemaforo->get('amarillo',0);$gR=$peiSemaforo->get('rojo',0); @endphp
@@ -965,6 +983,85 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         document.querySelectorAll('.eval-list').forEach(function(el){ io.observe(el); });
     }
 })();
+
+function abrirModalFlyerManifiesto() {
+    var modal = document.getElementById('modalFlyerManifiesto');
+    if (modal) {
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+}
+function cerrarModalFlyerManifiesto() {
+    var modal = document.getElementById('modalFlyerManifiesto');
+    if (modal) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+}
+
+document.addEventListener('click', function(e) {
+    var m = document.getElementById('modalFlyerManifiesto');
+    if (m && e.target === m) cerrarModalFlyerManifiesto();
+});
 </script>
+
+{{-- MODAL FLYER MANIFIESTO SIPLAN --}}
+<div class="modal-bg" id="modalFlyerManifiesto">
+    <div class="modal-card" style="max-width: 840px; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.35);">
+        <div class="modal-top" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 20px 28px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(56,189,248,0.15); color: #38bdf8; display: grid; place-items: center; font-size: 18px; font-weight: 900;">
+                    <i class="fa fa-flag-checkered"></i>
+                </div>
+                <div>
+                    <h5 style="font-size: 1.15rem; font-weight: 900; color: #fff; margin: 0; font-family: 'Outfit', sans-serif;">SIPLAN — El Manifiesto Institucional</h5>
+                    <small style="color: #94a3b8; font-size: 0.78rem;">Gente común cambiando la historia del IPS</small>
+                </div>
+            </div>
+            <button type="button" class="modal-x" onclick="cerrarModalFlyerManifiesto()">&times;</button>
+        </div>
+        <div class="modal-content" style="padding: 28px; background: #f8fafc; max-height: 75vh; overflow-y: auto;">
+            
+            <div style="background: #fff; border-left: 6px solid #2563eb; padding: 22px; border-radius: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.05); margin-bottom: 24px;">
+                <p style="font-size: 1.05rem; font-weight: 600; color: #0f172a; font-style: italic; line-height: 1.65; margin-bottom: 12px;">
+                    “No nacimos en escritorios distantes ni en teorías frías. Nacimos de la convicción de paraguayos comunes que aman a su patria y se negaron a aceptar que la gestión pública deba ser lenta, opaca o ineficiente. SIPLAN es el resultado de transformar esa pasión en tecnología real para salvar vidas.”
+                </p>
+                <small style="color: #64748b; font-weight: 700;">— Equipo Técnico de Planificación & Desarrollo · IPS Paraguay</small>
+            </div>
+
+            <h6 style="font-weight: 800; color: #0f172a; margin-bottom: 12px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                <i class="fa fa-bullseye text-primary mr-1"></i> ¿Por qué construimos SIPLAN?
+            </h6>
+            <p style="font-size: 0.9rem; color: #475569; line-height: 1.65; margin-bottom: 24px;">
+                SIPLAN (Sistema Integrado de Planificación y Gestión Estratégica) es la herramienta tecnológica que conecta los grandes objetivos del Instituto de Previsión Social con el presupuesto del Estado, la transparencia del MECIP y la atención hospitalaria directa.
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 28px;">
+                <div style="background: #fff; padding: 18px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                    <strong style="color: #1e3a8a; font-size: 0.9rem; display: block; margin-bottom: 4px;"><i class="fa fa-pills text-info mr-1"></i> Medicamentos a Tiempo</strong>
+                    <span style="font-size: 0.78rem; color: #64748b; line-height: 1.5;">Anticipar el abastecimiento con datos predictivos de salud e insumos.</span>
+                </div>
+                <div style="background: #fff; padding: 18px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                    <strong style="color: #1e3a8a; font-size: 0.9rem; display: block; margin-bottom: 4px;"><i class="fa fa-clock text-warning mr-1"></i> Menos Tiempos de Espera</strong>
+                    <span style="font-size: 0.78rem; color: #64748b; line-height: 1.5;">Acelerar consultas, cirugías y estudios tomográficos.</span>
+                </div>
+                <div style="background: #fff; padding: 18px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                    <strong style="color: #1e3a8a; font-size: 0.9rem; display: block; margin-bottom: 4px;"><i class="fa fa-heartbeat text-danger mr-1"></i> Trato Humano y Digno</strong>
+                    <span style="font-size: 0.78rem; color: #64748b; line-height: 1.5;">Atención cálida a nuestros jubilados y familias aportantes.</span>
+                </div>
+                <div style="background: #fff; padding: 18px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                    <strong style="color: #1e3a8a; font-size: 0.9rem; display: block; margin-bottom: 4px;"><i class="fa fa-shield-alt text-success mr-1"></i> Transparencia Total</strong>
+                    <span style="font-size: 0.78rem; color: #64748b; line-height: 1.5;">Trazabilidad inmutable de cada guaraní y cada meta.</span>
+                </div>
+            </div>
+
+            <div style="text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 10px;">
+                <a href="{{ route('siplan.manifesto') }}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; font-weight: 700; padding: 10px 24px; border-radius: 20px; text-decoration: none; font-size: 0.85rem; box-shadow: 0 4px 14px rgba(15,23,42,0.25);">
+                    <i class="fa fa-external-link-alt"></i> Leer la Declaración Completa en /nosotros
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
