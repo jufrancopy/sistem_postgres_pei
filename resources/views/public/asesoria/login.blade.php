@@ -68,10 +68,24 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 </head>
 <body>
 
+@php
+  $sysLogoRaw  = \App\Models\HomeConfiguration::getSetting('logo_url');
+  $sysSiteName = \App\Models\HomeConfiguration::getSetting('site_name', 'Sistema de Planificación Institucional');
+  if (!empty($sysLogoRaw)) {
+      $sysLogoUrl = (str_starts_with($sysLogoRaw, 'http://') || str_starts_with($sysLogoRaw, 'https://')) ? $sysLogoRaw : url($sysLogoRaw);
+  } else {
+      $sysLogoUrl = asset('material/img/new_logo.png');
+  }
+@endphp
+
 <div class="topbar">
-  <div class="topbar-logo"><i class="fa fa-user-shield"></i></div>
+  @if(!empty($sysLogoUrl))
+    <img src="{{ $sysLogoUrl }}" alt="{{ $sysSiteName }}" style="max-height: 38px; max-width: 160px; object-fit: contain; flex-shrink:0;">
+  @else
+    <div class="topbar-logo"><i class="fa fa-user-shield"></i></div>
+  @endif
   <div>
-    <div class="topbar-title">Sistema de Planificación Institucional</div>
+    <div class="topbar-title">{{ $sysSiteName }}</div>
     <div class="topbar-sub">Módulo de Asesoría y Validación Externa</div>
   </div>
 </div>
