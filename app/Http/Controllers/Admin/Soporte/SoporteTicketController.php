@@ -38,6 +38,34 @@ class SoporteTicketController extends Controller
             'estado'         => 'pendiente',
         ]);
 
+        // Otorgar +50 Puntos de Gamificación al usuario por colaborar reportando fallas
+        try {
+            if (Auth::user()) {
+                app(\App\Services\GamificationService::class)->awardPoints(
+                    Auth::user(),
+                    'reporte_falla',
+                    'Reconocimiento por reportar falla técnica ' . $ticket->codigo,
+                    50,
+                    $ticket
+                );
+            }
+        } catch (\Exception $e) {
+            // Silencioso si no aplica
+        }
+
+        // Crear Notificación en el Sistema para el Usuario
+        try {
+            if (class_exists(\App\Models\SystemNotification::class)) {
+                \App\Models\SystemNotification::create([
+                    'user_id' => $ticket->user_id,
+                    'tipo'    => 'ticket_creado',
+                    'titulo'  => '🎫 Ticket ' . $ticket->codigo . ' Generado (+50 Pts)',
+                    'mensaje' => 'Tu reporte de incidencia <b>' . e($ticket->titulo) . '</b> ha sido recepcionado. ¡Ganaste <b>+50 Pts</b> de gamificación por colaborar con la mejora continua de SIPLAN GO!',
+                    'leido'   => false,
+                ]);
+            }
+        } catch (\Exception $e) {}
+
         // Notificación en tiempo real a Redis
         try {
             \Illuminate\Support\Facades\Redis::publish('soporte:ticket:creado', json_encode([
@@ -49,13 +77,11 @@ class SoporteTicketController extends Controller
                 'url_origen' => $ticket->url_origen,
                 'created_at' => $ticket->created_at->format('Y-m-d H:i:s'),
             ]));
-        } catch (\Exception $e) {
-            // Manejo silencioso en caso de Redis sin servicio
-        }
+        } catch (\Exception $e) {}
 
         return response()->json([
             'success' => true,
-            'message' => '¡Ticket ' . $ticket->codigo . ' registrado exitosamente! El administrador lo atenderá a la brevedad.',
+            'message' => '¡Ticket ' . $ticket->codigo . ' registrado exitosamente! Ganaste +50 Pts de gamificación por colaborar.',
             'ticket'  => $ticket,
         ]);
     }
@@ -125,10 +151,31 @@ class SoporteTicketController extends Controller
 
         $ticket->save();
 
+        // Notificar al usuario que reportó el problema vía SystemNotification y Redis
+        try {
+            if (class_exists(\App\Models\SystemNotification::class)) {
+                \App\Models\SystemNotification::create([
+                    'user_id' => $ticket->user_id,
+                    'tipo'    => 'ticket_actualizado',
+                    'titulo'  => '🎫 Actualización de Ticket ' . $ticket->codigo,
+                    'mensaje' => 'Tu reporte <b>' . e($ticket->titulo) . '</b> ha sido actualizado a estado <b>' . strtoupper($ticket->estado) . '</b>.' . ($ticket->respuesta_admin ? '<br><b>Respuesta del Administrador:</b> <i>"' . e($ticket->respuesta_admin) . '"</i>' : '') . '<br><small class="text-success">¡Agradecemos enormemente tu esfuerzo al notificar para mejorar el sistema!</small>',
+                    'leido'   => false,
+                ]);
+            }
+
+            \Illuminate\Support\Facades\Redis::publish('soporte:ticket:actualizado', json_encode([
+                'user_id'         => $ticket->user_id,
+                'ticket_codigo'   => $ticket->codigo,
+                'estado'          => $ticket->estado,
+                'respuesta_admin' => $ticket->respuesta_admin,
+                'mensaje'         => 'Tu reporte ' . $ticket->codigo . ' ha sido actualizado a ' . strtoupper($ticket->estado) . '. ¡Gracias por notificar!',
+            ]));
+        } catch (\Exception $e) {}
+
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Estado del ticket ' . $ticket->codigo . ' actualizado a ' . strtoupper($ticket->estado),
+                'message' => 'Estado del ticket ' . $ticket->codigo . ' actualizado a ' . strtoupper($ticket->estado) . '. Se ha notificado al usuario.',
                 'ticket'  => $ticket,
             ]);
         }

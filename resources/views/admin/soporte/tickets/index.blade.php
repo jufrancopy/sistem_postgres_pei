@@ -198,7 +198,16 @@
                                 {{-- Acciones --}}
                                 <td class="align-middle text-right" style="white-space: nowrap;">
                                     <button type="button" class="btn btn-xs btn-primary font-weight-bold px-2.5 py-1 btnGestionarTicket"
-                                            data-ticket="{{ json_encode($tk) }}" title="Gestionar Ticket">
+                                            data-id="{{ $tk->id }}"
+                                            data-codigo="{{ $tk->codigo }}"
+                                            data-titulo="{{ e($tk->titulo) }}"
+                                            data-descripcion="{{ e($tk->descripcion) }}"
+                                            data-user-name="{{ e($tk->user->name ?? 'Usuario') }}"
+                                            data-user-email="{{ e($tk->user->email ?? '') }}"
+                                            data-estado="{{ $tk->estado }}"
+                                            data-url="{{ e($tk->url_origen) }}"
+                                            data-respuesta="{{ e($tk->respuesta_admin) }}"
+                                            title="Gestionar Ticket">
                                         <i class="fa fa-tools mr-1"></i> Gestionar
                                     </button>
                                     <button type="button" class="btn btn-xs btn-outline-danger px-2 py-1 btnEliminarTicket"
@@ -278,7 +287,7 @@
                         Cerrar
                     </button>
                     <button type="submit" class="btn btn-success btn-sm rounded-pill px-4 font-weight-bold shadow-sm">
-                        <i class="fa fa-save mr-1"></i> Guardar Cambios
+                        <i class="fa fa-save mr-1"></i> Guardar y Notificar al Usuario
                     </button>
                 </div>
             </form>
@@ -344,18 +353,19 @@ $(document).ready(function() {
 
     // Abrir modal de gestión
     $(document).on('click', '.btnGestionarTicket', function() {
-        var tk = $(this).data('ticket');
-        $('#mg_ticket_id').val(tk.id);
-        $('#mg_ticket_codigo').text(tk.codigo);
-        $('#mg_ticket_titulo').text(tk.titulo);
-        $('#mg_ticket_descripcion').text(tk.descripcion);
-        $('#mg_user_name').text(tk.user ? tk.user.name : 'Usuario Desconocido');
-        $('#mg_user_email').text(tk.user ? tk.user.email : '');
-        $('#mg_ticket_estado').val(tk.estado);
-        $('#mg_respuesta_admin').val(tk.respuesta_admin || '');
+        var $btn = $(this);
+        $('#mg_ticket_id').val($btn.data('id'));
+        $('#mg_ticket_codigo').text($btn.data('codigo'));
+        $('#mg_ticket_titulo').text($btn.data('titulo'));
+        $('#mg_ticket_descripcion').text($btn.data('descripcion'));
+        $('#mg_user_name').text($btn.data('user-name'));
+        $('#mg_user_email').text($btn.data('user-email'));
+        $('#mg_ticket_estado').val($btn.data('estado'));
+        $('#mg_respuesta_admin').val($btn.data('respuesta') || '');
 
-        if (tk.url_origen) {
-            $('#mg_btn_abrir_url').attr('href', tk.url_origen).show();
+        var url = $btn.data('url');
+        if (url) {
+            $('#mg_btn_abrir_url').attr('href', url).show();
         } else {
             $('#mg_btn_abrir_url').hide();
         }
