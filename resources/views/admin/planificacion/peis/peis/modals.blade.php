@@ -1421,15 +1421,33 @@ function aplicarAccionEIndicadorIa() {
     }
 }
 
-window.abrirModalRemitirJuntaObjetivo = function(axiId, axiTitle) {
+window.abrirModalRemitirJuntaObjetivo = function(axiId, axiTitle, juntaId, juntaNombre) {
     $('#remitir_axi_id').val(axiId);
     $('#remitir_axi_titulo_header').text('Objetivo: ' + axiTitle);
     $('#remitir_notas_remision').val('');
+
+    // Manejo de la Junta Consultiva Receptora
+    if (juntaId && juntaId !== '') {
+        $('#remitir_junta_id').val(juntaId);
+        $('#bloque_junta_selector').addClass('d-none');
+        $('#bloque_junta_asignada_info').removeClass('d-none');
+        $('#remitir_junta_nombre_badge').text(juntaNombre || 'Junta Consultiva Vinculada al Objetivo');
+    } else {
+        $('#bloque_junta_selector').removeClass('d-none');
+        $('#bloque_junta_asignada_info').addClass('d-none');
+        if ($.fn.select2) {
+            $('#remitir_junta_id').select2({
+                dropdownParent: $('#modalRemitirJuntaObjetivo'),
+                width: '100%'
+            });
+        }
+    }
 
     const $axiBlock = $('#axi-' + axiId);
     const $actionsBlocks = $axiBlock.find('[id^="actionsBlock_"]');
 
     let htmlAcciones = '';
+    let countRed = 0;
 
     if ($actionsBlocks.length === 0) {
         htmlAcciones = '<div class="alert alert-warning py-2 small mb-0"><i class="fa fa-exclamation-circle mr-1"></i> Este objetivo estratégico no posee acciones registradas aún.</div>';
@@ -1438,24 +1456,41 @@ window.abrirModalRemitirJuntaObjetivo = function(axiId, axiTitle) {
             const rawId = $(this).attr('id').replace('actionsBlock_', '');
             const actionText = $(this).find('.font-weight-bold.text-dark').text().trim() || 'Acción Estratégica';
             const isRed = $(this).find('.badge-danger').length > 0 || $(this).html().indexOf('ROJO') !== -1 || $(this).html().indexOf('rojo') !== -1;
-            const badgeSemaforo = isRed
-                ? '<span class="badge badge-danger ml-2 px-2 py-1"><i class="fa fa-circle mr-1"></i> ALERTA ROJA</span>'
-                : '<span class="badge badge-secondary ml-2 px-2 py-1">EN CURSO</span>';
 
-            const isChecked = isRed ? 'checked' : '';
-
-            htmlAcciones += `
-                <div class="card border p-3 bg-white" style="border-radius:10px;">
-                    <div class="custom-control custom-checkbox d-flex align-items-center">
-                        <input type="checkbox" class="custom-control-input chk-accion-remitir" name="accion_ids[]" value="${rawId}" id="chk_acc_${rawId}" ${isChecked}>
-                        <label class="custom-control-label font-weight-bold text-dark w-100 cursor-pointer d-flex align-items-center justify-content-between mb-0" for="chk_acc_${rawId}">
-                            <span>${actionText}</span>
-                            ${badgeSemaforo}
-                        </label>
+            if (isRed) {
+                countRed++;
+                htmlAcciones += `
+                    <div class="card border border-danger p-3 bg-white mb-2 shadow-xs" style="border-radius:10px; border-left: 5px solid #dc2626 !important;">
+                        <div class="custom-control custom-checkbox d-flex align-items-center">
+                            <input type="checkbox" class="custom-control-input chk-accion-remitir" name="accion_ids[]" value="${rawId}" id="chk_acc_${rawId}" checked>
+                            <label class="custom-control-label font-weight-bold text-dark w-100 cursor-pointer d-flex align-items-center justify-content-between mb-0" for="chk_acc_${rawId}">
+                                <span>${actionText}</span>
+                                <span class="badge badge-danger ml-2 px-2 py-1"><i class="fa fa-exclamation-triangle mr-1"></i> ALERTA ROJA</span>
+                            </label>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            } else {
+                // Acciones normales u opcionales
+                htmlAcciones += `
+                    <div class="card border p-3 bg-light mb-2 opacity-9" style="border-radius:10px;">
+                        <div class="custom-control custom-checkbox d-flex align-items-center">
+                            <input type="checkbox" class="custom-control-input chk-accion-remitir" name="accion_ids[]" value="${rawId}" id="chk_acc_${rawId}">
+                            <label class="custom-control-label font-weight-bold text-secondary w-100 cursor-pointer d-flex align-items-center justify-content-between mb-0" for="chk_acc_${rawId}">
+                                <span>${actionText}</span>
+                                <span class="badge badge-secondary ml-2 px-2 py-1">EN CURSO</span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            }
         });
+
+        if (countRed > 0) {
+            htmlAcciones = `<div class="alert alert-danger py-2 small mb-3 font-weight-bold" style="border-radius:8px;">
+                <i class="fa fa-fire mr-1"></i> Se han detectado ${countRed} Acción(es) con Reportes en ALERTA ROJA preseleccionadas para remitir.
+            </div>` + htmlAcciones;
+        }
     }
 
     $('#contenedorAccionesRemitir').html(htmlAcciones);
@@ -1472,7 +1507,7 @@ window.enviarRemisionJuntaObjetivo = function(e) {
 
     const juntaId = $('#remitir_junta_id').val();
     if (!juntaId) {
-        toastr.warning('Por favor seleccioná la Junta Consultiva receptora.');
+        toastr.warning('Por favor asociá o seleccioná la Junta Consultiva receptora.');
         return;
     }
 
@@ -1523,31 +1558,41 @@ window.enviarRemisionJuntaObjetivo = function(e) {
             <form id="formRemitirJuntaObjetivo" onsubmit="enviarRemisionJuntaObjetivo(event)">
                 @csrf
                 <input type="hidden" id="remitir_axi_id" name="axi_id">
+                <input type="hidden" id="remitir_junta_id" name="junta_id">
 
                 <div class="modal-body p-4" style="background-color: #f8fafc;">
+                    {{-- Banner Informativo de la Junta Asignada --}}
+                    <div id="bloque_junta_asignada_info" class="p-3 mb-3 rounded shadow-xs text-white d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%); border-radius: 12px;">
+                        <div>
+                            <small class="text-white-50 d-block text-uppercase" style="font-size:0.7rem; letter-spacing:0.05em;">Junta Consultiva Receptora (Configurada en el Objetivo)</small>
+                            <span class="font-weight-bold text-warning" id="remitir_junta_nombre_badge" style="font-size:0.95rem;">Junta Consultiva</span>
+                        </div>
+                        <span class="badge badge-warning text-dark font-weight-bold px-3 py-1" style="border-radius: 20px;"><i class="fa fa-shield-alt mr-1"></i> Asignación Directa</span>
+                    </div>
+
                     <div class="alert alert-info border-0 shadow-sm mb-3" style="border-radius: 10px; background-color: #eff6ff; color: #1e40af;">
                         <i class="fa fa-info-circle mr-1"></i>
-                        Seleccioná las **Acciones Estratégicas** que deseás elevar a la Junta Consultiva para dictamen técnico y plan de mitigación. Las acciones con **Alerta Roja** han sido preseleccionadas automáticamente.
+                        Las **Acciones Estratégicas con Reportes en Alerta Roja** han sido identificadas y seleccionadas automáticamente para su remisión y dictamen técnico.
                     </div>
 
                     {{-- Lista de Acciones del Objetivo Estratégico --}}
                     <div class="form-group mb-4">
                         <label class="font-weight-bold text-dark small text-uppercase mb-2 d-block">
-                            <i class="fa fa-tasks text-primary mr-1"></i> Acciones del Objetivo Estratégico:
+                            <i class="fa fa-tasks text-primary mr-1"></i> Acciones a Remitir:
                         </label>
-                        <div id="contenedorAccionesRemitir" class="d-flex flex-column" style="gap: 8px;">
+                        <div id="contenedorAccionesRemitir" class="d-flex flex-column">
                             {{-- Se puebla dinámicamente vía JS --}}
                         </div>
                     </div>
 
-                    {{-- Selector de Junta Consultiva --}}
+                    {{-- Selector de Junta Consultiva (Solo si el Objetivo no tenía Junta pre-configurada) --}}
                     <div class="row">
-                        <div class="col-md-7 form-group mb-3">
+                        <div class="col-md-7 form-group mb-3 d-none" id="bloque_junta_selector">
                             <label class="font-weight-bold text-dark small mb-1">Junta Consultiva Receptora <span class="text-danger">*</span></label>
                             @php
                                 $juntasActivas = \App\Models\Planificacion\Junta::where('activo', true)->orderBy('nombre')->get();
                             @endphp
-                            <select name="junta_id" id="remitir_junta_id" class="form-control font-weight-bold" required>
+                            <select id="remitir_junta_id_select" class="form-control font-weight-bold" onchange="$('#remitir_junta_id').val($(this).val())">
                                 <option value="">— Seleccionar Junta Consultiva —</option>
                                 @foreach($juntasActivas as $jta)
                                     <option value="{{ $jta->id }}">{{ $jta->nombre }} ({{ strtoupper($jta->programa) }})</option>

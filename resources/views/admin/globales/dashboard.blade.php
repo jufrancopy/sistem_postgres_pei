@@ -1448,8 +1448,16 @@
 
                     <div class="row">
                         <div class="col-md-6 form-group mb-3">
-                            <label class="font-weight-bold text-dark small mb-1">Nombre del Presidente <span class="text-danger">*</span></label>
-                            <input type="text" name="presidente_nombre" id="modal_junta_presi_nombre" class="form-control" required placeholder="Ej: Dr. Carlos Gustavo Benítez">
+                            <label class="font-weight-bold text-dark small mb-1">Presidente de la Junta (Usuario SIPLAN) <span class="text-danger">*</span></label>
+                            @php
+                                $usuariosList = \App\Models\User::orderBy('name')->get();
+                            @endphp
+                            <select name="presidente_user_id" id="modal_junta_presi_user_id" class="form-control select2InModalJunta" style="width:100%" required>
+                                <option value="">— Seleccionar Presidente de SIPLAN —</option>
+                                @foreach($usuariosList as $u)
+                                    <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="col-md-6 form-group mb-3">
                             <label class="font-weight-bold text-dark small mb-1">Cargo del Presidente <span class="text-danger">*</span></label>
@@ -4275,7 +4283,7 @@ window.abrirModalNuevaJunta = function() {
     $('#modal_junta_ambito').val('');
     $('#modal_junta_fines').val('');
     $('#modal_junta_atribuciones').val('');
-    $('#modal_junta_presi_nombre').val('');
+    $('#modal_junta_presi_user_id').val('').trigger('change');
     $('#modal_junta_presi_cargo').val('Presidente de la Junta Consultiva');
     $('#modal_junta_integrantes').val([]).trigger('change');
     $('#collapseNuevoUsuarioJunta').collapse('hide');
@@ -4293,13 +4301,41 @@ window.abrirModalEditarJunta = function(id) {
     $('#modal_junta_ambito').val(jta.ambito_competencia || '');
     $('#modal_junta_fines').val(jta.fines || '');
     $('#modal_junta_atribuciones').val(jta.atribuciones || '');
-    $('#modal_junta_presi_nombre').val(jta.presidente_nombre || '');
+    $('#modal_junta_presi_user_id').val(jta.presidente_user_id || '').trigger('change');
     $('#modal_junta_presi_cargo').val(jta.presidente_cargo || '');
 
     const integranteIds = (jta.integrantes || []).map(function(m) { return m.id; });
     $('#modal_junta_integrantes').val(integranteIds).trigger('change');
     $('#collapseNuevoUsuarioJunta').collapse('hide');
     $('#modalJuntaConsultiva').modal('show');
+};
+
+window.eliminarJuntaConsultiva = function(id, nombre) {
+    Swal.fire({
+        title: '¿Eliminar Junta Consultiva?',
+        html: 'Estás a punto de eliminar la junta <strong>' + nombre + '</strong>.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '<i class="fa fa-trash mr-1"></i> Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '{{ url("admin/planificacion/juntas") }}/' + id,
+                type: 'DELETE',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function(res) {
+                    toastr.success('Junta Consultiva eliminada correctamente.');
+                    $('#junta_row_' + id).fadeOut(300, function() { $(this).remove(); });
+                },
+                error: function(xhr) {
+                    toastr.error('No se pudo eliminar la Junta Consultiva.');
+                }
+            });
+        }
+    });
 };
 
 window.guardarJuntaConsultiva = function(e) {

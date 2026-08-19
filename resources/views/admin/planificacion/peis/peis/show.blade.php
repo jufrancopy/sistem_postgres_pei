@@ -2538,6 +2538,21 @@
                         $bscSelect.val(bscVal).trigger('change');
                     }
 
+                    // ── Junta Consultiva (Select2) ──
+                    var $axisJuntaSel = $('#axis_junta_id');
+                    if ($axisJuntaSel.length) {
+                        if ($axisJuntaSel.hasClass('select2-hidden-accessible')) {
+                            $axisJuntaSel.select2('destroy');
+                        }
+                        $axisJuntaSel.select2({
+                            dropdownParent: $axisJuntaSel.closest('.form-group'),
+                            placeholder: '— Ninguna Junta Asignada —',
+                            allowClear: true
+                        });
+                        var axisJuntaVal = (typeBtn === 'edit' && data.profile.junta_id) ? data.profile.junta_id : '';
+                        $axisJuntaSel.val(axisJuntaVal).trigger('change');
+                    }
+
                     // ── Resultado Intermedio Institucional ──
                     var riVal = (typeBtn === 'edit' && data.profile.resultado_intermedio)
                         ? data.profile.resultado_intermedio : '';
@@ -2953,6 +2968,21 @@
                         $('#goals_bsc_perspectiva').val('');
                     }
 
+                    // ── Junta Consultiva (Select2) ──
+                    var $goalsJuntaSel = $('#goals_junta_id');
+                    if ($goalsJuntaSel.length) {
+                        if ($goalsJuntaSel.hasClass('select2-hidden-accessible')) {
+                            $goalsJuntaSel.select2('destroy');
+                        }
+                        $goalsJuntaSel.select2({
+                            dropdownParent: $goalsJuntaSel.closest('.form-group'),
+                            placeholder: '— Ninguna Junta Asignada —',
+                            allowClear: true
+                        });
+                        var goalsJuntaVal = (typeBtn === 'edit' && data.profile.junta_id) ? data.profile.junta_id : '';
+                        $goalsJuntaSel.val(goalsJuntaVal).trigger('change');
+                    }
+
                     // ── Select2 Indicador (Ámbito: Objetivo Específico) ──────
                     var $goalsIndicadorSel = $('#goals_indicador_id');
                     if ($goalsIndicadorSel.hasClass('select2-hidden-accessible')) {
@@ -3080,6 +3110,21 @@
                     $('#actions_type').val(data.profile.type);
                     $('#actions_group_id').val(data.profile.group_id);
                     $('#actions_dependency').val(data.profile.dependency_id);
+
+                    // ── Junta Consultiva (Select2) ──
+                    var $actionsJuntaSel = $('#actions_junta_id');
+                    if ($actionsJuntaSel.length) {
+                        if ($actionsJuntaSel.hasClass('select2-hidden-accessible')) {
+                            $actionsJuntaSel.select2('destroy');
+                        }
+                        $actionsJuntaSel.select2({
+                            dropdownParent: $actionsJuntaSel.closest('.form-group'),
+                            placeholder: '— Ninguna Junta Asignada —',
+                            allowClear: true
+                        });
+                        var actionsJuntaVal = (typeBtn === 'edit' && data.profile.junta_id) ? data.profile.junta_id : '';
+                        $actionsJuntaSel.val(actionsJuntaVal).trigger('change');
+                    }
 
                     // ── Select2 Responsables — usa la raíz del árbol institucional ──
                     var $responsibles = $('#responsibles');

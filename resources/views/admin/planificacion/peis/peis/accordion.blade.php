@@ -210,11 +210,16 @@
                             title="Ver / Gestionar {{ $countRiesgos }} riesgo(s) MECIP 2015 asociados">
                         <i class="fa fa-shield-alt mr-1"></i> Riesgos MECIP ({{ $countRiesgos }})
                     </button>
+                    @php
+                        $axiJunta = $axi->junta ?? ($axi->juntas ? $axi->juntas->first() : null);
+                        $axiJuntaId = $axiJunta ? $axiJunta->id : ($axi->junta_id ?? '');
+                        $axiJuntaNombre = $axiJunta ? $axiJunta->nombre : '';
+                    @endphp
                     <button type="button" class="btn btn-sm btn-warning text-dark font-weight-bold py-0 px-2 btnRemitirJuntaObjetivo shadow-sm"
                             data-axi-id="{{ $axi->id }}"
                             data-axi-title="{{ e(strip_tags($axi->name)) }}"
-                            onclick="event.stopPropagation(); abrirModalRemitirJuntaObjetivo('{{ $axi->id }}', '{{ e(strip_tags($axi->name)) }}')"
-                            title="Remitir Acciones de este Objetivo Estratégico a la Junta Consultiva / Consejo de Sabios">
+                            onclick="event.stopPropagation(); abrirModalRemitirJuntaObjetivo('{{ $axi->id }}', '{{ e(strip_tags($axi->name)) }}', '{{ $axiJuntaId }}', '{{ e($axiJuntaNombre) }}')"
+                            title="Remitir Acciones en Alerta Roja de este Objetivo Estratégico a la Junta Consultiva / Consejo de Sabios">
                         <i class="fa fa-landmark mr-1"></i> Remitir a Junta
                     </button>
                     @if($bscPerspectiva && isset($bscLabels[$bscPerspectiva]))
@@ -421,12 +426,14 @@
                                    title="Agregar {{ $niveles['action'] ?? 'Acción' }}">
                                     <i class="fa fa-plus" style="font-size:.7rem"></i>
                                 </a>
-                                <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold py-0 px-2 ml-1 createActionsButton shadow-xs"
-                                        data-id="{{ $goal->id }}" data-type="create" id="createActions"
-                                        title="Crear nueva Acción Estratégica e Indicador con Inteligencia Artificial (Llama 3.3 70B)"
-                                        style="border-radius: 12px; font-size: 0.72rem;">
-                                    <i class="fa fa-robot text-warning mr-1"></i> + Acción IA
-                                </button>
+                                 @if(auth()->check() && (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('Admin') || auth()->user()->id == 1))
+                                 <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold py-0 px-2 ml-1 createActionsButton shadow-xs"
+                                         data-id="{{ $goal->id }}" data-type="create" id="createActions"
+                                         title="Crear nueva Acción Estratégica e Indicador con Inteligencia Artificial (Llama 3.3 70B)"
+                                         style="border-radius: 12px; font-size: 0.72rem;">
+                                     <i class="fa fa-robot text-warning mr-1"></i> + Acción IA
+                                 </button>
+                                 @endif
                                  @role('Administrador')
                                  <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
                                     data-id="{{ $goal->id }}" href="javascript:void(0)"

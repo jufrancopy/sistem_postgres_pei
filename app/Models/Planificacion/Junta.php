@@ -19,6 +19,7 @@ class Junta extends Model
         'fines',
         'atribuciones',
         'ambito_competencia',
+        'presidente_user_id',
         'presidente_nombre',
         'presidente_cargo',
         'firma_digital_url',
@@ -29,6 +30,11 @@ class Junta extends Model
     protected $casts = [
         'activo' => 'boolean',
     ];
+
+    public function presidente()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'presidente_user_id');
+    }
 
     public function intervenciones()
     {

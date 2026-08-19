@@ -20,21 +20,24 @@ return new class extends Migration
                 if (!Schema::hasColumn('planificacion.juntas', 'ambito_competencia')) {
                     $table->string('ambito_competencia')->nullable();
                 }
+                if (!Schema::hasColumn('planificacion.juntas', 'presidente_user_id')) {
+                    $table->unsignedBigInteger('presidente_user_id')->nullable();
+                    $table->foreign('presidente_user_id')->references('id')->on('users')->onDelete('set null');
+                }
             });
         }
 
         // 2. Tabla Pivot Junta - Integrantes (Usuarios)
         if (!Schema::hasTable('planificacion.junta_integrantes')) {
             Schema::create('planificacion.junta_integrantes', function (Blueprint $table) {
-                $table->uuid('id')->primary();
                 $table->uuid('junta_id');
                 $table->unsignedBigInteger('user_id');
                 $table->string('cargo')->nullable()->default('Miembro Consultor');
                 $table->timestamps();
 
+                $table->primary(['junta_id', 'user_id']);
                 $table->foreign('junta_id')->references('id')->on('planificacion.juntas')->onDelete('cascade');
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-                $table->unique(['junta_id', 'user_id']);
             });
         }
 
@@ -59,6 +62,10 @@ return new class extends Migration
 
         if (Schema::hasTable('planificacion.juntas')) {
             Schema::table('planificacion.juntas', function (Blueprint $table) {
+                if (Schema::hasColumn('planificacion.juntas', 'presidente_user_id')) {
+                    $table->dropForeign(['presidente_user_id']);
+                    $table->dropColumn('presidente_user_id');
+                }
                 $table->dropColumn(['fines', 'atribuciones', 'ambito_competencia']);
             });
         }
