@@ -16,6 +16,9 @@ class Junta extends Model
         'codigo',
         'programa',
         'descripcion',
+        'fines',
+        'atribuciones',
+        'ambito_competencia',
         'presidente_nombre',
         'presidente_cargo',
         'firma_digital_url',
@@ -30,6 +33,19 @@ class Junta extends Model
     public function intervenciones()
     {
         return $this->hasMany(JuntaIntervencion::class, 'junta_id');
+    }
+
+    public function integrantes()
+    {
+        return $this->belongsToMany(\App\Models\User::class, 'planificacion.junta_integrantes', 'junta_id', 'user_id')
+                    ->withPivot('cargo')
+                    ->withTimestamps();
+    }
+
+    public function peiProfiles()
+    {
+        return $this->belongsToMany(\App\Admin\Planificacion\Pei\PeiProfile::class, 'planificacion.pei_profile_juntas', 'junta_id', 'pei_profile_id')
+                    ->withTimestamps();
     }
 
     public static function generarCodigo(string $programa): string

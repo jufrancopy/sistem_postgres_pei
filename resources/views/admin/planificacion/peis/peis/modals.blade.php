@@ -1420,7 +1420,167 @@ function aplicarAccionEIndicadorIa() {
         $('#modalPreviewAccionEIndicadorIa').modal('hide');
     }
 }
+
+window.abrirModalRemitirJuntaObjetivo = function(axiId, axiTitle) {
+    $('#remitir_axi_id').val(axiId);
+    $('#remitir_axi_titulo_header').text('Objetivo: ' + axiTitle);
+    $('#remitir_notas_remision').val('');
+
+    const $axiBlock = $('#axi-' + axiId);
+    const $actionsBlocks = $axiBlock.find('[id^="actionsBlock_"]');
+
+    let htmlAcciones = '';
+
+    if ($actionsBlocks.length === 0) {
+        htmlAcciones = '<div class="alert alert-warning py-2 small mb-0"><i class="fa fa-exclamation-circle mr-1"></i> Este objetivo estratégico no posee acciones registradas aún.</div>';
+    } else {
+        $actionsBlocks.each(function() {
+            const rawId = $(this).attr('id').replace('actionsBlock_', '');
+            const actionText = $(this).find('.font-weight-bold.text-dark').text().trim() || 'Acción Estratégica';
+            const isRed = $(this).find('.badge-danger').length > 0 || $(this).html().indexOf('ROJO') !== -1 || $(this).html().indexOf('rojo') !== -1;
+            const badgeSemaforo = isRed
+                ? '<span class="badge badge-danger ml-2 px-2 py-1"><i class="fa fa-circle mr-1"></i> ALERTA ROJA</span>'
+                : '<span class="badge badge-secondary ml-2 px-2 py-1">EN CURSO</span>';
+
+            const isChecked = isRed ? 'checked' : '';
+
+            htmlAcciones += `
+                <div class="card border p-3 bg-white" style="border-radius:10px;">
+                    <div class="custom-control custom-checkbox d-flex align-items-center">
+                        <input type="checkbox" class="custom-control-input chk-accion-remitir" name="accion_ids[]" value="${rawId}" id="chk_acc_${rawId}" ${isChecked}>
+                        <label class="custom-control-label font-weight-bold text-dark w-100 cursor-pointer d-flex align-items-center justify-content-between mb-0" for="chk_acc_${rawId}">
+                            <span>${actionText}</span>
+                            ${badgeSemaforo}
+                        </label>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    $('#contenedorAccionesRemitir').html(htmlAcciones);
+    $('#modalRemitirJuntaObjetivo').modal('show');
+};
+
+window.enviarRemisionJuntaObjetivo = function(e) {
+    e.preventDefault();
+    const selectedAccions = $('.chk-accion-remitir:checked').map(function() { return $(this).val(); }).get();
+    if (selectedAccions.length === 0) {
+        toastr.warning('Por favor seleccioná al menos una Acción Estratégica para remitir.');
+        return;
+    }
+
+    const juntaId = $('#remitir_junta_id').val();
+    if (!juntaId) {
+        toastr.warning('Por favor seleccioná la Junta Consultiva receptora.');
+        return;
+    }
+
+    const $btn = $('#btnSubmitRemitirObjetivo');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Remitiendo...');
+
+    $.ajax({
+        url: '{{ route("admin.juntas.remitirAlerta") }}',
+        type: 'POST',
+        data: $('#formRemitirJuntaObjetivo').serialize(),
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Remitir Expediente(s) a la Junta');
+            if (res.success) {
+                $('#modalRemitirJuntaObjetivo').modal('hide');
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Acciones Remitidas a Junta!',
+                    text: res.message,
+                    confirmButtonColor: '#2563eb'
+                });
+            } else {
+                Swal.fire('Error', res.message || 'No se pudieron remitir las acciones.', 'error');
+            }
+        },
+        error: function(err) {
+            $btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Remitir Expediente(s) a la Junta');
+            var msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Ocurrió un error al procesar la remisión.';
+            Swal.fire('Error', msg, 'error');
+        }
+    });
+};
 </script>
+
+{{-- Modal Remitir Acciones a Junta desde Nivel de Objetivo Estratégico --}}
+<div class="modal fade" id="modalRemitirJuntaObjetivo" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);">
+                <div>
+                    <h5 class="modal-title font-weight-bold mb-0 text-white" style="font-size: 1.15rem;">
+                        <i class="fa fa-landmark text-warning mr-2"></i> Remitir Acciones al Consejo de Sabios / Junta Consultiva
+                    </h5>
+                    <small class="text-white-50" id="remitir_axi_titulo_header">Objetivo Estratégico</small>
+                </div>
+                <button type="button" class="close text-white opacity-8" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+
+            <form id="formRemitirJuntaObjetivo" onsubmit="enviarRemisionJuntaObjetivo(event)">
+                @csrf
+                <input type="hidden" id="remitir_axi_id" name="axi_id">
+
+                <div class="modal-body p-4" style="background-color: #f8fafc;">
+                    <div class="alert alert-info border-0 shadow-sm mb-3" style="border-radius: 10px; background-color: #eff6ff; color: #1e40af;">
+                        <i class="fa fa-info-circle mr-1"></i>
+                        Seleccioná las **Acciones Estratégicas** que deseás elevar a la Junta Consultiva para dictamen técnico y plan de mitigación. Las acciones con **Alerta Roja** han sido preseleccionadas automáticamente.
+                    </div>
+
+                    {{-- Lista de Acciones del Objetivo Estratégico --}}
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bold text-dark small text-uppercase mb-2 d-block">
+                            <i class="fa fa-tasks text-primary mr-1"></i> Acciones del Objetivo Estratégico:
+                        </label>
+                        <div id="contenedorAccionesRemitir" class="d-flex flex-column" style="gap: 8px;">
+                            {{-- Se puebla dinámicamente vía JS --}}
+                        </div>
+                    </div>
+
+                    {{-- Selector de Junta Consultiva --}}
+                    <div class="row">
+                        <div class="col-md-7 form-group mb-3">
+                            <label class="font-weight-bold text-dark small mb-1">Junta Consultiva Receptora <span class="text-danger">*</span></label>
+                            @php
+                                $juntasActivas = \App\Models\Planificacion\Junta::where('activo', true)->orderBy('nombre')->get();
+                            @endphp
+                            <select name="junta_id" id="remitir_junta_id" class="form-control font-weight-bold" required>
+                                <option value="">— Seleccionar Junta Consultiva —</option>
+                                @foreach($juntasActivas as $jta)
+                                    <option value="{{ $jta->id }}">{{ $jta->nombre }} ({{ strtoupper($jta->programa) }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-5 form-group mb-3">
+                            <label class="font-weight-bold text-dark small mb-1">Nivel de Prioridad <span class="text-danger">*</span></label>
+                            <select name="prioridad" id="remitir_prioridad" class="form-control font-weight-bold">
+                                <option value="ALTA" selected>🔴 ALTA - Dictamen Requerido</option>
+                                <option value="EMERGENCIA">🚨 EMERGENCIA - Intervención Inmediata</option>
+                                <option value="MEDIA">🟡 MEDIA - Seguimiento Preventivo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- Observaciones / Notas de Remisión --}}
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold text-dark small mb-1">Observaciones / Notas de Remisión para los Consultores</label>
+                        <textarea name="notas_remision" id="remitir_notas_remision" class="form-control" rows="3" placeholder="Describir las razones de la remisión, desvíos detectados o puntos críticos a dictaminar por la Junta..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-white border-top px-4 py-3">
+                    <button type="button" class="btn btn-light btn-round px-4" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning text-dark font-weight-bold btn-round shadow-sm px-4" id="btnSubmitRemitirObjetivo">
+                        <i class="fa fa-paper-plane mr-1"></i> Remitir Expediente(s) a la Junta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 {{-- Modal Preview de Acción + Indicador IA --}}
 <div class="modal fade" id="modalPreviewAccionEIndicadorIa" tabindex="-1" role="dialog" style="z-index: 1060;">

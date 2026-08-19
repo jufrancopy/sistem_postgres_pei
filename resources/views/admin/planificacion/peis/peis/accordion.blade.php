@@ -210,6 +210,13 @@
                             title="Ver / Gestionar {{ $countRiesgos }} riesgo(s) MECIP 2015 asociados">
                         <i class="fa fa-shield-alt mr-1"></i> Riesgos MECIP ({{ $countRiesgos }})
                     </button>
+                    <button type="button" class="btn btn-sm btn-warning text-dark font-weight-bold py-0 px-2 btnRemitirJuntaObjetivo shadow-sm"
+                            data-axi-id="{{ $axi->id }}"
+                            data-axi-title="{{ e(strip_tags($axi->name)) }}"
+                            onclick="event.stopPropagation(); abrirModalRemitirJuntaObjetivo('{{ $axi->id }}', '{{ e(strip_tags($axi->name)) }}')"
+                            title="Remitir Acciones de este Objetivo Estratégico a la Junta Consultiva / Consejo de Sabios">
+                        <i class="fa fa-landmark mr-1"></i> Remitir a Junta
+                    </button>
                     @if($bscPerspectiva && isset($bscLabels[$bscPerspectiva]))
                     <span class="badge {{ $bscColores[$bscPerspectiva]['badge'] ?? 'badge-secondary' }}"
                           style="font-size:.68rem"

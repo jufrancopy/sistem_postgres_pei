@@ -262,7 +262,7 @@ class GlobalesController extends Controller
             ]);
         }
 
-        $juntasList = \App\Models\Planificacion\Junta::withCount('intervenciones')->orderBy('nombre')->get();
+        $juntasList = \App\Models\Planificacion\Junta::with(['integrantes', 'intervenciones'])->withCount('intervenciones')->orderBy('nombre')->get();
         $totalJuntas = $juntasList->count();
         $totalJuntasActivas = $juntasList->where('activo', true)->count();
         $totalIntervencionesJuntas = \App\Models\Planificacion\JuntaIntervencion::count();

@@ -970,6 +970,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'store'])->name('store');
         Route::get('/intervenciones', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'intervenciones'])->name('intervenciones');
         Route::post('/remitir-alerta', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'remitirAlerta'])->name('remitirAlerta');
+        Route::post('/crear-usuario-rapido', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'crearUsuarioRapido'])->name('crearUsuarioRapido');
         Route::post('/dictamen/{id}', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'emitirDictamen'])->name('emitirDictamen');
         Route::post('/sugerir-mitigacion-ia', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'sugerirMitigacionIa'])->name('sugerirMitigacionIa');
     });

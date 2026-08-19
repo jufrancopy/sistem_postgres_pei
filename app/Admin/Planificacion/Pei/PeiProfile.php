@@ -325,4 +325,9 @@ class PeiProfile extends Model
     {
         return $this->belongsTo(\App\Models\Planificacion\Junta::class, 'junta_id');
     }
+
+    public function juntas()
+    {
+        return $this->belongsToMany(\App\Models\Planificacion\Junta::class, 'planificacion.pei_profile_juntas', 'pei_profile_id', 'junta_id')->withTimestamps();
+    }
 }

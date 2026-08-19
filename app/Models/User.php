@@ -34,6 +34,18 @@ class User extends Authenticatable
         return $this->hasMany(UserActivity::class, 'user_id');
     }
 
+    public function mecipAspectos()
+    {
+        return $this->hasMany(FodaAspecto::class, 'user_id');
+    }
+
+    public function juntas()
+    {
+        return $this->belongsToMany(\App\Models\Planificacion\Junta::class, 'planificacion.junta_integrantes', 'user_id', 'junta_id')
+                    ->withPivot('cargo')
+                    ->withTimestamps();
+    }
+
     /**
      * Puntos totales acumulados en Gamificación
      */

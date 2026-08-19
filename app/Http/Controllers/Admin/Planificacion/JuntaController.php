@@ -34,26 +34,34 @@ class JuntaController extends Controller
     }
 
     /**
-     * Guardar o actualizar una Junta (con registro de firma digital/sello)
+     * Guardar o actualizar una Junta Consultiva (con integrantes y firma digital/sello)
      */
     public function store(Request $request)
     {
         $request->validate([
-            'nombre'            => 'required|string|max:255',
-            'programa'          => 'required|in:salud,jubilaciones,finanzas,institucional',
-            'presidente_nombre' => 'required|string|max:255',
-            'presidente_cargo'  => 'required|string|max:255',
+            'nombre'             => 'required|string|max:255',
+            'programa'           => 'required|in:salud,jubilaciones,finanzas,institucional',
+            'presidente_nombre'  => 'required|string|max:255',
+            'presidente_cargo'   => 'required|string|max:255',
+            'fines'              => 'nullable|string',
+            'atribuciones'       => 'nullable|string',
+            'ambito_competencia' => 'nullable|string|max:255',
+            'integrantes'        => 'nullable|array',
+            'integrantes.*'      => 'exists:users,id',
         ]);
 
         $id = $request->input('id');
         $junta = $id ? Junta::findOrFail($id) : new Junta();
 
-        $junta->nombre            = $request->input('nombre');
-        $junta->programa          = $request->input('programa');
-        $junta->descripcion       = $request->input('descripcion');
-        $junta->presidente_nombre = $request->input('presidente_nombre');
-        $junta->presidente_cargo  = $request->input('presidente_cargo');
-        $junta->activo            = $request->has('activo') ? (bool)$request->input('activo') : true;
+        $junta->nombre             = $request->input('nombre');
+        $junta->programa           = $request->input('programa');
+        $junta->descripcion        = $request->input('descripcion');
+        $junta->fines              = $request->input('fines');
+        $junta->atribuciones       = $request->input('atribuciones');
+        $junta->ambito_competencia = $request->input('ambito_competencia');
+        $junta->presidente_nombre  = $request->input('presidente_nombre');
+        $junta->presidente_cargo   = $request->input('presidente_cargo');
+        $junta->activo             = $request->has('activo') ? (bool)$request->input('activo') : true;
 
         if (!$junta->codigo) {
             $junta->codigo = Junta::generarCodigo($junta->programa);
@@ -69,7 +77,53 @@ class JuntaController extends Controller
 
         $junta->save();
 
-        return redirect()->back()->with('success', 'Junta Consultiva guardada exitosamente con su Firma Registrada.');
+        // Sincronizar integrantes de la Junta (Usuarios de SIPLAN)
+        if ($request->has('integrantes')) {
+            $integrantesIds = (array) $request->input('integrantes');
+            $junta->integrantes()->sync($integrantesIds);
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Junta Consultiva guardada exitosamente.',
+                'junta'   => $junta->load('integrantes'),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Junta Consultiva guardada exitosamente con sus integrantes.');
+    }
+
+    /**
+     * Crear nuevo usuario rápido in-situ desde el modal de Junta Consultiva
+     */
+    public function crearUsuarioRapido(Request $request)
+    {
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+        ]);
+
+        $user = \App\Models\User::create([
+            'name'     => $request->input('name'),
+            'email'    => $request->input('email'),
+            'password' => bcrypt($request->input('password', '12345678')),
+        ]);
+
+        // Asignar rol predeterminado Participantes si Spatie Roles está activo
+        if (class_exists('\Spatie\Permission\Models\Role') && \Spatie\Permission\Models\Role::where('name', 'Participantes')->exists()) {
+            $user->assignRole('Participantes');
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Usuario {$user->name} creado exitosamente en SIPLAN.",
+            'user'    => [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email,
+            ],
+        ]);
     }
 
     /**
@@ -97,65 +151,97 @@ class JuntaController extends Controller
     }
 
     /**
-     * Remitir un avance en Alerta Roja a la Junta de Intervención
+     * Remitir un avance o una/varias Acciones en Alerta Roja a la Junta de Intervención
      */
     public function remitirAlerta(Request $request)
     {
         $request->validate([
-            'reporte_id'     => 'nullable|exists:planificacion.pei_accion_reportes,id',
-            'pei_profile_id' => 'nullable|exists:planificacion.pei_profiles,id',
-            'junta_id'       => 'nullable|exists:planificacion.juntas,id',
+            'reporte_id'     => 'nullable|exists:pei_accion_reportes,id',
+            'pei_profile_id' => 'nullable|exists:pei_profiles,id',
+            'accion_ids'     => 'nullable|array',
+            'accion_ids.*'   => 'exists:pei_profiles,id',
+            'junta_id'       => 'nullable|exists:juntas,id',
             'prioridad'      => 'nullable|in:MEDIA,ALTA,EMERGENCIA',
             'notas_remision' => 'nullable|string',
         ]);
 
-        $reporteId = $request->input('reporte_id');
-        $profileId = $request->input('pei_profile_id');
-        $accion = null;
-        $reporte = null;
+        $accionIds = (array) $request->input('accion_ids', []);
+        if ($request->filled('pei_profile_id')) {
+            $accionIds[] = $request->input('pei_profile_id');
+        }
 
+        $reporteId = $request->input('reporte_id');
+        $reporte = null;
         if ($reporteId) {
             $reporte = PeiAccionReporte::with('accion.junta')->find($reporteId);
-            if ($reporte) {
-                $accion = $reporte->accion;
+            if ($reporte && $reporte->accion) {
+                $accionIds[] = $reporte->accion->id;
             }
-        } elseif ($profileId) {
-            $accion = PeiProfile::with('junta')->find($profileId);
         }
 
-        if (!$accion) {
-            return response()->json(['success' => false, 'message' => 'No se encontró la Acción Estratégica asociada.'], 400);
+        $accionIds = array_unique(array_filter($accionIds));
+
+        if (empty($accionIds)) {
+            return response()->json(['success' => false, 'message' => 'No se seleccionó ninguna Acción Estratégica para remitir.'], 400);
         }
 
-        // Determinar la Junta: especificada en modal o la asignada a la acción o la Junta de Salud por defecto
-        $juntaId = $request->input('junta_id') ?: $accion->junta_id;
+        $juntaId = $request->input('junta_id');
+        if (!$juntaId) {
+            $primeraAccion = PeiProfile::find($accionIds[0]);
+            $juntaId = $primeraAccion ? $primeraAccion->junta_id : null;
+        }
+
         if (!$juntaId) {
             $juntaPorDefecto = Junta::where('programa', 'salud')->first() ?: Junta::first();
             $juntaId = $juntaPorDefecto ? $juntaPorDefecto->id : null;
         }
 
         if (!$juntaId) {
-            return response()->json(['success' => false, 'message' => 'No existe ninguna Junta configurada en el sistema. Por favor configure una Junta primero.'], 400);
+            return response()->json(['success' => false, 'message' => 'No existe ninguna Junta Consultiva configurada en el sistema. Por favor cree una Junta primero.'], 400);
         }
 
         $junta = Junta::findOrFail($juntaId);
+        $expedientesCreados = [];
 
-        // Crear Expediente de Intervención
-        $expediente = JuntaIntervencion::create([
-            'codigo_expediente'   => JuntaIntervencion::generarCodigoExpediente($junta),
-            'junta_id'             => $junta->id,
-            'pei_profile_id'       => $accion->id,
-            'reporte_avance_id'   => $reporte->id,
-            'solicitante_user_id' => Auth::id(),
-            'diagnostico'          => $request->input('notas_remision') ?: 'Reporte de Avance en Alerta Roja. Brecha detectada en la ejecución del indicador.',
-            'estado'               => 'PENDIENTE',
-            'prioridad'            => $request->input('prioridad', 'ALTA'),
-        ]);
+        foreach ($accionIds as $accId) {
+            $accion = PeiProfile::find($accId);
+            if (!$accion) continue;
 
+            // Asociar la Junta a la Acción en la tabla pivot pei_profile_juntas
+            $accion->juntas()->syncWithoutDetaching([$junta->id]);
+            if (!$accion->junta_id) {
+                $accion->junta_id = $junta->id;
+                $accion->save();
+            }
+
+            // Buscar el último reporte en alerta si no se paso un reporte específico
+            $repId = ($reporte && $reporte->pei_profile_id == $accion->id) ? $reporte->id : null;
+            if (!$repId) {
+                $ultReporte = PeiAccionReporte::where('pei_profile_id', $accion->id)->orderByDesc('fecha_reporte')->first();
+                $repId = $ultReporte ? $ultReporte->id : null;
+            }
+
+            $expediente = JuntaIntervencion::create([
+                'codigo_expediente'   => JuntaIntervencion::generarCodigoExpediente($junta),
+                'junta_id'             => $junta->id,
+                'pei_profile_id'       => $accion->id,
+                'reporte_avance_id'   => $repId,
+                'solicitante_user_id' => Auth::id(),
+                'diagnostico'          => $request->input('notas_remision') ?: 'Remisión de Acción Estratégica en Alerta Roja para dictamen técnico de la Junta Consultiva.',
+                'estado'               => 'PENDIENTE',
+                'prioridad'            => $request->input('prioridad', 'ALTA'),
+            ]);
+
+            $expedientesCreados[] = $expediente->codigo_expediente;
+        }
+
+        $codigosStr = implode(', ', $expedientesCreados);
         return response()->json([
             'success' => true,
-            'message' => "Expediente {$expediente->codigo_expediente} remitido exitosamente a la {$junta->nombre}.",
-            'codigo'  => $expediente->codigo_expediente,
+            'message' => count($expedientesCreados) === 1
+                ? "Expediente {$codigosStr} remitido exitosamente a la {$junta->nombre}."
+                : "Se generaron los Expedientes ({$codigosStr}) remitidos a la {$junta->nombre}.",
+            'codigos' => $expedientesCreados,
         ]);
     }
 

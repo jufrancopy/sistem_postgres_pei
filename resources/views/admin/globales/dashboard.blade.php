@@ -1169,7 +1169,155 @@
 
                 </div>
 
-            </div>
+                {{-- ════════════════════════════════════════════════════════════════════════════
+                     PESTAÑA 7: JUNTAS CONSULTIVAS (CONSEJO DE SABIOS)
+                     ════════════════════════════════════════════════════════════════════════════ --}}
+                <div class="tab-pane fade" id="tab-juntas" role="tabpanel">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                        <div>
+                            <h4 class="font-weight-bold text-dark mb-1">
+                                <i class="fa fa-balance-scale text-primary mr-2"></i> Juntas Consultivas (Consejo de Sabios)
+                            </h4>
+                            <p class="text-muted mb-0 small">
+                                Gestión de Comités Consultivos Institucionales, Fines, Atribuciones y Miembros Asignados del IPS.
+                            </p>
+                        </div>
+                        <div class="mt-3 mt-md-0 d-flex flex-wrap align-items-center" style="gap: 8px;">
+                            <a href="{{ route('admin.juntas.intervenciones') }}" class="btn btn-outline-info btn-round px-3 font-weight-bold">
+                                <i class="fa fa-inbox mr-1"></i> Bandeja de Dictámenes / Intervenciones
+                            </a>
+                            <button type="button" class="btn btn-primary btn-round px-3 shadow-sm font-weight-bold" onclick="abrirModalNuevaJunta()">
+                                <i class="fa fa-plus-circle mr-1"></i> Nueva Junta Consultiva
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- KPIs de Juntas --}}
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="card kpi-card p-3 border-left border-primary" style="border-left-width:4px !important;">
+                                <div class="d-flex align-items-center">
+                                    <div class="kpi-icon-box mr-3" style="background:#e0e7ff; color:#3730a3;">
+                                        <i class="fa fa-landmark"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Juntas Configuradas</div>
+                                        <div class="h3 font-weight-bold text-dark mb-0">{{ $totalJuntas }}</div>
+                                        <small class="text-muted">{{ $totalJuntasActivas }} activas en el sistema</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="card kpi-card p-3 border-left border-success" style="border-left-width:4px !important;">
+                                <div class="d-flex align-items-center">
+                                    <div class="kpi-icon-box mr-3" style="background:#dcfce7; color:#15803d;">
+                                        <i class="fa fa-user-shield"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Integrantes / Consultores</div>
+                                        <div class="h3 font-weight-bold text-dark mb-0">{{ $juntasList->pluck('integrantes')->flatten()->unique('id')->count() }}</div>
+                                        <small class="text-muted">Especialistas asignados</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card kpi-card p-3 border-left border-warning" style="border-left-width:4px !important;">
+                                <div class="d-flex align-items-center">
+                                    <div class="kpi-icon-box mr-3" style="background:#fef3c7; color:#b45309;">
+                                        <i class="fa fa-file-signature"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Expedientes Intervenidos</div>
+                                        <div class="h3 font-weight-bold text-dark mb-0">{{ $totalIntervencionesJuntas }}</div>
+                                        <small class="text-muted">Dictámenes en alertas rojas</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Tabla de Juntas --}}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom w-100 dataTableInit" id="tablaJuntasGlobal">
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%;">#</th>
+                                    <th style="width: 25%;">Junta / Programa</th>
+                                    <th style="width: 25%;">Fines y Atribuciones</th>
+                                    <th style="width: 15%;">Ámbito Competencia</th>
+                                    <th style="width: 20%;">Presidente & Integrantes</th>
+                                    <th style="width: 10%; text-align: center;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($juntasList as $jIdx => $jta)
+                                <tr id="junta_row_{{ $jta->id }}">
+                                    <td class="font-weight-bold text-center">{{ count($juntasList) - $jIdx }}</td>
+                                    <td>
+                                        <div class="font-weight-bold text-dark" style="font-size: 0.93rem;">{{ $jta->nombre }}</div>
+                                        <div class="d-flex align-items-center mt-1" style="gap:4px;">
+                                            <span class="badge badge-light border text-muted" style="font-size:0.7rem;">{{ $jta->codigo }}</span>
+                                            @php
+                                                $progColors = ['salud'=>'danger','jubilaciones'=>'warning','finanzas'=>'success','institucional'=>'info'];
+                                            @endphp
+                                            <span class="badge badge-{{ $progColors[$jta->programa] ?? 'secondary' }} text-uppercase px-2" style="font-size:0.68rem;">
+                                                {{ $jta->programa }}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if($jta->fines)
+                                            <div class="small text-dark font-weight-bold"><i class="fa fa-bullseye text-primary mr-1"></i>{{ \Illuminate\Support\Str::limit($jta->fines, 70) }}</div>
+                                        @endif
+                                        @if($jta->atribuciones)
+                                            <div class="small text-muted"><i class="fa fa-gavel text-warning mr-1"></i>{{ \Illuminate\Support\Str::limit($jta->atribuciones, 70) }}</div>
+                                        @elseif($jta->descripcion)
+                                            <div class="small text-muted">{{ \Illuminate\Support\Str::limit($jta->descripcion, 70) }}</div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-light border text-dark font-weight-bold">
+                                            <i class="fa fa-compass mr-1 text-info"></i>{{ $jta->ambito_competencia ?: 'Institucional Global' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="small font-weight-bold text-dark">
+                                            <i class="fa fa-user-tie text-primary mr-1"></i>{{ $jta->presidente_nombre }}
+                                        </div>
+                                        <small class="text-muted d-block" style="font-size:0.72rem;">{{ $jta->presidente_cargo }}</small>
+                                        <div class="mt-1">
+                                            @if($jta->integrantes->isNotEmpty())
+                                                @foreach($jta->integrantes->take(3) as $m)
+                                                    <span class="badge badge-light border text-dark mr-1 mb-1" style="font-size:0.7rem;">
+                                                        <i class="fa fa-user text-success mr-1"></i>{{ $m->name }}
+                                                    </span>
+                                                @endforeach
+                                                @if($jta->integrantes->count() > 3)
+                                                    <span class="badge badge-secondary" style="font-size:0.68rem;">+{{ $jta->integrantes->count() - 3 }} más</span>
+                                                @endif
+                                            @else
+                                                <small class="text-muted italic"><i class="fa fa-user-slash mr-1"></i>Sin integrantes asignados</small>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center" style="gap: 5px;">
+                                            <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalEditarJunta('{{ $jta->id }}')" title="Editar Junta Consultiva">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+                                            <a href="{{ route('admin.juntas.intervenciones', ['junta_id' => $jta->id]) }}" class="btn btn-circle btn-warning text-dark" title="Ver Bandeja de Dictámenes">
+                                                <i class="fa fa-inbox"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
         </div>
     </div>
 
@@ -1239,6 +1387,125 @@
                         <button type="button" class="btn btn-light btn-round px-4" data-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary btn-round px-4" id="btnGuardarUserModal">
                             <i class="fa fa-save mr-1"></i> Guardar Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ════════════════════════════════════════════════════════════════════════════
+     MODAL DE CREACIÓN / EDICIÓN DE JUNTA CONSULTIVA IN-SITU
+     ════════════════════════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalJuntaConsultiva" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow border-0 rounded-lg">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e3a8a, #2563eb);">
+                <h5 class="modal-title font-weight-bold text-white mb-0" id="modalJuntaHeading">
+                    <i class="fa fa-balance-scale mr-2"></i> Nueva Junta Consultiva
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formJuntaConsultiva" onsubmit="guardarJuntaConsultiva(event)">
+                    @csrf
+                    <input type="hidden" name="id" id="modal_junta_id">
+
+                    <div class="row">
+                        <div class="col-md-8 form-group mb-3">
+                            <label class="font-weight-bold text-dark small mb-1">Nombre de la Junta Consultiva <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre" id="modal_junta_nombre" class="form-control" required placeholder="Ej: Junta Consultiva de Salud y Servicios Médicos">
+                        </div>
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold text-dark small mb-1">Programa / Eje <span class="text-danger">*</span></label>
+                            <select name="programa" id="modal_junta_programa" class="form-control font-weight-bold">
+                                <option value="salud">Salud y Servicios Médicos</option>
+                                <option value="jubilaciones">Jubilaciones y Pensiones</option>
+                                <option value="finanzas">Administración y Finanzas</option>
+                                <option value="institucional">Institucional / General</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small mb-1">Ámbito de Competencia</label>
+                        <input type="text" name="ambito_competencia" id="modal_junta_ambito" class="form-control" placeholder="Ej: Red de Hospitales Nacionales, Dirección de Jubilaciones, Infraestructura...">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark small mb-1">Fines para los que se creó</label>
+                            <textarea name="fines" id="modal_junta_fines" class="form-control" rows="3" placeholder="Describir los fines principales y objetivos de la Junta..."></textarea>
+                        </div>
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark small mb-1">Atribuciones de la Junta</label>
+                            <textarea name="atribuciones" id="modal_junta_atribuciones" class="form-control" rows="3" placeholder="Describir atribuciones, facultades de dictamen y alcance..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark small mb-1">Nombre del Presidente <span class="text-danger">*</span></label>
+                            <input type="text" name="presidente_nombre" id="modal_junta_presi_nombre" class="form-control" required placeholder="Ej: Dr. Carlos Gustavo Benítez">
+                        </div>
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark small mb-1">Cargo del Presidente <span class="text-danger">*</span></label>
+                            <input type="text" name="presidente_cargo" id="modal_junta_presi_cargo" class="form-control" required placeholder="Ej: Presidente de la Junta Consultiva de Salud">
+                        </div>
+                    </div>
+
+                    {{-- Cargar Integrantes desde SIPLAN + Botón Crear Nuevo Usuario --}}
+                    <div class="card border shadow-sm mb-4" style="border-radius:10px;">
+                        <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                            <span class="font-weight-bold text-dark small text-uppercase">
+                                <i class="fa fa-users text-primary mr-1"></i> Integrantes de la Junta (Usuarios SIPLAN)
+                            </span>
+                            <button type="button" class="btn btn-sm btn-outline-success font-weight-bold py-0" data-toggle="collapse" data-target="#collapseNuevoUsuarioJunta" aria-expanded="false">
+                                <i class="fa fa-user-plus mr-1"></i> + Cargar Nuevo Usuario en SIPLAN
+                            </button>
+                        </div>
+                        <div class="card-body p-3">
+                            {{-- Formulario Desplegable Inline para Crear Usuario al Vuelo --}}
+                            <div class="collapse mb-3 p-3 bg-light border border-success rounded" id="collapseNuevoUsuarioJunta">
+                                <h6 class="font-weight-bold text-success mb-2" style="font-size:0.85rem;">
+                                    <i class="fa fa-user-plus mr-1"></i> Registrar Nuevo Usuario en el Sistema SIPLAN
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-5 form-group mb-2">
+                                        <label class="small font-weight-bold mb-1">Nombre y Apellido</label>
+                                        <input type="text" id="quick_user_name" class="form-control form-control-sm" placeholder="Ej: Dra. María Solís">
+                                    </div>
+                                    <div class="col-md-5 form-group mb-2">
+                                        <label class="small font-weight-bold mb-1">Correo Electrónico</label>
+                                        <input type="email" id="quick_user_email" class="form-control form-control-sm" placeholder="msolis@ips.gov.py">
+                                    </div>
+                                    <div class="col-md-2 form-group mb-2 d-flex align-items-end">
+                                        <button type="button" class="btn btn-sm btn-success font-weight-bold w-100" id="btnGuardarQuickUser" onclick="guardarNuevoUsuarioInline()">
+                                            <i class="fa fa-save"></i> Guardar
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="text-muted"><i class="fa fa-info-circle mr-1"></i>Se creará la cuenta en el sistema y se agregará inmediatamente a la lista de integrantes de la Junta.</small>
+                            </div>
+
+                            <div class="form-group mb-0">
+                                <label class="font-weight-bold text-dark small mb-1">Seleccionar Integrantes</label>
+                                <select name="integrantes[]" id="modal_junta_integrantes" class="form-control select2InModalJunta" multiple style="width: 100%;">
+                                    @foreach($usuariosList as $u)
+                                        <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end" style="gap:.5rem">
+                        <button type="button" class="btn btn-light btn-round px-4" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary btn-round px-4" id="btnGuardarJuntaModal">
+                            <i class="fa fa-save mr-1"></i> Guardar Junta Consultiva
                         </button>
                     </div>
                 </form>
@@ -3988,4 +4255,125 @@ function guardarPremiacionGrupo(e) {
         </div>
     </div>
 </div>
+<script>
+$(document).ready(function() {
+    if ($.fn.select2) {
+        $('.select2InModalJunta').select2({
+            dropdownParent: $('#modalJuntaConsultiva'),
+            width: '100%'
+        });
+    }
+});
+
+const juntasDataMap = @json($juntasList->keyBy('id'));
+
+window.abrirModalNuevaJunta = function() {
+    $('#modal_junta_id').val('');
+    $('#modalJuntaHeading').html('<i class="fa fa-balance-scale mr-2"></i> Nueva Junta Consultiva');
+    $('#modal_junta_nombre').val('');
+    $('#modal_junta_programa').val('salud');
+    $('#modal_junta_ambito').val('');
+    $('#modal_junta_fines').val('');
+    $('#modal_junta_atribuciones').val('');
+    $('#modal_junta_presi_nombre').val('');
+    $('#modal_junta_presi_cargo').val('Presidente de la Junta Consultiva');
+    $('#modal_junta_integrantes').val([]).trigger('change');
+    $('#collapseNuevoUsuarioJunta').collapse('hide');
+    $('#modalJuntaConsultiva').modal('show');
+};
+
+window.abrirModalEditarJunta = function(id) {
+    const jta = juntasDataMap[id];
+    if (!jta) return;
+
+    $('#modal_junta_id').val(jta.id);
+    $('#modalJuntaHeading').html('<i class="fa fa-edit mr-2"></i> Editar Junta Consultiva: ' + jta.nombre);
+    $('#modal_junta_nombre').val(jta.nombre);
+    $('#modal_junta_programa').val(jta.programa);
+    $('#modal_junta_ambito').val(jta.ambito_competencia || '');
+    $('#modal_junta_fines').val(jta.fines || '');
+    $('#modal_junta_atribuciones').val(jta.atribuciones || '');
+    $('#modal_junta_presi_nombre').val(jta.presidente_nombre || '');
+    $('#modal_junta_presi_cargo').val(jta.presidente_cargo || '');
+
+    const integranteIds = (jta.integrantes || []).map(function(m) { return m.id; });
+    $('#modal_junta_integrantes').val(integranteIds).trigger('change');
+    $('#collapseNuevoUsuarioJunta').collapse('hide');
+    $('#modalJuntaConsultiva').modal('show');
+};
+
+window.guardarJuntaConsultiva = function(e) {
+    e.preventDefault();
+    const $btn = $('#btnGuardarJuntaModal');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
+
+    $.ajax({
+        url: '{{ route("admin.juntas.store") }}',
+        type: 'POST',
+        data: $('#formJuntaConsultiva').serialize(),
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Junta Consultiva');
+            if (res.success) {
+                $('#modalJuntaConsultiva').modal('hide');
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Junta Consultiva Guardada!',
+                    text: res.message,
+                    confirmButtonColor: '#2563eb'
+                }).then(function() {
+                    location.reload();
+                });
+            } else {
+                Swal.fire('Error', res.message || 'No se pudo guardar la Junta.', 'error');
+            }
+        },
+        error: function(err) {
+            $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Junta Consultiva');
+            var msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Error al procesar la solicitud.';
+            Swal.fire('Error', msg, 'error');
+        }
+    });
+};
+
+window.guardarNuevoUsuarioInline = function() {
+    const name = $('#quick_user_name').val().trim();
+    const email = $('#quick_user_email').val().trim();
+    if (!name || !email) {
+        toastr.error('Por favor ingrese Nombre y Correo Electrónico.');
+        return;
+    }
+
+    const $btn = $('#btnGuardarQuickUser');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>');
+
+    $.ajax({
+        url: '{{ route("admin.juntas.crearUsuarioRapido") }}',
+        type: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            name: name,
+            email: email
+        },
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-save"></i> Guardar');
+            if (res.success) {
+                toastr.success(res.message);
+                const newOption = new Option(res.user.name + ' (' + res.user.email + ')', res.user.id, true, true);
+                $('#modal_junta_integrantes').append(newOption).trigger('change');
+
+                $('#quick_user_name').val('');
+                $('#quick_user_email').val('');
+                $('#collapseNuevoUsuarioJunta').collapse('hide');
+            } else {
+                toastr.error(res.message || 'Error al crear el usuario.');
+            }
+        },
+        error: function(err) {
+            $btn.prop('disabled', false).html('<i class="fa fa-save"></i> Guardar');
+            var msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Error al crear el usuario.';
+            toastr.error(msg);
+        }
+    });
+};
+</script>
 @endsection
