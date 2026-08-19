@@ -393,7 +393,7 @@ class RecalculateGamificationPoints extends Command
 
     protected function collectPeiEdits(): void
     {
-        $this->info('Recopilando ediciones de elementos PEI...');
+        $this->info('Recopilando ediciones, autorías y asignaciones de elementos PEI...');
 
         // 1. Histórico de la tabla pei_profile_edits
         foreach (PeiProfileEdit::with('user')->cursor() as $edit) {
@@ -413,22 +413,75 @@ class RecalculateGamificationPoints extends Command
             );
         }
 
-        // 2. Creación / Edición de nodos en pei_profiles por usuarios
-        foreach (\App\Admin\Planificacion\Pei\PeiProfile::whereNotNull('updated_by')->cursor() as $node) {
-            $userId = $node->updated_by;
-            if (!$userId || !$this->usersById->has($userId)) {
+        // 2. Nodos PEI asignados/creados directamente (user_id en pei_profiles - 353 nodos)
+        foreach (\App\Admin\Planificacion\Pei\PeiProfile::whereNotNull('user_id')->cursor() as $node) {
+            if (!$this->usersById->has($node->user_id)) {
                 continue;
             }
 
             $this->queuePoint(
-                $userId,
+                $node->user_id,
                 'pei_edit',
-                'Aporte/Edición de elemento PEI: ' . Str::limit(strip_tags($node->name), 40),
+                'Autoría/Gestión de elemento PEI: ' . Str::limit(strip_tags($node->name), 40),
                 10,
                 \App\Admin\Planificacion\Pei\PeiProfile::class,
                 $node->id,
                 (string) $node->id,
-                $node->updated_at?->toDateTimeString() ?: $node->created_at?->toDateTimeString()
+                $node->created_at?->toDateTimeString()
+            );
+        }
+
+        // 3. Edición de nodos en pei_profiles (updated_by)
+        foreach (\App\Admin\Planificacion\Pei\PeiProfile::whereNotNull('updated_by')->cursor() as $node) {
+            if (!$this->usersById->has($node->updated_by)) {
+                continue;
+            }
+
+            $this->queuePoint(
+                $node->updated_by,
+                'pei_edit',
+                'Actualización de elemento PEI: ' . Str::limit(strip_tags($node->name), 40),
+                10,
+                \App\Admin\Planificacion\Pei\PeiProfile::class,
+                'upd_' . $node->id,
+                (string) $node->id,
+                $node->updated_at?->toDateTimeString()
+            );
+        }
+
+        // 4. Analistas asignados a elementos PEI (tabla pivot peis_profiles_has_analysts)
+        $analistasPivot = DB::table('planificacion.peis_profiles_has_analysts')->get();
+        foreach ($analistasPivot as $row) {
+            if (!$this->usersById->has($row->analyst_id)) {
+                continue;
+            }
+
+            $this->queuePoint(
+                $row->analyst_id,
+                'pei_edit',
+                'Asignación como Analista en elemento PEI #' . $row->pei_profile_id,
+                10,
+                \App\Admin\Planificacion\Pei\PeiProfile::class,
+                'analyst_pivot_' . $row->pei_profile_id . '_' . $row->analyst_id,
+                (string) $row->pei_profile_id
+            );
+        }
+
+        // 5. Reportes de avance en acciones PEI (pei_accion_reportes)
+        foreach (\App\Models\Planificacion\PeiAccionReporte::whereNotNull('user_id')->cursor() as $reporte) {
+            if (!$this->usersById->has($reporte->user_id)) {
+                continue;
+            }
+
+            $this->queuePoint(
+                $reporte->user_id,
+                'pei_reporte_avance',
+                'Reporte de Avance en Acción PEI',
+                15,
+                \App\Models\Planificacion\PeiAccionReporte::class,
+                $reporte->id,
+                (string) $reporte->pei_profile_id,
+                $reporte->created_at?->toDateTimeString()
             );
         }
     }
