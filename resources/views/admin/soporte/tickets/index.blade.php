@@ -166,8 +166,13 @@
                                     <tr>
                                         {{-- Código --}}
                                         <td class="align-middle">
-                                            <strong class="text-dark d-block" style="font-size: 0.88rem;">{{ $tk->codigo }}</strong>
-                                            <small class="text-muted" style="font-size: 0.72rem;">{{ $tk->created_at->format('d/m/Y H:i') }}</small>
+                                            <div class="d-flex align-items-center">
+                                                <strong class="text-dark" style="font-size: 0.88rem;">{{ $tk->codigo }}</strong>
+                                                <span class="badge badge-success-light text-success font-weight-bold ml-1.5 px-1.5 py-0.5 d-none badge-ia-copiado" id="badge_copiado_{{ $tk->codigo }}" style="border-radius: 6px; font-size: 0.68rem; background: #dcfce7; color: #15803d !important; border: 1px solid #bbf7d0;" title="Este ticket ya fue copiado para Antigravity AI">
+                                                    <i class="fa fa-check-circle mr-0.5"></i> IA ✓
+                                                </span>
+                                            </div>
+                                            <small class="text-muted d-block" style="font-size: 0.72rem;">{{ $tk->created_at->format('d/m/Y H:i') }}</small>
                                         </td>
 
                                         {{-- Prioridad --}}
@@ -465,7 +470,7 @@ $(document).ready(function() {
             userEmail: $btn.data('user-email'),
             url: $btn.data('url')
         };
-        mostrarPromptIaModal(construirPromptIaUnico(ticket), 'Prompt para Ticket ' + ticket.codigo);
+        mostrarPromptIaModal(construirPromptIaUnico(ticket), 'Prompt para Ticket ' + ticket.codigo, ticket.codigo);
     });
 
     // Clic en botón "Copiar Prompt para Antigravity" dentro del modal de gestión
@@ -480,7 +485,7 @@ $(document).ready(function() {
             userEmail: $('#mg_user_email').text(),
             url: $('#mg_btn_abrir_url').attr('href') !== '#' ? $('#mg_btn_abrir_url').attr('href') : ''
         };
-        mostrarPromptIaModal(construirPromptIaUnico(ticket), 'Prompt para Ticket ' + ticket.codigo);
+        mostrarPromptIaModal(construirPromptIaUnico(ticket), 'Prompt para Ticket ' + ticket.codigo, ticket.codigo);
     });
 
     // Guardar cambios del ticket
@@ -532,9 +537,63 @@ $(document).ready(function() {
             }
         });
     });
+
+    // Inicializar checks de IA en tabla y DataTables draw
+    actualizarCheckmarksUI();
+    if ($.fn.DataTable && $('#tablaTicketsAdmin').length) {
+        var dt = $('#tablaTicketsAdmin').DataTable();
+        dt.on('draw', function() {
+            actualizarCheckmarksUI();
+        });
+    }
 });
 
-// Helper Functions para Prompts de IA
+// Helper Functions para Prompts de IA & Seguimiento de Checks Copiados
+function getTicketsCopiadosArray() {
+    try {
+        return JSON.parse(localStorage.getItem('tickets_copiados_ia')) || [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function marcarTicketComoCopiado(codigo) {
+    if (!codigo) return;
+    var array = getTicketsCopiadosArray();
+    if (!array.includes(codigo)) {
+        array.push(codigo);
+        try {
+            localStorage.setItem('tickets_copiados_ia', JSON.stringify(array));
+        } catch (e) {}
+    }
+    actualizarCheckmarksUI();
+}
+
+function actualizarCheckmarksUI() {
+    var array = getTicketsCopiadosArray();
+    array.forEach(function(codigo) {
+        // Mostrar badge "IA ✓" al lado del código
+        $('#badge_copiado_' + codigo).removeClass('d-none').addClass('d-inline-flex');
+
+        // Cambiar botón de la fila a verde check
+        var $btnRow = $('.btnCopiarPromptIa[data-codigo="' + codigo + '"]');
+        if ($btnRow.length) {
+            $btnRow.removeClass('btn-purple').addClass('btn-success')
+                   .html('<i class="fa fa-check mr-1"></i> Copiado');
+        }
+    });
+}
+
+function limpiarCheckmarksIa() {
+    try {
+        localStorage.removeItem('tickets_copiados_ia');
+    } catch (e) {}
+    $('.badge-ia-copiado').addClass('d-none').removeClass('d-inline-flex');
+    $('.btnCopiarPromptIa').removeClass('btn-success').addClass('btn-purple')
+           .html('<i class="fa fa-robot mr-1"></i> Prompt IA');
+    if (typeof toastr !== 'undefined') toastr.info('Se restablecieron los checks de tickets copiados.');
+}
+
 function construirPromptIaUnico(t) {
     return `<USER_REQUEST>\n` +
            `Por favor ayuda a resolver la siguiente falla reportada por un usuario en el sistema SIPLAN PEI:\n\n` +
@@ -550,13 +609,18 @@ function construirPromptIaUnico(t) {
            `</USER_REQUEST>`;
 }
 
-function mostrarPromptIaModal(promptText, titulo) {
+function mostrarPromptIaModal(promptText, titulo, codigoTicket) {
     $('#promptModalTitle').text(titulo || 'Prompt para Antigravity AI');
     $('#textoPromptIaPreview').val(promptText);
     if ($('#modalPreviewPromptIa').parent().is('body') === false) {
         $('#modalPreviewPromptIa').appendTo('body');
     }
     $('#modalPreviewPromptIa').modal('show');
+
+    if (codigoTicket) {
+        marcarTicketComoCopiado(codigoTicket);
+    }
+
     copyTextToClipboard(promptText, '🤖 ¡Prompt copiado al portapapeles! Pegalo directamente en el chat con Antigravity.');
 }
 
@@ -571,8 +635,9 @@ function copiarPromptLotePendientesIa() {
     var tickets = [];
     $('.btnCopiarPromptIa').each(function() {
         var $btn = $(this);
+        var cod = $btn.data('codigo');
         tickets.push({
-            codigo: $btn.data('codigo'),
+            codigo: cod,
             fecha: $btn.data('fecha'),
             prioridad: $btn.data('prioridad'),
             titulo: $btn.data('titulo'),
@@ -581,6 +646,7 @@ function copiarPromptLotePendientesIa() {
             userEmail: $btn.data('user-email'),
             url: $btn.data('url')
         });
+        marcarTicketComoCopiado(cod);
     });
 
     if (tickets.length === 0) {
