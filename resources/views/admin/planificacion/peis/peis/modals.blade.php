@@ -382,6 +382,26 @@
                             <i class="fa fa-external-link-alt mr-1"></i> Gestionar Indicadores
                         </a>
                     </div>
+                    {{-- ── Junta Consultiva (Consejo de Sabios) ── --}}
+                    <div class="form-group mb-3 p-3 rounded" style="background:#f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #7c3aed;">
+                        <label class="control-label font-weight-bold d-flex align-items-center text-dark mb-1">
+                            <i class="fas fa-landmark mr-2" style="color:#7c3aed"></i> Remitir a Junta Consultiva
+                            <span class="badge badge-light border ml-2" style="font-size:.68rem; font-weight:400">supervisión institucional</span>
+                        </label>
+                        <small class="form-text text-muted mb-2">
+                            Seleccioná la Junta Especial encargada de dictaminar sobre este objetivo estratégico.
+                        </small>
+                        @php
+                            $juntasConsultivas = \App\Models\Planificacion\Junta::where('is_active', true)->orderBy('nombre')->get();
+                        @endphp
+                        <select id="axis_junta_id" name="junta_id" class="form-control form-control-sm" style="width:100%">
+                            <option value="">— Ninguna (Por defecto según área) —</option>
+                            @foreach($juntasConsultivas as $junta)
+                                <option value="{{ $junta->id }}">{{ $junta->codigo }} - {{ $junta->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div class="form-group mb-3 position-relative">
                         <small class="form-text text-muted mb-1">
                             Seleccioná el indicador de la ficha técnica que mide este objetivo estratégico (ámbito: Objetivo Estratégico).
@@ -478,6 +498,23 @@
                             <i class="fa fa-external-link-alt mr-1"></i> Gestionar Indicadores
                         </a>
                     </div>
+                    {{-- ── Junta Consultiva (Consejo de Sabios) ── --}}
+                    <div class="form-group mb-3 p-3 rounded" style="background:#f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #7c3aed;">
+                        <label class="control-label font-weight-bold d-flex align-items-center text-dark mb-1">
+                            <i class="fas fa-landmark mr-2" style="color:#7c3aed"></i> Remitir a Junta Consultiva
+                            <span class="badge badge-light border ml-2" style="font-size:.68rem; font-weight:400">supervisión institucional</span>
+                        </label>
+                        <small class="form-text text-muted mb-2">
+                            Seleccioná la Junta Especial encargada de dictaminar sobre este objetivo específico.
+                        </small>
+                        <select id="goals_junta_id" name="junta_id" class="form-control form-control-sm" style="width:100%">
+                            <option value="">— Ninguna (Por defecto según área) —</option>
+                            @foreach($juntasConsultivas as $junta)
+                                <option value="{{ $junta->id }}">{{ $junta->codigo }} - {{ $junta->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div class="form-group mb-3 position-relative">
                         <small class="form-text text-muted mb-1">
                             Seleccioná el indicador de la ficha técnica que mide este objetivo específico (ámbito: Objetivo Específico).
@@ -597,6 +634,23 @@
                             'class' => 'form-control',
                             'id' => 'actions_order_item',
                         ]) }}
+                    </div>
+
+                    {{-- ── Junta Consultiva (Consejo de Sabios) ── --}}
+                    <div class="form-group mb-3 p-3 rounded" style="background:#f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #7c3aed;">
+                        <label class="control-label font-weight-bold d-flex align-items-center text-dark mb-1">
+                            <i class="fas fa-landmark mr-2" style="color:#7c3aed"></i> Remitir a Junta Consultiva
+                            <span class="badge badge-light border ml-2" style="font-size:.68rem; font-weight:400">supervisión operacional</span>
+                        </label>
+                        <small class="form-text text-muted mb-2">
+                            Seleccioná la Junta Especial encargada de dictaminar o acompañar esta Acción Estratégica.
+                        </small>
+                        <select id="actions_junta_id" name="junta_id" class="form-control form-control-sm" style="width:100%">
+                            <option value="">— Ninguna (Por defecto según área) —</option>
+                            @foreach($juntasConsultivas as $junta)
+                                <option value="{{ $junta->id }}">{{ $junta->codigo }} - {{ $junta->nombre }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     {{-- ── Indicador de la Ficha Técnica ── --}}

@@ -1070,7 +1070,7 @@ if (typeof window.remitirAlertaJunta === 'undefined') {
         }
 
         Swal.fire({
-            title: '<i class="fas fa-landmark text-danger"></i> Remitir al Consejo de Sabios',
+            title: '<i class="fas fa-landmark text-danger"></i> Remitir a Junta Consultiva',
             html: `<div class="text-left small mb-3">Se remitirá la Acción Estratégica <b>"${actionName}"</b> en Alerta Roja a la Junta Consultiva correspondiente para emisión de Dictamen con Firma Hológrafa:</div>` +
                   `<textarea id="swal_notas_remision" class="form-control form-control-sm" rows="3" placeholder="Motivo o detalles de la brecha operativa (opcional)..."></textarea>`,
             icon: 'warning',

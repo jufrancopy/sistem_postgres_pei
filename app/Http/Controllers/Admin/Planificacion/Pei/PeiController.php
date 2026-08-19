@@ -325,6 +325,7 @@ class PeiController extends Controller
                 'foda_perfil_id'       => $resolve('foda_perfil_id', $request->foda_perfil_id),
                 'bsc_perspectiva'      => $resolve('bsc_perspectiva', $request->bsc_perspectiva),
                 'indicador_id'         => $request->indicador_id ?: null,
+                'junta_id'             => $request->junta_id ?: null,
                 'activity_id'          => $request->activity_id ?: null,
                 'resultado_intermedio' => $request->resultado_intermedio ?: null,
                 'ri_presupuestario'    => $request->ri_presupuestario ?: null,

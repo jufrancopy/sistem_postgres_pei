@@ -3060,6 +3060,7 @@
                         if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val('0');
                         actionsEditor.setData('');
                         $('#actions_order_item').val('');
+                        $('#actions_junta_id').val('');
                         $('#saveBtnActions').val('create');
 
                     } else if (typeBtn === 'edit') {
@@ -3072,6 +3073,7 @@
                         if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val(data.profile.creado_con_ia ? '1' : '0');
                         actionsEditor.setData(data.profile.name);
                         $('#actions_order_item').val(data.profile.order_item);
+                        $('#actions_junta_id').val(data.profile.junta_id || '');
                         $('#saveBtnActions').val('edit');
                     }
 
