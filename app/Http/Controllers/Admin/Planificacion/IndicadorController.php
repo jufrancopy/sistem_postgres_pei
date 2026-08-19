@@ -188,6 +188,13 @@ class IndicadorController extends Controller
             'creado_con_ia'           => 'nullable|boolean',
         ]);
 
+        if (empty($data['codigo_letras']) || empty($data['codigo_numeros'])) {
+            $codeRes = $this->siguienteCodigo($profileId);
+            $codeData = json_decode($codeRes->getContent(), true);
+            if (empty($data['codigo_letras']))  $data['codigo_letras']  = $codeData['letras'] ?? 'IND';
+            if (empty($data['codigo_numeros'])) $data['codigo_numeros'] = $codeData['numeros'] ?? '001';
+        }
+
         $indicador = Indicador::create(array_merge($data, [
             'pei_profile_id' => $profileId,
             'metas'          => $request->input('metas', []),

@@ -282,7 +282,8 @@ class PeiController extends Controller
         $user = Auth::user();
 
         $rawProfileId = $request->profile_id ? trim($request->profile_id) : null;
-        $isCreateAction = $request->saveBtn === 'create' || $request->saveBtnGoals === 'create' || $request->saveBtnActions === 'create';
+        $saveBtnVal = $request->input('saveBtnActions') ?: ($request->input('saveBtnGoals') ?: $request->input('saveBtn'));
+        $isCreateAction = $saveBtnVal === 'create' || $request->saveBtn === 'create' || $request->saveBtnGoals === 'create' || $request->saveBtnActions === 'create';
         $profileId = ($isCreateAction || empty($rawProfileId)) ? null : $rawProfileId;
 
         // Campos exclusivos del nodo master — solo se actualizan si vienen
@@ -339,6 +340,11 @@ class PeiController extends Controller
         // árbol NestedSet. updateOrCreate no maneja parent_id porque no está en $fillable.
         if (!$profileId && $request->parent_id) {
             $parent  = PeiProfile::findOrFail($request->parent_id);
+            if (empty($attributes['year_start']))    $attributes['year_start']    = $parent->year_start;
+            if (empty($attributes['year_end']))      $attributes['year_end']      = $parent->year_end;
+            if (empty($attributes['group_id']))       $attributes['group_id']       = $parent->group_id;
+            if (empty($attributes['dependency_id']))  $attributes['dependency_id']  = $parent->dependency_id;
+
             $profile = new PeiProfile($attributes);
             $profile->appendToNode($parent)->save();
         } else {
@@ -347,11 +353,11 @@ class PeiController extends Controller
 
         $wasChanged = $profile->wasChanged();
 
-        // Manejo de relaciones
-        $syncAnalysts = $profile->analysts()->sync($request->analyst_id);
-        $syncStrategies = $profile->strategies()->sync($request->strategy_id);
-        $syncResponsibles = $profile->responsibles()->sync($request->responsible_id);
-        $syncActivityTasks = $profile->activityTasks()->sync($request->input('activity_task_ids', []));
+        // Manejo de relaciones (Solo sincronizar si el campo viene en la petición para no desvincular al editar)
+        $syncAnalysts = $request->has('analyst_id') ? $profile->analysts()->sync($request->analyst_id) : [];
+        $syncStrategies = $request->has('strategy_id') ? $profile->strategies()->sync($request->strategy_id) : [];
+        $syncResponsibles = $request->has('responsible_id') ? $profile->responsibles()->sync($request->responsible_id) : [];
+        $syncActivityTasks = $request->has('activity_task_ids') ? $profile->activityTasks()->sync($request->input('activity_task_ids', [])) : [];
 
         $relationsChanged = 
             !empty($syncAnalysts['attached']) || !empty($syncAnalysts['detached']) || !empty($syncAnalysts['updated']) ||

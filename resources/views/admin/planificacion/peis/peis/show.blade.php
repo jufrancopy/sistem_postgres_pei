@@ -2773,6 +2773,7 @@
                     .html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
 
                 var formData = new FormData(this);
+                formData.append('saveBtnActions', $('#saveBtnActions').val() || ($('#actions_profile_id').val() ? 'edit' : 'create'));
                 formData.append('name', actionsEditor.getData());
                 formData.append('indicador_id', $('#action_indicador_id').val() || '');
                 formData.append('junta_id', $('#actions_junta_id').val() || '');
@@ -3045,6 +3046,7 @@
                     .html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
 
                 var formData = new FormData(this);
+                formData.append('saveBtnGoals', $('#saveBtnGoals').val() || ($('#goals_profile_id').val() ? 'edit' : 'create'));
                 formData.append('name', goalsEditor.getData());
                 formData.append('bsc_perspectiva', $('#goals_bsc_perspectiva').val() || '');
                 formData.append('indicador_id', $('#goals_indicador_id').val() || '');
