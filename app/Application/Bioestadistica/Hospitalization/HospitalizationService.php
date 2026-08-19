@@ -6,7 +6,6 @@ use App\Application\Bioestadistica\Audit\AuditService;
 use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
 use App\Application\Bioestadistica\RecordCaptureService;
 use App\Application\Bioestadistica\Sp11Matrix;
-use App\Models\Bioestadistica\CatalogItem;
 use App\Models\Bioestadistica\Establecimiento;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\HospEpisodio;
@@ -26,7 +25,12 @@ class HospitalizationService
     {
         $data = $this->normalize($input);
         $this->assertEstablishment($data['establecimiento_id'], $user);
-        $period = HospEpisodio::periodFromDates($data['fecha_ingreso'], $data['fecha_egreso']);
+        $period = isset($input['periodo_anio'], $input['periodo_mes'])
+            ? [
+                'periodo_anio' => (int) $input['periodo_anio'],
+                'periodo_mes' => (int) $input['periodo_mes'],
+            ]
+            : HospEpisodio::periodFromDates($data['fecha_ingreso'], $data['fecha_egreso']);
         $previousPeriod = $episodio ? [
             'establecimiento_id' => (int) $episodio->establecimiento_id,
             'periodo_anio' => (int) $episodio->periodo_anio,
@@ -79,6 +83,136 @@ class HospitalizationService
         return $saved->fresh(['establecimiento']);
     }
 
+    /**
+     * Guarda hasta 200 episodios y consolida una sola vez cada período afectado.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array{creados:int,actualizados:int,eliminados:int}
+     */
+    public function saveBatch(
+        int $establecimientoId,
+        int $year,
+        int $month,
+        array $rows,
+        User $user,
+        ?Record $record = null
+    ): array {
+        $this->assertEstablishment($establecimientoId, $user);
+        $periods = [];
+        $summary = ['creados' => 0, 'actualizados' => 0, 'eliminados' => 0];
+
+        app(AuditService::class)->withoutAuditing(function () use (
+            $establecimientoId,
+            $year,
+            $month,
+            $rows,
+            $user,
+            $record,
+            &$periods,
+            &$summary
+        ) {
+            DB::transaction(function () use (
+                $establecimientoId,
+                $year,
+                $month,
+                $rows,
+                $user,
+                $record,
+                &$periods,
+                &$summary
+            ) {
+                foreach ($rows as $index => $row) {
+                $episodio = null;
+                if (! empty($row['id'])) {
+                    $episodio = HospEpisodio::query()->lockForUpdate()->findOrFail((int) $row['id']);
+                    if (! $episodio->isAccessibleBy($user)) {
+                        abort(403);
+                    }
+                    $periods[$this->periodKey(
+                        (int) $episodio->establecimiento_id,
+                        (int) $episodio->periodo_anio,
+                        (int) $episodio->periodo_mes
+                    )] = [
+                        (int) $episodio->establecimiento_id,
+                        (int) $episodio->periodo_anio,
+                        (int) $episodio->periodo_mes,
+                    ];
+                }
+
+                if (! empty($row['eliminar'])) {
+                    if ($episodio) {
+                        $episodio->delete();
+                        $summary['eliminados']++;
+                    }
+                    continue;
+                }
+
+                if ($episodio && empty($row['cedula'])) {
+                    $row['cedula'] = $episodio->cedula;
+                }
+
+                try {
+                    $saved = $this->save([
+                        ...$row,
+                        'establecimiento_id' => $establecimientoId,
+                        'periodo_anio' => $year,
+                        'periodo_mes' => $month,
+                    ], $user, $episodio, false);
+                } catch (ValidationException $exception) {
+                    $errors = [];
+                    foreach ($exception->errors() as $field => $messages) {
+                        $errors["rows.{$index}.{$field}"] = $messages;
+                    }
+                    throw ValidationException::withMessages($errors);
+                }
+
+                    if ($record) {
+                        $saved->forceFill(['record_id' => $record->id])->save();
+                    }
+
+                    $summary[$episodio ? 'actualizados' : 'creados']++;
+                    $periods[$this->periodKey(
+                        (int) $saved->establecimiento_id,
+                        (int) $saved->periodo_anio,
+                        (int) $saved->periodo_mes
+                    )] = [
+                        (int) $saved->establecimiento_id,
+                        (int) $saved->periodo_anio,
+                        (int) $saved->periodo_mes,
+                    ];
+                }
+            });
+        });
+
+        foreach ($periods as [$establishment, $periodYear, $periodMonth]) {
+            $this->consolidate($establishment, $periodYear, $periodMonth, $user, $record);
+        }
+
+        return $summary;
+    }
+
+    public function reassignEpisodesToPeriod(Record $record, int $year, int $month): void
+    {
+        if ((int) $record->periodo_anio === $year && (int) $record->periodo_mes === $month) {
+            return;
+        }
+
+        HospEpisodio::query()
+            ->where('establecimiento_id', $record->establecimiento_id)
+            ->where('periodo_anio', $record->periodo_anio)
+            ->where('periodo_mes', $record->periodo_mes)
+            ->when(
+                $record->id,
+                fn ($query) => $query->where(function ($inner) use ($record) {
+                    $inner->where('record_id', $record->id)->orWhereNull('record_id');
+                })
+            )
+            ->update([
+                'periodo_anio' => $year,
+                'periodo_mes' => $month,
+            ]);
+    }
+
     public function delete(HospEpisodio $episodio, User $user): void
     {
         $this->assertEstablishment((int) $episodio->establecimiento_id, $user);
@@ -91,16 +225,23 @@ class HospitalizationService
         });
     }
 
-    public function consolidate(int $establecimientoId, int $year, int $month, ?User $user = null): Record
-    {
-        return app(AuditService::class)->withoutAuditing(function () use ($establecimientoId, $year, $month, $user) {
-            return DB::transaction(function () use ($establecimientoId, $year, $month, $user) {
+    public function consolidate(
+        int $establecimientoId,
+        int $year,
+        int $month,
+        ?User $user = null,
+        ?Record $target = null
+    ): Record {
+        return app(AuditService::class)->withoutAuditing(function () use ($establecimientoId, $year, $month, $user, $target) {
+            return DB::transaction(function () use ($establecimientoId, $year, $month, $user, $target) {
                 $formulario = $this->sp10();
                 $lookup = [
                     'formulario_id' => $formulario->id,
                     'establecimiento_id' => $establecimientoId,
                     'periodo_anio' => $year,
                     'periodo_mes' => $month,
+                    'estructura_departamento_id' => $target?->estructura_departamento_id,
+                    'estructura_servicio_id' => $target?->estructura_servicio_id,
                 ];
                 $record = Record::withTrashed()->where($lookup)->lockForUpdate()->first();
                 if ($record?->trashed()) {
@@ -114,14 +255,17 @@ class HospitalizationService
                     ]);
                 }
 
-                $metrics = $this->metrics($establecimientoId, $year, $month);
+                $metrics = $this->metrics($establecimientoId, $year, $month, (int) $record->id, $record->estructura_servicio_id);
                 $values = $this->toRecordValues($formulario, $metrics);
-                $this->capture->save($record->load('formulario.secciones.fields.catalogo.items'), $values, true);
+                $this->capture->save($record->load('formulario.secciones.fields.detalle.prestaciones'), $values, true);
 
                 HospEpisodio::query()
                     ->where('establecimiento_id', $establecimientoId)
                     ->where('periodo_anio', $year)
                     ->where('periodo_mes', $month)
+                    ->where(function ($query) use ($record) {
+                        $query->where('record_id', $record->id)->orWhereNull('record_id');
+                    })
                     ->update(['record_id' => $record->id]);
 
                 app(IndicatorCacheService::class)->invalidateForRecord($record);
@@ -134,19 +278,19 @@ class HospitalizationService
     /**
      * @return array<string, mixed>
      */
-    public function metrics(int $establecimientoId, int $year, int $month): array
+    public function metrics(int $establecimientoId, int $year, int $month, ?int $recordId = null, ?int $servicioId = null): array
     {
-        $range = $this->monthRange($year, $month);
-        $discharged = HospEpisodio::query()
+        $period = HospEpisodio::query()
             ->where('establecimiento_id', $establecimientoId)
-            ->whereDate('fecha_egreso', '>=', $range['from'])
-            ->whereDate('fecha_egreso', '<=', $range['to'])
+            ->where('periodo_anio', $year)
+            ->where('periodo_mes', $month)
+            ->when($recordId, fn ($query) => $query->where(function ($inner) use ($recordId) {
+                $inner->where('record_id', $recordId)->orWhereNull('record_id');
+            }));
+        $discharged = (clone $period)
+            ->whereNotNull('fecha_egreso')
             ->get();
-        $admitted = HospEpisodio::query()
-            ->where('establecimiento_id', $establecimientoId)
-            ->whereDate('fecha_ingreso', '>=', $range['from'])
-            ->whereDate('fecha_ingreso', '<=', $range['to'])
-            ->count();
+        $admitted = (clone $period)->count();
 
         $stayDays = $discharged->sum(fn (HospEpisodio $episodio) => $episodio->stayDays() ?? 0);
         $egresos = $discharged->count();
@@ -155,7 +299,7 @@ class HospitalizationService
         $cesareas = $discharged->where('cesarea', true)->count();
         $partos = $discharged->where('servicio', 'MATERNIDAD')->count();
         $recienNacidos = $discharged->where('recien_nacido', true)->count();
-        $sp11 = $this->sp11Totals($establecimientoId, $year, $month);
+        $sp11 = $this->sp11Totals($establecimientoId, $year, $month, $servicioId);
 
         return [
             'ingresos_total' => $admitted,
@@ -219,8 +363,6 @@ class HospitalizationService
     {
         [$fromYear, $fromMonth] = $context['periodo_desde'];
         [$toYear, $toMonth] = $context['periodo_hasta'];
-        $from = CarbonImmutable::create($fromYear, $fromMonth, 1)->toDateString();
-        $to = CarbonImmutable::create($toYear, $toMonth, 1)->endOfMonth()->toDateString();
 
         $query = DB::connection('pgsql')
             ->table('bioestadistica.hosp_episodios as h')
@@ -230,7 +372,11 @@ class HospitalizationService
                 '=',
                 'h.establecimiento_id'
             )
-            ->whereNull('h.deleted_at');
+            ->whereNull('h.deleted_at')
+            ->whereRaw('(h.periodo_anio * 100 + h.periodo_mes) BETWEEN ? AND ?', [
+                $fromYear * 100 + $fromMonth,
+                $toYear * 100 + $toMonth,
+            ]);
 
         $merged = array_merge($context, $filter);
         foreach ([
@@ -247,10 +393,9 @@ class HospitalizationService
             }
         }
 
-        $dateColumn = in_array($metric, ['ingresos'], true) ? 'h.fecha_ingreso' : 'h.fecha_egreso';
-        $query->whereNotNull($dateColumn)
-            ->whereDate($dateColumn, '>=', $from)
-            ->whereDate($dateColumn, '<=', $to);
+        if ($metric !== 'ingresos') {
+            $query->whereNotNull('h.fecha_egreso');
+        }
 
         $value = match ($metric) {
             'ingresos', 'egresos' => $query->count(),
@@ -357,7 +502,7 @@ class HospitalizationService
      */
     private function toRecordValues(Formulario $formulario, array $metrics): array
     {
-        $fields = $formulario->secciones()->with('fields.catalogo.items')->get()->flatMap->fields->keyBy('code');
+        $fields = $formulario->secciones()->with('fields.detalle.prestaciones')->get()->flatMap->fields->keyBy('code');
         $values = [];
         foreach ([
             'ingresos_total', 'egresos_total', 'dias_estancia', 'fallecidos',
@@ -387,14 +532,17 @@ class HospitalizationService
      */
     private function tablaRows($field, array $counts): array
     {
-        $items = $field->catalogo?->items ?? collect();
+        $items = $field->rowItems();
+        $labels = $field->code === 'egresos_por_sexo'
+            ? ['M' => 'Masculino', 'F' => 'Femenino']
+            : HospEpisodio::SERVICIOS;
         $rows = [];
         foreach ($counts as $code => $count) {
             if (! $code) {
                 continue;
             }
-            $item = $items->first(fn (CatalogItem $item) => $item->codigo === $code)
-                ?? $items->first(fn (CatalogItem $item) => $item->codigo === (string) $code);
+            $wanted = $labels[$code] ?? $code;
+            $item = $items->first(fn ($row) => strcasecmp((string) $row->label, (string) $wanted) === 0);
             if (! $item) {
                 continue;
             }
@@ -407,28 +555,36 @@ class HospitalizationService
     /**
      * @return array{pacientes_dia:int,camas_operativas:int,camas_disponibles:int}
      */
-    private function sp11Totals(int $establecimientoId, int $year, int $month): array
+    private function sp11Totals(int $establecimientoId, int $year, int $month, ?int $servicioId = null): array
     {
         $formulario = Formulario::where('codigo', 'SP11')->first();
         $empty = ['pacientes_dia' => 0, 'camas_operativas' => 0, 'camas_disponibles' => 0];
         if (! $formulario) {
             return $empty;
         }
-        $record = Record::query()
+        $records = Record::query()
             ->where('formulario_id', $formulario->id)
             ->where('establecimiento_id', $establecimientoId)
             ->where('periodo_anio', $year)
             ->where('periodo_mes', $month)
+            ->when(
+                $servicioId,
+                fn ($query) => $query->where('estructura_servicio_id', $servicioId),
+                fn ($query) => $query
+            )
             ->with('values.field')
-            ->first();
-        $matrix = $record?->values->first(fn ($value) => $value->field?->code === 'paciente_dia');
-        $payload = $matrix?->value_json ?? [];
+            ->get();
 
-        return [
-            'pacientes_dia' => Sp11Matrix::total($payload, 'pacientes_dia'),
-            'camas_operativas' => Sp11Matrix::total($payload, 'camas_operativas'),
-            'camas_disponibles' => Sp11Matrix::total($payload, 'camas_disponibles'),
-        ];
+        $totals = $empty;
+        foreach ($records as $record) {
+            $matrix = $record->values->first(fn ($value) => $value->field?->code === 'paciente_dia');
+            $payload = $matrix?->value_json ?? [];
+            $totals['pacientes_dia'] += Sp11Matrix::total($payload, 'pacientes_dia');
+            $totals['camas_operativas'] += Sp11Matrix::total($payload, 'camas_operativas');
+            $totals['camas_disponibles'] += Sp11Matrix::total($payload, 'camas_disponibles');
+        }
+
+        return $totals;
     }
 
     /**
@@ -449,5 +605,10 @@ class HospitalizationService
         $value = trim((string) $value);
 
         return $value === '' ? null : mb_substr($value, 0, $max);
+    }
+
+    private function periodKey(int $establecimientoId, int $year, int $month): string
+    {
+        return "{$establecimientoId}:{$year}:{$month}";
     }
 }

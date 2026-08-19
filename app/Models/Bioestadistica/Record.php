@@ -33,6 +33,40 @@ class Record extends BioestadisticaModel
         return $this->belongsTo(Establecimiento::class);
     }
 
+    public function estructuraDepartamento(): BelongsTo
+    {
+        return $this->belongsTo(EstructuraDepartamento::class, 'estructura_departamento_id');
+    }
+
+    public function estructuraServicio(): BelongsTo
+    {
+        return $this->belongsTo(EstructuraServicio::class, 'estructura_servicio_id');
+    }
+
+    public function corteLabel(): ?string
+    {
+        if (! $this->estructura_servicio_id) {
+            return null;
+        }
+
+        return trim(($this->estructuraDepartamento?->nombre ?? '').' / '.($this->estructuraServicio?->nombre ?? ''), ' /')
+            ?: null;
+    }
+
+    public function spreadsheetParams(): array
+    {
+        $params = [
+            'establecimiento_id' => $this->establecimiento_id,
+            'periodo_anio' => $this->periodo_anio,
+            'periodo_mes' => $this->periodo_mes,
+        ];
+        if ($this->estructura_servicio_id) {
+            $params['estructura_servicio_id'] = $this->estructura_servicio_id;
+        }
+
+        return $params;
+    }
+
     public function values(): HasMany
     {
         return $this->hasMany(RecordValue::class)->with('field');

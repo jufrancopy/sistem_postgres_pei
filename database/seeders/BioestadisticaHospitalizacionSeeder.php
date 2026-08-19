@@ -2,22 +2,23 @@
 
 namespace Database\Seeders;
 
+use App\Application\Bioestadistica\Dictionary\HealthVariableDictionary;
 use App\Application\Bioestadistica\Indicators\FormulaAstValidator;
 use App\Application\Bioestadistica\Sp11Matrix;
-use App\Models\Bioestadistica\CatalogItem;
-use App\Models\Bioestadistica\Catalogo;
 use App\Models\Bioestadistica\Dashboard;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\HospEpisodio;
 use App\Models\Bioestadistica\Indicador;
+use App\Models\Bioestadistica\Reporte;
+use App\Models\Bioestadistica\VariableDetalle;
 use Illuminate\Database\Seeder;
 
 class BioestadisticaHospitalizacionSeeder extends Seeder
 {
     public function run(): void
     {
-        $servicios = $this->catalog('HOSP_SERVICIOS', 'Servicios hospitalarios', HospEpisodio::SERVICIOS);
-        $sexos = $this->catalog('HOSP_SEXO', 'Sexo', ['M' => 'Masculino', 'F' => 'Femenino']);
+        $servicios = $this->detalle('2', 'HOSPITALIZACIÓN', 'SERVICIOS HOSPITALARIOS', HospEpisodio::SERVICIOS);
+        $sexos = $this->detalle('2', 'HOSPITALIZACIÓN', 'SEXO', ['M' => 'Masculino', 'F' => 'Femenino']);
 
         $sp10 = Formulario::updateOrCreate(
             ['codigo' => 'SP10'],
@@ -61,7 +62,7 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
         foreach ([
             ['egresos_por_servicio', 'Egresos por servicio', $servicios],
             ['egresos_por_sexo', 'Egresos por sexo', $sexos],
-        ] as [$code, $label, $catalog]) {
+        ] as [$code, $label, $detalle]) {
             $field = $section->fields()->withTrashed()->firstOrNew(['code' => $code]);
             if ($field->trashed()) {
                 $field->restore();
@@ -70,10 +71,10 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
                 'label' => $label,
                 'type' => 'tabla',
                 'required' => false,
-                'catalogo_id' => $catalog->id,
+                'detalle_id' => $detalle->id,
                 'config' => [
-                    'row_source' => 'catalogo',
-                    'row_catalog_id' => $catalog->id,
+                    'row_source' => 'diccionario',
+                    'row_detalle_id' => $detalle->id,
                     'row_label' => $label,
                     'totals' => true,
                     'columns' => [['code' => 'total', 'label' => 'Total', 'type' => 'integer', 'min' => 0]],
@@ -110,25 +111,23 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
         ])->save();
 
         $this->indicators();
+        $this->reports();
         $this->dashboard();
-        $this->command?->info('Metadata SP10/SP11, indicadores hospitalarios y panel HOSPITALARIO configurados.');
+        $this->command?->info('Metadata SP10/SP11, indicadores hospitalarios, reportes y panel HOSPITALARIO configurados.');
     }
 
-    private function catalog(string $code, string $name, array $items): Catalogo
+    /**
+     * @param  array<string, string>  $items
+     */
+    private function detalle(string $codigo, string $variable, string $tipo, array $items): VariableDetalle
     {
-        $catalog = Catalogo::updateOrCreate(
-            ['codigo' => $code],
-            ['nombre' => $name, 'descripcion' => 'Catálogo canónico de hospitalización.', 'activo' => true]
-        );
-        $order = 1;
-        foreach ($items as $itemCode => $label) {
-            CatalogItem::updateOrCreate(
-                ['catalogo_id' => $catalog->id, 'codigo' => $itemCode],
-                ['label' => $label, 'orden' => $order++, 'activo' => true]
-            );
+        $dictionary = new HealthVariableDictionary();
+        $detalle = null;
+        foreach ($items as $label) {
+            $detalle = $dictionary->remember($codigo, $variable, $tipo, $label)['detalle'];
         }
 
-        return $catalog->load('items');
+        return $detalle;
     }
 
     private function indicators(): void
@@ -218,6 +217,93 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
         }
     }
 
+    private function reports(): void
+    {
+        if (! Formulario::where('codigo', 'SP10')->exists()) {
+            return;
+        }
+
+        BioestadisticaAnalyticsSupport::upsertReport(
+            'EGRESOS_ESTABLECIMIENTO',
+            'Egresos hospitalarios por establecimiento y período',
+            'Egresos consolidados del SP10.',
+            [
+                'form' => 'SP10',
+                'field' => 'egresos_total',
+                'agg' => 'sum',
+                'indicator' => 'EGRESOS_HOSP',
+                'dimensions' => ['establecimiento', 'periodo'],
+                'filtros' => ['estado_record' => 'aprobado'],
+                'order_by' => [
+                    ['ref' => 'periodo', 'dir' => 'asc'],
+                    ['ref' => 'establecimiento', 'dir' => 'asc'],
+                ],
+                'limit' => 500,
+                'totales' => true,
+                'label' => 'Egresos',
+            ]
+        );
+        BioestadisticaAnalyticsSupport::upsertReport(
+            'INGRESOS_ESTABLECIMIENTO',
+            'Ingresos hospitalarios por establecimiento y período',
+            'Ingresos consolidados del SP10.',
+            [
+                'form' => 'SP10',
+                'field' => 'ingresos_total',
+                'agg' => 'sum',
+                'indicator' => 'INGRESOS_HOSP',
+                'dimensions' => ['establecimiento', 'periodo'],
+                'filtros' => ['estado_record' => 'aprobado'],
+                'order_by' => [
+                    ['ref' => 'periodo', 'dir' => 'asc'],
+                    ['ref' => 'establecimiento', 'dir' => 'asc'],
+                ],
+                'limit' => 500,
+                'totales' => true,
+                'label' => 'Ingresos',
+            ]
+        );
+        BioestadisticaAnalyticsSupport::upsertReport(
+            'EGRESOS_POR_SERVICIO',
+            'Egresos por servicio hospitalario',
+            'Egresos del SP10 desagregados por servicio del diccionario.',
+            [
+                'form' => 'SP10',
+                'field' => 'egresos_por_servicio',
+                'metric' => 'total',
+                'agg' => 'sum',
+                'dimensions' => ['catalogo_item', 'establecimiento'],
+                'filtros' => ['estado_record' => 'aprobado'],
+                'order_by' => [['ref' => 'valor', 'dir' => 'desc']],
+                'limit' => 500,
+                'totales' => true,
+                'label' => 'Egresos',
+            ]
+        );
+        if (Formulario::where('codigo', 'SP11')->exists()) {
+            BioestadisticaAnalyticsSupport::upsertReport(
+                'PACIENTE_DIA_SP11',
+                'Paciente día por establecimiento y período',
+                'Suma de paciente día informada en SP11.',
+                [
+                    'form' => 'SP11',
+                    'field' => 'paciente_dia',
+                    'metric' => 'pacientes_dia',
+                    'agg' => 'sum',
+                    'dimensions' => ['establecimiento', 'periodo'],
+                    'filtros' => ['estado_record' => 'aprobado'],
+                    'order_by' => [
+                        ['ref' => 'periodo', 'dir' => 'asc'],
+                        ['ref' => 'establecimiento', 'dir' => 'asc'],
+                    ],
+                    'limit' => 500,
+                    'totales' => true,
+                    'label' => 'Paciente día',
+                ]
+            );
+        }
+    }
+
     private function dashboard(): void
     {
         $dashboard = Dashboard::withTrashed()
@@ -239,18 +325,30 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
                 'descripcion' => 'KPIs SP10/SP11: egresos, estancia, mortalidad, ocupación.',
             ]);
         }
+        $egresos = Reporte::where('codigo', 'EGRESOS_ESTABLECIMIENTO')->first();
+        $porServicio = Reporte::where('codigo', 'EGRESOS_POR_SERVICIO')->first();
         $dashboard->widgets()->delete();
         foreach ([
             ['kpi', 'Egresos', ['indicator' => 'EGRESOS_HOSP'], 0, 0, 3, 2],
             ['kpi', 'Estancia media', ['indicator' => 'ESTANCIA_MEDIA'], 3, 0, 3, 2],
             ['kpi', 'Mortalidad %', ['indicator' => 'MORTALIDAD_HOSP'], 6, 0, 3, 2],
             ['kpi', 'Ocupación %', ['indicator' => 'OCUPACION_HOSPITALARIA'], 9, 0, 3, 2],
-            ['lineas', 'Egresos 12 meses', ['indicator' => 'EGRESOS_HOSP'], 0, 2, 6, 3],
-            ['barras', 'Cirugías', ['indicator' => 'CIRUGIAS_HOSP', 'dimension' => 'establecimiento'], 6, 2, 6, 3],
+            ['lineas', 'Egresos 12 meses', ['form' => 'SP10', 'field' => 'egresos_total', 'agg' => 'sum', 'dimension' => 'periodo', 'label' => 'Egresos'], 0, 2, 6, 3],
+            ['barras', 'Cirugías', ['form' => 'SP10', 'field' => 'cirugias', 'agg' => 'sum', 'dimension' => 'establecimiento', 'label' => 'Cirugías'], 6, 2, 6, 3],
             ['indicador', 'Cesáreas', ['indicator' => 'PCT_CESAREAS', 'umbrales' => ['verde' => [0, 30], 'amarillo' => [30.01, 40], 'rojo' => [40.01, 100]]], 0, 5, 4, 2],
             ['kpi', 'Recién nacidos', ['indicator' => 'RECIEN_NACIDOS'], 4, 5, 4, 2],
             ['kpi', 'Rotación de camas', ['indicator' => 'ROTACION_CAMAS'], 8, 5, 4, 2],
-        ] as [$tipo, $titulo, $config, $x, $y, $w, $h]) {
+            ['kpi', 'Ingresos', ['indicator' => 'INGRESOS_HOSP'], 0, 7, 3, 2],
+            ['kpi', 'Cirugías', ['indicator' => 'CIRUGIAS_HOSP'], 3, 7, 3, 2],
+            ['kpi', 'Intervalo de sustitución', ['indicator' => 'INTERVALO_SUSTITUCION'], 6, 7, 3, 2],
+            ['lineas', 'Paciente día', ['form' => 'SP11', 'field' => 'paciente_dia', 'metric' => 'pacientes_dia', 'agg' => 'sum', 'dimension' => 'periodo', 'label' => 'Paciente día'], 9, 7, 3, 2],
+            $egresos ? ['tabla', 'Egresos por establecimiento', ['reporte_id' => $egresos->id], 0, 9, 6, 4] : null,
+            $porServicio ? ['tabla', 'Egresos por servicio', ['reporte_id' => $porServicio->id], 6, 9, 6, 4] : null,
+        ] as $widget) {
+            if (! $widget) {
+                continue;
+            }
+            [$tipo, $titulo, $config, $x, $y, $w, $h] = $widget;
             $dashboard->widgets()->create([
                 'tipo' => $tipo,
                 'titulo' => $titulo,

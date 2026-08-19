@@ -45,6 +45,22 @@ class ExcelImportAnalyzerTest extends TestCase
         self::assertJson(json_encode($result, JSON_THROW_ON_ERROR));
     }
 
+    public function test_detects_variables_salud_sheet_without_version_suffix(): void
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('VARIABLES SALUD');
+        $sheet->fromArray([
+            ['CODIGO DE VARIABLE', 'DESCRIPCIÓN DE VARIABLE', 'TIPO DE REGISTRO', 'PRESTACIONES'],
+            [1, 'Ambulatorio', 'Consulta por especialidad', 'Cardiología'],
+        ]);
+
+        $path = $this->save($spreadsheet, 'xlsx');
+        $result = (new ExcelImportAnalyzer())->analyze($path);
+
+        self::assertSame('variables_salud', $result['tipo']);
+    }
+
     public function test_opens_xls_and_infers_supported_types(): void
     {
         $spreadsheet = new Spreadsheet();
@@ -86,6 +102,25 @@ class ExcelImportAnalyzerTest extends TestCase
 
         self::assertSame('establecimientos_dim', $result['tipo']);
         self::assertSame('id_establecimiento', $result['hojas'][0]['columnas'][0]['codigo']);
+    }
+
+    public function test_detects_establecimientos_sheet_without_dim_prefix(): void
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('ESTABLECIMIENTOS');
+        $sheet->fromArray([
+            ['ID_ESTABLECIMIENTO', 'ESTABLECIMIENTOS', 'DEPARTAMENTO', 'DISTRITO', 'CÓDIGO SIH', 'SISTEMA HOSPITALARIO', 'LATITUDE', 'LONGITUDE'],
+            ['01-US-01', 'Horqueta US', 'Concepción', 'HORQUETA', '74', 'SIH', '-23.3', '-57.0'],
+        ]);
+
+        $path = $this->save($spreadsheet, 'xlsx');
+        $result = (new ExcelImportAnalyzer())->analyze($path);
+
+        self::assertSame('establecimientos_dim', $result['tipo']);
+        $codes = array_column($result['hojas'][0]['columnas'], 'codigo');
+        self::assertContains('id_establecimiento', $codes);
+        self::assertContains('establecimientos', $codes);
     }
 
     public function test_detects_formularios_sp_workbook(): void

@@ -515,7 +515,7 @@ class ExcelImportAnalyzer
             $sheetCode = $this->normalizeCode($sheet['nombre']);
             $headerCodes = array_column($sheet['cabeceras'], 'codigo');
 
-            if ($sheetCode === 'variables_salud_2'
+            if (str_starts_with($sheetCode, 'variables_salud')
                 && count(array_intersect($headerCodes, [
                     'codigo_de_variable',
                     'descripcion_de_variable',
@@ -529,9 +529,13 @@ class ExcelImportAnalyzer
         foreach ($sheets as $sheet) {
             $sheetCode = $this->normalizeCode($sheet['nombre']);
             $headerCodes = array_column($sheet['cabeceras'], 'codigo');
+            $hasId = in_array('id_establecimiento', $headerCodes, true);
+            $hasName = in_array('establecimiento', $headerCodes, true)
+                || in_array('establecimientos', $headerCodes, true);
 
             if ($sheetCode === 'dim_establecimientos'
-                || count(array_intersect($headerCodes, ['id_establecimiento', 'establecimiento'])) === 2) {
+                || ($sheetCode === 'establecimientos' && $hasId && $hasName)
+                || ($hasId && $hasName && count($headerCodes) >= 8)) {
                 return 'establecimientos_dim';
             }
         }

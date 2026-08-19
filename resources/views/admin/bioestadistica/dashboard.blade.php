@@ -59,14 +59,15 @@
         <p class="text-muted mb-2">Administración del módulo</p>
         <div class="row">
             <div class="col-md-3"><a class="btn btn-info btn-block" href="{{ route('bioestadistica.formularios.index') }}">Formularios</a></div>
-            <div class="col-md-3"><a class="btn btn-info btn-block" href="{{ route('bioestadistica.catalogos.index') }}">Catálogos</a></div>
+            <div class="col-md-3"><a class="btn btn-info btn-block" href="{{ route('bioestadistica.diccionario.index') }}">Diccionario</a></div>
             <div class="col-md-3"><a class="btn btn-info btn-block" href="{{ route('bioestadistica.geografia.index') }}">Geografía</a></div>
+            <div class="col-md-3"><a class="btn btn-info btn-block" href="{{ route('bioestadistica.estructura.index') }}">Deptos. y servicios</a></div>
             @can('bio.indicator.view')<div class="col-md-3"><a class="btn btn-info btn-block" href="{{ route('bioestadistica.indicadores.index') }}">Indicadores</a></div>@endcan
             @can('bio.report.view')<div class="col-md-3 mt-2"><a class="btn btn-outline-info btn-block" href="{{ route('bioestadistica.reportes.index') }}">Reportes</a></div>@endcan
             @can('bio.dashboard.view')<div class="col-md-3 mt-2"><a class="btn btn-outline-info btn-block" href="{{ route('bioestadistica.dashboards.index') }}">Dashboards</a></div>@endcan
         </div>
         <p class="small text-muted mt-3 mb-0">
-            Catálogo: {{ $stats['catalogos'] }} · Variables: {{ $stats['variables'] }} ·
+            Variables: {{ $stats['variables'] }} · Prestaciones: {{ $stats['prestaciones'] }} ·
             Formularios: {{ $stats['formularios_activos'] }}/{{ $stats['formularios'] }} ·
             Indicadores: {{ $stats['indicadores_activos'] }}/{{ $stats['indicadores'] }} ·
             Establecimientos: {{ $stats['establecimientos'] }}

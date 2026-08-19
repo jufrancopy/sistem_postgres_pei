@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Admin\Bioestadistica;
 use App\Application\Bioestadistica\Audit\AuditService;
 use App\Application\Bioestadistica\Hospitalization\HospitalizationService;
 use App\Application\Bioestadistica\Imports\HospEpisodioImporter;
+use App\Http\Controllers\Admin\Bioestadistica\Concerns\BuildsCaptureNavigator;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Bioestadistica\HospEpisodioBatchRequest;
 use App\Http\Requests\Bioestadistica\HospEpisodioRequest;
 use App\Models\Bioestadistica\Establecimiento;
+use App\Models\Bioestadistica\EstablecimientoServicio;
+use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\HospEpisodio;
 use App\Models\Bioestadistica\ImportJob;
 use App\Models\Bioestadistica\Record;
@@ -20,6 +24,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class HospitalizacionController extends Controller
 {
+    use BuildsCaptureNavigator;
+
     public function index(Request $request): View
     {
         abort_unless($request->user()->can('bio.hosp.view'), 403);
@@ -54,16 +60,20 @@ class HospitalizacionController extends Controller
     public function create(Request $request): View
     {
         abort_unless($request->user()->can('bio.hosp.manage'), 403);
+        $defaultPeriod = now()->subMonth();
 
         return view('admin.bioestadistica.hospitalizacion.form', [
             'episodio' => new HospEpisodio([
                 'establecimiento_id' => $request->integer('establecimiento_id') ?: null,
+                'periodo_anio' => $request->integer('periodo_anio', (int) $defaultPeriod->year),
+                'periodo_mes' => $request->integer('periodo_mes', (int) $defaultPeriod->month),
                 'fecha_ingreso' => now()->toDateString(),
             ]),
             'establecimientos' => $this->allowedEstablishments(),
             'servicios' => HospEpisodio::SERVICIOS,
             'tiposAlta' => HospEpisodio::TIPOS_ALTA,
             'tiposCirugia' => HospEpisodio::TIPOS_CIRUGIA,
+            'months' => $this->months(),
         ]);
     }
 
@@ -73,7 +83,7 @@ class HospitalizacionController extends Controller
         $episodio = $service->save($request->validated(), $request->user());
 
         return redirect()->route('bioestadistica.hospitalizacion.edit', $episodio)
-            ->with('success', 'Episodio guardado. El consolidado SP10 se actualizó para el período derivado de las fechas.');
+            ->with('success', 'Episodio guardado. El consolidado SP10 se actualizó para el período seleccionado.');
     }
 
     public function edit(Request $request, HospEpisodio $episodio, AuditService $audit): View
@@ -92,7 +102,139 @@ class HospitalizacionController extends Controller
             'servicios' => HospEpisodio::SERVICIOS,
             'tiposAlta' => HospEpisodio::TIPOS_ALTA,
             'tiposCirugia' => HospEpisodio::TIPOS_CIRUGIA,
+            'months' => $this->months(),
         ]);
+    }
+
+    public function spreadsheet(Request $request): View|RedirectResponse
+    {
+        abort_unless($request->user()->can('bio.hosp.manage'), 403);
+        $establishmentId = $request->integer('establecimiento_id');
+        $year = $request->integer('periodo_anio');
+        $month = $request->integer('periodo_mes');
+        if ($establishmentId < 1 || $year < 1990 || $year > 2100 || $month < 1 || $month > 12) {
+            return redirect()->route('bioestadistica.captura.create')
+                ->with('warning', 'Para cargar SP10 seleccione establecimiento y período estadístico, igual que en los demás formularios.');
+        }
+
+        $establishments = $this->allowedEstablishments();
+        abort_unless($establishments->contains('id', $establishmentId), 403);
+        $establecimiento = $establishments->firstWhere('id', $establishmentId);
+        $establecimiento->load(['unidades.departamento', 'unidades.servicio']);
+        $formulario = Formulario::where('codigo', 'SP10')->firstOrFail();
+        [$departamentoId, $servicioId] = $this->optionalCorte(
+            $establishmentId,
+            $request->input('estructura_servicio_id')
+        );
+        $recordQuery = Record::query()
+            ->where('formulario_id', $formulario->id)
+            ->where('establecimiento_id', $establishmentId)
+            ->where('periodo_anio', $year)
+            ->where('periodo_mes', $month);
+        if ($servicioId) {
+            $record = $recordQuery->where('estructura_servicio_id', $servicioId)->first();
+        } else {
+            $record = $recordQuery->first();
+        }
+        $record ??= Record::create([
+            'formulario_id' => $formulario->id,
+            'establecimiento_id' => $establishmentId,
+            'periodo_anio' => $year,
+            'periodo_mes' => $month,
+            'estructura_departamento_id' => $departamentoId,
+            'estructura_servicio_id' => $servicioId,
+            'estado' => Record::ESTADO_BORRADOR,
+            'created_by' => $request->user()->id,
+        ]);
+        $record->load(['formulario', 'establecimiento', 'estructuraDepartamento', 'estructuraServicio']);
+
+        $episodes = HospEpisodio::query()
+            ->where('establecimiento_id', $establishmentId)
+            ->where('periodo_anio', $year)
+            ->where('periodo_mes', $month)
+            ->where(function ($query) use ($record) {
+                $query->where('record_id', $record->id)
+                    ->orWhereNull('record_id');
+            })
+            ->orderBy('fecha_ingreso')
+            ->orderBy('id')
+            ->limit(200)
+            ->get();
+        $episodes->each(function (HospEpisodio $episode) use ($request) {
+            $episode->setAttribute('cedula_visible', $episode->visibleCedula($request->user()));
+        });
+
+        return view('admin.bioestadistica.hospitalizacion.spreadsheet', [
+            'record' => $record,
+            'episodios' => $episodes,
+            'establecimiento' => $establecimiento,
+            'establecimientoId' => $establishmentId,
+            'periodo_anio' => $year,
+            'periodo_mes' => $month,
+            'months' => $this->months(),
+            'servicios' => HospEpisodio::SERVICIOS,
+            'tiposAlta' => HospEpisodio::TIPOS_ALTA,
+            'tiposCirugia' => HospEpisodio::TIPOS_CIRUGIA,
+            'siblingPlanillas' => $this->captureNavigator(
+                $establishmentId,
+                $year,
+                $month,
+                (int) $formulario->id,
+                $record->estructura_departamento_id ? (int) $record->estructura_departamento_id : null,
+                $record->estructura_servicio_id ? (int) $record->estructura_servicio_id : null
+            ),
+            'establecimientoNombre' => $establecimiento->nombre,
+            'unidades' => $establecimiento->unidades,
+            'corteServicioId' => $record->estructura_servicio_id,
+            'corteEtiqueta' => $record->corteLabel(),
+        ]);
+    }
+
+    public function saveSpreadsheet(
+        HospEpisodioBatchRequest $request,
+        HospitalizationService $service,
+        AuditService $audit
+    ): RedirectResponse {
+        $data = $request->validated();
+        $formulario = Formulario::where('codigo', 'SP10')->firstOrFail();
+        [$departamentoId, $servicioId] = $this->optionalCorte(
+            (int) $data['establecimiento_id'],
+            $data['estructura_servicio_id'] ?? null
+        );
+        $record = Record::firstOrCreate([
+            'formulario_id' => $formulario->id,
+            'establecimiento_id' => $data['establecimiento_id'],
+            'periodo_anio' => $data['periodo_anio'],
+            'periodo_mes' => $data['periodo_mes'],
+            'estructura_departamento_id' => $departamentoId,
+            'estructura_servicio_id' => $servicioId,
+        ], [
+            'estado' => Record::ESTADO_BORRADOR,
+            'created_by' => $request->user()->id,
+        ]);
+        abort_unless($record->isEditable(), 422, 'El registro SP10 no está disponible para edición.');
+
+        $summary = $service->saveBatch(
+            (int) $data['establecimiento_id'],
+            (int) $data['periodo_anio'],
+            (int) $data['periodo_mes'],
+            $data['rows'],
+            $request->user(),
+            $record
+        );
+
+        $audit->recordBatch('import', HospEpisodio::class, null, $summary, [
+            'establecimiento_id' => (int) $data['establecimiento_id'],
+            'periodo_anio' => (int) $data['periodo_anio'],
+            'periodo_mes' => (int) $data['periodo_mes'],
+            'estructura_servicio_id' => $servicioId,
+        ], ['phase' => 'spreadsheet']);
+
+        return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', $record->spreadsheetParams())->with(
+            'success',
+            "Planilla guardada: {$summary['creados']} creados, "
+            ."{$summary['actualizados']} actualizados y {$summary['eliminados']} eliminados."
+        );
     }
 
     public function update(HospEpisodioRequest $request, HospEpisodio $episodio, HospitalizationService $service): RedirectResponse
@@ -277,6 +419,30 @@ class HospitalizacionController extends Controller
             });
             fclose($out);
         }, 'sp10-episodios.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * @return array{0: int|null, 1: int|null}
+     */
+    private function optionalCorte(int $establecimientoId, mixed $servicioId, bool $requiredWhenAssigned = false): array
+    {
+        $unidades = EstablecimientoServicio::query()
+            ->where('establecimiento_id', $establecimientoId)
+            ->get();
+        if ($unidades->isEmpty()) {
+            return [null, null];
+        }
+        $match = $unidades->firstWhere('servicio_id', (int) $servicioId);
+        if (! $match) {
+            if (! $requiredWhenAssigned && ($servicioId === null || $servicioId === '')) {
+                return [null, null];
+            }
+            throw ValidationException::withMessages([
+                'estructura_servicio_id' => 'Seleccione el departamento y servicio donde se carga la variable.',
+            ]);
+        }
+
+        return [(int) $match->departamento_id, (int) $match->servicio_id];
     }
 
     private function allowedEstablishments()

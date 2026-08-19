@@ -192,10 +192,14 @@
                     </ul>
                 </div>
             </li>
+        @endrole
 
-            {{-- ── DEPARTAMENTO 3: ESTADÍSTICAS (Ámbar / Naranja Datos #f59e0b / DATA) ── --}}
+        {{-- ── DEPARTAMENTO 3: ESTADÍSTICAS (Ámbar / Naranja Datos #f59e0b / DATA) ── --}}
+        @hasanyrole('Administrador|Analista de Bioestadística|Digitador Bioestadística|Consultor Bioestadística|Auditor Bioestadística')
             @php
-                $pendientesSiess = \App\Models\Estadistica\SiessExtracto::pendientes()->count();
+                $pendientesSiess = auth()->user()->hasRole('Administrador')
+                    ? \App\Models\Estadistica\SiessExtracto::pendientes()->count()
+                    : 0;
             @endphp
             <li class="nav-item">
                 <a class="nav-link" data-toggle="collapse" href="#siessMenu" aria-expanded="{{ $enEstadisticas ? 'true' : 'false' }}">
@@ -212,6 +216,7 @@
                     <ul class="nav">
 
                         {{-- ── Submenú 1: Seguridad Social (Color Cascading #f59e0b) ── --}}
+                        @role('Administrador')
                         <li class="nav-item">
                             <a class="nav-link {{ $enSiess ? 'active' : '' }}" data-toggle="collapse" href="#seguridadSocialSubMenu" aria-expanded="{{ $enSiess ? 'true' : 'false' }}">
                                 <span class="sidebar-mini"><i class="fa fa-shield-alt" style="font-size:.8rem; color: #f59e0b;"></i></span>
@@ -302,6 +307,7 @@
                                 </ul>
                             </div>
                         </li>
+                        @endrole
 
                         {{-- ── Submenú 2: Bioestadísticas (Color Cascading #f59e0b) ── --}}
                         <li class="nav-item">
@@ -322,9 +328,9 @@
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">FR</span><span class="sidebar-normal">Formularios</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $isActive('bioestadistica/catalogos*') }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.catalogos.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">CA</span><span class="sidebar-normal">Catálogos</span>
+                                    <li class="nav-item {{ $isActive('bioestadistica/diccionario*') }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.diccionario.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">DI</span><span class="sidebar-normal">Diccionario</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('bioestadistica/captura*') || $isActive('bioestadistica/captura-asignaciones*') }}">
@@ -363,13 +369,6 @@
                                         </a>
                                     </li>
                                     @endcan
-                                    @can('bio.hosp.view')
-                                    <li class="nav-item {{ $isActive('bioestadistica/hospitalizacion*') }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.hospitalizacion.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">HO</span><span class="sidebar-normal">Hospitalización</span>
-                                        </a>
-                                    </li>
-                                    @endcan
                                     @can('bio.audit.view')
                                     <li class="nav-item {{ $isActive('bioestadistica/auditoria*') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.auditoria.index') }}">
@@ -380,6 +379,11 @@
                                     <li class="nav-item {{ $isActive('bioestadistica/geografia*') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">GE</span><span class="sidebar-normal">Geografía</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ $isActive('bioestadistica/estructura*') }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.estructura.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">DS</span><span class="sidebar-normal">Deptos. y servicios</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('bioestadistica/clasificaciones*') }}">
@@ -393,7 +397,9 @@
                     </ul>
                 </div>
             </li>
+        @endhasanyrole
 
+        @role('Administrador')
             {{-- ── DEPARTAMENTO 4: GESTIÓN OPERATIVA & SERVICIOS (Teal/Cyan #06b6d4 / OPS) ── --}}
             @php $enRiiss = str_contains($path, 'riiss'); @endphp
             <li class="nav-item">
@@ -524,127 +530,6 @@
                 </a>
             </li>
         @endrole
-
-        {{-- Sidebar exclusivo para Analista de Bioestadística --}}
-        @role('Analista de Bioestadística')
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="collapse" href="#bioestadisticaMenuAnalista" aria-expanded="{{ $enBioestadistica ? 'true' : 'false' }}">
-                    <i class="material-icons">healing</i>
-                    <p>Bioestadísticas <b class="caret"></b></p>
-                </a>
-                <div class="collapse {{ $enBioestadistica ? 'show' : '' }}" id="bioestadisticaMenuAnalista">
-                    <ul class="nav">
-                        <li class="nav-item {{ $isActive('bioestadistica') || $isActive('bioestadistica/dashboard') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.dashboard') }}">
-                                <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem"></i></span>
-                                <span class="sidebar-normal">Dashboard</span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ $isActive('bioestadistica/formularios*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.formularios.index') }}"><span class="sidebar-mini">FR</span><span class="sidebar-normal">Formularios</span></a>
-                        </li>
-                        <li class="nav-item {{ $isActive('bioestadistica/catalogos*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.catalogos.index') }}"><span class="sidebar-mini">CA</span><span class="sidebar-normal">Catálogos</span></a>
-                        </li>
-                        <li class="nav-item {{ $isActive('bioestadistica/captura*') || $isActive('bioestadistica/captura-asignaciones*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.captura.index') }}"><span class="sidebar-mini">CP</span><span class="sidebar-normal">Captura</span></a>
-                        </li>
-                        <li class="nav-item {{ $isActive('bioestadistica/captura/pendientes*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.captura.pending') }}"><span class="sidebar-mini">PD</span><span class="sidebar-normal">Pendientes</span></a>
-                        </li>
-                        <li class="nav-item {{ $isActive('bioestadistica/indicadores*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.indicadores.index') }}"><span class="sidebar-mini">IN</span><span class="sidebar-normal">Indicadores</span></a>
-                        </li>
-                        @can('bio.report.view')
-                        <li class="nav-item {{ $isActive('bioestadistica/reportes*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.reportes.index') }}"><span class="sidebar-mini">RP</span><span class="sidebar-normal">Reportes</span></a>
-                        </li>
-                        @endcan
-                        @can('bio.dashboard.view')
-                        <li class="nav-item {{ $isActive('bioestadistica/dashboards*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.dashboards.index') }}"><span class="sidebar-mini">TB</span><span class="sidebar-normal">Dashboards</span></a>
-                        </li>
-                        @endcan
-                        @can('bio.import.view')
-                        <li class="nav-item {{ $isActive('bioestadistica/importaciones*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.importaciones.index') }}"><span class="sidebar-mini">IM</span><span class="sidebar-normal">Importaciones</span></a>
-                        </li>
-                        @endcan
-                        @can('bio.hosp.view')
-                        <li class="nav-item {{ $isActive('bioestadistica/hospitalizacion*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.hospitalizacion.index') }}"><span class="sidebar-mini">HO</span><span class="sidebar-normal">Hospitalización</span></a>
-                        </li>
-                        @endcan
-                        @can('bio.audit.view')
-                        <li class="nav-item {{ $isActive('bioestadistica/auditoria*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.auditoria.index') }}"><span class="sidebar-mini">AU</span><span class="sidebar-normal">Auditoría</span></a>
-                        </li>
-                        @endcan
-                        <li class="nav-item {{ $isActive('bioestadistica/geografia*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}"><span class="sidebar-mini">GE</span><span class="sidebar-normal">Geografía</span></a>
-                        </li>
-                        <li class="nav-item {{ $isActive('bioestadistica/clasificaciones*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.clasificaciones.index') }}"><span class="sidebar-mini">CL</span><span class="sidebar-normal">Clasificaciones</span></a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-        @endrole
-
-        @hasanyrole('Digitador Bioestadística|Consultor Bioestadística|Auditor Bioestadística')
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="collapse" href="#bioestadisticaMenuOperativo" aria-expanded="{{ $enBioestadistica ? 'true' : 'false' }}">
-                    <i class="material-icons">healing</i><p>Bioestadísticas <b class="caret"></b></p>
-                </a>
-                <div class="collapse {{ $enBioestadistica ? 'show' : '' }}" id="bioestadisticaMenuOperativo">
-                    <ul class="nav">
-                        <li class="nav-item {{ $isActive('bioestadistica') || $isActive('bioestadistica/dashboard') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.dashboard') }}"><span class="sidebar-mini">DB</span><span class="sidebar-normal">Dashboard</span></a>
-                        </li>
-                        <li class="nav-item {{ $isActive('bioestadistica/formularios*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.formularios.index') }}"><span class="sidebar-mini">FR</span><span class="sidebar-normal">Formularios</span></a>
-                        </li>
-                        <li class="nav-item {{ $isActive('bioestadistica/captura*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.captura.index') }}"><span class="sidebar-mini">CP</span><span class="sidebar-normal">Captura</span></a>
-                        </li>
-                        <li class="nav-item {{ $isActive('bioestadistica/captura/pendientes*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.captura.pending') }}"><span class="sidebar-mini">PD</span><span class="sidebar-normal">Pendientes</span></a>
-                        </li>
-                        <li class="nav-item {{ $isActive('bioestadistica/indicadores*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.indicadores.index') }}"><span class="sidebar-mini">IN</span><span class="sidebar-normal">Indicadores</span></a>
-                        </li>
-                        @can('bio.report.view')
-                        <li class="nav-item {{ $isActive('bioestadistica/reportes*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.reportes.index') }}"><span class="sidebar-mini">RP</span><span class="sidebar-normal">Reportes</span></a>
-                        </li>
-                        @endcan
-                        @can('bio.dashboard.view')
-                        <li class="nav-item {{ $isActive('bioestadistica/dashboards*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.dashboards.index') }}"><span class="sidebar-mini">TB</span><span class="sidebar-normal">Dashboards</span></a>
-                        </li>
-                        @endcan
-                        @can('bio.import.view')
-                        <li class="nav-item {{ $isActive('bioestadistica/importaciones*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.importaciones.index') }}"><span class="sidebar-mini">IM</span><span class="sidebar-normal">Importaciones</span></a>
-                        </li>
-                        @endcan
-                        @can('bio.hosp.view')
-                        <li class="nav-item {{ $isActive('bioestadistica/hospitalizacion*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.hospitalizacion.index') }}"><span class="sidebar-mini">HO</span><span class="sidebar-normal">Hospitalización</span></a>
-                        </li>
-                        @endcan
-                        @can('bio.audit.view')
-                        <li class="nav-item {{ $isActive('bioestadistica/auditoria*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.auditoria.index') }}"><span class="sidebar-mini">AU</span><span class="sidebar-normal">Auditoría</span></a>
-                        </li>
-                        @endcan
-                        <li class="nav-item {{ $isActive('bioestadistica/geografia*') }}">
-                            <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}"><span class="sidebar-mini">GE</span><span class="sidebar-normal">Geografía</span></a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-        @endhasanyrole
 
         {{-- Sidebar exclusivo para Analista - RIISS --}}
         @role('Analista - RIISS')

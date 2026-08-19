@@ -86,9 +86,12 @@ class BioestadisticaDistritosSeeder extends Seeder
             ->load($path);
         $dimensionSheet = null;
         foreach ($spreadsheet->getWorksheetIterator() as $sheet) {
-            if (str_contains($this->key($sheet->getTitle()), 'DIM_ESTABLECIMIENTOS')) {
+            $title = $this->key($sheet->getTitle());
+            if (in_array($title, ['DIM_ESTABLECIMIENTOS', 'ESTABLECIMIENTOS'], true)) {
                 $dimensionSheet = $sheet;
-                break;
+                if ($title === 'DIM_ESTABLECIMIENTOS') {
+                    break;
+                }
             }
         }
         if (! $dimensionSheet) {
@@ -108,8 +111,8 @@ class BioestadisticaDistritosSeeder extends Seeder
         for ($row = $headerRow + 1; $row <= $dimensionSheet->getHighestDataRow(); $row++) {
             $data = $this->row($dimensionSheet, $row, $headers);
             $code = $this->value($data, ['ID_ESTABLECIMIENTO', 'CODIGO_ESTABLECIMIENTO', 'ID']);
-            $name = $this->value($data, ['ESTABLECIMIENTO', 'NOMBRE_ESTABLECIMIENTO']);
-            $departmentCode = $this->value($data, ['ID_DEPTO', 'CODIGO_DEPARTAMENTO']);
+            $name = $this->value($data, ['ESTABLECIMIENTO', 'ESTABLECIMIENTOS', 'NOMBRE_ESTABLECIMIENTO']);
+            $departmentCode = $this->value($data, ['ID_DEPTO', 'ID_DEPARTAMENTO', 'CODIGO_DEPARTAMENTO']);
             if (! $code || ! $name || ! $departmentCode) {
                 continue;
             }
@@ -196,15 +199,25 @@ class BioestadisticaDistritosSeeder extends Seeder
 
     private function establishmentSourcePath(): ?string
     {
-        $preferred = base_path('.docs-bio/ESTABLECIMIENTO_CON_ID 2.xlsx');
-        $fallback = base_path('.docs-bio/ESTABLECIMIENTO_CON_ID.xlsx');
-
-        foreach ([$preferred, $fallback] as $path) {
-            if (! is_file($path)) {
+        $dir = base_path('.docs-bio');
+        $preferred = [];
+        $fallback = [];
+        foreach (glob($dir.DIRECTORY_SEPARATOR.'*') ?: [] as $file) {
+            if (! is_file($file) || ! preg_match('/establecimiento_con_id/i', basename($file))) {
                 continue;
             }
+            if (str_contains(basename($file), ' 2.') || preg_match('/_2\./', basename($file))) {
+                $preferred[] = $file;
+            } else {
+                $fallback[] = $file;
+            }
+        }
+
+        foreach (array_merge($preferred, $fallback) as $path) {
             $book = IOFactory::createReaderForFile($path)->setReadDataOnly(true)->load($path);
-            $sheet = $book->getSheetByName('DIM ESTABLECIMIENTOS') ?? $book->getActiveSheet();
+            $sheet = $book->getSheetByName('ESTABLECIMIENTOS')
+                ?? $book->getSheetByName('DIM ESTABLECIMIENTOS')
+                ?? $book->getActiveSheet();
             $count = 0;
             for ($row = 2; $row <= $sheet->getHighestDataRow() && $count < 100; $row++) {
                 if (trim((string) $sheet->getCell([1, $row])->getValue()) !== '') {

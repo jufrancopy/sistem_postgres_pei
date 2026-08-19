@@ -8,9 +8,12 @@ composer.lock
 backups/
 *.xlsx
 *.xls
+!.docs-bio/*.xlsx
+!.docs-bio/*.xls
+~$*.xlsx
+~$*.xls
 *.accdb
 *.laccdb
-.docs-bio/
 _fix_nivel_label.php
 recursos/*.csv
 recursos/*.xls

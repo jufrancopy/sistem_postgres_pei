@@ -2,9 +2,12 @@
 
 namespace App\Application\Bioestadistica\Imports;
 
-use App\Models\Bioestadistica\CatalogItem;
-use App\Models\Bioestadistica\Catalogo;
+use App\Application\Bioestadistica\Dictionary\DictionaryCodes;
+use App\Application\Bioestadistica\Dictionary\HealthVariableDictionary;
 use App\Models\Bioestadistica\Formulario;
+use App\Models\Bioestadistica\Prestacion;
+use App\Models\Bioestadistica\Variable;
+use App\Models\Bioestadistica\VariableDetalle;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
@@ -173,13 +176,13 @@ class FormulariosSpImporter
                 continue;
             }
             if (is_numeric($decision)) {
-                $item = CatalogItem::find((int) $decision);
+                $item = Prestacion::find((int) $decision);
                 $rows[] = [
                     'label' => $label,
                     'nivel' => 4,
                     'catalog_item_id' => $item?->id,
-                    'catalogo_id' => $item?->catalogo_id,
-                    'sugerencia' => $item?->label,
+                    'catalogo_id' => $item?->detalle_id,
+                    'sugerencia' => $item?->nombre,
                     'score' => 1,
                     'accion' => 'manual',
                 ];
@@ -383,23 +386,23 @@ class FormulariosSpImporter
         ]];
         $fields = 0;
         $index = 0;
-        foreach ($groups as $catalogId => $itemIds) {
-            $catalog = Catalogo::find($catalogId);
+        foreach ($groups as $detalleId => $itemIds) {
+            $detalle = VariableDetalle::with('variable')->find($detalleId);
             $code = $formulario->codigo === 'SP1' && $index === 0
                 ? 'consultas_por_especialidad'
-                : Str::lower(Str::slug(($catalog?->codigo ?: 'datos').'_'.$index, '_'));
+                : Str::lower(Str::slug(($detalle ? DictionaryCodes::slug($detalle) : 'datos').'_'.$index, '_'));
             $field = $section->fields()->withTrashed()->firstOrNew(['code' => $code]);
             if ($field->trashed()) {
                 $field->restore();
             }
             $field->fill([
-                'label' => $catalog?->nombre ?: $form['nombre'],
+                'label' => $detalle?->nombre ?: $form['nombre'],
                 'type' => 'tabla',
                 'required' => $index === 0,
-                'catalogo_id' => $catalogId,
+                'detalle_id' => $detalleId,
                 'config' => [
-                    'row_source' => 'catalogo',
-                    'row_catalog_id' => $catalogId,
+                    'row_source' => 'diccionario',
+                    'row_detalle_id' => $detalleId,
                     'row_label' => 'Prestación',
                     'totals' => true,
                     'columns' => $metrics,
@@ -485,27 +488,19 @@ class FormulariosSpImporter
      */
     private function createPrestacion(Formulario $formulario, string $label): array
     {
-        $code = Str::upper(Str::limit('SPIMP_'.$formulario->codigo, 80, ''));
-        $catalog = Catalogo::firstOrCreate(
-            ['codigo' => $code],
-            [
-                'nombre' => "Prestaciones importadas {$formulario->codigo}",
-                'descripcion' => 'Creadas desde matching asistido de Formularios SP.',
-                'activo' => true,
-            ]
-        );
-        $item = CatalogItem::firstOrCreate(
-            ['catalogo_id' => $catalog->id, 'codigo' => Str::limit(Str::upper(Str::slug($label, '_')), 65, '').'_'.substr(sha1($label), 0, 8)],
-            [
-                'label' => $label,
-                'prestacion' => $label,
-                'domain_code' => self::FORMS[$formulario->codigo]['dominio'] ?? null,
-                'activo' => true,
-                'orden' => 0,
-            ]
+        $domain = self::FORMS[$formulario->codigo]['dominio'] ?? 'x';
+        $variable = Variable::query()
+            ->where('codigo', $domain)
+            ->orderBy('id')
+            ->first();
+        $remembered = (new HealthVariableDictionary())->remember(
+            $domain,
+            $variable?->nombre ?: 'IMPORTADO',
+            'Importado '.$formulario->codigo,
+            $label
         );
 
-        return [(int) $catalog->id, (int) $item->id];
+        return [(int) $remembered['detalle']->id, (int) $remembered['prestacion']->id];
     }
 
     private function cleanLabel(string $value): string

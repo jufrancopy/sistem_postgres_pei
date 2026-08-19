@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Admin\Bioestadistica;
 use App\Application\Bioestadistica\Dashboards\DashboardService;
 use App\Application\Bioestadistica\Reports\PeriodContext;
 use App\Http\Controllers\Controller;
-use App\Models\Bioestadistica\Catalogo;
 use App\Models\Bioestadistica\Establecimiento;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\Indicador;
-use App\Models\Bioestadistica\VariableDefinition;
+use App\Models\Bioestadistica\Prestacion;
+use App\Models\Bioestadistica\Variable;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -42,8 +42,8 @@ class BioestadisticaDashboardController extends Controller
             'stats' => [
                 'formularios' => Formulario::count(),
                 'formularios_activos' => Formulario::where('estado', 'activo')->count(),
-                'catalogos' => Catalogo::count(),
-                'variables' => VariableDefinition::count(),
+                'variables' => Variable::count(),
+                'prestaciones' => Prestacion::count(),
                 'establecimientos' => Establecimiento::count(),
                 'distrito_pendiente' => Establecimiento::whereNull('distrito_id')->count(),
                 'indicadores' => Indicador::count(),

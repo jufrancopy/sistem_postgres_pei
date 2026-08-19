@@ -5,7 +5,7 @@
 <div class="card">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">local_hospital</i> Episodios hospitalarios (SP10)</h4>
-        <p class="card-category">Detalle nominativo. El período estadístico se deriva de la fecha de egreso o, si sigue internado, del ingreso.</p>
+        <p class="card-category">Detalle nominativo con período estadístico editable y carga masiva tipo planilla.</p>
     </div>
     <div class="card-body">
         @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
@@ -36,6 +36,9 @@
         </form>
         <div class="mb-3">
             @can('bio.hosp.manage')
+                <a class="btn btn-success" href="{{ route('bioestadistica.hospitalizacion.spreadsheet', request()->only(['establecimiento_id','periodo_anio','periodo_mes'])) }}">
+                    <i class="material-icons">grid_on</i> Cargar planilla
+                </a>
                 <a class="btn btn-success" href="{{ route('bioestadistica.hospitalizacion.create') }}">Nuevo episodio</a>
                 <a class="btn btn-outline-info" href="{{ route('bioestadistica.hospitalizacion.import') }}">Importar Excel</a>
             @endcan

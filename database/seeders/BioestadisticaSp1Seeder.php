@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Bioestadistica\Catalogo;
+use App\Application\Bioestadistica\Dictionary\DictionaryCodes;
 use App\Models\Bioestadistica\Formulario;
+use App\Models\Bioestadistica\VariableDetalle;
 use Illuminate\Database\Seeder;
 
 class BioestadisticaSp1Seeder extends Seeder
@@ -17,9 +18,15 @@ class BioestadisticaSp1Seeder extends Seeder
             return;
         }
 
-        $catalogo = Catalogo::where('codigo', 'VAR_1_CONSULTA_POR_ESPECIALIDAD')->first();
-        if (! $catalogo) {
-            $this->command?->warn('Catálogo de especialidades no encontrado; ejecute BioestadisticaVariablesSeeder primero.');
+        $detalle = VariableDetalle::query()
+            ->where('activo', true)
+            ->whereHas('variable', fn ($query) => $query->where('codigo', '1')->where('activo', true))
+            ->with('variable')
+            ->get()
+            ->first(fn (VariableDetalle $item) => DictionaryCodes::slug($item) === 'VAR_1_CONSULTA_POR_ESPECIALIDAD');
+
+        if (! $detalle) {
+            $this->command?->warn('El diccionario no tiene CONSULTA POR ESPECIALIDAD; ejecute BioestadisticaVariablesSeeder primero.');
 
             return;
         }
@@ -38,10 +45,11 @@ class BioestadisticaSp1Seeder extends Seeder
                 'label' => 'Consultas por especialidad',
                 'type' => 'tabla',
                 'required' => true,
-                'catalogo_id' => $catalogo->id,
+                'detalle_id' => $detalle->id,
                 'help_text' => 'Cargue el total de consultas de cada especialidad. Las especialidades sin actividad pueden quedar vacías.',
                 'config' => [
-                    'row_source' => 'catalogo',
+                    'row_source' => 'diccionario',
+                    'row_detalle_id' => $detalle->id,
                     'row_label' => 'Especialidad',
                     'totals' => true,
                     'columns' => [
@@ -77,6 +85,6 @@ class BioestadisticaSp1Seeder extends Seeder
 
         $formulario->update(['estado' => 'activo']);
 
-        $this->command?->info('SP1 configurado y publicado con ' . $catalogo->items()->count() . ' especialidades.');
+        $this->command?->info('SP1 configurado y publicado con '.$detalle->prestaciones()->count().' especialidades.');
     }
 }

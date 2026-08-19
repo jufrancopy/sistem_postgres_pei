@@ -5,7 +5,7 @@
 <div class="card">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">place</i> Maestro geográfico propio</h4>
-        <p class="card-category">Departamento → Distrito → Establecimiento (aislado de RIISS)</p>
+        <p class="card-category">Departamento/región → Distrito → Establecimiento (aislado de RIISS)</p>
     </div>
     <div class="card-body">
         @if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
@@ -15,7 +15,7 @@
 
         <div class="row mb-4">
             <div class="col-md-6">
-                <h5>Nuevo departamento</h5>
+                <h5>Nuevo departamento/región</h5>
                 <form method="POST" action="{{ route('bioestadistica.geografia.departamentos.store') }}" class="form-row">
                     @csrf
                     <div class="col-3"><input class="form-control" name="codigo" placeholder="Código" required></div>
@@ -29,7 +29,7 @@
                     @csrf
                     <div class="col-5">
                         <select class="form-control" name="departamento_id" required>
-                            <option value="">Departamento</option>
+                            <option value="">Departamento/región</option>
                             @foreach($departamentos as $departamento)
                                 <option value="{{ $departamento->id }}">{{ $departamento->nombre }}</option>
                             @endforeach
@@ -70,7 +70,7 @@
             <div class="col-md-5"><input class="form-control" name="q" value="{{ request('q') }}" placeholder="Buscar por nombre o código"></div>
             <div class="col-md-4">
                 <select class="form-control" name="departamento_id">
-                    <option value="">Todos los departamentos</option>
+                    <option value="">Todos los departamentos/región</option>
                     @foreach($departamentos as $departamento)
                         <option value="{{ $departamento->id }}" @selected(request('departamento_id') == $departamento->id)>{{ $departamento->nombre }}</option>
                     @endforeach
@@ -88,16 +88,15 @@
                         <th>Código SIH</th>
                         <th>Tipo</th>
                         <th>Nivel</th>
-                        <th>Grado / descripción</th>
-                        <th>Departamento</th>
+                        <th>Grado de complejidad</th>
+                        <th>Departamento/región</th>
                         <th>Distrito</th>
                         <th>Microred</th>
                         <th>Prestador</th>
-                        <th>ID dpto.</th>
                         <th>Latitud</th>
                         <th>Longitud</th>
                         <th>Área gestión</th>
-                        <th>Situación inmueble</th>
+                        <th>Situación</th>
                         <th>Observación</th>
                         <th>Acciones</th>
                     </tr>
@@ -112,7 +111,7 @@
                         <td>{{ $establecimiento->nivel_atencion }}</td>
                         <td>
                             @if($establecimiento->gradoComplejidad)
-                                {{ $establecimiento->gradoComplejidad->codigo }} — {{ $establecimiento->gradoComplejidad->descripcion }}
+                                Complejidad {{ $establecimiento->gradoComplejidad->codigo }} — {{ $establecimiento->gradoComplejidad->descripcion }}
                             @endif
                         </td>
                         <td>{{ $establecimiento->distrito?->departamento?->nombre }}</td>
@@ -125,7 +124,6 @@
                         </td>
                         <td>{{ $establecimiento->microred?->nombre }}</td>
                         <td>{{ $establecimiento->prestador }}</td>
-                        <td>{{ $establecimiento->distrito?->departamento?->codigo }}</td>
                         <td>{{ $establecimiento->latitud }}</td>
                         <td>{{ $establecimiento->longitud }}</td>
                         <td>{{ $establecimiento->areaGestion?->nombre }}</td>
@@ -146,7 +144,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="17" class="text-center text-muted">Sin establecimientos.</td></tr>
+                    <tr><td colspan="18" class="text-center text-muted">Sin establecimientos.</td></tr>
                 @endforelse
                 </tbody>
             </table>

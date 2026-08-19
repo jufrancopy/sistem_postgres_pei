@@ -21,14 +21,28 @@ class Field extends BioestadisticaModel
         return $this->belongsTo(FormSeccion::class, 'seccion_id');
     }
 
-    public function catalogo(): BelongsTo
+    public function detalle(): BelongsTo
     {
-        return $this->belongsTo(Catalogo::class);
+        return $this->belongsTo(VariableDetalle::class, 'detalle_id');
     }
 
-    public function variableDefinition(): BelongsTo
+    /**
+     * Filas de una tabla o lista de captura: prestaciones del detalle del diccionario.
+     *
+     * @return \Illuminate\Support\Collection<int, object>
+     */
+    public function rowItems()
     {
-        return $this->belongsTo(VariableDefinition::class);
+        $this->loadMissing('detalle.prestaciones');
+
+        return ($this->detalle?->prestaciones ?? collect())
+            ->where('activo', true)
+            ->values()
+            ->map(fn (Prestacion $prestacion) => (object) [
+                'id' => $prestacion->id,
+                'label' => $prestacion->nombre,
+                'activo' => $prestacion->activo,
+            ]);
     }
 
     public function parent(): BelongsTo

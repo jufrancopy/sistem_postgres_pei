@@ -2,11 +2,14 @@
 @section('title', "Captura {$record->formulario->codigo}")
 
 @section('content')
+@php $canEditPeriod = auth()->user()->can('update', $record); @endphp
 <div class="card">
     <div class="card-header card-header-info">
         <h4 class="card-title">{{ $record->formulario->codigo }} — {{ $record->formulario->nombre }}</h4>
         <p class="card-category">
-            {{ $record->establecimiento->nombre }} ·
+            {{ $record->establecimiento->nombre }}
+            @if($record->corteLabel()) · {{ $record->corteLabel() }} @endif
+            ·
             {{ \Carbon\Carbon::create($record->periodo_anio, $record->periodo_mes, 1)->translatedFormat('F Y') }} ·
             <span class="badge {{ \App\Models\Bioestadistica\Record::estadoBadge($record->estado) }}">{{ \App\Models\Bioestadistica\Record::estadoLabel($record->estado) }}</span>
         </p>
@@ -15,6 +18,18 @@
         @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
         @if($record->estado === 'objetado')<div class="alert alert-warning"><strong>Observación de la objeción:</strong> {{ $record->observacion }}</div>@endif
+
+        @include('admin.bioestadistica.captura._sp-navigator')
+
+        @if($record->isEditable() && ($unidades ?? collect())->isNotEmpty() && ! $record->estructura_servicio_id)
+            <div class="alert alert-warning">
+                Este establecimiento tiene departamento y servicio asociados. Selecciónelos abajo y pulse <strong>Aplicar</strong> para que esta carga quede cortada por ese servicio.
+            </div>
+        @endif
+
+        @include('admin.bioestadistica.captura._period-servicio', [
+            'periodHelp' => 'Al aplicarlo se recarga el formulario; esto ajusta correctamente calendarios como SP11.',
+        ])
 
         <form method="POST" action="{{ route('bioestadistica.captura.update', $record) }}">
             @csrf @method('PUT')

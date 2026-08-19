@@ -2,9 +2,8 @@
 
 namespace App\Application\Bioestadistica\Imports;
 
+use App\Application\Bioestadistica\Dictionary\HealthVariableDictionary;
 use App\Application\Bioestadistica\RecordCaptureService;
-use App\Models\Bioestadistica\CatalogItem;
-use App\Models\Bioestadistica\Catalogo;
 use App\Models\Bioestadistica\Establecimiento;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\Record;
@@ -62,17 +61,24 @@ class GenericFormImporter
                 if ($establishmentColumn && $column['source'] === $establishmentColumn) {
                     continue;
                 }
-                $catalogId = $this->catalogFor($formulario, $column);
+                $detalleId = $this->detalleFor($formulario, $column);
                 $field = $section->fields()->withTrashed()->firstOrNew(['code' => $column['code']]);
                 if ($field->trashed()) {
                     $field->restore();
+                }
+                $config = $column['config'] ?? null;
+                if ($detalleId) {
+                    $config = array_merge($config ?? [], [
+                        'row_source' => 'diccionario',
+                        'row_detalle_id' => $detalleId,
+                    ]);
                 }
                 $field->fill([
                     'label' => $column['label'],
                     'type' => $column['type'],
                     'required' => (bool) ($column['required'] ?? false),
-                    'catalogo_id' => $catalogId,
-                    'config' => $column['config'] ?? null,
+                    'detalle_id' => $detalleId,
+                    'config' => $config,
                     'orden' => $order + 1,
                 ])->save();
                 $created++;
@@ -148,7 +154,7 @@ class GenericFormImporter
                     'establecimiento_id' => $establishment->id,
                     'periodo_anio' => (int) $period['anio'],
                     'periodo_mes' => (int) $period['mes'],
-                ])->first();
+                ])->whereNull('estructura_servicio_id')->first();
                 if ($record?->trashed()) {
                     $record->restore();
                 }
@@ -193,33 +199,27 @@ class GenericFormImporter
         }
     }
 
-    private function catalogFor(Formulario $formulario, array $column): ?int
+    private function detalleFor(Formulario $formulario, array $column): ?int
     {
         if ($column['type'] !== 'select' || empty($column['values']) || ! is_array($column['values'])) {
             return null;
         }
-        $code = Str::upper(Str::limit('IMP_'.$formulario->codigo.'_'.Str::slug($column['code'], '_'), 80, ''));
-        $catalog = Catalogo::withTrashed()->firstOrNew(['codigo' => $code]);
-        if ($catalog->trashed()) {
-            $catalog->restore();
-        }
-        $catalog->fill([
-            'nombre' => "Importación {$formulario->codigo} — {$column['label']}",
-            'descripcion' => 'Catálogo sugerido desde los valores del Excel.',
-            'activo' => true,
-        ])->save();
-        foreach (array_values(array_unique($column['values'])) as $order => $value) {
+        $dictionary = new HealthVariableDictionary();
+        $detalleId = null;
+        foreach (array_values(array_unique($column['values'])) as $value) {
             $value = trim((string) $value);
             if ($value === '') {
                 continue;
             }
-            CatalogItem::updateOrCreate(
-                ['catalogo_id' => $catalog->id, 'codigo' => $this->itemCode($value)],
-                ['label' => $value, 'orden' => $order, 'activo' => true]
-            );
+            $detalleId = $dictionary->remember(
+                'IMP',
+                'IMPORTADO',
+                $formulario->codigo.' — '.$column['label'],
+                $value
+            )['detalle']->id;
         }
 
-        return $catalog->id;
+        return $detalleId;
     }
 
     private function validateMapping(array $mapping): void
@@ -281,10 +281,5 @@ class GenericFormImporter
     private function isEmpty(array $row): bool
     {
         return collect($row)->every(fn ($value) => trim((string) $value) === '');
-    }
-
-    private function itemCode(string $value): string
-    {
-        return Str::limit(Str::upper(Str::slug($value, '_')), 65, '').'_'.substr(sha1($value), 0, 8);
     }
 }
