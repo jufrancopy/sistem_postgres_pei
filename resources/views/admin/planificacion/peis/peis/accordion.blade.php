@@ -547,14 +547,7 @@
                                                            id="reportProgress" title="Reportar Avance">
                                                             <i class="fa fa-chart-line" style="font-size:.7rem"></i>
                                                         </a>
-                                                        @if($colorFisico === 'danger' || $semaforoFisico === 'Rojo')
-                                                        <button type="button" class="btn btn-sm btn-danger py-0 px-2 shadow-sm font-weight-bold"
-                                                                onclick="event.stopPropagation(); remitirAlertaJunta('{{ $action->id }}', '{{ e(strip_tags($action->name)) }}')"
-                                                                title="Remitir Alerta Roja al Consejo de Sabios / Junta Consultiva"
-                                                                style="font-size:.7rem">
-                                                            <i class="fa fa-landmark mr-1"></i> Remitir a Junta
-                                                        </button>
-                                                        @endif
+
                                                         <button type="button"
                                                                 class="btn btn-sm btn-outline-success py-0 px-2 btnNotificarAccion"
                                                                 data-id="{{ $action->id }}"
