@@ -201,6 +201,11 @@
                                             <small class="text-muted text-truncate d-block" style="font-size: 0.78rem;" title="{{ $tk->descripcion }}">
                                                 {{ Str::limit($tk->descripcion, 75) }}
                                             </small>
+                                            @if($tk->commit_hash)
+                                                <a href="https://github.com/jufrancopy/sistem_postgres_pei/commit/{{ $tk->commit_hash }}" target="_blank" class="badge badge-dark font-mono mt-1 text-warning px-2 py-0.5" style="border-radius:6px; font-family:monospace; font-size:0.7rem;" title="Ver commit de solución en GitHub">
+                                                    <i class="fa fa-code-branch text-warning mr-1"></i> Commit: {{ Str::limit($tk->commit_hash, 7, '') }}
+                                                </a>
+                                            @endif
                                         </td>
 
                                         {{-- Ruta Capturada --}}
@@ -250,6 +255,7 @@
                                                     data-estado="{{ $tk->estado }}"
                                                     data-url="{{ e($tk->url_origen) }}"
                                                     data-respuesta="{{ e($tk->respuesta_admin) }}"
+                                                    data-commit-hash="{{ e($tk->commit_hash) }}"
                                                     title="Gestionar Ticket">
                                                 <i class="fa fa-tools mr-1"></i> Gestionar
                                             </button>
@@ -322,6 +328,12 @@
                             <option value="resuelto">🟢 Resuelto (Problema corregido)</option>
                             <option value="rechazado">🔴 Rechazado / No procede</option>
                         </select>
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <label class="font-weight-bold small text-dark mb-1"><i class="fa fa-code-branch text-primary mr-1"></i> Commit de Solución (Hash / Código Git):</label>
+                        <input type="text" id="mg_commit_hash" name="commit_hash" class="form-control form-control-sm font-weight-bold" placeholder="Ej: cc8732c o df59cae" style="border-radius: 8px; font-family: monospace;">
+                        <small class="text-muted" style="font-size:0.71rem;">Ingresá el hash de commit generado al solucionar la falla (ej: <code>df59cae</code>)</small>
                     </div>
 
                     <div class="form-group mb-2">
@@ -446,6 +458,7 @@ $(document).ready(function() {
         $('#mg_user_email').text($btn.data('user-email'));
         $('#mg_ticket_estado').val($btn.data('estado'));
         $('#mg_respuesta_admin').val($btn.data('respuesta') || '');
+        $('#mg_commit_hash').val($btn.data('commit-hash') || '');
 
         var url = $btn.data('url');
         if (url) {

@@ -22,6 +22,7 @@ class SoporteTicket extends Model
         'prioridad',
         'estado',
         'respuesta_admin',
+        'commit_hash',
         'resolved_by',
         'resolved_at',
     ];

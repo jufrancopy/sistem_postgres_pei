@@ -134,11 +134,15 @@ class SoporteTicketController extends Controller
         $request->validate([
             'estado'          => 'required|in:pendiente,en_proceso,resuelto,rechazado',
             'respuesta_admin' => 'nullable|string',
+            'commit_hash'     => 'nullable|string|max:100',
         ]);
 
         $ticket->estado = $request->estado;
         if ($request->has('respuesta_admin')) {
             $ticket->respuesta_admin = trim($request->respuesta_admin);
+        }
+        if ($request->has('commit_hash')) {
+            $ticket->commit_hash = trim($request->commit_hash) ?: null;
         }
 
         if (in_array($request->estado, ['resuelto', 'rechazado'])) {
