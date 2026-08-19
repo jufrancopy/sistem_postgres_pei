@@ -14,12 +14,37 @@
                         </h4>
                         <p class="card-category text-white-50 mb-0">Atención rápida de incidencias de usuarios del sistema</p>
                     </div>
-                    <div>
+                    <div class="d-flex align-items-center" style="gap: 8px;">
+                        <button type="button" class="btn btn-purple font-weight-bold shadow-sm" onclick="copiarPromptLotePendientesIa()" title="Copiar prompt con todas las fallas pendientes para pegar en el chat de Antigravity AI">
+                            <i class="fa fa-robot mr-1"></i> 🤖 Copiar Pendientes para IA
+                        </button>
                         <button type="button" class="btn btn-success font-weight-bold shadow-sm" onclick="abrirModalReportarFalla()">
                             <i class="fa fa-plus-circle mr-1"></i> Crear Ticket Interno
                         </button>
                     </div>
                 </div>
+
+                <style>
+                    .btn-purple {
+                        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+                        color: #ffffff !important;
+                        border: none;
+                    }
+                    .btn-purple:hover {
+                        background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+                        color: #ffffff !important;
+                        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+                    }
+                    .btn-outline-purple {
+                        color: #7c3aed !important;
+                        border: 1px solid #7c3aed;
+                        background: transparent;
+                    }
+                    .btn-outline-purple:hover {
+                        background: #7c3aed;
+                        color: #ffffff !important;
+                    }
+                </style>
 
                 <div class="card-body p-4">
 
@@ -196,9 +221,23 @@
 
                                         {{-- Acciones --}}
                                         <td class="align-middle text-right" style="white-space: nowrap;">
+                                            <button type="button" class="btn btn-xs btn-purple font-weight-bold px-2.5 py-1 btnCopiarPromptIa mr-1"
+                                                    data-codigo="{{ $tk->codigo }}"
+                                                    data-fecha="{{ $tk->created_at->format('d/m/Y H:i') }}"
+                                                    data-prioridad="{{ strtoupper($tk->prioridad) }}"
+                                                    data-titulo="{{ e($tk->titulo) }}"
+                                                    data-descripcion="{{ e($tk->descripcion) }}"
+                                                    data-user-name="{{ e($tk->user->name ?? 'Usuario') }}"
+                                                    data-user-email="{{ e($tk->user->email ?? '') }}"
+                                                    data-url="{{ e($tk->url_origen) }}"
+                                                    title="Copiar prompt listo para pegar en el chat de Antigravity AI">
+                                                <i class="fa fa-robot mr-1"></i> Prompt IA
+                                            </button>
                                             <button type="button" class="btn btn-xs btn-primary font-weight-bold px-2.5 py-1 btnGestionarTicket"
                                                     data-id="{{ $tk->id }}"
                                                     data-codigo="{{ $tk->codigo }}"
+                                                    data-fecha="{{ $tk->created_at->format('d/m/Y H:i') }}"
+                                                    data-prioridad="{{ strtoupper($tk->prioridad) }}"
                                                     data-titulo="{{ e($tk->titulo) }}"
                                                     data-descripcion="{{ e($tk->descripcion) }}"
                                                     data-user-name="{{ e($tk->user->name ?? 'Usuario') }}"
@@ -229,7 +268,7 @@
 
 {{-- Modal de Gestión de Ticket --}}
 <div class="modal fade" id="modalGestionarTicket" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 100050;">
-    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 650px;">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 680px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
             
             <div class="modal-header py-3 px-4 bg-dark text-white">
@@ -254,10 +293,13 @@
                                 <strong id="mg_user_name" class="text-dark"></strong>
                                 <div class="small text-muted" id="mg_user_email"></div>
                             </div>
-                            <div class="col-md-5 text-md-right mt-2 mt-md-0">
+                            <div class="col-md-5 text-md-right mt-2 mt-md-0 d-flex flex-column align-items-md-end" style="gap:5px;">
                                 <a id="mg_btn_abrir_url" href="#" target="_blank" class="btn btn-xs btn-outline-danger font-weight-bold rounded-pill px-3 py-1">
                                     <i class="fa fa-external-link-alt mr-1"></i> Abrir Pantalla de Falla
                                 </a>
+                                <button type="button" class="btn btn-xs btn-purple font-weight-bold rounded-pill px-3 py-1" id="btnMgCopiarPromptIa">
+                                    <i class="fa fa-robot mr-1"></i> Copiar Prompt para Antigravity
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -294,6 +336,38 @@
                 </div>
             </form>
 
+        </div>
+    </div>
+</div>
+
+{{-- Modal Vista Previa Prompt para Antigravity AI --}}
+<div class="modal fade" id="modalPreviewPromptIa" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 100060;">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header py-3 px-4 text-white" style="background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);">
+                <div class="d-flex align-items-center">
+                    <i class="fa fa-robot fa-2x text-warning mr-3"></i>
+                    <div>
+                        <h5 class="modal-title font-weight-bold text-white mb-0" id="promptModalTitle">Prompt para Antigravity AI</h5>
+                        <small class="text-white-50">Copiá este texto estructurado y pegalo directamente en el chat con la IA</small>
+                    </div>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="alert alert-info border-0 py-2.5 px-3 mb-3 small font-weight-500" style="border-radius: 8px; background: #f0fdf4; color: #166534; border-left: 4px solid #22c55e !important;">
+                    <i class="fa fa-check-circle mr-1 text-success"></i> Este prompt contiene el código del ticket, contexto del usuario, ruta del error y las instrucciones para que Antigravity localice y corrija la falla.
+                </div>
+                <div class="position-relative">
+                    <textarea id="textoPromptIaPreview" class="form-control font-mono p-3 bg-dark text-emerald-400 border-0" rows="12" style="font-family: monospace; font-size: 0.82rem; border-radius: 10px; color: #4ade80 !important; background: #0f172a !important; line-height: 1.5;" readonly></textarea>
+                </div>
+            </div>
+            <div class="modal-footer bg-white py-3 px-4 justify-content-between">
+                <button type="button" class="btn btn-light rounded-pill px-4 font-weight-bold" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-purple rounded-pill px-4 font-weight-bold shadow-sm" onclick="copiarContenidoPromptIa()">
+                    <i class="fa fa-copy mr-1"></i> Copiar al Portapapeles
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -378,6 +452,37 @@ $(document).ready(function() {
         $('#modalGestionarTicket').modal('show');
     });
 
+    // Clic en botón "Prompt IA" de la fila
+    $(document).on('click', '.btnCopiarPromptIa', function() {
+        var $btn = $(this);
+        var ticket = {
+            codigo: $btn.data('codigo'),
+            fecha: $btn.data('fecha'),
+            prioridad: $btn.data('prioridad'),
+            titulo: $btn.data('titulo'),
+            descripcion: $btn.data('descripcion'),
+            userName: $btn.data('user-name'),
+            userEmail: $btn.data('user-email'),
+            url: $btn.data('url')
+        };
+        mostrarPromptIaModal(construirPromptIaUnico(ticket), 'Prompt para Ticket ' + ticket.codigo);
+    });
+
+    // Clic en botón "Copiar Prompt para Antigravity" dentro del modal de gestión
+    $('#btnMgCopiarPromptIa').on('click', function() {
+        var ticket = {
+            codigo: $('#mg_ticket_codigo').text(),
+            fecha: 'Reciente',
+            prioridad: 'ALTA',
+            titulo: $('#mg_ticket_titulo').text(),
+            descripcion: $('#mg_ticket_descripcion').text(),
+            userName: $('#mg_user_name').text(),
+            userEmail: $('#mg_user_email').text(),
+            url: $('#mg_btn_abrir_url').attr('href') !== '#' ? $('#mg_btn_abrir_url').attr('href') : ''
+        };
+        mostrarPromptIaModal(construirPromptIaUnico(ticket), 'Prompt para Ticket ' + ticket.codigo);
+    });
+
     // Guardar cambios del ticket
     $('#formGestionarTicket').on('submit', function(e) {
         e.preventDefault();
@@ -428,5 +533,109 @@ $(document).ready(function() {
         });
     });
 });
+
+// Helper Functions para Prompts de IA
+function construirPromptIaUnico(t) {
+    return `<USER_REQUEST>\n` +
+           `Por favor ayuda a resolver la siguiente falla reportada por un usuario en el sistema SIPLAN PEI:\n\n` +
+           `- **Código Ticket**: ${t.codigo}\n` +
+           `- **Prioridad**: ${t.prioridad}\n` +
+           `- **Fecha**: ${t.fecha}\n` +
+           `- **Usuario que Reportó**: ${t.userName} (${t.userEmail})\n` +
+           `- **Falla / Asunto**: ${t.titulo}\n` +
+           `- **Detalle del Inconveniente**: ${t.descripcion}\n` +
+           `- **Ruta / Pantalla de la Falla**: ${t.url || 'No especificada'}\n\n` +
+           `**Instrucción para Antigravity AI**:\n` +
+           `Analizá el código fuente del proyecto asociado a esta ruta (${t.url || t.titulo}). Identificá la causa raíz del error ("${t.titulo} - ${t.descripcion}") y realizá las modificaciones de código necesarias en controladores, modelos o vistas para corregir esta falla.\n` +
+           `</USER_REQUEST>`;
+}
+
+function mostrarPromptIaModal(promptText, titulo) {
+    $('#promptModalTitle').text(titulo || 'Prompt para Antigravity AI');
+    $('#textoPromptIaPreview').val(promptText);
+    if ($('#modalPreviewPromptIa').parent().is('body') === false) {
+        $('#modalPreviewPromptIa').appendTo('body');
+    }
+    $('#modalPreviewPromptIa').modal('show');
+    copyTextToClipboard(promptText, '🤖 ¡Prompt copiado al portapapeles! Pegalo directamente en el chat con Antigravity.');
+}
+
+function copiarContenidoPromptIa() {
+    var txt = $('#textoPromptIaPreview').val();
+    if (txt) {
+        copyTextToClipboard(txt, '🤖 ¡Prompt copiado al portapapeles! Pegalo en el chat con Antigravity.');
+    }
+}
+
+function copiarPromptLotePendientesIa() {
+    var tickets = [];
+    $('.btnCopiarPromptIa').each(function() {
+        var $btn = $(this);
+        tickets.push({
+            codigo: $btn.data('codigo'),
+            fecha: $btn.data('fecha'),
+            prioridad: $btn.data('prioridad'),
+            titulo: $btn.data('titulo'),
+            descripcion: $btn.data('descripcion'),
+            userName: $btn.data('user-name'),
+            userEmail: $btn.data('user-email'),
+            url: $btn.data('url')
+        });
+    });
+
+    if (tickets.length === 0) {
+        if (typeof toastr !== 'undefined') toastr.info('No hay tickets visibles en esta vista.');
+        else alert('No hay tickets visibles.');
+        return;
+    }
+
+    var text = `<USER_REQUEST>\n` +
+               `Por favor ayuda a resolver los siguientes ${tickets.length} reportes de fallas registrados en el sistema SIPLAN PEI:\n\n`;
+
+    tickets.forEach(function(t, idx) {
+        text += `---\n### ${idx + 1}. [${t.codigo}] ${t.titulo}\n` +
+                `- **Prioridad**: ${t.prioridad} | **Fecha**: ${t.fecha}\n` +
+                `- **Usuario**: ${t.userName} (${t.userEmail})\n` +
+                `- **Ruta Afectada**: ${t.url || 'No especificada'}\n` +
+                `- **Detalle**: ${t.descripcion}\n\n`;
+    });
+
+    text += `**Instrucción para Antigravity AI**:\n` +
+            `Revisá el código del proyecto para cada una de las fallas descritas arriba, diagnosticá la causa raíz de cada inconveniente y aplicá los cambios necesarios en el repositorio para solucionar todos los reportes.\n` +
+            `</USER_REQUEST>`;
+
+    mostrarPromptIaModal(text, 'Prompt Lote (' + tickets.length + ' Tickets para Antigravity)');
+}
+
+function copyTextToClipboard(text, successMsg) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function() {
+            if (typeof toastr !== 'undefined') toastr.success(successMsg || '¡Copiado al portapapeles!');
+            else alert(successMsg || '¡Copiado!');
+        }).catch(function() {
+            fallbackCopyText(text, successMsg);
+        });
+    } else {
+        fallbackCopyText(text, successMsg);
+    }
+}
+
+function fallbackCopyText(text, successMsg) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        if (typeof toastr !== 'undefined') toastr.success(successMsg || '¡Copiado al portapapeles!');
+        else alert(successMsg || '¡Copiado!');
+    } catch (err) {
+        alert('No se pudo copiar automáticamente. Por favor seleccioná el texto del cuadro.');
+    }
+    document.body.removeChild(textArea);
+}
 </script>
 @endsection
