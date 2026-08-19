@@ -1,5 +1,11 @@
 {{-- ══ MODAL GLOBAL Y BOTÓN FLOTANTE PARA REPORTE DE FALLAS Y SOPORTE TÉCNICO ══ --}}
 <style>
+#modalReportarFalla:not(.show) {
+    display: none !important;
+}
+#modalReportarFalla.show {
+    display: block !important;
+}
 .btn-ticket-float {
     position: fixed;
     bottom: 24px;

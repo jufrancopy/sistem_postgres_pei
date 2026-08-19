@@ -116,7 +116,7 @@
                 {{-- Fila 2: botones --}}
                 <div class="d-flex align-items-center mt-1 flex-wrap" style="gap:.3rem">
                     <button type="button" class="btn btn-sm btn-outline-light py-0 px-2"
-                            onclick="event.stopPropagation(); openChatWithContext('PeiObjective', '{{ $axi->id }}', 'Objetivo: {{ e(strip_tags($axi->name)) }}', '{{ url()->current() }}#axi-{{ $axi->id }}')"
+                            onclick="event.stopPropagation(); openChatWithContext('PeiObjective', '{{ $axi->id }}', 'Objetivo: {{ e(strip_tags($axi->name)) }}', '{{ route('pei-profiles.show', $profile->id) }}#axi-{{ $axi->id }}')"
                             title="Consultar sobre este objetivo en el chat">
                         <i class="fa fa-comment-dots mr-1" style="font-size:.75rem"></i> Consultar
                     </button>
@@ -372,7 +372,7 @@
                                 </button>
                                 @endif
                                 <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2"
-                                        onclick="event.stopPropagation(); openChatWithContext('PeiGoal', '{{ $goal->id }}', 'Meta: {{ e(strip_tags($goal->name)) }}', '{{ url()->current() }}#goal-{{ $goal->id }}')"
+                                        onclick="event.stopPropagation(); openChatWithContext('PeiGoal', '{{ $goal->id }}', 'Meta: {{ e(strip_tags($goal->name)) }}', '{{ route('pei-profiles.show', $profile->id) }}#goal-{{ $goal->id }}')"
                                         title="Consultar sobre esta meta en el chat">
                                     <i class="fa fa-comment-dots mr-1" style="font-size:.7rem"></i> Consultar
                                 </button>
@@ -532,7 +532,7 @@
                                                     </div>
                                                     <div class="d-flex flex-shrink-0" style="gap:.3rem">
                                                         <button type="button" class="btn btn-sm btn-outline-info py-0 px-2"
-                                                                onclick="event.stopPropagation(); openChatWithContext('PeiAction', '{{ $action->id }}', 'Acción: {{ e(strip_tags($action->name)) }}', '{{ url()->current() }}#actionsBlock_{{ $action->id }}')"
+                                                                onclick="event.stopPropagation(); openChatWithContext('PeiAction', '{{ $action->id }}', 'Acción: {{ e(strip_tags($action->name)) }}', '{{ route('pei-profiles.show', $profile->id) }}#actionsBlock_{{ $action->id }}')"
                                                                 title="Consultar sobre esta acción en el chat"
                                                                 style="font-size:.7rem">
                                                             <i class="fa fa-comment-dots mr-1"></i> Consultar

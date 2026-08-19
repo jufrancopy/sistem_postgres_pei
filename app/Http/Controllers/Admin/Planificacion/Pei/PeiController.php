@@ -1074,6 +1074,10 @@ class PeiController extends Controller
 
     public function accordion(Request $request, string $profileId)
     {
+        if (!$request->ajax() && !$request->wantsJson()) {
+            return redirect()->route('pei-profiles.show', $profileId);
+        }
+
         $profile = \App\Admin\Planificacion\Pei\PeiProfile::with([
             'children.marcos',
             'children.strategies',

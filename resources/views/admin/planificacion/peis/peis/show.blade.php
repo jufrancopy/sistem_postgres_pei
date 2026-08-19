@@ -5694,23 +5694,26 @@ $(document).ready(function() {
 });
 
 function restaurarElementoPei(id, type) {
+    var baseUrl = "{{ url('pei-profiles/' . $profile->id . '/basurero') }}";
     var url = (type === 'iniciativa')
-        ? "{{ url('admin/planificacion/pei-profiles/' . $profile->id . '/basurero/restaurar-iniciativa') }}/" + id
-        : "{{ url('admin/planificacion/pei-profiles/' . $profile->id . '/basurero/restaurar-nodo') }}/" + id;
+        ? baseUrl + "/restaurar-iniciativa/" + id
+        : baseUrl + "/restaurar-nodo/" + id;
 
     $.ajax({
         url: url,
         type: "POST",
         data: { _token: "{{ csrf_token() }}" },
         success: function(resp) {
-            if (window.toastr) toastr.success(resp.message || 'Elemento restaurado.');
+            if (window.toastr) toastr.success(resp.message || 'Elemento restaurado con éxito.');
             cargarBasureroPeiAdmin();
-            setTimeout(function() {
-                location.reload();
-            }, 1000);
+            if (typeof recargarAcordeon === 'function') {
+                recargarAcordeon();
+            } else {
+                setTimeout(function() { location.reload(); }, 1000);
+            }
         },
-        error: function() {
-            if (window.toastr) toastr.error('Error al restaurar el elemento.');
+        error: function(xhr) {
+            if (window.toastr) toastr.error(xhr.responseJSON?.message || 'Error al restaurar el elemento.');
         }
     });
 }
