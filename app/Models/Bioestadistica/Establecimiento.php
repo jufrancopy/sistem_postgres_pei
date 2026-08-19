@@ -40,6 +40,11 @@ class Establecimiento extends BioestadisticaModel
         return $this->belongsTo(AreaGestion::class);
     }
 
+    public function unidades(): HasMany
+    {
+        return $this->hasMany(EstablecimientoServicio::class);
+    }
+
     public function records(): HasMany
     {
         return $this->hasMany(Record::class);

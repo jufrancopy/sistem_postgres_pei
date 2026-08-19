@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Admin\Bioestadistica;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bioestadistica\AreaGestion;
+use App\Models\Bioestadistica\EstructuraDepartamento;
+use App\Models\Bioestadistica\EstructuraServicio;
 use App\Models\Bioestadistica\GradoComplejidad;
 use App\Models\Bioestadistica\Microred;
 use App\Models\Bioestadistica\TipoEstablecimiento;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -19,6 +22,8 @@ class ClasificacionController extends Controller
         'tipos-establecimiento' => TipoEstablecimiento::class,
         'grados-complejidad' => GradoComplejidad::class,
         'areas-gestion' => AreaGestion::class,
+        'departamentos' => EstructuraDepartamento::class,
+        'servicios' => EstructuraServicio::class,
     ];
 
     public function index(): View
@@ -28,6 +33,21 @@ class ClasificacionController extends Controller
             'tipos' => TipoEstablecimiento::orderBy('nombre')->get(),
             'grados' => GradoComplejidad::orderBy('codigo')->get(),
             'areas' => AreaGestion::orderBy('nombre')->get(),
+            'departamentos' => EstructuraDepartamento::with(['servicios' => fn ($q) => $q->orderBy('nombre')])
+                ->orderBy('nombre')
+                ->get(),
+        ]);
+    }
+
+    public function servicios(Request $request): JsonResponse
+    {
+        $request->validate(['departamento_id' => ['required', 'integer']]);
+
+        return response()->json([
+            'data' => EstructuraServicio::where('departamento_id', $request->integer('departamento_id'))
+                ->where('activo', true)
+                ->orderBy('nombre')
+                ->get(['id', 'nombre']),
         ]);
     }
 
@@ -97,6 +117,30 @@ class ClasificacionController extends Controller
                     Rule::unique($model, 'nombre')->ignore($id)->withoutTrashed(),
                 ],
                 'descripcion' => ['nullable', 'string', 'max:1000'],
+            ],
+            'servicios' => [
+                'departamento_id' => [
+                    'required',
+                    'integer',
+                    Rule::exists(EstructuraDepartamento::class, 'id')->withoutTrashed(),
+                ],
+                'nombre' => [
+                    'required',
+                    'string',
+                    'max:200',
+                    Rule::unique($model, 'nombre')
+                        ->where('departamento_id', request('departamento_id'))
+                        ->ignore($id)
+                        ->withoutTrashed(),
+                ],
+            ],
+            'departamentos' => [
+                'nombre' => [
+                    'required',
+                    'string',
+                    'max:200',
+                    Rule::unique($model, 'nombre')->ignore($id)->withoutTrashed(),
+                ],
             ],
             default => [
                 'nombre' => [

@@ -6,7 +6,6 @@ use App\Application\Bioestadistica\Audit\AuditService;
 use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
 use App\Application\Bioestadistica\RecordCaptureService;
 use App\Application\Bioestadistica\Sp11Matrix;
-use App\Models\Bioestadistica\CatalogItem;
 use App\Models\Bioestadistica\Establecimiento;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\HospEpisodio;
@@ -185,6 +184,22 @@ class HospitalizationService
         return $summary;
     }
 
+    public function reassignEpisodesToPeriod(Record $record, int $year, int $month): void
+    {
+        if ((int) $record->periodo_anio === $year && (int) $record->periodo_mes === $month) {
+            return;
+        }
+
+        HospEpisodio::query()
+            ->where('establecimiento_id', $record->establecimiento_id)
+            ->where('periodo_anio', $record->periodo_anio)
+            ->where('periodo_mes', $record->periodo_mes)
+            ->update([
+                'periodo_anio' => $year,
+                'periodo_mes' => $month,
+            ]);
+    }
+
     public function delete(HospEpisodio $episodio, User $user): void
     {
         $this->assertEstablishment((int) $episodio->establecimiento_id, $user);
@@ -207,6 +222,8 @@ class HospitalizationService
                     'establecimiento_id' => $establecimientoId,
                     'periodo_anio' => $year,
                     'periodo_mes' => $month,
+                    'estructura_departamento_id' => null,
+                    'estructura_servicio_id' => null,
                 ];
                 $record = Record::withTrashed()->where($lookup)->lockForUpdate()->first();
                 if ($record?->trashed()) {
@@ -222,7 +239,7 @@ class HospitalizationService
 
                 $metrics = $this->metrics($establecimientoId, $year, $month);
                 $values = $this->toRecordValues($formulario, $metrics);
-                $this->capture->save($record->load('formulario.secciones.fields.catalogo.items'), $values, true);
+                $this->capture->save($record->load('formulario.secciones.fields.detalle.prestaciones'), $values, true);
 
                 HospEpisodio::query()
                     ->where('establecimiento_id', $establecimientoId)
@@ -461,7 +478,7 @@ class HospitalizationService
      */
     private function toRecordValues(Formulario $formulario, array $metrics): array
     {
-        $fields = $formulario->secciones()->with('fields.catalogo.items')->get()->flatMap->fields->keyBy('code');
+        $fields = $formulario->secciones()->with('fields.detalle.prestaciones')->get()->flatMap->fields->keyBy('code');
         $values = [];
         foreach ([
             'ingresos_total', 'egresos_total', 'dias_estancia', 'fallecidos',
@@ -491,14 +508,17 @@ class HospitalizationService
      */
     private function tablaRows($field, array $counts): array
     {
-        $items = $field->catalogo?->items ?? collect();
+        $items = $field->rowItems();
+        $labels = $field->code === 'egresos_por_sexo'
+            ? ['M' => 'Masculino', 'F' => 'Femenino']
+            : HospEpisodio::SERVICIOS;
         $rows = [];
         foreach ($counts as $code => $count) {
             if (! $code) {
                 continue;
             }
-            $item = $items->first(fn (CatalogItem $item) => $item->codigo === $code)
-                ?? $items->first(fn (CatalogItem $item) => $item->codigo === (string) $code);
+            $wanted = $labels[$code] ?? $code;
+            $item = $items->first(fn ($row) => strcasecmp((string) $row->label, (string) $wanted) === 0);
             if (! $item) {
                 continue;
             }
@@ -518,21 +538,24 @@ class HospitalizationService
         if (! $formulario) {
             return $empty;
         }
-        $record = Record::query()
+        $records = Record::query()
             ->where('formulario_id', $formulario->id)
             ->where('establecimiento_id', $establecimientoId)
             ->where('periodo_anio', $year)
             ->where('periodo_mes', $month)
             ->with('values.field')
-            ->first();
-        $matrix = $record?->values->first(fn ($value) => $value->field?->code === 'paciente_dia');
-        $payload = $matrix?->value_json ?? [];
+            ->get();
 
-        return [
-            'pacientes_dia' => Sp11Matrix::total($payload, 'pacientes_dia'),
-            'camas_operativas' => Sp11Matrix::total($payload, 'camas_operativas'),
-            'camas_disponibles' => Sp11Matrix::total($payload, 'camas_disponibles'),
-        ];
+        $totals = $empty;
+        foreach ($records as $record) {
+            $matrix = $record->values->first(fn ($value) => $value->field?->code === 'paciente_dia');
+            $payload = $matrix?->value_json ?? [];
+            $totals['pacientes_dia'] += Sp11Matrix::total($payload, 'pacientes_dia');
+            $totals['camas_operativas'] += Sp11Matrix::total($payload, 'camas_operativas');
+            $totals['camas_disponibles'] += Sp11Matrix::total($payload, 'camas_disponibles');
+        }
+
+        return $totals;
     }
 
     /**

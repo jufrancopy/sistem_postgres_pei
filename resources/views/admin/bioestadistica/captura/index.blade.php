@@ -29,17 +29,19 @@
         </form>
         <div class="table-responsive">
             <table class="table table-hover">
-                <thead><tr><th>Formulario</th><th>Establecimiento</th><th>Período del dato</th><th>Estado</th><th>Actualizado</th><th></th></tr></thead>
+                <thead><tr><th>Formulario</th><th>Establecimiento</th><th>Departamento</th><th>Servicio</th><th>Período del dato</th><th>Estado</th><th>Actualizado</th><th></th></tr></thead>
                 <tbody>@forelse($records as $record)
                     <tr>
                         <td>{{ $record->formulario->codigo }} — {{ $record->formulario->nombre }}</td>
                         <td>{{ $record->establecimiento->nombre }}</td>
+                        <td>{{ $record->estructuraDepartamento?->nombre ?? '—' }}</td>
+                        <td>{{ $record->estructuraServicio?->nombre ?? '—' }}</td>
                         <td>{{ $months[$record->periodo_mes] }}/{{ $record->periodo_anio }}</td>
                         <td><span class="badge {{ \App\Models\Bioestadistica\Record::estadoBadge($record->estado) }}">{{ \App\Models\Bioestadistica\Record::estadoLabel($record->estado) }}</span></td>
                         <td>{{ $record->updated_at?->format('d/m/Y H:i') }}</td>
                         <td><a class="btn btn-primary btn-sm" href="{{ route('bioestadistica.captura.edit', $record) }}">{{ $record->isEditable() ? 'Editar' : 'Ver' }}</a></td>
                     </tr>
-                @empty<tr><td colspan="6" class="text-center text-muted">No hay registros para los filtros seleccionados.</td></tr>@endforelse</tbody>
+                    @empty<tr><td colspan="8" class="text-center text-muted">No hay registros para los filtros seleccionados.</td></tr>@endforelse</tbody>
             </table>
         </div>
         {{ $records->links() }}

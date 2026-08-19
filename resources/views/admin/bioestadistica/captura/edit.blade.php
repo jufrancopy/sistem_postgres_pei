@@ -7,7 +7,9 @@
     <div class="card-header card-header-info">
         <h4 class="card-title">{{ $record->formulario->codigo }} — {{ $record->formulario->nombre }}</h4>
         <p class="card-category">
-            {{ $record->establecimiento->nombre }} ·
+            {{ $record->establecimiento->nombre }}
+            @if($record->corteLabel()) · {{ $record->corteLabel() }} @endif
+            ·
             {{ \Carbon\Carbon::create($record->periodo_anio, $record->periodo_mes, 1)->translatedFormat('F Y') }} ·
             <span class="badge {{ \App\Models\Bioestadistica\Record::estadoBadge($record->estado) }}">{{ \App\Models\Bioestadistica\Record::estadoLabel($record->estado) }}</span>
         </p>
@@ -17,8 +19,16 @@
         @if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
         @if($record->estado === 'objetado')<div class="alert alert-warning"><strong>Observación de la objeción:</strong> {{ $record->observacion }}</div>@endif
 
+        @include('admin.bioestadistica.captura._sp-navigator')
+
+        @if($record->isEditable() && ($unidades ?? collect())->isNotEmpty() && ! $record->estructura_servicio_id)
+            <div class="alert alert-warning">
+                Este establecimiento tiene departamento y servicio asociados. Selecciónelos abajo y pulse <strong>Aplicar</strong> para que esta carga quede cortada por ese servicio.
+            </div>
+        @endif
+
         <div class="card border mb-3">
-            <div class="card-header bg-light"><strong>Período estadístico</strong></div>
+            <div class="card-header bg-light"><strong>Período y servicio</strong></div>
             <div class="card-body py-2">
                 <form method="POST" action="{{ route('bioestadistica.captura.period.update', $record) }}">
                     @csrf @method('PUT')
@@ -37,15 +47,36 @@
                                 @endforeach
                             </select>
                         </div>
+                        @if(($unidades ?? collect())->isNotEmpty())
+                            <div class="form-group col-md-4 mb-0">
+                                <label>Departamento / servicio</label>
+                                <select class="form-control" name="estructura_servicio_id" @disabled(!$canEditPeriod) @required($canEditPeriod)>
+                                    <option value="">Seleccione</option>
+                                    @foreach($unidades as $unidad)
+                                        <option value="{{ $unidad->servicio_id }}" @selected((string) old('estructura_servicio_id', $record->estructura_servicio_id) === (string) $unidad->servicio_id)>
+                                            {{ $unidad->etiqueta() }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                         <div class="col-md-2">
                             @if($canEditPeriod)
-                                <button class="btn btn-info btn-sm mb-0">Aplicar período</button>
+                                <button class="btn btn-info btn-sm mb-0">Aplicar</button>
                             @endif
                         </div>
-                        <div class="col-md-5">
+                        <div class="col-md-12 mt-2">
                             <small class="text-muted">Al aplicarlo se recarga el formulario; esto ajusta correctamente calendarios como SP11.</small>
                             @if($record->formulario->codigo === 'SP11')
                                 <br><small class="text-warning">Si el mes destino tiene menos días, primero quite los valores de los días que dejarían de existir.</small>
+                            @endif
+                            @if(($unidades ?? collect())->isEmpty())
+                                <br><small class="text-muted">
+                                    Este establecimiento no tiene departamento/servicio asociado.
+                                    @can('bio.geo.create')
+                                        <a href="{{ route('bioestadistica.estructura.index') }}">Asociarlo</a>
+                                    @endcan
+                                </small>
                             @endif
                         </div>
                     </div>

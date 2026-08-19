@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Admin\Bioestadistica;
 
 use App\Http\Controllers\Controller;
-use App\Models\Bioestadistica\Catalogo;
 use App\Models\Bioestadistica\Field;
 use App\Models\Bioestadistica\FormSeccion;
 use App\Models\Bioestadistica\Formulario;
-use App\Models\Bioestadistica\VariableDefinition;
+use App\Models\Bioestadistica\VariableDetalle;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -38,13 +37,16 @@ class FormularioController extends Controller
 
     public function edit(Formulario $formulario): View
     {
-        $formulario->load(['secciones.fields.catalogo', 'secciones.fields.variableDefinition']);
+        $formulario->load(['secciones.fields.detalle.variable']);
 
         return view('admin.bioestadistica.formularios.edit', [
             'formulario' => $formulario,
-            'catalogos' => Catalogo::where('activo', true)->orderBy('nombre')->get(),
-            'variables' => VariableDefinition::where('activo', true)
-                ->orderBy('dominio')->orderBy('tipo_registro')->orderBy('prestacion')->get(),
+            'detalles' => VariableDetalle::with('variable')
+                ->where('activo', true)
+                ->orderBy('nombre')
+                ->get()
+                ->sortBy(fn ($detalle) => $detalle->variable->codigo.' '.$detalle->nombre)
+                ->values(),
             'fieldTypes' => [
                 'text' => 'Texto', 'textarea' => 'Texto largo', 'integer' => 'Número entero',
                 'decimal' => 'Decimal', 'date' => 'Fecha', 'time' => 'Hora', 'boolean' => 'Booleano',
@@ -106,6 +108,7 @@ class FormularioController extends Controller
         $data = $this->validateField($request, $seccion);
         $data['config'] = $this->parseConfig($data['config'] ?? null);
         $data['required'] = $request->boolean('required');
+        $data = $this->syncFieldSource($data);
         $seccion->fields()->create($data);
 
         return back()->with('success', 'Campo agregado.');
@@ -116,6 +119,7 @@ class FormularioController extends Controller
         $data = $this->validateField($request, $field->seccion, $field);
         $data['config'] = $this->parseConfig($data['config'] ?? null);
         $data['required'] = $request->boolean('required');
+        $data = $this->syncFieldSource($data);
         $field->update($data);
 
         return back()->with('success', 'Campo actualizado.');
@@ -164,12 +168,27 @@ class FormularioController extends Controller
             'validation_regex' => ['nullable', 'string', 'max:500'],
             'tooltip' => ['nullable', 'string', 'max:400'],
             'help_text' => ['nullable', 'string', 'max:2000'],
-            'catalogo_id' => ['nullable', 'integer', Rule::exists(Catalogo::class, 'id')->withoutTrashed()],
+            'detalle_id' => ['nullable', 'integer', Rule::exists(VariableDetalle::class, 'id')->withoutTrashed()],
             'parent_field_id' => ['nullable', 'integer', Rule::exists(Field::class, 'id')->withoutTrashed()],
-            'variable_definition_id' => ['nullable', 'integer', Rule::exists(VariableDefinition::class, 'id')->withoutTrashed()],
             'config' => ['nullable'],
             'orden' => ['nullable', 'integer', 'min:0'],
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function syncFieldSource(array $data): array
+    {
+        if (! empty($data['detalle_id'])) {
+            $data['config'] = array_merge($data['config'] ?? [], [
+                'row_source' => 'diccionario',
+                'row_detalle_id' => (int) $data['detalle_id'],
+            ]);
+        }
+
+        return $data;
     }
 
     private function parseConfig(mixed $config): ?array

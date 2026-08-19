@@ -2,10 +2,7 @@
 
 namespace App\Application\Bioestadistica\Imports;
 
-use App\Models\Bioestadistica\CatalogItem;
-use App\Models\Bioestadistica\Catalogo;
-use App\Models\Bioestadistica\VariableDefinition;
-use Illuminate\Database\Eloquent\Model;
+use App\Application\Bioestadistica\Dictionary\HealthVariableDictionary;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -16,7 +13,7 @@ use Throwable;
 
 class VariablesSaludImporter
 {
-    private const SHEET_NAME = 'VARIABLES SALUD (2)';
+    private const SHEET_NAMES = ['VARIABLES SALUD', 'VARIABLES SALUD (2)'];
 
     /**
      * @return array<string, mixed>
@@ -29,20 +26,20 @@ class VariablesSaludImporter
             'archivo' => basename($filePath),
             'procesados' => 0,
             'creados' => [
-                'catalogos' => 0,
-                'catalog_items' => 0,
-                'variable_definitions' => 0,
+                'variables' => 0,
+                'variable_detalles' => 0,
+                'prestaciones' => 0,
             ],
             'advertencias' => [],
         ];
 
         try {
             $spreadsheet = $this->loadSpreadsheet($filePath);
-            $sheet = $spreadsheet->getSheetByName(self::SHEET_NAME);
+            $sheet = $this->resolveSheet($spreadsheet);
 
             if (! $sheet) {
                 throw new RuntimeException(
-                    "El archivo no contiene la hoja canónica '" . self::SHEET_NAME . "'."
+                    "El archivo no contiene una hoja 'VARIABLES SALUD'."
                 );
             }
 
@@ -51,7 +48,7 @@ class VariablesSaludImporter
 
             if ($summary['procesados'] === 0) {
                 throw new RuntimeException(
-                    "La hoja '" . self::SHEET_NAME . "' no contiene prestaciones válidas."
+                    "La hoja '" . $sheet->getTitle() . "' no contiene prestaciones válidas."
                 );
             }
 
@@ -102,7 +99,7 @@ class VariablesSaludImporter
             $current['codigo'] = $values[1] ?: $current['codigo'];
             $current['dominio'] = $values[2] ?: $current['dominio'];
             $current['tipo'] = $values[3] ?: $current['tipo'];
-            $prestacion = $values[4];
+            $prestacion = $values[4] ?: ($values[3] ? $values[3] : null);
 
             if (! $current['codigo'] || ! $current['dominio'] || ! $current['tipo'] || ! $prestacion) {
                 continue;
@@ -122,78 +119,23 @@ class VariablesSaludImporter
                 DB::transaction(function () use (
                     $current,
                     $prestacion,
-                    $filePath,
-                    $sheet,
                     &$summary
                 ): void {
-                    $catalogCode = Str::limit(
-                        Str::upper(Str::slug(
-                            "VAR_{$current['codigo']}_{$current['tipo']}",
-                            '_'
-                        )),
-                        80,
-                        ''
-                    );
-
-                    [$catalogo, $catalogCreated] = $this->upsert(
-                        Catalogo::class,
-                        ['codigo' => $catalogCode],
-                        [
-                            'nombre' => "{$current['dominio']} — {$current['tipo']}",
-                            'descripcion' => 'Generado desde ' . basename($filePath),
-                            'activo' => true,
-                        ]
-                    );
-
-                    $itemCode = Str::limit(
-                        Str::upper(Str::slug($prestacion, '_')),
-                        65,
-                        ''
-                    ) . '_' . substr(sha1($prestacion), 0, 8);
-
-                    [, $itemCreated] = $this->upsert(
-                        CatalogItem::class,
-                        ['catalogo_id' => $catalogo->id, 'codigo' => $itemCode],
-                        [
-                            'label' => $prestacion,
-                            'orden' => $summary['procesados'],
-                            'activo' => true,
-                            'domain_code' => $current['codigo'],
-                            'tipo_registro' => $current['tipo'],
-                            'prestacion' => $prestacion,
-                            'meta' => [
-                                'source' => basename($filePath),
-                                'sheet' => $sheet->getTitle(),
-                            ],
-                        ]
-                    );
-
-                    [, $definitionCreated] = $this->upsert(
-                        VariableDefinition::class,
-                        [
-                            'codigo_dominio' => $current['codigo'],
-                            'tipo_registro' => $current['tipo'],
-                            'prestacion' => $prestacion,
-                        ],
-                        [
-                            'dominio' => $current['dominio'],
-                            'catalogo_id' => $catalogo->id,
-                            'meta' => [
-                                'source' => basename($filePath),
-                                'sheet' => $sheet->getTitle(),
-                            ],
-                            'activo' => true,
-                        ]
+                    $dictionary = (new HealthVariableDictionary())->remember(
+                        $current['codigo'],
+                        $current['dominio'],
+                        $current['tipo'],
+                        $prestacion
                     );
 
                     $summary['procesados']++;
-                    $summary['creados']['catalogos'] += (int) $catalogCreated;
-                    $summary['creados']['catalog_items'] += (int) $itemCreated;
-                    $summary['creados']['variable_definitions'] += (int) $definitionCreated;
+                    $summary['creados']['variables'] += (int) $dictionary['created']['variable'];
+                    $summary['creados']['variable_detalles'] += (int) $dictionary['created']['detalle'];
+                    $summary['creados']['prestaciones'] += (int) $dictionary['created']['prestacion'];
                 });
             } catch (Throwable $exception) {
                 throw new RuntimeException(
-                    "Error en la fila {$row} de '" . self::SHEET_NAME . "': {$exception->getMessage()}",
+                    "Error en la fila {$row} de '" . $sheet->getTitle() . "': {$exception->getMessage()}",
                     0,
                     $exception
                 );
@@ -224,7 +166,7 @@ class VariablesSaludImporter
 
         if (! $found) {
             throw new RuntimeException(
-                "La hoja '" . self::SHEET_NAME . "' no tiene los encabezados esperados."
+                "La hoja '" . $sheet->getTitle() . "' no tiene los encabezados esperados."
             );
         }
     }
@@ -241,6 +183,25 @@ class VariablesSaludImporter
             || str_contains($row, 'PRESTACIONES');
     }
 
+    private function resolveSheet(Spreadsheet $spreadsheet): ?Worksheet
+    {
+        foreach (self::SHEET_NAMES as $name) {
+            $sheet = $spreadsheet->getSheetByName($name);
+            if ($sheet) {
+                return $sheet;
+            }
+        }
+
+        foreach ($spreadsheet->getWorksheetIterator() as $sheet) {
+            $title = $this->key($sheet->getTitle());
+            if (str_starts_with($title, 'VARIABLES_SALUD')) {
+                return $sheet;
+            }
+        }
+
+        return $spreadsheet->getSheetCount() === 1 ? $spreadsheet->getActiveSheet() : null;
+    }
+
     private function loadSpreadsheet(string $filePath): Spreadsheet
     {
         try {
@@ -254,32 +215,6 @@ class VariablesSaludImporter
                 $exception
             );
         }
-    }
-
-    /**
-     * @template T of Model
-     * @param class-string<T> $model
-     * @param array<string, mixed> $identity
-     * @param array<string, mixed> $attributes
-     * @return array{0: T, 1: bool}
-     */
-    private function upsert(
-        string $model,
-        array $identity,
-        array $attributes
-    ): array {
-        /** @var T $instance */
-        $instance = $model::withTrashed()->firstOrNew($identity);
-        $created = ! $instance->exists;
-
-        if ($instance->exists && method_exists($instance, 'trashed') && $instance->trashed()) {
-            $instance->restore();
-        }
-
-        $instance->fill($attributes);
-        $instance->save();
-
-        return [$instance, $created];
     }
 
     private function clean(mixed $value): ?string

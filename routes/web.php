@@ -280,14 +280,36 @@ Route::group(['middleware' => ['auth']], function () {
         Route::delete('/geografia/establecimientos/{establecimiento}', 'Admin\Bioestadistica\GeografiaController@destroyEstablecimiento')
             ->middleware('permission:bio.geo.delete')->name('geografia.establecimientos.destroy');
 
+        Route::get('/estructura', 'Admin\Bioestadistica\EstablecimientoEstructuraController@index')
+            ->middleware('permission:bio.geo.view')->name('estructura.index');
+        Route::get('/estructura/cortes', 'Admin\Bioestadistica\EstablecimientoEstructuraController@cortes')
+            ->middleware('permission:bio.record.create')->name('estructura.cortes');
+        Route::post('/estructura', 'Admin\Bioestadistica\EstablecimientoEstructuraController@store')
+            ->middleware('permission:bio.geo.create')->name('estructura.store');
+        Route::delete('/estructura/{unidad}', 'Admin\Bioestadistica\EstablecimientoEstructuraController@destroy')
+            ->middleware('permission:bio.geo.delete')->name('estructura.destroy');
+
         Route::get('/clasificaciones', 'Admin\Bioestadistica\ClasificacionController@index')
             ->middleware('permission:bio.geo.view')->name('clasificaciones.index');
+        Route::get('/clasificaciones/servicios', 'Admin\Bioestadistica\ClasificacionController@servicios')
+            ->middleware('permission:bio.geo.view')->name('clasificaciones.servicios');
         Route::post('/clasificaciones/{tipo}', 'Admin\Bioestadistica\ClasificacionController@store')
             ->middleware('permission:bio.geo.create')->name('clasificaciones.store');
         Route::put('/clasificaciones/{tipo}/{id}', 'Admin\Bioestadistica\ClasificacionController@update')
             ->middleware('permission:bio.geo.update')->name('clasificaciones.update');
         Route::delete('/clasificaciones/{tipo}/{id}', 'Admin\Bioestadistica\ClasificacionController@destroy')
             ->middleware('permission:bio.geo.delete')->name('clasificaciones.destroy');
+
+        Route::get('/diccionario', 'Admin\Bioestadistica\DiccionarioController@index')
+            ->middleware('permission:bio.catalog.view')->name('diccionario.index');
+        Route::post('/diccionario/variables', 'Admin\Bioestadistica\DiccionarioController@storeVariable')
+            ->middleware('permission:bio.catalog.create')->name('diccionario.variables.store');
+        Route::get('/diccionario/{variable}', 'Admin\Bioestadistica\DiccionarioController@show')
+            ->middleware('permission:bio.catalog.view')->name('diccionario.show');
+        Route::post('/diccionario/{variable}/detalles', 'Admin\Bioestadistica\DiccionarioController@storeDetalle')
+            ->middleware('permission:bio.catalog.update')->name('diccionario.detalles.store');
+        Route::post('/diccionario/detalles/{detalle}/prestaciones', 'Admin\Bioestadistica\DiccionarioController@storePrestacion')
+            ->middleware('permission:bio.catalog.update')->name('diccionario.prestaciones.store');
 
         Route::get('/formularios', 'Admin\Bioestadistica\FormularioController@index')
             ->middleware('permission:bio.form.view')->name('formularios.index');
@@ -311,21 +333,6 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.form.update')->name('fields.update');
         Route::delete('/campos/{field}', 'Admin\Bioestadistica\FormularioController@destroyField')
             ->middleware('permission:bio.form.update')->name('fields.destroy');
-
-        Route::get('/catalogos', 'Admin\Bioestadistica\CatalogoController@index')
-            ->middleware('permission:bio.catalog.view')->name('catalogos.index');
-        Route::post('/catalogos', 'Admin\Bioestadistica\CatalogoController@store')
-            ->middleware('permission:bio.catalog.create')->name('catalogos.store');
-        Route::get('/catalogos/{catalogo}', 'Admin\Bioestadistica\CatalogoController@show')
-            ->middleware('permission:bio.catalog.view')->name('catalogos.show');
-        Route::put('/catalogos/{catalogo}', 'Admin\Bioestadistica\CatalogoController@update')
-            ->middleware('permission:bio.catalog.update')->name('catalogos.update');
-        Route::delete('/catalogos/{catalogo}', 'Admin\Bioestadistica\CatalogoController@destroy')
-            ->middleware('permission:bio.catalog.delete')->name('catalogos.destroy');
-        Route::post('/catalogos/{catalogo}/items', 'Admin\Bioestadistica\CatalogoController@storeItem')
-            ->middleware('permission:bio.catalog.update')->name('catalogos.items.store');
-        Route::delete('/catalog-items/{item}', 'Admin\Bioestadistica\CatalogoController@destroyItem')
-            ->middleware('permission:bio.catalog.delete')->name('catalog-items.destroy');
 
         Route::get('/captura', 'Admin\Bioestadistica\CapturaController@index')
             ->middleware('permission:bio.record.view')->name('captura.index');

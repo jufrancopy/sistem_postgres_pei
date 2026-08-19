@@ -75,10 +75,10 @@ class ReportBuilder
             'label' => 'Mes',
         ],
         'catalogo_item' => [
-            'select' => 'COALESCE(ci.label, v.catalog_item_id::text) AS catalogo_item',
-            'group' => 'v.catalog_item_id, ci.label',
-            'order' => 'ci.label',
-            'label' => 'Ítem de catálogo',
+            'select' => 'COALESCE(pr.nombre, v.catalog_item_id::text) AS catalogo_item',
+            'group' => 'v.catalog_item_id, pr.nombre',
+            'order' => 'pr.nombre',
+            'label' => 'Prestación',
         ],
     ];
 
@@ -199,7 +199,7 @@ class ReportBuilder
             ->where('v.estado', $definition['filtros']['estado_record'] ?? 'aprobado');
 
         if (in_array('catalogo_item', $definition['dimensions'], true)) {
-            $query->leftJoin('bioestadistica.catalog_items as ci', 'ci.id', '=', 'v.catalog_item_id');
+            $query->leftJoin('bioestadistica.prestaciones as pr', 'pr.id', '=', 'v.catalog_item_id');
         }
 
         if (($definition['metric'] ?? null) === null) {
@@ -360,7 +360,9 @@ class ReportBuilder
             $ids = Record::assignedEstablishmentIds($user);
             $reportedQuery->whereIn('r.establecimiento_id', $ids ?: [0]);
         }
-        $reported = $reportedQuery->count('r.id');
+        $reported = (int) $reportedQuery
+            ->selectRaw('COUNT(DISTINCT (r.establecimiento_id, r.formulario_id, r.periodo_anio, r.periodo_mes)) AS total')
+            ->value('total');
 
         return [
             'esperados' => $expected,

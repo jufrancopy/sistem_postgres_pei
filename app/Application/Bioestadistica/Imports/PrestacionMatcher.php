@@ -2,7 +2,7 @@
 
 namespace App\Application\Bioestadistica\Imports;
 
-use App\Models\Bioestadistica\CatalogItem;
+use App\Models\Bioestadistica\Prestacion;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -80,15 +80,18 @@ class PrestacionMatcher
      */
     private function items(): Collection
     {
-        return $this->cache ??= CatalogItem::query()
+        return $this->cache ??= Prestacion::query()
             ->where('activo', true)
-            ->get(['id', 'catalogo_id', 'label', 'prestacion', 'domain_code'])
-            ->map(fn (CatalogItem $item) => [
+            ->with('detalle.variable')
+            ->get()
+            ->map(fn (Prestacion $item) => [
                 'id' => (int) $item->id,
-                'catalogo_id' => (int) $item->catalogo_id,
-                'label' => $item->prestacion ?: $item->label,
-                'key' => $this->normalize($item->prestacion ?: $item->label),
-                'domain' => $item->domain_code !== null ? (string) $item->domain_code : null,
+                'catalogo_id' => (int) $item->detalle_id,
+                'label' => $item->nombre,
+                'key' => $this->normalize($item->nombre),
+                'domain' => $item->detalle?->variable?->codigo !== null
+                    ? (string) $item->detalle->variable->codigo
+                    : null,
             ]);
     }
 

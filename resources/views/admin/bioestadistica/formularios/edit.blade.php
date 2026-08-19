@@ -52,7 +52,7 @@
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-sm">
-                            <thead><tr><th>Orden</th><th>Código</th><th>Etiqueta</th><th>Tipo</th><th>Catálogo / variable</th><th>Validación</th><th></th></tr></thead>
+                            <thead><tr><th>Orden</th><th>Código</th><th>Etiqueta</th><th>Tipo</th><th>Diccionario / catálogo</th><th>Validación</th><th></th></tr></thead>
                             <tbody>
                             @forelse($seccion->fields as $field)
                                 <tr>
@@ -60,7 +60,11 @@
                                     <td><code>{{ $field->code }}</code></td>
                                     <td>{{ $field->label }} @if($field->required)<span class="text-danger">*</span>@endif</td>
                                     <td>{{ $fieldTypes[$field->type] ?? $field->type }}</td>
-                                    <td>{{ $field->catalogo?->nombre ?? $field->variableDefinition?->prestacion }}</td>
+                                    <td>
+                                        @if($field->detalle)
+                                            {{ $field->detalle->variable->codigo }} — {{ $field->detalle->nombre }}
+                                        @endif
+                                    </td>
                                     <td>{{ $field->min_value !== null ? "mín. {$field->min_value}" : '' }} {{ $field->max_value !== null ? "máx. {$field->max_value}" : '' }}</td>
                                     <td>
                                         <form method="POST" action="{{ route('bioestadistica.fields.destroy', $field) }}" onsubmit="return confirm('¿Eliminar campo?')">
@@ -91,24 +95,18 @@
                                 <div class="col-md-2"><input class="form-control" type="number" min="0" name="orden" value="{{ $seccion->fields->count() + 1 }}"></div>
                             </div>
                             <div class="form-row mt-2">
-                                <div class="col-md-4">
-                                    <select class="form-control" name="catalogo_id">
-                                        <option value="">Sin catálogo</option>
-                                        @foreach($catalogos as $catalogo)<option value="{{ $catalogo->id }}">{{ $catalogo->nombre }}</option>@endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <select class="form-control" name="variable_definition_id">
-                                        <option value="">Sin variable maestra</option>
-                                        @foreach($variables as $variable)
-                                            <option value="{{ $variable->id }}">{{ $variable->dominio }} / {{ $variable->prestacion }}</option>
+                                <div class="col-md-12">
+                                    <select class="form-control" name="detalle_id">
+                                        <option value="">Sin detalle del diccionario</option>
+                                        @foreach($detalles as $detalle)
+                                            <option value="{{ $detalle->id }}">{{ $detalle->variable->codigo }} — {{ $detalle->variable->nombre }} / {{ $detalle->nombre }}</option>
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-2"><input class="form-control" type="number" step="any" name="min_value" placeholder="Mínimo"></div>
-                                <div class="col-md-2"><input class="form-control" type="number" step="any" name="max_value" placeholder="Máximo"></div>
                             </div>
                             <div class="form-row mt-2">
+                                <div class="col-md-2"><input class="form-control" type="number" step="any" name="min_value" placeholder="Mínimo"></div>
+                                <div class="col-md-2"><input class="form-control" type="number" step="any" name="max_value" placeholder="Máximo"></div>
                                 <div class="col-md-4"><input class="form-control" name="validation_regex" placeholder="Expresión de validación"></div>
                                 <div class="col-md-4"><input class="form-control" name="tooltip" placeholder="Tooltip"></div>
                                 <div class="col-md-4"><input class="form-control" name="help_text" placeholder="Ayuda contextual"></div>

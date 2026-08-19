@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin\Bioestadistica;
 use App\Application\Bioestadistica\Audit\AuditService;
 use App\Application\Bioestadistica\Hospitalization\HospitalizationService;
 use App\Application\Bioestadistica\Imports\HospEpisodioImporter;
+use App\Http\Controllers\Admin\Bioestadistica\Concerns\BuildsCaptureNavigator;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Bioestadistica\HospEpisodioBatchRequest;
 use App\Http\Requests\Bioestadistica\HospEpisodioRequest;
 use App\Models\Bioestadistica\Establecimiento;
+use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\HospEpisodio;
 use App\Models\Bioestadistica\ImportJob;
 use App\Models\Bioestadistica\Record;
@@ -21,6 +23,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class HospitalizacionController extends Controller
 {
+    use BuildsCaptureNavigator;
+
     public function index(Request $request): View
     {
         abort_unless($request->user()->can('bio.hosp.view'), 403);
@@ -101,41 +105,50 @@ class HospitalizacionController extends Controller
         ]);
     }
 
-    public function spreadsheet(Request $request): View
+    public function spreadsheet(Request $request): View|RedirectResponse
     {
         abort_unless($request->user()->can('bio.hosp.manage'), 403);
-        $establishments = $this->allowedEstablishments();
-        $defaultPeriod = now()->subMonth();
-        $establishmentId = $request->integer(
-            'establecimiento_id',
-            (int) $establishments->first()?->id
-        );
-        $year = $request->integer('periodo_anio', (int) $defaultPeriod->year);
-        $month = $request->integer('periodo_mes', (int) $defaultPeriod->month);
-
-        abort_unless(
-            ! $establishmentId || $establishments->contains('id', $establishmentId),
-            403
-        );
-
-        $episodes = collect();
-        if ($establishmentId) {
-            $episodes = HospEpisodio::query()
-                ->where('establecimiento_id', $establishmentId)
-                ->where('periodo_anio', $year)
-                ->where('periodo_mes', $month)
-                ->orderBy('fecha_ingreso')
-                ->orderBy('id')
-                ->limit(200)
-                ->get();
-            $episodes->each(function (HospEpisodio $episode) use ($request) {
-                $episode->setAttribute('cedula_visible', $episode->visibleCedula($request->user()));
-            });
+        $establishmentId = $request->integer('establecimiento_id');
+        $year = $request->integer('periodo_anio');
+        $month = $request->integer('periodo_mes');
+        if ($establishmentId < 1 || $year < 1990 || $year > 2100 || $month < 1 || $month > 12) {
+            return redirect()->route('bioestadistica.captura.create')
+                ->with('warning', 'Para cargar SP10 seleccione establecimiento y período estadístico, igual que en los demás formularios.');
         }
 
+        $establishments = $this->allowedEstablishments();
+        abort_unless($establishments->contains('id', $establishmentId), 403);
+        $establecimiento = $establishments->firstWhere('id', $establishmentId);
+        $formulario = Formulario::where('codigo', 'SP10')->firstOrFail();
+        $record = Record::firstOrCreate([
+            'formulario_id' => $formulario->id,
+            'establecimiento_id' => $establishmentId,
+            'periodo_anio' => $year,
+            'periodo_mes' => $month,
+            'estructura_departamento_id' => null,
+            'estructura_servicio_id' => null,
+        ], [
+            'estado' => Record::ESTADO_BORRADOR,
+            'created_by' => $request->user()->id,
+        ]);
+        $record->load(['formulario', 'establecimiento']);
+
+        $episodes = HospEpisodio::query()
+            ->where('establecimiento_id', $establishmentId)
+            ->where('periodo_anio', $year)
+            ->where('periodo_mes', $month)
+            ->orderBy('fecha_ingreso')
+            ->orderBy('id')
+            ->limit(200)
+            ->get();
+        $episodes->each(function (HospEpisodio $episode) use ($request) {
+            $episode->setAttribute('cedula_visible', $episode->visibleCedula($request->user()));
+        });
+
         return view('admin.bioestadistica.hospitalizacion.spreadsheet', [
+            'record' => $record,
             'episodios' => $episodes,
-            'establecimientos' => $establishments,
+            'establecimiento' => $establecimiento,
             'establecimientoId' => $establishmentId,
             'periodo_anio' => $year,
             'periodo_mes' => $month,
@@ -143,6 +156,13 @@ class HospitalizacionController extends Controller
             'servicios' => HospEpisodio::SERVICIOS,
             'tiposAlta' => HospEpisodio::TIPOS_ALTA,
             'tiposCirugia' => HospEpisodio::TIPOS_CIRUGIA,
+            'siblingPlanillas' => $this->captureNavigator(
+                $establishmentId,
+                $year,
+                $month,
+                (int) $formulario->id
+            ),
+            'establecimientoNombre' => $establecimiento->nombre,
         ]);
     }
 
@@ -152,6 +172,20 @@ class HospitalizacionController extends Controller
         AuditService $audit
     ): RedirectResponse {
         $data = $request->validated();
+        $formulario = Formulario::where('codigo', 'SP10')->firstOrFail();
+        $record = Record::firstOrCreate([
+            'formulario_id' => $formulario->id,
+            'establecimiento_id' => $data['establecimiento_id'],
+            'periodo_anio' => $data['periodo_anio'],
+            'periodo_mes' => $data['periodo_mes'],
+            'estructura_departamento_id' => null,
+            'estructura_servicio_id' => null,
+        ], [
+            'estado' => Record::ESTADO_BORRADOR,
+            'created_by' => $request->user()->id,
+        ]);
+        abort_unless($record->isEditable(), 422, 'El registro SP10 no está disponible para edición.');
+
         $summary = $service->saveBatch(
             (int) $data['establecimiento_id'],
             (int) $data['periodo_anio'],

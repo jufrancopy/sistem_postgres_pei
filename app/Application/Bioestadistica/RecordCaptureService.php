@@ -25,7 +25,7 @@ class RecordCaptureService
         }
 
         $fields = $record->formulario->secciones()
-            ->with('fields.catalogo.items')
+            ->with('fields.detalle.prestaciones')
             ->get()
             ->flatMap(fn ($section) => $section->fields)
             ->keyBy('code');
@@ -169,7 +169,8 @@ class RecordCaptureService
     }
 
     /**
-     * Normaliza una tabla de catálogo a {"rows": {"<catalog_item_id>": {"<columna>": número}}},
+     * Normaliza una tabla a {"rows": {"<fila_id>": {"<columna>": número}}}.
+     * El id es prestación (diccionario) o ítem de catálogo auxiliar.
      * descartando las filas sin datos para no almacenar el catálogo completo en vacío.
      */
     private function tabla(Field $field, mixed $value): array
@@ -184,12 +185,12 @@ class RecordCaptureService
         if ($columns->isEmpty()) {
             $this->fail("{$field->label} no tiene columnas configuradas.");
         }
-        $validItems = $field->catalogo?->items->pluck('id')->map(fn ($id) => (string) $id)->all() ?? [];
+        $validItems = $field->rowItems()->pluck('id')->map(fn ($id) => (string) $id)->all();
 
         $normalized = [];
         foreach ($rows as $itemId => $cells) {
             if ($validItems && ! in_array((string) $itemId, $validItems, true)) {
-                $this->fail("{$field->label} contiene una fila que no pertenece al catálogo.");
+                $this->fail("{$field->label} contiene una fila que no pertenece al diccionario o catálogo.");
             }
             if (! is_array($cells)) {
                 $this->fail("{$field->label} contiene una fila con formato inválido.");
@@ -257,11 +258,11 @@ class RecordCaptureService
 
     private function validateCatalog(Field $field, mixed $value): void
     {
-        if (! $field->catalogo_id || ! in_array($field->type, ['select', 'radio', 'multiselect'], true)) {
+        if (! $field->detalle_id || ! in_array($field->type, ['select', 'radio', 'multiselect'], true)) {
             return;
         }
 
-        $valid = $field->catalogo?->items->pluck('id')->map(fn ($id) => (string) $id)->all() ?? [];
+        $valid = $field->rowItems()->pluck('id')->map(fn ($id) => (string) $id)->all();
         $selected = is_array($value) ? $value : [$value];
         foreach ($selected as $item) {
             if (! in_array((string) $item, $valid, true)) {

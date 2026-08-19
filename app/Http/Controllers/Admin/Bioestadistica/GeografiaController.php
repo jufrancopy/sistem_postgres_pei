@@ -21,7 +21,13 @@ class GeografiaController extends Controller
     public function index(Request $request): View
     {
         $establecimientos = Establecimiento::query()
-            ->with(['distrito.departamento', 'microred', 'tipoEstablecimiento', 'gradoComplejidad', 'areaGestion'])
+            ->with([
+                'distrito.departamento',
+                'microred',
+                'tipoEstablecimiento',
+                'gradoComplejidad',
+                'areaGestion',
+            ])
             ->buscar($request->string('q')->toString())
             ->when($request->filled('departamento_id'), fn ($query) => $query
                 ->whereHas('distrito', fn ($distritos) => $distritos
@@ -39,7 +45,13 @@ class GeografiaController extends Controller
 
     public function editEstablecimiento(Establecimiento $establecimiento): View
     {
-        $establecimiento->load(['distrito.departamento', 'microred', 'tipoEstablecimiento', 'gradoComplejidad', 'areaGestion']);
+        $establecimiento->load([
+            'distrito.departamento',
+            'microred',
+            'tipoEstablecimiento',
+            'gradoComplejidad',
+            'areaGestion',
+        ]);
 
         return view('admin.bioestadistica.geografia.edit-establecimiento', array_merge([
             'establecimiento' => $establecimiento,
@@ -77,7 +89,7 @@ class GeografiaController extends Controller
             'activo' => ['nullable', 'boolean'],
         ]));
 
-        return back()->with('success', 'Departamento creado.');
+        return back()->with('success', 'Departamento/región creado.');
     }
 
     public function storeDistrito(Request $request): RedirectResponse

@@ -199,6 +199,61 @@ class HospitalizacionServiceTest extends TestCase
         $this->assertSame($targetMonth, (int) $record->periodo_mes);
     }
 
+    public function test_draft_can_assign_servicio_after_association(): void
+    {
+        $user = User::role('Administrador')->first() ?? User::first();
+        $establecimiento = Establecimiento::query()->whereNotNull('distrito_id')->first();
+        $formulario = Formulario::where('codigo', 'SP1')->where('estado', 'activo')->first();
+        $departamento = \App\Models\Bioestadistica\EstructuraDepartamento::query()->first();
+        $servicio = $departamento
+            ? \App\Models\Bioestadistica\EstructuraServicio::query()->where('departamento_id', $departamento->id)->first()
+            : null;
+        if (! $user || ! $establecimiento || ! $formulario || ! $servicio) {
+            $this->markTestSkipped('Faltan usuario, establecimiento, SP1 o un servicio.');
+        }
+
+        $year = 2094;
+        $month = 7;
+        Record::where('formulario_id', $formulario->id)
+            ->where('establecimiento_id', $establecimiento->id)
+            ->where('periodo_anio', $year)
+            ->where('periodo_mes', $month)
+            ->delete();
+        \App\Models\Bioestadistica\EstablecimientoServicio::where('establecimiento_id', $establecimiento->id)->delete();
+        \App\Models\Bioestadistica\EstablecimientoServicio::create([
+            'establecimiento_id' => $establecimiento->id,
+            'departamento_id' => $departamento->id,
+            'servicio_id' => $servicio->id,
+        ]);
+
+        $record = Record::create([
+            'formulario_id' => $formulario->id,
+            'establecimiento_id' => $establecimiento->id,
+            'periodo_anio' => $year,
+            'periodo_mes' => $month,
+            'estado' => Record::ESTADO_BORRADOR,
+            'created_by' => $user->id,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('bioestadistica.captura.edit', $record))
+            ->assertOk()
+            ->assertSee('Departamento / servicio')
+            ->assertSee($servicio->nombre);
+
+        $this->actingAs($user)
+            ->put(route('bioestadistica.captura.period.update', $record), [
+                'periodo_anio' => $year,
+                'periodo_mes' => $month,
+                'estructura_servicio_id' => $servicio->id,
+            ])
+            ->assertRedirect();
+
+        $record->refresh();
+        $this->assertSame((int) $departamento->id, (int) $record->estructura_departamento_id);
+        $this->assertSame((int) $servicio->id, (int) $record->estructura_servicio_id);
+    }
+
     public function test_sp11_period_change_rejects_values_on_invalid_days(): void
     {
         $user = User::role('Administrador')->first() ?? User::first();
@@ -323,8 +378,142 @@ class HospitalizacionServiceTest extends TestCase
                 'periodo_mes' => 8,
             ]))
             ->assertOk()
-            ->assertSee('Planilla de carga SP10')
-            ->assertSee('Guardar planilla');
+            ->assertSee('SP10')
+            ->assertSee('Guardar planilla')
+            ->assertSee($establecimiento->nombre)
+            ->assertSee('Planillas de')
+            ->assertDontSee('Establecimiento a cargar');
+    }
+
+    public function test_spreadsheet_requires_selected_period_and_establishment(): void
+    {
+        $user = User::role('Administrador')->first() ?? User::first();
+        if (! $user) {
+            $this->markTestSkipped('Falta usuario administrador.');
+        }
+
+        $this->actingAs($user)
+            ->get(route('bioestadistica.hospitalizacion.spreadsheet'))
+            ->assertRedirect(route('bioestadistica.captura.create'));
+    }
+
+    public function test_captura_store_for_sp10_opens_spreadsheet_of_selected_period(): void
+    {
+        $user = User::role('Administrador')->first() ?? User::first();
+        $establecimiento = Establecimiento::query()->whereNotNull('distrito_id')->first();
+        $formulario = Formulario::where('codigo', 'SP10')->first();
+        if (! $user || ! $establecimiento || ! $formulario) {
+            $this->markTestSkipped('Faltan usuario, establecimiento o SP10.');
+        }
+
+        $year = 2095;
+        $month = 4;
+        Record::where('formulario_id', $formulario->id)
+            ->where('establecimiento_id', $establecimiento->id)
+            ->where('periodo_anio', $year)
+            ->where('periodo_mes', $month)
+            ->delete();
+
+        $this->actingAs($user)
+            ->post(route('bioestadistica.captura.store'), [
+                'formulario_id' => $formulario->id,
+                'establecimiento_id' => $establecimiento->id,
+                'periodo_anio' => $year,
+                'periodo_mes' => $month,
+            ])
+            ->assertRedirect(route('bioestadistica.hospitalizacion.spreadsheet', [
+                'establecimiento_id' => $establecimiento->id,
+                'periodo_anio' => $year,
+                'periodo_mes' => $month,
+            ]));
+    }
+
+    public function test_capture_edit_lists_other_sp_of_same_establishment(): void
+    {
+        $user = User::role('Administrador')->first() ?? User::first();
+        $establecimiento = Establecimiento::query()->whereNotNull('distrito_id')->first();
+        $sp1 = Formulario::where('codigo', 'SP1')->where('estado', 'activo')->first();
+        $sp2 = Formulario::where('codigo', 'SP2')->where('estado', 'activo')->first();
+        if (! $user || ! $establecimiento || ! $sp1 || ! $sp2) {
+            $this->markTestSkipped('Faltan usuario, establecimiento o formularios SP1/SP2.');
+        }
+
+        $year = 2096;
+        $month = 3;
+        Record::where('establecimiento_id', $establecimiento->id)
+            ->where('periodo_anio', $year)
+            ->where('periodo_mes', $month)
+            ->delete();
+
+        $record = Record::create([
+            'formulario_id' => $sp1->id,
+            'establecimiento_id' => $establecimiento->id,
+            'periodo_anio' => $year,
+            'periodo_mes' => $month,
+            'estado' => Record::ESTADO_BORRADOR,
+            'created_by' => $user->id,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('bioestadistica.captura.edit', $record))
+            ->assertOk()
+            ->assertSee('Planillas de')
+            ->assertSee('SP1')
+            ->assertSee('SP2')
+            ->assertSee($establecimiento->nombre);
+    }
+
+    public function test_sp10_period_change_moves_episodes_with_the_record(): void
+    {
+        $user = User::role('Administrador')->first() ?? User::first();
+        $establecimiento = Establecimiento::first();
+        $formulario = Formulario::where('codigo', 'SP10')->first();
+        if (! $user || ! $establecimiento || ! $formulario) {
+            $this->markTestSkipped('Faltan usuario, establecimiento o SP10.');
+        }
+
+        $year = 2094;
+        Record::where('formulario_id', $formulario->id)
+            ->where('establecimiento_id', $establecimiento->id)
+            ->where('periodo_anio', $year)
+            ->whereIn('periodo_mes', [1, 2])
+            ->delete();
+        HospEpisodio::query()
+            ->where('establecimiento_id', $establecimiento->id)
+            ->where('periodo_anio', $year)
+            ->whereIn('periodo_mes', [1, 2])
+            ->delete();
+
+        $episodio = app(HospitalizationService::class)->save([
+            'establecimiento_id' => $establecimiento->id,
+            'periodo_anio' => $year,
+            'periodo_mes' => 1,
+            'cedula' => 'SP10-'.bin2hex(random_bytes(4)),
+            'fecha_ingreso' => '2026-01-10',
+            'fecha_egreso' => '2026-01-12',
+            'tipo_alta' => 'MEJORADO',
+        ], $user);
+        $record = Record::where('formulario_id', $formulario->id)
+            ->where('establecimiento_id', $establecimiento->id)
+            ->where('periodo_anio', $year)
+            ->where('periodo_mes', 1)
+            ->firstOrFail();
+
+        $this->actingAs($user)
+            ->put(route('bioestadistica.captura.period.update', $record), [
+                'periodo_anio' => $year,
+                'periodo_mes' => 2,
+            ])
+            ->assertRedirect(route('bioestadistica.hospitalizacion.spreadsheet', [
+                'establecimiento_id' => $establecimiento->id,
+                'periodo_anio' => $year,
+                'periodo_mes' => 2,
+            ]));
+
+        $record->refresh();
+        $episodio->refresh();
+        $this->assertSame(2, (int) $record->periodo_mes);
+        $this->assertSame(2, (int) $episodio->periodo_mes);
     }
 
     public function test_spreadsheet_http_save_accepts_multiple_form_rows(): void
@@ -369,5 +558,62 @@ class HospitalizacionServiceTest extends TestCase
     {
         $ast = ['op' => 'hosp_count', 'metric' => 'egresos'];
         $this->assertSame($ast, app(FormulaAstValidator::class)->validate($ast));
+    }
+
+    public function test_captura_allows_same_period_for_different_servicios(): void
+    {
+        $user = User::role('Administrador')->first() ?? User::first();
+        $establecimiento = Establecimiento::query()->whereNotNull('distrito_id')->first();
+        $sp1 = Formulario::where('codigo', 'SP1')->where('estado', 'activo')->first();
+        $departamento = \App\Models\Bioestadistica\EstructuraDepartamento::query()->first();
+        $servicios = $departamento
+            ? \App\Models\Bioestadistica\EstructuraServicio::query()->where('departamento_id', $departamento->id)->limit(2)->get()
+            : collect();
+        if (! $user || ! $establecimiento || ! $sp1 || $servicios->count() < 2) {
+            $this->markTestSkipped('Faltan usuario, establecimiento, SP1 o dos servicios del mismo departamento.');
+        }
+
+        $year = 2097;
+        $month = 8;
+        Record::where('formulario_id', $sp1->id)
+            ->where('establecimiento_id', $establecimiento->id)
+            ->where('periodo_anio', $year)
+            ->where('periodo_mes', $month)
+            ->delete();
+        \App\Models\Bioestadistica\EstablecimientoServicio::where('establecimiento_id', $establecimiento->id)->delete();
+        foreach ($servicios as $servicio) {
+            \App\Models\Bioestadistica\EstablecimientoServicio::create([
+                'establecimiento_id' => $establecimiento->id,
+                'departamento_id' => $departamento->id,
+                'servicio_id' => $servicio->id,
+            ]);
+        }
+
+        $this->actingAs($user)
+            ->post(route('bioestadistica.captura.store'), [
+                'formulario_id' => $sp1->id,
+                'establecimiento_id' => $establecimiento->id,
+                'periodo_anio' => $year,
+                'periodo_mes' => $month,
+                'estructura_servicio_id' => $servicios[0]->id,
+            ])
+            ->assertRedirect();
+
+        $this->actingAs($user)
+            ->post(route('bioestadistica.captura.store'), [
+                'formulario_id' => $sp1->id,
+                'establecimiento_id' => $establecimiento->id,
+                'periodo_anio' => $year,
+                'periodo_mes' => $month,
+                'estructura_servicio_id' => $servicios[1]->id,
+            ])
+            ->assertRedirect();
+
+        $this->assertSame(2, Record::query()
+            ->where('formulario_id', $sp1->id)
+            ->where('establecimiento_id', $establecimiento->id)
+            ->where('periodo_anio', $year)
+            ->where('periodo_mes', $month)
+            ->count());
     }
 }

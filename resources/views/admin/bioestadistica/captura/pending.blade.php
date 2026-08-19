@@ -24,9 +24,9 @@
             <div class="card border mb-3">
                 <div class="card-header bg-light">
                     <strong>{{ $row['establecimiento']->nombre }}</strong>
-                    <small class="text-muted">
-                        {{ $row['establecimiento']->distrito?->departamento?->nombre }} /
+                    <small class="text-muted">{{ $row['establecimiento']->distrito?->departamento?->nombre }} /
                         {{ $row['establecimiento']->distrito?->nombre }}
+                        @if($row['unidad']) · {{ $row['unidad']->etiqueta() }} @endif
                     </small>
                 </div>
                 <div class="card-body">
@@ -38,8 +38,18 @@
                                     <td>{{ $formulario->codigo }} — {{ $formulario->nombre }}</td>
                                     <td class="text-right">
                                         @if($formulario->codigo === 'SP10' || $formulario->layout_type === 'nominativo')
-                                            @can('bio.hosp.manage')
-                                                <a class="btn btn-info btn-sm" href="{{ route('bioestadistica.hospitalizacion.create', ['establecimiento_id' => $row['establecimiento']->id]) }}">Cargar episodios</a>
+                                            @can('bio.record.create')
+                                            <form method="POST" action="{{ route('bioestadistica.captura.store') }}" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="formulario_id" value="{{ $formulario->id }}">
+                                                <input type="hidden" name="establecimiento_id" value="{{ $row['establecimiento']->id }}">
+                                                <input type="hidden" name="periodo_anio" value="{{ $periodo_anio }}">
+                                                <input type="hidden" name="periodo_mes" value="{{ $periodo_mes }}">
+                                                @if($row['unidad'] && !($formulario->codigo === 'SP10' || $formulario->layout_type === 'nominativo'))
+                                                    <input type="hidden" name="estructura_servicio_id" value="{{ $row['unidad']->servicio_id }}">
+                                                @endif
+                                                <button class="btn btn-info btn-sm">Cargar planilla</button>
+                                            </form>
                                             @endcan
                                         @else
                                             @can('bio.record.create')
@@ -49,6 +59,9 @@
                                                 <input type="hidden" name="establecimiento_id" value="{{ $row['establecimiento']->id }}">
                                                 <input type="hidden" name="periodo_anio" value="{{ $periodo_anio }}">
                                                 <input type="hidden" name="periodo_mes" value="{{ $periodo_mes }}">
+                                                @if($row['unidad'] && !($formulario->codigo === 'SP10' || $formulario->layout_type === 'nominativo'))
+                                                    <input type="hidden" name="estructura_servicio_id" value="{{ $row['unidad']->servicio_id }}">
+                                                @endif
                                                 <button class="btn btn-info btn-sm">Iniciar carga</button>
                                             </form>
                                             @endcan

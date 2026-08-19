@@ -72,7 +72,7 @@ class IndicatorEngine
         );
 
         return match ($op) {
-            'add' => in_array(null, $args, true) ? null : array_sum($args),
+            'add' => $this->sumNullable($args),
             'sub' => $args[0] === null || $args[1] === null ? null : $args[0] - $args[1],
             'mul' => in_array(null, $args, true) ? null : array_product($args),
             'div' => $this->divide($args[0], $args[1]),
@@ -182,6 +182,19 @@ class IndicatorEngine
         return $left === null || $right === null || $right == 0.0 ? null : $left / $right;
     }
 
+    /**
+     * @param  array<int, float|null>  $args
+     */
+    private function sumNullable(array $args): ?float
+    {
+        $present = array_values(array_filter($args, fn ($value) => $value !== null));
+        if ($present === []) {
+            return null;
+        }
+
+        return array_sum($present);
+    }
+
     private function cachedValue(Indicador $indicator, IndicadorFormula $formula, array $context): float|false|null
     {
         if (! $this->cacheable($context)) {
@@ -267,7 +280,9 @@ class IndicatorEngine
                 $reportedQuery->where($column, $context[$filter]);
             }
         }
-        $reported = $reportedQuery->count('r.id');
+        $reported = (int) $reportedQuery
+            ->selectRaw('COUNT(DISTINCT (r.establecimiento_id, r.formulario_id, r.periodo_anio, r.periodo_mes)) AS total')
+            ->value('total');
 
         return [
             'esperados' => $expected,

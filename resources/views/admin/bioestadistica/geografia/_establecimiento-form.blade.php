@@ -21,7 +21,7 @@
 
 <div class="form-row">
     <div class="form-group col-md-3">
-        <label>Departamento *</label>
+        <label>Departamento/región *</label>
         <select class="form-control bio-departamento" name="departamento_id" data-target="{{ $formId }}-distrito" required>
             <option value="">Seleccione</option>
             @foreach($departamentos as $departamento)
@@ -34,7 +34,7 @@
     <div class="form-group col-md-3">
         <label>Distrito *</label>
         <select class="form-control" id="{{ $formId }}-distrito" name="distrito_id" data-selected="{{ $distritoSeleccionado }}" required>
-            <option value="">Seleccione departamento</option>
+            <option value="">Seleccione departamento/región</option>
         </select>
     </div>
     <div class="form-group col-md-3">
@@ -114,7 +114,7 @@
 <button class="btn btn-success">{{ $submitLabel }}</button>
 
 @once
-@push('js')
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.bio-departamento').forEach(function (departmentSelect) {
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const departmentId = departmentSelect.value;
             districtSelect.innerHTML = '<option value="">Cargando...</option>';
             if (!departmentId) {
-                districtSelect.innerHTML = '<option value="">Seleccione departamento</option>';
+                districtSelect.innerHTML = '<option value="">Seleccione departamento/región</option>';
                 return;
             }
 

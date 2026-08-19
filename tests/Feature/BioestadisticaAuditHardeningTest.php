@@ -6,7 +6,7 @@ use App\Application\Bioestadistica\Audit\AuditService;
 use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
 use App\Http\Controllers\Auth\LoginController;
 use App\Models\Bioestadistica\AuditLog;
-use App\Models\Bioestadistica\Catalogo;
+use App\Models\Bioestadistica\Variable;
 use App\Models\Bioestadistica\Dashboard;
 use App\Models\Bioestadistica\Establecimiento;
 use App\Models\Bioestadistica\Formulario;
@@ -39,17 +39,17 @@ class BioestadisticaAuditHardeningTest extends TestCase
     {
         $user = $this->userWithRole('Administrador');
         Auth::login($user);
-        $catalogo = Catalogo::create([
-            'codigo' => 'F7-'.Str::lower(Str::random(8)),
-            'nombre' => 'Original',
-            'descripcion' => 'Sin cambio',
+        $original = 'Original '.Str::random(8);
+        $variable = Variable::create([
+            'codigo' => 'F7',
+            'nombre' => $original,
             'activo' => true,
         ]);
-        $catalogo->update(['nombre' => 'Actualizado']);
+        $variable->update(['nombre' => 'Actualizado']);
 
         $log = AuditLog::query()
-            ->where('entity_type', Catalogo::class)
-            ->where('entity_id', $catalogo->id)
+            ->where('entity_type', Variable::class)
+            ->where('entity_id', $variable->id)
             ->where('accion', 'update')
             ->latest('id')
             ->first();
@@ -57,7 +57,7 @@ class BioestadisticaAuditHardeningTest extends TestCase
         $this->assertNotNull($log);
         $this->assertArrayHasKey('nombre', $log->old_values);
         $this->assertArrayHasKey('nombre', $log->new_values);
-        $this->assertSame('Original', $log->old_values['nombre']);
+        $this->assertSame($original, $log->old_values['nombre']);
         $this->assertSame('Actualizado', $log->new_values['nombre']);
         $this->assertArrayNotHasKey('descripcion', $log->old_values);
         $this->assertArrayNotHasKey('updated_at', $log->old_values);
@@ -106,7 +106,7 @@ class BioestadisticaAuditHardeningTest extends TestCase
     {
         $log = AuditLog::create([
             'accion' => 'view',
-            'entity_type' => Catalogo::class,
+            'entity_type' => Variable::class,
             'entity_id' => 1,
             'created_at' => now(),
         ]);
@@ -119,7 +119,7 @@ class BioestadisticaAuditHardeningTest extends TestCase
     {
         $id = AuditLog::create([
             'accion' => 'view',
-            'entity_type' => Catalogo::class,
+            'entity_type' => Variable::class,
             'entity_id' => 1,
             'created_at' => now(),
         ])->id;
@@ -356,25 +356,25 @@ class BioestadisticaAuditHardeningTest extends TestCase
     {
         $user = $this->userWithRole('Administrador');
         Auth::login($user);
-        $catalogo = null;
-        app(AuditService::class)->withoutAuditing(function () use (&$catalogo) {
-            $catalogo = Catalogo::create([
-                'codigo' => 'F7M-'.Str::lower(Str::random(8)),
-                'nombre' => 'Mute',
+        $variable = null;
+        app(AuditService::class)->withoutAuditing(function () use (&$variable) {
+            $variable = Variable::create([
+                'codigo' => 'F7M',
+                'nombre' => 'Mute '.Str::random(8),
                 'activo' => true,
             ]);
         });
         $this->assertFalse(
-            AuditLog::query()->where('entity_type', Catalogo::class)->where('entity_id', $catalogo->id)->exists()
+            AuditLog::query()->where('entity_type', Variable::class)->where('entity_id', $variable->id)->exists()
         );
 
-        app(AuditService::class)->recordBatch('import', Catalogo::class, (int) $catalogo->id, [
+        app(AuditService::class)->recordBatch('import', Variable::class, (int) $variable->id, [
             'registros' => 3,
         ], ['establecimiento_id' => 1], ['phase' => 'commit']);
 
         $log = AuditLog::query()
             ->where('accion', 'import')
-            ->where('entity_id', $catalogo->id)
+            ->where('entity_id', $variable->id)
             ->latest('id')
             ->first();
         $this->assertNotNull($log);

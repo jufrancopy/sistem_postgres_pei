@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Bioestadistica\CatalogItem;
-use App\Models\Bioestadistica\Catalogo;
-use App\Models\Bioestadistica\VariableDefinition;
+use App\Application\Bioestadistica\Dictionary\HealthVariableDictionary;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -25,7 +23,8 @@ class BioestadisticaVariablesSeeder extends Seeder
         $count = 0;
         $duplicates = 0;
         $seen = [];
-        $preferredSheet = $spreadsheet->getSheetByName('VARIABLES SALUD (2)');
+        $preferredSheet = $spreadsheet->getSheetByName('VARIABLES SALUD')
+            ?? $spreadsheet->getSheetByName('VARIABLES SALUD (2)');
         $worksheets = $preferredSheet ? [$preferredSheet] : $spreadsheet->getAllSheets();
 
         foreach ($worksheets as $sheet) {
@@ -48,7 +47,7 @@ class BioestadisticaVariablesSeeder extends Seeder
                 $current['codigo'] = $values[1] ?: $current['codigo'];
                 $current['dominio'] = $values[2] ?: $current['dominio'];
                 $current['tipo'] = $values[3] ?: $current['tipo'];
-                $prestacion = $values[4];
+                $prestacion = $values[4] ?: ($values[3] ? $values[3] : null);
 
                 if (! $current['codigo'] || ! $current['dominio'] || ! $current['tipo'] || ! $prestacion) {
                     continue;
@@ -62,49 +61,11 @@ class BioestadisticaVariablesSeeder extends Seeder
                 }
                 $seen[$naturalKey] = true;
 
-                $catalogCode = Str::upper(Str::slug(
-                    "VAR_{$current['codigo']}_{$current['tipo']}",
-                    '_'
-                ));
-                $catalogCode = Str::limit($catalogCode, 80, '');
-
-                $catalogo = Catalogo::updateOrCreate(
-                    ['codigo' => $catalogCode],
-                    [
-                        'nombre' => "{$current['dominio']} — {$current['tipo']}",
-                        'descripcion' => 'Generado desde variables salud.xls',
-                        'activo' => true,
-                    ]
-                );
-
-                $itemCode = Str::upper(Str::slug($prestacion, '_'));
-                $itemCode = Str::limit($itemCode, 65, '') . '_' . substr(sha1($prestacion), 0, 8);
-
-                CatalogItem::updateOrCreate(
-                    ['catalogo_id' => $catalogo->id, 'codigo' => $itemCode],
-                    [
-                        'label' => $prestacion,
-                        'orden' => $count,
-                        'activo' => true,
-                        'domain_code' => $current['codigo'],
-                        'tipo_registro' => $current['tipo'],
-                        'prestacion' => $prestacion,
-                        'meta' => ['source' => basename($path), 'sheet' => $sheet->getTitle()],
-                    ]
-                );
-
-                VariableDefinition::updateOrCreate(
-                    [
-                        'codigo_dominio' => $current['codigo'],
-                        'tipo_registro' => $current['tipo'],
-                        'prestacion' => $prestacion,
-                    ],
-                    [
-                        'dominio' => $current['dominio'],
-                        'catalogo_id' => $catalogo->id,
-                        'meta' => ['source' => basename($path), 'sheet' => $sheet->getTitle()],
-                        'activo' => true,
-                    ]
+                (new HealthVariableDictionary())->remember(
+                    $current['codigo'],
+                    $current['dominio'],
+                    $current['tipo'],
+                    $prestacion
                 );
                 $count++;
             }

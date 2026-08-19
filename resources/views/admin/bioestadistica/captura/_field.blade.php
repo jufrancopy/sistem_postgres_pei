@@ -23,17 +23,17 @@
     @elseif($field->type === 'boolean')
         <select class="form-control" id="field-{{ $field->id }}" name="values[{{ $field->code }}]" @disabled(!$editable)><option value="">Seleccione</option><option value="1" @selected(old("values.{$field->code}", $value) === true || old("values.{$field->code}", $value) === '1')>Sí</option><option value="0" @selected(old("values.{$field->code}", $value) === false || old("values.{$field->code}", $value) === '0')>No</option></select>
     @elseif(in_array($field->type, ['select', 'radio']))
-        <select class="form-control" id="field-{{ $field->id }}" name="values[{{ $field->code }}]" @disabled(!$editable)><option value="">Seleccione</option>@foreach($field->catalogo?->items ?? [] as $item)<option value="{{ $item->id }}" @selected((string) old("values.{$field->code}", $value) === (string) $item->id)>{{ $item->label }}</option>@endforeach</select>
+        <select class="form-control" id="field-{{ $field->id }}" name="values[{{ $field->code }}]" @disabled(!$editable)><option value="">Seleccione</option>@foreach($field->rowItems() as $item)<option value="{{ $item->id }}" @selected((string) old("values.{$field->code}", $value) === (string) $item->id)>{{ $item->label }}</option>@endforeach</select>
     @elseif($field->type === 'multiselect')
-        <select class="form-control" id="field-{{ $field->id }}" name="values[{{ $field->code }}][]" multiple @disabled(!$editable)>@foreach($field->catalogo?->items ?? [] as $item)<option value="{{ $item->id }}" @selected(in_array($item->id, old("values.{$field->code}", $value ?? [])))>{{ $item->label }}</option>@endforeach</select>
+        <select class="form-control" id="field-{{ $field->id }}" name="values[{{ $field->code }}][]" multiple @disabled(!$editable)>@foreach($field->rowItems() as $item)<option value="{{ $item->id }}" @selected(in_array($item->id, old("values.{$field->code}", $value ?? [])))>{{ $item->label }}</option>@endforeach</select>
     @elseif($field->type === 'tabla')
         @php
             $columns = $field->config['columns'] ?? [];
-            $rows = ($field->catalogo?->items ?? collect())->where('activo', true);
+            $rows = $field->rowItems();
             $storedRows = $value['rows'] ?? [];
         @endphp
         @if($columns === [] || $rows->isEmpty())
-            <div class="alert alert-warning mb-0">El campo no tiene columnas configuradas o su catálogo está vacío.</div>
+            <div class="alert alert-warning mb-0">El campo no tiene columnas configuradas o su diccionario/catálogo está vacío.</div>
         @else
             <div class="table-responsive">
                 <table class="table table-sm table-bordered bio-tabla mb-0" data-totals="{{ ($field->config['totals'] ?? false) ? '1' : '0' }}">
