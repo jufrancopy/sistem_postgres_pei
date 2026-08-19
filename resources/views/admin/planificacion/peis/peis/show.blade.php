@@ -5562,8 +5562,9 @@ $('#btnCopiarCredencialesAsesor').click(function() {
 </script>
 
 <!-- MODAL BASURERO PEI (RESTAURACIÓN DE ELEMENTOS ELIMINADOS) -->
+<!-- MODAL BASURERO PEI (RESTAURACIÓN DE ELEMENTOS ELIMINADOS) -->
 <div class="modal fade" id="modalBasureroPei" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1200px;">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1250px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
             <div class="modal-header text-white" style="background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);">
                 <h5 class="modal-title font-weight-bold d-flex align-items-center mb-0">
@@ -5575,24 +5576,28 @@ $('#btnCopiarCredencialesAsesor').click(function() {
                 </button>
             </div>
             <div class="modal-body p-4 bg-light">
-                <div class="alert alert-info border-0 shadow-xs mb-3 font-weight-bold" style="border-radius: 10px; background: #e0f2fe; color: #0369a1;">
-                    <i class="fa fa-info-circle mr-1"></i> En el PEI nada se pierde. Todo elemento u Acción Operativa eliminada se conserva aquí para poder recuperarse con un solo clic.
+                <div class="alert alert-info border-0 shadow-xs mb-3 font-weight-bold d-flex align-items-center justify-content-between" style="border-radius: 10px; background: #e0f2fe; color: #0369a1;">
+                    <div>
+                        <i class="fa fa-info-circle mr-1"></i> En el PEI nada se pierde. Todo elemento u Acción Operativa eliminada se conserva aquí con su <strong>ubicación y contexto de origen</strong> para poder recuperarse con un solo clic.
+                    </div>
+                    <span class="badge badge-primary font-weight-bold px-3 py-1.5" id="cntTotalBasurero">0 Elementos</span>
                 </div>
 
-                <div class="card border shadow-xs" style="border-radius: 12px;">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped mb-0" id="tablaBasureroPeiAdmin" style="font-size: 0.85rem;">
+                <div class="card border shadow-xs" style="border-radius: 12px; overflow: hidden;">
+                    <div class="p-3 bg-white">
+                        <table class="table table-hover table-striped w-100 mb-0" id="tablaBasureroPeiAdmin" style="font-size: 0.84rem;">
                             <thead class="bg-dark text-white">
                                 <tr>
-                                    <th style="width: 160px;">Tipo de Elemento</th>
-                                    <th>Nombre / Descripción del Elemento Eliminado</th>
-                                    <th style="width: 180px;" class="text-center">Fecha Eliminación</th>
-                                    <th style="width: 140px;" class="text-center">Acción</th>
+                                    <th style="width: 130px;">Tipo Elemento</th>
+                                    <th>Elemento Eliminado</th>
+                                    <th>📍 Contexto / Ubicación donde se Insertará</th>
+                                    <th style="width: 140px;" class="text-center">Fecha Eliminación</th>
+                                    <th style="width: 130px;" class="text-center">Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="4" class="text-center py-4 text-muted">Cargando elementos del basurero...</td>
+                                    <td colspan="5" class="text-center py-4 text-muted">Cargando elementos del basurero...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -5600,7 +5605,7 @@ $('#btnCopiarCredencialesAsesor').click(function() {
                 </div>
             </div>
             <div class="modal-footer bg-white px-4 py-3">
-                <button type="button" class="btn btn-secondary btn-round" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-secondary btn-round font-weight-bold px-4" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -5608,28 +5613,41 @@ $('#btnCopiarCredencialesAsesor').click(function() {
 
 <script>
 function cargarBasureroPeiAdmin() {
+    if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tablaBasureroPeiAdmin')) {
+        $('#tablaBasureroPeiAdmin').DataTable().clear().destroy();
+    }
+
+    var $tbody = $('#tablaBasureroPeiAdmin tbody');
+    $tbody.html('<tr><td colspan="5" class="text-center py-4 text-muted"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando elementos del basurero...</td></tr>');
+
     $.ajax({
         url: "{{ route('pei.basurero.list', $profile->id) }}",
         type: "GET",
         success: function(resp) {
-            var $tbody = $('#tablaBasureroPeiAdmin tbody');
             $tbody.empty();
             var count = 0;
 
             if (resp.trashed_nodes && resp.trashed_nodes.length > 0) {
                 resp.trashed_nodes.forEach(function(n) {
                     count++;
-                    var dateTxt = n.deleted_at ? n.deleted_at.substring(0, 16).replace('T', ' ') : '—';
                     var badgeType = n.level === 'axi' ? 'badge-primary' : (n.level === 'goal' ? 'badge-info' : 'badge-purple');
+                    var levelName = (n.level === 'axi' ? 'OBJETIVO' : (n.level === 'goal' ? 'META' : (n.level === 'action' ? 'ACCIÓN' : (n.level||'NODO').toUpperCase())));
                     var tr = `
                         <tr>
                             <td class="align-middle">
-                                <span class="badge ${badgeType} font-weight-bold px-2 py-1">${(n.level||'Nodo').toUpperCase()}</span>
+                                <span class="badge ${badgeType} font-weight-bold px-2.5 py-1" style="font-size:0.72rem;">${levelName}</span>
                             </td>
-                            <td class="align-middle font-weight-bold text-dark">${n.name}</td>
-                            <td class="align-middle text-center text-muted small">${dateTxt}</td>
+                            <td class="align-middle">
+                                <strong class="text-dark d-block" style="font-size:0.86rem;">${n.name}</strong>
+                            </td>
+                            <td class="align-middle small">
+                                <div class="p-1.5 rounded bg-light border text-dark font-weight-500" style="font-size:0.78rem;">
+                                    ${n.contexto || '—'}
+                                </div>
+                            </td>
+                            <td class="align-middle text-center text-muted small font-mono">${n.deleted_at || '—'}</td>
                             <td class="align-middle text-center">
-                                <button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3" onclick="restaurarElementoPei('${n.id}', 'node')">
+                                <button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3 py-1 shadow-xs" onclick="restaurarElementoPei('${n.id}', 'node')">
                                     <i class="fa fa-undo mr-1"></i> Restaurar
                                 </button>
                             </td>
@@ -5642,19 +5660,23 @@ function cargarBasureroPeiAdmin() {
             if (resp.trashed_inis && resp.trashed_inis.length > 0) {
                 resp.trashed_inis.forEach(function(i) {
                     count++;
-                    var dateTxt = i.deleted_at ? i.deleted_at.substring(0, 16).replace('T', ' ') : '—';
                     var tr = `
                         <tr>
                             <td class="align-middle">
-                                <span class="badge badge-success font-weight-bold px-2 py-1">ACCIÓN OPERATIVA</span>
+                                <span class="badge badge-success font-weight-bold px-2.5 py-1" style="font-size:0.72rem;">ACCIÓN OPERATIVA</span>
                             </td>
                             <td class="align-middle">
-                                <span class="badge badge-dark font-weight-bold mr-1">${i.codigo}</span>
-                                <span class="font-weight-bold text-dark">${i.accion}</span>
+                                ${i.codigo ? `<span class="badge badge-dark font-weight-bold mr-1">${i.codigo}</span>` : ''}
+                                <strong class="text-dark">${i.accion}</strong>
                             </td>
-                            <td class="align-middle text-center text-muted small">${dateTxt}</td>
+                            <td class="align-middle small">
+                                <div class="p-1.5 rounded bg-light border text-dark font-weight-500" style="font-size:0.78rem;">
+                                    ${i.contexto || '—'}
+                                </div>
+                            </td>
+                            <td class="align-middle text-center text-muted small font-mono">${i.deleted_at || '—'}</td>
                             <td class="align-middle text-center">
-                                <button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3" onclick="restaurarElementoPei('${i.id}', 'iniciativa')">
+                                <button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3 py-1 shadow-xs" onclick="restaurarElementoPei('${i.id}', 'iniciativa')">
                                     <i class="fa fa-undo mr-1"></i> Restaurar
                                 </button>
                             </td>
@@ -5664,8 +5686,29 @@ function cargarBasureroPeiAdmin() {
                 });
             }
 
-            if (count === 0) {
-                $tbody.html('<tr><td colspan="4" class="text-center py-4 text-muted font-weight-bold"><i class="fa fa-check-circle text-success mr-1"></i> El basurero está vacío. No hay elementos ni acciones eliminadas.</td></tr>');
+            $('#cntTotalBasurero').text(count + ' Elementos Eliminados');
+
+            if ($.fn.DataTable && $('#tablaBasureroPeiAdmin').length) {
+                $('#tablaBasureroPeiAdmin').DataTable({
+                    "language": {
+                        "sProcessing":     "Procesando...",
+                        "sLengthMenu":     "Mostrar _MENU_ registros",
+                        "sZeroRecords":    "No se encontraron elementos en el basurero",
+                        "sEmptyTable":     "El basurero está vacío. No hay elementos eliminados.",
+                        "sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ elementos",
+                        "sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 elementos",
+                        "sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
+                        "sSearch":         "Buscar en el basurero:",
+                        "oPaginate": {
+                            "sFirst":    "Primero",
+                            "sLast":     "Último",
+                            "sNext":     "Siguiente",
+                            "sPrevious": "Anterior"
+                        }
+                    },
+                    "order": [[3, "desc"]],
+                    "pageLength": 10
+                });
             }
         }
     });

@@ -1543,16 +1543,52 @@ class PeiController extends Controller
 
         // 1. Nodos soft-deleted en la jerarquía PEI
         $trashedNodes = PeiProfile::onlyTrashed()
+            ->with(['parent.parent'])
             ->orderBy('deleted_at', 'desc')
-            ->get(['id', 'name', 'level', 'type', 'deleted_at']);
+            ->get()
+            ->map(function($node) {
+                $contexto = [];
+                $curr = $node->parent;
+                while ($curr) {
+                    $lvl = strtoupper($curr->level ?: 'NODO');
+                    $label = "<span class='badge badge-light border text-dark mr-1'>{$lvl}</span>" . \Illuminate\Support\Str::limit(strip_tags($curr->name), 40);
+                    array_unshift($contexto, $label);
+                    $curr = $curr->parent;
+                }
+                return [
+                    'id'          => $node->id,
+                    'name'        => $node->name,
+                    'level'       => $node->level,
+                    'type'        => $node->type,
+                    'contexto'    => !empty($contexto) ? implode(' <i class="fa fa-angle-right text-muted mx-1"></i> ', $contexto) : '<span class="text-muted italic"><i class="fa fa-sitemap mr-1"></i> Raíz del PEI</span>',
+                    'deleted_at'  => $node->deleted_at ? $node->deleted_at->format('d/m/Y H:i') : '—',
+                ];
+            });
 
         // 2. Acciones Operativas soft-deleted
         $trashedInis = \App\Models\PlanMaestro\PlanAccion::onlyTrashed()
+            ->with(['peiProfile', 'eje'])
             ->orderBy('deleted_at', 'desc')
-            ->get(['id', 'codigo', 'accion', 'estado', 'deleted_at']);
+            ->get()
+            ->map(function($ini) {
+                $contexto = '<span class="text-muted italic"><i class="fa fa-list mr-1"></i> Acción Operativa</span>';
+                if ($ini->peiProfile) {
+                    $contexto = '<span class="badge badge-info mr-1">ACCIÓN PEI</span> ' . \Illuminate\Support\Str::limit(strip_tags($ini->peiProfile->name), 45);
+                } elseif ($ini->eje) {
+                    $contexto = '<span class="badge badge-secondary mr-1">EJE</span> ' . \Illuminate\Support\Str::limit(strip_tags($ini->eje->nombre), 45);
+                }
+                return [
+                    'id'         => $ini->id,
+                    'codigo'     => $ini->codigo,
+                    'accion'     => $ini->accion,
+                    'estado'     => $ini->estado,
+                    'contexto'   => $contexto,
+                    'deleted_at' => $ini->deleted_at ? $ini->deleted_at->format('d/m/Y H:i') : '—',
+                ];
+            });
 
         return response()->json([
-            'ok' => true,
+            'ok'            => true,
             'trashed_nodes' => $trashedNodes,
             'trashed_inis'  => $trashedInis,
             'total'         => $trashedNodes->count() + $trashedInis->count(),
