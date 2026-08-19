@@ -392,7 +392,7 @@
                             Seleccioná la Junta Especial encargada de dictaminar sobre este objetivo estratégico.
                         </small>
                         @php
-                            $juntasConsultivas = \App\Models\Planificacion\Junta::where('is_active', true)->orderBy('nombre')->get();
+                            $juntasConsultivas = \App\Models\Planificacion\Junta::where('activo', true)->orderBy('nombre')->get();
                         @endphp
                         <select id="axis_junta_id" name="junta_id" class="form-control form-control-sm" style="width:100%">
                             <option value="">— Ninguna (Por defecto según área) —</option>
