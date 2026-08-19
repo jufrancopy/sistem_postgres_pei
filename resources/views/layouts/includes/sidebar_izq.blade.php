@@ -45,6 +45,14 @@
                     <p>Administrador</p>
                 </a>
             </li>
+            <li class="nav-item {{ request()->is('admin/soporte/tickets*') ? 'active' : '' }}">
+                <a class="nav-link font-weight-bold" href="{{ route('admin.soporte.tickets.index') }}">
+                    <i class="material-icons text-danger">confirmation_number</i>
+                    <p class="text-danger font-weight-bold">Bandeja de Tickets
+                        <span class="badge badge-danger ml-1" id="sidebarTicketPendingBadge" style="display:none">0</span>
+                    </p>
+                </a>
+            </li>
             <li class="nav-item my-2">
                 <a class="nav-link text-white font-weight-bold shadow-sm" href="{{ url('/') }}" target="_blank" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); border-radius: 10px; margin: 5px 15px; padding: 10px 15px; transition: all 0.3s ease;" title="Abrir Portal Público Institucional (Nueva Pestaña)">
                     <i class="material-icons text-white mr-2" style="font-size: 1.2rem;">public</i>

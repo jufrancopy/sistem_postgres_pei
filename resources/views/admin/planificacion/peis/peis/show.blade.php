@@ -1011,14 +1011,17 @@
                                                 ];
                                             @endphp
                                             <div class="mt-3 px-1">
-                                                <div class="d-flex align-items-center mb-2">
-                                                    <i class="fa fa-sitemap text-muted mr-2"></i>
+                                                <div class="d-flex align-items-center mb-2 flex-wrap" style="gap:.5rem">
+                                                    <i class="fa fa-sitemap text-muted mr-1"></i>
                                                     <span class="font-weight-bold text-uppercase" style="font-size:.75rem; letter-spacing:.05em; color:#495057">
                                                         Marco Estratégico General
                                                     </span>
-                                                    <span class="badge badge-light border ml-2" style="font-size:.68rem">
+                                                    <span class="badge badge-light border ml-1" style="font-size:.68rem">
                                                         {{ $marcosGenerales->count() }} referencial(es)
                                                     </span>
+                                                    <button type="button" class="btn btn-xs btn-outline-success font-weight-bold rounded-pill ml-auto shadow-xs" onclick="abrirModalInspiracionOds(3);">
+                                                        <i class="fa fa-lightbulb text-warning mr-1"></i> Banco de Ideas ODS 2030 (ONU)
+                                                    </button>
                                                 </div>
                                                 <div class="d-flex flex-wrap" style="gap:.35rem">
                                                     @foreach($marcosGenerales->groupBy('tipo') as $tipo => $items)
@@ -1026,9 +1029,13 @@
                                                             $cfg = $coloresMeg[$tipo] ?? $coloresMeg['general'];
                                                         @endphp
                                                         @foreach($items as $marco)
+                                                        @php
+                                                            $odsNum = (preg_match('/(\d+)/', $marco->nombre, $matches)) ? (int)$matches[1] : 3;
+                                                        @endphp
                                                         <span class="badge {{ $cfg['bg'] }}"
-                                                              style="font-size:.72rem; padding:.35em .6em"
-                                                              title="{{ ucfirst($tipo) }}">
+                                                              style="font-size:.72rem; padding:.35em .6em; cursor:pointer;"
+                                                              title="Haz clic para ver ideas de inspiración sobre este marco"
+                                                              onclick="abrirModalInspiracionOds({{ $odsNum }});">
                                                             <i class="fa {{ $cfg['icon'] }} mr-1"></i>{{ $marco->nombre }}
                                                         </span>
                                                         @endforeach
@@ -1571,6 +1578,7 @@
 
                 {{-- Star Modals --}}
                 @include('admin.planificacion.peis.peis.modals')
+                @include('admin.planificacion.ods.modal_inspiracion')
                 @role('Administrador')
                 @include('admin.planificacion.peis.peis.partials.modal_puntos_manuales')
                 @endrole
@@ -2212,6 +2220,7 @@
                 .create(document.querySelector('#ajaxGoalsModal #goalsForm #goals'))
                 .then(editor => {
                     goalsEditor = editor;
+                    window.goalsEditor = editor;
                 })
                 .catch(err => {
                     console.error(err.stack);
@@ -2222,6 +2231,7 @@
                 .create(document.querySelector('#ajaxActionsModal #actionsForm #actions'))
                 .then(editor => {
                     actionsEditor = editor;
+                    window.actionsEditor = editor;
                 })
                 .catch(err => {
                     console.error(err.stack);
@@ -3030,7 +3040,7 @@
                 });
             });
 
-            $('body').on('click', '#createActions', function() {
+            $('body').on('click', '#createActions, .createActionsButton', function() {
                 var profileID = $(this).data('id');
                 var typeBtn = $(this).data('type');
 
@@ -3044,6 +3054,7 @@
                     if (typeBtn === 'create') {
                         $('#actions_profile_id').val('');
                         $('#actions_parent_id').val(data.profile.id);
+                        if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val('0');
                         actionsEditor.setData('');
                         $('#actions_order_item').val('');
                         $('#saveBtnActions').val('create');
@@ -3051,6 +3062,7 @@
                     } else if (typeBtn === 'edit') {
                         $('#actions_profile_id').val(data.profile.id);
                         $('#actions_parent_id').val(data.profile.parent_id);
+                        if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val(data.profile.creado_con_ia ? '1' : '0');
                         actionsEditor.setData(data.profile.name)
                         $('#actions_order_item').val(data.profile.order_item);
                         $('#saveBtnActions').val('edit');
@@ -3826,42 +3838,47 @@
 
                 // ══ FIN MÓDULO REPORTAR AVANCE ═══════════════════════════════
             });
-            // Agregar un controlador de eventos para el botón de eliminación
-            $('.contentMain').on('click', '.deleteItem', function() {
+            $(document).on('click', '.deleteItem', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 var axisId = $(this).data('id');
+                var $btn = $(this);
 
-                // Muestra una confirmación en SweetAlert
                 Swal.fire({
-                    title: '¿Estás seguro de eliminarlo?',
-                    text: "Si lo haces, no podrás revertirlo",
+                    title: '¿Enviar a la Papelera?',
+                    text: 'El elemento será movido al basurero del PEI.',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Estoy seguro!'
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, enviar a la papelera',
+                    cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Si el usuario confirma, procede con la eliminación
                         $.ajax({
                             type: "DELETE",
-                            url: "{{ route('pei-profiles.store') }}" + '/' + axisId,
+                            url: "{{ url('pei-profiles') }}/" + axisId,
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
                             success: function(data) {
-
+                                var $actionBlock = $('#actionsBlock_' + axisId);
+                                if ($actionBlock.length) {
+                                    $actionBlock.fadeOut(300, function(){ $(this).remove(); });
+                                } else {
+                                    $btn.closest('.card, .accordion-item').fadeOut(300, function(){ $(this).remove(); });
+                                }
+                                Swal.fire(
+                                    'Movido a la Papelera',
+                                    'El elemento fue enviado al basurero correctamente.',
+                                    'success'
+                                );
                             },
                             error: function(data) {
                                 console.log('Error:', data);
+                                toastr.error('No se pudo enviar el registro a la papelera.');
                             }
                         });
-
-                        // Elimina la tarjeta del DOM
-                        $(this).closest('.card').remove();
-
-                        // Muestra una notificación de éxito después de la eliminación
-                        Swal.fire(
-                            'Borrado',
-                            'El registro ha sido eliminado correctamente',
-                            'success'
-                        );
                     }
                 });
             });
@@ -3889,6 +3906,21 @@
         var _sentidoLabels   = { ascendente:'▲ Asc.', descendente:'▼ Desc.' };
 
         // ── Estilos radio como card seleccionable ──────────────────────────
+        $(document).on('click', '.ind-radio-card', function(e) {
+            var $radio = $(this).find('input[type="radio"]');
+            if ($radio.length) {
+                $radio.prop('checked', true);
+                var name = $radio.attr('name');
+                $('input[name="' + name + '"]').each(function() {
+                    var card = $(this).closest('.ind-radio-card');
+                    var color = card.data('color') || 'secondary';
+                    card.removeClass('ind-selected-' + color);
+                });
+                var color = $(this).data('color') || 'secondary';
+                $(this).addClass('ind-selected-' + color);
+            }
+        });
+
         $(document).on('change', '.ind-radio', function() {
             var name  = $(this).attr('name');
             // Desmarcar todas las del mismo grupo
@@ -3902,6 +3934,23 @@
             var color = card.data('color') || 'secondary';
             card.addClass('ind-selected-' + color);
         });
+
+        function getRadioValue(name) {
+            var $checked = $('input[name="' + name + '"]:checked');
+            if ($checked.length && $checked.val()) return $checked.val();
+            
+            // Fallback: buscar por clase ind-selected-* en las cards si radio check se desincronizó
+            var $selectedCard = $('input[name="' + name + '"]').closest('.ind-radio-card').filter(function() {
+                var cls = $(this).attr('class') || '';
+                return cls.indexOf('ind-selected-') >= 0;
+            });
+            if ($selectedCard.length) {
+                var $r = $selectedCard.find('input[type="radio"]');
+                $r.prop('checked', true);
+                return $r.val();
+            }
+            return null;
+        }
 
         // ── Agregar fila de meta ───────────────────────────────────────────
         function agregarMeta(anio, valor) {
@@ -4095,11 +4144,11 @@
         // ── Guardar ficha ──────────────────────────────────────────────────
         $('#btnGuardarIndicador').on('click', function() {
             var nombre = $.trim($('#ind_nombre').val());
-            var dim    = $('input[name="ind_dimension"]:checked').val();
-            var amb    = $('input[name="ind_ambito"]:checked').val();
-            var frec   = $('input[name="ind_frecuencia"]:checked').val();
-            var cob    = $('input[name="ind_cobertura"]:checked').val();
-            var sent   = $('input[name="ind_sentido"]:checked').val();
+            var dim    = getRadioValue('ind_dimension');
+            var amb    = getRadioValue('ind_ambito');
+            var frec   = getRadioValue('ind_frecuencia');
+            var cob    = getRadioValue('ind_cobertura');
+            var sent   = getRadioValue('ind_sentido');
 
             if (!nombre)  { toastr.warning('El nombre del indicador es obligatorio.'); return; }
             if (!dim)     { toastr.warning('Seleccioná la dimensión del indicador.'); return; }
@@ -4136,21 +4185,30 @@
                 payload['metas[' + i + '][valor]'] = m.valor;
             });
 
-            var url    = _indicadorEditId
+            if (_indicadorEditId) {
+                payload._method = 'PUT';
+            }
+
+            var url = _indicadorEditId
                 ? '{{ url("pei-profiles") }}/' + _peiProfileId + '/indicadores/' + _indicadorEditId
                 : '{{ url("pei-profiles") }}/' + _peiProfileId + '/indicadores';
-            var method = _indicadorEditId ? 'PUT' : 'POST';
 
             $.ajax({
-                url: url, type: method, data: payload,
+                url: url,
+                type: 'POST',
+                data: payload,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
                 success: function(res) {
-                    toastr.success(_indicadorEditId ? 'Indicador actualizado.' : 'Indicador creado.');
+                    toastr.success(_indicadorEditId ? 'Ficha de Indicador actualizada correctamente.' : 'Ficha de Indicador creada correctamente.');
                     $('#modalIndicador').modal('hide');
+                    if (typeof cargarListaIndicadores === 'function') cargarListaIndicadores();
                 },
                 error: function(xhr) {
                     var e = xhr.responseJSON?.errors;
                     if (e) $.each(e, (k,v) => toastr.error(v[0]));
-                    else toastr.error(xhr.responseJSON?.message || 'Error al guardar.');
+                    else toastr.error(xhr.responseJSON?.message || 'Error al guardar la Ficha de Indicador.');
                 }
             });
         });

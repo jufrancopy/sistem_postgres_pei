@@ -136,9 +136,13 @@
                         @endphp
                         @foreach($marcosAxi->groupBy('tipo') as $tipo => $items)
                             @foreach($items as $marco)
+                                @php
+                                    $odsVal = (preg_match('/(\d+)/', $marco->nombre, $matches)) ? (int)$matches[1] : 3;
+                                @endphp
                                 <span class="badge shadow-xs mr-1" 
-                                      style="{{ $badgeStyles[$tipo] ?? 'background:#64748b; color:#fff;' }} font-size:.68rem; padding: 4px 8px; border-radius: 6px;"
-                                      title="{{ $marco->descripcion ?? $marco->nombre }}">
+                                      style="{{ $badgeStyles[$tipo] ?? 'background:#64748b; color:#fff;' }} font-size:.68rem; padding: 4px 8px; border-radius: 6px; cursor: pointer;"
+                                      title="Haz clic para ver ideas e inspiración de las Naciones Unidas (ODS {{ $odsVal }})"
+                                      onclick="event.stopPropagation(); abrirModalInspiracionOds({{ $odsVal }});">
                                     {{ $marco->nombre }}
                                 </span>
                             @endforeach
@@ -410,6 +414,12 @@
                                    title="Agregar {{ $niveles['action'] ?? 'Acción' }}">
                                     <i class="fa fa-plus" style="font-size:.7rem"></i>
                                 </a>
+                                <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold py-0 px-2 ml-1 createActionsButton shadow-xs"
+                                        data-id="{{ $goal->id }}" data-type="create" id="createActions"
+                                        title="Crear nueva Acción Estratégica e Indicador con Inteligencia Artificial (Llama 3.3 70B)"
+                                        style="border-radius: 12px; font-size: 0.72rem;">
+                                    <i class="fa fa-robot text-warning mr-1"></i> + Acción IA
+                                </button>
                                  @role('Administrador')
                                  <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
                                     data-id="{{ $goal->id }}" href="javascript:void(0)"
@@ -489,13 +499,18 @@
                                                         border-left-color:{{ $colorFisico === 'success' ? '#28a745' : ($colorFisico === 'warning' ? '#ffc107' : ($colorFisico === 'danger' ? '#dc3545' : '#6c757d')) }}">
                                                 <div class="d-flex align-items-start flex-wrap" style="gap:.3rem">
                                                     <div style="flex:1 1 180px; min-width:0">
-                                                        <div class="d-flex align-items-center mb-1">
-                                                            <span class="badge badge-{{ $colorFisico }} mr-2" style="font-size:.65rem">
+                                                        <div class="d-flex align-items-center mb-1 flex-wrap" style="gap:4px;">
+                                                            <span class="badge badge-{{ $colorFisico }}" style="font-size:.65rem">
                                                                 <i class="fa fa-circle mr-1"></i>{{ strtoupper($semaforoFisico) }}
                                                             </span>
                                                             <span class="badge badge-light text-muted border" style="font-size:.65rem">
                                                                 #{{ $action->order_item }}
                                                             </span>
+                                                            @if(!empty($action->creado_con_ia))
+                                                                <span class="badge badge-pill shadow-xs" title="Esta Acción fue concebida y redactada con Inteligencia Artificial (Llama 3.3 70B / Groq)" style="background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%); color: #fff; font-size: 0.68rem; padding: 3px 8px; font-weight:600;">
+                                                                    <i class="fa fa-robot mr-1 text-warning"></i> Generado con IA
+                                                                </span>
+                                                            @endif
                                                         </div>
                                                         <div class="font-weight-bold text-dark" style="font-size:.88rem; word-break:break-word;">
                                                             {!! $action->name !!}
@@ -526,6 +541,14 @@
                                                                 style="font-size:.7rem">
                                                             <i class="fa fa-paper-plane"></i>
                                                         </button>
+                                                        @role('Administrador')
+                                                        <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
+                                                           data-id="{{ $action->id }}"
+                                                           href="javascript:void(0)"
+                                                           title="Enviar a la Papelera">
+                                                            <i class="fa fa-trash" style="font-size:.7rem"></i>
+                                                        </a>
+                                                        @endrole
                                                         @php
                                                             $comentariosAction = isset($comentariosAsesoria) ? (
                                                                 $comentariosAsesoria->get('node_' . $action->id)

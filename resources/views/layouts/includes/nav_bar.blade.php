@@ -39,6 +39,14 @@
           </a>
         </li>
 
+        {{-- ── Reportar Falla Técnica / Ticket ── --}}
+        <li class="nav-item">
+          <a class="nav-link" href="javascript:void(0)" onclick="abrirModalReportarFalla()" title="Reportar una Falla o Problema Técnico al Administrador">
+            <i class="material-icons text-danger" style="font-size: 22px;">report_problem</i>
+            <p class="d-lg-none mb-0">Reportar Falla</p>
+          </a>
+        </li>
+
         {{-- ── Notificaciones SIESS ── --}}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="javascript:void(0)" id="siessNotifBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones SIESS" style="cursor: pointer;">
@@ -95,6 +103,10 @@
                 <i class="fa fa-award text-warning mr-2" style="width: 18px;"></i> Mi Perfil y Gamificación
             </a>
             @hasrole('Administrador')
+            <a href="{{ route('admin.soporte.tickets.index') }}" class="dropdown-item px-3 py-2 text-danger font-weight-bold">
+                <i class="fa fa-ticket-alt text-danger mr-2" style="width: 18px;"></i> Bandeja de Tickets / Fallas
+                <span class="badge badge-danger float-right ml-2" id="headerTicketPendingBadge">0</span>
+            </a>
             <a href="#" class="dropdown-item px-3 py-2 text-primary font-weight-bold" data-toggle="modal" data-target="#modalSimuladorRoles">
                 <i class="fa fa-user-secret text-primary mr-2" style="width: 18px;"></i> Ver como otro Usuario / Rol
             </a>
@@ -391,6 +403,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, 100);
 });
+
+function checkPendingTicketsCount() {
+    $.getJSON('{{ route("admin.soporte.tickets.countPending") }}', function(res) {
+        if (res.pending > 0) {
+            $('#headerTicketPendingBadge, #sidebarTicketPendingBadge').text(res.pending).show();
+        } else {
+            $('#headerTicketPendingBadge, #sidebarTicketPendingBadge').hide();
+        }
+    }).fail(function(){});
+}
+
+@role('Administrador')
+$(document).ready(function() {
+    checkPendingTicketsCount();
+    setInterval(checkPendingTicketsCount, 60000);
+});
+@endrole
 </script>
 @endhasrole
 @endauth

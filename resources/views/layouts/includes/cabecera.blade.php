@@ -26,6 +26,7 @@
 
     {{-- Polyfill seguro via Cloudflare (polyfill.io fue comprometido en 2024) --}}
     <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=default"></script>
+    <script src="{{ asset('js/jquery.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.1/purify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 

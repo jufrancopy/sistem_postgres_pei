@@ -70,9 +70,11 @@ class PeiProfile extends Model
         'public_token',
         'is_active',
         'updated_by',
+        'creado_con_ia',
     ];
 
     protected $casts = [
+        'creado_con_ia' => 'boolean',
         'is_active'   => 'boolean',
         'ri_metas'    => 'array',
         'public_tabs' => 'array',

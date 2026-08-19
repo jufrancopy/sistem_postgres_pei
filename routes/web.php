@@ -951,3 +951,24 @@ Route::get('pei-profiles/{profileId}/proyectos/acciones-publico',
     [\App\Http\Controllers\Admin\Proyectos\ProyectoInstitucionalController::class, 'getAccionesDePerfil'])
     ->name('proyectos.solicitar.acciones');
 Route::get('/debug-patrimonies', function() { return Illuminate\Support\Facades\Schema::getColumnListing('patrimonies'); });
+
+// ── Módulo de Soporte Técnico y Reporte de Fallas ─────────────────────────
+Route::middleware(['auth'])->group(function () {
+    Route::post('/soporte/tickets', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'store'])
+        ->name('soporte.tickets.store');
+    Route::get('/admin/soporte/tickets/count-pending', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'countPending'])
+        ->name('admin.soporte.tickets.countPending');
+
+    Route::middleware(['role:Administrador'])->prefix('admin/soporte')->name('admin.soporte.')->group(function() {
+        Route::get('/tickets', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'index'])->name('tickets.index');
+        Route::put('/tickets/{ticket}/status', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'updateStatus'])->name('tickets.updateStatus');
+        Route::delete('/tickets/{ticket}', [\App\Http\Controllers\Admin\Soporte\SoporteTicketController::class, 'destroy'])->name('tickets.destroy');
+    });
+
+    // ── Asistente de IA (Groq / Llama 3.3 70B) ─────────────────────────────
+    Route::prefix('admin/ai')->name('admin.ai.')->group(function() {
+        Route::post('/redactar-smart', [\App\Http\Controllers\Admin\Ai\AiAssistantController::class, 'redactarSmart'])->name('redactarSmart');
+        Route::post('/sugerir-indicador', [\App\Http\Controllers\Admin\Ai\AiAssistantController::class, 'sugerirIndicador'])->name('sugerirIndicador');
+        Route::post('/generar-accion-completa', [\App\Http\Controllers\Admin\Ai\AiAssistantController::class, 'generarAccionCompleta'])->name('generarAccionCompleta');
+    });
+});

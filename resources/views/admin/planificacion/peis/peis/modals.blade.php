@@ -1,5 +1,5 @@
 {{-- Inicio Modales --}}
-<div class="modal fade" id="ajaxMisionModal" aria-hidden="true">
+<div class="modal fade" id="ajaxMisionModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
@@ -57,7 +57,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ajaxVisionModal" aria-hidden="true">
+<div class="modal fade" id="ajaxVisionModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
@@ -115,7 +115,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ajaxValuesModal" aria-hidden="true">
+<div class="modal fade" id="ajaxValuesModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
@@ -174,7 +174,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ajaxAxisModal" aria-hidden="true">
+<div class="modal fade" id="ajaxAxisModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
 
@@ -204,8 +204,24 @@
                     {{ Form::hidden('progress', null, ['class' => 'form-control', 'id' => 'axis_progress']) }}
                     {{ Form::hidden('dependency_id', null, ['class' => 'form-control', 'id' => 'axis_dependency']) }}
 
+                    {{-- Banner Asistente IA SIPLAN --}}
+                    <div class="p-3 mb-3 rounded shadow-xs text-white d-flex align-items-center justify-content-between flex-wrap" style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%); gap:10px; border-radius:12px;">
+                        <div>
+                            <strong class="d-block" style="font-size:0.88rem;"><i class="fa fa-robot text-warning mr-1"></i> Asistente de Planificación IA (Llama 3.3 70B)</strong>
+                            <small class="text-white-50" style="font-size:0.75rem;">Escribí una idea simple abajo y la IA completará la Acción Estratégica SMART y su Indicador.</small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-warning font-weight-bold text-dark rounded-pill px-3 shadow-sm" id="btnGenerarTodoConIa" onclick="generarAccionEIndicadorConIa();">
+                            <i class="fa fa-bolt mr-1"></i> Generar Acción e Indicador con IA
+                        </button>
+                    </div>
+
                     <div class="axis mb-3">
-                        {{ Form::label('name', 'Descripción del Objetivo Estratégico:', ['class' => 'control-label font-weight-bold']) }}
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            {{ Form::label('name', 'Descripción del Objetivo Estratégico / Acción:', ['class' => 'control-label font-weight-bold mb-0']) }}
+                            <button type="button" class="btn btn-xs btn-outline-success font-weight-bold rounded-pill px-2.5 shadow-xs" id="btnMejorarSmartIa" onclick="mejorarTextoSmartIa();" title="Usar la IA de Llama 3.3 para perfeccionar la redacción bajo metodología SMART e IPS">
+                                <i class="fa fa-magic text-warning mr-1"></i> Mejorar Redacción SMART con IA
+                            </button>
+                        </div>
                         {{ Form::textarea('name', null, [
                             'class' => 'form-control editor',
                             'id' => 'axis',
@@ -320,8 +336,11 @@
 
                     {{-- ── Marcos Referenciales (PND, ODS, etc.) ── --}}
                     <div class="form-group mb-3 position-relative">
-                        <label class="control-label font-weight-bold">
-                            <i class="fa fa-link mr-1"></i> Marcos Referenciales
+                        <label class="control-label font-weight-bold d-flex align-items-center justify-content-between">
+                            <span><i class="fa fa-link mr-1"></i> Marcos Referenciales</span>
+                            <button type="button" class="btn btn-xs btn-outline-success font-weight-bold rounded-pill px-2.5 shadow-xs" onclick="abrirModalInspiracionOds(3);">
+                                <i class="fa fa-lightbulb text-warning mr-1"></i> Banco de Ideas ODS (ONU)
+                            </button>
                         </label>
                         <small class="form-text text-muted mb-1">
                             Vinculá este objetivo a PND 2050, ODS u otro marco normativo.
@@ -381,7 +400,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ajaxGoalsModal" aria-hidden="true">
+<div class="modal fade" id="ajaxGoalsModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
 
@@ -477,7 +496,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ajaxStrategiesModal" aria-hidden="true">
+<div class="modal fade" id="ajaxStrategiesModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header" style="background:linear-gradient(135deg,#e65100,#f57c00)">
@@ -511,7 +530,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ajaxActionsModal" aria-hidden="true">
+<div class="modal fade" id="ajaxActionsModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
 
@@ -540,9 +559,26 @@
                     {{ Form::hidden('goal', null, ['class' => 'form-control', 'id' => 'actions_goal']) }}
                     {{ Form::hidden('progress', null, ['class' => 'form-control', 'id' => 'actions_progress']) }}
                     {{ Form::hidden('dependency_id', null, ['class' => 'form-control', 'id' => 'actions_dependency']) }}
+                    {{ Form::hidden('creado_con_ia', '0', ['id' => 'action_creado_con_ia']) }}
+
+                    {{-- Banner Asistente IA SIPLAN --}}
+                    <div class="p-3 mb-3 rounded shadow-xs text-white d-flex align-items-center justify-content-between flex-wrap" style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%); gap:10px; border-radius:12px;">
+                        <div>
+                            <strong class="d-block" style="font-size:0.88rem;"><i class="fa fa-robot text-warning mr-1"></i> Asistente de Planificación IA (Llama 3.3 70B)</strong>
+                            <small class="text-white-50" style="font-size:0.75rem;">Escribí una idea simple abajo y la IA completará la Acción Estratégica SMART y su Indicador.</small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-warning font-weight-bold text-dark rounded-pill px-3 shadow-sm" id="btnGenerarTodoConIaActions" onclick="generarAccionEIndicadorConIaActions();">
+                            <i class="fa fa-bolt mr-1"></i> Generar Acción e Indicador con IA
+                        </button>
+                    </div>
 
                     <div class="actions mb-3">
-                        {{ Form::label('name', 'Descripción de la ' . ($niveles['action'] ?? 'Acción') . ':', ['class' => 'control-label font-weight-bold']) }}
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            {{ Form::label('name', 'Descripción de la ' . ($niveles['action'] ?? 'Acción') . ':', ['class' => 'control-label font-weight-bold mb-0']) }}
+                            <button type="button" class="btn btn-xs btn-outline-success font-weight-bold rounded-pill px-2.5 shadow-xs" id="btnMejorarSmartIaActions" onclick="mejorarTextoSmartIaActions();" title="Usar la IA de Llama 3.3 para perfeccionar la redacción bajo metodología SMART e IPS">
+                                <i class="fa fa-magic text-warning mr-1"></i> Mejorar Redacción SMART con IA
+                            </button>
+                        </div>
                         {{ Form::textarea('name', null, [
                             'class' => 'form-control editor',
                             'id' => 'actions',
@@ -699,7 +735,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ajaxHistoricalModal" aria-hidden="true">
+<div class="modal fade" id="ajaxHistoricalModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
@@ -728,7 +764,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ajaxAxisListlModal" aria-hidden="true">
+<div class="modal fade" id="ajaxAxisListlModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
@@ -763,7 +799,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ajaxGoalsListModal" aria-hidden="true">
+<div class="modal fade" id="ajaxGoalsListModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header" style="background:linear-gradient(135deg,#1565c0,#1976d2)">
@@ -797,7 +833,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ajaxActionsListModal" aria-hidden="true">
+<div class="modal fade" id="ajaxActionsListModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header" style="background:linear-gradient(135deg,#2e7d32,#388e3c)">
@@ -833,7 +869,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ajaxDefineCriteriaModal" aria-hidden="true">
+<div class="modal fade" id="ajaxDefineCriteriaModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header py-2" style="background:linear-gradient(135deg,#1b5e20,#2e7d32)">
@@ -961,7 +997,7 @@
 @include('admin.planificacion.indicadores.modal_ficha', ['profile' => $profile])
 
 {{-- ══ Modal Lista de Indicadores del Perfil ══════════════════════════════ --}}
-<div class="modal fade" id="modalIndicadoresList" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalIndicadoresList" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header" style="background:linear-gradient(135deg,#1a237e,#283593)">
@@ -1001,3 +1037,267 @@
     </div>
 </div>
 {{-- /Modal Lista --}}
+
+<script>
+function mejorarTextoSmartIa() {
+    var rawText = $('#axis').val();
+    if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances['axis']) {
+        rawText = CKEDITOR.instances['axis'].getData();
+    }
+
+    var plainText = $('<div>').html(rawText).text().trim();
+    if (!plainText) {
+        if (typeof toastr !== 'undefined') toastr.warning('Ingresá una idea o borrador primero para que la IA lo redacte en formato SMART.');
+        return;
+    }
+
+    var $btn = $('#btnMejorarSmartIa');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Redactando con IA...');
+
+    $.ajax({
+        url: '{{ route("admin.ai.redactarSmart") }}',
+        type: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            texto: plainText,
+            tipo: 'Objetivo/Acción Estratégica IPS'
+        },
+        dataType: 'json',
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-magic text-warning mr-1"></i> Mejorar Redacción SMART con IA');
+            if (res.success && res.resultado) {
+                if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances['axis']) {
+                    CKEDITOR.instances['axis'].setData(res.resultado);
+                } else {
+                    $('#axis').val(res.resultado);
+                }
+                if (typeof toastr !== 'undefined') toastr.success('¡Texto mejorado y formateado a metodología SMART por la IA!');
+            }
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false).html('<i class="fa fa-magic text-warning mr-1"></i> Mejorar Redacción SMART con IA');
+            if (typeof toastr !== 'undefined') toastr.error('Error al conectar con la IA.');
+        }
+    });
+}
+
+function generarAccionEIndicadorConIa() {
+    var rawText = $('#axis').val();
+    if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances['axis']) {
+        rawText = CKEDITOR.instances['axis'].getData();
+    }
+    var borrador = $('<div>').html(rawText).text().trim();
+
+    if (!borrador || borrador.length < 3) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Escribí una idea básica primero',
+                text: 'Por favor, ingresá una idea o borrador breve en la casilla de descripción (ej: "Construir nuevo vacunatorio en Luque") y volvé a presionar el botón.',
+                confirmButtonColor: '#4f46e5'
+            });
+        } else if (typeof toastr !== 'undefined') {
+            toastr.warning('Escribí una idea o borrador primero en la descripción.');
+        }
+        return;
+    }
+
+    var $btn = $('#btnGenerarTodoConIa');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Generando con IA (Llama 3.3)...');
+
+    $.ajax({
+        url: '{{ route("admin.ai.generarAccionCompleta") }}',
+        type: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            borrador: borrador
+        },
+        dataType: 'json',
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-bolt mr-1"></i> Generar Acción e Indicador con IA');
+            if (res.success && res.data) {
+                var d = res.data;
+                if (d.accion_nombre) {
+                    if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances['axis']) {
+                        CKEDITOR.instances['axis'].setData(d.accion_nombre);
+                    } else {
+                        $('#axis').val(d.accion_nombre);
+                    }
+                }
+                if (d.resultado_intermedio && $('#axis_resultado_intermedio').length) {
+                    $('#axis_resultado_intermedio').val(d.resultado_intermedio);
+                }
+
+                // Autocompletar Ficha Técnica de Indicador en modal_ficha
+                if (d.indicador) {
+                    var ind = d.indicador;
+                    if ($('#form_ind_nombre').length) $('#form_ind_nombre').val(ind.nombre);
+                    if ($('#form_ind_codigo_letras').length) $('#form_ind_codigo_letras').val(ind.codigo_letras);
+                    if ($('#form_ind_codigo_numeros').length) $('#form_ind_codigo_numeros').val(ind.codigo_numeros);
+                    if ($('#form_ind_formula').length) $('#form_ind_formula').val(ind.formula);
+                    if ($('#form_ind_unidad_medida').length) $('#form_ind_unidad_medida').val(ind.unidad_medida);
+                    if ($('#form_ind_fuente').length) $('#form_ind_fuente').val(ind.fuente);
+                    if ($('#form_ind_dependencia_responsable').length) $('#form_ind_dependencia_responsable').val(ind.dependencia_responsable);
+
+                    // Seleccionar radios de dimensión, frecuencia, cobertura y sentido
+                    if (ind.dimension) {
+                        $('input[name="ind_dimension"][value="' + ind.dimension + '"]').prop('checked', true).trigger('change');
+                        $('.ind-card-dim').removeClass('border-primary bg-light');
+                        $('.ind-card-dim[data-value="' + ind.dimension + '"]').addClass('border-primary bg-light');
+                    }
+                    if (ind.frecuencia) {
+                        $('input[name="ind_frecuencia"][value="' + ind.frecuencia + '"]').prop('checked', true).trigger('change');
+                    }
+                    if (ind.cobertura) {
+                        $('input[name="ind_cobertura"][value="' + ind.cobertura + '"]').prop('checked', true).trigger('change');
+                    }
+                    if (ind.sentido) {
+                        $('input[name="ind_sentido"][value="' + ind.sentido + '"]').prop('checked', true).trigger('change');
+                    }
+                }
+
+                if (typeof toastr !== 'undefined') {
+                    toastr.success('¡Acción Estratégica SMART y su Ficha Técnica de Indicador fueron generadas exitosamente!', '🤖 IA Llama 3.3 70B');
+                }
+            }
+        },
+        error: function() {
+            $btn.prop('disabled', false).html('<i class="fa fa-bolt mr-1"></i> Generar Acción e Indicador con IA');
+            if (typeof toastr !== 'undefined') toastr.error('Ocurrió un error al conectar con la IA.');
+        }
+    });
+}
+
+function getValFromEditor(id, modalId) {
+    var val = '';
+    var instanceName = id + 'Editor';
+    if (typeof window[instanceName] !== 'undefined' && window[instanceName] && typeof window[instanceName].getData === 'function') {
+        val = window[instanceName].getData();
+    } else if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances && CKEDITOR.instances[id]) {
+        val = CKEDITOR.instances[id].getData();
+    } else {
+        val = $('#' + id).val() || '';
+    }
+
+    var plain = $('<div>').html(val).text().trim();
+    if (!plain && modalId) {
+        var domText = $('#' + modalId + ' .ck-editor__editable').text().trim();
+        if (domText) plain = domText;
+    }
+    return plain;
+}
+
+function setValToEditor(id, modalId, htmlContent) {
+    var instanceName = id + 'Editor';
+    if (typeof window[instanceName] !== 'undefined' && window[instanceName] && typeof window[instanceName].setData === 'function') {
+        window[instanceName].setData(htmlContent);
+    } else if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances && CKEDITOR.instances[id]) {
+        CKEDITOR.instances[id].setData(htmlContent);
+    }
+    $('#' + id).val(htmlContent);
+    if (modalId && $('#' + modalId + ' .ck-editor__editable').length) {
+        $('#' + modalId + ' .ck-editor__editable').html('<p>' + htmlContent + '</p>');
+    }
+}
+
+function mejorarTextoSmartIaActions() {
+    var plainText = getValFromEditor('actions', 'ajaxActionsModal');
+    if (!plainText || plainText.length < 2) {
+        plainText = "Optimización de la atención médica, gestión de turnos y abastecimiento de insumos en el IPS";
+    }
+
+    var $btn = $('#btnMejorarSmartIaActions');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Redactando con IA...');
+
+    $.ajax({
+        url: '{{ route("admin.ai.redactarSmart") }}',
+        type: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            texto: plainText,
+            tipo: 'Acción Estratégica / Operativa IPS'
+        },
+        dataType: 'json',
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-magic text-warning mr-1"></i> Mejorar Redacción SMART con IA');
+            if (res.success && res.resultado) {
+                setValToEditor('actions', 'ajaxActionsModal', res.resultado);
+                if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val('1');
+                if (typeof toastr !== 'undefined') toastr.success('¡Texto mejorado y formateado a metodología SMART por la IA!');
+            }
+        },
+        error: function() {
+            $btn.prop('disabled', false).html('<i class="fa fa-magic text-warning mr-1"></i> Mejorar Redacción SMART con IA');
+            if (typeof toastr !== 'undefined') toastr.error('Error al conectar con la IA.');
+        }
+    });
+}
+
+function generarAccionEIndicadorConIaActions() {
+    var borrador = getValFromEditor('actions', 'ajaxActionsModal');
+    if (!borrador || borrador.length < 2) {
+        borrador = "Optimización de la atención médica, gestión de turnos y abastecimiento de insumos en el IPS";
+    }
+
+    var $btn = $('#btnGenerarTodoConIaActions');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Generando con IA (Llama 3.3)...');
+
+    $.ajax({
+        url: '{{ route("admin.ai.generarAccionCompleta") }}',
+        type: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            borrador: borrador
+        },
+        dataType: 'json',
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-bolt mr-1"></i> Generar Acción e Indicador con IA');
+            if (res.success && res.data) {
+                if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val('1');
+                var d = res.data;
+                if (d.accion_nombre) {
+                    setValToEditor('actions', 'ajaxActionsModal', d.accion_nombre);
+                }
+                if (d.resultado_intermedio && $('#actions_resultado_intermedio').length) {
+                    $('#actions_resultado_intermedio').val(d.resultado_intermedio);
+                }
+
+                // Autocompletar Ficha Técnica de Indicador en modal_ficha si está presente
+                if (d.indicador) {
+                    var ind = d.indicador;
+                    if ($('#form_ind_nombre').length) $('#form_ind_nombre').val(ind.nombre);
+                    if ($('#form_ind_codigo_letras').length) $('#form_ind_codigo_letras').val(ind.codigo_letras);
+                    if ($('#form_ind_codigo_numeros').length) $('#form_ind_codigo_numeros').val(ind.codigo_numeros);
+                    if ($('#form_ind_formula').length) $('#form_ind_formula').val(ind.formula);
+                    if ($('#form_ind_unidad_medida').length) $('#form_ind_unidad_medida').val(ind.unidad_medida);
+                    if ($('#form_ind_fuente').length) $('#form_ind_fuente').val(ind.fuente);
+                    if ($('#form_ind_dependencia_responsable').length) $('#form_ind_dependencia_responsable').val(ind.dependencia_responsable);
+
+                    if (ind.dimension) {
+                        $('input[name="ind_dimension"][value="' + ind.dimension + '"]').prop('checked', true).trigger('change');
+                        $('.ind-card-dim').removeClass('border-primary bg-light');
+                        $('.ind-card-dim[data-value="' + ind.dimension + '"]').addClass('border-primary bg-light');
+                    }
+                    if (ind.frecuencia) {
+                        $('input[name="ind_frecuencia"][value="' + ind.frecuencia + '"]').prop('checked', true).trigger('change');
+                    }
+                    if (ind.cobertura) {
+                        $('input[name="ind_cobertura"][value="' + ind.cobertura + '"]').prop('checked', true).trigger('change');
+                    }
+                    if (ind.sentido) {
+                        $('input[name="ind_sentido"][value="' + ind.sentido + '"]').prop('checked', true).trigger('change');
+                    }
+                }
+
+                if (typeof toastr !== 'undefined') {
+                    toastr.success('¡Acción Estratégica SMART y su Ficha Técnica de Indicador fueron generadas exitosamente!', '🤖 IA Llama 3.3 70B');
+                }
+            }
+        },
+        error: function() {
+            $btn.prop('disabled', false).html('<i class="fa fa-bolt mr-1"></i> Generar Acción e Indicador con IA');
+            if (typeof toastr !== 'undefined') toastr.error('Ocurrió un error al conectar con la IA.');
+        }
+    });
+}
+</script>

@@ -15,6 +15,7 @@
     <link href="{{ asset('material') }}/css/material-dashboard.css?v=2.1.3" rel="stylesheet" />
     <link href="{{ asset('material') }}/demo/demo.css" rel="stylesheet" />
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <script src="{{ asset('js/jquery.js') }}"></script>
     </head>
     <body class="{{ $class ?? '' }}">
         @auth()
@@ -112,6 +113,9 @@
         <script src="{{ asset('material') }}/js/plugins/bootstrap-notify.js"></script>
         <script src="{{ asset('material') }}/js/material-dashboard.js?v=2.1.1" type="text/javascript"></script>
         <script src="{{ asset('material') }}/js/settings.js"></script>
+
+        @include('layouts.includes.ticket_modal')
+
         @stack('js')
     </body>
 </html>
