@@ -4,68 +4,55 @@
 
 @section('content')
 <div class="content-wrapper p-3 p-md-4 bg-light">
-    <!-- Header Banner Principal -->
-    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; overflow: hidden; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);">
-        <div class="card-body p-4 text-white">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3" style="gap: 15px;">
-                <div>
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="badge badge-warning text-dark font-weight-bold px-2.5 py-1" style="border-radius: 6px; font-size: 0.72rem;">
-                            <i class="fas fa-shield-alt mr-1"></i> GESTIÓN DE ALERTAS Y GOBERNANZA
-                        </span>
-                        <span class="text-white-50 small">SIPLAN GO — IPS</span>
+    <div class="card">
+        <div class="card-header card-header-info">
+            <h4 class="card-title text-white font-weight-bold mb-0">
+                <i class="fas fa-exclamation-triangle mr-2"></i> Bandeja de Intervención (Consejo de Sabios)
+            </h4>
+        </div>
+
+        <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('admin.juntas.index') }}">Juntas Consultivas</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Bandeja de Intervención</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex flex-wrap align-items-center justify-content-between">
+                        <form action="{{ route('admin.juntas.intervenciones') }}" method="GET" class="form-inline flex-wrap" style="gap: 12px;">
+                            <div class="d-flex align-items-center mb-2">
+                                <label class="font-weight-bold mr-2 mb-0 text-dark small"><i class="fa fa-filter text-info mr-1"></i> Estado:</label>
+                                <a href="{{ route('admin.juntas.intervenciones', ['estado' => 'TODOS']) }}" class="btn btn-sm mr-2 {{ $estado === 'TODOS' ? 'btn-primary font-weight-bold' : 'btn-outline-secondary bg-white' }}">Todos</a>
+                                <a href="{{ route('admin.juntas.intervenciones', ['estado' => 'PENDIENTE']) }}" class="btn btn-sm mr-2 {{ $estado === 'PENDIENTE' ? 'btn-danger font-weight-bold' : 'btn-outline-secondary bg-white' }}">
+                                    <i class="fa fa-clock mr-1"></i> Pendientes
+                                </a>
+                                <a href="{{ route('admin.juntas.intervenciones', ['estado' => 'EMITIDO']) }}" class="btn btn-sm mr-2 {{ $estado === 'EMITIDO' ? 'btn-success font-weight-bold' : 'btn-outline-secondary bg-white' }}">
+                                    <i class="fa fa-check-double mr-1"></i> Emitidos con Firma
+                                </a>
+                            </div>
+
+                            <div class="d-flex align-items-center mb-2">
+                                <select name="junta_id" class="form-control form-control-sm font-weight-bold text-dark" style="width: auto; min-width: 200px;" onchange="this.form.submit()">
+                                    <option value="">-- Todas las Juntas --</option>
+                                    @foreach($juntas as $j)
+                                        <option value="{{ $j->id }}" {{ $juntaId == $j->id ? 'selected' : '' }}>{{ $j->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </form>
+
+                        <div>
+                            <a href="{{ route('admin.juntas.index') }}" class="btn btn-outline-info mb-2 mr-2 font-weight-bold">
+                                <i class="fa fa-cog mr-1"></i> Configurar Juntas & Firmas
+                            </a>
+                        </div>
                     </div>
-                    <h3 class="font-weight-bold text-white mb-1" style="font-size: 1.45rem;">
-                        <i class="fas fa-exclamation-triangle text-danger mr-2"></i> Bandeja de Intervención (Consejo de Sabios)
-                    </h3>
-                    <p class="text-white-50 mb-0 small" style="max-width: 750px; line-height: 1.45;">
-                        Gestión de Alertas en Rojo remitidas a las Juntas Consultivas para la emisión de Dictámenes de Mitigación, Evaluación de Impacto y Mejora Continua.
-                    </p>
-                </div>
-                <div class="flex-shrink-0">
-                    <a href="{{ route('admin.juntas.index') }}" class="btn btn-warning text-dark font-weight-bold rounded-pill px-4 py-2 shadow-sm" style="font-size: 0.85rem;">
-                        <i class="fas fa-cog mr-1"></i> Configurar Juntas & Firmas
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px; background: #f0fdf4; color: #166534; border-left: 5px solid #22c55e !important;">
-            <i class="fas fa-check-circle mr-2 text-success"></i> {{ session('success') }}
-            <button type="button" class="close text-success" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    @endif
-
-    <!-- Barra de Filtros por Estado y Junta -->
-    <div class="card shadow-sm border-0 mb-4" style="border-radius: 14px;">
-        <div class="card-body py-3 px-4">
-            <form action="{{ route('admin.juntas.intervenciones') }}" method="GET" class="form-inline justify-content-between flex-wrap" style="gap: 12px;">
-                <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
-                    <span class="font-weight-bold mr-2 text-dark small"><i class="fas fa-filter text-primary mr-1"></i> Filtrar por Estado:</span>
-                    <a href="{{ route('admin.juntas.intervenciones', ['estado' => 'TODOS']) }}" class="btn btn-sm rounded-pill font-weight-bold px-3 {{ $estado === 'TODOS' ? 'btn-primary shadow-sm' : 'btn-light border text-muted' }}">Todos</a>
-                    <a href="{{ route('admin.juntas.intervenciones', ['estado' => 'PENDIENTE']) }}" class="btn btn-sm rounded-pill font-weight-bold px-3 {{ $estado === 'PENDIENTE' ? 'btn-danger shadow-sm' : 'btn-light border text-muted' }}">
-                        <i class="fas fa-clock mr-1"></i> Pendientes
-                    </a>
-                    <a href="{{ route('admin.juntas.intervenciones', ['estado' => 'EMITIDO']) }}" class="btn btn-sm rounded-pill font-weight-bold px-3 {{ $estado === 'EMITIDO' ? 'btn-success shadow-sm' : 'btn-light border text-muted' }}">
-                        <i class="fas fa-check-double mr-1"></i> Emitidos con Firma
-                    </a>
-                </div>
-
-                <div>
-                    <select name="junta_id" class="form-control form-control-sm bg-white border font-weight-bold text-dark" style="border-radius: 8px; min-width: 220px;" onchange="this.form.submit()">
-                        <option value="">-- Todas las Juntas --</option>
-                        @foreach($juntas as $j)
-                            <option value="{{ $j->id }}" {{ $juntaId == $j->id ? 'selected' : '' }}>{{ $j->nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </form>
-        </div>
-    </div>
+                    <div class="card-body">
 
     <!-- Lista de Expedientes de Intervención -->
     <div class="row">
@@ -203,6 +190,11 @@
     <!-- Paginación -->
     <div class="d-flex justify-content-center mt-3">
         {{ $intervenciones->links() }}
+    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

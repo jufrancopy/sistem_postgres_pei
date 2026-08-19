@@ -365,8 +365,8 @@ class PeiController extends Controller
             !empty($syncResponsibles['attached']) || !empty($syncResponsibles['detached']) || !empty($syncResponsibles['updated']) ||
             !empty($syncActivityTasks['attached']) || !empty($syncActivityTasks['detached']) || !empty($syncActivityTasks['updated']);
 
-        // Registrar editor y otorgar puntos solo en actualizaciones reales (no en creación ni en guardados sin cambios)
-        if (!$profile->wasRecentlyCreated && ($wasChanged || $relationsChanged)) {
+        // Registrar editor y otorgar puntos en creaciones y actualizaciones reales
+        if ($profile->wasRecentlyCreated || $wasChanged || $relationsChanged) {
             $profile->updated_by = $user->id;
             $profile->saveQuietly();
 

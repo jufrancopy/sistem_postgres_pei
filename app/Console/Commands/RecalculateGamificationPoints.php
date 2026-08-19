@@ -395,6 +395,7 @@ class RecalculateGamificationPoints extends Command
     {
         $this->info('Recopilando ediciones de elementos PEI...');
 
+        // 1. Histórico de la tabla pei_profile_edits
         foreach (PeiProfileEdit::with('user')->cursor() as $edit) {
             if (!$this->usersById->has($edit->user_id)) {
                 continue;
@@ -409,6 +410,25 @@ class RecalculateGamificationPoints extends Command
                 $edit->id,
                 (string) $edit->pei_profile_id,
                 $edit->created_at?->toDateTimeString()
+            );
+        }
+
+        // 2. Creación / Edición de nodos en pei_profiles por usuarios
+        foreach (\App\Admin\Planificacion\Pei\PeiProfile::whereNotNull('updated_by')->cursor() as $node) {
+            $userId = $node->updated_by;
+            if (!$userId || !$this->usersById->has($userId)) {
+                continue;
+            }
+
+            $this->queuePoint(
+                $userId,
+                'pei_edit',
+                'Aporte/Edición de elemento PEI: ' . Str::limit(strip_tags($node->name), 40),
+                10,
+                \App\Admin\Planificacion\Pei\PeiProfile::class,
+                $node->id,
+                (string) $node->id,
+                $node->updated_at?->toDateTimeString() ?: $node->created_at?->toDateTimeString()
             );
         }
     }
