@@ -1428,18 +1428,27 @@ window.abrirModalRemitirJuntaObjetivo = function(axiId, axiTitle, juntaId, junta
 
     // Manejo de la Junta Consultiva Receptora
     if (juntaId && juntaId !== '') {
-        $('#remitir_junta_id').val(juntaId);
+        // Junta preconfigurada en el objetivo: usar hidden input, deshabilitar el select
+        $('#remitir_junta_id_hidden').val(juntaId);
+        $('#remitir_junta_id').prop('disabled', true);
         $('#bloque_junta_selector').addClass('d-none');
         $('#bloque_junta_asignada_info').removeClass('d-none');
         $('#remitir_junta_nombre_badge').text(juntaNombre || 'Junta Consultiva Vinculada al Objetivo');
     } else {
+        // Sin junta preconfigurada: mostrar selector
+        $('#remitir_junta_id_hidden').val('');
+        $('#remitir_junta_id').prop('disabled', false).val('');
         $('#bloque_junta_selector').removeClass('d-none');
         $('#bloque_junta_asignada_info').addClass('d-none');
         if ($.fn.select2) {
-            $('#remitir_junta_id').select2({
-                dropdownParent: $('#modalRemitirJuntaObjetivo'),
-                width: '100%'
-            });
+            if (!$('#remitir_junta_id').hasClass('select2-hidden-accessible')) {
+                $('#remitir_junta_id').select2({
+                    dropdownParent: $('#modalRemitirJuntaObjetivo'),
+                    width: '100%',
+                    placeholder: '— Seleccionar Junta Consultiva —',
+                    allowClear: true
+                });
+            }
         }
     }
 
@@ -1558,7 +1567,8 @@ window.enviarRemisionJuntaObjetivo = function(e) {
             <form id="formRemitirJuntaObjetivo" onsubmit="enviarRemisionJuntaObjetivo(event)">
                 @csrf
                 <input type="hidden" id="remitir_axi_id" name="axi_id">
-                <input type="hidden" id="remitir_junta_id" name="junta_id">
+                {{-- Hidden input para cuando hay junta preconfigurada en el objetivo --}}
+                <input type="hidden" id="remitir_junta_id_hidden" name="junta_id_preconfig">
 
                 <div class="modal-body p-4" style="background-color: #f8fafc;">
                     {{-- Banner Informativo de la Junta Asignada --}}
@@ -1592,7 +1602,7 @@ window.enviarRemisionJuntaObjetivo = function(e) {
                             @php
                                 $juntasActivas = \App\Models\Planificacion\Junta::where('activo', true)->orderBy('nombre')->get();
                             @endphp
-                            <select id="remitir_junta_id_select" class="form-control font-weight-bold" onchange="$('#remitir_junta_id').val($(this).val())">
+                            <select id="remitir_junta_id" name="junta_id" class="form-control font-weight-bold select2-remitir-junta">
                                 <option value="">— Seleccionar Junta Consultiva —</option>
                                 @foreach($juntasActivas as $jta)
                                     <option value="{{ $jta->id }}">{{ $jta->nombre }} ({{ strtoupper($jta->programa) }})</option>

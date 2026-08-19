@@ -2775,6 +2775,7 @@
                 var formData = new FormData(this);
                 formData.append('name', actionsEditor.getData());
                 formData.append('indicador_id', $('#action_indicador_id').val() || '');
+                formData.append('junta_id', $('#actions_junta_id').val() || '');
 
                 // Agregar responsables del Select2 manualmente
                 formData.delete('responsible_id[]'); // limpiar si hubiera
@@ -2852,6 +2853,7 @@
                     formData.append('ri_presupuestario', $('#axis_ri_presupuestario').val() || '');
                     formData.append('ri_programa', $('#axis_ri_programa').val() || '');
                     formData.append('ri_recursos_gs', $('#axis_ri_recursos_gs').val() || '');
+                    formData.append('junta_id', $('#axis_junta_id').val() || '');
 
                     // Metas RI
                     var riIdx = 0;
@@ -3046,6 +3048,7 @@
                 formData.append('name', goalsEditor.getData());
                 formData.append('bsc_perspectiva', $('#goals_bsc_perspectiva').val() || '');
                 formData.append('indicador_id', $('#goals_indicador_id').val() || '');
+                formData.append('junta_id', $('#goals_junta_id').val() || '');
 
                 $.ajax({
                     data: formData,

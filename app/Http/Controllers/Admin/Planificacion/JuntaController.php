@@ -10,6 +10,7 @@ use App\Admin\Planificacion\Pei\PeiProfile;
 use App\Models\Planificacion\PeiAccionReporte;
 use App\Services\GroqService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class JuntaController extends Controller
@@ -174,8 +175,15 @@ class JuntaController extends Controller
             'reporte_id'     => 'nullable|exists:pei_accion_reportes,id',
             'pei_profile_id' => 'nullable|exists:pei_profiles,id',
             'accion_ids'     => 'nullable|array',
-            'accion_ids.*'   => 'exists:pei_profiles,id',
-            'junta_id'       => 'nullable|exists:juntas,id',
+            'accion_ids.*'   => 'nullable|exists:pei_profiles,id',
+            'junta_id'       => [
+                'nullable',
+                function ($attribute, $value, $fail) {
+                    if ($value && !Junta::find($value)) {
+                        $fail('La Junta Consultiva seleccionada no existe.');
+                    }
+                },
+            ],
             'prioridad'      => 'nullable|in:MEDIA,ALTA,EMERGENCIA',
             'notas_remision' => 'nullable|string',
         ]);
@@ -200,7 +208,7 @@ class JuntaController extends Controller
             return response()->json(['success' => false, 'message' => 'No se seleccionó ninguna Acción Estratégica para remitir.'], 400);
         }
 
-        $juntaId = $request->input('junta_id');
+        $juntaId = $request->input('junta_id_preconfig') ?: $request->input('junta_id');
         if (!$juntaId) {
             $primeraAccion = PeiProfile::find($accionIds[0]);
             $juntaId = $primeraAccion ? $primeraAccion->junta_id : null;

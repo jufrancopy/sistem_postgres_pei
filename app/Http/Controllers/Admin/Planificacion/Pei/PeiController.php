@@ -538,6 +538,7 @@ class PeiController extends Controller
         $profile = PeiProfile::with([
                 'analysts', 'descendants', 'dependency', 'group', 'responsibles', 'strategies',
                 'children.marcos', 'children.strategies',
+                'children.junta', // nivel 1 (axi) con su Junta Consultiva vinculada
                 'children.indicador', // nivel 1 (axi) con su indicador
                 'children.children.indicador', // nivel 2 (goal) con su indicador
                 'children.children.children.indicador', // nivel 3 (action) con su indicador
