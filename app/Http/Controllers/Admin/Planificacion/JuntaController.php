@@ -268,12 +268,17 @@ class JuntaController extends Controller
         }
 
         $codigosStr = implode(', ', $expedientesCreados);
+        $urlIntervenciones = route('admin.juntas.intervenciones');
+
         return response()->json([
-            'success' => true,
-            'message' => count($expedientesCreados) === 1
+            'success'            => true,
+            'message'            => count($expedientesCreados) === 1
                 ? "Expediente {$codigosStr} remitido exitosamente a la {$junta->nombre}."
                 : "Se generaron los Expedientes ({$codigosStr}) remitidos a la {$junta->nombre}.",
-            'codigos' => $expedientesCreados,
+            'codigos'            => $expedientesCreados,
+            'junta_nombre'       => $junta->nombre,
+            'junta_presidente'   => $junta->presidente?->name ?? 'Junta Consultiva',
+            'url_intervenciones' => $urlIntervenciones,
         ]);
     }
 

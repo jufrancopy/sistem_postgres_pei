@@ -1526,12 +1526,7 @@ window.enviarRemisionJuntaObjetivo = function(e) {
             $btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Remitir Expediente(s) a la Junta');
             if (res.success) {
                 $('#modalRemitirJuntaObjetivo').modal('hide');
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Acciones Remitidas a Junta!',
-                    text: res.message,
-                    confirmButtonColor: '#2563eb'
-                });
+                mostrarModalQrJunta(res);
             } else {
                 Swal.fire('Error', res.message || 'No se pudieron remitir las acciones.', 'error');
             }
@@ -1543,6 +1538,38 @@ window.enviarRemisionJuntaObjetivo = function(e) {
         }
     });
 };
+
+function mostrarModalQrJunta(data) {
+    var url = data.url_intervenciones || "{{ route('admin.juntas.intervenciones') }}";
+    var codigos = data.codigos ? (Array.isArray(data.codigos) ? data.codigos.join(', ') : data.codigos) : 'EXPEDIENTE';
+    var juntaNombre = data.junta_nombre || 'Junta Consultiva Institucional';
+
+    $('#qr_modal_junta_nombre').text(juntaNombre);
+    $('#qr_codigo_expediente').text(codigos);
+    $('#qr_input_url_junta').val(url);
+    $('#qr_btn_abrir_intervenciones').attr('href', url);
+
+    var qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=5&data=' + encodeURIComponent(url);
+    $('#qr_img_junta').attr('src', qrSrc);
+
+    $('#modalQrJunta').modal('show');
+}
+
+function copiarUrlJuntaQr() {
+    var input = document.getElementById('qr_input_url_junta');
+    input.select();
+    document.execCommand('copy');
+    if (window.toastr) toastr.success('Enlace copiado al portapapeles.');
+}
+
+function compartirJuntaWhatsApp() {
+    var url = $('#qr_input_url_junta').val();
+    var cod = $('#qr_codigo_expediente').text();
+    var texto = '🏛️ *EXPEDIENTE PARA JUNTA CONSULTIVA PEI*\n\n' +
+                '📌 *Expediente:* ' + cod + '\n' +
+                '🔗 *Acceder al Expediente:* ' + url;
+    window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(texto), '_blank');
+}
 </script>
 
 {{-- Modal Remitir Acciones a Junta desde Nivel de Objetivo Estratégico --}}
@@ -1742,4 +1769,61 @@ window.enviarRemisionJuntaObjetivo = function(e) {
         </div>
     </div>
 </div>
-</script>
+
+{{-- Modal QR Code & Enlace Seguro para la Junta Consultiva --}}
+<div class="modal fade" id="modalQrJunta" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 100060;">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 580px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header py-3 px-4 text-white" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="fa fa-qrcode fa-2x text-warning mr-2"></i>
+                    <div>
+                        <span class="badge badge-warning text-dark font-weight-bold px-2 py-0.5" style="border-radius: 6px; font-size: 0.68rem;">EXPEDIENTE REMITIDO</span>
+                        <h5 class="modal-title font-weight-bold text-white mb-0" id="qr_modal_junta_nombre">Junta Consultiva</h5>
+                    </div>
+                </div>
+                <button type="button" class="close text-white opacity-8" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body p-4 bg-light text-center">
+                <div class="alert alert-success border-0 py-2.5 px-3 mb-3 small font-weight-bold" style="border-radius: 10px; background: #f0fdf4; color: #15803d; border-left: 4px solid #22c55e !important;">
+                    <i class="fa fa-check-circle mr-1"></i> Remisión registrada correctamente. Escaneá este código QR con cualquier celular o tablet para abrir el expediente.
+                </div>
+
+                {{-- QR Container --}}
+                <div class="p-3 bg-white rounded-circle d-inline-block shadow-sm mb-3" style="border: 4px solid #e2e8f0;">
+                    <img id="qr_img_junta" src="" alt="Código QR de Remisión a Junta" style="width: 210px; height: 210px; border-radius: 12px;" />
+                </div>
+
+                <div class="mb-3">
+                    <span class="badge badge-dark font-mono font-weight-bold px-3 py-1 text-warning" id="qr_codigo_expediente" style="font-size: 0.88rem; font-family: monospace;">EXP-0000</span>
+                </div>
+
+                <div class="form-group mb-3 text-left">
+                    <label class="font-weight-bold text-dark small mb-1">
+                        <i class="fa fa-link text-primary mr-1"></i> Enlace Web Seguro para la Junta:
+                    </label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" id="qr_input_url_junta" class="form-control font-weight-bold text-primary font-mono" readonly style="font-family: monospace; font-size: 0.8rem; border-radius: 8px 0 0 8px;">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-primary font-weight-bold px-3" onclick="copiarUrlJuntaQr()" style="border-radius: 0 8px 8px 0;">
+                                <i class="fa fa-copy mr-1"></i> Copiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap" style="gap:8px;">
+                    <button type="button" class="btn btn-sm btn-success font-weight-bold rounded-pill px-3 py-2 shadow-sm" onclick="compartirJuntaWhatsApp()">
+                        <i class="fab fa-whatsapp mr-1" style="font-size: 1.05rem;"></i> Compartir por WhatsApp
+                    </button>
+                    <a id="qr_btn_abrir_intervenciones" href="#" target="_blank" class="btn btn-sm btn-dark font-weight-bold rounded-pill px-3 py-2 shadow-sm">
+                        <i class="fa fa-external-link-alt mr-1"></i> Abrir Bandeja de Junta
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer bg-white py-2.5 px-4 justify-content-between">
+                <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4 font-weight-bold" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
