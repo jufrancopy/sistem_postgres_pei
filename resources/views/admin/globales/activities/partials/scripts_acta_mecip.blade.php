@@ -57,11 +57,15 @@
 
     // ── Renderizar lista de participantes ─────────────────────────────────────
     function renderParticipantes(participantes) {
+        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tblParticipantesActa')) {
+            $('#tblParticipantesActa').DataTable().clear().destroy();
+        }
+
         var tbody = $('#tbodyParticipantesActa');
         tbody.empty();
 
         if (!participantes || participantes.length === 0) {
-            tbody.html('<tr><td colspan="6" class="text-center text-muted py-3" style="font-size: 0.82rem;"><i class="fa fa-users mr-1"></i>No hay participantes registrados aún. Compartí el QR para que se registren.</td></tr>');
+            tbody.html('<tr><td colspan="6" class="text-center text-muted py-3" style="font-size: 0.82rem; color: #475569 !important;"><i class="fa fa-users mr-1"></i>No hay participantes registrados aún. Compartí el QR para que se registren.</td></tr>');
             $('#actaParticipantesCountBadge').text('0 participantes');
             $('#modalQrCountText').text('0 participantes registrados');
             return;
@@ -76,12 +80,12 @@
                 : '<span class="badge badge-light border text-muted px-2 py-1" style="font-size:0.7rem;">Manual</span>';
 
             var tr = '<tr>' +
-                '<td class="font-weight-bold text-dark">' + $('<div>').text(p.nombre_completo || (p.nombre + ' ' + p.apellido)).html() + ' ' + badgeQr + '</td>' +
-                '<td>' + $('<div>').text(p.correo || '—').html() + '</td>' +
-                '<td>' + $('<div>').text(p.dependencia || '—').html() + '</td>' +
-                '<td>' + $('<div>').text(p.cargo || '—').html() + '</td>' +
-                '<td>' + $('<div>').text(p.telefono || '—').html() + '</td>' +
-                '<td class="text-center">' +
+                '<td class="font-weight-bold text-dark align-middle" style="color: #0f172a !important;">' + $('<div>').text(p.nombre_completo || (p.nombre + ' ' + (p.apellido || ''))).html() + ' ' + badgeQr + '</td>' +
+                '<td class="text-dark font-weight-500 align-middle" style="color: #0f172a !important;">' + $('<div>').text(p.correo || '—').html() + '</td>' +
+                '<td class="text-dark font-weight-500 align-middle" style="color: #0f172a !important;">' + $('<div>').text(p.dependencia || '—').html() + '</td>' +
+                '<td class="text-dark font-weight-500 align-middle" style="color: #0f172a !important;">' + $('<div>').text(p.cargo || '—').html() + '</td>' +
+                '<td class="text-dark font-weight-500 align-middle" style="color: #0f172a !important;">' + $('<div>').text(p.telefono || '—').html() + '</td>' +
+                '<td class="text-center align-middle">' +
                     '<button type="button" class="btn btn-xs btn-outline-danger btnDeleteParticipanteActa" data-id="' + p.id + '" style="padding: 2px 6px; font-size: 0.7rem;" title="Eliminar">' +
                         '<i class="fa fa-trash"></i>' +
                     '</button>' +
@@ -89,6 +93,30 @@
             '</tr>';
             tbody.append(tr);
         });
+
+        if ($.fn.DataTable) {
+            $('#tblParticipantesActa').DataTable({
+                destroy: true,
+                paging: true,
+                pageLength: 5,
+                lengthChange: false,
+                searching: true,
+                ordering: true,
+                info: true,
+                language: {
+                    search: "Buscar:",
+                    searchPlaceholder: "Filtrar participante...",
+                    emptyTable: "No hay participantes registrados.",
+                    info: "Mostrando _START_ a _END_ de _TOTAL_ participantes",
+                    infoEmpty: "0 participantes",
+                    infoFiltered: "(filtrado de _MAX_ totales)",
+                    paginate: {
+                        previous: "Anterior",
+                        next: "Siguiente"
+                    }
+                }
+            });
+        }
     }
 
     // ── Cargar y Abrir Editor Proforma MECIP ───────────────────────────────────

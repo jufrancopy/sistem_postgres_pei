@@ -226,20 +226,46 @@
                                 </div>
                             </div>
 
-                            {{-- Tabla de Participantes --}}
+                            {{-- Tabla de Participantes con DataTables --}}
+                            <style>
+                                #tblParticipantesActa, 
+                                #tblParticipantesActa th, 
+                                #tblParticipantesActa td {
+                                    color: #0f172a !important;
+                                }
+                                #tblParticipantesActa_wrapper .dataTables_filter label {
+                                    font-size: 0.78rem !important;
+                                    color: #0f172a !important;
+                                    font-weight: 600 !important;
+                                }
+                                #tblParticipantesActa_wrapper .dataTables_filter input {
+                                    border: 1px solid #cbd5e1 !important;
+                                    border-radius: 6px !important;
+                                    padding: 2px 8px !important;
+                                    font-size: 0.78rem !important;
+                                    color: #0f172a !important;
+                                    background-color: #ffffff !important;
+                                }
+                                #tblParticipantesActa_wrapper .dataTables_info,
+                                #tblParticipantesActa_wrapper .dataTables_paginate {
+                                    font-size: 0.75rem !important;
+                                    color: #475569 !important;
+                                    margin-top: 6px !important;
+                                }
+                            </style>
                             <div class="table-responsive mb-3">
-                                <table class="table table-sm table-bordered table-hover mb-0" id="tblParticipantesActa" style="border: 1.5px solid #cbd5e1; font-size: 0.8rem;">
-                                    <thead class="bg-light text-dark font-weight-bold">
+                                <table class="table table-sm table-bordered table-hover mb-0" id="tblParticipantesActa" style="border: 1.5px solid #cbd5e1; font-size: 0.8rem; color: #0f172a !important; background-color: #ffffff;">
+                                    <thead class="bg-light font-weight-bold" style="color: #0f172a !important;">
                                         <tr>
-                                            <th style="width: 22%;">Nombre y Apellido</th>
-                                            <th style="width: 20%;">Correo Electrónico</th>
-                                            <th style="width: 20%;">Dependencia</th>
-                                            <th style="width: 18%;">Cargo</th>
-                                            <th style="width: 12%;">Teléfono</th>
-                                            <th style="width: 8%; text-align: center;">Acción</th>
+                                            <th style="width: 22%; color: #0f172a !important;">Nombre y Apellido</th>
+                                            <th style="width: 20%; color: #0f172a !important;">Correo Electrónico</th>
+                                            <th style="width: 20%; color: #0f172a !important;">Dependencia</th>
+                                            <th style="width: 18%; color: #0f172a !important;">Cargo</th>
+                                            <th style="width: 12%; color: #0f172a !important;">Teléfono</th>
+                                            <th style="width: 8%; text-align: center; color: #0f172a !important;">Acción</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="tbodyParticipantesActa">
+                                    <tbody id="tbodyParticipantesActa" style="color: #0f172a !important;">
                                         {{-- Inyectado dinámicamente --}}
                                     </tbody>
                                 </table>
