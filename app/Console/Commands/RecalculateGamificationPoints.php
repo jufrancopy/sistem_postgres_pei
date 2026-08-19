@@ -404,7 +404,7 @@ class RecalculateGamificationPoints extends Command
                 $edit->user_id,
                 'pei_edit',
                 'Edición de elemento PEI',
-                100,
+                10,
                 PeiProfileEdit::class,
                 $edit->id,
                 (string) $edit->pei_profile_id,
