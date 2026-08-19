@@ -473,7 +473,7 @@ class PeiController extends Controller
 
     public function edit($id)
     {
-        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'activity'])->find($id);
+        $profile = PeiProfile::with(['analysts', 'descendants', 'dependency', 'group', 'responsibles', 'activity', 'activityTasks', 'strategies'])->find($id);
         $groupParent = null;
         if ($profile->group && $profile->group->parent_id) {
             $groupParent = \App\Admin\Globales\Group::find($profile->group->parent_id);
