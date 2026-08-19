@@ -407,10 +407,42 @@ class GamificationService
 
     /**
      * Query base de puntos del usuario, opcionalmente filtrado por PEI.
+    /**
+     * Obtiene el ID del PEI master y todos los IDs descendientes de su árbol jerárquico.
+     */
+    public function getPeiTreeProfileIds(string $masterPeiId): array
+    {
+        $allIds = [$masterPeiId];
+        $currentBatch = [$masterPeiId];
+
+        for ($i = 0; $i < 5; $i++) {
+            $nextBatch = PeiProfile::whereIn('parent_id', $currentBatch)->pluck('id')->toArray();
+            if (empty($nextBatch)) {
+                break;
+            }
+            $allIds = array_merge($allIds, $nextBatch);
+            $currentBatch = $nextBatch;
+        }
+
+        return array_unique($allIds);
+    }
+
+    /**
+     * Query base de puntos del usuario, filtrado por el contexto del árbol PEI activo (o todos si es nulo).
      */
     protected function pointsQuery(User $user, ?string $peiProfileId = null)
     {
-        return GamificationPoint::where('user_id', $user->id);
+        $query = GamificationPoint::where('user_id', $user->id);
+
+        if ($peiProfileId) {
+            $allowedProfileIds = $this->getPeiTreeProfileIds($peiProfileId);
+            $query->where(function ($q) use ($allowedProfileIds) {
+                $q->whereIn('pei_profile_id', $allowedProfileIds)
+                  ->orWhereNull('pei_profile_id');
+            });
+        }
+
+        return $query;
     }
 
     /**

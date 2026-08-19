@@ -94,9 +94,10 @@ class UserProfileController extends Controller
         $selectedPei = $selectedPeiId ? PeiProfile::find($selectedPeiId) : null;
         $peiName = $selectedPei ? strip_tags($selectedPei->name) : null;
 
-        $pointsQuery = GamificationPoint::where('user_id', $user->id);
-
-        $points = $pointsQuery->orderByDesc('created_at')->get()->map(function ($point) {
+        $points = $this->gamificationService->getValidPointsForUser($user, $selectedPeiId)
+            ->sortByDesc('created_at')
+            ->values()
+            ->map(function ($point) {
             return [
                 'id' => $point->id,
                 'created_at' => $point->created_at,
