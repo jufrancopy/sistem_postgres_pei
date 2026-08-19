@@ -45,7 +45,7 @@
                                                 <input type="hidden" name="establecimiento_id" value="{{ $row['establecimiento']->id }}">
                                                 <input type="hidden" name="periodo_anio" value="{{ $periodo_anio }}">
                                                 <input type="hidden" name="periodo_mes" value="{{ $periodo_mes }}">
-                                                @if($row['unidad'] && !($formulario->codigo === 'SP10' || $formulario->layout_type === 'nominativo'))
+                                                @if($row['unidad'])
                                                     <input type="hidden" name="estructura_servicio_id" value="{{ $row['unidad']->servicio_id }}">
                                                 @endif
                                                 <button class="btn btn-info btn-sm">Cargar planilla</button>
@@ -59,7 +59,7 @@
                                                 <input type="hidden" name="establecimiento_id" value="{{ $row['establecimiento']->id }}">
                                                 <input type="hidden" name="periodo_anio" value="{{ $periodo_anio }}">
                                                 <input type="hidden" name="periodo_mes" value="{{ $periodo_mes }}">
-                                                @if($row['unidad'] && !($formulario->codigo === 'SP10' || $formulario->layout_type === 'nominativo'))
+                                                @if($row['unidad'])
                                                     <input type="hidden" name="estructura_servicio_id" value="{{ $row['unidad']->servicio_id }}">
                                                 @endif
                                                 <button class="btn btn-info btn-sm">Iniciar carga</button>

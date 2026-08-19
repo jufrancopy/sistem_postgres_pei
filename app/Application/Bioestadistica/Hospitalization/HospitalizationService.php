@@ -94,7 +94,8 @@ class HospitalizationService
         int $year,
         int $month,
         array $rows,
-        User $user
+        User $user,
+        ?Record $record = null
     ): array {
         $this->assertEstablishment($establecimientoId, $user);
         $periods = [];
@@ -106,6 +107,7 @@ class HospitalizationService
             $month,
             $rows,
             $user,
+            $record,
             &$periods,
             &$summary
         ) {
@@ -115,6 +117,7 @@ class HospitalizationService
                 $month,
                 $rows,
                 $user,
+                $record,
                 &$periods,
                 &$summary
             ) {
@@ -163,6 +166,10 @@ class HospitalizationService
                     throw ValidationException::withMessages($errors);
                 }
 
+                    if ($record) {
+                        $saved->forceFill(['record_id' => $record->id])->save();
+                    }
+
                     $summary[$episodio ? 'actualizados' : 'creados']++;
                     $periods[$this->periodKey(
                         (int) $saved->establecimiento_id,
@@ -178,7 +185,7 @@ class HospitalizationService
         });
 
         foreach ($periods as [$establishment, $periodYear, $periodMonth]) {
-            $this->consolidate($establishment, $periodYear, $periodMonth, $user);
+            $this->consolidate($establishment, $periodYear, $periodMonth, $user, $record);
         }
 
         return $summary;
@@ -194,6 +201,12 @@ class HospitalizationService
             ->where('establecimiento_id', $record->establecimiento_id)
             ->where('periodo_anio', $record->periodo_anio)
             ->where('periodo_mes', $record->periodo_mes)
+            ->when(
+                $record->id,
+                fn ($query) => $query->where(function ($inner) use ($record) {
+                    $inner->where('record_id', $record->id)->orWhereNull('record_id');
+                })
+            )
             ->update([
                 'periodo_anio' => $year,
                 'periodo_mes' => $month,
@@ -212,18 +225,23 @@ class HospitalizationService
         });
     }
 
-    public function consolidate(int $establecimientoId, int $year, int $month, ?User $user = null): Record
-    {
-        return app(AuditService::class)->withoutAuditing(function () use ($establecimientoId, $year, $month, $user) {
-            return DB::transaction(function () use ($establecimientoId, $year, $month, $user) {
+    public function consolidate(
+        int $establecimientoId,
+        int $year,
+        int $month,
+        ?User $user = null,
+        ?Record $target = null
+    ): Record {
+        return app(AuditService::class)->withoutAuditing(function () use ($establecimientoId, $year, $month, $user, $target) {
+            return DB::transaction(function () use ($establecimientoId, $year, $month, $user, $target) {
                 $formulario = $this->sp10();
                 $lookup = [
                     'formulario_id' => $formulario->id,
                     'establecimiento_id' => $establecimientoId,
                     'periodo_anio' => $year,
                     'periodo_mes' => $month,
-                    'estructura_departamento_id' => null,
-                    'estructura_servicio_id' => null,
+                    'estructura_departamento_id' => $target?->estructura_departamento_id,
+                    'estructura_servicio_id' => $target?->estructura_servicio_id,
                 ];
                 $record = Record::withTrashed()->where($lookup)->lockForUpdate()->first();
                 if ($record?->trashed()) {
@@ -237,7 +255,7 @@ class HospitalizationService
                     ]);
                 }
 
-                $metrics = $this->metrics($establecimientoId, $year, $month);
+                $metrics = $this->metrics($establecimientoId, $year, $month, (int) $record->id, $record->estructura_servicio_id);
                 $values = $this->toRecordValues($formulario, $metrics);
                 $this->capture->save($record->load('formulario.secciones.fields.detalle.prestaciones'), $values, true);
 
@@ -245,6 +263,9 @@ class HospitalizationService
                     ->where('establecimiento_id', $establecimientoId)
                     ->where('periodo_anio', $year)
                     ->where('periodo_mes', $month)
+                    ->where(function ($query) use ($record) {
+                        $query->where('record_id', $record->id)->orWhereNull('record_id');
+                    })
                     ->update(['record_id' => $record->id]);
 
                 app(IndicatorCacheService::class)->invalidateForRecord($record);
@@ -257,12 +278,15 @@ class HospitalizationService
     /**
      * @return array<string, mixed>
      */
-    public function metrics(int $establecimientoId, int $year, int $month): array
+    public function metrics(int $establecimientoId, int $year, int $month, ?int $recordId = null, ?int $servicioId = null): array
     {
         $period = HospEpisodio::query()
             ->where('establecimiento_id', $establecimientoId)
             ->where('periodo_anio', $year)
-            ->where('periodo_mes', $month);
+            ->where('periodo_mes', $month)
+            ->when($recordId, fn ($query) => $query->where(function ($inner) use ($recordId) {
+                $inner->where('record_id', $recordId)->orWhereNull('record_id');
+            }));
         $discharged = (clone $period)
             ->whereNotNull('fecha_egreso')
             ->get();
@@ -275,7 +299,7 @@ class HospitalizationService
         $cesareas = $discharged->where('cesarea', true)->count();
         $partos = $discharged->where('servicio', 'MATERNIDAD')->count();
         $recienNacidos = $discharged->where('recien_nacido', true)->count();
-        $sp11 = $this->sp11Totals($establecimientoId, $year, $month);
+        $sp11 = $this->sp11Totals($establecimientoId, $year, $month, $servicioId);
 
         return [
             'ingresos_total' => $admitted,
@@ -531,7 +555,7 @@ class HospitalizationService
     /**
      * @return array{pacientes_dia:int,camas_operativas:int,camas_disponibles:int}
      */
-    private function sp11Totals(int $establecimientoId, int $year, int $month): array
+    private function sp11Totals(int $establecimientoId, int $year, int $month, ?int $servicioId = null): array
     {
         $formulario = Formulario::where('codigo', 'SP11')->first();
         $empty = ['pacientes_dia' => 0, 'camas_operativas' => 0, 'camas_disponibles' => 0];
@@ -543,6 +567,11 @@ class HospitalizationService
             ->where('establecimiento_id', $establecimientoId)
             ->where('periodo_anio', $year)
             ->where('periodo_mes', $month)
+            ->when(
+                $servicioId,
+                fn ($query) => $query->where('estructura_servicio_id', $servicioId),
+                fn ($query) => $query
+            )
             ->with('values.field')
             ->get();
 

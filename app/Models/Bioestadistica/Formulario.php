@@ -17,4 +17,11 @@ class Formulario extends BioestadisticaModel
     {
         return $this->hasMany(Record::class);
     }
+
+    public function scopeOrdenSp($query)
+    {
+        return $query->orderByRaw(
+            "CASE WHEN codigo ~ '^SP[0-9]+$' THEN CAST(substring(codigo from 3) AS integer) ELSE 100000 END, codigo"
+        );
+    }
 }

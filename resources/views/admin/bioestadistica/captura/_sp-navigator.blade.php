@@ -40,6 +40,6 @@
                 @endif
             @endforeach
         </div>
-        <small class="text-muted d-block mt-1">Pase a otro SP del mismo establecimiento y período sin volver al listado. El botón con borde gris aún no tiene carga.</small>
+        <small class="text-muted d-block mt-1">Pase a otro SP del mismo establecimiento, período y servicio sin volver al listado. El botón con borde gris aún no tiene carga.</small>
     </div>
 </div>

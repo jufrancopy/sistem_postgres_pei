@@ -382,7 +382,55 @@ class HospitalizacionServiceTest extends TestCase
             ->assertSee('Guardar planilla')
             ->assertSee($establecimiento->nombre)
             ->assertSee('Planillas de')
+            ->assertSeeInOrder(['SP1', 'SP2', 'SP3', 'SP4', 'SP5'])
             ->assertDontSee('Establecimiento a cargar');
+    }
+
+    public function test_spreadsheet_asks_for_servicio_before_starting_other_sp(): void
+    {
+        $user = User::role('Administrador')->first() ?? User::first();
+        $establecimiento = Establecimiento::query()->whereNotNull('distrito_id')->first();
+        $departamento = \App\Models\Bioestadistica\EstructuraDepartamento::query()->first();
+        $servicio = $departamento
+            ? \App\Models\Bioestadistica\EstructuraServicio::query()->where('departamento_id', $departamento->id)->first()
+            : null;
+        $sp1 = Formulario::where('codigo', 'SP1')->where('estado', 'activo')->first();
+        if (! $user || ! $establecimiento || ! $servicio || ! $sp1) {
+            $this->markTestSkipped('Faltan usuario, establecimiento, servicio o SP1.');
+        }
+
+        \App\Models\Bioestadistica\EstablecimientoServicio::where('establecimiento_id', $establecimiento->id)->delete();
+        \App\Models\Bioestadistica\EstablecimientoServicio::create([
+            'establecimiento_id' => $establecimiento->id,
+            'departamento_id' => $departamento->id,
+            'servicio_id' => $servicio->id,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('bioestadistica.hospitalizacion.spreadsheet', [
+                'establecimiento_id' => $establecimiento->id,
+                'periodo_anio' => 2088,
+                'periodo_mes' => 2,
+            ]))
+            ->assertOk()
+            ->assertSee('Departamento / servicio')
+            ->assertSee($servicio->nombre)
+            ->assertDontSee('Departamento / servicio para otro SP');
+
+        $this->actingAs($user)
+            ->from(route('bioestadistica.hospitalizacion.spreadsheet', [
+                'establecimiento_id' => $establecimiento->id,
+                'periodo_anio' => 2088,
+                'periodo_mes' => 2,
+            ]))
+            ->post(route('bioestadistica.captura.store'), [
+                'formulario_id' => $sp1->id,
+                'establecimiento_id' => $establecimiento->id,
+                'periodo_anio' => 2088,
+                'periodo_mes' => 2,
+            ])
+            ->assertRedirect()
+            ->assertSessionHasErrors('estructura_servicio_id');
     }
 
     public function test_spreadsheet_requires_selected_period_and_establishment(): void
@@ -414,18 +462,28 @@ class HospitalizacionServiceTest extends TestCase
             ->where('periodo_mes', $month)
             ->delete();
 
+        $unidad = \App\Models\Bioestadistica\EstablecimientoServicio::query()
+            ->where('establecimiento_id', $establecimiento->id)
+            ->first();
+        $payload = [
+            'formulario_id' => $formulario->id,
+            'establecimiento_id' => $establecimiento->id,
+            'periodo_anio' => $year,
+            'periodo_mes' => $month,
+        ];
+        $expected = [
+            'establecimiento_id' => $establecimiento->id,
+            'periodo_anio' => $year,
+            'periodo_mes' => $month,
+        ];
+        if ($unidad) {
+            $payload['estructura_servicio_id'] = $unidad->servicio_id;
+            $expected['estructura_servicio_id'] = $unidad->servicio_id;
+        }
+
         $this->actingAs($user)
-            ->post(route('bioestadistica.captura.store'), [
-                'formulario_id' => $formulario->id,
-                'establecimiento_id' => $establecimiento->id,
-                'periodo_anio' => $year,
-                'periodo_mes' => $month,
-            ])
-            ->assertRedirect(route('bioestadistica.hospitalizacion.spreadsheet', [
-                'establecimiento_id' => $establecimiento->id,
-                'periodo_anio' => $year,
-                'periodo_mes' => $month,
-            ]));
+            ->post(route('bioestadistica.captura.store'), $payload)
+            ->assertRedirect(route('bioestadistica.hospitalizacion.spreadsheet', $expected));
     }
 
     public function test_capture_edit_lists_other_sp_of_same_establishment(): void

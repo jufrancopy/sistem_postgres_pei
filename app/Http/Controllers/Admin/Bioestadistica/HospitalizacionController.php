@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Bioestadistica\HospEpisodioBatchRequest;
 use App\Http\Requests\Bioestadistica\HospEpisodioRequest;
 use App\Models\Bioestadistica\Establecimiento;
+use App\Models\Bioestadistica\EstablecimientoServicio;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\HospEpisodio;
 use App\Models\Bioestadistica\ImportJob;
@@ -119,24 +120,42 @@ class HospitalizacionController extends Controller
         $establishments = $this->allowedEstablishments();
         abort_unless($establishments->contains('id', $establishmentId), 403);
         $establecimiento = $establishments->firstWhere('id', $establishmentId);
+        $establecimiento->load(['unidades.departamento', 'unidades.servicio']);
         $formulario = Formulario::where('codigo', 'SP10')->firstOrFail();
-        $record = Record::firstOrCreate([
+        [$departamentoId, $servicioId] = $this->optionalCorte(
+            $establishmentId,
+            $request->input('estructura_servicio_id')
+        );
+        $recordQuery = Record::query()
+            ->where('formulario_id', $formulario->id)
+            ->where('establecimiento_id', $establishmentId)
+            ->where('periodo_anio', $year)
+            ->where('periodo_mes', $month);
+        if ($servicioId) {
+            $record = $recordQuery->where('estructura_servicio_id', $servicioId)->first();
+        } else {
+            $record = $recordQuery->first();
+        }
+        $record ??= Record::create([
             'formulario_id' => $formulario->id,
             'establecimiento_id' => $establishmentId,
             'periodo_anio' => $year,
             'periodo_mes' => $month,
-            'estructura_departamento_id' => null,
-            'estructura_servicio_id' => null,
-        ], [
+            'estructura_departamento_id' => $departamentoId,
+            'estructura_servicio_id' => $servicioId,
             'estado' => Record::ESTADO_BORRADOR,
             'created_by' => $request->user()->id,
         ]);
-        $record->load(['formulario', 'establecimiento']);
+        $record->load(['formulario', 'establecimiento', 'estructuraDepartamento', 'estructuraServicio']);
 
         $episodes = HospEpisodio::query()
             ->where('establecimiento_id', $establishmentId)
             ->where('periodo_anio', $year)
             ->where('periodo_mes', $month)
+            ->where(function ($query) use ($record) {
+                $query->where('record_id', $record->id)
+                    ->orWhereNull('record_id');
+            })
             ->orderBy('fecha_ingreso')
             ->orderBy('id')
             ->limit(200)
@@ -160,9 +179,14 @@ class HospitalizacionController extends Controller
                 $establishmentId,
                 $year,
                 $month,
-                (int) $formulario->id
+                (int) $formulario->id,
+                $record->estructura_departamento_id ? (int) $record->estructura_departamento_id : null,
+                $record->estructura_servicio_id ? (int) $record->estructura_servicio_id : null
             ),
             'establecimientoNombre' => $establecimiento->nombre,
+            'unidades' => $establecimiento->unidades,
+            'corteServicioId' => $record->estructura_servicio_id,
+            'corteEtiqueta' => $record->corteLabel(),
         ]);
     }
 
@@ -173,13 +197,17 @@ class HospitalizacionController extends Controller
     ): RedirectResponse {
         $data = $request->validated();
         $formulario = Formulario::where('codigo', 'SP10')->firstOrFail();
+        [$departamentoId, $servicioId] = $this->optionalCorte(
+            (int) $data['establecimiento_id'],
+            $data['estructura_servicio_id'] ?? null
+        );
         $record = Record::firstOrCreate([
             'formulario_id' => $formulario->id,
             'establecimiento_id' => $data['establecimiento_id'],
             'periodo_anio' => $data['periodo_anio'],
             'periodo_mes' => $data['periodo_mes'],
-            'estructura_departamento_id' => null,
-            'estructura_servicio_id' => null,
+            'estructura_departamento_id' => $departamentoId,
+            'estructura_servicio_id' => $servicioId,
         ], [
             'estado' => Record::ESTADO_BORRADOR,
             'created_by' => $request->user()->id,
@@ -191,20 +219,18 @@ class HospitalizacionController extends Controller
             (int) $data['periodo_anio'],
             (int) $data['periodo_mes'],
             $data['rows'],
-            $request->user()
+            $request->user(),
+            $record
         );
 
         $audit->recordBatch('import', HospEpisodio::class, null, $summary, [
             'establecimiento_id' => (int) $data['establecimiento_id'],
             'periodo_anio' => (int) $data['periodo_anio'],
             'periodo_mes' => (int) $data['periodo_mes'],
+            'estructura_servicio_id' => $servicioId,
         ], ['phase' => 'spreadsheet']);
 
-        return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', [
-            'establecimiento_id' => $data['establecimiento_id'],
-            'periodo_anio' => $data['periodo_anio'],
-            'periodo_mes' => $data['periodo_mes'],
-        ])->with(
+        return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', $record->spreadsheetParams())->with(
             'success',
             "Planilla guardada: {$summary['creados']} creados, "
             ."{$summary['actualizados']} actualizados y {$summary['eliminados']} eliminados."
@@ -393,6 +419,30 @@ class HospitalizacionController extends Controller
             });
             fclose($out);
         }, 'sp10-episodios.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * @return array{0: int|null, 1: int|null}
+     */
+    private function optionalCorte(int $establecimientoId, mixed $servicioId, bool $requiredWhenAssigned = false): array
+    {
+        $unidades = EstablecimientoServicio::query()
+            ->where('establecimiento_id', $establecimientoId)
+            ->get();
+        if ($unidades->isEmpty()) {
+            return [null, null];
+        }
+        $match = $unidades->firstWhere('servicio_id', (int) $servicioId);
+        if (! $match) {
+            if (! $requiredWhenAssigned && ($servicioId === null || $servicioId === '')) {
+                return [null, null];
+            }
+            throw ValidationException::withMessages([
+                'estructura_servicio_id' => 'Seleccione el departamento y servicio donde se carga la variable.',
+            ]);
+        }
+
+        return [(int) $match->departamento_id, (int) $match->servicio_id];
     }
 
     private function allowedEstablishments()

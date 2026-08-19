@@ -36,7 +36,9 @@
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">grid_on</i> {{ $record->formulario->codigo }} — {{ $record->formulario->nombre }}</h4>
         <p class="card-category">
-            {{ $establecimiento->nombre }} ·
+            {{ $establecimiento->nombre }}
+            @if($record->corteLabel()) · {{ $record->corteLabel() }} @endif
+            ·
             {{ \Carbon\Carbon::create($periodo_anio, $periodo_mes, 1)->translatedFormat('F Y') }} ·
             <span class="badge {{ \App\Models\Bioestadistica\Record::estadoBadge($record->estado) }}">{{ \App\Models\Bioestadistica\Record::estadoLabel($record->estado) }}</span>
         </p>
@@ -45,7 +47,7 @@
         @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
         @if($errors->any())
             <div class="alert alert-danger">
-                <strong>No se guardó la planilla.</strong>
+                <strong>No se pudo completar la acción.</strong>
                 <ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
             </div>
         @endif
@@ -53,44 +55,24 @@
 
         @include('admin.bioestadistica.captura._sp-navigator')
 
-        <div class="card border mb-3">
-            <div class="card-header bg-light"><strong>Período estadístico</strong></div>
-            <div class="card-body py-2">
-                <form method="POST" action="{{ route('bioestadistica.captura.period.update', $record) }}">
-                    @csrf @method('PUT')
-                    <div class="form-row align-items-end">
-                        <div class="form-group col-md-2 mb-0">
-                            <label>Año</label>
-                            <input class="form-control" type="number" name="periodo_anio" min="1990" max="2100"
-                                value="{{ old('periodo_anio', $record->periodo_anio) }}" required
-                                @disabled(!$canEditPeriod)>
-                        </div>
-                        <div class="form-group col-md-3 mb-0">
-                            <label>Mes</label>
-                            <select class="form-control" name="periodo_mes" required @disabled(!$canEditPeriod)>
-                                @foreach($months as $number => $month)
-                                    <option value="{{ $number }}" @selected((int) old('periodo_mes', $record->periodo_mes) === $number)>{{ $month }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            @if($canEditPeriod)
-                                <button class="btn btn-info btn-sm mb-0">Aplicar período</button>
-                            @endif
-                        </div>
-                        <div class="col-md-5">
-                            <small class="text-muted">Al aplicarlo se recarga la planilla del establecimiento y período seleccionados. Los episodios existentes se mueven con el período.</small>
-                        </div>
-                    </div>
-                </form>
+        @if($record->isEditable() && ($unidades ?? collect())->isNotEmpty() && ! $record->estructura_servicio_id)
+            <div class="alert alert-warning">
+                Este establecimiento tiene departamento y servicio asociados. Selecciónelos abajo y pulse <strong>Aplicar</strong> para que esta carga quede cortada por ese servicio.
             </div>
-        </div>
+        @endif
+
+        @include('admin.bioestadistica.captura._period-servicio', [
+            'periodHelp' => 'Al aplicarlo se recarga la planilla del establecimiento, período y servicio. Los episodios de esta carga se mueven con el período.',
+        ])
 
         <form method="POST" action="{{ route('bioestadistica.hospitalizacion.spreadsheet.save') }}" id="spreadsheet-form">
             @csrf
             <input type="hidden" name="establecimiento_id" value="{{ $establecimientoId }}">
             <input type="hidden" name="periodo_anio" value="{{ $periodo_anio }}">
             <input type="hidden" name="periodo_mes" value="{{ $periodo_mes }}">
+            @if($record->estructura_servicio_id)
+                <input type="hidden" name="estructura_servicio_id" value="{{ $record->estructura_servicio_id }}">
+            @endif
 
             <div class="table-responsive" style="max-height:65vh">
                 <table class="table table-bordered table-sm text-nowrap" id="episodes-grid">

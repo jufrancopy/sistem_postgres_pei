@@ -48,6 +48,7 @@ class HospEpisodioBatchRequest extends FormRequest
             ],
             'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
             'periodo_mes' => ['required', 'integer', 'between:1,12'],
+            'estructura_servicio_id' => ['nullable', 'integer'],
             'rows' => ['required', 'array', 'min:1', 'max:200'],
             'rows.*.id' => ['nullable', 'integer'],
             'rows.*.eliminar' => ['nullable', 'boolean'],

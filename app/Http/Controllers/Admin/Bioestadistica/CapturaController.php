@@ -42,7 +42,7 @@ class CapturaController extends Controller
 
         return view('admin.bioestadistica.captura.index', [
             'records' => $records,
-            'formularios' => Formulario::where('estado', 'activo')->orderBy('codigo')->get(),
+            'formularios' => Formulario::where('estado', 'activo')->ordenSp()->get(),
             'establecimientos' => $this->allowedEstablishments(),
             'months' => $this->months(),
         ]);
@@ -53,7 +53,7 @@ class CapturaController extends Controller
         $this->ensureCanCapture();
 
         return view('admin.bioestadistica.captura.create', [
-            'formularios' => Formulario::where('estado', 'activo')->orderBy('codigo')->get(),
+            'formularios' => Formulario::where('estado', 'activo')->ordenSp()->get(),
             'establecimientos' => $this->allowedEstablishments(),
             'months' => $this->months(),
             'selectedEstablecimientoId' => $request->integer('establecimiento_id') ?: old('establecimiento_id'),
@@ -113,7 +113,7 @@ class CapturaController extends Controller
     {
         $year = $request->integer('periodo_anio', now()->subMonth()->year);
         $month = $request->integer('periodo_mes', now()->subMonth()->month);
-        $forms = Formulario::where('estado', 'activo')->orderBy('codigo')->get();
+        $forms = Formulario::where('estado', 'activo')->ordenSp()->get();
         $establishments = $this->allowedEstablishments()->filter(fn ($item) => $item->distrito_id);
         $establishments->load(['unidades.departamento', 'unidades.servicio']);
         $existing = Record::query()
@@ -124,17 +124,11 @@ class CapturaController extends Controller
 
         $rows = collect();
         foreach ($establishments as $establecimiento) {
-            $nominativoMissing = $forms->filter(fn (Formulario $form) => $this->isNominativoForm($form)
-                && ! $existing->contains(fn (Record $record) => (int) $record->establecimiento_id === (int) $establecimiento->id
-                    && (int) $record->formulario_id === (int) $form->id
-                    && $record->estructura_servicio_id === null));
-
             $unidades = $establecimiento->unidades;
             $slices = $unidades->isEmpty() ? collect([null]) : $unidades;
-            $tabularForms = $forms->reject(fn (Formulario $form) => $this->isNominativoForm($form));
 
-            foreach ($slices as $index => $unidad) {
-                $missing = $tabularForms->reject(function (Formulario $form) use ($existing, $establecimiento, $unidad) {
+            foreach ($slices as $unidad) {
+                $missing = $forms->reject(function (Formulario $form) use ($existing, $establecimiento, $unidad) {
                     return $existing->contains(function (Record $record) use ($form, $establecimiento, $unidad) {
                         if ((int) $record->establecimiento_id !== (int) $establecimiento->id
                             || (int) $record->formulario_id !== (int) $form->id) {
@@ -147,10 +141,6 @@ class CapturaController extends Controller
                         return (int) $record->estructura_servicio_id === (int) $unidad->servicio_id;
                     });
                 });
-
-                if ($index === 0) {
-                    $missing = $nominativoMissing->concat($missing)->values();
-                }
 
                 if ($missing->isEmpty()) {
                     continue;
@@ -185,11 +175,7 @@ class CapturaController extends Controller
             'values.field',
         ]);
         if ($record->formulario->codigo === 'SP10' || $record->formulario->layout_type === 'nominativo') {
-            return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', [
-                'establecimiento_id' => $record->establecimiento_id,
-                'periodo_anio' => $record->periodo_anio,
-                'periodo_mes' => $record->periodo_mes,
-            ]);
+            return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', $record->spreadsheetParams());
         }
 
         return view('admin.bioestadistica.captura.edit', [
@@ -246,7 +232,7 @@ class CapturaController extends Controller
             || $record->formulario->layout_type === 'nominativo';
 
         $corteUpdate = [];
-        if (! $isNominative && $request->exists('estructura_servicio_id')) {
+        if ($request->exists('estructura_servicio_id')) {
             $corteUpdate = $this->corteUpdateForRecord(
                 $record,
                 $request->input('estructura_servicio_id')
@@ -311,14 +297,12 @@ class CapturaController extends Controller
                 (int) $record->establecimiento_id,
                 (int) $record->periodo_anio,
                 (int) $record->periodo_mes,
-                $request->user()
+                $request->user(),
+                $record
             );
 
-            return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', [
-                'establecimiento_id' => $record->establecimiento_id,
-                'periodo_anio' => $record->periodo_anio,
-                'periodo_mes' => $record->periodo_mes,
-            ])->with('success', 'Período estadístico actualizado.');
+            return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', $record->spreadsheetParams())
+                ->with('success', 'Período y servicio actualizados.');
         }
 
         return back()->with('success', 'Período y servicio actualizados.');
@@ -405,11 +389,8 @@ class CapturaController extends Controller
     {
         $record->loadMissing('formulario');
         if ($record->formulario->codigo === 'SP10' || $record->formulario->layout_type === 'nominativo') {
-            return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', [
-                'establecimiento_id' => $record->establecimiento_id,
-                'periodo_anio' => $record->periodo_anio,
-                'periodo_mes' => $record->periodo_mes,
-            ])->with($level, $message);
+            return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', $record->spreadsheetParams())
+                ->with($level, $message);
         }
 
         return redirect()->route('bioestadistica.captura.edit', $record)->with($level, $message);
@@ -429,11 +410,6 @@ class CapturaController extends Controller
         ]);
     }
 
-    private function isNominativoForm(Formulario $formulario): bool
-    {
-        return $formulario->codigo === 'SP10' || $formulario->layout_type === 'nominativo';
-    }
-
     private function lookupForCapture(array $data, Formulario $formulario): array
     {
         $lookup = [
@@ -444,10 +420,6 @@ class CapturaController extends Controller
             'estructura_departamento_id' => null,
             'estructura_servicio_id' => null,
         ];
-
-        if ($this->isNominativoForm($formulario)) {
-            return $lookup;
-        }
 
         $unidades = EstablecimientoServicio::query()
             ->where('establecimiento_id', $data['establecimiento_id'])

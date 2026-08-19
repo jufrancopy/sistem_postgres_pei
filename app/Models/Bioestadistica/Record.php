@@ -53,6 +53,20 @@ class Record extends BioestadisticaModel
             ?: null;
     }
 
+    public function spreadsheetParams(): array
+    {
+        $params = [
+            'establecimiento_id' => $this->establecimiento_id,
+            'periodo_anio' => $this->periodo_anio,
+            'periodo_mes' => $this->periodo_mes,
+        ];
+        if ($this->estructura_servicio_id) {
+            $params['estructura_servicio_id'] = $this->estructura_servicio_id;
+        }
+
+        return $params;
+    }
+
     public function values(): HasMany
     {
         return $this->hasMany(RecordValue::class)->with('field');
