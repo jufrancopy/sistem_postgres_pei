@@ -410,15 +410,7 @@ class GamificationService
      */
     protected function pointsQuery(User $user, ?string $peiProfileId = null)
     {
-        $query = GamificationPoint::where('user_id', $user->id);
-
-        if ($peiProfileId) {
-            $query->where(function ($q) use ($peiProfileId) {
-                $q->where('pei_profile_id', $peiProfileId)->orWhereNull('pei_profile_id');
-            });
-        }
-
-        return $query;
+        return GamificationPoint::where('user_id', $user->id);
     }
 
     /**

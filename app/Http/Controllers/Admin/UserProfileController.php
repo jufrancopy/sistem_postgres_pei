@@ -95,12 +95,6 @@ class UserProfileController extends Controller
         $peiName = $selectedPei ? strip_tags($selectedPei->name) : null;
 
         $pointsQuery = GamificationPoint::where('user_id', $user->id);
-        if ($selectedPeiId) {
-            $pointsQuery->where(function($q) use ($selectedPeiId) {
-                $q->where('pei_profile_id', $selectedPeiId)
-                    ->orWhereNull('pei_profile_id');
-            });
-        }
 
         $points = $pointsQuery->orderByDesc('created_at')->get()->map(function ($point) {
             return [
