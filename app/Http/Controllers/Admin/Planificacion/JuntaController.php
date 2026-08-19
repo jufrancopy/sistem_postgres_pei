@@ -150,7 +150,7 @@ class JuntaController extends Controller
         $estado = $request->get('estado', 'TODOS');
         $juntaId = $request->get('junta_id');
 
-        $query = JuntaIntervencion::with(['junta', 'accion.indicador', 'reporte.usuario', 'solicitante'])
+        $query = JuntaIntervencion::with(['junta.presidente', 'junta.integrantes', 'accion.indicador', 'reporte.usuario', 'solicitante'])
             ->orderBy('created_at', 'desc');
 
         if ($estado !== 'TODOS') {

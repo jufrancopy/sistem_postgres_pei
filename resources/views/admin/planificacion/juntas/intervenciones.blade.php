@@ -3,50 +3,60 @@
 @section('title', 'Bandeja de Intervención de Juntas - Alertas en Rojo')
 
 @section('content')
-<div class="content-wrapper p-3">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-        <div>
-            <h3 class="mb-1 text-danger font-weight-bold">
-                <i class="fas fa-exclamation-triangle mr-2"></i> Bandeja de Intervención (Consejo de Sabios)
-            </h3>
-            <p class="text-muted mb-0 small">
-                Gestión de Alertas en Rojo remitidas a las Juntas Consultivas para la emisión de Dictámenes de Mitigación y Mejora Continua.
-            </p>
-        </div>
-        <div>
-            <a href="{{ route('admin.juntas.index') }}" class="btn btn-outline-primary font-weight-bold shadow-sm">
-                <i class="fas fa-cog mr-1"></i> Configurar Juntas & Firmas
-            </a>
+<div class="content-wrapper p-3 p-md-4 bg-light">
+    <!-- Header Banner Principal -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; overflow: hidden; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);">
+        <div class="card-body p-4 text-white">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3" style="gap: 15px;">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge badge-warning text-dark font-weight-bold px-2.5 py-1" style="border-radius: 6px; font-size: 0.72rem;">
+                            <i class="fas fa-shield-alt mr-1"></i> GESTIÓN DE ALERTAS Y GOBERNANZA
+                        </span>
+                        <span class="text-white-50 small">SIPLAN GO — IPS</span>
+                    </div>
+                    <h3 class="font-weight-bold text-white mb-1" style="font-size: 1.45rem;">
+                        <i class="fas fa-exclamation-triangle text-danger mr-2"></i> Bandeja de Intervención (Consejo de Sabios)
+                    </h3>
+                    <p class="text-white-50 mb-0 small" style="max-width: 750px; line-height: 1.45;">
+                        Gestión de Alertas en Rojo remitidas a las Juntas Consultivas para la emisión de Dictámenes de Mitigación, Evaluación de Impacto y Mejora Continua.
+                    </p>
+                </div>
+                <div class="flex-shrink-0">
+                    <a href="{{ route('admin.juntas.index') }}" class="btn btn-warning text-dark font-weight-bold rounded-pill px-4 py-2 shadow-sm" style="font-size: 0.85rem;">
+                        <i class="fas fa-cog mr-1"></i> Configurar Juntas & Firmas
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-            <i class="fas fa-check-circle mr-2"></i> {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px; background: #f0fdf4; color: #166534; border-left: 5px solid #22c55e !important;">
+            <i class="fas fa-check-circle mr-2 text-success"></i> {{ session('success') }}
+            <button type="button" class="close text-success" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
     @endif
 
-    <!-- Filtros de Estado -->
-    <div class="card shadow-sm border-0 mb-4 bg-light">
-        <div class="card-body py-3">
-            <form action="{{ route('admin.juntas.intervenciones') }}" method="GET" class="form-inline justify-content-between">
-                <div class="d-flex align-items-center">
-                    <span class="font-weight-bold mr-3 text-dark"><i class="fas fa-filter mr-1"></i> Filtrar por Estado:</span>
-                    <a href="{{ route('admin.juntas.intervenciones', ['estado' => 'TODOS']) }}" class="btn btn-sm mr-2 {{ $estado === 'TODOS' ? 'btn-primary font-weight-bold' : 'btn-outline-secondary bg-white' }}">Todos</a>
-                    <a href="{{ route('admin.juntas.intervenciones', ['estado' => 'PENDIENTE']) }}" class="btn btn-sm mr-2 {{ $estado === 'PENDIENTE' ? 'btn-danger font-weight-bold' : 'btn-outline-secondary bg-white' }}">
+    <!-- Barra de Filtros por Estado y Junta -->
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: 14px;">
+        <div class="card-body py-3 px-4">
+            <form action="{{ route('admin.juntas.intervenciones') }}" method="GET" class="form-inline justify-content-between flex-wrap" style="gap: 12px;">
+                <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                    <span class="font-weight-bold mr-2 text-dark small"><i class="fas fa-filter text-primary mr-1"></i> Filtrar por Estado:</span>
+                    <a href="{{ route('admin.juntas.intervenciones', ['estado' => 'TODOS']) }}" class="btn btn-sm rounded-pill font-weight-bold px-3 {{ $estado === 'TODOS' ? 'btn-primary shadow-sm' : 'btn-light border text-muted' }}">Todos</a>
+                    <a href="{{ route('admin.juntas.intervenciones', ['estado' => 'PENDIENTE']) }}" class="btn btn-sm rounded-pill font-weight-bold px-3 {{ $estado === 'PENDIENTE' ? 'btn-danger shadow-sm' : 'btn-light border text-muted' }}">
                         <i class="fas fa-clock mr-1"></i> Pendientes
                     </a>
-                    <a href="{{ route('admin.juntas.intervenciones', ['estado' => 'EMITIDO']) }}" class="btn btn-sm mr-2 {{ $estado === 'EMITIDO' ? 'btn-success font-weight-bold' : 'btn-outline-secondary bg-white' }}">
+                    <a href="{{ route('admin.juntas.intervenciones', ['estado' => 'EMITIDO']) }}" class="btn btn-sm rounded-pill font-weight-bold px-3 {{ $estado === 'EMITIDO' ? 'btn-success shadow-sm' : 'btn-light border text-muted' }}">
                         <i class="fas fa-check-double mr-1"></i> Emitidos con Firma
                     </a>
                 </div>
 
                 <div>
-                    <select name="junta_id" class="form-control form-control-sm bg-white border" onchange="this.form.submit()">
+                    <select name="junta_id" class="form-control form-control-sm bg-white border font-weight-bold text-dark" style="border-radius: 8px; min-width: 220px;" onchange="this.form.submit()">
                         <option value="">-- Todas las Juntas --</option>
                         @foreach($juntas as $j)
                             <option value="{{ $j->id }}" {{ $juntaId == $j->id ? 'selected' : '' }}>{{ $j->nombre }}</option>
@@ -57,90 +67,133 @@
         </div>
     </div>
 
-    <!-- Lista de Intervenciones -->
+    <!-- Lista de Expedientes de Intervención -->
     <div class="row">
         @forelse($intervenciones as $item)
             @php
                 $badgeEstado = 'badge-danger';
-                if ($item->estado === 'EMITIDO') $badgeEstado = 'badge-success';
-                elseif ($item->estado === 'EN_APLICACION') $badgeEstado = 'badge-info';
+                $borderHeader = '#dc2626';
+                if ($item->estado === 'EMITIDO') {
+                    $badgeEstado = 'badge-success';
+                    $borderHeader = '#16a34a';
+                } elseif ($item->estado === 'EN_APLICACION') {
+                    $badgeEstado = 'badge-info';
+                    $borderHeader = '#2563eb';
+                }
+
+                // Cargar Presidente estrictamente desde la BD
+                $nombrePresidente = $item->junta?->presidente?->name 
+                    ?? $item->junta?->presidente_nombre 
+                    ?? 'Presidente no asignado';
+
+                $cargoPresidente = $item->junta?->presidente_cargo 
+                    ?? 'Presidente de la Junta';
+
+                // Limpiar etiquetas HTML escapadas del título
+                $tituloAccion = strip_tags($item->accion?->name ?? 'Acción Estratégica');
             @endphp
-            <div class="col-md-12 mb-3">
-                <div class="card shadow-sm border-left-danger border-0">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <span class="badge badge-dark font-weight-bold mr-2">{{ $item->codigo_expediente }}</span>
-                                <span class="badge {{ $badgeEstado }} text-uppercase font-weight-bold px-2 py-1">{{ $item->estado }}</span>
-                                <span class="badge badge-warning text-dark ml-2 font-weight-bold"><i class="fas fa-fire mr-1"></i> {{ $item->prioridad }}</span>
-                            </div>
-                            <small class="text-muted"><i class="far fa-calendar-alt mr-1"></i> Remitido el {{ $item->created_at->format('d/m/Y H:i') }}</small>
+            <div class="col-md-12 mb-4">
+                <div class="card shadow-sm border-0" style="border-radius: 16px; overflow: hidden;">
+                    
+                    {{-- Encabezado Estilizado del Card (Padrón de Diseño del Sistema) --}}
+                    <div class="card-header py-3 px-4 bg-dark text-white d-flex flex-wrap justify-content-between align-items-center" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-left: 5px solid {{ $borderHeader }} !important;">
+                        <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                            <span class="badge badge-warning text-dark font-mono font-weight-bold px-3 py-1.5" style="font-family: monospace; font-size: 0.82rem; border-radius: 8px;">
+                                {{ $item->codigo_expediente }}
+                            </span>
+                            <span class="badge {{ $badgeEstado }} text-uppercase font-weight-bold px-3 py-1.5" style="border-radius: 8px; font-size: 0.73rem;">
+                                {{ str_replace('_', ' ', $item->estado) }}
+                            </span>
+                            <span class="badge badge-danger font-weight-bold px-2.5 py-1.5" style="border-radius: 8px; font-size: 0.72rem;">
+                                <i class="fas fa-fire mr-1"></i> PRIORIDAD {{ strtoupper($item->prioridad) }}
+                            </span>
                         </div>
+                        <small class="text-white-50 font-weight-500 mt-2 mt-sm-0">
+                            <i class="far fa-calendar-alt mr-1 text-warning"></i> Remitido el {{ $item->created_at->format('d/m/Y H:i') }}
+                        </small>
+                    </div>
 
-                        <div class="row">
-                            <div class="col-md-7">
-                                <h5 class="font-weight-bold text-primary mb-1">
-                                    <i class="fas fa-bullseye text-danger mr-1"></i> {{ $item->accion->name ?? 'Acción Estratégica' }}
-                                </h5>
-                                <p class="small text-muted mb-2">
-                                    <strong>Junta Asignada:</strong> {{ $item->junta->nombre ?? 'Junta Consultiva' }} 
-                                    | <strong>Presidente:</strong> {{ $item->junta->presidente_nombre ?? 'N/A' }}
-                                </p>
+                    <div class="card-body p-4 bg-white">
+                        <div class="row align-items-center">
+                            {{-- Columna Izquierda: Detalle del Problema y Junta --}}
+                            <div class="col-lg-7 mb-3 mb-lg-0">
+                                <div class="d-flex align-items-start gap-2 mb-2">
+                                    <span class="badge badge-danger rounded-circle p-2 mr-2" style="width: 32px; height: 32px; display: grid; place-items: center;">
+                                        <i class="fas fa-bullseye text-white"></i>
+                                    </span>
+                                    <div>
+                                        <h5 class="font-weight-bold text-dark mb-1" style="font-size: 1.05rem; line-height: 1.35;">
+                                            {{ $tituloAccion }}
+                                        </h5>
+                                        <div class="small text-muted mb-2">
+                                            <i class="fas fa-building text-primary mr-1"></i> <strong>Junta Asignada:</strong> <span class="text-dark font-weight-bold">{{ $item->junta->nombre ?? 'Junta Consultiva Institucional' }}</span>
+                                            <span class="mx-1 text-muted">|</span>
+                                            <i class="fas fa-user-shield text-info mr-1"></i> <strong>Presidente (BD):</strong> <span class="text-dark font-weight-bold">{{ $nombrePresidente }}</span>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                <div class="bg-light p-2 rounded border mb-2 small">
-                                    <strong class="text-dark"><i class="fas fa-align-left mr-1"></i> Diagnóstico de Remisión:</strong>
-                                    <div>{{ $item->diagnostico ?: 'Desviación en el cumplimiento de indicadores en Rojo.' }}</div>
+                                {{-- Bloque de Diagnóstico de Remisión --}}
+                                <div class="p-3 rounded border mb-2" style="background: #f8fafc; border-left: 4px solid #3b82f6 !important; border-radius: 10px;">
+                                    <strong class="text-dark small d-block mb-1">
+                                        <i class="fas fa-align-left text-primary mr-1"></i> Diagnóstico de Remisión / Inconveniente:
+                                    </strong>
+                                    <div class="text-dark small" style="line-height: 1.45;">
+                                        {{ strip_tags($item->diagnostico ?: 'Desviación en el cumplimiento de indicadores en Rojo.') }}
+                                    </div>
                                 </div>
 
                                 @if($item->reporte)
-                                    <div class="small text-muted">
-                                        <i class="fas fa-user-edit mr-1"></i> Reportado por {{ $item->reporte->usuario->name ?? 'Técnico' }} 
-                                        el {{ $item->reporte->created_at->format('d/m/Y') }}
+                                    <div class="small text-muted mt-2">
+                                        <i class="fas fa-user-edit mr-1 text-secondary"></i> Reportado por <strong>{{ $item->reporte->usuario->name ?? 'Técnico' }}</strong> el {{ $item->reporte->created_at->format('d/m/Y H:i') }}
                                     </div>
                                 @endif
                             </div>
 
-                            <div class="col-md-5 border-left pl-3">
+                            {{-- Columna Derecha: Estado de Dictamen y Botón de Acción --}}
+                            <div class="col-lg-5 border-left-lg pl-lg-4">
                                 @if($item->estado === 'EMITIDO' && $item->recomendaciones_mitigacion)
-                                    <div class="p-2 bg-success-light rounded border border-success mb-2">
-                                        <small class="font-weight-bold text-success d-block mb-1">
+                                    <div class="p-3 rounded border mb-3" style="background: #f0fdf4; border-color: #86efac !important; border-radius: 12px;">
+                                        <small class="font-weight-bold text-success d-block mb-1 font-size-14">
                                             <i class="fas fa-signature mr-1"></i> Dictamen de Mitigación Emitido:
                                         </small>
-                                        <ul class="pl-3 mb-1 small text-dark">
+                                        <ul class="pl-3 mb-2 small text-dark font-weight-500">
                                             @foreach($item->recomendaciones_mitigacion as $mit)
                                                 <li>{{ $mit }}</li>
                                             @endforeach
                                         </ul>
-                                        <div class="text-right">
+                                        <div class="text-right border-top pt-1 mt-1">
                                             <small class="text-muted font-italic">
-                                                Firmado por {{ $item->junta->presidente_nombre }} ({{ $item->firma_estampada_at ? $item->firma_estampada_at->format('d/m/Y H:i') : 'Firmado' }})
+                                                Firmado por <strong>{{ $nombrePresidente }}</strong> ({{ $item->firma_estampada_at ? $item->firma_estampada_at->format('d/m/Y H:i') : 'Firmado' }})
                                             </small>
                                         </div>
                                     </div>
                                 @else
-                                    <div class="p-3 bg-light rounded text-center mb-2 border">
+                                    <div class="p-3 rounded text-center mb-3 border" style="background: #fffbeb; border-color: #fde68a !important; border-radius: 12px;">
                                         <i class="fas fa-clock text-warning fa-2x mb-2 d-block"></i>
-                                        <span class="small font-weight-bold text-muted">Pendiente de Dictamen del Consejo de Sabios</span>
+                                        <strong class="small font-weight-bold text-dark d-block">Pendiente de Dictamen del Consejo de Sabios</strong>
+                                        <span class="text-muted" style="font-size: 0.78rem;">Se requiere la emisión del Dictamen y la firma del Presidente para cerrar la alerta.</span>
                                     </div>
                                 @endif
 
-                                <div class="text-right mt-3">
-                                    <button class="btn btn-sm btn-primary font-weight-bold shadow-sm" onclick='abrirModalEmitirDictamen(@json($item))'>
+                                <div class="text-right">
+                                    <button class="btn btn-sm btn-purple font-weight-bold px-4 py-2 rounded-pill shadow-sm" style="background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%); color: white; border: none;" onclick='abrirModalEmitirDictamen(@json($item))'>
                                         <i class="fas fa-scroll mr-1"></i> {{ $item->estado === 'EMITIDO' ? 'Ver / Editar Dictamen' : 'Emitir Dictamen & Estampar Firma' }}
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         @empty
             <div class="col-md-12">
-                <div class="card shadow-sm border-0 text-center py-5">
-                    <div class="card-body">
-                        <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
-                        <h4 class="font-weight-bold text-dark">¡No hay alertas pendientes en esta bandeja!</h4>
-                        <p class="text-muted mb-0">No se han registrado reportes en rojo o todos los expedientes han sido atendidos por las Juntas.</p>
+                <div class="card shadow-sm border-0 text-center py-5" style="border-radius: 16px;">
+                    <div class="card-body py-5">
+                        <i class="fas fa-check-circle text-success fa-4x mb-3"></i>
+                        <h4 class="font-weight-bold text-dark mb-1">¡No hay alertas pendientes en esta bandeja!</h4>
+                        <p class="text-muted mb-0">No se han registrado reportes en rojo o todos los expedientes han sido atendidos por las Juntas Consultivas.</p>
                     </div>
                 </div>
             </div>
@@ -152,6 +205,8 @@
         {{ $intervenciones->links() }}
     </div>
 </div>
+
+@endsection
 
 <!-- Modal para Emitir Dictamen con Firma Hológrafa Registrada -->
 <div class="modal fade" id="modalEmitirDictamen" tabindex="-1" role="dialog" aria-hidden="true">
