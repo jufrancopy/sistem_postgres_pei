@@ -1543,46 +1543,98 @@ class PeiController extends Controller
 
         // 1. Nodos soft-deleted en la jerarquía PEI
         $trashedNodes = PeiProfile::onlyTrashed()
-            ->with(['parent.parent'])
             ->orderBy('deleted_at', 'desc')
             ->get()
             ->map(function($node) {
                 $contexto = [];
-                $curr = $node->parent;
-                while ($curr) {
-                    $lvl = strtoupper($curr->level ?: 'NODO');
-                    $label = "<span class='badge badge-light border text-dark mr-1'>{$lvl}</span>" . \Illuminate\Support\Str::limit(strip_tags($curr->name), 40);
+                $currId = $node->parent_id;
+
+                while ($currId) {
+                    $parent = PeiProfile::withTrashed()->find($currId);
+                    if (!$parent) break;
+
+                    $lvlLabel = match($parent->level) {
+                        'master' => 'PEI RAÍZ',
+                        'axi'    => 'OBJ. ESTRATÉGICO',
+                        'goal'   => 'OBJ. ESPECÍFICO',
+                        'action' => 'ACCIÓN PEI',
+                        default  => strtoupper($parent->level ?: 'NODO'),
+                    };
+
+                    $badgeClass = match($parent->level) {
+                        'master' => 'badge-dark',
+                        'axi'    => 'badge-primary',
+                        'goal'   => 'badge-info',
+                        'action' => 'badge-purple',
+                        default  => 'badge-secondary',
+                    };
+
+                    $label = "<span class='badge {$badgeClass} font-weight-bold mr-1'>{$lvlLabel}</span>" . \Illuminate\Support\Str::limit(strip_tags($parent->name), 50);
                     array_unshift($contexto, $label);
-                    $curr = $curr->parent;
+
+                    $currId = $parent->parent_id;
                 }
+
                 return [
                     'id'          => $node->id,
-                    'name'        => $node->name,
+                    'name'        => strip_tags($node->name),
                     'level'       => $node->level,
                     'type'        => $node->type,
-                    'contexto'    => !empty($contexto) ? implode(' <i class="fa fa-angle-right text-muted mx-1"></i> ', $contexto) : '<span class="text-muted italic"><i class="fa fa-sitemap mr-1"></i> Raíz del PEI</span>',
+                    'contexto'    => !empty($contexto)
+                                        ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
+                                        : '<span class="text-muted italic"><i class="fa fa-sitemap mr-1"></i> Nivel Superior</span>',
                     'deleted_at'  => $node->deleted_at ? $node->deleted_at->format('d/m/Y H:i') : '—',
                 ];
             });
 
         // 2. Acciones Operativas soft-deleted
         $trashedInis = \App\Models\PlanMaestro\PlanAccion::onlyTrashed()
-            ->with(['peiProfile', 'eje'])
             ->orderBy('deleted_at', 'desc')
             ->get()
             ->map(function($ini) {
-                $contexto = '<span class="text-muted italic"><i class="fa fa-list mr-1"></i> Acción Operativa</span>';
-                if ($ini->peiProfile) {
-                    $contexto = '<span class="badge badge-info mr-1">ACCIÓN PEI</span> ' . \Illuminate\Support\Str::limit(strip_tags($ini->peiProfile->name), 45);
-                } elseif ($ini->eje) {
-                    $contexto = '<span class="badge badge-secondary mr-1">EJE</span> ' . \Illuminate\Support\Str::limit(strip_tags($ini->eje->nombre), 45);
+                $contexto = [];
+                if ($ini->pei_profile_id) {
+                    $currId = $ini->pei_profile_id;
+                    while ($currId) {
+                        $parent = PeiProfile::withTrashed()->find($currId);
+                        if (!$parent) break;
+
+                        $lvlLabel = match($parent->level) {
+                            'master' => 'PEI RAÍZ',
+                            'axi'    => 'OBJ. ESTRATÉGICO',
+                            'goal'   => 'OBJ. ESPECÍFICO',
+                            'action' => 'ACCIÓN PEI',
+                            default  => strtoupper($parent->level ?: 'NODO'),
+                        };
+
+                        $badgeClass = match($parent->level) {
+                            'master' => 'badge-dark',
+                            'axi'    => 'badge-primary',
+                            'goal'   => 'badge-info',
+                            'action' => 'badge-purple',
+                            default  => 'badge-secondary',
+                        };
+
+                        $label = "<span class='badge {$badgeClass} font-weight-bold mr-1'>{$lvlLabel}</span>" . \Illuminate\Support\Str::limit(strip_tags($parent->name), 50);
+                        array_unshift($contexto, $label);
+
+                        $currId = $parent->parent_id;
+                    }
+                } elseif ($ini->eje_id) {
+                    $eje = \App\Models\PlanMaestro\PlanEje::find($ini->eje_id);
+                    if ($eje) {
+                        $contexto[] = "<span class='badge badge-secondary font-weight-bold mr-1'>EJE</span>" . \Illuminate\Support\Str::limit(strip_tags($eje->nombre), 50);
+                    }
                 }
+
                 return [
                     'id'         => $ini->id,
                     'codigo'     => $ini->codigo,
-                    'accion'     => $ini->accion,
+                    'accion'     => strip_tags($ini->accion),
                     'estado'     => $ini->estado,
-                    'contexto'   => $contexto,
+                    'contexto'   => !empty($contexto)
+                                        ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
+                                        : '<span class="text-muted italic"><i class="fa fa-list mr-1"></i> Acción Operativa</span>',
                     'deleted_at' => $ini->deleted_at ? $ini->deleted_at->format('d/m/Y H:i') : '—',
                 ];
             });
