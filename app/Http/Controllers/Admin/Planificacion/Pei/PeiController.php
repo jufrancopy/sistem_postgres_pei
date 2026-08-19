@@ -1553,23 +1553,26 @@ class PeiController extends Controller
                     $parent = PeiProfile::withTrashed()->find($currId);
                     if (!$parent) break;
 
+                    if ($parent->level === 'master') {
+                        $currId = $parent->parent_id;
+                        continue;
+                    }
+
                     $lvlLabel = match($parent->level) {
-                        'master' => 'PEI RAÍZ',
                         'axi'    => 'OBJ. ESTRATÉGICO',
                         'goal'   => 'OBJ. ESPECÍFICO',
-                        'action' => 'ACCIÓN PEI',
+                        'action' => 'ACCIÓN ESTRATÉGICA',
                         default  => strtoupper($parent->level ?: 'NODO'),
                     };
 
                     $badgeClass = match($parent->level) {
-                        'master' => 'badge-dark',
                         'axi'    => 'badge-primary',
                         'goal'   => 'badge-info',
                         'action' => 'badge-purple',
                         default  => 'badge-secondary',
                     };
 
-                    $label = "<span class='badge {$badgeClass} font-weight-bold mr-1'>{$lvlLabel}</span>" . \Illuminate\Support\Str::limit(strip_tags($parent->name), 50);
+                    $label = "<span class='badge {$badgeClass} font-weight-bold mr-1'>{$lvlLabel}</span>" . \Illuminate\Support\Str::limit(strip_tags($parent->name), 55);
                     array_unshift($contexto, $label);
 
                     $currId = $parent->parent_id;
@@ -1582,7 +1585,7 @@ class PeiController extends Controller
                     'type'        => $node->type,
                     'contexto'    => !empty($contexto)
                                         ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
-                                        : '<span class="text-muted italic"><i class="fa fa-sitemap mr-1"></i> Nivel Superior</span>',
+                                        : '<span class="text-muted italic"><i class="fa fa-sitemap mr-1"></i> Objetivo Estratégico (Nivel Superior)</span>',
                     'deleted_at'  => $node->deleted_at ? $node->deleted_at->format('d/m/Y H:i') : '—',
                 ];
             });
@@ -1599,23 +1602,26 @@ class PeiController extends Controller
                         $parent = PeiProfile::withTrashed()->find($currId);
                         if (!$parent) break;
 
+                        if ($parent->level === 'master') {
+                            $currId = $parent->parent_id;
+                            continue;
+                        }
+
                         $lvlLabel = match($parent->level) {
-                            'master' => 'PEI RAÍZ',
                             'axi'    => 'OBJ. ESTRATÉGICO',
                             'goal'   => 'OBJ. ESPECÍFICO',
-                            'action' => 'ACCIÓN PEI',
+                            'action' => 'ACCIÓN ESTRATÉGICA',
                             default  => strtoupper($parent->level ?: 'NODO'),
                         };
 
                         $badgeClass = match($parent->level) {
-                            'master' => 'badge-dark',
                             'axi'    => 'badge-primary',
                             'goal'   => 'badge-info',
                             'action' => 'badge-purple',
                             default  => 'badge-secondary',
                         };
 
-                        $label = "<span class='badge {$badgeClass} font-weight-bold mr-1'>{$lvlLabel}</span>" . \Illuminate\Support\Str::limit(strip_tags($parent->name), 50);
+                        $label = "<span class='badge {$badgeClass} font-weight-bold mr-1'>{$lvlLabel}</span>" . \Illuminate\Support\Str::limit(strip_tags($parent->name), 55);
                         array_unshift($contexto, $label);
 
                         $currId = $parent->parent_id;
@@ -1623,7 +1629,7 @@ class PeiController extends Controller
                 } elseif ($ini->eje_id) {
                     $eje = \App\Models\PlanMaestro\PlanEje::find($ini->eje_id);
                     if ($eje) {
-                        $contexto[] = "<span class='badge badge-secondary font-weight-bold mr-1'>EJE</span>" . \Illuminate\Support\Str::limit(strip_tags($eje->nombre), 50);
+                        $contexto[] = "<span class='badge badge-secondary font-weight-bold mr-1'>EJE</span>" . \Illuminate\Support\Str::limit(strip_tags($eje->nombre), 55);
                     }
                 }
 

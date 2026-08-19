@@ -5634,7 +5634,7 @@ function cargarBasureroPeiAdmin() {
                 resp.trashed_nodes.forEach(function(n) {
                     count++;
                     var badgeType = n.level === 'axi' ? 'badge-primary' : (n.level === 'goal' ? 'badge-info' : 'badge-purple');
-                    var levelName = (n.level === 'axi' ? 'OBJETIVO' : (n.level === 'goal' ? 'META' : (n.level === 'action' ? 'ACCIÓN' : (n.level||'NODO').toUpperCase())));
+                    var levelName = (n.level === 'axi' ? 'OBJ. ESTRATÉGICO' : (n.level === 'goal' ? 'OBJ. ESPECÍFICO' : (n.level === 'action' ? 'ACCIÓN ESTRATÉGICA' : (n.level||'NODO').toUpperCase())));
                     var tr = `
                         <tr>
                             <td class="align-middle">
