@@ -172,10 +172,9 @@ class JuntaController extends Controller
     public function remitirAlerta(Request $request)
     {
         $request->validate([
-            'reporte_id'     => 'nullable|exists:pei_accion_reportes,id',
-            'pei_profile_id' => 'nullable|exists:pei_profiles,id',
+            'reporte_id'     => 'nullable',
+            'pei_profile_id' => 'nullable',
             'accion_ids'     => 'nullable|array',
-            'accion_ids.*'   => 'nullable|exists:pei_profiles,id',
             'junta_id'       => [
                 'nullable',
                 function ($attribute, $value, $fail) {
