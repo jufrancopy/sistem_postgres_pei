@@ -208,15 +208,25 @@ class JuntaController extends Controller
             return response()->json(['success' => false, 'message' => 'No se seleccionó ninguna Acción Estratégica para remitir.'], 400);
         }
 
+        // Resolver la Junta: 1) explícita del request, 2) de la acción, 3) subiendo por jerarquía, 4) primera del sistema
         $juntaId = $request->input('junta_id_preconfig') ?: $request->input('junta_id');
-        if (!$juntaId) {
-            $primeraAccion = PeiProfile::find($accionIds[0]);
-            $juntaId = $primeraAccion ? $primeraAccion->junta_id : null;
+
+        if (!$juntaId && !empty($accionIds)) {
+            // Buscar en la propia acción o subiendo por su jerarquía (goal → axi)
+            foreach ($accionIds as $accId) {
+                $nodo = PeiProfile::find($accId);
+                while ($nodo) {
+                    if ($nodo->junta_id) {
+                        $juntaId = $nodo->junta_id;
+                        break 2;
+                    }
+                    $nodo = $nodo->parent_id ? PeiProfile::find($nodo->parent_id) : null;
+                }
+            }
         }
 
         if (!$juntaId) {
-            $juntaPorDefecto = Junta::where('programa', 'salud')->first() ?: Junta::first();
-            $juntaId = $juntaPorDefecto ? $juntaPorDefecto->id : null;
+            $juntaId = Junta::first()?->id;
         }
 
         if (!$juntaId) {

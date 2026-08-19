@@ -1513,12 +1513,7 @@ window.enviarRemisionJuntaObjetivo = function(e) {
         toastr.warning('Por favor seleccioná al menos una Acción Estratégica para remitir.');
         return;
     }
-
-    const juntaId = $('#remitir_junta_id').val();
-    if (!juntaId) {
-        toastr.warning('Por favor asociá o seleccioná la Junta Consultiva receptora.');
-        return;
-    }
+    // La junta se puede enviar o dejar vacía — el servidor la autodetecta desde las acciones o el objetivo
 
     const $btn = $('#btnSubmitRemitirObjetivo');
     $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Remitiendo...');
@@ -1595,28 +1590,32 @@ window.enviarRemisionJuntaObjetivo = function(e) {
                         </div>
                     </div>
 
-                    {{-- Selector de Junta Consultiva (Solo si el Objetivo no tenía Junta pre-configurada) --}}
-                    <div class="row">
-                        <div class="col-md-7 form-group mb-3 d-none" id="bloque_junta_selector">
-                            <label class="font-weight-bold text-dark small mb-1">Junta Consultiva Receptora <span class="text-danger">*</span></label>
-                            @php
-                                $juntasActivas = \App\Models\Planificacion\Junta::where('activo', true)->orderBy('nombre')->get();
-                            @endphp
-                            <select id="remitir_junta_id" name="junta_id" class="form-control font-weight-bold select2-remitir-junta">
-                                <option value="">— Seleccionar Junta Consultiva —</option>
-                                @foreach($juntasActivas as $jta)
-                                    <option value="{{ $jta->id }}">{{ $jta->nombre }} ({{ strtoupper($jta->programa) }})</option>
-                                @endforeach
-                            </select>
+                    {{-- Selector de Junta Consultiva (Opcional si el Objetivo no tiene Junta pre-configurada) --}}
+                    <div id="bloque_junta_selector" class="mb-3 d-none">
+                        <div class="alert alert-warning border-0 py-2 mb-2" style="border-radius:8px; background:#fffbeb; color:#92400e; font-size:0.82rem;">
+                            <i class="fa fa-info-circle mr-1"></i>
+                            <strong>Sin Junta configurada en el Objetivo.</strong> El sistema usará la Junta vinculada a cada Acción, o puede seleccionar una aquí:
                         </div>
-                        <div class="col-md-5 form-group mb-3">
-                            <label class="font-weight-bold text-dark small mb-1">Nivel de Prioridad <span class="text-danger">*</span></label>
-                            <select name="prioridad" id="remitir_prioridad" class="form-control font-weight-bold">
-                                <option value="ALTA" selected>🔴 ALTA - Dictamen Requerido</option>
-                                <option value="EMERGENCIA">🚨 EMERGENCIA - Intervención Inmediata</option>
-                                <option value="MEDIA">🟡 MEDIA - Seguimiento Preventivo</option>
-                            </select>
-                        </div>
+                        <label class="font-weight-bold text-dark small mb-1">Junta Consultiva Receptora <span class="text-muted">(opcional)</span></label>
+                        @php
+                            $juntasActivas = \App\Models\Planificacion\Junta::where('activo', true)->orderBy('nombre')->get();
+                        @endphp
+                        <select id="remitir_junta_id" name="junta_id" class="form-control font-weight-bold select2-remitir-junta">
+                            <option value="">— Autodetectar desde las Acciones —</option>
+                            @foreach($juntasActivas as $jta)
+                                <option value="{{ $jta->id }}">{{ $jta->nombre }} ({{ strtoupper($jta->programa) }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Nivel de Prioridad --}}
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small mb-1">Nivel de Prioridad <span class="text-danger">*</span></label>
+                        <select name="prioridad" id="remitir_prioridad" class="form-control font-weight-bold">
+                            <option value="ALTA" selected>🔴 ALTA - Dictamen Requerido</option>
+                            <option value="EMERGENCIA">🚨 EMERGENCIA - Intervención Inmediata</option>
+                            <option value="MEDIA">🟡 MEDIA - Seguimiento Preventivo</option>
+                        </select>
                     </div>
 
                     {{-- Observaciones / Notas de Remisión --}}
