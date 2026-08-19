@@ -63,6 +63,7 @@ class PeiProfile extends Model
         'public_token',
         'public_tabs',
         'resultado_intermedio',
+        'junta_id',
         'ri_presupuestario',
         'ri_programa',
         'ri_recursos_gs',
@@ -318,5 +319,10 @@ class PeiProfile extends Model
     public function proyectos()
     {
         return $this->hasMany(\App\Models\Proyectos\ProyectoInstitucional::class, 'pei_profile_id');
+    }
+
+    public function junta()
+    {
+        return $this->belongsTo(\App\Models\Planificacion\Junta::class, 'junta_id');
     }
 }

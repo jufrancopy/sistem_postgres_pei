@@ -963,4 +963,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/sugerir-indicador', [\App\Http\Controllers\Admin\Ai\AiAssistantController::class, 'sugerirIndicador'])->name('sugerirIndicador');
         Route::post('/generar-accion-completa', [\App\Http\Controllers\Admin\Ai\AiAssistantController::class, 'generarAccionCompleta'])->name('generarAccionCompleta');
     });
+
+    // ── Módulo de Juntas Consultivas (Consejo de Sabios) & Intervención de Alertas ──
+    Route::prefix('admin/planificacion/juntas')->name('admin.juntas.')->group(function() {
+        Route::get('/', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'store'])->name('store');
+        Route::get('/intervenciones', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'intervenciones'])->name('intervenciones');
+        Route::post('/remitir-alerta', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'remitirAlerta'])->name('remitirAlerta');
+        Route::post('/dictamen/{id}', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'emitirDictamen'])->name('emitirDictamen');
+        Route::post('/sugerir-mitigacion-ia', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'sugerirMitigacionIa'])->name('sugerirMitigacionIa');
+    });
 });

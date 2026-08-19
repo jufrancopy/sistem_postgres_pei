@@ -533,6 +533,14 @@
                                                            id="reportProgress" title="Reportar Avance">
                                                             <i class="fa fa-chart-line" style="font-size:.7rem"></i>
                                                         </a>
+                                                        @if($colorFisico === 'danger' || $semaforoFisico === 'Rojo')
+                                                        <button type="button" class="btn btn-sm btn-danger py-0 px-2 shadow-sm font-weight-bold"
+                                                                onclick="event.stopPropagation(); remitirAlertaJunta('{{ $action->id }}', '{{ e(strip_tags($action->name)) }}')"
+                                                                title="Remitir Alerta Roja al Consejo de Sabios / Junta Consultiva"
+                                                                style="font-size:.7rem">
+                                                            <i class="fa fa-landmark mr-1"></i> Remitir a Junta
+                                                        </button>
+                                                        @endif
                                                         <button type="button"
                                                                 class="btn btn-sm btn-outline-success py-0 px-2 btnNotificarAccion"
                                                                 data-id="{{ $action->id }}"
@@ -1052,6 +1060,56 @@
                         </div>{{-- /collapse meta --}}
                     </div>
                     @endforeach
+
+<script>
+if (typeof window.remitirAlertaJunta === 'undefined') {
+    window.remitirAlertaJunta = function(actionId, actionName) {
+        if (typeof Swal === 'undefined') {
+            alert('Remitiendo alerta...');
+            return;
+        }
+
+        Swal.fire({
+            title: '<i class="fas fa-landmark text-danger"></i> Remitir al Consejo de Sabios',
+            html: `<div class="text-left small mb-3">Se remitirá la Acción Estratégica <b>"${actionName}"</b> en Alerta Roja a la Junta Consultiva correspondiente para emisión de Dictamen con Firma Hológrafa:</div>` +
+                  `<textarea id="swal_notas_remision" class="form-control form-control-sm" rows="3" placeholder="Motivo o detalles de la brecha operativa (opcional)..."></textarea>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            confirmButtonText: '<i class="fa fa-paper-plane mr-1"></i> Remitir Expediente',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const el = document.getElementById('swal_notas_remision');
+                return {
+                    notas: el ? el.value : ''
+                };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{{ route('admin.juntas.remitirAlerta') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        pei_profile_id: actionId,
+                        notas_remision: result.value ? result.value.notas : ''
+                    },
+                    success: function(res) {
+                        if (res.success) {
+                            Swal.fire('¡Remitido con Éxito!', res.message, 'success');
+                        } else {
+                            Swal.fire('Atención', res.message || 'No se pudo remitir.', 'error');
+                        }
+                    },
+                    error: function(err) {
+                        Swal.fire('Error', 'Ocurrió un fallo en el servidor.', 'error');
+                    }
+                });
+            }
+        });
+    };
+}
+</script>
 
                 </div>
             </div>{{-- /collapse objetivo --}}
