@@ -19,22 +19,33 @@ class IndicadorController extends Controller
     {
         $profile = PeiProfile::findOrFail($profileId);
 
-        // Letras: primeras letras de cada palabra del nombre (sin HTML), máx 4 chars
+        // Prefijo predeterminado limpio
         $nombre  = strip_tags($profile->name);
         $palabras = preg_split('/\s+/', $nombre);
         $letras  = strtoupper(
             implode('', array_map(
                 fn($p) => mb_substr(preg_replace('/[^a-zA-ZáéíóúÁÉÍÓÚ]/u', '', $p), 0, 1),
-                array_filter($palabras, fn($p) => mb_strlen($p) > 2) // ignorar artículos cortos
+                array_filter($palabras, fn($p) => mb_strlen($p) > 2)
             ))
         );
         $letras = mb_substr($letras, 0, 4) ?: 'IND';
 
-        // Número: siguiente correlativo del perfil
-        $ultimo = Indicador::where('pei_profile_id', $profileId)
-            ->whereRaw("codigo_letras = ?", [$letras])
+        // Obtener todos los IDs de la estructura PEI (raíz + descendientes)
+        $allProfileIds = PeiProfile::whereIn('id', $profile->descendantsAndSelf($profileId)->pluck('id'))->pluck('id')->toArray();
+        if (empty($allProfileIds)) {
+            $allProfileIds = [$profileId];
+        }
+
+        // Buscar el máximo correlativo numérico en todo el PEI
+        $ultimo = Indicador::whereIn('pei_profile_id', $allProfileIds)
             ->selectRaw("MAX(CAST(NULLIF(regexp_replace(codigo_numeros, '[^0-9]', '', 'g'), '') AS INTEGER)) as max_num")
             ->value('max_num');
+
+        // Si no hay en el PEI actual, buscar globalmente para evitar duplicados si aplica
+        if (!$ultimo) {
+            $ultimo = Indicador::selectRaw("MAX(CAST(NULLIF(regexp_replace(codigo_numeros, '[^0-9]', '', 'g'), '') AS INTEGER)) as max_num")
+                ->value('max_num');
+        }
 
         $siguiente = str_pad(($ultimo ?? 0) + 1, 3, '0', STR_PAD_LEFT);
 
