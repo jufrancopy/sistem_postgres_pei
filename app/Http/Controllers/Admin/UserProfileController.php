@@ -61,11 +61,11 @@ class UserProfileController extends Controller
         // Resumen de Gamificación y Jerarquía
         $gamification = $this->gamificationService->getUserGamificationSummary($targetUser, $selectedPeiId);
 
-        // Leaderboard / Tabla de Posiciones para el PEI activo o global (Top 10 usuarios institucionales - excluye administradores)
+        // Leaderboard / Tabla de Posiciones para el PEI activo o global (Top 10 usuarios de la institución)
         $leaderboard = User::with('roles', 'group')
             ->get()
             ->reject(function($u) {
-                return $u->hasRole('Administrador') || $u->hasRole('Super Admin');
+                return $u->hasRole('Super Admin');
             })
             ->map(function($u) use ($selectedPeiId) {
                 $points = $this->gamificationService->getUserTotalPoints($u, $selectedPeiId);

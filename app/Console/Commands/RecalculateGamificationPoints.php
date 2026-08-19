@@ -93,6 +93,7 @@ class RecalculateGamificationPoints extends Command
         $this->collectChatMessages();
         $this->collectPeiEdits();
         $this->collectAccionesOperativas();
+        $this->collectGitCommits();
 
         $this->info('Insertando ' . count($this->pendingRows) . ' registros de puntos...');
         $inserted = $gamificationService->insertPointsBatch($this->pendingRows);
@@ -505,6 +506,63 @@ class RecalculateGamificationPoints extends Command
                 (string) ($accion->pei_profile_id ?: $this->defaultPeiId),
                 $accion->created_at?->toDateTimeString()
             );
+        }
+    }
+
+    protected function collectGitCommits(): void
+    {
+        $this->info('Recopilando desarrollos y commits de programadores...');
+
+        try {
+            $command = 'git log -n 500 --pretty=format:"%h|||%an|||%ae|||%cd|||%s" --date=format:"%Y-%m-%d %H:%M:%S"';
+            $output = shell_exec($command);
+
+            if ($output) {
+                $lines = explode("\n", trim($output));
+                foreach ($lines as $line) {
+                    $parts = explode("|||", $line);
+                    if (count($parts) >= 5) {
+                        $hash    = trim($parts[0]);
+                        $author  = trim($parts[1]);
+                        $email   = trim($parts[2]);
+                        $date    = trim($parts[3]);
+                        $subject = trim($parts[4]);
+
+                        // Coincidencia inteligente por email o por nombre
+                        $matchedUser = $this->usersById->first(function ($u) use ($author, $email) {
+                            $userMail = strtolower($u->email ?? '');
+                            $commitMail = strtolower($email ?? '');
+                            if ($userMail && $commitMail && $userMail === $commitMail) {
+                                return true;
+                            }
+
+                            $userName = strtolower($u->name ?? '');
+                            $authorName = strtolower($author ?? '');
+                            if (str_contains($userName, 'angel') && str_contains($authorName, 'angel')) {
+                                return true;
+                            }
+
+                            $firstName = explode(' ', $userName)[0] ?? '';
+                            return strlen($firstName) > 3 && str_contains($authorName, $firstName);
+                        });
+
+                        if ($matchedUser) {
+                            $this->queuePoint(
+                                $matchedUser->id,
+                                'git_commit',
+                                '🚀 Desarrollo & Aporte de Código: ' . Str::limit($subject, 45),
+                                50,
+                                \App\Models\User::class,
+                                $matchedUser->id,
+                                null,
+                                $date
+                            );
+                        }
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            $this->error('Error recopilando commits: ' . $e->getMessage());
         }
     }
 }
