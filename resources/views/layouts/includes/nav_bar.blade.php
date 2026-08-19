@@ -23,6 +23,14 @@
             $userPts = app(\App\Services\GamificationService::class)->getUserTotalPoints(Auth::user());
         @endphp
 
+        {{-- ── Historial de Novedades y Desarrollos Git ── --}}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ route('admin.novedades.index') }}" title="🚀 Novedades, Desarrollos y Actualizaciones del Sistema (Git Log)">
+            <i class="material-icons text-success" style="font-size: 22px;">rocket_launch</i>
+            <p class="d-lg-none mb-0">Novedades & Desarrollos</p>
+          </a>
+        </li>
+
         {{-- ── Manifiesto & Propósito SIPLAN ── --}}
         <li class="nav-item">
           <a class="nav-link" href="{{ route('siplan.manifesto') }}" target="_blank" title="El Manifiesto & Propósito Institucional de SIPLAN">

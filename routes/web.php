@@ -990,4 +990,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/sugerir-mitigacion-ia', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'sugerirMitigacionIa'])->name('sugerirMitigacionIa');
         Route::delete('/{id}', [\App\Http\Controllers\Admin\Planificacion\JuntaController::class, 'destroy'])->name('destroy');
     });
+
+    // ── Módulo de Novedades y Desarrollos del Sistema (Git Changelog) ───────
+    Route::get('/admin/novedades', [\App\Http\Controllers\Admin\NovedadesController::class, 'index'])->name('admin.novedades.index');
 });
