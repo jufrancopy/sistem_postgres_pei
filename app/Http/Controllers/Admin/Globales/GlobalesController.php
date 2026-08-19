@@ -229,6 +229,44 @@ class GlobalesController extends Controller
         $allPermissions       = Permission::orderBy('name')->get();
         $allGroups            = \App\Admin\Globales\Group::orderBy('name')->get(['id', 'name']);
 
+        // ── Juntas Consultivas (Consejo de Sabios) ─────────────────────────────
+        if (\App\Models\Planificacion\Junta::count() === 0) {
+            \App\Models\Planificacion\Junta::create([
+                'nombre'            => 'Junta Consultiva de Salud y Servicios Médicos',
+                'codigo'            => 'JUNTA-SALUD-01',
+                'programa'          => 'salud',
+                'descripcion'       => 'Comité de expertos médicos para el análisis de alertas en hospitales, abastecimiento e insumos.',
+                'presidente_nombre' => 'Dr. Carlos Gustavo Benítez',
+                'presidente_cargo'  => 'Presidente de la Junta Consultiva de Salud',
+                'activo'            => true,
+            ]);
+
+            \App\Models\Planificacion\Junta::create([
+                'nombre'            => 'Junta Consultiva de Jubilaciones y Pensiones',
+                'codigo'            => 'JUNTA-JUB-01',
+                'programa'          => 'jubilaciones',
+                'descripcion'       => 'Comité técnico actuarial para dictámenes sobre sostenibilidad del fondo de jubilaciones.',
+                'presidente_nombre' => 'Lic. María Elena Ramos',
+                'presidente_cargo'  => 'Presidenta de la Junta de Jubilaciones',
+                'activo'            => true,
+            ]);
+
+            \App\Models\Planificacion\Junta::create([
+                'nombre'            => 'Junta Consultiva de Administración y Finanzas',
+                'codigo'            => 'JUNTA-FIN-01',
+                'programa'          => 'finanzas',
+                'descripcion'       => 'Consejo para contingencias presupuestarias, obras e infraestructura de salud.',
+                'presidente_nombre' => 'Ing. Roberto Silva',
+                'presidente_cargo'  => 'Presidente de la Junta de Finanzas',
+                'activo'            => true,
+            ]);
+        }
+
+        $juntasList = \App\Models\Planificacion\Junta::withCount('intervenciones')->orderBy('nombre')->get();
+        $totalJuntas = $juntasList->count();
+        $totalJuntasActivas = $juntasList->where('activo', true)->count();
+        $totalIntervencionesJuntas = \App\Models\Planificacion\JuntaIntervencion::count();
+
         return view('admin.globales.dashboard', get_defined_vars());
     }
 

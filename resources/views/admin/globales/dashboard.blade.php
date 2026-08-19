@@ -443,6 +443,12 @@
                         <i class="fa fa-globe mr-2"></i> Visibilidad & Sitio Público
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-juntas-link" data-toggle="pill" href="#tab-juntas" role="tab" aria-selected="false">
+                        <i class="fa fa-balance-scale mr-2"></i> Juntas Consultivas
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalJuntas }}</span>
+                    </a>
+                </li>
             </ul>
         </div>
 
