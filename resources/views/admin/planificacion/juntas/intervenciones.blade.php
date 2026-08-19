@@ -206,8 +206,6 @@
     </div>
 </div>
 
-@endsection
-
 <!-- Modal para Emitir Dictamen con Firma Hológrafa Registrada -->
 <div class="modal fade" id="modalEmitirDictamen" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
