@@ -7,6 +7,7 @@ use App\Models\HomeConfiguration;
 use App\Models\Gamification\GamificationPoint;
 use App\Models\Gamification\GamificationBadge;
 use App\Models\Gamification\UserLogin;
+use App\Admin\Planificacion\Pei\PeiProfile;
 use App\Admin\Planificacion\Foda\FodaAnalisis;
 use App\Admin\Planificacion\Foda\FodaCruceAmbiente;
 use App\Admin\Globales\ActivityTask;
