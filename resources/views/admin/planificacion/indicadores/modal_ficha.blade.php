@@ -391,14 +391,17 @@ function generarFichaIndicadorIa() {
 
             // Llenar vista previa modal
             $('#prev_ind_nombre').text(ind.nombre || 'Indicador sin nombre');
-            $('#prev_ind_dimension').text(ind.dimension || 'No especificada');
-            $('#prev_ind_frecuencia').text(ind.frecuencia || 'Anual');
-            $('#prev_ind_ambito').text(ind.ambito || 'Resultado');
-            $('#prev_ind_sentido').text(ind.sentido || 'Ascendente');
+            $('#prev_ind_dimension').text((ind.dimension || 'eficacia').toUpperCase());
+            $('#prev_ind_frecuencia').text((ind.frecuencia || 'anual').toUpperCase());
+            $('#prev_ind_ambito').text((ind.ambito || 'accion_estrategica').replace('_', ' ').toUpperCase());
+            $('#prev_ind_sentido').text((ind.sentido || 'ascendente').toUpperCase());
             $('#prev_ind_formula').text(ind.formula || 'N/A');
             $('#prev_ind_unidad_medida').text(ind.unidad_medida || 'Porcentaje (%)');
             $('#prev_ind_fuente').text(ind.fuente || 'Registros Institucionales IPS');
             $('#prev_ind_dependencia_responsable').text(ind.dependencia_responsable || 'Dirección de Planificación');
+            $('#prev_ind_descripcion').text(ind.descripcion || 'Sin descripción especificada.');
+            $('#prev_ind_variables').text(ind.variables || 'Variables no especificadas.');
+            $('#prev_ind_comentarios').text(ind.comentarios || 'Sugerencia de Inteligencia Artificial.');
 
             // Mostrar modal de vista previa
             $('#modalPreviewIndicadorIa').modal('show');
@@ -417,10 +420,16 @@ function aplicarSugerenciaIaFicha() {
     if (ind.nombre) $('#ind_nombre').val(ind.nombre);
     if (ind.codigo_letras) $('#ind_codigo_letras').val(ind.codigo_letras);
     if (ind.codigo_numeros) $('#ind_codigo_numeros').val(ind.codigo_numeros);
+    if (ind.descripcion) $('#ind_descripcion').val(ind.descripcion);
+    if (ind.variables) $('#ind_variables').val(ind.variables);
     if (ind.formula) $('#ind_formula').val(ind.formula);
     if (ind.unidad_medida) $('#ind_unidad_medida').val(ind.unidad_medida);
     if (ind.fuente) $('#ind_fuente').val(ind.fuente);
     if (ind.dependencia_responsable) $('#ind_dependencia_responsable').val(ind.dependencia_responsable);
+    if (ind.comentarios) $('#ind_comentarios').val(ind.comentarios);
+
+    // Marcar como creado con IA
+    $('#ind_creado_con_ia').val('1');
 
     // Seleccionar radio cards
     $.each(['dimension', 'ambito', 'frecuencia', 'cobertura', 'sentido'], function(i, campo) {
@@ -436,7 +445,7 @@ function aplicarSugerenciaIaFicha() {
     });
 
     $('#modalPreviewIndicadorIa').modal('hide');
-    if (typeof toastr !== 'undefined') toastr.success('¡Ficha de Indicador aplicada exitosamente desde la vista previa de IA!');
+    if (typeof toastr !== 'undefined') toastr.success('¡Todos los 16 campos de la Ficha de Indicador fueron aplicados y etiquetados con 🤖 Creado con IA!');
 }
 </script>
 
@@ -453,8 +462,9 @@ function aplicarSugerenciaIaFicha() {
             </div>
             <div class="modal-body p-4" style="background-color: #f8fafc;">
                 <div class="card border-0 shadow-sm mb-3" style="border-radius: 12px; overflow: hidden;">
-                    <div class="card-header bg-white font-weight-bold text-dark border-bottom-0 pb-0 pt-3" style="font-size: 1.1rem;">
-                        <i class="fa fa-line-chart text-primary mr-2"></i> <span id="prev_ind_nombre"></span>
+                    <div class="card-header bg-white font-weight-bold text-dark border-bottom-0 pb-0 pt-3 d-flex align-items-center justify-content-between" style="font-size: 1.1rem;">
+                        <span><i class="fa fa-line-chart text-primary mr-2"></i> <span id="prev_ind_nombre"></span></span>
+                        <span class="badge badge-warning text-dark font-weight-bold"><i class="fa fa-robot mr-1"></i> Creado con IA</span>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -474,9 +484,19 @@ function aplicarSugerenciaIaFicha() {
                                 <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Sentido Deseado</label>
                                 <span id="prev_ind_sentido" class="badge badge-success px-3 py-2 font-weight-bold" style="font-size:0.85rem;"></span>
                             </div>
+
+                            <div class="col-12 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Descripción del Indicador</label>
+                                <div id="prev_ind_descripcion" class="p-2.5 bg-white border rounded text-dark" style="font-size:0.88rem;"></div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Variables</label>
+                                <div id="prev_ind_variables" class="p-2.5 bg-white border rounded text-dark font-mono" style="font-family:monospace; font-size:0.85rem;"></div>
+                            </div>
+
                             <div class="col-12 mb-3">
                                 <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Fórmula de Cálculo</label>
-                                <div id="prev_ind_formula" class="p-3 bg-light rounded border text-dark font-mono" style="font-family: monospace; font-size:0.9rem;"></div>
+                                <div id="prev_ind_formula" class="p-3 bg-light rounded border text-primary font-weight-bold font-mono" style="font-family: monospace; font-size:0.9rem;"></div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Unidad de Medida</label>
@@ -486,9 +506,13 @@ function aplicarSugerenciaIaFicha() {
                                 <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Fuente de Datos</label>
                                 <div id="prev_ind_fuente" class="text-dark"></div>
                             </div>
-                            <div class="col-12">
+                            <div class="col-12 mb-3">
                                 <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Dependencia / Unidad Responsable</label>
                                 <div id="prev_ind_dependencia_responsable" class="text-dark font-weight-bold"></div>
+                            </div>
+                            <div class="col-12">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Comentarios</label>
+                                <div id="prev_ind_comentarios" class="text-muted small font-italic"></div>
                             </div>
                         </div>
                     </div>

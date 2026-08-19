@@ -18,11 +18,13 @@ class Indicador extends Model
         'linea_base_anio', 'linea_base_valor',
         'metas',
         'fuente', 'dependencia_responsable', 'comentarios',
+        'creado_con_ia',
     ];
 
     protected $casts = [
         'metas'          => 'array',
         'linea_base_anio'=> 'integer',
+        'creado_con_ia'  => 'boolean',
     ];
 
     const DIMENSIONES = [

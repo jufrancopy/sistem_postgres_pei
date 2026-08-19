@@ -1257,47 +1257,35 @@ function generarAccionEIndicadorConIaActions() {
         dataType: 'json',
         success: function(res) {
             $btn.prop('disabled', false).html('<i class="fa fa-bolt mr-1"></i> Generar Acción e Indicador con IA');
-            if (res.success && res.data) {
-                if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val('1');
-                var d = res.data;
-                if (d.accion_nombre) {
-                    setValToEditor('actions', 'ajaxActionsModal', d.accion_nombre);
-                }
-                if (d.resultado_intermedio && $('#actions_resultado_intermedio').length) {
-                    $('#actions_resultado_intermedio').val(d.resultado_intermedio);
-                }
-
-                // Autocompletar Ficha Técnica de Indicador en modal_ficha si está presente
-                if (d.indicador) {
-                    var ind = d.indicador;
-                    if ($('#form_ind_nombre').length) $('#form_ind_nombre').val(ind.nombre);
-                    if ($('#form_ind_codigo_letras').length) $('#form_ind_codigo_letras').val(ind.codigo_letras);
-                    if ($('#form_ind_codigo_numeros').length) $('#form_ind_codigo_numeros').val(ind.codigo_numeros);
-                    if ($('#form_ind_formula').length) $('#form_ind_formula').val(ind.formula);
-                    if ($('#form_ind_unidad_medida').length) $('#form_ind_unidad_medida').val(ind.unidad_medida);
-                    if ($('#form_ind_fuente').length) $('#form_ind_fuente').val(ind.fuente);
-                    if ($('#form_ind_dependencia_responsable').length) $('#form_ind_dependencia_responsable').val(ind.dependencia_responsable);
-
-                    if (ind.dimension) {
-                        $('input[name="ind_dimension"][value="' + ind.dimension + '"]').prop('checked', true).trigger('change');
-                        $('.ind-card-dim').removeClass('border-primary bg-light');
-                        $('.ind-card-dim[data-value="' + ind.dimension + '"]').addClass('border-primary bg-light');
-                    }
-                    if (ind.frecuencia) {
-                        $('input[name="ind_frecuencia"][value="' + ind.frecuencia + '"]').prop('checked', true).trigger('change');
-                    }
-                    if (ind.cobertura) {
-                        $('input[name="ind_cobertura"][value="' + ind.cobertura + '"]').prop('checked', true).trigger('change');
-                    }
-                    if (ind.sentido) {
-                        $('input[name="ind_sentido"][value="' + ind.sentido + '"]').prop('checked', true).trigger('change');
-                    }
-                }
-
-                if (typeof toastr !== 'undefined') {
-                    toastr.success('¡Acción Estratégica SMART y su Ficha Técnica de Indicador fueron generadas exitosamente!', '🤖 IA Llama 3.3 70B');
-                }
+            if (!res.success || !res.data) {
+                if (typeof toastr !== 'undefined') toastr.error('No se pudo estructurar la Acción e Indicador.');
+                return;
             }
+
+            var d = res.data;
+            window.lastIaAccionCompletaData = d;
+
+            // Llenar vista previa Acción
+            $('#prev_accion_smart_texto').html(d.accion_nombre || 'Acción sin definir');
+
+            // Llenar vista previa Indicador (16 Campos)
+            var ind = d.indicador || {};
+            $('#prev_ind_nombre_full').text(ind.nombre || 'Indicador sin nombre');
+            $('#prev_ind_codigo_full').text((ind.codigo_letras || 'IND') + '-' + (ind.codigo_numeros || '001'));
+            $('#prev_ind_dim_full').text((ind.dimension || 'eficacia').toUpperCase());
+            $('#prev_ind_amb_full').text((ind.ambito || 'accion_estrategica').replace('_', ' ').toUpperCase());
+            $('#prev_ind_frec_full').text((ind.frecuencia || 'trimestral').toUpperCase());
+            $('#prev_ind_sent_full').text((ind.sentido || 'ascendente').toUpperCase());
+            $('#prev_ind_desc_full').text(ind.descripcion || 'Sin descripción');
+            $('#prev_ind_vars_full').text(ind.variables || 'Variables no especificadas');
+            $('#prev_ind_form_full').text(ind.formula || '(A / B) * 100');
+            $('#prev_ind_um_full').text(ind.unidad_medida || '%');
+            $('#prev_ind_fuente_full').text(ind.fuente || 'Sistema SIESS / IPS');
+            $('#prev_ind_dep_full').text(ind.dependencia_responsable || 'Dirección de Planificación IPS');
+            $('#prev_ind_com_full').text(ind.comentarios || 'Generado automáticamente con IA.');
+
+            // Desplegar Modal Preview
+            $('#modalPreviewAccionEIndicadorIa').modal('show');
         },
         error: function() {
             $btn.prop('disabled', false).html('<i class="fa fa-bolt mr-1"></i> Generar Acción e Indicador con IA');
@@ -1305,4 +1293,185 @@ function generarAccionEIndicadorConIaActions() {
         }
     });
 }
+
+function aplicarAccionEIndicadorIa() {
+    var d = window.lastIaAccionCompletaData;
+    if (!d) return;
+
+    var $btn = $('#btnAplicarAccionEIndicadorIa');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Creando y vinculando...');
+
+    // 1. Etiquetar Acción como Creada con IA
+    if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val('1');
+
+    // 2. Establecer texto de Acción SMART
+    if (d.accion_nombre) {
+        setValToEditor('actions', 'ajaxActionsModal', d.accion_nombre);
+    }
+    if (d.resultado_intermedio && $('#actions_resultado_intermedio').length) {
+        $('#actions_resultado_intermedio').val(d.resultado_intermedio);
+    }
+
+    // 3. Crear el Indicador en DB con etiqueta creado_con_ia = 1
+    var profileId = $('#actions_profile_id').val() || '{{ $profile->id ?? "" }}';
+    var ind = d.indicador || {};
+
+    var payloadInd = {
+        _token: '{{ csrf_token() }}',
+        nombre: ind.nombre || ('Indicador: ' + (d.accion_nombre ? d.accion_nombre.substring(0, 50) : 'Acción IPS')),
+        codigo_letras: ind.codigo_letras || 'IND',
+        codigo_numeros: ind.codigo_numeros || '001',
+        dimension: ind.dimension || 'eficacia',
+        ambito: ind.ambito || 'accion_estrategica',
+        descripcion: ind.descripcion || '',
+        variables: ind.variables || '',
+        formula: ind.formula || '(A / B) * 100',
+        unidad_medida: ind.unidad_medida || '%',
+        frecuencia: ind.frecuencia || 'trimestral',
+        cobertura: ind.cobertura || 'nacional',
+        sentido: ind.sentido || 'ascendente',
+        fuente: ind.fuente || 'Sistema SIESS / IPS',
+        dependencia_responsable: ind.dependencia_responsable || 'Dirección de Planificación',
+        comentarios: ind.comentarios || 'Generado automáticamente con IA.',
+        creado_con_ia: 1
+    };
+
+    if (profileId) {
+        $.ajax({
+            url: '{{ url("pei-profiles") }}/' + profileId + '/indicadores',
+            type: 'POST',
+            data: payloadInd,
+            dataType: 'json',
+            success: function(res) {
+                $btn.prop('disabled', false).html('<i class="fa fa-check mr-1"></i> Aplicar Acción e Indicador a la Ficha (Etiquetado con IA)');
+                $('#modalPreviewAccionEIndicadorIa').modal('hide');
+
+                if (res && res.indicador) {
+                    var newOption = new Option('[' + (res.indicador.codigo || 'IND-001') + '] ' + res.indicador.nombre, res.indicador.id, true, true);
+                    $('#action_indicador_id').append(newOption).trigger('change');
+                }
+
+                if (typeof toastr !== 'undefined') {
+                    toastr.success('¡Acción Estratégica SMART e Indicador fueron creados, vinculados y etiquetados con la insignia 🤖 Creado con IA!', '¡Operación Exitosa!');
+                }
+            },
+            error: function(xhr) {
+                $btn.prop('disabled', false).html('<i class="fa fa-check mr-1"></i> Aplicar Acción e Indicador a la Ficha (Etiquetado con IA)');
+                $('#modalPreviewAccionEIndicadorIa').modal('hide');
+                if (typeof toastr !== 'undefined') toastr.warning('Se aplicó la Acción SMART, pero debes seleccionar el indicador manualmente.');
+            }
+        });
+    } else {
+        $btn.prop('disabled', false).html('<i class="fa fa-check mr-1"></i> Aplicar Acción e Indicador a la Ficha (Etiquetado con IA)');
+        $('#modalPreviewAccionEIndicadorIa').modal('hide');
+    }
+}
+</script>
+
+{{-- Modal Preview de Acción + Indicador IA --}}
+<div class="modal fade" id="modalPreviewAccionEIndicadorIa" tabindex="-1" role="dialog" style="z-index: 1060;">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius:15px; overflow:hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%);">
+                <div>
+                    <h5 class="modal-title font-weight-bold mb-0 text-warning" style="font-size: 1.15rem;">
+                        <i class="fa fa-robot mr-2"></i> Vista Preliminar: Acción Estratégica & Ficha de Indicador (IA Llama 3.3 70B)
+                    </h5>
+                    <small class="text-white-50">Propuesta estructurada automáticamente con etiquetado de Inteligencia Artificial para la gestión del IPS.</small>
+                </div>
+                <button type="button" class="close text-white opacity-8" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-4" style="background-color: #f8fafc; max-height:78vh; overflow-y:auto;">
+
+                {{-- 1. Tarjeta de Acción SMART --}}
+                <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; border-left: 5px solid #ffc107 !important;">
+                    <div class="card-header bg-white font-weight-bold text-dark d-flex align-items-center justify-content-between pt-3 pb-2 border-bottom-0">
+                        <span style="font-size: 1.05rem;"><i class="fa fa-bullseye text-warning mr-2"></i> 🎯 Acción Estratégica SMART Propuesta</span>
+                        <span class="badge badge-warning text-dark px-3 py-1 font-weight-bold" style="border-radius: 20px;"><i class="fa fa-robot mr-1"></i> Creado con IA</span>
+                    </div>
+                    <div class="card-body pt-1 pb-3">
+                        <div id="prev_accion_smart_texto" class="p-3 bg-light rounded text-dark font-weight-500" style="font-size: 0.95rem; border: 1px solid #e2e8f0; line-height: 1.6;"></div>
+                    </div>
+                </div>
+
+                {{-- 2. Tarjeta Ficha de Indicador (16 Campos) --}}
+                <div class="card border-0 shadow-sm" style="border-radius: 12px; border-left: 5px solid #3b82f6 !important;">
+                    <div class="card-header bg-white font-weight-bold text-dark d-flex align-items-center justify-content-between pt-3 pb-2 border-bottom-0">
+                        <span style="font-size: 1.05rem;"><i class="fa fa-ruler-combined text-primary mr-2"></i> 📊 Ficha Técnica del Indicador Asociado</span>
+                        <span class="badge badge-info px-3 py-1 font-weight-bold" style="border-radius: 20px;"><i class="fa fa-check-circle mr-1"></i> Ficha Completa (16 Campos)</span>
+                    </div>
+                    <div class="card-body pt-1">
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Nombre del Indicador</label>
+                                <div id="prev_ind_nombre_full" class="font-weight-bold text-dark" style="font-size:1rem;"></div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Código Sugerido</label>
+                                <span id="prev_ind_codigo_full" class="badge badge-dark px-3 py-2 font-weight-bold" style="font-size:0.85rem;"></span>
+                            </div>
+
+                            <div class="col-md-3 col-6 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Dimensión</label>
+                                <span id="prev_ind_dim_full" class="badge badge-primary px-3 py-2 font-weight-bold d-block text-center" style="font-size:0.85rem;"></span>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Ámbito</label>
+                                <span id="prev_ind_amb_full" class="badge badge-secondary px-3 py-2 font-weight-bold d-block text-center" style="font-size:0.85rem;"></span>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Frecuencia</label>
+                                <span id="prev_ind_frec_full" class="badge badge-info px-3 py-2 font-weight-bold d-block text-center" style="font-size:0.85rem;"></span>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Sentido Deseado</label>
+                                <span id="prev_ind_sent_full" class="badge badge-success px-3 py-2 font-weight-bold d-block text-center" style="font-size:0.85rem;"></span>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Descripción Técnica del Indicador</label>
+                                <div id="prev_ind_desc_full" class="p-2.5 bg-white rounded border text-dark" style="font-size:0.9rem;"></div>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Variables de la Fórmula</label>
+                                <div id="prev_ind_vars_full" class="p-2.5 bg-white rounded border text-dark font-mono" style="font-family:monospace; font-size:0.88rem;"></div>
+                            </div>
+
+                            <div class="col-md-8 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Fórmula de Cálculo</label>
+                                <div id="prev_ind_form_full" class="p-2.5 bg-light rounded border text-primary font-weight-bold font-mono" style="font-family:monospace; font-size:0.92rem;"></div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Unidad de Medida</label>
+                                <div id="prev_ind_um_full" class="p-2.5 bg-light rounded border text-dark font-weight-bold" style="font-size:0.9rem;"></div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Fuente de Datos</label>
+                                <div id="prev_ind_fuente_full" class="text-dark font-weight-500"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Dependencia Responsable</label>
+                                <div id="prev_ind_dep_full" class="text-dark font-weight-bold"></div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Comentarios / Observaciones</label>
+                                <div id="prev_ind_com_full" class="text-muted small font-italic"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-white border-top">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal"><i class="fa fa-times mr-1"></i> Descartar</button>
+                <button type="button" class="btn btn-success font-weight-bold rounded-pill px-4 shadow-sm" id="btnAplicarAccionEIndicadorIa" onclick="aplicarAccionEIndicadorIa();">
+                    <i class="fa fa-check mr-1"></i> Aplicar Acción e Indicador a la Ficha (Etiquetado con IA)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 </script>

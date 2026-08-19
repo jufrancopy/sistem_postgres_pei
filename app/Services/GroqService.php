@@ -224,27 +224,30 @@ PROMPT;
         $prompt = <<<PROMPT
 Eres un especialista en diseño de indicadores de gestión pública y de salud para el IPS de Paraguay.
 
-Tu tarea es diseñar la Ficha Técnica de un Indicador idóneo para la siguiente Acción u Objetivo Estratégico:
+Tu tarea es diseñar la Ficha Técnica COMPLETA de un Indicador idóneo para la siguiente Acción u Objetivo Estratégico:
 - Título: "{$accionTitulo}"
 - Contexto: "{$contexto}"
 
-Genera ÚNICAMENTE un objeto JSON estricto con la siguiente estructura (sin bloque markdown ni texto extra):
+Genera ÚNICAMENTE un objeto JSON estricto con la siguiente estructura (sin bloques markdown ni texto adicional):
 {
   "nombre": "Nombre técnico y preciso del indicador",
   "codigo_letras": "IND",
   "codigo_numeros": "001",
   "dimension": "eficacia",
   "ambito": "accion_estrategica",
+  "descripcion": "Explicación detallada del indicador: en qué consiste y qué permite medir en la institución.",
+  "variables": "Definición clara de variables: A = Número de atenciones/metas logradas; B = Total de atenciones/metas programadas.",
+  "formula": "(A / B) * 100",
+  "unidad_medida": "%",
   "frecuencia": "trimestral",
   "cobertura": "nacional",
   "sentido": "ascendente",
-  "formula": "Fórmula matemática clara (Ej: (N° de atenciones / Total programado) * 100)",
-  "unidad_medida": "%",
-  "fuente": "Sistema SIESS / Registro Hospitalario IPS",
-  "dependencia_responsable": "Dirección de Planificación y Gestión Hospitalaria"
+  "fuente": "Sistema Informático Hospitalario (SIH / SIESS IPS / SIPLAN GO)",
+  "dependencia_responsable": "Dirección de Planificación y Gestión Hospitalaria",
+  "comentarios": "Indicador estandarizado conforme a normativas del IPS y MECIP."
 }
 
-Nota de valores posibles:
+Nota de valores posibles obligatorios:
 - dimension: eficacia, eficiencia, calidad, economia
 - ambito: objetivo_estrategico, objetivo_especifico, accion_estrategica, accion_operativa
 - frecuencia: mensual, trimestral, semestral, anual
@@ -253,7 +256,7 @@ Nota de valores posibles:
 PROMPT;
 
         try {
-            $raw = $this->generarTextoLibre($prompt, 800);
+            $raw = $this->generarTextoLibre($prompt, 1000);
             preg_match('/\{.*\}/s', $raw, $matches);
             $clean = $matches[0] ?? '{}';
             $data = json_decode($clean, true);
@@ -271,13 +274,16 @@ PROMPT;
             'codigo_numeros'          => '001',
             'dimension'               => 'eficacia',
             'ambito'                  => 'accion_estrategica',
+            'descripcion'             => 'Permite evaluar el grado de cumplimiento cuantitativo de las metas programadas para la acción.',
+            'variables'               => 'A = Cantidad de metas alcanzadas en el periodo; B = Cantidad total de metas planificadas.',
+            'formula'                 => '(A / B) * 100',
+            'unidad_medida'           => '%',
             'frecuencia'              => 'trimestral',
             'cobertura'               => 'nacional',
             'sentido'                 => 'ascendente',
-            'formula'                 => '(N° de metas cumplidas / Total de metas programadas) * 100',
-            'unidad_medida'           => '%',
             'fuente'                  => 'Sistema SIPLAN GO IPS',
             'dependencia_responsable' => 'Unidad Ejecutora IPS',
+            'comentarios'             => 'Registrado automáticamente con apoyo de la Inteligencia Artificial.',
         ];
     }
 
@@ -303,13 +309,16 @@ Genera ÚNICAMENTE un objeto JSON estricto sin bloques markdown ni comillas exte
     "codigo_numeros": "001",
     "dimension": "eficacia",
     "ambito": "accion_estrategica",
+    "descripcion": "Descripción detallada del indicador y qué permite medir en el IPS.",
+    "variables": "Variables: A = N° de atenciones/metas alcanzadas; B = Total programado.",
+    "formula": "(A / B) * 100",
+    "unidad_medida": "%",
     "frecuencia": "trimestral",
     "cobertura": "nacional",
     "sentido": "ascendente",
-    "formula": "(N° de metas logradas / Total de metas programadas) * 100",
-    "unidad_medida": "%",
     "fuente": "Sistema Informático Hospitalario (SIH / SIESS IPS)",
-    "dependencia_responsable": "Dirección de Planificación y Gestión IPS"
+    "dependencia_responsable": "Dirección de Planificación y Gestión IPS",
+    "comentarios": "Generado con apoyo de la Inteligencia Artificial para el monitoreo institucional."
   }
 }
 
@@ -319,7 +328,7 @@ Valores posibles de frecuencia: mensual, trimestral, semestral, anual
 PROMPT;
 
         try {
-            $raw = $this->generarTextoLibre($prompt, 1000);
+            $raw = $this->generarTextoLibre($prompt, 1200);
             preg_match('/\{.*\}/s', $raw, $matches);
             $clean = $matches[0] ?? '{}';
             $data = json_decode($clean, true);

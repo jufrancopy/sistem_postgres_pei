@@ -621,6 +621,9 @@
                                                     <div class="d-flex align-items-center flex-wrap mb-1" style="gap:.25rem">
                                                         <span class="badge badge-dark" style="font-size:.6rem">{{ $indObj->codigoCompleto() }}</span>
                                                         <span class="badge text-white" style="font-size:.6rem;background:{{ $dc['bg'] }}">{{ $dc['label'] }}</span>
+                                                        @if(!empty($indObj->creado_con_ia))
+                                                            <span class="badge badge-warning text-dark font-weight-bold" style="font-size:.6rem;" title="Indicador generado con Inteligencia Artificial (Llama 3.3)"><i class="fa fa-robot mr-1"></i>IA</span>
+                                                        @endif
                                                         @if($indObj->sentido === 'ascendente')
                                                             <span class="text-success font-weight-bold" style="font-size:.8rem" title="Ascendente">▲</span>
                                                         @else

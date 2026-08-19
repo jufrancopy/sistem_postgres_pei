@@ -185,11 +185,13 @@ class IndicadorController extends Controller
             'fuente'                  => 'nullable|string|max:500',
             'dependencia_responsable' => 'nullable|string|max:300',
             'comentarios'             => 'nullable|string',
+            'creado_con_ia'           => 'nullable|boolean',
         ]);
 
         $indicador = Indicador::create(array_merge($data, [
             'pei_profile_id' => $profileId,
             'metas'          => $request->input('metas', []),
+            'creado_con_ia'  => $request->boolean('creado_con_ia', false),
         ]));
 
         return response()->json([
@@ -225,10 +227,12 @@ class IndicadorController extends Controller
             'fuente'                  => 'nullable|string|max:500',
             'dependencia_responsable' => 'nullable|string|max:300',
             'comentarios'             => 'nullable|string',
+            'creado_con_ia'           => 'nullable|boolean',
         ]);
 
         $indicador->update(array_merge($data, [
-            'metas' => $request->input('metas', []),
+            'metas'         => $request->input('metas', []),
+            'creado_con_ia' => $request->has('creado_con_ia') ? $request->boolean('creado_con_ia') : $indicador->creado_con_ia,
         ]));
 
         return response()->json([

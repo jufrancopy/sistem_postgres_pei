@@ -138,7 +138,12 @@
                             </span>
                         </td>
                         <td style="font-size:.88rem;font-weight:500">
-                            <div>{{ $ind->nombre }}</div>
+                            <div class="d-flex align-items-center flex-wrap" style="gap:5px;">
+                                <span>{{ $ind->nombre }}</span>
+                                @if($ind->creado_con_ia)
+                                <span class="badge badge-warning text-dark font-weight-bold" style="font-size:.65rem;" title="Generado con Inteligencia Artificial (Llama 3.3)"><i class="fa fa-robot mr-1"></i>IA</span>
+                                @endif
+                            </div>
                             @if($ind->variables)
                             <div class="text-muted" style="font-size:.72rem;font-style:italic">
                                 <i class="fa fa-calculator text-info mr-1"></i>Variables: {{ \Illuminate\Support\Str::limit($ind->variables, 90) }}
