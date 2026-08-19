@@ -83,6 +83,7 @@
 }
 </style>
 
+@auth
 {{-- Botón Flotante en la esquina inferior izquierda --}}
 <button type="button" class="btn-ticket-float" onclick="abrirModalReportarFalla()" title="¿Encontraste un error o falla? Reportalo al Administrador aquí">
     <i class="fa fa-exclamation-triangle"></i>
@@ -253,3 +254,4 @@ $(document).ready(function() {
     });
 });
 </script>
+@endauth

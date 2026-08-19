@@ -3052,6 +3052,9 @@
                     $('#actionsForm').trigger("reset");
 
                     if (typeBtn === 'create') {
+                        $('#modalHeadingActions').html("Crear {{ $niveles['action'] ?? 'Acción' }}");
+                        var parentName = data.profile.name ? $('<div>').html(data.profile.name).text() : '';
+                        $('#modalActionsSubdetail').html('<i class="fa fa-sitemap text-warning mr-1"></i> Pertenece a: <strong>' + (parentName.length > 85 ? parentName.substring(0, 85) + '...' : parentName) + '</strong>');
                         $('#actions_profile_id').val('');
                         $('#actions_parent_id').val(data.profile.id);
                         if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val('0');
@@ -3060,10 +3063,14 @@
                         $('#saveBtnActions').val('create');
 
                     } else if (typeBtn === 'edit') {
+                        var actionName = data.profile.name ? $('<div>').html(data.profile.name).text() : 'Sin descripción';
+                        var orderNum = data.profile.order_item ? '#' + data.profile.order_item + ' — ' : '';
+                        $('#modalHeadingActions').html("Editar {{ $niveles['action'] ?? 'Acción' }} " + orderNum);
+                        $('#modalActionsSubdetail').html('<i class="fa fa-info-circle text-warning mr-1"></i> Detalle de la Acción: <strong>' + (actionName.length > 90 ? actionName.substring(0, 90) + '...' : actionName) + '</strong>');
                         $('#actions_profile_id').val(data.profile.id);
                         $('#actions_parent_id').val(data.profile.parent_id);
                         if ($('#action_creado_con_ia').length) $('#action_creado_con_ia').val(data.profile.creado_con_ia ? '1' : '0');
-                        actionsEditor.setData(data.profile.name)
+                        actionsEditor.setData(data.profile.name);
                         $('#actions_order_item').val(data.profile.order_item);
                         $('#saveBtnActions').val('edit');
                     }

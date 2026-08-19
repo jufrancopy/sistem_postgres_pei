@@ -385,28 +385,23 @@ function generarFichaIndicadorIa() {
                 if (typeof toastr !== 'undefined') toastr.error('No se pudo obtener la sugerencia.');
                 return;
             }
-            if (ind.nombre) $('#ind_nombre').val(ind.nombre);
-            if (ind.codigo_letras) $('#ind_codigo_letras').val(ind.codigo_letras);
-            if (ind.codigo_numeros) $('#ind_codigo_numeros').val(ind.codigo_numeros);
-            if (ind.formula) $('#ind_formula').val(ind.formula);
-            if (ind.unidad_medida) $('#ind_unidad_medida').val(ind.unidad_medida);
-            if (ind.fuente) $('#ind_fuente').val(ind.fuente);
-            if (ind.dependencia_responsable) $('#ind_dependencia_responsable').val(ind.dependencia_responsable);
+            
+            // Guardar propuesta temporalmente para la vista previa
+            window.lastIaIndicadorData = ind;
 
-            // Seleccionar radio cards
-            $.each(['dimension', 'ambito', 'frecuencia', 'cobertura', 'sentido'], function(i, campo) {
-                var val = ind[campo];
-                if (val) {
-                    var $r = $('input[name="ind_' + campo + '"]').filter(function() {
-                        return $(this).val().toLowerCase() === val.toLowerCase();
-                    });
-                    if ($r.length) {
-                        $r.prop('checked', true).trigger('change');
-                    }
-                }
-            });
+            // Llenar vista previa modal
+            $('#prev_ind_nombre').text(ind.nombre || 'Indicador sin nombre');
+            $('#prev_ind_dimension').text(ind.dimension || 'No especificada');
+            $('#prev_ind_frecuencia').text(ind.frecuencia || 'Anual');
+            $('#prev_ind_ambito').text(ind.ambito || 'Resultado');
+            $('#prev_ind_sentido').text(ind.sentido || 'Ascendente');
+            $('#prev_ind_formula').text(ind.formula || 'N/A');
+            $('#prev_ind_unidad_medida').text(ind.unidad_medida || 'Porcentaje (%)');
+            $('#prev_ind_fuente').text(ind.fuente || 'Registros Institucionales IPS');
+            $('#prev_ind_dependencia_responsable').text(ind.dependencia_responsable || 'Dirección de Planificación');
 
-            if (typeof toastr !== 'undefined') toastr.success('¡Ficha de Indicador autocompletada inteligentemente por la IA!');
+            // Mostrar modal de vista previa
+            $('#modalPreviewIndicadorIa').modal('show');
         },
         error: function(xhr) {
             $btn.prop('disabled', false).html('<i class="fa fa-magic text-warning mr-1"></i> Autocompletar Ficha con IA');
@@ -414,4 +409,95 @@ function generarFichaIndicadorIa() {
         }
     });
 }
+
+function aplicarSugerenciaIaFicha() {
+    var ind = window.lastIaIndicadorData;
+    if (!ind) return;
+
+    if (ind.nombre) $('#ind_nombre').val(ind.nombre);
+    if (ind.codigo_letras) $('#ind_codigo_letras').val(ind.codigo_letras);
+    if (ind.codigo_numeros) $('#ind_codigo_numeros').val(ind.codigo_numeros);
+    if (ind.formula) $('#ind_formula').val(ind.formula);
+    if (ind.unidad_medida) $('#ind_unidad_medida').val(ind.unidad_medida);
+    if (ind.fuente) $('#ind_fuente').val(ind.fuente);
+    if (ind.dependencia_responsable) $('#ind_dependencia_responsable').val(ind.dependencia_responsable);
+
+    // Seleccionar radio cards
+    $.each(['dimension', 'ambito', 'frecuencia', 'cobertura', 'sentido'], function(i, campo) {
+        var val = ind[campo];
+        if (val) {
+            var $r = $('input[name="ind_' + campo + '"]').filter(function() {
+                return $(this).val().toLowerCase() === val.toLowerCase();
+            });
+            if ($r.length) {
+                $r.prop('checked', true).trigger('change');
+            }
+        }
+    });
+
+    $('#modalPreviewIndicadorIa').modal('hide');
+    if (typeof toastr !== 'undefined') toastr.success('¡Ficha de Indicador aplicada exitosamente desde la vista previa de IA!');
+}
 </script>
+
+{{-- Modal Preview Indicador IA --}}
+<div class="modal fade" id="modalPreviewIndicadorIa" tabindex="-1" role="dialog" style="z-index: 1060;">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius:15px; overflow:hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%);">
+                <div>
+                    <h5 class="modal-title font-weight-bold mb-0 text-warning" style="font-size: 1.1rem;"><i class="fa fa-eye mr-2"></i> Vista Preliminar: Propuesta de Ficha de Indicador (IA Llama 3.3)</h5>
+                    <small class="text-white-50">Revisá la estructuración propuesta por la Inteligencia Artificial antes de aplicar a la ficha.</small>
+                </div>
+                <button type="button" class="close text-white opacity-8" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-4" style="background-color: #f8fafc;">
+                <div class="card border-0 shadow-sm mb-3" style="border-radius: 12px; overflow: hidden;">
+                    <div class="card-header bg-white font-weight-bold text-dark border-bottom-0 pb-0 pt-3" style="font-size: 1.1rem;">
+                        <i class="fa fa-line-chart text-primary mr-2"></i> <span id="prev_ind_nombre"></span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Dimensión</label>
+                                <span id="prev_ind_dimension" class="badge badge-primary px-3 py-2 font-weight-bold" style="font-size:0.85rem;"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Frecuencia de Medición</label>
+                                <span id="prev_ind_frecuencia" class="badge badge-info px-3 py-2 font-weight-bold" style="font-size:0.85rem;"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Ámbito</label>
+                                <span id="prev_ind_ambito" class="badge badge-secondary px-3 py-2 font-weight-bold" style="font-size:0.85rem;"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Sentido Deseado</label>
+                                <span id="prev_ind_sentido" class="badge badge-success px-3 py-2 font-weight-bold" style="font-size:0.85rem;"></span>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Fórmula de Cálculo</label>
+                                <div id="prev_ind_formula" class="p-3 bg-light rounded border text-dark font-mono" style="font-family: monospace; font-size:0.9rem;"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Unidad de Medida</label>
+                                <div id="prev_ind_unidad_medida" class="font-weight-bold text-dark"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Fuente de Datos</label>
+                                <div id="prev_ind_fuente" class="text-dark"></div>
+                            </div>
+                            <div class="col-12">
+                                <label class="text-muted small font-weight-bold text-uppercase d-block mb-1">Dependencia / Unidad Responsable</label>
+                                <div id="prev_ind_dependencia_responsable" class="text-dark font-weight-bold"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white border-top">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal"><i class="fa fa-times mr-1"></i> Descartar</button>
+                <button type="button" class="btn btn-success font-weight-bold rounded-pill px-4 shadow-sm" onclick="aplicarSugerenciaIaFicha();"><i class="fa fa-check mr-1"></i> Aplicar a la Ficha del Indicador</button>
+            </div>
+        </div>
+    </div>
+</div>

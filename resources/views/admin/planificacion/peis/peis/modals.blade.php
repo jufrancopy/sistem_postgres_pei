@@ -204,6 +204,7 @@
                     {{ Form::hidden('progress', null, ['class' => 'form-control', 'id' => 'axis_progress']) }}
                     {{ Form::hidden('dependency_id', null, ['class' => 'form-control', 'id' => 'axis_dependency']) }}
 
+                    @if(auth()->check() && (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('Admin') || auth()->user()->id == 1))
                     {{-- Banner Asistente IA SIPLAN --}}
                     <div class="p-3 mb-3 rounded shadow-xs text-white d-flex align-items-center justify-content-between flex-wrap" style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%); gap:10px; border-radius:12px;">
                         <div>
@@ -214,6 +215,7 @@
                             <i class="fa fa-bolt mr-1"></i> Generar Acción e Indicador con IA
                         </button>
                     </div>
+                    @endif
 
                     <div class="axis mb-3">
                         <div class="d-flex align-items-center justify-content-between mb-1">
@@ -534,12 +536,14 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
 
-            <div class="modal-header" style="background:linear-gradient(135deg,#2e7d32,#388e3c)">
-                <div>
-                    <h5 class="modal-title text-white mb-0" id="modalHeadingActions"></h5>
-                    <small class="text-white" style="opacity:.8"><i class="fa fa-rocket mr-1"></i> {{ $niveles['action'] ?? 'Acción' }}</small>
+            <div class="modal-header py-3" style="background:linear-gradient(135deg,#2e7d32,#388e3c)">
+                <div style="flex:1; min-width:0; padding-right:15px;">
+                    <h5 class="modal-title text-white font-weight-bold mb-1" id="modalHeadingActions" style="font-size:1.15rem;"></h5>
+                    <div id="modalActionsSubdetail" class="text-white small" style="opacity:.95; font-size:0.85rem; line-height:1.3; font-weight:500;">
+                        <i class="fa fa-rocket mr-1 text-warning"></i> {{ $niveles['action'] ?? 'Acción' }}
+                    </div>
                 </div>
-                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                <button type="button" class="close text-white opacity-8" data-dismiss="modal"><span>&times;</span></button>
             </div>
 
             <div class="modal-body">
@@ -561,6 +565,7 @@
                     {{ Form::hidden('dependency_id', null, ['class' => 'form-control', 'id' => 'actions_dependency']) }}
                     {{ Form::hidden('creado_con_ia', '0', ['id' => 'action_creado_con_ia']) }}
 
+                    @if(auth()->check() && (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('Admin') || auth()->user()->id == 1))
                     {{-- Banner Asistente IA SIPLAN --}}
                     <div class="p-3 mb-3 rounded shadow-xs text-white d-flex align-items-center justify-content-between flex-wrap" style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%); gap:10px; border-radius:12px;">
                         <div>
@@ -571,6 +576,7 @@
                             <i class="fa fa-bolt mr-1"></i> Generar Acción e Indicador con IA
                         </button>
                     </div>
+                    @endif
 
                     <div class="actions mb-3">
                         <div class="d-flex align-items-center justify-content-between mb-1">
@@ -1046,9 +1052,8 @@ function mejorarTextoSmartIa() {
     }
 
     var plainText = $('<div>').html(rawText).text().trim();
-    if (!plainText) {
-        if (typeof toastr !== 'undefined') toastr.warning('Ingresá una idea o borrador primero para que la IA lo redacte en formato SMART.');
-        return;
+    if (!plainText || plainText.length < 2) {
+        plainText = "Fortalecimiento de la gestión operativa e institucional de los servicios de salud y prestaciones del Instituto de Previsión Social (IPS)";
     }
 
     var $btn = $('#btnMejorarSmartIa');
