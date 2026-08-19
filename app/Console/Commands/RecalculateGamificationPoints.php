@@ -443,7 +443,7 @@ class RecalculateGamificationPoints extends Command
                 'Actualización de elemento PEI: ' . Str::limit(strip_tags($node->name), 40),
                 10,
                 \App\Admin\Planificacion\Pei\PeiProfile::class,
-                'upd_' . $node->id,
+                $node->id,
                 (string) $node->id,
                 $node->updated_at?->toDateTimeString()
             );
@@ -459,10 +459,10 @@ class RecalculateGamificationPoints extends Command
             $this->queuePoint(
                 $row->analyst_id,
                 'pei_edit',
-                'Asignación como Analista en elemento PEI #' . $row->pei_profile_id,
+                'Asignación como Analista en elemento PEI',
                 10,
                 \App\Admin\Planificacion\Pei\PeiProfile::class,
-                'analyst_pivot_' . $row->pei_profile_id . '_' . $row->analyst_id,
+                $row->pei_profile_id,
                 (string) $row->pei_profile_id
             );
         }

@@ -209,11 +209,24 @@ class GamificationService
             return true;
         }
 
-        $model = app($referenceType);
+        try {
+            // Si el modelo usa UUID y el ID no es un UUID válido de 36 caracteres
+            if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $referenceId)) {
+                if (preg_match('/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i', $referenceId, $matches)) {
+                    $referenceId = $matches[0];
+                } else {
+                    return true;
+                }
+            }
 
-        return $model->newQuery()
-            ->where($model->getKeyName(), $referenceId)
-            ->exists();
+            $model = app($referenceType);
+
+            return $model->newQuery()
+                ->where($model->getKeyName(), $referenceId)
+                ->exists();
+        } catch (\Throwable $e) {
+            return true;
+        }
     }
 
     /**
