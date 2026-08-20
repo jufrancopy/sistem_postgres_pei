@@ -528,22 +528,28 @@ class RecalculateGamificationPoints extends Command
                         $date    = trim($parts[3]);
                         $subject = trim($parts[4]);
 
-                        // Coincidencia inteligente por email o por nombre
+                        // Coincidencia exacta inteligente por email o por nombre completo
                         $matchedUser = $this->usersById->first(function ($u) use ($author, $email) {
-                            $userMail = strtolower($u->email ?? '');
-                            $commitMail = strtolower($email ?? '');
+                            $userMail = strtolower(trim($u->email ?? ''));
+                            $commitMail = strtolower(trim($email ?? ''));
                             if ($userMail && $commitMail && $userMail === $commitMail) {
                                 return true;
                             }
 
-                            $userName = strtolower($u->name ?? '');
-                            $authorName = strtolower($author ?? '');
-                            if (str_contains($userName, 'angel') && str_contains($authorName, 'angel')) {
+                            $userName = strtolower(trim($u->name ?? ''));
+                            $authorName = strtolower(trim($author ?? ''));
+
+                            // Coincidencia específica para Ángel Rojas
+                            if (str_contains($userName, 'rojas') && str_contains($authorName, 'rojas')) {
                                 return true;
                             }
 
-                            $firstName = explode(' ', $userName)[0] ?? '';
-                            return strlen($firstName) > 3 && str_contains($authorName, $firstName);
+                            // Coincidencia exacta de nombre
+                            if ($userName === $authorName) {
+                                return true;
+                            }
+
+                            return false;
                         });
 
                         if ($matchedUser) {
