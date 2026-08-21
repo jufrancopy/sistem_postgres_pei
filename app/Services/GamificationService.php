@@ -658,7 +658,7 @@ class GamificationService
                         'pei_profile_id' => null,
                         'points'         => $points,
                         'action_type'    => 'group_award',
-                        'description'    => "Premio de Equipo ({$group->name}): {$title}" . ($description ? " — {$description}" : ""),
+                        'description'    => \Illuminate\Support\Str::limit("Premio de Equipo ({$group->name}): {$title}" . ($description ? " — {$description}" : ""), 450),
                         'reference_type' => \App\Models\Gamification\GroupReward::class,
                         'reference_id'   => (string)$reward->id,
                     ]);
