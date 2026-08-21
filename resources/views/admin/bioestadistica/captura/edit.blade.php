@@ -2,6 +2,30 @@
 @section('title', "Captura {$record->formulario->codigo}")
 
 @section('content')
+<style>
+    .bio-capture-field { position: relative; }
+    .bio-capture-field__head { position: relative; z-index: 1; }
+    .bio-capture-field__label {
+        position: static !important;
+        display: block;
+        float: none !important;
+        transform: none !important;
+        top: auto !important;
+        left: auto !important;
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #3c4858;
+        line-height: 1.3;
+        pointer-events: auto !important;
+    }
+    .bio-capture-field__help {
+        position: static !important;
+        display: block;
+        line-height: 1.35;
+    }
+    .bio-capture-field--block { width: 100%; }
+</style>
 @php $canEditPeriod = auth()->user()->can('update', $record); @endphp
 <div class="card">
     <div class="card-header card-header-info">
@@ -54,9 +78,9 @@
         </form>
 
         @if($record->isEditable() && auth()->user()->can('bio.record.submit'))
-            <form method="POST" action="{{ route('bioestadistica.captura.submit', $record) }}" class="mt-2">
+            <form method="POST" action="{{ route('bioestadistica.captura.submit', $record) }}" class="mt-2 bio-confirm-form" data-confirm="Se validará el último borrador guardado. ¿Enviar para aprobación?">
                 @csrf
-                <button class="btn btn-success" onclick="return confirm('Se validará el último borrador guardado. ¿Enviar para aprobación?')">Enviar para aprobación</button>
+                <button class="btn btn-success" type="submit">Enviar para aprobación</button>
             </form>
         @endif
 
@@ -106,4 +130,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+@endsection
+
+@section('scripts')
+@include('admin.bioestadistica._siplan-scripts')
 @endsection

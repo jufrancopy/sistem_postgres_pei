@@ -2,7 +2,9 @@
 @section('title', 'Bioestadística — Clasificaciones')
 
 @section('content')
-<div class="card">
+@include('admin.bioestadistica._siplan-styles')
+@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Clasificaciones']]])
+<div class="card bio-siplan">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">category</i> Clasificación de establecimientos</h4>
         <p class="card-category">Microredes, tipos, grados de complejidad, áreas de gestión, departamentos y servicios</p>
@@ -61,7 +63,7 @@
                                     </span>
                                 @endcan
                                 @can('bio.geo.delete')
-                                    <form method="POST" action="{{ route('bioestadistica.clasificaciones.destroy', [$slug, $item->id]) }}" class="mt-1 text-right" onsubmit="return confirm('¿Eliminar esta clasificación?');">
+                                    <form method="POST" action="{{ route('bioestadistica.clasificaciones.destroy', [$slug, $item->id]) }}" class="mt-1 text-right bio-confirm-form" data-confirm="¿Eliminar esta clasificación?">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-link btn-sm text-danger p-0" type="submit" title="Eliminar">
@@ -118,7 +120,7 @@
                                 <span class="{{ $departamento->activo ? '' : 'text-muted' }}">{{ $departamento->nombre }}</span>
                             @endcan
                             @can('bio.geo.delete')
-                                <form method="POST" action="{{ route('bioestadistica.clasificaciones.destroy', ['departamentos', $departamento->id]) }}" class="mt-1 text-right" onsubmit="return confirm('¿Eliminar este departamento?');">
+                                <form method="POST" action="{{ route('bioestadistica.clasificaciones.destroy', ['departamentos', $departamento->id]) }}" class="mt-1 text-right bio-confirm-form" data-confirm="¿Eliminar este departamento?">
                                     @csrf
                                     @method('DELETE')
                                     <button class="btn btn-link btn-sm text-danger p-0" type="submit" title="Eliminar">
@@ -179,7 +181,7 @@
                                     <span class="{{ $servicio->activo ? '' : 'text-muted' }}">{{ $servicio->nombre }}</span>
                                 @endcan
                                 @can('bio.geo.delete')
-                                    <form method="POST" action="{{ route('bioestadistica.clasificaciones.destroy', ['servicios', $servicio->id]) }}" class="mt-1 text-right" onsubmit="return confirm('¿Eliminar este servicio?');">
+                                    <form method="POST" action="{{ route('bioestadistica.clasificaciones.destroy', ['servicios', $servicio->id]) }}" class="mt-1 text-right bio-confirm-form" data-confirm="¿Eliminar este servicio?">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-link btn-sm text-danger p-0" type="submit" title="Eliminar">
@@ -238,15 +240,15 @@
                                             <i class="material-icons" style="font-size:16px">save</i>
                                         </button>
                                         @can('bio.geo.delete')
-                                            <button class="btn btn-link btn-sm text-danger p-0 ml-1" type="button" title="Eliminar"
-                                                onclick="if(confirm('¿Eliminar este grado?')){ document.getElementById('delete-grado-{{ $grado->id }}').submit(); }">
+                                            <button class="btn btn-link btn-sm text-danger p-0 ml-1" type="submit" form="delete-grado-{{ $grado->id }}" title="Eliminar"
+                                                formaction="{{ route('bioestadistica.clasificaciones.destroy', ['grados-complejidad', $grado->id]) }}">
                                                 <i class="material-icons" style="font-size:16px">delete</i>
                                             </button>
                                         @endcan
                                     </div>
                                 </form>
                                 @can('bio.geo.delete')
-                                    <form id="delete-grado-{{ $grado->id }}" method="POST" action="{{ route('bioestadistica.clasificaciones.destroy', ['grados-complejidad', $grado->id]) }}" class="d-none">
+                                    <form id="delete-grado-{{ $grado->id }}" method="POST" action="{{ route('bioestadistica.clasificaciones.destroy', ['grados-complejidad', $grado->id]) }}" class="d-none bio-confirm-form" data-confirm="¿Eliminar este grado?">
                                         @csrf
                                         @method('DELETE')
                                     </form>
@@ -263,7 +265,7 @@
                             <td>{{ $grado->activo ? 'Sí' : 'No' }}</td>
                             <td>
                                 @can('bio.geo.delete')
-                                    <form method="POST" action="{{ route('bioestadistica.clasificaciones.destroy', ['grados-complejidad', $grado->id]) }}" onsubmit="return confirm('¿Eliminar este grado?');">
+                                    <form method="POST" action="{{ route('bioestadistica.clasificaciones.destroy', ['grados-complejidad', $grado->id]) }}" class="bio-confirm-form" data-confirm="¿Eliminar este grado?">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-link btn-sm text-danger p-0" type="submit" title="Eliminar">
@@ -282,4 +284,8 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+@include('admin.bioestadistica._siplan-scripts')
 @endsection

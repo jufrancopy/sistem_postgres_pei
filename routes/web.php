@@ -258,11 +258,15 @@ Route::group(['middleware' => ['auth']], function () {
 
         Route::get('/auditoria', 'Admin\Bioestadistica\AuditoriaController@index')
             ->middleware('permission:bio.audit.view')->name('auditoria.index');
+        Route::get('/auditoria/datatable', 'Admin\Bioestadistica\AuditoriaController@datatable')
+            ->middleware('permission:bio.audit.view')->name('auditoria.datatable');
         Route::get('/auditoria/{auditoria}', 'Admin\Bioestadistica\AuditoriaController@show')
             ->middleware('permission:bio.audit.view')->name('auditoria.show');
 
         Route::get('/geografia', 'Admin\Bioestadistica\GeografiaController@index')
             ->middleware('permission:bio.geo.view')->name('geografia.index');
+        Route::get('/geografia/datatable', 'Admin\Bioestadistica\GeografiaController@datatable')
+            ->middleware('permission:bio.geo.view')->name('geografia.datatable');
         Route::get('/geografia/distritos', 'Admin\Bioestadistica\GeografiaController@distritos')
             ->middleware('permission:bio.geo.view')->name('geografia.distritos');
         Route::get('/geografia/establecimientos', 'Admin\Bioestadistica\GeografiaController@establecimientos')
@@ -336,6 +340,8 @@ Route::group(['middleware' => ['auth']], function () {
 
         Route::get('/captura', 'Admin\Bioestadistica\CapturaController@index')
             ->middleware('permission:bio.record.view')->name('captura.index');
+        Route::get('/captura/datatable', 'Admin\Bioestadistica\CapturaController@datatable')
+            ->middleware('permission:bio.record.view')->name('captura.datatable');
         Route::get('/captura/nueva', 'Admin\Bioestadistica\CapturaController@create')
             ->middleware('permission:bio.record.create')->name('captura.create');
         Route::get('/captura/pendientes', 'Admin\Bioestadistica\CapturaController@pending')
@@ -405,6 +411,8 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.dashboard.manage')->name('dashboards.create');
         Route::post('/dashboards', 'Admin\Bioestadistica\DashboardController@store')
             ->middleware('permission:bio.dashboard.manage')->name('dashboards.store');
+        Route::get('/dashboards/{dashboard}/editar', 'Admin\Bioestadistica\DashboardController@edit')
+            ->middleware('permission:bio.dashboard.manage|bio.dashboard.personalize')->name('dashboards.edit');
         Route::get('/dashboards/{dashboard}', 'Admin\Bioestadistica\DashboardController@show')
             ->middleware('permission:bio.dashboard.view')->name('dashboards.show');
         Route::put('/dashboards/{dashboard}', 'Admin\Bioestadistica\DashboardController@update')

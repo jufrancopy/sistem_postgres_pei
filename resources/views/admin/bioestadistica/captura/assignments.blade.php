@@ -18,7 +18,7 @@
                     <select class="form-control" name="establecimiento_ids[]" multiple size="10">
                         @foreach($establecimientos as $establecimiento)
                             <option value="{{ $establecimiento->id }}" @selected(in_array($establecimiento->id, $assignments[$user->id] ?? []))>
-                                {{ $establecimiento->distrito?->departamento?->nombre }} / {{ $establecimiento->distrito?->nombre }} — {{ $establecimiento->nombre }}
+                                {{ $establecimiento->nombre }}
                             </option>
                         @endforeach
                     </select>

@@ -37,14 +37,6 @@ class BioestadisticaFormulariosSeeder extends Seeder
                     'estado' => 'borrador',
                 ]
             );
-
-            $form->secciones()->firstOrCreate(
-                ['titulo' => 'Contexto'],
-                [
-                    'descripcion' => 'Departamento, distrito, establecimiento y período estadístico.',
-                    'orden' => 0,
-                ]
-            );
         }
     }
 }

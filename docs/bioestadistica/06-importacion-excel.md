@@ -125,7 +125,7 @@ Una hoja por formulario. Reglas:
 
 - **Los números entre paréntesis se ignoran**: eran identificadores del registro Access legado y no aportan al motor.
 - El encabezado de la planilla (departamento, establecimiento, código, mes, año) **no genera campos**:
-  se resuelve con la sección `contexto` estándar y las columnas de `records`.
+  se resuelve en la UI de carga y las columnas de `records`.
 - Las filas de prestación se enlazan a `catalog_items` por coincidencia de nombre dentro del dominio esperado.
   El importador muestra los no resueltos para decisión manual.
 - Las columnas métricas se crean como `fields` de tipo `integer` o `decimal` dentro de un campo `tabla`.

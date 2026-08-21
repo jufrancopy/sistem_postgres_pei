@@ -9,12 +9,20 @@
 @endphp
 
 @section('content')
-<div class="card">
+@include('admin.bioestadistica._siplan-styles')
+@include('admin.bioestadistica._breadcrumbs', [
+    'items' => [
+        ['label' => 'Reportes', 'url' => route('bioestadistica.reportes.index')],
+        ['label' => $reporte->exists ? 'Editar '.$reporte->codigo : 'Nuevo reporte'],
+    ],
+])
+<div class="card bio-siplan">
     <div class="card-header card-header-info">
-        <h4 class="card-title">{{ $reporte->exists ? 'Diseñar reporte' : 'Nuevo reporte' }}</h4>
+        <h4 class="card-title">{{ $reporte->exists ? 'Editar reporte' : 'Nuevo reporte' }}</h4>
         <p class="card-category">Solo fuentes numéricas calificadas. No se acepta SQL ni columnas arbitrarias.</p>
     </div>
     <div class="card-body">
+        @if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
         <form method="POST" action="{{ $reporte->exists ? route('bioestadistica.reportes.update', $reporte) : route('bioestadistica.reportes.store') }}">
             @csrf
             @if($reporte->exists) @method('PUT') @endif
@@ -153,14 +161,17 @@
 
             <div class="mt-3">
                 <button class="btn btn-success">Guardar definición</button>
-                <a class="btn btn-link" href="{{ route('bioestadistica.reportes.index') }}">Cancelar</a>
                 @if($reporte->exists)
-                    <button class="btn btn-danger float-right" form="deleteReporte">Archivar</button>
+                    <a class="btn btn-outline-primary" href="{{ route('bioestadistica.reportes.run', $reporte) }}">Ejecutar</a>
+                @endif
+                <a class="btn btn-secondary" href="{{ route('bioestadistica.reportes.index') }}">Volver al listado</a>
+                @if($reporte->exists)
+                    <button class="btn btn-outline-danger float-right" type="submit" form="deleteReporte">Archivar</button>
                 @endif
             </div>
         </form>
         @if($reporte->exists)
-            <form id="deleteReporte" method="POST" action="{{ route('bioestadistica.reportes.destroy', $reporte) }}" onsubmit="return confirm('¿Archivar este reporte?')">
+            <form id="deleteReporte" method="POST" action="{{ route('bioestadistica.reportes.destroy', $reporte) }}" class="bio-confirm-form" data-confirm="¿Archivar este reporte?">
                 @csrf @method('DELETE')
             </form>
         @endif
@@ -169,6 +180,7 @@
 @endsection
 
 @section('scripts')
+@include('admin.bioestadistica._siplan-scripts')
 <script>
 document.getElementById('useJson')?.addEventListener('change', function () {
     document.getElementById('definitionMode').value = this.checked ? 'advanced' : 'visual';

@@ -70,7 +70,7 @@ Subtabla y matriz siguen con editor JSON hasta importar SP8 y SP11.
 | 1 | Migraciones `records` y `record_values` con la restricción única de período |
 | 2 | `RecordCaptureService` con validación por tipo de campo |
 | 3 | Renderizador dinámico de formularios según `layout_type` |
-| 4 | Sección de contexto con departamento, distrito, establecimiento, mes y año |
+| 8 | DataTables serverSide en listados de alto volumen (carga, establecimientos, auditoría) |
 | 5 | Flujo de estados: borrador, enviado, aprobado, objetado |
 | 6 | Alcance por establecimiento para el rol Digitador |
 | 7 | Panel de períodos pendientes por establecimiento |

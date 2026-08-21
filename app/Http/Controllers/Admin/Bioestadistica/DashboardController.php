@@ -37,6 +37,15 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function edit(Request $request, Dashboard $dashboard): View
+    {
+        $this->authorize('update', $dashboard);
+
+        return view('admin.bioestadistica.dashboards.form', [
+            'dashboard' => $dashboard,
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $this->authorize('create', Dashboard::class);
@@ -58,9 +67,15 @@ class DashboardController extends Controller
         $this->authorize('view', $dashboard);
         $service->assertVisible($dashboard, $request->user());
         $closed = PeriodContext::lastClosed();
+        $dashboard->load('widgets');
+        $editingWidget = null;
+        if ($request->filled('edit_widget')) {
+            $editingWidget = $dashboard->widgets->firstWhere('id', $request->integer('edit_widget'));
+        }
 
         return view('admin.bioestadistica.dashboards.show', [
-            'dashboard' => $dashboard->load('widgets'),
+            'dashboard' => $dashboard,
+            'editingWidget' => $editingWidget,
             'editable' => $this->canEdit($dashboard, $request->user()),
             'months' => PeriodContext::MONTHS,
             'period' => [
@@ -185,7 +200,8 @@ class DashboardController extends Controller
             'alto' => (int) $data['alto'],
         ]);
 
-        return back()->with('success', 'Widget actualizado.');
+        return redirect()->route('bioestadistica.dashboards.show', $dashboard)
+            ->with('success', 'Widget actualizado.');
     }
 
     public function destroyWidget(
@@ -238,7 +254,16 @@ class DashboardController extends Controller
             'descripcion' => ['nullable', 'string', 'max:3000'],
             'es_default' => ['nullable', 'boolean'],
         ]);
-        $data['es_default'] = $request->boolean('es_default');
+
+        $isInstitutional = $dashboard ? $dashboard->isInstitutional() : true;
+        if ($isInstitutional) {
+            $data['es_default'] = $request->user()->can('bio.dashboard.manage')
+                ? $request->boolean('es_default')
+                : (bool) ($dashboard?->es_default ?? false);
+        } else {
+            $data['es_default'] = false;
+        }
+
         $exists = Dashboard::query()
             ->when($dashboard, fn ($query) => $query->where('id', '<>', $dashboard->id))
             ->where('codigo', $data['codigo'])

@@ -2,7 +2,9 @@
 @section('title', 'Bioestadística — Indicadores')
 
 @section('content')
-<div class="card">
+@include('admin.bioestadistica._siplan-styles')
+@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Indicadores']]])
+<div class="card bio-siplan">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">functions</i> Motor de indicadores</h4>
         <p class="card-category">Indicadores configurables mediante fórmulas seguras</p>
@@ -12,9 +14,11 @@
         @if($errors->any())<div class="alert alert-danger">{{ $errors->first() }}</div>@endif
 
         @can('bio.indicator.manage')
-            <button class="btn btn-info btn-sm mb-3" data-toggle="collapse" data-target="#nuevoIndicador">
-                <i class="material-icons">add</i> Nuevo indicador
-            </button>
+            <div class="d-flex bio-toolbar mb-3">
+                <button class="btn btn-info btn-sm" data-toggle="collapse" data-target="#nuevoIndicador">
+                    <i class="material-icons">add</i> Nuevo indicador
+                </button>
+            </div>
             <div class="collapse mb-4" id="nuevoIndicador">
                 <form method="POST" action="{{ route('bioestadistica.indicadores.store') }}" class="card card-body bg-light">
                     @csrf
@@ -23,7 +27,7 @@
                         <div class="col-md-4"><input class="form-control" name="nombre" placeholder="Nombre" required></div>
                         <div class="col-md-2"><input class="form-control" name="unidad" placeholder="Unidad"></div>
                         <div class="col-md-2">
-                            <select class="form-control" name="ambito">
+                            <select class="form-control bio-select2" name="ambito" data-placeholder="Ámbito">
                                 @foreach(['establecimiento','distrito','departamento','microred','pais'] as $value)
                                     <option value="{{ $value }}">{{ ucfirst($value) }}</option>
                                 @endforeach
@@ -39,10 +43,20 @@
         @endcan
 
         <div class="table-responsive">
-            <table class="table table-hover">
-                <thead><tr><th>Código</th><th>Nombre</th><th>Unidad</th><th>Ámbito</th><th>Fórmulas</th><th>Estado</th><th></th></tr></thead>
+            <table class="table table-bordered table-hover table-sm bio-data-table" data-page-length="25" data-order-false="6">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Unidad</th>
+                        <th>Ámbito</th>
+                        <th>Fórmulas</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
                 <tbody>
-                @forelse($indicadores as $indicador)
+                @foreach($indicadores as $indicador)
                     <tr>
                         <td><strong>{{ $indicador->codigo }}</strong></td>
                         <td>{{ $indicador->nombre }}</td>
@@ -50,15 +64,20 @@
                         <td>{{ ucfirst($indicador->ambito) }}</td>
                         <td>{{ $indicador->formulas->count() }}</td>
                         <td><span class="badge badge-{{ $indicador->activo ? 'success' : 'secondary' }}">{{ $indicador->activo ? 'Activo' : 'Inactivo' }}</span></td>
-                        <td><a class="btn btn-primary btn-sm" href="{{ route('bioestadistica.indicadores.show', $indicador) }}">Configurar / evaluar</a></td>
+                        <td>
+                            <div class="bio-actions">
+                                <a class="btn btn-outline-primary btn-sm" href="{{ route('bioestadistica.indicadores.show', $indicador) }}">Configurar</a>
+                            </div>
+                        </td>
                     </tr>
-                @empty
-                    <tr><td colspan="7" class="text-center text-muted">Sin indicadores configurados.</td></tr>
-                @endforelse
+                @endforeach
                 </tbody>
             </table>
         </div>
-        {{ $indicadores->links() }}
     </div>
 </div>
+@endsection
+
+@section('scripts')
+@include('admin.bioestadistica._siplan-scripts')
 @endsection

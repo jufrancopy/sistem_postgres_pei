@@ -1,10 +1,12 @@
 @extends('layouts.master')
-@section('title', 'Bioestadística — Geografía')
+@section('title', 'Bioestadística — Establecimientos')
 
 @section('content')
-<div class="card">
+@include('admin.bioestadistica._siplan-styles')
+@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Establecimientos']]])
+<div class="card bio-siplan">
     <div class="card-header card-header-info">
-        <h4 class="card-title"><i class="material-icons">place</i> Maestro geográfico propio</h4>
+        <h4 class="card-title"><i class="material-icons">place</i> Establecimientos</h4>
         <p class="card-category">Departamento/región → Distrito → Establecimiento (aislado de RIISS)</p>
     </div>
     <div class="card-body">
@@ -28,7 +30,7 @@
                 <form method="POST" action="{{ route('bioestadistica.geografia.distritos.store') }}" class="form-row">
                     @csrf
                     <div class="col-5">
-                        <select class="form-control" name="departamento_id" required>
+                        <select class="form-control bio-select2" name="departamento_id" data-placeholder="Departamento/región" required>
                             <option value="">Departamento/región</option>
                             @foreach($departamentos as $departamento)
                                 <option value="{{ $departamento->id }}">{{ $departamento->nombre }}</option>
@@ -42,8 +44,8 @@
         </div>
 
         <hr>
-        <div class="d-flex justify-content-between align-items-center">
-            <h4>Establecimientos</h4>
+        <div class="d-flex justify-content-between align-items-center bio-toolbar mb-2">
+            <h4 class="mb-0">Listado de establecimientos</h4>
             @can('bio.geo.create')
                 <button class="btn btn-info btn-sm" type="button" data-toggle="collapse" data-target="#nuevoEstablecimiento">
                     <i class="material-icons">add</i> Nuevo
@@ -66,22 +68,37 @@
         </div>
         @endcan
 
-        <form method="GET" class="form-row mb-3">
-            <div class="col-md-5"><input class="form-control" name="q" value="{{ request('q') }}" placeholder="Buscar por nombre o código"></div>
-            <div class="col-md-4">
-                <select class="form-control" name="departamento_id">
-                    <option value="">Todos los departamentos/región</option>
-                    @foreach($departamentos as $departamento)
-                        <option value="{{ $departamento->id }}" @selected(request('departamento_id') == $departamento->id)>{{ $departamento->nombre }}</option>
-                    @endforeach
-                </select>
+        <form method="GET" class="bio-filters" id="bio-geo-filters">
+            <div class="form-row align-items-end">
+                <div class="col-md-5 mb-2">
+                    <label class="small text-muted mb-1">Buscar</label>
+                    <input class="form-control" name="q" value="{{ request('q') }}" placeholder="Nombre o código">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="small text-muted mb-1">Departamento/región</label>
+                    <select class="form-control bio-select2" name="departamento_id" data-placeholder="Todos" data-allow-clear="1">
+                        <option value="">Todos los departamentos/región</option>
+                        @foreach($departamentos as $departamento)
+                            <option value="{{ $departamento->id }}" @selected(request('departamento_id') == $departamento->id)>{{ $departamento->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <button class="btn btn-primary btn-sm btn-block" type="submit">Aplicar filtro</button>
+                </div>
             </div>
-            <div class="col-md-3"><button class="btn btn-primary btn-sm">Filtrar</button></div>
         </form>
 
         <div class="table-responsive">
-            <table class="table table-sm table-hover text-nowrap">
-                <thead>
+            <table
+                class="table table-bordered table-hover table-sm text-nowrap bio-data-table-ajax"
+                data-page-length="25"
+                data-order-false="3,5,6,7,8,12,15"
+                data-url="{{ route('bioestadistica.geografia.datatable') }}"
+                data-filter-form="#bio-geo-filters"
+                data-columns='[{"data":"codigo"},{"data":"nombre"},{"data":"codigo_sih"},{"data":"tipo","orderable":false},{"data":"nivel"},{"data":"complejidad","orderable":false},{"data":"departamento","orderable":false},{"data":"distrito","html":true,"orderable":false},{"data":"microred","orderable":false},{"data":"prestador"},{"data":"latitud"},{"data":"longitud"},{"data":"area","orderable":false},{"data":"situacion"},{"data":"observacion"},{"data":"acciones","html":true,"orderable":false,"searchable":false}]'
+            >
+                <thead class="thead-light">
                     <tr>
                         <th>ID establecimiento</th>
                         <th>Establecimiento</th>
@@ -101,55 +118,13 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                @forelse($establecimientos as $establecimiento)
-                    <tr>
-                        <td>{{ $establecimiento->codigo }}</td>
-                        <td>{{ $establecimiento->nombre }}</td>
-                        <td>{{ $establecimiento->codigo_sih }}</td>
-                        <td>{{ $establecimiento->tipoEstablecimiento?->nombre }}</td>
-                        <td>{{ $establecimiento->nivel_atencion }}</td>
-                        <td>
-                            @if($establecimiento->gradoComplejidad)
-                                Complejidad {{ $establecimiento->gradoComplejidad->codigo }} — {{ $establecimiento->gradoComplejidad->descripcion }}
-                            @endif
-                        </td>
-                        <td>{{ $establecimiento->distrito?->departamento?->nombre }}</td>
-                        <td>
-                            @if($establecimiento->distrito)
-                                {{ $establecimiento->distrito->nombre }}
-                            @else
-                                <span class="badge badge-warning">Pendiente</span>
-                            @endif
-                        </td>
-                        <td>{{ $establecimiento->microred?->nombre }}</td>
-                        <td>{{ $establecimiento->prestador }}</td>
-                        <td>{{ $establecimiento->latitud }}</td>
-                        <td>{{ $establecimiento->longitud }}</td>
-                        <td>{{ $establecimiento->areaGestion?->nombre }}</td>
-                        <td>{{ $establecimiento->situacion_inmueble }}</td>
-                        <td class="text-wrap" style="min-width:180px">{{ $establecimiento->observacion }}</td>
-                        <td>
-                            @can('bio.geo.update')
-                                <a class="btn btn-primary btn-sm" href="{{ route('bioestadistica.geografia.establecimientos.edit', $establecimiento) }}" title="Editar">
-                                    <i class="material-icons">edit</i>
-                                </a>
-                            @endcan
-                            @can('bio.geo.delete')
-                                <form method="POST" action="{{ route('bioestadistica.geografia.establecimientos.destroy', $establecimiento) }}" class="d-inline" onsubmit="return confirm('¿Eliminar este establecimiento?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-danger btn-sm" title="Eliminar"><i class="material-icons">delete</i></button>
-                                </form>
-                            @endcan
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="18" class="text-center text-muted">Sin establecimientos.</td></tr>
-                @endforelse
-                </tbody>
+                <tbody></tbody>
             </table>
         </div>
-        {{ $establecimientos->links() }}
     </div>
 </div>
+@endsection
+
+@section('scripts')
+@include('admin.bioestadistica._siplan-scripts')
 @endsection

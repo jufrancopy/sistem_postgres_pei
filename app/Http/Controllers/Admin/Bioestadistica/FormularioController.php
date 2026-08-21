@@ -18,18 +18,13 @@ class FormularioController extends Controller
     public function index(): View
     {
         return view('admin.bioestadistica.formularios.index', [
-            'formularios' => Formulario::withCount('secciones')->orderBy('codigo')->paginate(30),
+            'formularios' => Formulario::withCount('secciones')->ordenSp()->limit(500)->get(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $formulario = Formulario::create($this->validateFormulario($request));
-        $formulario->secciones()->create([
-            'titulo' => 'Contexto',
-            'descripcion' => 'Establecimiento y período estadístico (gestionados por el motor).',
-            'orden' => 0,
-        ]);
 
         return redirect()->route('bioestadistica.formularios.edit', $formulario)
             ->with('success', 'Formulario creado.');

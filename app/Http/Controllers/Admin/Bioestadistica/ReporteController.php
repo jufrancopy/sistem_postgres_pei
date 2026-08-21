@@ -23,7 +23,7 @@ class ReporteController extends Controller
     public function index(): View
     {
         return view('admin.bioestadistica.reportes.index', [
-            'reportes' => Reporte::with('formulario')->orderBy('codigo')->paginate(30),
+            'reportes' => Reporte::with('formulario')->orderBy('codigo')->limit(500)->get(),
         ]);
     }
 

@@ -330,12 +330,12 @@
                                     </li>
                                     <li class="nav-item {{ $isActive('bioestadistica/diccionario*') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.diccionario.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">DI</span><span class="sidebar-normal">Diccionario</span>
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">VA</span><span class="sidebar-normal">Variables</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('bioestadistica/captura*') || $isActive('bioestadistica/captura-asignaciones*') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.captura.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">CP</span><span class="sidebar-normal">Captura</span>
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">CD</span><span class="sidebar-normal">Carga de datos</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('bioestadistica/captura/pendientes*') }}">
@@ -378,7 +378,7 @@
                                     @endcan
                                     <li class="nav-item {{ $isActive('bioestadistica/geografia*') }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">GE</span><span class="sidebar-normal">Geografía</span>
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">ES</span><span class="sidebar-normal">Establecimientos</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $isActive('bioestadistica/estructura*') }}">

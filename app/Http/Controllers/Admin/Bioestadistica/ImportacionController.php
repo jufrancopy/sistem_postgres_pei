@@ -22,7 +22,7 @@ class ImportacionController extends Controller
     {
         $this->authorize('view', ImportJob::class);
         return view('admin.bioestadistica.importaciones.index', [
-            'imports' => ImportJob::with('creator')->latest()->paginate(25),
+            'imports' => ImportJob::with('creator')->latest()->limit(500)->get(),
         ]);
     }
 
