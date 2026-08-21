@@ -235,32 +235,26 @@ class GlobalesController extends Controller
         $totalJuntasActivas = $juntasList->where('activo', true)->count();
         $totalIntervencionesJuntas = \App\Models\Planificacion\JuntaIntervencion::count();
 
-        // ── Top 5 Funcionarios Destacados por Puntos de Gamificación (Filtrado por PEI Seleccionado y sin Admins) ──
+        // ── Top 10 Funcionarios Destacados por Puntos de Gamificación (Sin Admins y Consistente) ──
         $adminUserIds = User::role('Administrador')->pluck('id')->toArray();
 
-        $top5Query = \App\Models\Gamification\GamificationPoint::selectRaw('user_id, SUM(points) as total_points')
-            ->whereNotIn('user_id', $adminUserIds);
+        $top10Users = User::with('group')
+            ->whereNotIn('id', $adminUserIds)
+            ->get()
+            ->sortByDesc(function($u) {
+                return (int) $u->gamification_points;
+            })
+            ->take(10)
+            ->values();
 
-        if ($selectedPei) {
-            $descendantPeiIds = $selectedPei->descendants()->pluck('id')->push($selectedPei->id)->toArray();
-            $top5Query->whereIn('pei_profile_id', $descendantPeiIds);
-        }
-
-        $top5PointsMap = $top5Query->groupBy('user_id')
-            ->orderByDesc('total_points')
-            ->limit(5)
-            ->get();
-
-        $top5UserIds = $top5PointsMap->pluck('user_id');
-        $top5Users   = User::with('group')->whereIn('id', $top5UserIds)->get()->keyBy('id');
-
-        $top5RankingReconocimiento = $top5PointsMap->map(function($item, $idx) use ($top5Users) {
-            $u = $top5Users->get($item->user_id);
-            if (!$u) return null;
-            $u->puntos_gamificacion = (int) $item->total_points;
+        $top10RankingReconocimiento = $top10Users->map(function($u, $idx) {
+            $u->puntos_gamificacion = (int) $u->gamification_points;
             $u->puesto_ranking      = $idx + 1;
             return $u;
-        })->filter()->values();
+        })->filter(fn($u) => $u->puntos_gamificacion > 0)->values();
+
+        // Mantener compatibilidad con variable en vista
+        $top5RankingReconocimiento = $top10RankingReconocimiento;
 
         return view('admin.globales.dashboard', get_defined_vars());
     }

@@ -599,14 +599,14 @@
                         </div>
                     </div>
 
-                    {{-- ── WIDGET TOP 5 FUNCIONARIOS DESTACADOS Y RECONOCIMIENTO WHATSAPP ── --}}
+                    {{-- ── WIDGET TOP 10 FUNCIONARIOS DESTACADOS Y RECONOCIMIENTO WHATSAPP ── --}}
                     @if(isset($top5RankingReconocimiento) && $top5RankingReconocimiento->count() > 0)
                     <div class="shadow-lg mb-4 overflow-hidden position-relative" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important; color: #ffffff !important; border-radius: 16px !important; border: 1px solid #334155 !important;">
                         <div class="py-3 px-4 d-flex align-items-center justify-content-between flex-wrap" style="background: rgba(255,255,255,0.06) !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important;">
                             <div>
                                 <h5 class="mb-0 font-weight-bold d-flex align-items-center" style="color: #ffffff !important; font-size: 1.1rem;">
                                     <i class="fa fa-trophy text-warning mr-2.5" style="font-size: 1.3rem;"></i>
-                                    TOP 5 — FUNCIONARIOS DESTACADOS DEL SISTEMA
+                                    TOP 10 — FUNCIONARIOS DESTACADOS DEL SISTEMA
                                 </h5>
                                 <small style="color: #cbd5e1 !important; font-weight: 500;">Reconocimiento a la excelencia, constancia y colaboración en la gestión del SIPLAN PEI</small>
                             </div>
@@ -617,10 +617,10 @@
                             </div>
                         </div>
                         <div class="p-4" style="background: #0f172a !important;">
-                            <div class="row" style="gap: 12px 0;">
+                            <div class="d-flex flex-nowrap overflow-auto py-2" style="gap: 14px; scrollbar-width: thin;">
                                 @foreach($top5RankingReconocimiento as $topIdx => $topUser)
                                     @php
-                                        $medals = ['🥇', '🥈', '🥉', '🎖️', '🎖️'];
+                                        $medals = ['🥇', '🥈', '🥉', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️'];
                                         $medal  = $medals[$topIdx] ?? '⭐';
                                         $bgBox  = match($topIdx) {
                                             0 => 'linear-gradient(135deg, rgba(245,158,11,0.25) 0%, rgba(217,119,6,0.15) 100%)',
@@ -635,7 +635,7 @@
                                             default => 'rgba(255,255,255,0.2)',
                                         };
                                     @endphp
-                                    <div class="col-lg-2 col-md-4 col-sm-6 flex-grow-1">
+                                    <div style="min-width: 195px; max-width: 215px; flex: 0 0 auto;">
                                         <div class="p-3 rounded-lg text-center h-100 d-flex flex-column justify-content-between position-relative shadow-sm"
                                              style="background: {{ $bgBox }} !important; border: 1.5px solid {{ $borderColor }} !important; border-radius: 12px !important;">
                                             <div>
