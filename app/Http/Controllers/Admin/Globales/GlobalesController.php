@@ -233,6 +233,8 @@ class GlobalesController extends Controller
         $juntasList = \App\Models\Planificacion\Junta::with(['presidente', 'integrantes', 'intervenciones'])->withCount('intervenciones')->orderBy('nombre')->get();
         $totalJuntas = $juntasList->count();
         $totalJuntasActivas = $juntasList->where('activo', true)->count();
+        $totalIntervencionesJuntas = \App\Models\Planificacion\JuntaIntervencion::count();
+
         // ── Top 5 Funcionarios Destacados por Puntos de Gamificación ─────────────
         $top5PointsMap = \App\Models\Gamification\GamificationPoint::selectRaw('user_id, SUM(points) as total_points')
             ->groupBy('user_id')
