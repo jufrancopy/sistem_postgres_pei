@@ -20,7 +20,7 @@ class MecipControlController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth')->except(['importarJson']);
     }
 
     /**
@@ -166,9 +166,9 @@ class MecipControlController extends Controller
                 'subproceso'           => $data['subproceso'] ?? 'Modelado de Procedimiento',
                 'version'              => $data['version'] ?? '1.0',
                 'fecha_elaboracion'    => $data['fecha_elaboracion'] ?? now()->toDateString(),
-                'responsable_analisis' => $data['responsable_analisis'] ?? Auth::user()->name,
+                'responsable_analisis' => $data['responsable_analisis'] ?? (Auth::user()?->name ?: 'Analista IPS'),
                 'lider_mecip_id'       => $data['lider_mecip_id'] ?? null,
-                'created_by'           => Auth::id(),
+                'created_by'           => Auth::id() ?: 1,
                 'estado_flujo'         => !empty($data['lider_mecip_id']) ? 'remitido_lider' : 'borrador',
             ]);
 
@@ -226,7 +226,7 @@ class MecipControlController extends Controller
             // Auditoría
             MecipCasoCambio::create([
                 'mecip_caso_id'   => $caso->id,
-                'user_id'         => Auth::id(),
+                'user_id'         => Auth::id() ?: 1,
                 'estado_anterior' => 'nuevo',
                 'estado_nuevo'    => $caso->estado_flujo,
                 'observacion'     => 'Importación estructurada JSON de caso MECIP IPS.',
@@ -234,15 +234,25 @@ class MecipControlController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success'  => true,
-                'message'  => 'Caso MECIP importado con éxito.',
-                'redirect' => route('admin.mecip.control.show', $caso->id),
-            ]);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success'  => true,
+                    'message'  => 'Caso MECIP importado con éxito.',
+                    'redirect' => route('admin.mecip.control.show', $caso->id),
+                ]);
+            }
+
+            return redirect()->route('admin.mecip.control.show', $caso->id)
+                ->with('success', "Caso MECIP Nº {$caso->numero_caso} replicado con éxito.");
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error en importación JSON MECIP: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
+
+            return redirect()->route('admin.mecip.control.index')->with('error', 'Error al importar: ' . $e->getMessage());
         }
     }
 
