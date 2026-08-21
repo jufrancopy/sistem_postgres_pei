@@ -540,12 +540,14 @@ class RecalculateGamificationPoints extends Command
                             $userName = strtolower(trim($u->name ?? ''));
                             $authorName = strtolower(trim($author ?? ''));
 
-                            // Coincidencia específica para Ángel Rojas
-                            if (str_contains($userName, 'rojas') && str_contains($authorName, 'rojas')) {
-                                return true;
+                            // Coincidencia específica para Ángel Rojas (arojas@ips.gov.py / Angel Rojas)
+                            if (str_contains($userMail, 'arojas') || (str_contains($userName, 'angel') && str_contains($userName, 'rojas'))) {
+                                if (str_contains($commitMail, 'arojas') || str_contains($commitMail, 'angel') || str_contains($authorName, 'angel') || str_contains($authorName, 'rojas')) {
+                                    return true;
+                                }
                             }
 
-                            // Coincidencia exacta de nombre
+                            // Coincidencia exacta de nombre o email
                             if ($userName === $authorName) {
                                 return true;
                             }
@@ -558,7 +560,7 @@ class RecalculateGamificationPoints extends Command
                                 $matchedUser->id,
                                 'git_commit',
                                 '🚀 Desarrollo & Aporte de Código: ' . Str::limit($subject, 45),
-                                50,
+                                100,
                                 \App\Models\User::class,
                                 $hash,
                                 null,
