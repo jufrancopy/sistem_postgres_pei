@@ -38,3 +38,13 @@ Route::get('tthh', function(){
         ->eloquent(App\Admin\Proyecto\EPC\TalentoHumano::query())
         ->toJson();
 });
+
+// Ruta API pública para replicación de pantalla IPS desde Bookmarklet
+Route::post('/mecip/importar-json', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'importarJson']);
+Route::options('/mecip/importar-json', function() {
+    return response()->json(['ok' => true], 200, [
+        'Access-Control-Allow-Origin'  => '*',
+        'Access-Control-Allow-Methods' => 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With',
+    ]);
+});
