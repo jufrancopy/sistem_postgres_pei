@@ -599,8 +599,35 @@
                         </div>
                     </div>
 
-                    {{-- ── WIDGET TOP 10 FUNCIONARIOS DESTACADOS Y RECONOCIMIENTO WHATSAPP ── --}}
+                    {{-- ── WIDGET TOP 10 FUNCIONARIOS DESTACADOS MARQUESINA CONTINUA PURA CSS ── --}}
                     @if(isset($top5RankingReconocimiento) && $top5RankingReconocimiento->count() > 0)
+                    <style>
+                    @keyframes top10MarqueeAnim {
+                        0% { transform: translate3d(0, 0, 0); }
+                        100% { transform: translate3d(-50%, 0, 0); }
+                    }
+                    .top10-marquee-wrapper {
+                        overflow: hidden;
+                        width: 100%;
+                        position: relative;
+                        padding: 6px 0;
+                    }
+                    .top10-marquee-track {
+                        display: flex;
+                        gap: 16px;
+                        width: max-content;
+                        animation: top10MarqueeAnim 35s linear infinite;
+                        will-change: transform;
+                    }
+                    .top10-marquee-wrapper:hover .top10-marquee-track {
+                        animation-play-state: paused;
+                    }
+                    .top10-card-item {
+                        min-width: 200px;
+                        max-width: 220px;
+                        flex: 0 0 auto;
+                    }
+                    </style>
                     <div class="shadow-lg mb-4 overflow-hidden position-relative" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important; color: #ffffff !important; border-radius: 16px !important; border: 1px solid #334155 !important;">
                         <div class="py-3 px-4 d-flex align-items-center justify-content-between flex-wrap" style="background: rgba(255,255,255,0.06) !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important;">
                             <div>
@@ -610,68 +637,65 @@
                                 </h5>
                                 <small style="color: #cbd5e1 !important; font-weight: 500;">Reconocimiento a la excelencia, constancia y colaboración en la gestión del SIPLAN PEI</small>
                             </div>
-                            <div class="d-flex align-items-center mt-2 mt-sm-0" style="gap: 10px;">
+                            <div class="mt-2 mt-sm-0">
                                 <span class="badge badge-pill px-3 py-1.5 font-weight-bold" style="background: linear-gradient(135deg, #f59e0b, #d97706) !important; color: #ffffff !important; font-size: 0.78rem;">
                                     <span class="spinner-grow spinner-grow-sm text-light mr-1" style="width: 8px; height: 8px;" role="status"></span> 🌟 TIRA EN VIVO
                                 </span>
-                                <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-outline-light border-secondary text-white font-weight-bold px-2.5 py-1" onclick="scrollTop10Ticker(-220)" title="Anterior">
-                                        <i class="fa fa-chevron-left"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-light border-secondary text-white font-weight-bold px-2.5 py-1" onclick="scrollTop10Ticker(220)" title="Siguiente">
-                                        <i class="fa fa-chevron-right"></i>
-                                    </button>
-                                </div>
                             </div>
                         </div>
-                        <div class="p-4" style="background: #0f172a !important;">
-                            <div class="d-flex flex-nowrap overflow-auto py-2" id="top10TickerContainer" style="gap: 14px; scrollbar-width: thin; scroll-behavior: smooth;">
-                                @foreach($top5RankingReconocimiento as $topIdx => $topUser)
-                                    @php
-                                        $medals = ['🥇', '🥈', '🥉', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️'];
-                                        $medal  = $medals[$topIdx] ?? '⭐';
-                                        $bgBox  = match($topIdx) {
-                                            0 => 'linear-gradient(135deg, rgba(245,158,11,0.25) 0%, rgba(217,119,6,0.15) 100%)',
-                                            1 => 'linear-gradient(135deg, rgba(203,213,225,0.25) 0%, rgba(148,163,184,0.15) 100%)',
-                                            2 => 'linear-gradient(135deg, rgba(251,146,60,0.25) 0%, rgba(194,65,12,0.15) 100%)',
-                                            default => 'rgba(255,255,255,0.06)',
-                                        };
-                                        $borderColor = match($topIdx) {
-                                            0 => '#f59e0b',
-                                            1 => '#cbd5e1',
-                                            2 => '#fb923c',
-                                            default => 'rgba(255,255,255,0.2)',
-                                        };
-                                    @endphp
-                                    <div style="min-width: 195px; max-width: 215px; flex: 0 0 auto;">
-                                        <div class="p-3 rounded-lg text-center h-100 d-flex flex-column justify-content-between position-relative shadow-sm"
-                                             style="background: {{ $bgBox }} !important; border: 1.5px solid {{ $borderColor }} !important; border-radius: 12px !important;">
-                                            <div>
-                                                <div class="display-4 mb-1" style="font-size: 1.8rem; line-height: 1;">{{ $medal }}</div>
-                                                <div class="badge badge-pill mb-2 px-2.5 py-1 font-weight-bold" style="background: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-size: 0.68rem; letter-spacing: 0.5px;">
-                                                    PUESTO #{{ $topUser->puesto_ranking }}
+                        <div class="p-3" style="background: #0f172a !important;">
+                            <div class="top10-marquee-wrapper">
+                                <div class="top10-marquee-track">
+                                    {{-- Duplicación exacta en 2 tandas para bucle infinito imperceptible --}}
+                                    @foreach([1, 2] as $tanda)
+                                        @foreach($top5RankingReconocimiento as $topIdx => $topUser)
+                                            @php
+                                                $medals = ['🥇', '🥈', '🥉', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️'];
+                                                $medal  = $medals[$topIdx] ?? '⭐';
+                                                $bgBox  = match($topIdx) {
+                                                    0 => 'linear-gradient(135deg, rgba(245,158,11,0.25) 0%, rgba(217,119,6,0.15) 100%)',
+                                                    1 => 'linear-gradient(135deg, rgba(203,213,225,0.25) 0%, rgba(148,163,184,0.15) 100%)',
+                                                    2 => 'linear-gradient(135deg, rgba(251,146,60,0.25) 0%, rgba(194,65,12,0.15) 100%)',
+                                                    default => 'rgba(255,255,255,0.06)',
+                                                };
+                                                $borderColor = match($topIdx) {
+                                                    0 => '#f59e0b',
+                                                    1 => '#cbd5e1',
+                                                    2 => '#fb923c',
+                                                    default => 'rgba(255,255,255,0.2)',
+                                                };
+                                            @endphp
+                                            <div class="top10-card-item">
+                                                <div class="p-3 rounded-lg text-center h-100 d-flex flex-column justify-content-between position-relative shadow-sm"
+                                                     style="background: {{ $bgBox }} !important; border: 1.5px solid {{ $borderColor }} !important; border-radius: 12px !important;">
+                                                    <div>
+                                                        <div class="display-4 mb-1" style="font-size: 1.8rem; line-height: 1;">{{ $medal }}</div>
+                                                        <div class="badge badge-pill mb-2 px-2.5 py-1 font-weight-bold" style="background: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-size: 0.68rem; letter-spacing: 0.5px;">
+                                                            PUESTO #{{ $topUser->puesto_ranking }}
+                                                        </div>
+                                                        <h6 class="font-weight-bold mb-1 text-truncate" title="{{ $topUser->name }}" style="font-size: 0.88rem; color: #ffffff !important;">
+                                                            {{ $topUser->name }}
+                                                        </h6>
+                                                        <small class="d-block text-truncate mb-2" style="font-size: 0.72rem; color: #cbd5e1 !important; font-weight: 500;">
+                                                            {{ $topUser->group->name ?? 'IPS Institucional' }}
+                                                        </small>
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-weight-bold text-warning mb-2.5" style="font-size: 0.95rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
+                                                            <i class="fa fa-star mr-1"></i> {{ number_format($topUser->puntos_gamificacion) }} Pts
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-block font-weight-bold rounded-pill shadow-sm"
+                                                                onclick="generarFichaWhatsApp('{{ addslashes($topUser->name) }}', '{{ addslashes($topUser->group->name ?? 'IPS Institucional') }}', '{{ $topUser->puntos_gamificacion }}', '{{ $topUser->puesto_ranking }}')"
+                                                                style="background: #25D366 !important; color: #ffffff !important; border: none !important; font-size: 0.73rem; padding: 6px 10px; font-weight: 700 !important;"
+                                                                title="Generar y compartir Ficha Visual de Reconocimiento en WhatsApp">
+                                                            <i class="fab fa-whatsapp mr-1" style="font-size: 0.85rem;"></i> FICHA WHATSAPP
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <h6 class="font-weight-bold mb-1 text-truncate" title="{{ $topUser->name }}" style="font-size: 0.88rem; color: #ffffff !important;">
-                                                    {{ $topUser->name }}
-                                                </h6>
-                                                <small class="d-block text-truncate mb-2" style="font-size: 0.72rem; color: #cbd5e1 !important; font-weight: 500;">
-                                                    {{ $topUser->group->name ?? 'IPS Institucional' }}
-                                                </small>
                                             </div>
-                                            <div>
-                                                <div class="font-weight-bold text-warning mb-2.5" style="font-size: 0.95rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
-                                                    <i class="fa fa-star mr-1"></i> {{ number_format($topUser->puntos_gamificacion) }} Pts
-                                                </div>
-                                                <button type="button" class="btn btn-sm btn-block font-weight-bold rounded-pill shadow-sm"
-                                                        onclick="generarFichaWhatsApp('{{ addslashes($topUser->name) }}', '{{ addslashes($topUser->group->name ?? 'IPS Institucional') }}', '{{ $topUser->puntos_gamificacion }}', '{{ $topUser->puesto_ranking }}')"
-                                                        style="background: #25D366 !important; color: #ffffff !important; border: none !important; font-size: 0.73rem; padding: 6px 10px; font-weight: 700 !important;"
-                                                        title="Generar y compartir Ficha Visual de Reconocimiento en WhatsApp">
-                                                    <i class="fab fa-whatsapp mr-1" style="font-size: 0.85rem;"></i> FICHA WHATSAPP
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
+                                        @endforeach
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -4744,39 +4768,6 @@ window.generarTextoConIA = function() {
     }, 1200);
 
     toastr.success('Redacción motivacional generada con éxito.', '🤖 Redactor IA Generativo');
-};
-
-// ── AUTOSCROLL CONTINUO INFINITO TICKER EN VIVO PARA TOP 10 ──
-(function initTop10AutoScroll() {
-    var container = document.getElementById('top10TickerContainer');
-    if (!container) return;
-
-    var speed = 0.6; // velocidad suave en px por frame
-    var isPaused = false;
-
-    container.addEventListener('mouseenter', function() { isPaused = true; });
-    container.addEventListener('mouseleave', function() { isPaused = false; });
-    container.addEventListener('touchstart', function() { isPaused = true; }, { passive: true });
-    container.addEventListener('touchend', function() { isPaused = false; }, { passive: true });
-
-    function scrollStep() {
-        if (!isPaused && container) {
-            container.scrollLeft += speed;
-            // Si llega al final del scroll horizontal, reiniciar suavemente al inicio
-            if (container.scrollLeft >= (container.scrollWidth - container.clientWidth - 2)) {
-                container.scrollLeft = 0;
-            }
-        }
-        requestAnimationFrame(scrollStep);
-    }
-    requestAnimationFrame(scrollStep);
-})();
-
-window.scrollTop10Ticker = function(offset) {
-    var container = document.getElementById('top10TickerContainer');
-    if (container) {
-        container.scrollBy({ left: offset, behavior: 'smooth' });
-    }
 };
 
 window.abrirModalPremioCierreSemana = function(groupId, groupName) {
