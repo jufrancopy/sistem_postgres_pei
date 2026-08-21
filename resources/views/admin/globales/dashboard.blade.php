@@ -601,64 +601,64 @@
 
                     {{-- ── WIDGET TOP 5 FUNCIONARIOS DESTACADOS Y RECONOCIMIENTO WHATSAPP ── --}}
                     @if(isset($top5RankingReconocimiento) && $top5RankingReconocimiento->count() > 0)
-                    <div class="card border-0 shadow-lg mb-4 rounded-lg overflow-hidden" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff;">
-                        <div class="card-header py-3 px-4 d-flex align-items-center justify-content-between flex-wrap" style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div class="shadow-lg mb-4 overflow-hidden position-relative" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important; color: #ffffff !important; border-radius: 16px !important; border: 1px solid #334155 !important;">
+                        <div class="py-3 px-4 d-flex align-items-center justify-content-between flex-wrap" style="background: rgba(255,255,255,0.06) !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important;">
                             <div>
-                                <h5 class="mb-0 font-weight-bold text-white d-flex align-items-center">
+                                <h5 class="mb-0 font-weight-bold d-flex align-items-center" style="color: #ffffff !important; font-size: 1.1rem;">
                                     <i class="fa fa-trophy text-warning mr-2.5" style="font-size: 1.3rem;"></i>
                                     TOP 5 — FUNCIONARIOS DESTACADOS DEL SISTEMA
                                 </h5>
-                                <small class="text-white-50">Reconocimiento a la excelencia, constancia y colaboración en la gestión del SIPLAN PEI</small>
+                                <small style="color: #cbd5e1 !important; font-weight: 500;">Reconocimiento a la excelencia, constancia y colaboración en la gestión del SIPLAN PEI</small>
                             </div>
                             <div class="mt-2 mt-sm-0">
-                                <span class="badge badge-pill px-3 py-1.5 font-weight-bold" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.78rem;">
+                                <span class="badge badge-pill px-3 py-1.5 font-weight-bold" style="background: linear-gradient(135deg, #f59e0b, #d97706) !important; color: #ffffff !important; font-size: 0.78rem;">
                                     🌟 Reconocimiento Institucional IPS
                                 </span>
                             </div>
                         </div>
-                        <div class="card-body p-4">
+                        <div class="p-4" style="background: #0f172a !important;">
                             <div class="row" style="gap: 12px 0;">
                                 @foreach($top5RankingReconocimiento as $topIdx => $topUser)
                                     @php
                                         $medals = ['🥇', '🥈', '🥉', '🎖️', '🎖️'];
                                         $medal  = $medals[$topIdx] ?? '⭐';
                                         $bgBox  = match($topIdx) {
-                                            0 => 'linear-gradient(135deg, rgba(245,158,11,0.2) 0%, rgba(217,119,6,0.1) 100%)',
-                                            1 => 'linear-gradient(135deg, rgba(203,213,225,0.2) 0%, rgba(148,163,184,0.1) 100%)',
-                                            2 => 'linear-gradient(135deg, rgba(251,146,60,0.2) 0%, rgba(194,65,12,0.1) 100%)',
-                                            default => 'rgba(255,255,255,0.05)',
+                                            0 => 'linear-gradient(135deg, rgba(245,158,11,0.25) 0%, rgba(217,119,6,0.15) 100%)',
+                                            1 => 'linear-gradient(135deg, rgba(203,213,225,0.25) 0%, rgba(148,163,184,0.15) 100%)',
+                                            2 => 'linear-gradient(135deg, rgba(251,146,60,0.25) 0%, rgba(194,65,12,0.15) 100%)',
+                                            default => 'rgba(255,255,255,0.06)',
                                         };
                                         $borderColor = match($topIdx) {
                                             0 => '#f59e0b',
                                             1 => '#cbd5e1',
                                             2 => '#fb923c',
-                                            default => 'rgba(255,255,255,0.15)',
+                                            default => 'rgba(255,255,255,0.2)',
                                         };
                                     @endphp
                                     <div class="col-lg-2 col-md-4 col-sm-6 flex-grow-1">
-                                        <div class="p-3 rounded-lg text-center h-100 d-flex flex-column justify-content-between position-relative shadow-xs"
-                                             style="background: {{ $bgBox }}; border: 1px solid {{ $borderColor }}; backdrop-filter: blur(8px);">
+                                        <div class="p-3 rounded-lg text-center h-100 d-flex flex-column justify-content-between position-relative shadow-sm"
+                                             style="background: {{ $bgBox }} !important; border: 1.5px solid {{ $borderColor }} !important; border-radius: 12px !important;">
                                             <div>
                                                 <div class="display-4 mb-1" style="font-size: 1.8rem; line-height: 1;">{{ $medal }}</div>
-                                                <div class="badge badge-pill mb-2 px-2.5 py-1 font-weight-bold" style="background: rgba(255,255,255,0.15); color: #fff; font-size: 0.68rem;">
+                                                <div class="badge badge-pill mb-2 px-2.5 py-1 font-weight-bold" style="background: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-size: 0.68rem; letter-spacing: 0.5px;">
                                                     PUESTO #{{ $topUser->puesto_ranking }}
                                                 </div>
-                                                <h6 class="font-weight-bold text-white mb-1 text-truncate" title="{{ $topUser->name }}" style="font-size: 0.88rem;">
+                                                <h6 class="font-weight-bold mb-1 text-truncate" title="{{ $topUser->name }}" style="font-size: 0.88rem; color: #ffffff !important;">
                                                     {{ $topUser->name }}
                                                 </h6>
-                                                <small class="text-white-50 d-block text-truncate mb-2" style="font-size: 0.72rem;">
+                                                <small class="d-block text-truncate mb-2" style="font-size: 0.72rem; color: #cbd5e1 !important; font-weight: 500;">
                                                     {{ $topUser->group->name ?? 'IPS Institucional' }}
                                                 </small>
                                             </div>
                                             <div>
-                                                <div class="font-weight-bold text-warning mb-2.5" style="font-size: 0.95rem;">
+                                                <div class="font-weight-bold text-warning mb-2.5" style="font-size: 0.95rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
                                                     <i class="fa fa-star mr-1"></i> {{ number_format($topUser->puntos_gamificacion) }} Pts
                                                 </div>
                                                 <button type="button" class="btn btn-sm btn-block font-weight-bold rounded-pill shadow-sm"
                                                         onclick="generarFichaWhatsApp('{{ addslashes($topUser->name) }}', '{{ addslashes($topUser->group->name ?? 'IPS Institucional') }}', '{{ $topUser->puntos_gamificacion }}', '{{ $topUser->puesto_ranking }}')"
-                                                        style="background: #25D366; color: #fff; border: none; font-size: 0.73rem; padding: 5px 8px;"
+                                                        style="background: #25D366 !important; color: #ffffff !important; border: none !important; font-size: 0.73rem; padding: 6px 10px; font-weight: 700 !important;"
                                                         title="Generar y compartir Ficha Visual de Reconocimiento en WhatsApp">
-                                                    <i class="fab fa-whatsapp mr-1" style="font-size: 0.85rem;"></i> Ficha WhatsApp
+                                                    <i class="fab fa-whatsapp mr-1" style="font-size: 0.85rem;"></i> FICHA WHATSAPP
                                                 </button>
                                             </div>
                                         </div>
