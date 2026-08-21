@@ -5591,16 +5591,17 @@ $('#btnCopiarCredencialesAsesor').click(function() {
                         <table class="table table-hover table-striped w-100 mb-0" id="tablaBasureroPeiAdmin" style="font-size: 0.84rem;">
                             <thead class="bg-dark text-white">
                                 <tr>
-                                    <th style="width: 130px;">Tipo Elemento</th>
+                                    <th style="width: 160px;">Nivel & Tipo</th>
                                     <th>Elemento Eliminado</th>
-                                    <th>📍 Contexto / Ubicación donde se Insertará</th>
-                                    <th style="width: 140px;" class="text-center">Fecha Eliminación</th>
-                                    <th style="width: 130px;" class="text-center">Acción</th>
+                                    <th>📍 Ruta Jerárquica donde Reaparecerá</th>
+                                    <th style="width: 220px;">👤 Trazabilidad & Últimos Cambios</th>
+                                    <th style="width: 120px;" class="text-center">Fecha Eliminación</th>
+                                    <th style="width: 120px;" class="text-center">Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">Cargando elementos del basurero...</td>
+                                    <td colspan="6" class="text-center py-4 text-muted">Cargando elementos del basurero...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -5621,7 +5622,7 @@ function cargarBasureroPeiAdmin() {
     }
 
     var $tbody = $('#tablaBasureroPeiAdmin tbody');
-    $tbody.html('<tr><td colspan="5" class="text-center py-4 text-muted"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando elementos del basurero...</td></tr>');
+    $tbody.html('<tr><td colspan="6" class="text-center py-4 text-muted"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando elementos del basurero...</td></tr>');
 
     $.ajax({
         url: "{{ route('pei.basurero.list', $profile->id) }}",
@@ -5633,20 +5634,44 @@ function cargarBasureroPeiAdmin() {
             if (resp.trashed_nodes && resp.trashed_nodes.length > 0) {
                 resp.trashed_nodes.forEach(function(n) {
                     count++;
-                    var badgeType = n.level === 'axi' ? 'badge-primary' : (n.level === 'goal' ? 'badge-info' : 'badge-purple');
-                    var levelName = (n.level === 'axi' ? 'OBJ. ESTRATÉGICO' : (n.level === 'goal' ? 'OBJ. ESPECÍFICO' : (n.level === 'action' ? 'ACCIÓN ESTRATÉGICA' : (n.level||'NODO').toUpperCase())));
+                    var badgeType = n.nivel_badge || 'badge-dark';
+                    var nivelNombre = n.nivel_nombre || 'Nivel PEI';
+                    
+                    var ultimasEdicionesHtml = '';
+                    if (n.ultimas_ediciones && n.ultimas_ediciones.length > 0) {
+                        ultimasEdicionesHtml = '<div class="mt-1 pt-1 border-top" style="font-size:0.7rem; color:#64748b;"><strong><i class="fa fa-history mr-1"></i> Historial reciente:</strong>';
+                        n.ultimas_ediciones.forEach(function(e) {
+                            ultimasEdicionesHtml += '<div class="text-truncate">&bull; ' + e.usuario + ' (' + e.fecha + ')</div>';
+                        });
+                        ultimasEdicionesHtml += '</div>';
+                    }
+
+                    var trazabilidadBlock = `
+                        <div class="p-2 rounded bg-light border text-dark shadow-xs" style="font-size:0.75rem; line-height: 1.3;">
+                            <div class="mb-1"><i class="fa fa-user-circle text-primary mr-1"></i> <strong>Autor:</strong> ${n.creador || 'Sistema'}</div>
+                            <div class="mb-1"><i class="fa fa-edit text-warning mr-1"></i> <strong>Último Editor:</strong> ${n.editor || '—'}</div>
+                            <div class="text-muted"><i class="fa fa-pen-nib text-info mr-1"></i> <strong>Ediciones:</strong> ${n.total_ediciones || 0} cambio(s)</div>
+                            ${ultimasEdicionesHtml}
+                        </div>
+                    `;
+
                     var tr = `
                         <tr>
                             <td class="align-middle">
-                                <span class="badge ${badgeType} font-weight-bold px-2.5 py-1" style="font-size:0.72rem;">${levelName}</span>
+                                <span class="badge ${badgeType} font-weight-bold px-2.5 py-1 mb-1 d-block text-left" style="font-size:0.72rem;">
+                                    <i class="fa fa-layer-group mr-1"></i> ${nivelNombre}
+                                </span>
                             </td>
                             <td class="align-middle">
-                                <strong class="text-dark d-block" style="font-size:0.86rem;">${n.name}</strong>
+                                <strong class="text-dark d-block" style="font-size:0.86rem; line-height: 1.3;">${n.name}</strong>
                             </td>
                             <td class="align-middle small">
-                                <div class="p-1.5 rounded bg-light border text-dark font-weight-500" style="font-size:0.78rem;">
+                                <div class="p-2 rounded bg-light border text-dark font-weight-500 shadow-xs" style="font-size:0.78rem;">
                                     ${n.contexto || '—'}
                                 </div>
+                            </td>
+                            <td class="align-middle">
+                                ${trazabilidadBlock}
                             </td>
                             <td class="align-middle text-center text-muted small font-mono">${n.deleted_at || '—'}</td>
                             <td class="align-middle text-center">
@@ -5663,19 +5688,31 @@ function cargarBasureroPeiAdmin() {
             if (resp.trashed_inis && resp.trashed_inis.length > 0) {
                 resp.trashed_inis.forEach(function(i) {
                     count++;
+                    var trazabilidadBlock = `
+                        <div class="p-2 rounded bg-light border text-dark shadow-xs" style="font-size:0.75rem; line-height: 1.3;">
+                            <div class="mb-1"><i class="fa fa-user-circle text-primary mr-1"></i> <strong>Autor:</strong> ${i.creador || 'Sistema'}</div>
+                            <div class="mb-1"><i class="fa fa-edit text-warning mr-1"></i> <strong>Último Editor:</strong> ${i.editor || '—'}</div>
+                        </div>
+                    `;
+
                     var tr = `
                         <tr>
                             <td class="align-middle">
-                                <span class="badge badge-success font-weight-bold px-2.5 py-1" style="font-size:0.72rem;">ACCIÓN OPERATIVA</span>
+                                <span class="badge badge-success font-weight-bold px-2.5 py-1 mb-1 d-block text-left" style="font-size:0.72rem;">
+                                    <i class="fa fa-tasks mr-1"></i> Nivel 4 &bull; Acción Operativa
+                                </span>
                             </td>
                             <td class="align-middle">
                                 ${i.codigo ? `<span class="badge badge-dark font-weight-bold mr-1">${i.codigo}</span>` : ''}
-                                <strong class="text-dark">${i.accion}</strong>
+                                <strong class="text-dark" style="font-size:0.86rem; line-height: 1.3;">${i.accion}</strong>
                             </td>
                             <td class="align-middle small">
-                                <div class="p-1.5 rounded bg-light border text-dark font-weight-500" style="font-size:0.78rem;">
+                                <div class="p-2 rounded bg-light border text-dark font-weight-500 shadow-xs" style="font-size:0.78rem;">
                                     ${i.contexto || '—'}
                                 </div>
+                            </td>
+                            <td class="align-middle">
+                                ${trazabilidadBlock}
                             </td>
                             <td class="align-middle text-center text-muted small font-mono">${i.deleted_at || '—'}</td>
                             <td class="align-middle text-center">

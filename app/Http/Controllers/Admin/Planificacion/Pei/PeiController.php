@@ -1543,10 +1543,12 @@ class PeiController extends Controller
 
         // 1. Nodos soft-deleted en la jerarquía PEI
         $trashedNodes = PeiProfile::onlyTrashed()
+            ->with(['user', 'updater'])
             ->orderBy('deleted_at', 'desc')
             ->get()
             ->map(function($node) {
                 $contexto = [];
+                $depth = 1;
                 $currId = $node->parent_id;
 
                 while ($currId) {
@@ -1557,6 +1559,8 @@ class PeiController extends Controller
                         $currId = $parent->parent_id;
                         continue;
                     }
+
+                    $depth++;
 
                     $lvlLabel = match($parent->level) {
                         'axi'    => 'OBJ. ESTRATÉGICO',
@@ -1578,24 +1582,64 @@ class PeiController extends Controller
                     $currId = $parent->parent_id;
                 }
 
+                // Determinar el Nivel Exacto en la Estructura PEI
+                $nivelNum = match($node->level) {
+                    'axi'    => 1,
+                    'goal'   => 2,
+                    'action' => 3,
+                    default  => $depth,
+                };
+
+                $nivelNombre = match($node->level) {
+                    'axi'    => 'Nivel 1 &bull; Objetivo Estratégico',
+                    'goal'   => 'Nivel 2 &bull; Objetivo Específico / Meta',
+                    'action' => 'Nivel 3 &bull; Acción Estratégica',
+                    default  => "Nivel {$nivelNum} &bull; " . strtoupper($node->level ?: 'NODO'),
+                };
+
+                $nivelBadgeClass = match($node->level) {
+                    'axi'    => 'badge-primary',
+                    'goal'   => 'badge-info',
+                    'action' => 'badge-purple',
+                    default  => 'badge-dark',
+                };
+
+                // Trazabilidad de Últimas Ediciones
+                $editsQuery = PeiProfileEdit::where('pei_profile_id', $node->id)->with('user')->latest()->take(3)->get();
+                $ultimasEdiciones = $editsQuery->map(function($e) {
+                    return [
+                        'usuario' => $e->user->name ?? 'Usuario',
+                        'fecha'   => $e->created_at ? $e->created_at->format('d/m/Y H:i') : '',
+                    ];
+                });
+
                 return [
-                    'id'          => $node->id,
-                    'name'        => strip_tags($node->name),
-                    'level'       => $node->level,
-                    'type'        => $node->type,
-                    'contexto'    => !empty($contexto)
-                                        ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
-                                        : '<span class="text-muted italic"><i class="fa fa-sitemap mr-1"></i> Objetivo Estratégico (Nivel Superior)</span>',
-                    'deleted_at'  => $node->deleted_at ? $node->deleted_at->format('d/m/Y H:i') : '—',
+                    'id'                 => $node->id,
+                    'name'               => strip_tags($node->name),
+                    'level'              => $node->level,
+                    'nivel_num'          => $nivelNum,
+                    'nivel_nombre'       => $nivelNombre,
+                    'nivel_badge'        => $nivelBadgeClass,
+                    'type'               => $node->type,
+                    'contexto'           => !empty($contexto)
+                                                ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
+                                                : '<span class="text-muted italic"><i class="fa fa-sitemap mr-1"></i> Raíz de Jerarquía (Nivel Superior)</span>',
+                    'creador'            => $node->user->name ?? 'Sistema',
+                    'editor'             => $node->updater->name ?? ($node->user->name ?? '—'),
+                    'total_ediciones'    => PeiProfileEdit::where('pei_profile_id', $node->id)->count(),
+                    'ultimas_ediciones'  => $ultimasEdiciones,
+                    'deleted_at'         => $node->deleted_at ? $node->deleted_at->format('d/m/Y H:i') : '—',
                 ];
             });
 
         // 2. Acciones Operativas soft-deleted
         $trashedInis = \App\Models\PlanMaestro\PlanAccion::onlyTrashed()
+            ->with(['user'])
             ->orderBy('deleted_at', 'desc')
             ->get()
             ->map(function($ini) {
                 $contexto = [];
+                $depth = 4;
                 if ($ini->pei_profile_id) {
                     $currId = $ini->pei_profile_id;
                     while ($currId) {
@@ -1634,14 +1678,22 @@ class PeiController extends Controller
                 }
 
                 return [
-                    'id'         => $ini->id,
-                    'codigo'     => $ini->codigo,
-                    'accion'     => strip_tags($ini->accion),
-                    'estado'     => $ini->estado,
-                    'contexto'   => !empty($contexto)
-                                        ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
-                                        : '<span class="text-muted italic"><i class="fa fa-list mr-1"></i> Acción Operativa</span>',
-                    'deleted_at' => $ini->deleted_at ? $ini->deleted_at->format('d/m/Y H:i') : '—',
+                    'id'                 => $ini->id,
+                    'codigo'             => $ini->codigo,
+                    'accion'             => strip_tags($ini->accion),
+                    'estado'             => $ini->estado,
+                    'level'              => 'iniciativa',
+                    'nivel_num'          => 4,
+                    'nivel_nombre'       => 'Nivel 4 &bull; Acción Operativa (Ejecución)',
+                    'nivel_badge'        => 'badge-success',
+                    'contexto'           => !empty($contexto)
+                                                ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
+                                                : '<span class="text-muted italic"><i class="fa fa-list mr-1"></i> Acción Operativa</span>',
+                    'creador'            => $ini->user->name ?? 'Sistema',
+                    'editor'             => $ini->user->name ?? '—',
+                    'total_ediciones'    => 1,
+                    'ultimas_ediciones'  => [],
+                    'deleted_at'         => $ini->deleted_at ? $ini->deleted_at->format('d/m/Y H:i') : '—',
                 ];
             });
 
