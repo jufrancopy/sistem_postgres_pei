@@ -865,19 +865,22 @@
                                                 }
                                             @endphp
                                             <div class="px-3 py-2" style="border-top:1px solid #e2e8f0; background:#f8fafc; font-size:.78rem">
-                                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                                    <span class="font-weight-bold text-uppercase text-dark" style="font-size:.68rem; letter-spacing:.04em">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <a class="font-weight-bold text-uppercase text-dark text-decoration-none d-flex align-items-center" data-toggle="collapse" href="#collapseIniciativas_{{ $action->id }}" role="button" aria-expanded="false" aria-controls="collapseIniciativas_{{ $action->id }}" style="font-size:.72rem; letter-spacing:.04em; cursor: pointer;" title="Hacer clic para desplegar u ocultar Acciones Operativas">
+                                                        <i class="fa fa-chevron-right text-info mr-1.5" style="font-size: 0.75rem; transition: transform 0.2s;" id="iconCollapseIniciativas_{{ $action->id }}"></i>
                                                         <i class="fa fa-tasks text-info mr-1"></i> Acciones Operativas (Mejora Continua)
-                                                        <span class="badge badge-info ml-1">{{ $iniciativasAccion->count() }}</span>
-                                                    </span>
+                                                        <span class="badge badge-info ml-1.5 px-2 py-0.5" style="border-radius: 10px;">{{ $iniciativasAccion->count() }}</span>
+                                                    </a>
                                                     <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size:.68rem; border-radius:12px;" onclick="abrirModalNuevaIniciativa('{{ $action->id }}', '{{ addslashes(strip_tags($action->name)) }}')" title="Agregar nueva Acción Operativa de Mejora Continua">
                                                         <i class="fa fa-plus-circle mr-1"></i> + Nueva Acción Operativa
                                                     </button>
                                                 </div>
 
+                                                {{-- Acordeón cerrado por defecto --}}
+                                                <div class="collapse mt-2.5" id="collapseIniciativas_{{ $action->id }}">
                                                 @if($iniciativasAccion->count() > 0)
                                                     <div class="d-flex flex-column" style="gap: .5rem;">
-                                                        @foreach($iniciativasAccion as $ini)
+                                                        @foreach($iniciativasAccion as $iniIdx => $ini)
                                                             @php
                                                                 $grpState = $ini->estado_grupo;
                                                                 $stBadge = match($grpState) {
@@ -886,8 +889,12 @@
                                                                     default     => ['cls' => 'badge-danger', 'icon' => 'fa-hourglass-start', 'label' => 'PENDIENTE', 'color' => '#ef4444'],
                                                                 };
                                                                 $mom = \App\Models\PlanMaestro\PlanAccion::MOMENTOS[$ini->momento] ?? ['label' => $ini->momento, 'color' => '#64748b'];
+
+                                                                // Alternar fondo entre celestito claro (#f0f9ff) y beige/marfil clarito (#fefce8)
+                                                                $cardBg = ($iniIdx % 2 === 0) ? '#f0f9ff' : '#fefce8';
+                                                                $cardBorderColor = ($iniIdx % 2 === 0) ? '#bae6fd' : '#fde68a';
                                                             @endphp
-                                                            <div class="p-2.5 rounded border bg-white shadow-xs ini-card-item" id="ini_card_{{ $ini->id }}" data-id="{{ $ini->id }}" data-codigo="{{ $ini->codigo }}" data-accion="{{ $ini->accion }}" data-estado="{{ $grpState }}" data-responsable="{{ $ini->responsable ?? '' }}" data-momento="{{ $ini->momento }}" style="border-left: 4px solid {{ $stBadge['color'] }} !important;">
+                                                            <div class="p-2.5 rounded border shadow-xs ini-card-item" id="ini_card_{{ $ini->id }}" data-id="{{ $ini->id }}" data-codigo="{{ $ini->codigo }}" data-accion="{{ $ini->accion }}" data-estado="{{ $grpState }}" data-responsable="{{ $ini->responsable ?? '' }}" data-momento="{{ $ini->momento }}" style="background: {{ $cardBg }} !important; border-color: {{ $cardBorderColor }} !important; border-left: 4px solid {{ $stBadge['color'] }} !important;">
                                                                 {{-- Fila Principal --}}
                                                                 <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: .5rem;">
                                                                     <div class="d-flex align-items-center flex-wrap flex-grow-1 mr-2" style="gap: .4rem; min-width: 0;">
@@ -1016,6 +1023,7 @@
                                                         Sin Acciones Operativas registradas para esta Acción PEI. Presiona <strong>+ Nueva Acción Operativa</strong> para crear una.
                                                     </div>
                                                 @endif
+                                                </div>
                                             </div>
 
                                             {{-- Reportes: todos visibles --}}
