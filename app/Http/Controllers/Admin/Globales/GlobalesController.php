@@ -41,7 +41,7 @@ class GlobalesController extends Controller
                 ->find($peiProfileId);
         }
         if (!$selectedPei && $peiPerfiles->count() > 0) {
-            $selectedPei  = $peiPerfiles->first();
+            $selectedPei = $peiPerfiles->firstWhere('id', 'ce99f883-fdd0-4723-8f75-cf689aa8f0fa') ?: $peiPerfiles->first();
         }
 
         if ($selectedPei) {
