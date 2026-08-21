@@ -721,6 +721,11 @@
                                             </div>
                                         @else
                                             <span class="badge badge-light border font-weight-bold text-muted px-2 py-1" style="font-size:0.75rem;">
+                                                <i class="fa fa-users text-muted mr-1"></i> <span id="badge_group_members_count_{{ $g->id }}">{{ $g->members_count }}</span> integrantes
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         @if($g->members->isEmpty())
                                             <span class="text-muted small">Sin miembros asignados</span>
                                         @else
@@ -733,6 +738,9 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 5px;">
+                                            <button type="button" class="btn btn-circle btn-warning text-dark font-weight-bold" onclick="abrirModalPremioCierreSemana('{{ $g->id }}', '{{ addslashes($g->name) }}')" title="Otorgar +100 Pts por Cierre de Semana Exitoso a todos los integrantes">
+                                                <i class="fa fa-gift"></i>
+                                            </button>
                                             <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalDetalleGrupo('{{ $g->id }}', '{{ addslashes($g->name) }}')" title="Gestionar Integrantes">
                                                 <i class="fa fa-user-plus"></i>
                                             </button>
