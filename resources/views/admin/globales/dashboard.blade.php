@@ -4577,7 +4577,12 @@ window.guardarNuevoUsuarioInline = function() {
                     </div>
 
                     <div class="form-group mb-3">
-                        <label class="font-weight-bold text-dark small mb-1">Título del Premio / Motivo</label>
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <label class="font-weight-bold text-dark small mb-0">Título del Premio / Motivo (*)</label>
+                            <button type="button" class="btn btn-xs font-weight-bold text-dark shadow-sm" onclick="generarTextoConIA()" style="background: linear-gradient(135deg, #fef08a 0%, #fde047 100%); border: 1px solid #facc15; border-radius: 12px; font-size: 0.72rem; padding: 2px 10px;">
+                                <i class="fa fa-magic mr-1 text-warning"></i> 🤖 Redactor IA Generativo
+                            </button>
+                        </div>
                         <input type="text" id="cierre_sem_title" name="title" class="form-control font-weight-bold" value="🎉 Cierre de Semana Exitoso — Aporte en SIPLAN GO!" required style="color: #0f172a !important;">
                     </div>
 
@@ -4688,6 +4693,48 @@ window.guardarNuevoUsuarioInline = function() {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
+const inspiracionesIA = [
+    {
+        title: "🎉 Cierre de Semana Exitoso — Aporte Destacado en SIPLAN GO!",
+        desc: "Felicitaciones a todo el equipo por su excepcional compromiso, constancia y aporte estratégico en el logro de las metas semanales de la institución."
+    },
+    {
+        title: "🌟 Mérito a la Innovación y Colaboración de Equipo",
+        desc: "Reconocimiento especial a cada integrante por mantener un ritmo de trabajo ejemplar, impulsando la excelencia y la transformación digital en el IPS."
+    },
+    {
+        title: "🏆 Impulsores del Plan Estratégico PEI — Cierre de Semana",
+        desc: "En mérito a su esfuerzo coordinado, liderazgo colaborativo y cumplimiento impecable de hitos prioritarios durante la presente semana."
+    },
+    {
+        title: "🚀 Excelencia Operativa y Compromiso Institucional",
+        desc: "Valoramos profundamente la dedicación y energía entregadas por el equipo para concretar los avances estratégicos en el sistema SIPLAN PEI."
+    },
+    {
+        title: "🛡️ Aporte de Alto Valor Institucional IPS",
+        desc: "Reconocimiento a la sinergia, proactividad y resultados colectivos que fortalecen el cumplimiento de los objetivos estratégicos institucionales."
+    }
+];
+
+let lastIaIndex = -1;
+window.generarTextoConIA = function() {
+    let nextIdx = Math.floor(Math.random() * inspiracionesIA.length);
+    if (nextIdx === lastIaIndex) {
+        nextIdx = (nextIdx + 1) % inspiracionesIA.length;
+    }
+    lastIaIndex = nextIdx;
+
+    const item = inspiracionesIA[nextIdx];
+    $('#cierre_sem_title').val(item.title).addClass('is-valid');
+    $('#cierre_sem_desc').val(item.desc).addClass('is-valid');
+    
+    setTimeout(function() {
+        $('#cierre_sem_title, #cierre_sem_desc').removeClass('is-valid');
+    }, 1200);
+
+    toastr.success('Redacción motivacional generada con éxito.', '🤖 Redactor IA Generativo');
+};
+
 window.abrirModalPremioCierreSemana = function(groupId, groupName) {
     $('#cierre_sem_group_id').val(groupId || '');
     $('#cierre_sem_group_name').val(groupName || 'Ámbito Institucional');

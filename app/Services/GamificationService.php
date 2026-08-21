@@ -636,9 +636,15 @@ class GamificationService
                 ->orWhere('id', $group->id)
                 ->pluck('id');
 
-            $members = User::whereIn('id', function($q) use ($subGroupIds) {
-                $q->select('user_id')->from('group_user')->whereIn('group_id', $subGroupIds);
-            })->orWhereIn('group_id', $subGroupIds)->get()->unique('id');
+            $groups = \App\Admin\Globales\Group::with('members')->whereIn('id', $subGroupIds)->get();
+            $memberIds = collect();
+            foreach ($groups as $g) {
+                $memberIds = $memberIds->merge($g->members->pluck('id'));
+            }
+            $directMemberIds = User::whereIn('group_id', $subGroupIds)->pluck('id');
+            $allUserIds = $memberIds->merge($directMemberIds)->unique();
+
+            $members = User::whereIn('id', $allUserIds)->get();
 
             foreach ($members as $member) {
                 $exists = GamificationPoint::where('user_id', $member->id)
