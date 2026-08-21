@@ -1574,15 +1574,63 @@
                 </button>
             </div>
             <div class="modal-body p-4">
+                <style>
+                    #modalDetalleGrupoSub .nav-tabs {
+                        border-bottom: 2px solid #cbd5e1 !important;
+                        gap: 6px !important;
+                    }
+                    #modalDetalleGrupoSub .nav-tabs .nav-link {
+                        color: #1e293b !important;
+                        background-color: #f1f5f9 !important;
+                        border: 1px solid #cbd5e1 !important;
+                        border-bottom: none !important;
+                        border-radius: 8px 8px 0 0 !important;
+                        padding: 9px 18px !important;
+                        font-weight: 700 !important;
+                        font-size: 0.86rem !important;
+                        transition: all 0.2s ease-in-out !important;
+                    }
+                    #modalDetalleGrupoSub .nav-tabs .nav-link i {
+                        color: #0284c7 !important;
+                    }
+                    #modalDetalleGrupoSub .nav-tabs .nav-link:hover {
+                        color: #0284c7 !important;
+                        background-color: #e2e8f0 !important;
+                    }
+                    #modalDetalleGrupoSub .nav-tabs .nav-link.active {
+                        color: #ffffff !important;
+                        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+                        border-color: #0284c7 !important;
+                        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3) !important;
+                    }
+                    #modalDetalleGrupoSub .nav-tabs .nav-link.active i,
+                    #modalDetalleGrupoSub .nav-tabs .nav-link.active span {
+                        color: #ffffff !important;
+                    }
+                    #modalDetalleGrupoSub .select2-container--default .select2-selection--multiple .select2-selection__choice {
+                        background-color: #e0f2fe !important;
+                        border: 1px solid #bae6fd !important;
+                        color: #0369a1 !important;
+                        font-weight: 700 !important;
+                        font-size: 0.82rem !important;
+                        padding: 4px 10px !important;
+                        border-radius: 6px !important;
+                    }
+                    #modalDetalleGrupoSub .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+                        color: #ef4444 !important;
+                        margin-right: 6px !important;
+                        font-weight: bold !important;
+                    }
+                </style>
                 <ul class="nav nav-tabs mb-3" id="grupoDetalleTabs" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link active font-weight-bold" id="tab-miembros-grupo-link" data-toggle="tab" href="#tab-miembros-grupo" role="tab">
-                            <i class="fa fa-users text-info mr-1"></i> Integrantes Directos (<span id="cantMiembrosGrupo">0</span>)
+                            <i class="fa fa-users mr-1"></i> Integrantes Directos (<span id="cantMiembrosGrupo">0</span>)
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link font-weight-bold" id="tab-subgrupos-grupo-link" data-toggle="tab" href="#tab-subgrupos-grupo" role="tab">
-                            <i class="fa fa-layer-group text-warning mr-1"></i> Subgrupos Hijos (<span id="cantSubgruposGrupo">0</span>)
+                            <i class="fa fa-layer-group mr-1"></i> Subgrupos Hijos (<span id="cantSubgruposGrupo">0</span>)
                         </a>
                     </li>
                 </ul>
@@ -1611,7 +1659,7 @@
                                         <small class="text-muted d-block mt-1">Selecciona o remueve usuarios para gestionar el equipo del subgrupo.</small>
                                     </div>
                                     <div class="text-right">
-                                        <button type="submit" class="btn btn-info font-weight-bold text-white btn-round px-4" id="btnGuardarIntegrantesSubgrupo">
+                                        <button type="submit" class="btn font-weight-bold text-white btn-round px-4 shadow-sm" id="btnGuardarIntegrantesSubgrupo" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: none;">
                                             <i class="fa fa-save mr-1"></i> Guardar Integrantes
                                         </button>
                                     </div>
