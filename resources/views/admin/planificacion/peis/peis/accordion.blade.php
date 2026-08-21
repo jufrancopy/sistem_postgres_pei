@@ -64,6 +64,39 @@
 .highlight-target-edited {
     animation: highlightGreenPulse 2.5s ease-out forwards;
 }
+
+@keyframes actionPulseHoverGreen {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45), 0 4px 14px rgba(16, 185, 129, 0.2);
+        border-color: #10b981 !important;
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.15), 0 8px 22px rgba(16, 185, 129, 0.35);
+        border-color: #34d399 !important;
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45), 0 4px 14px rgba(16, 185, 129, 0.2);
+        border-color: #10b981 !important;
+    }
+}
+.node-action-card-item {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1.5px solid #cbd5e1 !important;
+    border-left-width: 5px !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+}
+.node-action-card-item:hover,
+.node-action-card-item:focus-within {
+    background-color: #f0fdf4 !important;
+    animation: actionPulseHoverGreen 1.8s infinite ease-in-out !important;
+    transform: translateY(-2px);
+    z-index: 10;
+}
+.node-action-card-item:hover .card-header,
+.node-action-card-item:focus-within .card-header {
+    background-color: #e6f4ea !important;
+}
 </style>
 <div>
     @foreach ($profile->children->sortBy('order_item') as $axi)
@@ -506,8 +539,8 @@
                                         $rpColor = ['bg'=>'#f5f5f5','border'=>'#e0e0e0','text'=>'#666','badge'=>'secondary'];
                                     @endphp
 
-                                    <div class="mb-2" id="actionsBlock_{{ $action->id }}">
-                                        <div class="card border-0 shadow-sm">
+                                    <div class="mb-3" id="actionsBlock_{{ $action->id }}">
+                                        <div class="card shadow-sm node-action-card-item">
                                             <div class="card-header py-2 px-3"
                                                  style="border-left:4px solid; background-color:rgba(0,0,0,.03);
                                                         border-left-color:{{ $colorFisico === 'success' ? '#28a745' : ($colorFisico === 'warning' ? '#ffc107' : ($colorFisico === 'danger' ? '#dc3545' : '#6c757d')) }}">
