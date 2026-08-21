@@ -631,7 +631,14 @@ class GamificationService
                 'is_retroactive' => $isRetroactive,
             ]);
 
-            $members = $group->users()->get();
+            // Obtener todos los integrantes del grupo y sus subgrupos subordinados
+            $subGroupIds = \App\Admin\Globales\Group::where('parent_id', $group->id)
+                ->orWhere('id', $group->id)
+                ->pluck('id');
+
+            $members = User::whereIn('id', function($q) use ($subGroupIds) {
+                $q->select('user_id')->from('group_user')->whereIn('group_id', $subGroupIds);
+            })->orWhereIn('group_id', $subGroupIds)->get()->unique('id');
 
             foreach ($members as $member) {
                 $exists = GamificationPoint::where('user_id', $member->id)

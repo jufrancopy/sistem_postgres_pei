@@ -578,10 +578,10 @@
                                 Instancias subordinadas y equipos operativos. Podés gestionar, incorporar o desvincular integrantes con el botón <i class="fa fa-user-plus text-info"></i>.
                             </p>
                         </div>
-                        <div class="d-flex align-items-center mt-3 mt-md-0" style="gap: 10px;">
+                        <div class="d-flex align-items-center flex-wrap mt-3 mt-md-0" style="gap: 10px;">
                             @if(isset($eventosRaizList) && $eventosRaizList->count() > 0)
                             <div class="form-group mb-0">
-                                <select id="eventoGroupFilterSelect" class="form-control select2 font-weight-bold border-info" style="min-width: 240px;" title="Cambiar Evento Raíz">
+                                <select id="eventoGroupFilterSelect" class="form-control select2 font-weight-bold border-info" style="min-width: 200px;" title="Cambiar Evento Raíz">
                                     @foreach($eventosRaizList as $ev)
                                         <option value="{{ $ev->id }}" {{ (isset($selectedGroup) && $selectedGroup && $selectedGroup->id == $ev->id) ? 'selected' : '' }}>
                                             Evento: {{ $ev->name }}
@@ -590,11 +590,84 @@
                                 </select>
                             </div>
                             @endif
+                            <button type="button" class="btn btn-warning btn-round shadow-sm px-3 text-dark font-weight-bold" onclick="abrirModalPremioCierreSemana('{{ $selectedGroup->id ?? '' }}', '{{ addslashes($selectedGroup->name ?? 'Ámbito Institucional') }}')" title="Otorgar 100 Pts masivos a los integrantes del grupo y subgrupos">
+                                <i class="fa fa-gift mr-1 text-dark"></i> 🎉 +100 PTS CIERRE DE SEMANA
+                            </button>
                             <button type="button" class="btn btn-info btn-round shadow-sm px-3 text-white font-weight-bold" onclick="abrirModalNuevoGrupo()">
                                 <i class="fa fa-plus-circle mr-1"></i> NUEVO GRUPO DE TRABAJO
                             </button>
                         </div>
                     </div>
+
+                    {{-- ── WIDGET TOP 5 FUNCIONARIOS DESTACADOS Y RECONOCIMIENTO WHATSAPP ── --}}
+                    @if(isset($top5RankingReconocimiento) && $top5RankingReconocimiento->count() > 0)
+                    <div class="card border-0 shadow-lg mb-4 rounded-lg overflow-hidden" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff;">
+                        <div class="card-header py-3 px-4 d-flex align-items-center justify-content-between flex-wrap" style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <div>
+                                <h5 class="mb-0 font-weight-bold text-white d-flex align-items-center">
+                                    <i class="fa fa-trophy text-warning mr-2.5" style="font-size: 1.3rem;"></i>
+                                    TOP 5 — FUNCIONARIOS DESTACADOS DEL SISTEMA
+                                </h5>
+                                <small class="text-white-50">Reconocimiento a la excelencia, constancia y colaboración en la gestión del SIPLAN PEI</small>
+                            </div>
+                            <div class="mt-2 mt-sm-0">
+                                <span class="badge badge-pill px-3 py-1.5 font-weight-bold" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.78rem;">
+                                    🌟 Reconocimiento Institucional IPS
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row" style="gap: 12px 0;">
+                                @foreach($top5RankingReconocimiento as $topIdx => $topUser)
+                                    @php
+                                        $medals = ['🥇', '🥈', '🥉', '🎖️', '🎖️'];
+                                        $medal  = $medals[$topIdx] ?? '⭐';
+                                        $bgBox  = match($topIdx) {
+                                            0 => 'linear-gradient(135deg, rgba(245,158,11,0.2) 0%, rgba(217,119,6,0.1) 100%)',
+                                            1 => 'linear-gradient(135deg, rgba(203,213,225,0.2) 0%, rgba(148,163,184,0.1) 100%)',
+                                            2 => 'linear-gradient(135deg, rgba(251,146,60,0.2) 0%, rgba(194,65,12,0.1) 100%)',
+                                            default => 'rgba(255,255,255,0.05)',
+                                        };
+                                        $borderColor = match($topIdx) {
+                                            0 => '#f59e0b',
+                                            1 => '#cbd5e1',
+                                            2 => '#fb923c',
+                                            default => 'rgba(255,255,255,0.15)',
+                                        };
+                                    @endphp
+                                    <div class="col-lg-2 col-md-4 col-sm-6 flex-grow-1">
+                                        <div class="p-3 rounded-lg text-center h-100 d-flex flex-column justify-content-between position-relative shadow-xs"
+                                             style="background: {{ $bgBox }}; border: 1px solid {{ $borderColor }}; backdrop-filter: blur(8px);">
+                                            <div>
+                                                <div class="display-4 mb-1" style="font-size: 1.8rem; line-height: 1;">{{ $medal }}</div>
+                                                <div class="badge badge-pill mb-2 px-2.5 py-1 font-weight-bold" style="background: rgba(255,255,255,0.15); color: #fff; font-size: 0.68rem;">
+                                                    PUESTO #{{ $topUser->puesto_ranking }}
+                                                </div>
+                                                <h6 class="font-weight-bold text-white mb-1 text-truncate" title="{{ $topUser->name }}" style="font-size: 0.88rem;">
+                                                    {{ $topUser->name }}
+                                                </h6>
+                                                <small class="text-white-50 d-block text-truncate mb-2" style="font-size: 0.72rem;">
+                                                    {{ $topUser->group->name ?? 'IPS Institucional' }}
+                                                </small>
+                                            </div>
+                                            <div>
+                                                <div class="font-weight-bold text-warning mb-2.5" style="font-size: 0.95rem;">
+                                                    <i class="fa fa-star mr-1"></i> {{ number_format($topUser->puntos_gamificacion) }} Pts
+                                                </div>
+                                                <button type="button" class="btn btn-sm btn-block font-weight-bold rounded-pill shadow-sm"
+                                                        onclick="generarFichaWhatsApp('{{ addslashes($topUser->name) }}', '{{ addslashes($topUser->group->name ?? 'IPS Institucional') }}', '{{ $topUser->puntos_gamificacion }}', '{{ $topUser->puesto_ranking }}')"
+                                                        style="background: #25D366; color: #fff; border: none; font-size: 0.73rem; padding: 5px 8px;"
+                                                        title="Generar y compartir Ficha Visual de Reconocimiento en WhatsApp">
+                                                    <i class="fab fa-whatsapp mr-1" style="font-size: 0.85rem;"></i> Ficha WhatsApp
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                     <div class="table-responsive">
                         <table class="table table-hover table-custom w-100 dataTableInit" id="tablaGruposGlobal">
@@ -648,11 +721,6 @@
                                             </div>
                                         @else
                                             <span class="badge badge-light border font-weight-bold text-muted px-2 py-1" style="font-size:0.75rem;">
-                                                <i class="fa fa-users text-muted mr-1"></i> <span id="badge_group_members_count_{{ $g->id }}">{{ $g->members_count }}</span> integrantes
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td>
                                         @if($g->members->isEmpty())
                                             <span class="text-muted small">Sin miembros asignados</span>
                                         @else
@@ -4459,5 +4527,248 @@ window.guardarNuevoUsuarioInline = function() {
         }
     });
 };
+
+</script>
+
+{{-- ════════════════════════════════════════════════════════════════════════════
+     MODAL: PREMIO MASIVO CIERRE DE SEMANA (+100 PTS)
+     ════════════════════════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalPremioCierreSemana" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-lg">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                <h5 class="modal-title font-weight-bold mb-0 text-white">
+                    <i class="fa fa-gift mr-2"></i> 🎉 Premio Masivo — Cierre de Semana Exitoso
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formPremioCierreSemana">
+                @csrf
+                <div class="modal-body p-4">
+                    <input type="hidden" id="cierre_sem_group_id" name="group_id">
+                    
+                    <div class="alert alert-warning border-0 shadow-xs mb-3 font-weight-bold" style="background: #fffbeeb0; color: #92400e; font-size: 0.85rem;">
+                        <i class="fa fa-info-circle mr-1"></i> Este premio otorgará puntos de reconocimiento masivo a <strong>todos los integrantes</strong> del equipo seleccionado y sus subgrupos subordinados.
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small mb-1">Equipo / Grupo Seleccionado</label>
+                        <input type="text" id="cierre_sem_group_name" class="form-control font-weight-bold bg-light" readonly style="color: #0f172a !important;">
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small mb-1">Puntos de Reconocimiento</label>
+                        <div class="input-group">
+                            <input type="number" id="cierre_sem_points" name="points" class="form-control font-weight-bold text-warning" value="100" min="1" max="5000" required style="font-size: 1.1rem; color: #d97706 !important;">
+                            <div class="input-group-append">
+                                <span class="input-group-text font-weight-bold bg-warning text-dark border-0">PTS PER CAPITA</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small mb-1">Título del Premio / Motivo</label>
+                        <input type="text" id="cierre_sem_title" name="title" class="form-control font-weight-bold" value="🎉 Cierre de Semana Exitoso — Aporte en SIPLAN GO!" required style="color: #0f172a !important;">
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold text-dark small mb-1">Mensaje de Felicitación (Opcional)</label>
+                        <textarea id="cierre_sem_desc" name="description" class="form-control" rows="3" style="color: #0f172a !important;" placeholder="Ej: Felicitaciones a todo el equipo por su excelente desempeño, compromiso y cumplimiento de objetivos en la presente semana.">Reconocimiento al esfuerzo, compromiso y colaboración activa en la gestión institucional del SIPLAN PEI.</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3">
+                    <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning font-weight-bold text-dark px-4 shadow-sm" id="btnOtorgarCierreSemana">
+                        <i class="fa fa-gift mr-1"></i> 🎉 OTORGAR PUNTOS MASIVOS
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- ════════════════════════════════════════════════════════════════════════════
+     MODAL: FICHA VISUAL DE RECONOCIMIENTO PARA WHATSAPP
+     ════════════════════════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalFichaReconocimientoWhatsApp" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-lg">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                <h5 class="modal-title font-weight-bold text-white mb-0 d-flex align-items-center">
+                    <i class="fab fa-whatsapp text-success mr-2" style="font-size: 1.3rem;"></i>
+                    Tarjetas de Reconocimiento e Incentivo Institucional
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 text-center" style="background: #f8fafc;">
+                
+                {{-- Tarjeta Renderizada en HTML/CSS --}}
+                <div id="fichaReconocimientoCardContainer" class="mx-auto shadow-lg p-4 rounded-xl text-white position-relative"
+                     style="max-width: 620px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0369a1 100%); border: 3px solid #f59e0b; border-radius: 20px; font-family: system-ui, -apple-system, sans-serif; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important;">
+                    
+                    {{-- Sello Institucional Superior --}}
+                    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2" style="border-color: rgba(255,255,255,0.15) !important;">
+                        <span class="badge px-3 py-1 font-weight-bold" style="background: rgba(255,255,255,0.1); color: #7dd3fc; border: 1px solid rgba(125,211,252,0.3); font-size: 0.72rem; letter-spacing: 0.5px;">
+                            🛡️ INSTITUTO DE PREVISIÓN SOCIAL (IPS)
+                        </span>
+                        <span class="badge px-3 py-1 font-weight-bold" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.72rem;">
+                            SIPLAN GO! 🌟
+                        </span>
+                    </div>
+
+                    {{-- Trofeo e Insignia --}}
+                    <div class="my-2">
+                        <div style="font-size: 3.5rem; line-height: 1; text-shadow: 0 4px 10px rgba(245,158,11,0.5);" id="ficha_card_medal">🥇</div>
+                        <div class="text-uppercase font-weight-bold mt-1" style="color: #fef08a; font-size: 0.78rem; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                            MÉRITO A LA EXCELENCIA E INNOVACIÓN INSTITUCIONAL
+                        </div>
+                    </div>
+
+                    {{-- Nombre del Funcionario --}}
+                    <div class="my-3 py-2 px-3 rounded-lg" style="background: rgba(255,255,255,0.06); border: 1px dashed rgba(245,158,11,0.5);">
+                        <h2 class="font-weight-bold text-white mb-1" id="ficha_card_name" style="font-size: 1.6rem; letter-spacing: 0.3px; text-shadow: 0 2px 6px rgba(0,0,0,0.6);">
+                            Cristóbal Martínez
+                        </h2>
+                        <div class="font-weight-semibold" id="ficha_card_group" style="color: #93c5fd; font-size: 0.9rem;">
+                            Dpto. de Coordinación de Proyectos
+                        </div>
+                    </div>
+
+                    {{-- Mensaje Motivador y Sobrio --}}
+                    <p class="mb-3 px-2 text-white-50 italic" style="font-size: 0.84rem; line-height: 1.5; font-style: italic;">
+                        "Reconocimiento al constante compromiso, destacada colaboración activa y valioso aporte en la gestión estratégica del Sistema de Planificación PEI."
+                    </p>
+
+                    {{-- Puntuación e Insignia de Posición --}}
+                    <div class="d-flex align-items-center justify-content-center flex-wrap" style="gap: 10px;">
+                        <span class="badge badge-pill px-3 py-2 font-weight-bold" id="ficha_card_rank" style="background: rgba(255,255,255,0.15); color: #fff; font-size: 0.82rem;">
+                            🏆 Puesto #1 en Ranking
+                        </span>
+                        <span class="badge badge-pill px-3 py-2 font-weight-bold" id="ficha_card_points" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; font-size: 0.88rem; box-shadow: 0 4px 10px rgba(245,158,11,0.3);">
+                            ⭐ 1.250 PUNTOS ACUMULADOS
+                        </span>
+                    </div>
+
+                    {{-- Pie de Ficha --}}
+                    <div class="mt-3 pt-2 text-muted" style="border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.68rem; color: #94a3b8 !important;">
+                        Dirección de Planificación Institucional • Cierre de Semana Exitoso
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between flex-wrap">
+                <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Cerrar</button>
+                <div class="d-flex" style="gap: 8px;">
+                    <button type="button" class="btn font-weight-bold text-white px-3 shadow-sm" id="btnDescargarFichaPNG" style="background: #0284c7; border: none;">
+                        <i class="fa fa-download mr-1"></i> 📥 DESCARGAR IMAGEN (PNG)
+                    </button>
+                    <button type="button" class="btn font-weight-bold text-white px-4 shadow-sm" id="btnCompartirWhatsAppDirecto" style="background: #25D366; border: none;">
+                        <i class="fab fa-whatsapp mr-1"></i> 📲 COMPARTIR EN WHATSAPP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+window.abrirModalPremioCierreSemana = function(groupId, groupName) {
+    $('#cierre_sem_group_id').val(groupId || '');
+    $('#cierre_sem_group_name').val(groupName || 'Ámbito Institucional');
+    $('#modalPremioCierreSemana').modal('show');
+};
+
+$('#formPremioCierreSemana').on('submit', function(e) {
+    e.preventDefault();
+    var groupId = $('#cierre_sem_group_id').val();
+    if (!groupId) {
+        toastr.error('Por favor seleccione un grupo para otorgar el premio.');
+        return;
+    }
+
+    var $btn = $('#btnOtorgarCierreSemana');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Otorgando Puntos...');
+
+    $.ajax({
+        url: "{{ url('admin/globales/groups') }}/" + groupId + "/otorgar-puntos-cierre-semana",
+        type: "POST",
+        data: $(this).serialize(),
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-gift mr-1"></i> 🎉 OTORGAR PUNTOS MASIVOS');
+            if (res.success) {
+                $('#modalPremioCierreSemana').modal('hide');
+                Swal.fire({
+                    title: '¡Puntos Otorgados!',
+                    text: res.message || 'Se han acreditado los 100 Pts de Cierre de Semana Exitoso.',
+                    icon: 'success',
+                    confirmButtonColor: '#0284c7'
+                }).then(function() {
+                    location.reload();
+                });
+            } else {
+                toastr.error(res.message || 'Error al otorgar los puntos.');
+            }
+        },
+        error: function(err) {
+            $btn.prop('disabled', false).html('<i class="fa fa-gift mr-1"></i> 🎉 OTORGAR PUNTOS MASIVOS');
+            var msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Error al procesar la solicitud.';
+            toastr.error(msg);
+        }
+    });
+});
+
+let currentFichaData = {};
+
+window.generarFichaWhatsApp = function(name, group, points, rank) {
+    currentFichaData = { name: name, group: group, points: points, rank: rank };
+    var medals = ['🥇', '🥈', '🥉', '🎖️', '🎖️'];
+    var medal = medals[rank - 1] || '⭐';
+
+    $('#ficha_card_medal').text(medal);
+    $('#ficha_card_name').text(name);
+    $('#ficha_card_group').text(group);
+    $('#ficha_card_rank').text('🏆 Puesto #' + rank + ' en Ranking');
+    $('#ficha_card_points').text('⭐ ' + Number(points).toLocaleString() + ' PUNTOS ACUMULADOS');
+
+    $('#modalFichaReconocimientoWhatsApp').modal('show');
+};
+
+$('#btnDescargarFichaPNG').on('click', function() {
+    var $btn = $(this);
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Generando PNG...');
+
+    var element = document.getElementById('fichaReconocimientoCardContainer');
+    html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: null
+    }).then(function(canvas) {
+        $btn.prop('disabled', false).html('<i class="fa fa-download mr-1"></i> 📥 DESCARGAR IMAGEN (PNG)');
+        var link = document.createElement('a');
+        link.download = 'reconocimiento_' + (currentFichaData.name || 'funcionario').replace(/\s+/g, '_') + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }).catch(function(err) {
+        $btn.prop('disabled', false).html('<i class="fa fa-download mr-1"></i> 📥 DESCARGAR IMAGEN (PNG)');
+        toastr.error('No se pudo generar la imagen. Intente nuevamente.');
+    });
+});
+
+$('#btnCompartirWhatsAppDirecto').on('click', function() {
+    var mensaje = "🌟 *RECONOCIMIENTO A LA EXCELENCIA E INNOVACIÓN INSTITUCIONAL — SIPLAN GO! (IPS)*\n\n" +
+                  "🥇 *Funcionario Destacado*: " + (currentFichaData.name || '') + "\n" +
+                  "🏢 *Equipo/Dependencia*: " + (currentFichaData.group || '') + "\n" +
+                  "🏆 *Posición en Ranking*: Puesto #" + (currentFichaData.rank || '1') + "\n" +
+                  "⭐ *Puntuación Acumulada*: " + Number(currentFichaData.points || 0).toLocaleString() + " Pts\n\n" +
+                  "👏 ¡Felicitaciones por tu esfuerzo, constancia y valioso aporte en el Cierre de Semana Exitoso del Sistema de Planificación PEI!";
+
+    var url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensaje);
+    window.open(url, '_blank');
+});
 </script>
 @endsection

@@ -233,7 +233,23 @@ class GlobalesController extends Controller
         $juntasList = \App\Models\Planificacion\Junta::with(['presidente', 'integrantes', 'intervenciones'])->withCount('intervenciones')->orderBy('nombre')->get();
         $totalJuntas = $juntasList->count();
         $totalJuntasActivas = $juntasList->where('activo', true)->count();
-        $totalIntervencionesJuntas = \App\Models\Planificacion\JuntaIntervencion::count();
+        // ── Top 5 Funcionarios Destacados por Puntos de Gamificación ─────────────
+        $top5PointsMap = \App\Models\Gamification\GamificationPoint::selectRaw('user_id, SUM(points) as total_points')
+            ->groupBy('user_id')
+            ->orderByDesc('total_points')
+            ->limit(5)
+            ->get();
+
+        $top5UserIds = $top5PointsMap->pluck('user_id');
+        $top5Users = User::with('group')->whereIn('id', $top5UserIds)->get()->keyBy('id');
+
+        $top5RankingReconocimiento = $top5PointsMap->map(function($item, $idx) use ($top5Users) {
+            $u = $top5Users->get($item->user_id);
+            if (!$u) return null;
+            $u->puntos_gamificacion = (int) $item->total_points;
+            $u->puesto_ranking = $idx + 1;
+            return $u;
+        })->filter()->values();
 
         return view('admin.globales.dashboard', get_defined_vars());
     }

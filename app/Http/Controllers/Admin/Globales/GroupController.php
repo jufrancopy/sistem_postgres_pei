@@ -130,6 +130,34 @@ class GroupController extends Controller
         ]);
     }
 
+    /**
+     * Otorgar puntos masivos de reconocimiento por Cierre de Semana Exitoso a todos los integrantes de un equipo y sus subgrupos.
+     */
+    public function otorgarPuntosCierreSemana(Request $request, $id)
+    {
+        $group = Group::findOrFail($id);
+
+        $points = (int) $request->input('points', 100);
+        $title  = $request->input('title', '🎉 Cierre de Semana Exitoso — Aporte en SIPLAN GO!');
+        $desc   = $request->input('description', 'Reconocimiento al esfuerzo, compromiso y colaboración en la gestión institucional.');
+
+        $gamificationService = app(\App\Services\GamificationService::class);
+        $reward = $gamificationService->rewardGroup(
+            $group,
+            $points,
+            $title,
+            $desc,
+            true,
+            auth()->user()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "¡Se otorgaron +{$points} Pts por Cierre de Semana Exitoso a los integrantes de {$group->name} y sus subgrupos subordinados!",
+            'reward'  => $reward
+        ]);
+    }
+
     public function getRootGroups(Request $request)
     {
         $search = $request->get('q', '');
