@@ -4618,12 +4618,20 @@ window.guardarNuevoUsuarioInline = function() {
                 <div id="fichaReconocimientoCardContainer" class="mx-auto shadow-lg p-4 rounded-xl text-white position-relative"
                      style="max-width: 620px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0369a1 100%); border: 3px solid #f59e0b; border-radius: 20px; font-family: system-ui, -apple-system, sans-serif; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important;">
                     
-                    {{-- Sello Institucional Superior --}}
+                    @php
+                        $sysLogoRaw = \App\Models\HomeConfiguration::getSetting('logo_url');
+                        $sysLogoUrl = !empty($sysLogoRaw) ? (str_starts_with($sysLogoRaw, 'http') ? $sysLogoRaw : asset($sysLogoRaw)) : asset('material/img/new_logo.png');
+                    @endphp
+
+                    {{-- Sello e Isologo Institucional SIPLAN PEI Superior --}}
                     <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2" style="border-color: rgba(255,255,255,0.15) !important;">
-                        <span class="badge px-3 py-1 font-weight-bold" style="background: rgba(255,255,255,0.1); color: #7dd3fc; border: 1px solid rgba(125,211,252,0.3); font-size: 0.72rem; letter-spacing: 0.5px;">
-                            🛡️ INSTITUTO DE PREVISIÓN SOCIAL (IPS)
-                        </span>
-                        <span class="badge px-3 py-1 font-weight-bold" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.72rem;">
+                        <div class="d-flex align-items-center" style="gap: 10px;">
+                            <img src="{{ $sysLogoUrl }}" alt="Logo SIPLAN" style="max-height: 40px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));">
+                            <span class="badge px-2.5 py-1.5 font-weight-bold text-left" style="background: rgba(255,255,255,0.1); color: #7dd3fc; border: 1px solid rgba(125,211,252,0.3); font-size: 0.72rem; letter-spacing: 0.5px;">
+                                INSTITUTO DE PREVISIÓN SOCIAL (IPS)
+                            </span>
+                        </div>
+                        <span class="badge px-3 py-1.5 font-weight-bold" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.75rem;">
                             SIPLAN GO! 🌟
                         </span>
                     </div>
