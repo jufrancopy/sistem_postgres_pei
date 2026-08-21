@@ -57,14 +57,14 @@ class UserController extends Controller
 
     public function getUsers(Request $request)
     {
-        $data = [];
+        $search = $request->get('q');
+        $query = User::select("id", "name");
 
-        if ($request->has('q')) {
-            $search = $request->q;
-            $data = User::select("id", "name")
-                ->where('name', 'LIKE', "%$search%")
-                ->get();
+        if (!empty($search)) {
+            $query->where('name', 'ILIKE', "%{$search}%");
         }
+
+        $data = $query->orderBy('name')->take(50)->get();
 
         return response()->json($data);
     }

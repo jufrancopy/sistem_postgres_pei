@@ -500,11 +500,20 @@ Route::group(['middleware' => ['auth']], function () {
             Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');
         });
 
+        // ── Helper endpoints abiertos a usuarios autenticados para asignación ──
+        Route::get('get-root-groups', 'Admin\Globales\GroupController@getRootGroups')->name('get-root-groups');
+        Route::get('get-groups/{idRoot}', 'Admin\Globales\GroupController@getGroupsFromRoot')->name('get-groups');
+        Route::get('get-group-parent/{idSelection}', 'Admin\Globales\GroupController@dataGroupParent')->name('get-group-parent');
+        Route::get('get-group/{idSelection}', 'Admin\Globales\GroupController@dataGroup')->name('get-group');
+        Route::get('get-users', 'Admin\UserController@getUsers')->name('get-users');
+        Route::get('get-user/{id}', 'Admin\UserController@getUser')->name('get-user');
+        Route::get('get-pei-profiles', 'Admin\Globales\ActivityController@getPeiProfiles')->name('get-pei-profiles');
+
         // ── Show: Administrador + Gestor + Colaborador ───────────────────────
         Route::get('activities/{activity}', 'Admin\Globales\ActivityController@show')->name('activities.show');
 
-        // ── Creación de tareas y Notificaciones por correo: Solo Administrador y Gestor ──
-        Route::middleware(['role:Administrador|Gestor de Actividades'])->group(function () {
+        // ── Creación de tareas y Notificaciones por correo: Administrador, Gestores y Analistas ──
+        Route::middleware(['role:Administrador|Gestor de Actividades|Coordinador de Planificación|Analista de Planificación|Analista PEI|Líder MECIP|Analista|Colaborador de Actividades'])->group(function () {
             Route::post('activities/{activityId}/tareas', 'Admin\Globales\ActivityController@storeTarea')->name('activities.tareas.store');
             Route::post('activities/{activityId}/notificar-todos', 'Admin\Globales\ActivityController@notificarTodos')->name('activities.notificar-todos');
             Route::post('activities/tareas/{taskId}/notificar', 'Admin\Globales\ActivityController@notificarTarea')->name('activities.tareas.notificar');
