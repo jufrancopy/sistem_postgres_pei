@@ -20,6 +20,7 @@ class RolesTableSeeder extends Seeder
             'Analista de Monitoreo PEI',
             'Analista - RIISS',
             'Analista de Bioestadística',
+            'Líder MECIP',
             'Participantes',
         ];
 

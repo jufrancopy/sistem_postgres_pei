@@ -31,6 +31,14 @@
           </a>
         </li>
 
+        {{-- ── Control & Sincronización MECIP IPS ── --}}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ route('admin.mecip.control.index') }}" title="⚡ Control de Cambios & Sincronización MECIP (IPS)">
+            <i class="material-icons text-warning" style="font-size: 22px;">account_tree</i>
+            <p class="d-lg-none mb-0">Control MECIP IPS</p>
+          </a>
+        </li>
+
         {{-- ── Manifiesto & Propósito SIPLAN ── --}}
         <li class="nav-item">
           <a class="nav-link" href="{{ route('siplan.manifesto') }}" target="_blank" title="El Manifiesto & Propósito Institucional de SIPLAN">
