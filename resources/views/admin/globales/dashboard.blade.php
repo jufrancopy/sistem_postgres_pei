@@ -610,14 +610,22 @@
                                 </h5>
                                 <small style="color: #cbd5e1 !important; font-weight: 500;">Reconocimiento a la excelencia, constancia y colaboración en la gestión del SIPLAN PEI</small>
                             </div>
-                            <div class="mt-2 mt-sm-0">
+                            <div class="d-flex align-items-center mt-2 mt-sm-0" style="gap: 10px;">
                                 <span class="badge badge-pill px-3 py-1.5 font-weight-bold" style="background: linear-gradient(135deg, #f59e0b, #d97706) !important; color: #ffffff !important; font-size: 0.78rem;">
-                                    <span class="spinner-grow spinner-grow-sm text-light mr-1" style="width: 8px; height: 8px;" role="status"></span> 🌟 RECONOCIMIENTO EN VIVO
+                                    <span class="spinner-grow spinner-grow-sm text-light mr-1" style="width: 8px; height: 8px;" role="status"></span> 🌟 TIRA EN VIVO
                                 </span>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-light border-secondary text-white font-weight-bold px-2.5 py-1" onclick="scrollTop10Ticker(-220)" title="Anterior">
+                                        <i class="fa fa-chevron-left"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-light border-secondary text-white font-weight-bold px-2.5 py-1" onclick="scrollTop10Ticker(220)" title="Siguiente">
+                                        <i class="fa fa-chevron-right"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="p-4" style="background: #0f172a !important;">
-                            <div class="d-flex flex-nowrap overflow-auto py-2" id="top10TickerContainer" style="gap: 14px; scrollbar-width: thin; scroll-behavior: auto;">
+                            <div class="d-flex flex-nowrap overflow-auto py-2" id="top10TickerContainer" style="gap: 14px; scrollbar-width: thin; scroll-behavior: smooth;">
                                 @foreach($top5RankingReconocimiento as $topIdx => $topUser)
                                     @php
                                         $medals = ['🥇', '🥈', '🥉', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️'];
@@ -4763,6 +4771,13 @@ window.generarTextoConIA = function() {
     }
     requestAnimationFrame(scrollStep);
 })();
+
+window.scrollTop10Ticker = function(offset) {
+    var container = document.getElementById('top10TickerContainer');
+    if (container) {
+        container.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+};
 
 window.abrirModalPremioCierreSemana = function(groupId, groupName) {
     $('#cierre_sem_group_id').val(groupId || '');
