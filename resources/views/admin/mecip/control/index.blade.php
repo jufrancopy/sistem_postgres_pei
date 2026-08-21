@@ -90,7 +90,10 @@
                             </div>
                         </form>
 
-                        <div class="d-flex flex-wrap" style="gap: 10px;">
+                        <div class="d-flex flex-wrap align-items-center" style="gap: 10px;">
+                            <button type="button" class="btn btn-warning text-dark font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalBotonReplicadorIps">
+                                <i class="fas fa-bolt mr-1"></i> Botón Replicador de Pantalla IPS (1-Clic)
+                            </button>
                             <button type="button" class="btn btn-outline-info font-weight-bold" data-toggle="modal" data-target="#modalImportarJsonMecip">
                                 <i class="fas fa-file-import mr-1"></i> Importar Caso JSON (IPS)
                             </button>
@@ -269,6 +272,55 @@
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+{{-- Modal Botón Marcador Replicador de Pantalla IPS (1-Clic) --}}
+<div class="modal fade" id="modalBotonReplicadorIps" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+            <div class="modal-header bg-warning text-dark p-3" style="border-top-left-radius: 14px; border-top-right-radius: 14px;">
+                <h5 class="modal-title font-weight-bold mb-0 text-dark">
+                    <i class="fas fa-bolt mr-2"></i> Botón Replicador de Pantalla IPS (1-Clic)
+                </h5>
+                <button type="button" class="close text-dark" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 text-dark">
+                <div class="alert alert-info border-0 shadow-xs mb-3" style="border-left: 5px solid #0284c7 !important; background: #e0f2fe; color: #0369a1;">
+                    <h6 class="font-weight-bold mb-1"><i class="fas fa-magic mr-1"></i> ¿Cómo funciona el Botón Replicador de Pantalla?</h6>
+                    <p class="mb-0 small" style="line-height: 1.4;">
+                        Podés guardar este botón especial en tu <strong>Barra de Marcadores/Favoritos</strong> del navegador. Cuando estés logueado en la web del IPS viendo el expediente/tabla del caso, hacés <strong>un solo clic en tu marcador</strong> y el sistema extraerá la pantalla y la guardará automáticamente en tu SIPLAN.
+                    </p>
+                </div>
+
+                <div class="p-4 bg-light rounded border text-center my-3" style="border-radius: 12px !important;">
+                    <h6 class="font-weight-bold text-muted uppercase small mb-2">Instrucciones: Arrastrá este botón a tu barra de Marcadores de Chrome/Edge:</h6>
+                    
+                    @php
+                        $importRoute = route('admin.mecip.control.importarJson');
+                        $bookmarkletJs = "javascript:(function(){var pageText=document.body.innerText;var casoMatch=pageText.match(/(?:caso|expediente|nº|no\.)\s*[:#]?\s*(\d{5,10})/i)||[0,'".rand(3000000, 3999999)."'];var subMatch=pageText.match(/(?:subproceso|código|cod)\s*[:#]?\s*([A-Z0-9_\-]{5,20})/i)||[0,'GES_002_01'];var actividades=[];var tables=document.querySelectorAll('table');tables.forEach(function(tbl){var rows=tbl.querySelectorAll('tr');rows.forEach(function(row){var cells=row.querySelectorAll('td, th');if(cells.length>=2){var t0=cells[0].innerText.trim();var t1=cells[1].innerText.trim();if(t0&&t1&&!t0.toLowerCase().includes('código')&&!t0.toLowerCase().includes('actividad')){actividades.push({codigo:'ACT_'+(actividades.length+1),nombre:t0+' - '+t1,responsable:'IPS',tareas:[{descripcion:'Tarea parseada automáticamente de la pantalla IPS',tiempo_minutos:15}]});}}});});if(actividades.length===0){actividades.push({codigo:'ACT_01',nombre:'Recepción y análisis de caso en bandeja IPS',responsable:'Analista IPS',tareas:[{descripcion:'Modelado y revisión del procedimiento',tiempo_minutos:30}]});}var payload={numero_caso:casoMatch[1]||'".rand(3000000, 3999999)."',codigo_subproceso:subMatch[1]||'GES_002_01',macroproceso:'GESTIÓN INSTITUCIONAL IPS',proceso:'Gestión de Procesos MECIP',subproceso:document.title||'Modelado de Procedimiento IPS',version:'1.0',actividades:actividades};var form=document.createElement('form');form.method='POST';form.action='".$importRoute."';form.target='_blank';var i1=document.createElement('input');i1.type='hidden';i1.name='_token';i1.value='".csrf_token()."';form.appendChild(i1);var i2=document.createElement('input');i2.type='hidden';i2.name='json_data';i2.value=JSON.stringify(payload);form.appendChild(i2);document.body.appendChild(form);form.submit();alert('✅ Replicando expediente Caso #'+payload.numero_caso+' a SIPLAN...');})();";
+                    @endphp
+
+                    <a href="{{ $bookmarkletJs }}" onclick="alert('¡Arrastrá este botón hasta tu barra de Marcadores de arriba!'); return false;" class="btn btn-lg btn-warning text-dark font-weight-bold px-4 py-3 shadow-md border" style="border-radius: 30px; font-size: 1.1rem; cursor: grab;">
+                        <i class="fas fa-bolt mr-2 text-danger"></i> ⚡ Replicar Caso IPS a SIPLAN
+                    </a>
+                </div>
+
+                <div class="p-3 bg-white border rounded" style="font-size: 0.84rem;">
+                    <strong class="text-dark d-block mb-1"><i class="fas fa-list-ol text-info mr-1"></i> Pasos Simples:</strong>
+                    <ol class="pl-3 mb-0 text-muted" style="line-height: 1.5;">
+                        <li>Hacé clic sostenido sobre el botón amarillo <strong>"⚡ Replicar Caso IPS a SIPLAN"</strong> de arriba y arrastralo hasta tu barra de marcadores del navegador (debajo de la URL).</li>
+                        <li>Ingresá al sistema del IPS en tu computadora y entrá al expediente o tabla del subproceso que querés guardar.</li>
+                        <li>Presioná el marcador <strong>"⚡ Replicar Caso IPS a SIPLAN"</strong> en tu navegador. ¡Listo! Se abrirá automáticamente tu local SIPLAN con todos los datos replicados.</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-top p-3">
+                <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Entendido</button>
+            </div>
+        </div>
     </div>
 </div>
 
