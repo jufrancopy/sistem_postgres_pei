@@ -235,21 +235,30 @@ class GlobalesController extends Controller
         $totalJuntasActivas = $juntasList->where('activo', true)->count();
         $totalIntervencionesJuntas = \App\Models\Planificacion\JuntaIntervencion::count();
 
-        // ── Top 5 Funcionarios Destacados por Puntos de Gamificación ─────────────
-        $top5PointsMap = \App\Models\Gamification\GamificationPoint::selectRaw('user_id, SUM(points) as total_points')
-            ->groupBy('user_id')
+        // ── Top 5 Funcionarios Destacados por Puntos de Gamificación (Filtrado por PEI Seleccionado y sin Admins) ──
+        $adminUserIds = User::role('Administrador')->pluck('id')->toArray();
+
+        $top5Query = \App\Models\Gamification\GamificationPoint::selectRaw('user_id, SUM(points) as total_points')
+            ->whereNotIn('user_id', $adminUserIds);
+
+        if ($selectedPei) {
+            $descendantPeiIds = $selectedPei->descendants()->pluck('id')->push($selectedPei->id)->toArray();
+            $top5Query->whereIn('pei_profile_id', $descendantPeiIds);
+        }
+
+        $top5PointsMap = $top5Query->groupBy('user_id')
             ->orderByDesc('total_points')
             ->limit(5)
             ->get();
 
         $top5UserIds = $top5PointsMap->pluck('user_id');
-        $top5Users = User::with('group')->whereIn('id', $top5UserIds)->get()->keyBy('id');
+        $top5Users   = User::with('group')->whereIn('id', $top5UserIds)->get()->keyBy('id');
 
         $top5RankingReconocimiento = $top5PointsMap->map(function($item, $idx) use ($top5Users) {
             $u = $top5Users->get($item->user_id);
             if (!$u) return null;
             $u->puntos_gamificacion = (int) $item->total_points;
-            $u->puesto_ranking = $idx + 1;
+            $u->puesto_ranking      = $idx + 1;
             return $u;
         })->filter()->values();
 
