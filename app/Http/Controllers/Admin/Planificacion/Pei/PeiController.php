@@ -291,8 +291,7 @@ class PeiController extends Controller
         $masterOnlyFields = ['group_id', 'dependency_id', 'nivel_label', 'bsc_perspectiva',
                              'foda_perfil_id', 'mision', 'vision', 'values', 'year_start', 'year_end'];
 
-        $existing = $profileId ? PeiProfile::where('id', $profileId)
-            ->first($masterOnlyFields) : null;
+        $existing = $profileId ? PeiProfile::find($profileId) : null;
 
         $resolve = fn(string $field, $requestValue) =>
             $request->has($field) ? ($requestValue ?: null) : ($existing?->$field ?? null);
@@ -307,32 +306,32 @@ class PeiController extends Controller
                 'vision'               => $resolve('vision', $request->vision),
                 'values'               => $resolve('values', $request->values),
                 'period'               => $request->period,
-                'numerator'            => $request->numerator,
-                'operator'             => $request->operator,
-                'denominator'          => $denominator,
-                'goal'                 => $request->goal,
-                'progress'             => $request->progress,
+                'numerator'            => $resolve('numerator', $request->numerator),
+                'operator'             => $resolve('operator', $request->operator),
+                'denominator'          => $request->has('denominator') ? $denominator : ($existing?->denominator ?? null),
+                'goal'                 => $resolve('goal', $request->goal),
+                'progress'             => $resolve('progress', $request->progress),
                 'group_id'             => $resolve('group_id', $request->group_id),
                 'dependency_id'        => $resolve('dependency_id', $request->dependency_id),
-                'action'               => $request->action,
-                'indicator'            => $request->indicator,
-                'baseline'             => $request->baseline,
-                'target'               => $request->target,
+                'action'               => $resolve('action', $request->action),
+                'indicator'            => $resolve('indicator', $request->indicator),
+                'baseline'             => $resolve('baseline', $request->baseline),
+                'target'               => $resolve('target', $request->target),
                 'user_id'              => $user->id,
-                'order_item'           => $request->order_item,
-                'report_type'          => $request->report_type,
+                'order_item'           => $resolve('order_item', $request->order_item),
+                'report_type'          => $resolve('report_type', $request->report_type),
                 'parameters'           => $parametersJson,
                 'nivel_label'          => $resolve('nivel_label', $request->nivel_label),
                 'foda_perfil_id'       => $resolve('foda_perfil_id', $request->foda_perfil_id),
                 'bsc_perspectiva'      => $resolve('bsc_perspectiva', $request->bsc_perspectiva),
-                'indicador_id'         => $request->indicador_id ?: null,
-                'junta_id'             => $request->junta_id ?: null,
-                'activity_id'          => $request->activity_id ?: null,
-                'resultado_intermedio' => $request->resultado_intermedio ?: null,
-                'ri_presupuestario'    => $request->ri_presupuestario ?: null,
-                'ri_programa'          => $request->ri_programa ?: null,
-                'ri_recursos_gs'       => $request->ri_recursos_gs ?: null,
-                'ri_metas'             => json_encode($request->input('ri_metas', [])),
+                'indicador_id'         => $resolve('indicador_id', $request->indicador_id),
+                'junta_id'             => $resolve('junta_id', $request->junta_id),
+                'activity_id'          => $resolve('activity_id', $request->activity_id),
+                'resultado_intermedio' => $resolve('resultado_intermedio', $request->resultado_intermedio),
+                'ri_presupuestario'    => $resolve('ri_presupuestario', $request->ri_presupuestario),
+                'ri_programa'          => $resolve('ri_programa', $request->ri_programa),
+                'ri_recursos_gs'       => $resolve('ri_recursos_gs', $request->ri_recursos_gs),
+                'ri_metas'             => $request->has('ri_metas') ? json_encode($request->input('ri_metas', [])) : ($existing?->ri_metas ?? null),
                 'creado_con_ia'        => $request->has('creado_con_ia') ? filter_var($request->creado_con_ia, FILTER_VALIDATE_BOOLEAN) : ($existing?->creado_con_ia ?? false),
         ];
 

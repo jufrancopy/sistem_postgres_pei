@@ -4842,6 +4842,25 @@ $(document).on('click', '#btnColapsarTodoTreePei', function() {
     $('#contenedorArbolDraggablePei .btn-toggle-pei-children i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
 });
 
+$(document).on('click', '#btnMinimizarAccionesTreePei', function() {
+    // 1. Desplegar los Ejes (Nivel 1), Objetivos Estratégicos y Objetivos Específicos (Nivel 2)
+    $('#contenedorArbolDraggablePei li[data-level="eje"] > .nodo-pei-children').slideDown(150);
+    $('#contenedorArbolDraggablePei li[data-level="objetivo"] > .nodo-pei-children').slideDown(150);
+    $('#contenedorArbolDraggablePei li[data-level="objetivo_especifico"] > .nodo-pei-children').slideDown(150);
+
+    // 2. Minimizar/Colapsar las Acciones Estratégicas (Nivel 3) y Acciones Operativas (Nivel 4)
+    $('#contenedorArbolDraggablePei li[data-level="accion_estrategica"] > .nodo-pei-children').slideUp(150);
+    $('#contenedorArbolDraggablePei li[data-level="accion_operativa"] > .nodo-pei-children').slideUp(150);
+
+    // 3. Ajustar los iconos de despliegue
+    $('#contenedorArbolDraggablePei li[data-level="eje"] > div .btn-toggle-pei-children i').removeClass('fa-chevron-right').addClass('fa-chevron-down');
+    $('#contenedorArbolDraggablePei li[data-level="objetivo"] > div .btn-toggle-pei-children i').removeClass('fa-chevron-right').addClass('fa-chevron-down');
+    $('#contenedorArbolDraggablePei li[data-level="objetivo_especifico"] > div .btn-toggle-pei-children i').removeClass('fa-chevron-right').addClass('fa-chevron-down');
+
+    $('#contenedorArbolDraggablePei li[data-level="accion_estrategica"] > div .btn-toggle-pei-children i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
+    $('#contenedorArbolDraggablePei li[data-level="accion_operativa"] > div .btn-toggle-pei-children i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
+});
+
 @php
     $descendantIds = $profile->descendants->pluck('id')->push($profile->id)->map(fn($v) => (string)$v)->toArray();
     $numericIds    = array_values(array_filter($descendantIds, 'is_numeric'));
