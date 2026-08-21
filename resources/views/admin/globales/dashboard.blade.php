@@ -612,12 +612,12 @@
                             </div>
                             <div class="mt-2 mt-sm-0">
                                 <span class="badge badge-pill px-3 py-1.5 font-weight-bold" style="background: linear-gradient(135deg, #f59e0b, #d97706) !important; color: #ffffff !important; font-size: 0.78rem;">
-                                    🌟 Reconocimiento Institucional IPS
+                                    <span class="spinner-grow spinner-grow-sm text-light mr-1" style="width: 8px; height: 8px;" role="status"></span> 🌟 RECONOCIMIENTO EN VIVO
                                 </span>
                             </div>
                         </div>
                         <div class="p-4" style="background: #0f172a !important;">
-                            <div class="d-flex flex-nowrap overflow-auto py-2" style="gap: 14px; scrollbar-width: thin;">
+                            <div class="d-flex flex-nowrap overflow-auto py-2" id="top10TickerContainer" style="gap: 14px; scrollbar-width: thin; scroll-behavior: auto;">
                                 @foreach($top5RankingReconocimiento as $topIdx => $topUser)
                                     @php
                                         $medals = ['🥇', '🥈', '🥉', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️'];
@@ -4737,6 +4737,32 @@ window.generarTextoConIA = function() {
 
     toastr.success('Redacción motivacional generada con éxito.', '🤖 Redactor IA Generativo');
 };
+
+// ── AUTOSCROLL CONTINUO INFINITO TICKER EN VIVO PARA TOP 10 ──
+(function initTop10AutoScroll() {
+    var container = document.getElementById('top10TickerContainer');
+    if (!container) return;
+
+    var speed = 0.6; // velocidad suave en px por frame
+    var isPaused = false;
+
+    container.addEventListener('mouseenter', function() { isPaused = true; });
+    container.addEventListener('mouseleave', function() { isPaused = false; });
+    container.addEventListener('touchstart', function() { isPaused = true; }, { passive: true });
+    container.addEventListener('touchend', function() { isPaused = false; }, { passive: true });
+
+    function scrollStep() {
+        if (!isPaused && container) {
+            container.scrollLeft += speed;
+            // Si llega al final del scroll horizontal, reiniciar suavemente al inicio
+            if (container.scrollLeft >= (container.scrollWidth - container.clientWidth - 2)) {
+                container.scrollLeft = 0;
+            }
+        }
+        requestAnimationFrame(scrollStep);
+    }
+    requestAnimationFrame(scrollStep);
+})();
 
 window.abrirModalPremioCierreSemana = function(groupId, groupName) {
     $('#cierre_sem_group_id').val(groupId || '');
