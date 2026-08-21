@@ -4678,12 +4678,15 @@ window.guardarNuevoUsuarioInline = function() {
             </div>
             <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between flex-wrap">
                 <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Cerrar</button>
-                <div class="d-flex" style="gap: 8px;">
-                    <button type="button" class="btn font-weight-bold text-white px-3 shadow-sm" id="btnDescargarFichaPNG" style="background: #0284c7; border: none;">
-                        <i class="fa fa-download mr-1"></i> 📥 DESCARGAR IMAGEN (PNG)
+                <div class="d-flex flex-wrap" style="gap: 8px;">
+                    <button type="button" class="btn font-weight-bold text-white px-3 shadow-sm" id="btnCopiarFichaClipboard" style="background: #8b5cf6; border: none;" title="Copiar directamente al portapapeles para pegar con Ctrl+V en WhatsApp">
+                        <i class="fa fa-copy mr-1"></i> 📋 COPIAR IMAGEN (Ctrl+V en WhatsApp)
                     </button>
-                    <button type="button" class="btn font-weight-bold text-white px-4 shadow-sm" id="btnCompartirWhatsAppDirecto" style="background: #25D366; border: none;">
-                        <i class="fab fa-whatsapp mr-1"></i> 📲 COMPARTIR EN WHATSAPP
+                    <button type="button" class="btn font-weight-bold text-white px-3 shadow-sm" id="btnDescargarFichaPNG" style="background: #0284c7; border: none;">
+                        <i class="fa fa-download mr-1"></i> 📥 DESCARGAR FOTO (JPG HD)
+                    </button>
+                    <button type="button" class="btn font-weight-bold text-white px-3 shadow-sm" id="btnCompartirWhatsAppDirecto" style="background: #25D366; border: none;">
+                        <i class="fab fa-whatsapp mr-1"></i> 📲 TEXTO A WHATSAPP
                     </button>
                 </div>
             </div>
@@ -4796,23 +4799,67 @@ window.generarFichaWhatsApp = function(name, group, points, rank) {
     $('#modalFichaReconocimientoWhatsApp').modal('show');
 };
 
-$('#btnDescargarFichaPNG').on('click', function() {
+// ── COPIAR IMAGEN DIRECTAMENTE AL PORTAPAPELES (Ctrl+V en WhatsApp) ──
+$('#btnCopiarFichaClipboard').on('click', function() {
     var $btn = $(this);
-    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Generando PNG...');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Copiando Imagen...');
 
     var element = document.getElementById('fichaReconocimientoCardContainer');
     html2canvas(element, {
         scale: 2,
         useCORS: true,
-        backgroundColor: null
+        backgroundColor: '#0f172a'
     }).then(function(canvas) {
-        $btn.prop('disabled', false).html('<i class="fa fa-download mr-1"></i> 📥 DESCARGAR IMAGEN (PNG)');
+        canvas.toBlob(function(blob) {
+            if (navigator.clipboard && window.ClipboardItem) {
+                navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]).then(function() {
+                    $btn.prop('disabled', false).html('<i class="fa fa-check mr-1"></i> 📋 ¡COPIADO! Pegar con Ctrl+V');
+                    toastr.success('¡Imagen copiada al portapapeles! Abrí WhatsApp Web y presioná Ctrl + V (o Cmd + V) para pegar como foto.', '📋 Lista para WhatsApp');
+                    setTimeout(function() {
+                        $btn.html('<i class="fa fa-copy mr-1"></i> 📋 COPIAR IMAGEN (Ctrl+V en WhatsApp)');
+                    }, 4000);
+                }).catch(function(err) {
+                    descargarFichaFallback(canvas, $btn);
+                });
+            } else {
+                descargarFichaFallback(canvas, $btn);
+            }
+        }, 'image/png');
+    }).catch(function(err) {
+        $btn.prop('disabled', false).html('<i class="fa fa-copy mr-1"></i> 📋 COPIAR IMAGEN (Ctrl+V en WhatsApp)');
+        toastr.error('Error al generar la imagen.');
+    });
+});
+
+function descargarFichaFallback(canvas, $btn) {
+    $btn.prop('disabled', false).html('<i class="fa fa-copy mr-1"></i> 📋 COPIAR IMAGEN (Ctrl+V en WhatsApp)');
+    var link = document.createElement('a');
+    link.download = 'reconocimiento_' + (currentFichaData.name || 'funcionario').replace(/\s+/g, '_') + '.jpg';
+    link.href = canvas.toDataURL('image/jpeg', 0.95);
+    link.click();
+    toastr.info('Imagen descargada en formato JPG HD. Adjuntala como Foto en WhatsApp Web.', '📥 Descargada');
+}
+
+// ── DESCARGAR FOTO JPG HD CON FONDO SOLIDO ──
+$('#btnDescargarFichaPNG').on('click', function() {
+    var $btn = $(this);
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Generando Foto...');
+
+    var element = document.getElementById('fichaReconocimientoCardContainer');
+    html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#0f172a'
+    }).then(function(canvas) {
+        $btn.prop('disabled', false).html('<i class="fa fa-download mr-1"></i> 📥 DESCARGAR FOTO (JPG HD)');
         var link = document.createElement('a');
-        link.download = 'reconocimiento_' + (currentFichaData.name || 'funcionario').replace(/\s+/g, '_') + '.png';
-        link.href = canvas.toDataURL('image/png');
+        link.download = 'reconocimiento_' + (currentFichaData.name || 'funcionario').replace(/\s+/g, '_') + '.jpg';
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
         link.click();
     }).catch(function(err) {
-        $btn.prop('disabled', false).html('<i class="fa fa-download mr-1"></i> 📥 DESCARGAR IMAGEN (PNG)');
+        $btn.prop('disabled', false).html('<i class="fa fa-download mr-1"></i> 📥 DESCARGAR FOTO (JPG HD)');
         toastr.error('No se pudo generar la imagen. Intente nuevamente.');
     });
 });
