@@ -4623,10 +4623,10 @@ window.guardarNuevoUsuarioInline = function() {
                         $sysLogoUrl = !empty($sysLogoRaw) ? (str_starts_with($sysLogoRaw, 'http') ? $sysLogoRaw : asset($sysLogoRaw)) : asset('material/img/new_logo.png');
                     @endphp
 
-                    {{-- Sello e Isologo Institucional SIPLAN PEI Superior --}}
-                    <div class="d-flex align-items-center justify-content-start mb-3 border-bottom pb-2" style="border-color: rgba(255,255,255,0.15) !important; gap: 12px;">
-                        <img src="{{ $sysLogoUrl }}" alt="Logo SIPLAN" style="max-height: 42px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));">
-                        <span class="badge px-3 py-1.5 font-weight-bold text-left" style="background: rgba(255,255,255,0.1); color: #7dd3fc; border: 1px solid rgba(125,211,252,0.3); font-size: 0.75rem; letter-spacing: 0.5px;">
+                    {{-- Sello e Isologo Institucional SIPLAN PEI Superior Centrado --}}
+                    <div class="d-flex flex-column align-items-center justify-content-center mb-3 border-bottom pb-3" style="border-color: rgba(255,255,255,0.15) !important;">
+                        <img src="{{ $sysLogoUrl }}" alt="Logo SIPLAN" style="max-height: 58px; width: auto; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4)); margin-bottom: 8px;">
+                        <span class="badge px-3.5 py-1.5 font-weight-bold text-center" style="background: rgba(255,255,255,0.1); color: #7dd3fc; border: 1px solid rgba(125,211,252,0.35); font-size: 0.78rem; letter-spacing: 0.8px;">
                             🛡️ INSTITUTO DE PREVISIÓN SOCIAL (IPS)
                         </span>
                     </div>
