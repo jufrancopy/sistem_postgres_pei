@@ -191,6 +191,9 @@
                                                 <div>
                                                     <strong class="text-dark d-block" style="line-height:1.2; font-size:0.84rem;">{{ $tk->user->name ?? 'Usuario Desconocido' }}</strong>
                                                     <small class="text-muted d-block" style="font-size:0.73rem;">{{ $tk->user->email ?? '-' }}</small>
+                                                    <span class="badge badge-info text-white font-weight-bold mt-1 shadow-xs" style="font-size: 0.65rem; border-radius: 4px; background-color: #0284c7 !important;">
+                                                        <i class="fa fa-user-shield mr-1"></i>{{ $tk->user?->roles->pluck('name')->implode(', ') ?: 'Sin Rol Asignado' }}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </td>
@@ -239,6 +242,7 @@
                                                     data-descripcion="{{ e($tk->descripcion) }}"
                                                     data-user-name="{{ e($tk->user->name ?? 'Usuario') }}"
                                                     data-user-email="{{ e($tk->user->email ?? '') }}"
+                                                    data-user-roles="{{ e($tk->user?->roles->pluck('name')->implode(', ') ?: 'Sin Rol Asignado') }}"
                                                     data-url="{{ e($tk->url_origen) }}"
                                                     title="Copiar prompt listo para pegar en el chat de Antigravity AI">
                                                 <i class="fa fa-robot mr-1"></i> Prompt IA
@@ -252,6 +256,7 @@
                                                     data-descripcion="{{ e($tk->descripcion) }}"
                                                     data-user-name="{{ e($tk->user->name ?? 'Usuario') }}"
                                                     data-user-email="{{ e($tk->user->email ?? '') }}"
+                                                    data-user-roles="{{ e($tk->user?->roles->pluck('name')->implode(', ') ?: 'Sin Rol Asignado') }}"
                                                     data-estado="{{ $tk->estado }}"
                                                     data-url="{{ e($tk->url_origen) }}"
                                                     data-respuesta="{{ e($tk->respuesta_admin) }}"
@@ -608,17 +613,19 @@ function limpiarCheckmarksIa() {
 }
 
 function construirPromptIaUnico(t) {
+    var userRolesText = t.userRoles || 'Sin Rol Asignado';
     return `<USER_REQUEST>\n` +
            `Por favor ayuda a resolver la siguiente falla reportada por un usuario en el sistema SIPLAN PEI:\n\n` +
            `- **Código Ticket**: ${t.codigo}\n` +
            `- **Prioridad**: ${t.prioridad}\n` +
            `- **Fecha**: ${t.fecha}\n` +
            `- **Usuario que Reportó**: ${t.userName} (${t.userEmail})\n` +
+           `- **Rol del Usuario en Sistema**: ${userRolesText}\n` +
            `- **Falla / Asunto**: ${t.titulo}\n` +
            `- **Detalle del Inconveniente**: ${t.descripcion}\n` +
            `- **Ruta / Pantalla de la Falla**: ${t.url || 'No especificada'}\n\n` +
            `**Instrucción para Antigravity AI**:\n` +
-           `Analizá el código fuente del proyecto asociado a esta ruta (${t.url || t.titulo}). Identificá la causa raíz del error ("${t.titulo} - ${t.descripcion}") y realizá las modificaciones de código necesarias en controladores, modelos o vistas para corregir esta falla.\n` +
+           `Analizá el código fuente del proyecto asociado a esta ruta (${t.url || t.titulo}). Tomá en cuenta que la falla fue reportada por un usuario con el rol "${userRolesText}". Identificá la causa raíz del error ("${t.titulo} - ${t.descripcion}") y realizá las modificaciones de código necesarias en controladores, permisos de rol, middleware, modelos o vistas para corregir esta falla.\n` +
            `</USER_REQUEST>`;
 }
 
@@ -657,6 +664,7 @@ function copiarPromptLotePendientesIa() {
             descripcion: $btn.data('descripcion'),
             userName: $btn.data('user-name'),
             userEmail: $btn.data('user-email'),
+            userRoles: $btn.data('user-roles'),
             url: $btn.data('url')
         });
         marcarTicketComoCopiado(cod);
@@ -675,12 +683,13 @@ function copiarPromptLotePendientesIa() {
         text += `---\n### ${idx + 1}. [${t.codigo}] ${t.titulo}\n` +
                 `- **Prioridad**: ${t.prioridad} | **Fecha**: ${t.fecha}\n` +
                 `- **Usuario**: ${t.userName} (${t.userEmail})\n` +
+                `- **Rol del Usuario en Sistema**: ${t.userRoles || 'Sin Rol Asignado'}\n` +
                 `- **Ruta Afectada**: ${t.url || 'No especificada'}\n` +
                 `- **Detalle**: ${t.descripcion}\n\n`;
     });
 
     text += `**Instrucción para Antigravity AI**:\n` +
-            `Revisá el código del proyecto para cada una de las fallas descritas arriba, diagnosticá la causa raíz de cada inconveniente y aplicá los cambios necesarios en el repositorio para solucionar todos los reportes.\n` +
+            `Revisá el código del proyecto para cada una de las fallas descritas arriba considerando los roles de usuario indicados, diagnosticá la causa raíz de cada inconveniente y aplicá los cambios necesarios en el repositorio para solucionar todos los reportes.\n` +
             `</USER_REQUEST>`;
 
     mostrarPromptIaModal(text, 'Prompt Lote (' + tickets.length + ' Tickets para Antigravity)');

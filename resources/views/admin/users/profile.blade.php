@@ -190,6 +190,15 @@
                             </div>
                         </div>
 
+                        <div class="form-group row">
+                            <label class="col-md-4 col-form-label text-md-right font-weight-bold small text-dark">Rol(es) en el Sistema:</label>
+                            <div class="col-md-7 d-flex align-items-center">
+                                <span class="badge badge-info py-1.5 px-3 font-weight-bold text-white shadow-xs" style="font-size: .82rem; background-color: #00acc1 !important; border-radius: 6px;">
+                                    <i class="fa fa-user-shield mr-1.5"></i> {{ $targetUser->roles->pluck('name')->implode(', ') ?: 'Sin Rol Asignado' }}
+                                </span>
+                            </div>
+                        </div>
+
                         <div class="form-group row mb-0">
                             <div class="col-md-7 offset-md-4">
                                 <button type="submit" class="btn btn-info font-weight-bold" style="background-color: #00acc1 !important; border-color: #00acc1 !important; text-transform: none;">

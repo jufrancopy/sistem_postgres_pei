@@ -91,7 +91,7 @@ class SoporteTicketController extends Controller
      */
     public function index(Request $request)
     {
-        $query = SoporteTicket::with(['user', 'resolver', 'peiProfile'])->latest();
+        $query = SoporteTicket::with(['user.roles', 'resolver', 'peiProfile'])->latest();
 
         if ($request->filled('estado')) {
             $query->where('estado', $request->estado);
