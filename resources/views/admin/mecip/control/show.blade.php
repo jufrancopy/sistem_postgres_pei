@@ -560,6 +560,64 @@ function abrirModalAgregarTarea(actividadId, nombreActividad) {
     document.getElementById('titleAgregarTarea').innerHTML = '<i class="fas fa-tasks mr-2"></i> Agregar Tarea a: ' + nombreActividad;
     $('#modalAgregarTarea').modal('show');
 }
+
+$('#formAgregarTarea').on('submit', function(e) {
+    e.preventDefault();
+    var actionUrl = $(this).attr('action');
+    var $btn = $(this).find('button[type="submit"]');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
+
+    $.ajax({
+        url: actionUrl,
+        type: 'POST',
+        data: $(this).serialize(),
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(res) {
+            $btn.prop('disabled', false).html('Guardar Tarea');
+            $('#modalAgregarTarea').modal('hide');
+            toastr.success('Tarea agregada exitosamente al expediente.');
+            setTimeout(function() {
+                location.reload();
+            }, 800);
+        },
+        error: function(err) {
+            $btn.prop('disabled', false).html('Guardar Tarea');
+            var msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Error al guardar la tarea.';
+            toastr.error(msg);
+        }
+    });
+});
+
+$('#modalAgregarActividad form').on('submit', function(e) {
+    e.preventDefault();
+    var actionUrl = $(this).attr('action');
+    var $btn = $(this).find('button[type="submit"]');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Agregando...');
+
+    $.ajax({
+        url: actionUrl,
+        type: 'POST',
+        data: $(this).serialize(),
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(res) {
+            $btn.prop('disabled', false).html('Agregar Actividad');
+            $('#modalAgregarActividad').modal('hide');
+            toastr.success('Actividad agregada al diagrama de procesos.');
+            setTimeout(function() {
+                location.reload();
+            }, 800);
+        },
+        error: function(err) {
+            $btn.prop('disabled', false).html('Agregar Actividad');
+            var msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Error al agregar la actividad.';
+            toastr.error(msg);
+        }
+    });
+});
 </script>
 @endpush
 @endsection
