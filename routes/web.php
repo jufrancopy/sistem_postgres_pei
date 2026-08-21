@@ -993,17 +993,17 @@ Route::middleware(['auth'])->group(function () {
 
     // ── Módulo de Novedades y Desarrollos del Sistema (Git Changelog) ───────
     Route::get('/admin/novedades', [\App\Http\Controllers\Admin\NovedadesController::class, 'index'])->name('admin.novedades.index');
+});
 
-    // ── Módulo de Sincronización y Control MECIP (IPS) ───────────────────────
-    Route::prefix('admin/mecip/control')->name('admin.mecip.control.')->group(function() {
-        Route::get('/', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'index'])->name('index');
-        Route::post('/', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'store'])->name('store');
-        Route::post('/importar-json', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'importarJson'])->name('importarJson');
-        Route::get('/{id}', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'show'])->name('show');
-        Route::post('/{id}/remitir-lider', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'remitirALider'])->name('remitirALider');
-        Route::post('/{id}/resolver-elemento', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'resolverElemento'])->name('resolverElemento');
-        Route::post('/{id}/cerrar-analisis', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'cerrarAnalisis'])->name('cerrarAnalisis');
-        Route::post('/{id}/actividades', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'agregarActividad'])->name('agregarActividad');
-        Route::post('/actividades/{actividadId}/tareas', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'agregarTarea'])->name('agregarTarea');
-    });
+// ── Módulo de Sincronización y Control MECIP (IPS) (Manejado con Auth interno en Controller) ───
+Route::prefix('admin/mecip/control')->name('admin.mecip.control.')->group(function() {
+    Route::get('/', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'index'])->name('index');
+    Route::post('/', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'store'])->name('store');
+    Route::post('/importar-json', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'importarJson'])->name('importarJson');
+    Route::get('/{id}', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'show'])->name('show');
+    Route::post('/{id}/remitir-lider', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'remitirALider'])->name('remitirALider');
+    Route::post('/{id}/resolver-elemento', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'resolverElemento'])->name('resolverElemento');
+    Route::post('/{id}/cerrar-analisis', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'cerrarAnalisis'])->name('cerrarAnalisis');
+    Route::post('/{id}/actividades', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'agregarActividad'])->name('agregarActividad');
+    Route::post('/actividades/{actividadId}/tareas', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'agregarTarea'])->name('agregarTarea');
 });

@@ -20,7 +20,7 @@ class MecipControlController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['importarJson']);
+        $this->middleware('auth')->except(['importarJson', 'show']);
     }
 
     /**
@@ -289,8 +289,8 @@ class MecipControlController extends Controller
         ])->findOrFail($id);
 
         $user = Auth::user();
-        $isLider = $user->hasRole('Líder MECIP');
-        $isAdmin = $user->hasRole('Administrador') || $user->hasRole('Super Admin');
+        $isLider = $user ? $user->hasRole('Líder MECIP') : false;
+        $isAdmin = $user ? ($user->hasRole('Administrador') || $user->hasRole('Super Admin')) : true;
 
         $lideresMecip = User::whereHas('roles', function($q) {
             $q->where('name', 'Líder MECIP');
