@@ -249,12 +249,12 @@
                        title="Agregar {{ $niveles['goal'] ?? 'Meta' }}">
                         <i class="fa fa-plus" style="font-size:.75rem"></i>
                     </a>
-                    @role('Administrador')
+                    @if(auth()->check() && (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Gestor de Actividades') || auth()->user()->hasRole('Coordinador de Planificación') || auth()->user()->hasRole('Analista de Planificación') || auth()->user()->hasRole('Analista PEI') || auth()->user()->hasRole('Líder MECIP') || auth()->user()->hasRole('Analista') || auth()->user()->hasRole('Colaborador de Actividades')))
                     <a class="btn btn-sm btn-danger py-0 px-2 deleteItem" data-id="{{ $axi->id }}"
-                       href="javascript:void(0)" id="deleteProfile" title="Eliminar">
+                       href="javascript:void(0)" id="deleteProfile" title="Enviar a la Papelera">
                         <i class="fa fa-trash" style="font-size:.75rem"></i>
                     </a>
-                    @endrole
+                    @endif
                 </div>
                 {{-- Editores del Objetivo --}}
                 @php $uniqueEditorsAxi = $axi->edits->pluck('user')->filter()->unique('id'); @endphp
@@ -434,13 +434,13 @@
                                      <i class="fa fa-robot text-warning mr-1"></i> + Acción IA
                                  </button>
                                  @endif
-                                 @role('Administrador')
+                                 @if(auth()->check() && (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Gestor de Actividades') || auth()->user()->hasRole('Coordinador de Planificación') || auth()->user()->hasRole('Analista de Planificación') || auth()->user()->hasRole('Analista PEI') || auth()->user()->hasRole('Líder MECIP') || auth()->user()->hasRole('Analista') || auth()->user()->hasRole('Colaborador de Actividades')))
                                  <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
                                     data-id="{{ $goal->id }}" href="javascript:void(0)"
                                     id="deleteProfile" title="Eliminar">
                                      <i class="fa fa-trash" style="font-size:.7rem"></i>
                                  </a>
-                                 @endrole
+                                 @endif
                              </div>
                              {{-- Editores de la Meta --}}
                              @php $uniqueEditorsGoal = $goal->edits->pluck('user')->filter()->unique('id'); @endphp
@@ -556,14 +556,13 @@
                                                                 style="font-size:.7rem">
                                                             <i class="fa fa-paper-plane"></i>
                                                         </button>
-                                                        @role('Administrador')
-                                                        <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
-                                                           data-id="{{ $action->id }}"
-                                                           href="javascript:void(0)"
-                                                           title="Enviar a la Papelera">
-                                                            <i class="fa fa-trash" style="font-size:.7rem"></i>
-                                                        </a>
-                                                        @endrole
+                                                        @if(auth()->check() && (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Gestor de Actividades') || auth()->user()->hasRole('Coordinador de Planificación') || auth()->user()->hasRole('Analista de Planificación') || auth()->user()->hasRole('Analista PEI') || auth()->user()->hasRole('Líder MECIP') || auth()->user()->hasRole('Analista') || auth()->user()->hasRole('Colaborador de Actividades')))
+                                                          <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
+                                                             data-id="{{ $action->id }}" href="javascript:void(0)"
+                                                             id="deleteProfile" title="Enviar a la Papelera">
+                                                              <i class="fa fa-trash" style="font-size:.7rem"></i>
+                                                          </a>
+                                                        @endif
                                                         @php
                                                             $comentariosAction = isset($comentariosAsesoria) ? (
                                                                 $comentariosAsesoria->get('node_' . $action->id)
