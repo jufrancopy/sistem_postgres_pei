@@ -18,13 +18,27 @@ class MecipBpmScraperService
     protected string $username;
     protected string $password;
     protected ?string $jsessionId = null;
+    protected \GuzzleHttp\Cookie\CookieJar $cookieJar;
 
     public function __construct(?string $baseUrl = null, ?string $username = null, ?string $password = null)
     {
         $defaultUrl = env('MECIP_BPM_BASE_URL', 'https://servicios.ips.gov.py/ips/servlet/WSNavigatorPlus');
-        $this->baseUrl  = rtrim($baseUrl ?? config('services.mecip_bpm.base_url', $defaultUrl), '/');
-        $this->username = $username ?? config('services.mecip_bpm.user', env('MECIP_BPM_USER', ''));
-        $this->password = $password ?? config('services.mecip_bpm.password', env('MECIP_BPM_PASSWORD', ''));
+        $this->baseUrl   = rtrim($baseUrl ?? config('services.mecip_bpm.base_url', $defaultUrl), '/');
+        $this->username  = $username ?? config('services.mecip_bpm.user', env('MECIP_BPM_USER', ''));
+        $this->password  = $password ?? config('services.mecip_bpm.password', env('MECIP_BPM_PASSWORD', ''));
+        $this->cookieJar = new \GuzzleHttp\Cookie\CookieJar();
+    }
+
+    /**
+     * Escribe logs de forma segura sin fallar por permisos de archivo
+     */
+    protected function safeLog(string $level, string $message): void
+    {
+        try {
+            Log::$level($message);
+        } catch (\Throwable $e) {
+            // Silencioso en caso de permisos de archivo en storage/logs/
+        }
     }
 
     /**
@@ -33,7 +47,7 @@ class MecipBpmScraperService
     public function authenticate(): bool
     {
         if (empty($this->username) || empty($this->password)) {
-            Log::warning('[MECIP Scraper] No se configuraron credenciales institucionales para BPM.');
+            $this->safeLog('warning', '[MECIP Scraper] No se configuraron credenciales institucionales para BPM.');
             return false;
         }
 
@@ -44,7 +58,7 @@ class MecipBpmScraperService
             }
 
             // Petición GET previa para obtener la página y cualquier token o cookie inicial
-            $initialReq = Http::withOptions(['cookies' => true, 'verify' => false, 'timeout' => 15])->get($loginUrl);
+            $initialReq = Http::withOptions(['cookies' => $this->cookieJar, 'verify' => false, 'timeout' => 15])->get($loginUrl);
             $initialHtml = $initialReq->body();
 
             // Extraer _FORM_SERIAL dinámico si está presente en el formulario
@@ -56,7 +70,7 @@ class MecipBpmScraperService
             // Petición POST autenticada al Servlet Cytera NavigatorPlus del IPS
             $response = Http::asForm()
                 ->withOptions([
-                    'cookies' => true,
+                    'cookies' => $this->cookieJar,
                     'verify'  => false,
                     'allow_redirects' => true,
                     'timeout' => 20,
@@ -82,20 +96,20 @@ class MecipBpmScraperService
 
                 if ($jsessionCookie) {
                     $this->jsessionId = $jsessionCookie->getValue();
-                    Log::info("[MECIP Scraper] Sesión BPM iniciada exitosamente. JSESSIONID: {$this->jsessionId}");
+                    $this->safeLog('info', "[MECIP Scraper] Sesión BPM iniciada exitosamente. JSESSIONID: {$this->jsessionId}");
                     return true;
                 }
 
                 if (str_contains($response->body(), 'JSESSIONID') || str_contains($response->body(), 'm_process_id') || str_contains($response->body(), 'Bienvenido') || str_contains($response->body(), 'Gobernanza')) {
-                    Log::info("[MECIP Scraper] Autenticación BPM confirmada en cuerpo HTML de Cytera.");
+                    $this->safeLog('info', "[MECIP Scraper] Autenticación BPM confirmada en cuerpo HTML de Cytera.");
                     return true;
                 }
             }
 
-            Log::error("[MECIP Scraper] Error al autenticar en BPM Servlets: Status " . $response->status());
+            $this->safeLog('error', "[MECIP Scraper] Error al autenticar en BPM Servlets: Status " . $response->status());
             return false;
         } catch (\Throwable $e) {
-            Log::error("[MECIP Scraper] Excepción durante autenticación BPM: " . $e->getMessage());
+            $this->safeLog('error', "[MECIP Scraper] Excepción durante autenticación BPM: " . $e->getMessage());
             return false;
         }
     }
@@ -106,15 +120,15 @@ class MecipBpmScraperService
     public function scrapeProcess(string $processId, ?string $numeroCaso = null): ?MecipCaso
     {
         if (!$this->jsessionId && !$this->authenticate()) {
-            Log::info("[MECIP Scraper] Modo fallback sin sesión remota previa (Parseando HTML directo si se provee).");
+            $this->safeLog('info', "[MECIP Scraper] Modo fallback sin sesión remota previa (Parseando HTML directo si se provee).");
         }
 
         try {
-            $targetUrl = "{$this->baseUrl}/WSNavigatorPlus";
+            $targetUrl = str_contains($this->baseUrl, 'WSNavigatorPlus') ? $this->baseUrl : "{$this->baseUrl}/WSNavigatorPlus";
 
             $response = Http::asForm()
                 ->withOptions([
-                    'cookies' => true,
+                    'cookies' => $this->cookieJar,
                     'verify'  => false,
                     'timeout' => 30,
                 ])
@@ -129,10 +143,10 @@ class MecipBpmScraperService
                 return $this->parseAndSyncHtml($html, $numeroCaso ?? "CASO-BPM-{$processId}", $processId);
             }
 
-            Log::error("[MECIP Scraper] Petición a m_process_id={$processId} retornó estatus " . $response->status());
+            $this->safeLog('error', "[MECIP Scraper] Petición a m_process_id={$processId} retornó estatus " . $response->status());
             return null;
         } catch (\Throwable $e) {
-            Log::error("[MECIP Scraper] Excepción al extraer proceso {$processId}: " . $e->getMessage());
+            $this->safeLog('error', "[MECIP Scraper] Excepción al extraer proceso {$processId}: " . $e->getMessage());
             return null;
         }
     }
