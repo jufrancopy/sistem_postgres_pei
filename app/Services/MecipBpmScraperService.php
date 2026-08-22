@@ -188,7 +188,7 @@ class MecipBpmScraperService
             return null;
         } catch (\Throwable $e) {
             $this->safeLog('error', "[MECIP Scraper] Excepción al extraer proceso {$processId}: " . $e->getMessage());
-            return null;
+            throw $e;
         }
     }
 
@@ -251,7 +251,7 @@ class MecipBpmScraperService
                     'fecha_elaboracion'    => now(),
                     'responsable_analisis' => $responsableAnalisis,
                     'automatico_flag'      => true,
-                    'estado_flujo'         => 'en_analisis',
+                    'estado_flujo'         => 'borrador',
                 ]
             );
 
@@ -297,10 +297,15 @@ class MecipBpmScraperService
                 }
             }
 
-            // Registrar Auditoría de Cambio
+            // Registrar Auditoría de Cambio (Obteniendo un user_id válido existente en BD)
+            $firstUser = \App\Models\User::first();
+            $userId = auth()->id() ?? ($firstUser ? $firstUser->id : null);
+
             MecipCasoCambio::create([
                 'mecip_caso_id'    => $caso->id,
-                'user_id'          => auth()->id() ?? 1,
+                'user_id'          => $userId,
+                'estado_anterior'  => 'borrador',
+                'estado_nuevo'     => 'borrador',
                 'tipo_cambio'      => 'SINCRONIZACION_SCRAPING_BPM',
                 'resumen_cambio'   => "Sincronización automática mediante cliente HTTP/Scraping BPM (m_process_id: {$processId}).",
                 'detalles_json'    => json_encode(['process_id' => $processId, 'productos_count' => count($productos), 'insumos_count' => count($insumos)]),
@@ -309,7 +314,7 @@ class MecipBpmScraperService
             DB::commit();
 
             // Transmitir Evento en Vivo
-            event(new MecipNotificacionEvent($caso, 'SINCRONIZACION_BPM', "Caso {$caso->numero_caso} sincronizado exitosamente desde el BPM IPS."));
+            event(new MecipNotificacionEvent((int)$caso->id, $caso->numero_caso, $caso->subproceso, "Caso {$caso->numero_caso} sincronizado exitosamente desde el BPM IPS.", 'SINCRONIZACION_BPM'));
 
             Log::info("[MECIP Scraper] Caso {$caso->numero_caso} sincronizado exitosamente en BD local (ID: {$caso->id}).");
             return $caso;

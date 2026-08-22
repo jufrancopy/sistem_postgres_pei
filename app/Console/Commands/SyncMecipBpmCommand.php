@@ -58,24 +58,30 @@ class SyncMecipBpmCommand extends Command
         }
 
         $this->info("🔍 Navegando a m_process_id={$processId} y parseando tablas HTML...");
-        $caso = $scraper->scrapeProcess($processId, $numeroCaso);
+        try {
+            $caso = $scraper->scrapeProcess($processId, $numeroCaso);
 
-        if ($caso) {
-            $this->info("==========================================================");
-            $this->info("🎉 ¡ÉXITO! Caso sincronizado correctamente en PostgreSQL:");
-            $this->line("  ID Local: {$caso->id}");
-            $this->line("  Número de Caso: {$caso->numero_caso}");
-            $this->line("  Código Subproceso: {$caso->codigo_subproceso}");
-            $this->line("  Macroproceso: {$caso->macroproceso}");
-            $this->line("  Proceso: {$caso->proceso}");
-            $this->line("  Subproceso: {$caso->subproceso}");
-            $this->line("  Componentes Sincronizados: " . $caso->componentes()->count());
-            $this->line("  Actividades Sincronizadas: " . $caso->actividades()->count());
-            $this->info("==========================================================");
-            return Command::SUCCESS;
+            if ($caso) {
+                $this->info("==========================================================");
+                $this->info("🎉 ¡EXPEDIENTE DE PROCESO EXTRAÍDO Y GUARDADO CON ÉXITO!");
+                $this->info("==========================================================");
+                $this->line("• ID BD Local:      <comment>{$caso->id}</comment>");
+                $this->line("• Número de Caso:   <comment>{$caso->numero_caso}</comment>");
+                $this->line("• Subproceso:       <comment>{$caso->subproceso}</comment>");
+                $this->line("• Código:           <comment>{$caso->codigo_subproceso}</comment>");
+                $this->line("• Responsable:      <comment>{$caso->responsable_analisis}</comment>");
+                $this->line("• Componentes:      <comment>" . $caso->componentes->count() . " (Productos/Insumos)</comment>");
+                $this->line("• Actividades:       <comment>" . $caso->actividades->count() . "</comment>");
+                $this->info("==========================================================");
+                return Command::SUCCESS;
+            } else {
+                $this->error("❌ Error: No se pudo extraer ni sincronizar el caso desde BPM Servlets.");
+                return Command::FAILURE;
+            }
+        } catch (\Throwable $e) {
+            $this->error("❌ Excepción: " . $e->getMessage());
+            $this->error($e->getTraceAsString());
+            return Command::FAILURE;
         }
-
-        $this->error("❌ Error: No se pudo extraer ni sincronizar el caso desde BPM Servlets.");
-        return Command::FAILURE;
     }
 }
