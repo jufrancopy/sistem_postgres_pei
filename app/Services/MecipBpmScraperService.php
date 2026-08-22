@@ -161,36 +161,30 @@ class MecipBpmScraperService
         try {
             $baseUrl = str_contains($this->baseUrl, 'WSNavigatorPlus') ? $this->baseUrl : "{$this->baseUrl}/WSNavigatorPlus";
             
-            // Intentar las 3 URLs estándar de Cytera BPM para visualizar procesos
+            // Probar la URL exacta de actualización de proceso en Cytera
             $endpoints = [
+                "{$baseUrl}?_APPNAME=bpm&_PAGE=claim.UpdateProcess_self&m_process_id={$processId}&searchclient_process_id={$processId}",
+                "{$baseUrl}?_APPNAME=bpm&_PAGE=claim.UpdateProcess&m_process_id={$processId}&searchclient_process_id={$processId}",
                 "{$baseUrl}?_APPNAME=bpm&m_process_id={$processId}",
-                "{$baseUrl}?_APPNAME=bpm&_PAGE=claim.UpdateProcess&m_process_id={$processId}",
-                "{$baseUrl}?_APPNAME=bpm&_PAGE=cyrw_list_client_product.SearchProcess_pag&m_process_id={$processId}",
             ];
 
             foreach ($endpoints as $url) {
-                $response = Http::asForm()
-                    ->withOptions([
-                        'cookies' => $this->cookieJar,
-                        'verify'  => false,
-                        'timeout' => 30,
-                    ])
-                    ->post($url, [
-                        '_APPNAME'     => 'bpm',
-                        'm_process_id' => $processId,
-                        'action'       => 'view_process',
-                    ]);
+                $response = Http::withOptions([
+                    'cookies' => $this->cookieJar,
+                    'verify'  => false,
+                    'timeout' => 30,
+                ])->get($url);
 
                 if ($response->successful()) {
                     $html = $response->body();
                     $caso = $this->parseAndSyncHtml($html, $numeroCaso ?? "CASO-BPM-{$processId}", $processId);
-                    if ($caso && ($caso->componentes->count() > 0 || !empty($caso->subproceso))) {
+                    if ($caso) {
                         return $caso;
                     }
                 }
             }
 
-            $this->safeLog('warning', "[MECIP Scraper] Petición a m_process_id={$processId} no halló tablas en endpoints estándar.");
+            $this->safeLog('warning', "[MECIP Scraper] Petición a m_process_id={$processId} no retornó datos.");
             return null;
         } catch (\Throwable $e) {
             $this->safeLog('error', "[MECIP Scraper] Excepción al extraer proceso {$processId}: " . $e->getMessage());
@@ -208,12 +202,33 @@ class MecipBpmScraperService
         $xpath = new \DOMXPath($dom);
 
         // 1. Extraer Metadatos del Caso/Subproceso
-        $macroproceso       = $this->extractInputOrText($xpath, "//input[@name='macroproceso'] | //span[@id='lbl_macroproceso']", 'PROCESO DE GOBERNANZA');
+        $macroproceso       = $this->extractInputOrText($xpath, "//input[@name='macroproceso'] | //span[@id='lbl_macroproceso']", 'PROCESO DE GOBERNANZA IPS');
         $proceso            = $this->extractInputOrText($xpath, "//input[@name='proceso'] | //span[@id='lbl_proceso']", 'GESTIÓN ESTRATÉGICA E INSTITUCIONAL');
-        $subproceso         = $this->extractInputOrText($xpath, "//input[@name='subproceso'] | //span[@id='lbl_subproceso']", 'Diseño y Actualización de Estructuras');
-        $codigoSubproceso   = $this->extractInputOrText($xpath, "//input[@name='codigo_subproceso'] | //span[@id='lbl_codigo']", 'GEI-01');
+        $subproceso         = $this->extractInputOrText($xpath, "//input[@name='subproceso'] | //span[@id='lbl_subproceso']", '');
+
+        // Fallback para Cytera claim.UpdateProcess_self: Buscar título de Proceso en filas de tablas
+        if (empty($subproceso) || $subproceso === 'Diseño y Actualización de Estructuras') {
+            $procNodes = $xpath->query("//tr[contains(., 'Proceso')]//td[last()] | //tr[contains(., 'Proceso')]//font");
+            if ($procNodes && $procNodes->length > 0) {
+                $subproceso = trim($procNodes->item($procNodes->length - 1)->textContent);
+            }
+        }
+        if (empty($subproceso)) {
+            $subproceso = 'Atención de Expedientes y Procedimientos IPS';
+        }
+
+        $codigoSubproceso   = $this->extractInputOrText($xpath, "//input[@name='codigo_subproceso'] | //span[@id='lbl_codigo']", 'GES-BPM-' . ($processId ?? rand(100, 999)));
         $version            = $this->extractInputOrText($xpath, "//input[@name='version'] | //span[@id='lbl_version']", '1.0');
-        $responsableAnalisis = $this->extractInputOrText($xpath, "//input[@name='responsable'] | //span[@id='lbl_responsable']", 'Analista MECIP IPS');
+        $responsableAnalisis = $this->extractInputOrText($xpath, "//input[@name='responsable'] | //span[@id='lbl_responsable']", '');
+
+        if (empty($responsableAnalisis)) {
+            $regNodes = $xpath->query("//tr[contains(., 'Registrado por')]//td[last()]");
+            if ($regNodes && $regNodes->length > 0) {
+                $responsableAnalisis = trim($regNodes->item(0)->textContent);
+            } else {
+                $responsableAnalisis = 'Analista MECIP IPS';
+            }
+        }
 
         // 2. Extraer Productos e Insumos de Tablas HTML
         $productos = $this->extractTableRows($xpath, "//table[contains(@id, 'tabla_productos') or contains(@class, 'productos') or contains(., 'Productos')]");
