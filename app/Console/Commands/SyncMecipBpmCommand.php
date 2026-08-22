@@ -53,7 +53,8 @@ class SyncMecipBpmCommand extends Command
         if ($authSuccess) {
             $this->info("✅ Autenticación exitosa en el servidor BPM.");
         } else {
-            $this->warn("⚠️ No se pudo verificar la sesión remota previa. Ejecutando extracción en modo fallback...");
+            $this->warn("⚠️ No se pudo autenticar en el servidor BPM de IPS (Credenciales rechazadas o usuario no registrado en Gobernanza).");
+            $this->comment("👉 Sugerencia: Verifica tu usuario/clave institucionales del BPM IPS, o bien utiliza la opción 'Pegar Formulario HTML Directo' desde la Web /admin/mecip/control.");
         }
 
         $this->info("🔍 Navegando a m_process_id={$processId} y parseando tablas HTML...");
