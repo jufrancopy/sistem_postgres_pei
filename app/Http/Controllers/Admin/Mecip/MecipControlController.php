@@ -153,7 +153,7 @@ class MecipControlController extends Controller
             header('Access-Control-Max-Age: 86400');
         }
 
-        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        if (($_SERVER['REQUEST_METHOD'] ?? '') == 'OPTIONS') {
             if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
                 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
             }
@@ -199,12 +199,17 @@ class MecipControlController extends Controller
             // Insumos
             if (!empty($data['insumos']) && is_array($data['insumos'])) {
                 foreach ($data['insumos'] as $idx => $ins) {
+                    $cod = is_array($ins) ? ($ins['codigo'] ?? '') : '';
+                    $nom = is_array($ins) ? ($ins['nombre'] ?? ($ins['insumo'] ?? 'Insumo')) : $ins;
+                    $desc = is_array($ins) ? trim($ins['descripcion'] ?? ($ins['caracteristicas'] ?? '')) : '';
+                    $realNom = (!empty($nom) && $nom !== $cod && !str_contains($nom, '_47_')) ? $nom : (!empty($desc) ? $desc : ($cod ?: 'Insumo IPS #' . ($idx + 1)));
+
                     MecipCasoComponente::create([
                         'mecip_caso_id'          => $caso->id,
                         'tipo'                   => 'insumo',
-                        'nombre'                 => is_array($ins) ? ($ins['nombre'] ?? ($ins['insumo'] ?? 'Insumo')) : $ins,
+                        'nombre'                 => $realNom,
                         'entidad_origen_destino' => is_array($ins) ? ($ins['proveedor'] ?? ($ins['entidad'] ?? 'Proveedor')) : 'Proveedor',
-                        'descripcion'            => is_array($ins) ? ($ins['descripcion'] ?? ($ins['caracteristicas'] ?? null)) : null,
+                        'descripcion'            => $desc ?: $realNom,
                         'orden'                  => $idx + 1,
                     ]);
                 }
@@ -213,12 +218,17 @@ class MecipControlController extends Controller
             // Productos
             if (!empty($data['productos']) && is_array($data['productos'])) {
                 foreach ($data['productos'] as $idx => $prod) {
+                    $cod = is_array($prod) ? ($prod['codigo'] ?? '') : '';
+                    $nom = is_array($prod) ? ($prod['nombre'] ?? ($prod['producto'] ?? 'Producto')) : $prod;
+                    $desc = is_array($prod) ? trim($prod['descripcion'] ?? ($prod['caracteristicas'] ?? '')) : '';
+                    $realNom = (!empty($nom) && $nom !== $cod && !str_contains($nom, '_46_')) ? $nom : (!empty($desc) ? $desc : ($cod ?: 'Producto IPS #' . ($idx + 1)));
+
                     MecipCasoComponente::create([
                         'mecip_caso_id'          => $caso->id,
                         'tipo'                   => 'producto',
-                        'nombre'                 => is_array($prod) ? ($prod['nombre'] ?? ($prod['producto'] ?? 'Producto')) : $prod,
+                        'nombre'                 => $realNom,
                         'entidad_origen_destino' => is_array($prod) ? ($prod['cliente'] ?? ($prod['entidad'] ?? 'Cliente/Grupo Interés')) : 'Cliente/Grupo Interés',
-                        'descripcion'            => is_array($prod) ? ($prod['descripcion'] ?? ($prod['caracteristicas'] ?? null)) : null,
+                        'descripcion'            => $desc ?: $realNom,
                         'orden'                  => $idx + 1,
                     ]);
                 }
@@ -227,11 +237,16 @@ class MecipControlController extends Controller
             // Actividades y Tareas
             if (!empty($data['actividades']) && is_array($data['actividades'])) {
                 foreach ($data['actividades'] as $idx => $actData) {
+                    $cod = $actData['codigo'] ?? ('ACT_' . str_pad($idx + 1, 2, '0', STR_PAD_LEFT));
+                    $nom = $actData['nombre'] ?? '';
+                    $obj = $actData['objetivo'] ?? '';
+                    $realNom = (!empty($obj) && ($nom === $cod || str_contains($nom, '_48_'))) ? $obj : ($nom ?: ($obj ?: "Actividad #" . ($idx + 1)));
+
                     $actividad = MecipCasoActividad::create([
                         'mecip_caso_id'    => $caso->id,
-                        'codigo_actividad' => $actData['codigo'] ?? ('ACT_' . str_pad($idx + 1, 2, '0', STR_PAD_LEFT)),
-                        'nombre'           => $actData['nombre'] ?? "Actividad #" . ($idx + 1),
-                        'objetivo'         => $actData['objetivo'] ?? null,
+                        'codigo_actividad' => $cod,
+                        'nombre'           => $realNom,
+                        'objetivo'         => $obj ?: $realNom,
                         'responsable'      => $actData['responsable'] ?? null,
                         'orden'            => $idx + 1,
                     ]);
