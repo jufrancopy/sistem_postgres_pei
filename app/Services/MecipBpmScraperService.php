@@ -18,6 +18,7 @@ class MecipBpmScraperService
     protected string $username;
     protected string $password;
     protected ?string $jsessionId = null;
+    protected ?string $authenticatedHtml = null;
     protected \GuzzleHttp\Cookie\CookieJar $cookieJar;
 
     public function __construct(?string $baseUrl = null, ?string $username = null, ?string $password = null)
@@ -27,6 +28,16 @@ class MecipBpmScraperService
         $this->username  = $username ?? config('services.mecip_bpm.user', env('MECIP_BPM_USER', ''));
         $this->password  = $password ?? config('services.mecip_bpm.password', env('MECIP_BPM_PASSWORD', ''));
         $this->cookieJar = new \GuzzleHttp\Cookie\CookieJar();
+    }
+
+    public function getCookieJar(): \GuzzleHttp\Cookie\CookieJar
+    {
+        return $this->cookieJar;
+    }
+
+    public function getAuthenticatedHtml(): string
+    {
+        return $this->authenticatedHtml ?? '';
     }
 
     /**
@@ -117,6 +128,7 @@ class MecipBpmScraperService
                 }
 
                 $body = $response->body();
+                $this->authenticatedHtml = $body;
 
                 if (str_contains($body, 'Contraseña Incorrectos') || str_contains($body, 'Usuario o Contraseña Inválidos')) {
                     $this->safeLog('error', "[MECIP Scraper] Error de Credenciales en BPM IPS: Usuario o Contraseña Incorrectos para '{$this->username}'.");
@@ -147,26 +159,38 @@ class MecipBpmScraperService
         }
 
         try {
-            $targetUrl = str_contains($this->baseUrl, 'WSNavigatorPlus') ? $this->baseUrl : "{$this->baseUrl}/WSNavigatorPlus";
+            $baseUrl = str_contains($this->baseUrl, 'WSNavigatorPlus') ? $this->baseUrl : "{$this->baseUrl}/WSNavigatorPlus";
+            
+            // Intentar las 3 URLs estándar de Cytera BPM para visualizar procesos
+            $endpoints = [
+                "{$baseUrl}?_APPNAME=bpm&m_process_id={$processId}",
+                "{$baseUrl}?_APPNAME=bpm&_PAGE=claim.UpdateProcess&m_process_id={$processId}",
+                "{$baseUrl}?_APPNAME=bpm&_PAGE=cyrw_list_client_product.SearchProcess_pag&m_process_id={$processId}",
+            ];
 
-            $response = Http::asForm()
-                ->withOptions([
-                    'cookies' => $this->cookieJar,
-                    'verify'  => false,
-                    'timeout' => 30,
-                ])
-                ->post($targetUrl, [
-                    '_APPNAME'     => 'bpm',
-                    'm_process_id' => $processId,
-                    'action'       => 'view_process',
-                ]);
+            foreach ($endpoints as $url) {
+                $response = Http::asForm()
+                    ->withOptions([
+                        'cookies' => $this->cookieJar,
+                        'verify'  => false,
+                        'timeout' => 30,
+                    ])
+                    ->post($url, [
+                        '_APPNAME'     => 'bpm',
+                        'm_process_id' => $processId,
+                        'action'       => 'view_process',
+                    ]);
 
-            if ($response->successful()) {
-                $html = $response->body();
-                return $this->parseAndSyncHtml($html, $numeroCaso ?? "CASO-BPM-{$processId}", $processId);
+                if ($response->successful()) {
+                    $html = $response->body();
+                    $caso = $this->parseAndSyncHtml($html, $numeroCaso ?? "CASO-BPM-{$processId}", $processId);
+                    if ($caso && ($caso->componentes->count() > 0 || !empty($caso->subproceso))) {
+                        return $caso;
+                    }
+                }
             }
 
-            $this->safeLog('error', "[MECIP Scraper] Petición a m_process_id={$processId} retornó estatus " . $response->status());
+            $this->safeLog('warning', "[MECIP Scraper] Petición a m_process_id={$processId} no halló tablas en endpoints estándar.");
             return null;
         } catch (\Throwable $e) {
             $this->safeLog('error', "[MECIP Scraper] Excepción al extraer proceso {$processId}: " . $e->getMessage());
