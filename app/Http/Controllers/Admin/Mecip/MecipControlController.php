@@ -174,19 +174,27 @@ class MecipControlController extends Controller
                 throw new \Exception('El formato JSON proporcionado no es válido.');
             }
 
-            $caso = MecipCaso::create([
-                'numero_caso'          => $data['numero_caso'] ?? 'CASO-' . rand(1000, 9999),
-                'codigo_subproceso'    => $data['codigo_subproceso'] ?? 'GES_SUB_' . rand(10, 99),
-                'macroproceso'         => $data['macroproceso'] ?? 'GESTIÓN INSTITUCIONAL IPS',
-                'proceso'              => $data['proceso'] ?? 'Gestión de Procesos',
-                'subproceso'           => $data['subproceso'] ?? 'Modelado de Procedimiento',
-                'version'              => $data['version'] ?? '1.0',
-                'fecha_elaboracion'    => $data['fecha_elaboracion'] ?? now()->toDateString(),
-                'responsable_analisis' => $data['responsable_analisis'] ?? (Auth::user()?->name ?: 'Analista IPS'),
-                'lider_mecip_id'       => $data['lider_mecip_id'] ?? null,
-                'created_by'           => Auth::id() ?: 1,
-                'estado_flujo'         => !empty($data['lider_mecip_id']) ? 'remitido_lider' : 'borrador',
-            ]);
+            $numCaso = $data['numero_caso'] ?? ('CASO-' . rand(1000, 9999));
+
+            $caso = MecipCaso::updateOrCreate(
+                ['numero_caso' => $numCaso],
+                [
+                    'codigo_subproceso'    => $data['codigo_subproceso'] ?? ('GES_SUB_' . rand(10, 99)),
+                    'macroproceso'         => $data['macroproceso'] ?? 'GESTIÓN INSTITUCIONAL IPS',
+                    'proceso'              => $data['proceso'] ?? 'Gestión de Procesos',
+                    'subproceso'           => $data['subproceso'] ?? 'Modelado de Procedimiento',
+                    'version'              => $data['version'] ?? '1.0',
+                    'fecha_elaboracion'    => $data['fecha_elaboracion'] ?? now()->toDateString(),
+                    'responsable_analisis' => $data['responsable_analisis'] ?? (Auth::user()?->name ?: 'Analista IPS'),
+                    'lider_mecip_id'       => $data['lider_mecip_id'] ?? null,
+                    'created_by'           => Auth::id() ?: 1,
+                    'estado_flujo'         => !empty($data['lider_mecip_id']) ? 'remitido_lider' : 'borrador',
+                ]
+            );
+
+            // Limpiar componentes y actividades previas si se está actualizando un caso existente
+            $caso->componentes()->delete();
+            $caso->actividades()->delete();
 
             // Insumos
             if (!empty($data['insumos']) && is_array($data['insumos'])) {
