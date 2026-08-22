@@ -338,12 +338,19 @@ class MecipBpmScraperService
                 $caso->actividades()->delete();
                 $actOrden = 1;
                 foreach ($actividades as $act) {
-                    MecipCasoActividad::create([
+                    $actividad = MecipCasoActividad::create([
                         'mecip_caso_id'      => $caso->id,
                         'codigo_actividad'   => $act['codigo'] ?? "ACT-{$actOrden}",
                         'nombre'             => $act['nombre'] ?? ($act['col_0'] ?? 'Actividad Sincronizada'),
                         'responsable'        => $act['responsable'] ?? ($act['col_1'] ?? 'Responsable Asignado'),
                         'orden'              => $actOrden++,
+                    ]);
+
+                    MecipCasoTarea::create([
+                        'actividad_id'            => $actividad->id,
+                        'descripcion'             => $act['objetivo'] ?? 'Revisión y modelado del procedimiento MECIP IPS',
+                        'tiempo_estimado_minutos' => 30,
+                        'orden'                   => 1,
                     ]);
                 }
             }
