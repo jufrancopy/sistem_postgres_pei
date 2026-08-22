@@ -239,13 +239,17 @@ class MecipControlController extends Controller
                 }
             }
 
-            // Auditoría
+            // Auditoría (Asegurando campos válidos de la migración)
+            $firstUser = \App\Models\User::first();
+            $userId = Auth::id() ?: ($firstUser ? $firstUser->id : 1);
+
             MecipCasoCambio::create([
                 'mecip_caso_id'   => $caso->id,
-                'user_id'         => Auth::id() ?: 1,
-                'estado_anterior' => 'nuevo',
+                'user_id'         => $userId,
+                'estado_anterior' => 'borrador',
                 'estado_nuevo'    => $caso->estado_flujo,
-                'observacion'     => 'Importación estructurada JSON de caso MECIP IPS.',
+                'tipo_cambio'     => 'IMPORTACION_JSON',
+                'resumen_cambio'  => 'Importación estructurada JSON/Bookmarklet de caso MECIP IPS.',
             ]);
 
             DB::commit();
