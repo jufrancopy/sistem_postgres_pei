@@ -81,23 +81,25 @@ class MecipBpmScraperService
                 }
             }
 
-            // Configurar parámetros del formulario Cytera WSNavigatorPlus
+            // Configurar parámetros del formulario Cytera WSNavigatorPlus con ShredPassword SHA1/HMAC
+            $loginCryptKey = $postData['login_crypt_key'] ?? '';
+            $sTemp = strtolower(sha1($this->password));
+            $loginCryptPassword = hash_hmac('sha1', $loginCryptKey, $sTemp);
+
             $postData['_APPNAME']              = 'bpm';
             $postData['_PAGE']                 = 'bpm';
             $postData['_FORM']                 = 'login.Login';
             $postData['_PROCESS']              = 'TRUE';
             $postData['_BRANCH']               = 'ROOT';
             $postData['m_btn_user']            = $this->username;
-            $postData['m_btn_password']        = $this->password;
+            $postData['m_btn_password']        = ''; // Vacío como en la función JS ShredPassword
             $postData['m_btn_login']           = 'Iniciar Sesión';
-            $postData['login_encode_password'] = base64_encode($this->password);
-            $postData['login_crypt_password']  = base64_encode($this->password);
+            $postData['login_encode_password'] = $this->password;
+            $postData['login_crypt_password']  = $loginCryptPassword;
             $postData['user']                  = $this->username;
-            $postData['password']              = $this->password;
 
             // Petición POST autenticada al Servlet Cytera NavigatorPlus del IPS
             $response = Http::asForm()
-                ->withBasicAuth($this->username, $this->password)
                 ->withOptions([
                     'cookies' => $this->cookieJar,
                     'verify'  => false,
@@ -121,8 +123,8 @@ class MecipBpmScraperService
                     return false;
                 }
 
-                if ($this->jsessionId || str_contains($body, 'Bienvenido') || str_contains($body, 'Gobernanza') || str_contains($body, 'm_process_id')) {
-                    $this->safeLog('info', "[MECIP Scraper] Autenticación BPM confirmada en Cytera IPS.");
+                if ($this->jsessionId || str_contains($body, 'Bienvenido') || str_contains($body, 'Gobernanza') || str_contains($body, 'Franco Baez') || str_contains($body, 'm_process_id')) {
+                    $this->safeLog('info', "[MECIP Scraper] Autenticación BPM confirmada en Cytera IPS para '{$this->username}'.");
                     return true;
                 }
             }
