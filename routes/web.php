@@ -1016,4 +1016,6 @@ Route::prefix('admin/mecip/control')->name('admin.mecip.control.')->group(functi
     Route::post('/{id}/cerrar-analisis', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'cerrarAnalisis'])->name('cerrarAnalisis');
     Route::post('/{id}/actividades', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'agregarActividad'])->name('agregarActividad');
     Route::post('/actividades/{actividadId}/tareas', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'agregarTarea'])->name('agregarTarea');
+    Route::post('/sync-bpm', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'syncFromBpm'])->name('syncFromBpm');
+    Route::post('/parse-html', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'parseHtmlPayload'])->name('parseHtmlPayload');
 });

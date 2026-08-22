@@ -486,4 +486,73 @@ class MecipControlController extends Controller
 
         return redirect()->back()->with('success', 'Tarea agregada a la actividad.');
     }
+
+    /**
+     * Sincroniza un caso llamando al cliente autenticado de scraping BPM
+     */
+    public function syncFromBpm(Request $request)
+    {
+        $request->validate([
+            'process_id'  => 'required|string',
+            'numero_caso' => 'nullable|string',
+            'url'         => 'nullable|string',
+            'user'        => 'nullable|string',
+            'password'    => 'nullable|string',
+        ]);
+
+        try {
+            $scraper = new \App\Services\MecipBpmScraperService(
+                $request->get('url'),
+                $request->get('user'),
+                $request->get('password')
+            );
+
+            $caso = $scraper->scrapeProcess($request->process_id, $request->numero_caso);
+
+            if ($caso) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Caso {$caso->numero_caso} sincronizado exitosamente desde BPM IPS.",
+                    'caso'    => $caso,
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo completar la extracción del proceso BPM remoto.',
+            ], 422);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error durante el scraping BPM: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Parsea un fragmento HTML pegado o subido directamente por el usuario
+     */
+    public function parseHtmlPayload(Request $request)
+    {
+        $request->validate([
+            'html_content' => 'required|string',
+            'numero_caso'  => 'required|string',
+        ]);
+
+        try {
+            $scraper = new \App\Services\MecipBpmScraperService();
+            $caso = $scraper->parseAndSyncHtml($request->html_content, $request->numero_caso);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Servicios, Productos y Tareas parseadas y guardadas para {$caso->numero_caso}.",
+                'caso'    => $caso,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar el HTML pegado: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
