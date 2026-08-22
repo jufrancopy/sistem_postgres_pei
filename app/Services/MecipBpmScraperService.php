@@ -236,22 +236,97 @@ class MecipBpmScraperService
         if (empty($responsableAnalisis)) $responsableAnalisis = 'Analista BPM IPS';
 
         // 2. Extraer Tablas de Productos, Insumos, Actividades y Tareas de forma Dinámica
-        $productos   = $this->extractTableRows($xpath, "//table[contains(@id, 'producto') or contains(@class, 'producto') or contains(., 'Producto') or contains(., 'Cliente')]");
-        $insumos     = $this->extractTableRows($xpath, "//table[contains(@id, 'insumo') or contains(@class, 'insumo') or contains(., 'Insumo') or contains(., 'Proveedor')]");
-        $actividades = $this->extractTableRows($xpath, "//table[contains(@id, 'actividad') or contains(@class, 'actividad') or contains(., 'Actividad') or contains(., 'Tarea')]");
+        $productos   = [];
+        $insumos     = [];
+        $actividades = [];
+        $tareasMap   = [];
 
-        // Escaneo de rescate en TODAS las tablas HTML si no se encontraron resultados por clase/id
-        if (empty($productos) && empty($insumos) && empty($actividades)) {
-            $allTables = $xpath->query("//table");
-            if ($allTables && $allTables->length > 0) {
-                foreach ($allTables as $tIdx => $tblNode) {
-                    $tblTxt = $tblNode->textContent;
-                    if (str_contains($tblTxt, 'Producto') || str_contains($tblTxt, 'Cliente') || str_contains($tblTxt, 'Salida')) {
-                        $productos = array_merge($productos, $this->extractTableRowsFromNode($xpath, $tblNode));
-                    } elseif (str_contains($tblTxt, 'Insumo') || str_contains($tblTxt, 'Proveedor') || str_contains($tblTxt, 'Entrada')) {
-                        $insumos = array_merge($insumos, $this->extractTableRowsFromNode($xpath, $tblNode));
-                    } else {
-                        $actividades = array_merge($actividades, $this->extractTableRowsFromNode($xpath, $tblNode));
+        $allTables = $xpath->query("//table");
+        if ($allTables && $allTables->length > 0) {
+            foreach ($allTables as $tblNode) {
+                $headerTxt = '';
+                $ths = $xpath->query(".//th", $tblNode);
+                foreach ($ths as $th) {
+                    $headerTxt .= ' ' . mb_strtolower(trim($th->textContent));
+                }
+
+                $rows = $xpath->query(".//tbody/tr | .//tr[position() > 1]", $tblNode);
+                if (!$rows || $rows->length === 0) continue;
+
+                // FORMATO 46: PRODUCTOS
+                if (str_contains($headerTxt, 'producto') || str_contains($headerTxt, 'cliente')) {
+                    foreach ($rows as $r) {
+                        $tds = $xpath->query(".//td", $r);
+                        if ($tds && $tds->length >= 2) {
+                            $codigo = $this->extractCellText($xpath, $tds->item(0));
+                            $nombre = $tds->length >= 2 ? $this->extractCellText($xpath, $tds->item(1)) : '';
+                            $caract = $tds->length >= 3 ? $this->extractCellText($xpath, $tds->item(2)) : '';
+                            $cliente = $tds->length >= 4 ? $this->extractCellText($xpath, $tds->item(3)) : 'Consejo de Administración / Gerencias';
+
+                            $productos[] = [
+                                'codigo'      => $codigo,
+                                'nombre'      => !empty($nombre) ? $nombre : $codigo,
+                                'descripcion' => !empty($caract) ? $caract : $codigo,
+                                'entidad'     => $cliente,
+                            ];
+                        }
+                    }
+                }
+                // FORMATO 47: INSUMOS
+                elseif (str_contains($headerTxt, 'insumo') || str_contains($headerTxt, 'proveedor')) {
+                    foreach ($rows as $r) {
+                        $tds = $xpath->query(".//td", $r);
+                        if ($tds && $tds->length >= 2) {
+                            $codigo = $this->extractCellText($xpath, $tds->item(0));
+                            $nombre = $tds->length >= 2 ? $this->extractCellText($xpath, $tds->item(1)) : '';
+                            $caract = $tds->length >= 3 ? $this->extractCellText($xpath, $tds->item(2)) : '';
+                            $proveedor = $tds->length >= 4 ? $this->extractCellText($xpath, $tds->item(3)) : 'Todas las direcciones';
+
+                            $insumos[] = [
+                                'codigo'      => $codigo,
+                                'nombre'      => !empty($nombre) ? $nombre : $codigo,
+                                'descripcion' => !empty($caract) ? $caract : $codigo,
+                                'entidad'     => $proveedor,
+                            ];
+                        }
+                    }
+                }
+                // FORMATO 48: ACTIVIDADES
+                elseif (str_contains($headerTxt, 'actividad') && (str_contains($headerTxt, 'objetivo') || str_contains($headerTxt, 'responsable'))) {
+                    foreach ($rows as $r) {
+                        $tds = $xpath->query(".//td", $r);
+                        if ($tds && $tds->length >= 2) {
+                            $codigo = $this->extractCellText($xpath, $tds->item(0));
+                            $nombre = $tds->length >= 2 ? $this->extractCellText($xpath, $tds->item(1)) : '';
+                            $objetivo = $tds->length >= 3 ? $this->extractCellText($xpath, $tds->item(2)) : '';
+                            $responsable = $tds->length >= 4 ? $this->extractCellText($xpath, $tds->item(3)) : 'Analista IPS';
+
+                            $actividades[] = [
+                                'codigo'      => $codigo,
+                                'nombre'      => !empty($nombre) ? $nombre : $codigo,
+                                'objetivo'    => $objetivo,
+                                'responsable' => $responsable,
+                            ];
+                        }
+                    }
+                }
+                // FORMATO 49 / 93: TAREAS
+                elseif (str_contains($headerTxt, 'tarea') && (str_contains($headerTxt, 'tiempo') || str_contains($headerTxt, 'metodos'))) {
+                    $currAct = '';
+                    foreach ($rows as $r) {
+                        $tds = $xpath->query(".//td", $r);
+                        if ($tds) {
+                            if ($tds->length >= 4) {
+                                $currAct = $this->extractCellText($xpath, $tds->item(1));
+                                $tDesc   = $this->extractCellText($xpath, $tds->item(2));
+                                $tTime   = $this->extractCellText($xpath, $tds->item(3));
+                                $tareasMap[$currAct][] = ['descripcion' => $tDesc, 'tiempo' => $tTime];
+                            } elseif ($tds->length == 2 && !empty($currAct)) {
+                                $tDesc = $this->extractCellText($xpath, $tds->item(0));
+                                $tTime = $this->extractCellText($xpath, $tds->item(1));
+                                $tareasMap[$currAct][] = ['descripcion' => $tDesc, 'tiempo' => $tTime];
+                            }
+                        }
                     }
                 }
             }
@@ -279,6 +354,7 @@ class MecipBpmScraperService
         if (empty($productos)) {
             $productos = [
                 [
+                    'codigo'      => 'PROD_01',
                     'nombre'      => 'Resultado / Producto de ' . $subproceso,
                     'entidad'     => 'Destinatario del Subproceso',
                     'descripcion' => 'Documentación y entregable del expediente IPS #' . $numeroCaso,
@@ -289,6 +365,7 @@ class MecipBpmScraperService
         if (empty($insumos)) {
             $insumos = [
                 [
+                    'codigo'      => 'INS_01',
                     'nombre'      => 'Solicitud / Entrada de ' . $subproceso,
                     'entidad'     => 'Unidad Origen IPS',
                     'descripcion' => 'Antecedentes e insumos presentados para el expediente IPS #' . $numeroCaso,
@@ -322,9 +399,9 @@ class MecipBpmScraperService
                 MecipCasoComponente::create([
                     'mecip_caso_id'          => $caso->id,
                     'tipo'                   => 'producto',
-                    'nombre'                 => $p['nombre'] ?? ($p['col_0'] ?? 'Producto Sincronizado'),
-                    'entidad_origen_destino' => $p['entidad'] ?? ($p['col_1'] ?? 'Área Destino'),
-                    'descripcion'            => $p['descripcion'] ?? ($p['col_2'] ?? ''),
+                    'nombre'                 => $p['nombre'] ?? 'Producto Sincronizado',
+                    'entidad_origen_destino' => $p['entidad'] ?? 'Área Destino',
+                    'descripcion'            => $p['descripcion'] ?? '',
                     'orden'                  => $orden++,
                 ]);
             }
@@ -333,9 +410,9 @@ class MecipBpmScraperService
                 MecipCasoComponente::create([
                     'mecip_caso_id'          => $caso->id,
                     'tipo'                   => 'insumo',
-                    'nombre'                 => $i['nombre'] ?? ($i['col_0'] ?? 'Insumo Sincronizado'),
-                    'entidad_origen_destino' => $i['entidad'] ?? ($i['col_1'] ?? 'Área Origen'),
-                    'descripcion'            => $i['descripcion'] ?? ($i['col_2'] ?? ''),
+                    'nombre'                 => $i['nombre'] ?? 'Insumo Sincronizado',
+                    'entidad_origen_destino' => $i['entidad'] ?? 'Área Origen',
+                    'descripcion'            => $i['descripcion'] ?? '',
                     'orden'                  => $orden++,
                 ]);
             }
@@ -345,20 +422,51 @@ class MecipBpmScraperService
                 $caso->actividades()->delete();
                 $actOrden = 1;
                 foreach ($actividades as $act) {
+                    $actNombreKey = $act['nombre'] ?? '';
                     $actividad = MecipCasoActividad::create([
                         'mecip_caso_id'      => $caso->id,
                         'codigo_actividad'   => $act['codigo'] ?? "ACT-{$actOrden}",
-                        'nombre'             => $act['nombre'] ?? ($act['col_0'] ?? 'Actividad Sincronizada'),
-                        'responsable'        => $act['responsable'] ?? ($act['col_1'] ?? 'Responsable Asignado'),
+                        'nombre'             => $actNombreKey,
+                        'responsable'        => $act['responsable'] ?? 'Responsable Asignado',
                         'orden'              => $actOrden++,
                     ]);
 
-                    MecipCasoTarea::create([
-                        'actividad_id'            => $actividad->id,
-                        'descripcion'             => $act['objetivo'] ?? 'Revisión y modelado del procedimiento MECIP IPS',
-                        'tiempo_estimado_minutos' => 30,
-                        'orden'                   => 1,
-                    ]);
+                    // Buscar tareas asociadas en $tareasMap
+                    $foundTareas = [];
+                    foreach ($tareasMap as $aKey => $tList) {
+                        if (str_contains(mb_strtolower($aKey), mb_strtolower(substr($actNombreKey, 0, 30))) || str_contains(mb_strtolower($actNombreKey), mb_strtolower(substr($aKey, 0, 30)))) {
+                            $foundTareas = $tList;
+                            break;
+                        }
+                    }
+
+                    if (!empty($foundTareas)) {
+                        $tOrden = 1;
+                        foreach ($foundTareas as $t) {
+                            $timeMin = 30;
+                            if (preg_match('/(\d+)\s*d[ií]as?/i', $t['tiempo'], $mTime)) {
+                                $timeMin = (int)$mTime[1] * 480; // 8 horas por dia
+                            } elseif (preg_match('/(\d+)\s*horas?/i', $t['tiempo'], $mTime)) {
+                                $timeMin = (int)$mTime[1] * 60;
+                            } elseif (preg_match('/(\d+)\s*min/i', $t['tiempo'], $mTime)) {
+                                $timeMin = (int)$mTime[1];
+                            }
+
+                            MecipCasoTarea::create([
+                                'actividad_id'            => $actividad->id,
+                                'descripcion'             => $t['descripcion'],
+                                'tiempo_estimado_minutos' => $timeMin,
+                                'orden'                   => $tOrden++,
+                            ]);
+                        }
+                    } else {
+                        MecipCasoTarea::create([
+                            'actividad_id'            => $actividad->id,
+                            'descripcion'             => $act['objetivo'] ?? 'Ejecución y revisión del procedimiento MECIP IPS',
+                            'tiempo_estimado_minutos' => 30,
+                            'orden'                   => 1,
+                        ]);
+                    }
                 }
             }
 
@@ -380,43 +488,43 @@ class MecipBpmScraperService
                 $comentarioTxt = trim($mCom2[1]);
             }
 
-            $comentarioAutor = $responsableAnalisis ?? 'BPM IPS';
-
-            if (!empty($comentarioTxt)) {
-                $caso->comentarios()->delete();
-                \App\Models\Mecip\MecipCasoComentario::create([
-                    'mecip_caso_id'        => $caso->id,
-                    'user_id'              => $userId,
-                    'rol_usuario'          => "Analista BPM ({$comentarioAutor})",
-                    'comentario'           => $comentarioTxt,
-                    'justificacion_camino' => "Extracción de historial y observaciones del sistema BPM IPS.",
-                    'es_resolucion'        => false,
-                ]);
-            }
-
-            // Registrar Auditoría de Cambio (Obteniendo un user_id válido existente en BD)
             MecipCasoCambio::create([
-                'mecip_caso_id'    => $caso->id,
-                'user_id'          => $userId,
-                'estado_anterior'  => 'borrador',
-                'estado_nuevo'     => 'borrador',
-                'tipo_cambio'      => 'SINCRONIZACION_SCRAPING_BPM',
-                'resumen_cambio'   => "Sincronización automática mediante cliente HTTP/Scraping BPM (m_process_id: {$processId}).",
-                'detalles_json'    => json_encode(['process_id' => $processId, 'productos_count' => count($productos), 'insumos_count' => count($insumos)]),
+                'mecip_caso_id'   => $caso->id,
+                'user_id'         => $userId,
+                'estado_anterior' => 'borrador',
+                'estado_nuevo'    => 'borrador',
+                'tipo_cambio'     => 'SINCRONIZACION_SCRAPING_BPM',
+                'resumen_cambio'  => "Sincronización automática de expediente.",
+                'detalles_json'   => json_encode(['comentario' => $comentarioTxt]),
             ]);
 
             DB::commit();
+            $this->safeLog('info', "[MECIP Scraper] Caso {$numeroCaso} sincronizado exitosamente con ID: {$caso->id}");
 
-            // Transmitir Evento en Vivo
-            event(new MecipNotificacionEvent((int)$caso->id, $caso->numero_caso, $caso->subproceso, "Caso {$caso->numero_caso} sincronizado exitosamente desde el BPM IPS.", 'SINCRONIZACION_BPM'));
-
-            Log::info("[MECIP Scraper] Caso {$caso->numero_caso} sincronizado exitosamente en BD local (ID: {$caso->id}).");
             return $caso;
+
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error("[MECIP Scraper] Error al guardar datos en BD local: " . $e->getMessage());
+            $this->safeLog('error', "[MECIP Scraper] Error al sincronizar caso {$numeroCaso} en la BD: " . $e->getMessage());
             throw $e;
         }
+    }
+
+    /**
+     * Extrae texto formateado de una celda DOMNode respetando divs y párrafos
+     */
+    protected function extractCellText(\DOMXPath $xpath, \DOMNode $node): string
+    {
+        $divs = $xpath->query(".//div", $node);
+        if ($divs && $divs->length > 1) {
+            $lines = [];
+            foreach ($divs as $d) {
+                $txt = trim(preg_replace('/\s+/', ' ', strip_tags($d->textContent)));
+                if (!empty($txt)) $lines[] = $txt;
+            }
+            return implode("\n", $lines);
+        }
+        return trim(preg_replace('/\s+/', ' ', strip_tags($node->textContent)));
     }
 
     /**
