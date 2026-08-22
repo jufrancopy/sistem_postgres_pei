@@ -355,10 +355,33 @@ class MecipBpmScraperService
                 }
             }
 
-            // Registrar Auditoría de Cambio (Obteniendo un user_id válido existente en BD)
+            // Obteniendo un user_id válido existente en BD
             $firstUser = \App\Models\User::first();
             $userId = auth()->id() ?? ($firstUser ? $firstUser->id : null);
 
+            // Sincronizar Comentarios e Historial del Expediente BPM
+            $comentarioTxt = 'Se gestiona el expediente para revisión de modelado y aprobaciones correspondientes.';
+            if (preg_match('/Comentario anterior:\s*([^\n\r\t<]+)/i', $html, $mCom)) {
+                $comentarioTxt = trim($mCom[1]);
+            } elseif (preg_match('/Comentarios[^:]*:\s*([^\n\r\t<]+)/i', $html, $mCom2)) {
+                $comentarioTxt = trim($mCom2[1]);
+            }
+
+            $comentarioAutor = $responsableAnalisis ?? 'BPM IPS';
+
+            if (!empty($comentarioTxt)) {
+                $caso->comentarios()->delete();
+                \App\Models\Mecip\MecipCasoComentario::create([
+                    'mecip_caso_id'        => $caso->id,
+                    'user_id'              => $userId,
+                    'rol_usuario'          => "Analista BPM ({$comentarioAutor})",
+                    'comentario'           => $comentarioTxt,
+                    'justificacion_camino' => "Extracción de historial y observaciones del sistema BPM IPS.",
+                    'es_resolucion'        => false,
+                ]);
+            }
+
+            // Registrar Auditoría de Cambio (Obteniendo un user_id válido existente en BD)
             MecipCasoCambio::create([
                 'mecip_caso_id'    => $caso->id,
                 'user_id'          => $userId,

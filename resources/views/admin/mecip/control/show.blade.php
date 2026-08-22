@@ -116,6 +116,28 @@
             </div>
         </div>
 
+        {{-- Bloque de Detalle Completo & Antecedentes del Expediente BPM IPS --}}
+        @if($caso->comentarios->count() > 0)
+        <div class="row px-3 mb-4">
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm" style="border-radius: 12px; background: #ffffff; border-left: 5px solid #0d6efd !important;">
+                    <div class="card-body p-3.5">
+                        <h6 class="font-weight-bold text-primary mb-1.5" style="font-size: 0.98rem;">
+                            <i class="fas fa-file-alt mr-1"></i> Detalle Completo & Observaciones del Expediente BPM IPS:
+                        </h6>
+                        <p class="text-dark mb-0 font-italic bg-light p-3 rounded border" style="font-size: 0.93rem; line-height: 1.5; white-space: pre-wrap;">
+                            "{{ $caso->comentarios->first()->comentario }}"
+                        </p>
+                        <div class="text-muted small mt-2.5 d-flex flex-wrap align-items-center justify-content-between">
+                            <span><i class="fas fa-user-circle text-info mr-1"></i> Origen: <strong>{{ $caso->comentarios->first()->rol_usuario }}</strong></span>
+                            <span><i class="far fa-clock text-info mr-1"></i> Sincronizado: {{ $caso->comentarios->first()->created_at->format('d/m/Y H:i') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         {{-- DIAGRAMA DE NODOS DE ACTIVIDADES EN CASCADA --}}
         <div class="row px-3">
             <div class="col-md-12">
