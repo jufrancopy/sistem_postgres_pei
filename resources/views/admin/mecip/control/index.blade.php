@@ -91,11 +91,14 @@
                         </form>
 
                         <div class="d-flex flex-wrap align-items-center" style="gap: 10px;">
+                            <button type="button" class="btn btn-dark text-white font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalSyncBpmScraper">
+                                <i class="fas fa-network-wired text-info mr-1"></i> Sincronizar BPM IPS (Scraping)
+                            </button>
                             <button type="button" class="btn btn-warning text-dark font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalBotonReplicadorIps">
-                                <i class="fas fa-bolt mr-1"></i> Botón Replicador de Pantalla IPS (1-Clic)
+                                <i class="fas fa-bolt mr-1"></i> Botón Replicador IPS (1-Clic)
                             </button>
                             <button type="button" class="btn btn-outline-info font-weight-bold" data-toggle="modal" data-target="#modalImportarJsonMecip">
-                                <i class="fas fa-file-import mr-1"></i> Importar Caso JSON (IPS)
+                                <i class="fas fa-file-import mr-1"></i> Importar Caso JSON
                             </button>
                             <button type="button" class="btn btn-primary font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalNuevoCasoMecip">
                                 <i class="fas fa-plus-circle mr-1"></i> Capturar Nuevo Caso IPS
@@ -322,6 +325,86 @@
             </div>
         </div>
     </div>
+<!-- Modal Sincronizador BPM Scraping -->
+<div class="modal fade" id="modalSyncBpmScraper" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px !important; overflow: hidden;">
+            <div class="modal-header bg-dark text-white py-3">
+                <h5 class="modal-title font-weight-bold">
+                    <i class="fas fa-network-wired text-info mr-2"></i> Sincronización Automática Cytera BPM IPS
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <ul class="nav nav-pills nav-justified mb-3" id="pills-tab-bpm" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active font-weight-bold" id="tab-remote-sync" data-toggle="pill" href="#pane-remote-sync" role="tab">
+                            <i class="fas fa-key mr-1"></i> Extracción HTTP Remota Autenticada
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link font-weight-bold" id="tab-html-paste" data-toggle="pill" href="#pane-html-paste" role="tab">
+                            <i class="fas fa-code mr-1"></i> Pegar Formulario HTML Directo
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="pills-tabContent-bpm">
+                    {{-- Pestaña 1: Extracción HTTP Autenticada --}}
+                    <div class="tab-pane fade show active p-3 bg-white border rounded shadow-xs" id="pane-remote-sync" role="tabpanel">
+                        <form id="formSyncBpmScraper">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="font-weight-bold text-dark small"><i class="fas fa-hashtag text-info mr-1"></i> ID de Proceso (m_process_id):</label>
+                                    <input type="text" class="form-control" id="sync_process_id" value="101" placeholder="Ej. 101, 3782431">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="font-weight-bold text-dark small"><i class="fas fa-folder text-info mr-1"></i> Número de Caso Local:</label>
+                                    <input type="text" class="form-control" id="sync_numero_caso" value="CASO-BPM-101" placeholder="Ej. CASO-BPM-101">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="font-weight-bold text-dark small"><i class="fas fa-user text-info mr-1"></i> Usuario IPS (m_btn_user):</label>
+                                    <input type="text" class="form-control" id="sync_user" placeholder="Ej. jufranco">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="font-weight-bold text-dark small"><i class="fas fa-lock text-info mr-1"></i> Contraseña IPS (m_btn_password):</label>
+                                    <input type="password" class="form-control" id="sync_password" placeholder="Tu contraseña del IPS">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="font-weight-bold text-dark small"><i class="fas fa-link text-info mr-1"></i> URL del Servlet Cytera BPM:</label>
+                                <input type="text" class="form-control" id="sync_url" value="https://servicios.ips.gov.py/ips/servlet/WSNavigatorPlus">
+                            </div>
+                            <button type="button" class="btn btn-dark btn-block font-weight-bold py-2.5 shadow-sm" id="btnRunSyncBpm" onclick="ejecutarSyncBpmScraper()">
+                                <i class="fas fa-rocket text-warning mr-2"></i> 🚀 Iniciar Extracción Autenticada Remota
+                            </button>
+                        </form>
+                    </div>
+
+                    {{-- Pestaña 2: Pegar Formulario HTML Directo --}}
+                    <div class="tab-pane fade p-3 bg-white border rounded shadow-xs" id="pane-html-paste" role="tabpanel">
+                        <form id="formParseHtmlPayload">
+                            <div class="mb-3">
+                                <label class="font-weight-bold text-dark small"><i class="fas fa-folder text-info mr-1"></i> Número de Caso Asignado:</label>
+                                <input type="text" class="form-control" id="parse_numero_caso" value="CASO-BPM-HTML-001">
+                            </div>
+                            <div class="mb-3">
+                                <label class="font-weight-bold text-dark small"><i class="fas fa-code text-info mr-1"></i> Código Fuente HTML Pegado del Formulario BPM:</label>
+                                <textarea class="form-control font-monospace" id="parse_html_content" rows="7" placeholder="Pegá aquí el código HTML (Ver Código Fuente de la Página o Inspeccionar Elemento en Chrome/Edge)..." style="font-size: 0.8rem;"></textarea>
+                            </div>
+                            <button type="button" class="btn btn-info btn-block font-weight-bold py-2.5 shadow-sm" id="btnRunParseHtml" onclick="ejecutarParseHtmlPayload()">
+                                <i class="fas fa-magic mr-2"></i> ⚡ Parsear e Importar HTML Directo
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @push('scripts')
@@ -367,6 +450,92 @@ $(document).ready(function() {
             });
     }
 });
+
+function ejecutarSyncBpmScraper() {
+    const btn = document.getElementById('btnRunSyncBpm');
+    const processId = document.getElementById('sync_process_id').value;
+    const numeroCaso = document.getElementById('sync_numero_caso').value;
+    const user = document.getElementById('sync_user').value;
+    const password = document.getElementById('sync_password').value;
+    const url = document.getElementById('sync_url').value;
+
+    if (!processId.trim()) {
+        toastr.warning('Ingresá un ID de proceso m_process_id válido.');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Autenticando y Extrayendo en BPM Servlets...';
+
+    $.ajax({
+        url: "{{ route('admin.mecip.control.syncFromBpm') }}",
+        method: "POST",
+        data: {
+            _token: "{{ csrf_token() }}",
+            process_id: processId,
+            numero_caso: numeroCaso,
+            user: user,
+            password: password,
+            url: url
+        },
+        success: function(res) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-rocket text-warning mr-2"></i> 🚀 Iniciar Extracción Autenticada Remota';
+            if (res.success) {
+                toastr.success(res.message);
+                $('#modalSyncBpmScraper').modal('hide');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                toastr.error(res.message);
+            }
+        },
+        error: function(err) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-rocket text-warning mr-2"></i> 🚀 Iniciar Extracción Autenticada Remota';
+            toastr.error('Error al sincronizar con BPM Servlets: ' + (err.responseJSON?.message || 'Error del servidor'));
+        }
+    });
+}
+
+function ejecutarParseHtmlPayload() {
+    const btn = document.getElementById('btnRunParseHtml');
+    const htmlVal = document.getElementById('parse_html_content').value;
+    const numeroCaso = document.getElementById('parse_numero_caso').value;
+
+    if (!htmlVal.trim()) {
+        toastr.warning('Por favor pegá el código HTML del formulario BPM.');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Parseando Tablas HTML...';
+
+    $.ajax({
+        url: "{{ route('admin.mecip.control.parseHtmlPayload') }}",
+        method: "POST",
+        data: {
+            _token: "{{ csrf_token() }}",
+            html_content: htmlVal,
+            numero_caso: numeroCaso
+        },
+        success: function(res) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic mr-2"></i> ⚡ Parsear e Importar HTML Directo';
+            if (res.success) {
+                toastr.success(res.message);
+                $('#modalSyncBpmScraper').modal('hide');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                toastr.error(res.message);
+            }
+        },
+        error: function(err) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic mr-2"></i> ⚡ Parsear e Importar HTML Directo';
+            toastr.error('Error al parsear el HTML: ' + (err.responseJSON?.message || 'Error del servidor'));
+        }
+    });
+}
 
 function ejecutarImportacionJson() {
     const btn = document.getElementById('btnEjecutarImportacion');
