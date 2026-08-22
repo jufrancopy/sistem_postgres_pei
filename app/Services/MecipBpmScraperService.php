@@ -355,9 +355,15 @@ class MecipBpmScraperService
                 }
             }
 
-            // Obteniendo un user_id válido existente en BD
-            $firstUser = \App\Models\User::first();
-            $userId = auth()->id() ?? ($firstUser ? $firstUser->id : null);
+            // Obteniendo el user_id correspondiente al usuario o fallback a ID 1 (Julio Franco)
+            $matchedUser = null;
+            if (!empty($this->username)) {
+                $matchedUser = \App\Models\User::where('email', 'like', "{$this->username}%")
+                    ->orWhere('email', 'like', "%{$this->username}%")
+                    ->first();
+            }
+            $firstUser = \App\Models\User::orderBy('id', 'asc')->first();
+            $userId = auth()->id() ?? ($matchedUser ? $matchedUser->id : ($firstUser ? $firstUser->id : 1));
 
             // Sincronizar Comentarios e Historial del Expediente BPM
             $comentarioTxt = 'Se gestiona el expediente para revisión de modelado y aprobaciones correspondientes.';
