@@ -494,7 +494,11 @@ function ejecutarSyncBpmScraper() {
             if (res.success) {
                 toastr.success(res.message);
                 $('#modalSyncBpmScraper').modal('hide');
-                setTimeout(() => location.reload(), 1500);
+                if (res.redirect) {
+                    window.location.href = res.redirect;
+                } else {
+                    setTimeout(() => location.reload(), 1000);
+                }
             } else {
                 toastr.error(res.message);
             }
@@ -534,7 +538,11 @@ function ejecutarParseHtmlPayload() {
             if (res.success) {
                 toastr.success(res.message);
                 $('#modalSyncBpmScraper').modal('hide');
-                setTimeout(() => location.reload(), 1500);
+                if (res.redirect) {
+                    window.location.href = res.redirect;
+                } else {
+                    setTimeout(() => location.reload(), 1000);
+                }
             } else {
                 toastr.error(res.message);
             }

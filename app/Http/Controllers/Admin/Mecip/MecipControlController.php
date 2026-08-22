@@ -523,9 +523,10 @@ class MecipControlController extends Controller
 
             if ($caso) {
                 return response()->json([
-                    'success' => true,
-                    'message' => "Caso {$caso->numero_caso} sincronizado exitosamente desde BPM IPS.",
-                    'caso'    => $caso,
+                    'success'  => true,
+                    'message'  => "Caso {$caso->numero_caso} sincronizado exitosamente desde BPM IPS.",
+                    'caso'     => $caso,
+                    'redirect' => route('admin.mecip.control.show', $caso->id),
                 ]);
             }
 
@@ -556,9 +557,10 @@ class MecipControlController extends Controller
             $caso = $scraper->parseAndSyncHtml($request->html_content, $request->numero_caso);
 
             return response()->json([
-                'success' => true,
-                'message' => "Servicios, Productos y Tareas parseadas y guardadas para {$caso->numero_caso}.",
-                'caso'    => $caso,
+                'success'  => true,
+                'message'  => "Servicios, Productos y Tareas parseadas y guardadas para {$caso->numero_caso}.",
+                'caso'     => $caso,
+                'redirect' => route('admin.mecip.control.show', $caso->id),
             ]);
         } catch (\Throwable $e) {
             return response()->json([
