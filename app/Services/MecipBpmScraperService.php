@@ -53,42 +53,58 @@ class MecipBpmScraperService
 
         try {
             $loginUrl = str_contains($this->baseUrl, 'WSNavigatorPlus') ? $this->baseUrl : "{$this->baseUrl}/WSNavigatorPlus";
+            if (!str_contains($loginUrl, '_APPNAME=bpm')) {
+                $loginUrl .= (str_contains($loginUrl, '?') ? '&' : '?') . '_APPNAME=bpm';
+            }
             if (!str_contains($loginUrl, '_ALLOWRESUBMIT=TRUE')) {
-                $loginUrl .= (str_contains($loginUrl, '?') ? '&' : '?') . '_ALLOWRESUBMIT=TRUE';
+                $loginUrl .= '&_ALLOWRESUBMIT=TRUE';
             }
 
             // Petición GET previa para obtener la página y cualquier token o cookie inicial
             $initialReq = Http::withOptions(['cookies' => $this->cookieJar, 'verify' => false, 'timeout' => 15])->get($loginUrl);
             $initialHtml = $initialReq->body();
 
-            // Extraer _FORM_SERIAL dinámico si está presente en el formulario
-            $formSerial = 'login.Login_349683880';
-            if (preg_match('/name="_FORM_SERIAL"\s+value="([^"]+)"/i', $initialHtml, $m)) {
-                $formSerial = $m[1];
+            // Extraer todos los campos ocultos del formulario inicial
+            $dom = new \DOMDocument();
+            @$dom->loadHTML(mb_convert_encoding($initialHtml, 'HTML-ENTITIES', 'UTF-8'));
+            $xpath = new \DOMXPath($dom);
+
+            $postData = [];
+            $hiddenInputs = $xpath->query("//form//input[@type='hidden']");
+            if ($hiddenInputs && $hiddenInputs->length > 0) {
+                foreach ($hiddenInputs as $input) {
+                    $name  = $input->getAttribute('name');
+                    $value = $input->getAttribute('value');
+                    if (!empty($name)) {
+                        $postData[$name] = $value;
+                    }
+                }
             }
+
+            // Configurar parámetros del formulario Cytera WSNavigatorPlus
+            $postData['_APPNAME']              = 'bpm';
+            $postData['_PAGE']                 = 'bpm';
+            $postData['_FORM']                 = 'login.Login';
+            $postData['_PROCESS']              = 'TRUE';
+            $postData['_BRANCH']               = 'ROOT';
+            $postData['m_btn_user']            = $this->username;
+            $postData['m_btn_password']        = $this->password;
+            $postData['m_btn_login']           = 'Iniciar Sesión';
+            $postData['login_encode_password'] = base64_encode($this->password);
+            $postData['login_crypt_password']  = base64_encode($this->password);
+            $postData['user']                  = $this->username;
+            $postData['password']              = $this->password;
 
             // Petición POST autenticada al Servlet Cytera NavigatorPlus del IPS
             $response = Http::asForm()
+                ->withBasicAuth($this->username, $this->password)
                 ->withOptions([
                     'cookies' => $this->cookieJar,
                     'verify'  => false,
                     'allow_redirects' => true,
                     'timeout' => 20,
                 ])
-                ->post($loginUrl, [
-                    '_APPNAME'      => 'bpm',
-                    '_PAGE'         => 'bpm',
-                    '_FORM'         => 'login.Login',
-                    '_PROCESS'      => 'TRUE',
-                    '_FORM_SERIAL'  => $formSerial,
-                    '_BRANCH'       => 'ROOT',
-                    'm_btn_user'    => $this->username,
-                    'm_btn_password'=> $this->password,
-                    'm_btn_login'   => 'Iniciar Sesión',
-                    // Fallback keys para compatibilidad
-                    'user'          => $this->username,
-                    'password'      => $this->password,
-                ]);
+                ->post($loginUrl, $postData);
 
             if ($response->successful()) {
                 $cookies = $response->cookies();
@@ -96,12 +112,17 @@ class MecipBpmScraperService
 
                 if ($jsessionCookie) {
                     $this->jsessionId = $jsessionCookie->getValue();
-                    $this->safeLog('info', "[MECIP Scraper] Sesión BPM iniciada exitosamente. JSESSIONID: {$this->jsessionId}");
-                    return true;
                 }
 
-                if (str_contains($response->body(), 'JSESSIONID') || str_contains($response->body(), 'm_process_id') || str_contains($response->body(), 'Bienvenido') || str_contains($response->body(), 'Gobernanza')) {
-                    $this->safeLog('info', "[MECIP Scraper] Autenticación BPM confirmada en cuerpo HTML de Cytera.");
+                $body = $response->body();
+
+                if (str_contains($body, 'Contraseña Incorrectos') || str_contains($body, 'Usuario o Contraseña Inválidos')) {
+                    $this->safeLog('error', "[MECIP Scraper] Error de Credenciales en BPM IPS: Usuario o Contraseña Incorrectos para '{$this->username}'.");
+                    return false;
+                }
+
+                if ($this->jsessionId || str_contains($body, 'Bienvenido') || str_contains($body, 'Gobernanza') || str_contains($body, 'm_process_id')) {
+                    $this->safeLog('info', "[MECIP Scraper] Autenticación BPM confirmada en Cytera IPS.");
                     return true;
                 }
             }
