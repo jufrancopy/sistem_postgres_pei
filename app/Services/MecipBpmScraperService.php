@@ -203,39 +203,37 @@ class MecipBpmScraperService
         $xpath = new \DOMXPath($dom);
 
         // 1. Extraer Metadatos Dinámicos del Caso/Subproceso
-        $macroproceso       = $this->extractInputOrText($xpath, "//input[@name='macroproceso'] | //span[@id='lbl_macroproceso']", 'PROCESO DE GOBERNANZA IPS');
-        $proceso            = $this->extractInputOrText($xpath, "//input[@name='proceso'] | //span[@id='lbl_proceso']", 'GESTIÓN ESTRATÉGICA E INSTITUCIONAL');
+        $macroproceso       = $this->extractInputOrText($xpath, "//input[@name='macroproceso'] | //span[@id='lbl_macroproceso']", '');
+        $proceso            = $this->extractInputOrText($xpath, "//input[@name='proceso'] | //span[@id='lbl_proceso']", '');
         $subproceso         = $this->extractInputOrText($xpath, "//input[@name='subproceso'] | //span[@id='lbl_subproceso']", '');
 
-        // Extracción Dinámica del Nombre del Subproceso o Asunto
-        if (empty($subproceso)) {
-            if (preg_match('/(?:Subproceso|Asunto|Procedimiento)\s*[:#]?\s*([^\n\r\t<]+)/i', $html, $mProc)) {
-                $subproceso = trim($mProc[1]);
-            } else {
-                $procNodes = $xpath->query("//tr[contains(., 'Proceso') or contains(., 'Subproceso')]//td[last()] | //h1 | //h2 | //title");
-                if ($procNodes && $procNodes->length > 0) {
-                    $valTitle = trim($procNodes->item(0)->textContent);
-                    if (!empty($valTitle) && !str_contains($valTitle, 'Actualización de actividades')) {
-                        $subproceso = $valTitle;
-                    }
-                }
-            }
+        // Regex para formatos de vista cy-vista-formatos y paginas BPM IPS
+        if (empty($macroproceso) && preg_match('/Macrop?oroceso:\s*(?:<\/b>)?\s*([^\n\r<]+)/i', $html, $mMacro)) {
+            $macroproceso = substr(trim(strip_tags($mMacro[1])), 0, 150);
         }
-        if (empty($subproceso)) {
-            $subproceso = 'Expediente y Procedimiento BPM IPS #' . $numeroCaso;
+        if (empty($proceso) && preg_match('/Proceso:\s*(?:<\/b>)?\s*([^\n\r<]+)/i', $html, $mProc)) {
+            $proceso = substr(trim(strip_tags($mProc[1])), 0, 150);
         }
+        if (empty($subproceso) && preg_match('/Subproceso(?:\/Procedimiento)?:\s*(?:<\/b>)?\s*([^\n\r<]+)/i', $html, $mSub)) {
+            $subproceso = substr(trim(strip_tags($mSub[1])), 0, 150);
+        }
+
+        if (empty($macroproceso)) $macroproceso = 'PROCESO DE GOBERNANZA IPS';
+        if (empty($proceso)) $proceso = 'GESTIÓN ESTRATÉGICA E INSTITUCIONAL';
+        if (empty($subproceso)) $subproceso = 'Expediente y Procedimiento BPM IPS #' . $numeroCaso;
 
         $codigoSubproceso   = $this->extractInputOrText($xpath, "//input[@name='codigo_subproceso'] | //span[@id='lbl_codigo']", 'GES-BPM-' . $numeroCaso);
-        $version            = $this->extractInputOrText($xpath, "//input[@name='version'] | //span[@id='lbl_version']", '1.0');
-        $responsableAnalisis = $this->extractInputOrText($xpath, "//input[@name='responsable'] | //span[@id='lbl_responsable']", '');
-
-        if (empty($responsableAnalisis)) {
-            if (preg_match('/(?:Realizado|Registrado|Responsable)\s*por:\s*([^\n\r\t,<]+)/i', $html, $mResp)) {
-                $responsableAnalisis = trim($mResp[1]);
-            } else {
-                $responsableAnalisis = 'Analista BPM IPS';
-            }
+        $version            = $this->extractInputOrText($xpath, "//input[@name='version'] | //span[@id='lbl_version']", '');
+        if (empty($version) && preg_match('/Versi[oó]n:\s*(?:<\/b>)?\s*([^\n\r<]+)/i', $html, $mVer)) {
+            $version = substr(trim(strip_tags($mVer[1])), 0, 30);
         }
+        if (empty($version)) $version = '1.0';
+
+        $responsableAnalisis = $this->extractInputOrText($xpath, "//input[@name='responsable'] | //span[@id='lbl_responsable']", '');
+        if (empty($responsableAnalisis) && preg_match('/(?:Elaborado|Co-Elaborado|Realizado|Responsable)\s*por:\s*(?:<\/b>)?\s*([^\n\r,<]+)/i', $html, $mResp)) {
+            $responsableAnalisis = substr(trim(strip_tags($mResp[1])), 0, 100);
+        }
+        if (empty($responsableAnalisis)) $responsableAnalisis = 'Analista BPM IPS';
 
         // 2. Extraer Tablas de Productos, Insumos, Actividades y Tareas de forma Dinámica
         $productos   = $this->extractTableRows($xpath, "//table[contains(@id, 'producto') or contains(@class, 'producto') or contains(., 'Producto') or contains(., 'Cliente')]");
@@ -429,10 +427,19 @@ class MecipBpmScraperService
         $nodes = $xpath->query($expression);
         if ($nodes && $nodes->length > 0) {
             $node = $nodes->item(0);
+            $val = '';
             if ($node->hasAttribute('value')) {
-                return trim($node->getAttribute('value'));
+                $val = trim($node->getAttribute('value'));
+            } else {
+                $val = trim($node->textContent);
             }
-            return trim($node->textContent);
+            if (!empty($val)) {
+                $val = trim(preg_replace('/\s+/', ' ', strip_tags($val)));
+                if (strlen($val) > 150) {
+                    $val = substr($val, 0, 150);
+                }
+                return $val;
+            }
         }
         return $default;
     }

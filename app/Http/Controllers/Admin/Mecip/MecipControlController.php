@@ -202,8 +202,9 @@ class MecipControlController extends Controller
                     MecipCasoComponente::create([
                         'mecip_caso_id'          => $caso->id,
                         'tipo'                   => 'insumo',
-                        'nombre'                 => is_array($ins) ? ($ins['nombre'] ?? 'Insumo') : $ins,
-                        'entidad_origen_destino' => is_array($ins) ? ($ins['proveedor'] ?? 'Proveedor') : 'Proveedor',
+                        'nombre'                 => is_array($ins) ? ($ins['nombre'] ?? ($ins['insumo'] ?? 'Insumo')) : $ins,
+                        'entidad_origen_destino' => is_array($ins) ? ($ins['proveedor'] ?? ($ins['entidad'] ?? 'Proveedor')) : 'Proveedor',
+                        'descripcion'            => is_array($ins) ? ($ins['descripcion'] ?? ($ins['caracteristicas'] ?? null)) : null,
                         'orden'                  => $idx + 1,
                     ]);
                 }
@@ -215,8 +216,9 @@ class MecipControlController extends Controller
                     MecipCasoComponente::create([
                         'mecip_caso_id'          => $caso->id,
                         'tipo'                   => 'producto',
-                        'nombre'                 => is_array($prod) ? ($prod['nombre'] ?? 'Producto') : $prod,
-                        'entidad_origen_destino' => is_array($prod) ? ($prod['cliente'] ?? 'Cliente/Grupo Interés') : 'Cliente/Grupo Interés',
+                        'nombre'                 => is_array($prod) ? ($prod['nombre'] ?? ($prod['producto'] ?? 'Producto')) : $prod,
+                        'entidad_origen_destino' => is_array($prod) ? ($prod['cliente'] ?? ($prod['entidad'] ?? 'Cliente/Grupo Interés')) : 'Cliente/Grupo Interés',
+                        'descripcion'            => is_array($prod) ? ($prod['descripcion'] ?? ($prod['caracteristicas'] ?? null)) : null,
                         'orden'                  => $idx + 1,
                     ]);
                 }
