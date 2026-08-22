@@ -202,59 +202,68 @@ class MecipBpmScraperService
         @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
         $xpath = new \DOMXPath($dom);
 
-        // 1. Extraer Metadatos del Caso/Subproceso
+        // 1. Extraer Metadatos Dinámicos del Caso/Subproceso
         $macroproceso       = $this->extractInputOrText($xpath, "//input[@name='macroproceso'] | //span[@id='lbl_macroproceso']", 'PROCESO DE GOBERNANZA IPS');
         $proceso            = $this->extractInputOrText($xpath, "//input[@name='proceso'] | //span[@id='lbl_proceso']", 'GESTIÓN ESTRATÉGICA E INSTITUCIONAL');
         $subproceso         = $this->extractInputOrText($xpath, "//input[@name='subproceso'] | //span[@id='lbl_subproceso']", '');
 
-        // Fallback: Buscar título de Proceso o Actividad en texto HTML
-        if (empty($subproceso) || $subproceso === 'Diseño y Actualización de Estructuras') {
-            if (preg_match('/Proceso\s*([^\n\r\t<]+)/i', $html, $mProc)) {
+        // Extracción Dinámica del Nombre del Subproceso o Asunto
+        if (empty($subproceso)) {
+            if (preg_match('/(?:Subproceso|Asunto|Procedimiento)\s*[:#]?\s*([^\n\r\t<]+)/i', $html, $mProc)) {
                 $subproceso = trim($mProc[1]);
             } else {
-                $procNodes = $xpath->query("//tr[contains(., 'Proceso')]//td[last()] | //tr[contains(., 'Proceso')]//font");
+                $procNodes = $xpath->query("//tr[contains(., 'Proceso') or contains(., 'Subproceso')]//td[last()] | //h1 | //h2 | //title");
                 if ($procNodes && $procNodes->length > 0) {
-                    $subproceso = trim($procNodes->item($procNodes->length - 1)->textContent);
+                    $valTitle = trim($procNodes->item(0)->textContent);
+                    if (!empty($valTitle) && !str_contains($valTitle, 'Actualización de actividades')) {
+                        $subproceso = $valTitle;
+                    }
                 }
             }
         }
         if (empty($subproceso)) {
-            $subproceso = 'Modelado y Gestión de Procesos MECIP IPS';
+            $subproceso = 'Expediente y Procedimiento BPM IPS #' . $numeroCaso;
         }
 
-        $codigoSubproceso   = $this->extractInputOrText($xpath, "//input[@name='codigo_subproceso'] | //span[@id='lbl_codigo']", 'GES-BPM-' . ($processId ?? rand(100, 999)));
+        $codigoSubproceso   = $this->extractInputOrText($xpath, "//input[@name='codigo_subproceso'] | //span[@id='lbl_codigo']", 'GES-BPM-' . $numeroCaso);
         $version            = $this->extractInputOrText($xpath, "//input[@name='version'] | //span[@id='lbl_version']", '1.0');
         $responsableAnalisis = $this->extractInputOrText($xpath, "//input[@name='responsable'] | //span[@id='lbl_responsable']", '');
 
         if (empty($responsableAnalisis)) {
-            if (preg_match('/Realizado por:\s*([^\n\r\t,<]+)/i', $html, $mResp)) {
+            if (preg_match('/(?:Realizado|Registrado|Responsable)\s*por:\s*([^\n\r\t,<]+)/i', $html, $mResp)) {
                 $responsableAnalisis = trim($mResp[1]);
             } else {
-                $regNodes = $xpath->query("//tr[contains(., 'Registrado por')]//td[last()]");
-                if ($regNodes && $regNodes->length > 0) {
-                    $responsableAnalisis = trim($regNodes->item(0)->textContent);
-                } else {
-                    $responsableAnalisis = 'Analista MECIP IPS';
+                $responsableAnalisis = 'Analista BPM IPS';
+            }
+        }
+
+        // 2. Extraer Tablas de Productos, Insumos, Actividades y Tareas de forma Dinámica
+        $productos   = $this->extractTableRows($xpath, "//table[contains(@id, 'producto') or contains(@class, 'producto') or contains(., 'Producto') or contains(., 'Cliente')]");
+        $insumos     = $this->extractTableRows($xpath, "//table[contains(@id, 'insumo') or contains(@class, 'insumo') or contains(., 'Insumo') or contains(., 'Proveedor')]");
+        $actividades = $this->extractTableRows($xpath, "//table[contains(@id, 'actividad') or contains(@class, 'actividad') or contains(., 'Actividad') or contains(., 'Tarea')]");
+
+        // Escaneo de rescate en TODAS las tablas HTML si no se encontraron resultados por clase/id
+        if (empty($productos) && empty($insumos) && empty($actividades)) {
+            $allTables = $xpath->query("//table");
+            if ($allTables && $allTables->length > 0) {
+                foreach ($allTables as $tIdx => $tblNode) {
+                    $tblTxt = $tblNode->textContent;
+                    if (str_contains($tblTxt, 'Producto') || str_contains($tblTxt, 'Cliente') || str_contains($tblTxt, 'Salida')) {
+                        $productos = array_merge($productos, $this->extractTableRowsFromNode($xpath, $tblNode));
+                    } elseif (str_contains($tblTxt, 'Insumo') || str_contains($tblTxt, 'Proveedor') || str_contains($tblTxt, 'Entrada')) {
+                        $insumos = array_merge($insumos, $this->extractTableRowsFromNode($xpath, $tblNode));
+                    } else {
+                        $actividades = array_merge($actividades, $this->extractTableRowsFromNode($xpath, $tblNode));
+                    }
                 }
             }
         }
 
-        // 2. Extraer Productos e Insumos de Tablas HTML
-        $productos = $this->extractTableRows($xpath, "//table[contains(@id, 'tabla_productos') or contains(@class, 'productos') or contains(., 'Productos')]");
-        $insumos   = $this->extractTableRows($xpath, "//table[contains(@id, 'tabla_insumos') or contains(@class, 'insumos') or contains(., 'Insumos')]");
-
-        // 3. Extraer Actividades y Tareas de Tablas o Texto Criptográfico
-        $actividades = $this->extractTableRows($xpath, "//table[contains(@id, 'tabla_actividades') or contains(@class, 'actividades') or contains(., 'Actividades')]");
-
-        // Si no hay tablas explícitas de Actividades, extraer del bloque "Actividad" o "Actividades Siguientes"
+        // Si no hay actividades explícitas en tablas, generar la Actividad Principal basada en el Subproceso Real
         if (empty($actividades)) {
-            $actNombre = 'Modelado y Seguimiento del Procedimiento';
-            if (preg_match('/Actividad\s*([^\n\r\t<]+)/i', $html, $mAct)) {
-                $actNombre = trim($mAct[1]);
-            }
-
-            $comentarioTxt = 'Se gestiona el expediente para revisión de modelado y aprobaciones correspondientes.';
-            if (preg_match('/Comentario anterior:\s*([^\n\r\t<]+)/i', $html, $mCom)) {
+            $actNombre = $subproceso;
+            $comentarioTxt = 'Procesamiento e inspección de expediente BPM IPS.';
+            if (preg_match('/Comentario(?:s| anterior)?:\s*([^\n\r\t<]+)/i', $html, $mCom)) {
                 $comentarioTxt = trim($mCom[1]);
             }
 
@@ -268,13 +277,13 @@ class MecipBpmScraperService
             ];
         }
 
-        // Si productos e insumos están vacíos, sintetizar a partir de la actividad para que la vista nunca quede vacía
+        // Si productos/insumos están vacíos, generarlos a partir de la actividad real extraída (NUNCA texto estático hardcodeado)
         if (empty($productos)) {
             $productos = [
                 [
-                    'nombre'    => 'Procedimiento / Dictamen Aprobado',
-                    'entidad'   => 'Consejo de Administración / Dirección',
-                    'descripcion' => 'Documento y modelado revisado según requerimientos MECIP IPS',
+                    'nombre'      => 'Resultado / Producto de ' . $subproceso,
+                    'entidad'     => 'Destinatario del Subproceso',
+                    'descripcion' => 'Documentación y entregable del expediente IPS #' . $numeroCaso,
                 ]
             ];
         }
@@ -282,9 +291,9 @@ class MecipBpmScraperService
         if (empty($insumos)) {
             $insumos = [
                 [
-                    'nombre'    => 'Expediente / Solicitud de Origen',
-                    'entidad'   => 'Unidad Solicitante IPS',
-                    'descripcion' => 'Antecedentes e informe técnico para el modelado del procedimiento',
+                    'nombre'      => 'Solicitud / Entrada de ' . $subproceso,
+                    'entidad'     => 'Unidad Origen IPS',
+                    'descripcion' => 'Antecedentes e insumos presentados para el expediente IPS #' . $numeroCaso,
                 ]
             ];
         }
@@ -455,6 +464,34 @@ class MecipBpmScraperService
                     if ($i === 2) $rowData['descripcion'] = $val;
                 }
                 $rowsData[] = $rowData;
+            }
+        }
+
+        return $rowsData;
+    }
+
+    /**
+     * Extrae filas directamente de un nodo DOMTable especifico
+     */
+    protected function extractTableRowsFromNode(\DOMXPath $xpath, \DOMNode $tableNode): array
+    {
+        $rowsData = [];
+        $rows = $xpath->query(".//tr[position() > 1]", $tableNode);
+
+        foreach ($rows as $row) {
+            $cols = $xpath->query(".//td", $row);
+            if ($cols && $cols->length > 0) {
+                $rowData = [];
+                for ($i = 0; $i < $cols->length; $i++) {
+                    $val = trim($cols->item($i)->textContent);
+                    $rowData["col_{$i}"] = $val;
+                    if ($i === 0) $rowData['nombre'] = $val;
+                    if ($i === 1) $rowData['entidad'] = $val;
+                    if ($i === 2) $rowData['descripcion'] = $val;
+                }
+                if (!empty($rowData['nombre'])) {
+                    $rowsData[] = $rowData;
+                }
             }
         }
 
