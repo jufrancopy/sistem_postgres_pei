@@ -21,7 +21,8 @@ class MecipBpmScraperService
 
     public function __construct(?string $baseUrl = null, ?string $username = null, ?string $password = null)
     {
-        $this->baseUrl  = rtrim($baseUrl ?? config('services.mecip_bpm.base_url', env('MECIP_BPM_BASE_URL', 'http://bpm.ips.gov.py')), '/');
+        $defaultUrl = env('MECIP_BPM_BASE_URL', 'https://servicios.ips.gov.py/ips/servlet/WSNavigatorPlus');
+        $this->baseUrl  = rtrim($baseUrl ?? config('services.mecip_bpm.base_url', $defaultUrl), '/');
         $this->username = $username ?? config('services.mecip_bpm.user', env('MECIP_BPM_USER', ''));
         $this->password = $password ?? config('services.mecip_bpm.password', env('MECIP_BPM_PASSWORD', ''));
     }
@@ -37,9 +38,22 @@ class MecipBpmScraperService
         }
 
         try {
-            $loginUrl = "{$this->baseUrl}/WSNavigatorPlus";
+            $loginUrl = str_contains($this->baseUrl, 'WSNavigatorPlus') ? $this->baseUrl : "{$this->baseUrl}/WSNavigatorPlus";
+            if (!str_contains($loginUrl, '_ALLOWRESUBMIT=TRUE')) {
+                $loginUrl .= (str_contains($loginUrl, '?') ? '&' : '?') . '_ALLOWRESUBMIT=TRUE';
+            }
 
-            // Petición POST autenticada al Servlet WSNavigatorPlus
+            // Petición GET previa para obtener la página y cualquier token o cookie inicial
+            $initialReq = Http::withOptions(['cookies' => true, 'verify' => false, 'timeout' => 15])->get($loginUrl);
+            $initialHtml = $initialReq->body();
+
+            // Extraer _FORM_SERIAL dinámico si está presente en el formulario
+            $formSerial = 'login.Login_349683880';
+            if (preg_match('/name="_FORM_SERIAL"\s+value="([^"]+)"/i', $initialHtml, $m)) {
+                $formSerial = $m[1];
+            }
+
+            // Petición POST autenticada al Servlet Cytera NavigatorPlus del IPS
             $response = Http::asForm()
                 ->withOptions([
                     'cookies' => true,
@@ -48,14 +62,21 @@ class MecipBpmScraperService
                     'timeout' => 20,
                 ])
                 ->post($loginUrl, [
-                    '_APPNAME' => 'bpm',
-                    'user'     => $this->username,
-                    'password' => $this->password,
-                    'action'   => 'login',
+                    '_APPNAME'      => 'bpm',
+                    '_PAGE'         => 'bpm',
+                    '_FORM'         => 'login.Login',
+                    '_PROCESS'      => 'TRUE',
+                    '_FORM_SERIAL'  => $formSerial,
+                    '_BRANCH'       => 'ROOT',
+                    'm_btn_user'    => $this->username,
+                    'm_btn_password'=> $this->password,
+                    'm_btn_login'   => 'Iniciar Sesión',
+                    // Fallback keys para compatibilidad
+                    'user'          => $this->username,
+                    'password'      => $this->password,
                 ]);
 
             if ($response->successful()) {
-                // Capturar JSESSIONID de los headers Set-Cookie o del cliente HTTP
                 $cookies = $response->cookies();
                 $jsessionCookie = $cookies->getCookieByName('JSESSIONID');
 
@@ -65,9 +86,8 @@ class MecipBpmScraperService
                     return true;
                 }
 
-                // Fallback: Verificar si el body indica éxito de autenticación
-                if (str_contains($response->body(), 'JSESSIONID') || str_contains($response->body(), 'm_process_id') || str_contains($response->body(), 'Bienvenido')) {
-                    Log::info("[MECIP Scraper] Autenticación BPM confirmada en cuerpo HTML.");
+                if (str_contains($response->body(), 'JSESSIONID') || str_contains($response->body(), 'm_process_id') || str_contains($response->body(), 'Bienvenido') || str_contains($response->body(), 'Gobernanza')) {
+                    Log::info("[MECIP Scraper] Autenticación BPM confirmada en cuerpo HTML de Cytera.");
                     return true;
                 }
             }
