@@ -215,36 +215,105 @@
             </div>
         </div>
 
-        {{-- TABLAS DATATABLES: INSUMOS/PRODUCTOS Y DEBATE CON LÍDER --}}
+        {{-- TABLAS ESTRUCTURADAS COMPLETAS MECIP BPM --}}
+        
+        {{-- 1. TABLA COMPLETA DE ACTIVIDADES Y TAREAS --}}
         <div class="row px-3 mb-4">
-            {{-- Componentes --}}
-            <div class="col-md-6 mb-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white font-weight-bold text-dark border-bottom py-3">
-                        <i class="fas fa-exchange-alt text-primary mr-2"></i> Insumos (Proveedores) & Productos (Clientes)
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-dark text-white font-weight-bold d-flex align-items-center justify-content-between py-3">
+                        <span><i class="fas fa-tasks text-info mr-2"></i> 📋 Matriz Completa de Actividades y Tareas del Subproceso</span>
+                        <span class="badge badge-light text-dark font-weight-bold">{{ $caso->actividades->count() }} Actividad(es)</span>
                     </div>
                     <div class="card-body p-3">
                         <div class="table-responsive">
-                            <table class="table table-sm table-bordered table-hover data-table text-dark" id="tblInsumosProductos" style="width:100%;">
+                            <table class="table table-bordered table-hover text-dark data-table mb-0" id="tblMatrizActividades" style="width:100%;">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th style="width: 80px;" class="text-center">Tipo</th>
-                                        <th>Nombre / Descripción</th>
-                                        <th>Origen / Destino</th>
+                                        <th style="width: 100px;" class="text-center">Código</th>
+                                        <th>Nombre de la Actividad / Procedimiento</th>
+                                        <th style="width: 180px;">Responsable</th>
+                                        <th>Tareas e Instrucciones Asociadas</th>
+                                        <th style="width: 120px;" class="text-center">Tiempo Est.</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($caso->componentes as $comp)
+                                    @forelse($caso->actividades as $act)
+                                        @php
+                                            $tiempoTotalAct = $act->tareas->sum('tiempo_estimado_minutos');
+                                        @endphp
                                         <tr>
-                                            <td class="text-center align-middle">
-                                                <span class="badge {{ $comp->tipo === 'insumo' ? 'badge-info' : 'badge-success' }} font-weight-bold px-2 py-0.5">
-                                                    {{ strtoupper($comp->tipo) }}
-                                                </span>
+                                            <td class="text-center align-middle font-weight-bold">
+                                                <span class="badge badge-info px-2 py-1">{{ $act->codigo_actividad }}</span>
                                             </td>
-                                            <td class="align-middle font-weight-bold">{{ $comp->nombre }}</td>
-                                            <td class="align-middle text-muted small">{{ $comp->entidad_origen_destino ?: 'IPS' }}</td>
+                                            <td class="align-middle font-weight-bold text-dark">{{ $act->nombre }}</td>
+                                            <td class="align-middle text-muted small"><i class="fas fa-user-tag text-info mr-1"></i> {{ $act->responsable ?: 'Analista IPS' }}</td>
+                                            <td class="align-middle">
+                                                @if($act->tareas->count() > 0)
+                                                    <ul class="pl-3 mb-0 text-dark small" style="line-height: 1.5;">
+                                                        @foreach($act->tareas as $tar)
+                                                            <li>
+                                                                <strong class="text-dark">{{ $tar->descripcion }}</strong>
+                                                                @if($tar->tiempo_estimado_minutos)
+                                                                    <span class="badge badge-light border text-muted ml-1">{{ $tar->tiempo_estimado_minutos }}m</span>
+                                                                @endif
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                @else
+                                                    <span class="text-muted font-italic small">Sin tareas secundarias desglosadas.</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center align-middle font-weight-bold text-dark">
+                                                {{ $tiempoTotalAct ?: 30 }} min
+                                            </td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted p-4">No hay actividades registradas en este subproceso.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- 2. TABLAS DE PRODUCTOS (CLIENTES) E INSUMOS (PROVEEDORES) SEPARADAS --}}
+        <div class="row px-3 mb-4">
+            {{-- Productos (Clientes) --}}
+            <div class="col-md-6 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white font-weight-bold text-dark border-bottom py-3 d-flex align-items-center justify-content-between">
+                        <span><i class="fas fa-box-open text-success mr-2"></i> 📦 Productos Salientes (Clientes / Entregables)</span>
+                        <span class="badge badge-success font-weight-bold">{{ $caso->productos->count() }} Producto(s)</span>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered table-hover data-table text-dark mb-0" id="tblProductosClientes" style="width:100%;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Nombre del Producto / Entregable</th>
+                                        <th>Cliente / Entidad Destino</th>
+                                        <th>Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($caso->productos as $prod)
+                                        <tr>
+                                            <td class="align-middle font-weight-bold text-dark">
+                                                <i class="fas fa-file-alt text-success mr-1"></i> {{ $prod->nombre }}
+                                            </td>
+                                            <td class="align-middle text-dark small font-weight-bold">{{ $prod->entidad_origen_destino ?: 'Consejo de Administración / Dirección' }}</td>
+                                            <td class="align-middle text-muted small">{{ $prod->descripcion ?: 'Documento final del procedimiento' }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted p-3">No hay productos registrados.</td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
@@ -252,15 +321,55 @@
                 </div>
             </div>
 
-            {{-- Resumen de Tiempos y Dictámenes --}}
+            {{-- Insumos (Proveedores) --}}
             <div class="col-md-6 mb-3">
                 <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white font-weight-bold text-dark border-bottom py-3 d-flex align-items-center justify-content-between">
+                        <span><i class="fas fa-file-import text-info mr-2"></i> 📥 Insumos Entrantes (Proveedores / Requisitos)</span>
+                        <span class="badge badge-info font-weight-bold">{{ $caso->insumos->count() }} Insumo(s)</span>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered table-hover data-table text-dark mb-0" id="tblInsumosProveedores" style="width:100%;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Nombre del Insumo / Requisito</th>
+                                        <th>Proveedor / Entidad Origen</th>
+                                        <th>Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($caso->insumos as $ins)
+                                        <tr>
+                                            <td class="align-middle font-weight-bold text-dark">
+                                                <i class="fas fa-folder-open text-info mr-1"></i> {{ $ins->nombre }}
+                                            </td>
+                                            <td class="align-middle text-dark small font-weight-bold">{{ $ins->entidad_origen_destino ?: 'Unidad Solicitante IPS' }}</td>
+                                            <td class="align-middle text-muted small">{{ $ins->descripcion ?: 'Antecedentes de entrada para el procedimiento' }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted p-3">No hay insumos registrados.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Dictamen Final --}}
+        <div class="row px-3 mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white font-weight-bold text-dark border-bottom py-3">
                         <i class="fas fa-clipboard-check text-success mr-2"></i> Dictamen Final & Cierre del Análisis
                     </div>
                     <div class="card-body p-4">
                         @if($caso->dictamen_final)
-                            <div class="alert alert-success border-0 shadow-sm" style="border-radius: 10px; border-left: 5px solid #22c55e !important;">
+                            <div class="alert alert-success border-0 shadow-sm mb-0" style="border-radius: 10px; border-left: 5px solid #22c55e !important;">
                                 <h6 class="font-weight-bold text-success mb-1"><i class="fas fa-award mr-1"></i> Dictamen Aprobado por Administrador:</h6>
                                 <p class="mb-0 text-dark font-italic" style="font-size: 0.92rem;">
                                     "{{ $caso->dictamen_final }}"
