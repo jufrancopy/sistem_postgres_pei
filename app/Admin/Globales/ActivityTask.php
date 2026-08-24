@@ -76,4 +76,9 @@ class ActivityTask extends Model
     {
         return $this->hasOne(ActivityTaskActa::class, 'activity_task_id');
     }
+
+    public function reunionPhotos()
+    {
+        return $this->hasMany(ActivityReunionPhoto::class, 'activity_task_id')->orderBy('created_at', 'asc');
+    }
 }

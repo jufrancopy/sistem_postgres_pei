@@ -457,6 +457,7 @@
 @include('admin.globales.activities.partials.modal_ayuda', ['isScrumActivity' => $isScrumActivity])
 @include('admin.globales.activities.partials.modal_detalle_tarea')
 @include('admin.globales.activities.partials.modal_reuniones')
+@include('admin.globales.activities.partials.modal_galeria_reunion')
 @include('admin.globales.activities.partials.modal_documentos')
 @include('admin.globales.activities.partials.modal_seguimientos')
 @include('admin.globales.activities.partials.modal_editor_acta_mecip')
@@ -1353,6 +1354,18 @@ $('#btnLimpiarFiltro').on('click', function(e) {
                   render: function(d) { return '<span style="font-size:.78rem">' + (d || '—') + '</span>'; } },
                 { data: null,         title: 'Acta MECIP / Evidencias', width: '180px', className: 'text-center', orderable: false,
                   render: function(d, t, r) { return buildActa(r); } },
+                { data: null,         title: '<i class="fa fa-camera mr-1 text-info"></i>Fotos', width: '90px', className: 'text-center', orderable: false,
+                  render: function(d, t, r) {
+                      var canUpload = {{ auth()->user()->hasAnyRole(['superadmin','admin','coordinador_planificacion']) ? 'true' : 'false' }};
+                      var badge = r.foto_count > 0
+                          ? '<span class="badge badge-pill badge-info" style="font-size:.7rem">' + r.foto_count + '</span> '
+                          : '';
+                      return '<button type="button" class="btn btn-sm btn-outline-info py-0 px-2 btnVerGaleriaReunion" '
+                          + 'data-task-id="' + r.id + '" data-titulo="' + (r.title || 'Reunión') + '" '
+                          + 'data-can-upload="' + (r.can_upload ? '1' : '0') + '" '
+                          + 'title="Galería de fotos" style="font-size:.7rem">' + badge
+                          + '<i class="fa fa-camera"></i></button>';
+                  } },
             ],
             dom: '<"d-flex align-items-center mb-2"f>t',
             drawCallback: function() {
@@ -1437,6 +1450,27 @@ $('#btnLimpiarFiltro').on('click', function(e) {
         $('#actaPdfFrame').attr('src', '');
         $('#modalReuniones').modal('show');
     });
+
+    // ── Galería de Fotos de Reunión ─────────────────────────────────────────
+    $(document).on('click', '.btnVerGaleriaReunion', function() {
+        var taskId    = $(this).data('task-id');
+        var titulo    = $(this).data('titulo');
+        var canUpload = $(this).data('can-upload') == 1;
+        $('#modalReuniones').modal('hide');
+        setTimeout(function() {
+            abrirGaleriaReunion(taskId, titulo, canUpload);
+        }, 350);
+    });
+
+    $('#modalGaleriaReunion').on('hidden.bs.modal', function() {
+        // Reabrir el listado de reuniones y actualizar contadores de fotos
+        $('#modalReuniones').modal('show');
+        $.getJSON(_reunionesUrl, function(data) {
+            _reunionesData = data;
+            filtrarDt(_filtroActivo);
+        });
+    });
+
 })();
 // ══ FIN REUNIONES ════════════════════════════════════════════════════════════
 </script>

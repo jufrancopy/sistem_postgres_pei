@@ -42,6 +42,9 @@
                                 <th style="width:90px" class="text-center">Estado</th>
                                 <th style="width:90px" class="text-center">Fecha</th>
                                 <th style="min-width:180px" class="text-center">Acta MECIP / Evidencia</th>
+                                <th style="width:90px" class="text-center">
+                                    <i class="fa fa-camera mr-1 text-info"></i>Fotos
+                                </th>
                             </tr>
                         </thead>
                         <tbody id="reunionesBody"></tbody>

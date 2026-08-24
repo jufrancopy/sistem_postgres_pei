@@ -569,6 +569,12 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('activities/tareas/{taskId}/comentarios', 'Admin\Globales\ActivityController@storeComentario')->name('activities.tareas.comentarios.store');
         Route::delete('activities/tareas/comentarios/{commentId}', 'Admin\Globales\ActivityController@destroyComentario')->name('activities.tareas.comentarios.destroy');
 
+        // ── Galería de Fotos de Reunión ────────────────────────────────────────
+        Route::get('activities/reuniones/{taskId}/fotos', 'Admin\Globales\ActivityController@getReunionPhotos')->name('activities.reuniones.fotos.index');
+        Route::post('activities/reuniones/{taskId}/fotos', 'Admin\Globales\ActivityController@storeReunionPhoto')->name('activities.reuniones.fotos.store');
+        Route::delete('activities/reuniones/fotos/{photoId}', 'Admin\Globales\ActivityController@destroyReunionPhoto')->name('activities.reuniones.fotos.destroy');
+
+
         // ── Actas de Reunión MECIP ──────────────────────────────────────────
         Route::get('activities/tareas/{taskId}/acta-mecip', 'Admin\Globales\ActaMecipController@getActa')->name('activities.acta-mecip.get');
         Route::post('activities/tareas/{taskId}/acta-mecip', 'Admin\Globales\ActaMecipController@storeOrUpdate')->name('activities.acta-mecip.store');

@@ -11,8 +11,10 @@ use App\Admin\Globales\Activity;
 use App\Admin\Globales\ActivityTask;
 use App\Admin\Globales\ActivityTaskEvidence;
 use App\Admin\Globales\ActivityTaskComment;
+use App\Admin\Globales\ActivityReunionPhoto;
 use App\Notifications\ActividadTareaNotification;
 use App\Notifications\ActividadComentarioNotification;
+use Intervention\Image\Facades\Image as InterventionImage;
 
 class ActivityController extends Controller
 {
@@ -298,7 +300,11 @@ class ActivityController extends Controller
     public function reuniones(int $activityId)
     {
         $activity  = \App\Admin\Globales\Activity::findOrFail($activityId);
+        $authUser  = Auth::user();
+        $isAdmin   = $authUser->hasAnyRole(['superadmin', 'admin', 'coordinador_planificacion']);
+
         $reuniones = ActivityTask::with(['assignedTo', 'evidences', 'acta.participantes'])
+            ->withCount('reunionPhotos')
             ->where('activity_id', $activityId)
             ->where('es_reunion', true)
             ->orderBy('fecha_inicio')
@@ -322,6 +328,8 @@ class ActivityController extends Controller
             'acta_estado'       => $t->acta?->estado,
             'acta_participantes_count' => $t->acta ? $t->acta->participantes->count() : 0,
             'acta_public_url'   => $t->acta ? route('actas.public.show', $t->acta->uuid) : null,
+            'foto_count'        => $t->reunion_photos_count ?? 0,
+            'can_upload'        => $isAdmin || $t->assigned_to === $authUser->id,
             'evidencias'        => $t->evidences->map(fn($e) => [
                 'id'    => $e->id,
                 'type'  => $e->type,
@@ -748,5 +756,151 @@ class ActivityController extends Controller
         $userId = Auth::id();
 
         return view('admin.globales.activities.mis_tareas', compact('activity', 'userId'));
+    }
+
+    // ── Galería de Fotos de Reunión ───────────────────────────────
+
+    /**
+     * GET /admin/globales/activities/reuniones/{taskId}/fotos
+     * Retorna JSON con las fotos de una reunión.
+     */
+    public function getReunionPhotos($taskId)
+    {
+        $task = ActivityTask::where('es_reunion', true)->findOrFail($taskId);
+
+        $photos = $task->reunionPhotos()->with('uploader')->get()->map(fn($p) => [
+            'id'           => $p->id,
+            'url'          => $p->url,
+            'thumb_url'    => $p->thumb_url,
+            'original_name'=> $p->original_name,
+            'size_human'   => $p->size_human,
+            'uploader'     => optional($p->uploader)->name ?? 'Sistema',
+            'created_at'   => $p->created_at?->format('d/m/Y H:i'),
+        ]);
+
+        return response()->json([
+            'photos' => $photos,
+            'count'  => $photos->count(),
+            'limit'  => 3,
+        ]);
+    }
+
+    /**
+     * POST /admin/globales/activities/reuniones/{taskId}/fotos
+     * Procesa la imagen a WebP, crea miniatura, guarda y registra.
+     */
+    public function storeReunionPhoto(Request $request, $taskId)
+    {
+        $task = ActivityTask::where('es_reunion', true)->findOrFail($taskId);
+
+        // Control de permisos: responsable asignado o admin/coordinador
+        $user     = Auth::user();
+        $isAdmin  = $user->hasAnyRole(['superadmin', 'admin', 'coordinador_planificacion']);
+        $isOwner  = $task->assigned_to === $user->id;
+
+        if (!$isAdmin && !$isOwner) {
+            return response()->json(['error' => 'No tienes permiso para subir fotos a esta reunión.'], 403);
+        }
+
+        // Límite máximo de fotos
+        $currentCount = $task->reunionPhotos()->count();
+        if ($currentCount >= 3) {
+            return response()->json(['error' => 'Esta reunión ya tiene el máximo de 3 fotos permitidas.'], 422);
+        }
+
+        $request->validate([
+            'photo' => 'required|file|image|mimes:jpeg,jpg,png,webp,gif|max:10240',
+        ], [
+            'photo.required' => 'Seleccione una imagen.',
+            'photo.image'    => 'El archivo debe ser una imagen.',
+            'photo.mimes'    => 'Formatos aceptados: JPG, PNG, WebP o GIF.',
+            'photo.max'      => 'La imagen no debe superar los 10 MB.',
+        ]);
+
+        $file         = $request->file('photo');
+        $originalName = $file->getClientOriginalName();
+        $baseName     = pathinfo($originalName, PATHINFO_FILENAME);
+        $safeName     = preg_replace('/[^a-zA-Z0-9_-]/', '_', $baseName);
+        $uniqueId     = uniqid();
+        $dir          = "reunion_fotos/{$task->activity_id}/{$taskId}";
+
+        // Paths finales
+        $fullPath  = "{$dir}/{$uniqueId}_{$safeName}.webp";
+        $thumbPath = "{$dir}/thumb_{$uniqueId}_{$safeName}.webp";
+
+        // --- Procesar imagen full (max 1280px de ancho, calidad 80 WebP) ---
+        $imgFull = InterventionImage::make($file->getRealPath())
+            ->orientate()               // respetar EXIF rotation
+            ->resize(1280, null, function ($c) {
+                $c->aspectRatio();
+                $c->upsize(false);      // no agrandar si es más pequeña
+            });
+
+        $fullEncoded = $imgFull->encode('webp', 80);
+        Storage::disk('public')->put($fullPath, (string) $fullEncoded);
+        $sizeBytes = Storage::disk('public')->size($fullPath);
+
+        // --- Procesar miniatura (300×200px recortada y centrada) ---
+        $imgThumb = InterventionImage::make($file->getRealPath())
+            ->orientate()
+            ->fit(300, 200);
+
+        $thumbEncoded = $imgThumb->encode('webp', 75);
+        Storage::disk('public')->put($thumbPath, (string) $thumbEncoded);
+
+        // Guardar registro
+        $photo = ActivityReunionPhoto::create([
+            'activity_task_id' => $task->id,
+            'filename'         => $fullPath,
+            'thumb_path'       => $thumbPath,
+            'original_name'    => $originalName,
+            'size_bytes'       => $sizeBytes,
+            'uploaded_by'      => Auth::id(),
+        ]);
+
+        $photo->load('uploader');
+
+        return response()->json([
+            'success' => 'Foto subida y optimizada exitosamente.',
+            'photo'   => [
+                'id'            => $photo->id,
+                'url'           => $photo->url,
+                'thumb_url'     => $photo->thumb_url,
+                'original_name' => $photo->original_name,
+                'size_human'    => $photo->size_human,
+                'uploader'      => optional($photo->uploader)->name ?? 'Sistema',
+                'created_at'    => $photo->created_at?->format('d/m/Y H:i'),
+            ],
+            'count'   => $task->reunionPhotos()->count(),
+        ]);
+    }
+
+    /**
+     * DELETE /admin/globales/activities/reuniones/fotos/{photoId}
+     * Elimina la foto física y el registro de base de datos.
+     */
+    public function destroyReunionPhoto($photoId)
+    {
+        $photo = ActivityReunionPhoto::findOrFail($photoId);
+
+        $user    = Auth::user();
+        $isAdmin = $user->hasAnyRole(['superadmin', 'admin', 'coordinador_planificacion']);
+        $isOwner = $photo->uploaded_by === $user->id;
+
+        if (!$isAdmin && !$isOwner) {
+            return response()->json(['error' => 'No tienes permiso para eliminar esta foto.'], 403);
+        }
+
+        // Eliminar archivos físicos
+        if (Storage::disk('public')->exists($photo->filename)) {
+            Storage::disk('public')->delete($photo->filename);
+        }
+        if (Storage::disk('public')->exists($photo->thumb_path)) {
+            Storage::disk('public')->delete($photo->thumb_path);
+        }
+
+        $photo->delete();
+
+        return response()->json(['success' => 'Foto eliminada correctamente.']);
     }
 }
