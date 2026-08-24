@@ -52,7 +52,7 @@
                             </div>
                         </div>
                     @endif
-                    @if (count($errors))
+                    @if (isset($errors) && count($errors))
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="alert alert-danger">

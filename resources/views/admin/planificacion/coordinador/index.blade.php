@@ -2121,6 +2121,9 @@
                         }
                     }
                 }, 100);
+            }
+        });
+
         $(document).on('click', '.btnVerReporteAportes', function () {
             var peiId = $(this).data('pei-id');
             if (!peiId) return;
