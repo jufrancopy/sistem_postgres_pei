@@ -1,5 +1,4 @@
-{{-- ══ Modal Editor Proforma Acta MECIP (Word Interno) ════════════════════════ --}}
-<div class="modal fade" id="modalEditorActaMecip" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" style="background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 1055;">
+<div class="modal fade" id="modalEditorActaMecip" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" style="z-index: 1060;">
     <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document" style="max-width: 1100px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden; background: #f8fafc;">
             

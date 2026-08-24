@@ -11,6 +11,17 @@
     --col-done:     #10b981;
 }
 
+/* ── Modales Apilados (Stacked Modals) ── */
+#modalReuniones { z-index: 1050 !important; }
+#modalEditorActaMecip { z-index: 1060 !important; }
+#modalQrActa { z-index: 1070 !important; }
+#modalAddParticipanteManual { z-index: 1075 !important; }
+#modalActaPdf { z-index: 1080 !important; }
+
+/* Un solo backdrop en la base: los modales apilados nunca quedan tapados */
+.modal-backdrop { z-index: 1040 !important; }
+.modal-backdrop + .modal-backdrop { display: none !important; }
+
 /* ── Header ── */
 .activity-hero {
     background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
@@ -457,7 +468,6 @@
 @include('admin.globales.activities.partials.modal_ayuda', ['isScrumActivity' => $isScrumActivity])
 @include('admin.globales.activities.partials.modal_detalle_tarea')
 @include('admin.globales.activities.partials.modal_reuniones')
-@include('admin.globales.activities.partials.modal_galeria_reunion')
 @include('admin.globales.activities.partials.modal_documentos')
 @include('admin.globales.activities.partials.modal_seguimientos')
 @include('admin.globales.activities.partials.modal_editor_acta_mecip')
@@ -1478,30 +1488,209 @@ $('#btnLimpiarFiltro').on('click', function(e) {
         $('#modalReuniones').modal('show');
     });
 
-    // ── Galería de Fotos de Reunión ─────────────────────────────────────────
+    // ── Galería de Fotos de Reunión (Vista Interna) ───────────────────────────
+    var _galeriaTaskId  = null;
+    var _galeriaCsrf    = "{{ csrf_token() }}";
+    var _galeriaBase    = "{{ url('admin/globales/activities/reuniones') }}";
+    var _galeriaDelBase = "{{ url('admin/globales/activities/reuniones/fotos') }}";
+
     $(document).on('click', '.btnVerGaleriaReunion', function() {
-        if (document.activeElement) document.activeElement.blur();
         var taskId = $(this).data('task-id');
         var titulo = $(this).data('titulo');
-
-        // Esperar a que modalReuniones se oculte del todo antes de abrir la galería
-        if ($('#modalReuniones').hasClass('show')) {
-            $('#modalReuniones').one('hidden.bs.modal', function () {
-                abrirGaleriaReunion(taskId, titulo);
-            }).modal('hide');
-        } else {
-            abrirGaleriaReunion(taskId, titulo);
-        }
+        abrirGaleriaReunion(taskId, titulo);
     });
 
-    $('#modalGaleriaReunion').on('hidden.bs.modal', function() {
-        if (document.activeElement) document.activeElement.blur();
-        if ($('#modalReuniones').length) {
-            $('#modalReuniones').modal('show');
-            $.getJSON(_reunionesUrl, function(data) {
-                _reunionesData = data;
-                filtrarDt(_filtroActivo);
-            });
+    $(document).on('click', '.btnVolverReunionesList', function() {
+        cerrarGaleriaReunion();
+    });
+
+    function abrirGaleriaReunion(taskId, titulo) {
+        _galeriaTaskId = taskId;
+        $('#galeriaTituloReunion').text(titulo || 'Fotos de la Reunión');
+        $('#reunionesViewTable').addClass('d-none');
+        $('#reunionesViewGaleria').removeClass('d-none');
+        galeriaCargarFotos();
+    }
+
+    function cerrarGaleriaReunion() {
+        $('#reunionesViewGaleria').addClass('d-none');
+        $('#reunionesViewTable').removeClass('d-none');
+        // Actualizar datos del listado de reuniones
+        $.getJSON(_reunionesUrl, function(data) {
+            _reunionesData = data;
+            filtrarDt(_filtroActivo);
+        });
+    }
+
+    function galeriaCargarFotos() {
+        if (!_galeriaTaskId) return;
+        var url = _galeriaBase + '/' + _galeriaTaskId + '/fotos';
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function(r) { return r.json(); })
+            .then(function(data) { galeriaRenderizar(data.photos, data.count); })
+            .catch(function() { if (window.toastr) toastr.error('No se pudieron cargar las fotos.'); });
+    }
+
+    function galeriaRenderizar(photos, count) {
+        var grid   = document.getElementById('galeriaGrid');
+        var vacia  = document.getElementById('galeriaVacia');
+        var ccount = document.getElementById('galeriaCount');
+        var pbar   = document.getElementById('galeriaProgressBar');
+        var zone   = document.getElementById('galeriaUploadZone');
+
+        count = count || (photos ? photos.length : 0);
+        if (ccount) ccount.textContent = count;
+        if (pbar) {
+            pbar.style.width = Math.round((count / 3) * 100) + '%';
+            pbar.className   = 'progress-bar ' + (count >= 3 ? 'bg-danger' : 'bg-info');
+        }
+        if (zone) zone.style.display = (count >= 3) ? 'none' : '';
+
+        if (!grid) return;
+        grid.innerHTML = '';
+        if (!photos || photos.length === 0) {
+            if (vacia) vacia.style.display = '';
+            return;
+        }
+        if (vacia) vacia.style.display = 'none';
+
+        photos.forEach(function(p) {
+            var card = document.createElement('div');
+            card.style.cssText = 'position:relative;width:220px;height:150px;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.15);flex-shrink:0;background:#e2e8f0';
+            card.innerHTML = '\
+                <img src="' + p.thumb_url + '" alt="' + p.original_name + '"\
+                     style="width:100%;height:100%;object-fit:cover;cursor:zoom-in;transition:transform .25s"\
+                     onclick="galeriaOpenLightbox(\'' + p.url + '\', \'' + (p.original_name || '') + ' — Subida por ' + (p.uploader || '') + ' ' + (p.created_at || '') + '\')" \
+                     onmouseover="this.style.transform=\'scale(1.04)\'" onmouseout="this.style.transform=\'\'">\
+                <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.65));padding:6px 8px">\
+                    <p class="mb-0 text-white" style="font-size:.68rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">\
+                        <i class="fa fa-image mr-1" style="opacity:.7"></i>' + (p.original_name || 'foto') + '</p>\
+                    <p class="mb-0 text-white" style="font-size:.63rem;opacity:.7">' + (p.size_human || '') + ' WebP · ' + (p.created_at || '') + '</p>\
+                </div>\
+                <button onclick="galeriaEliminarFoto(' + p.id + ')" title="Eliminar foto"\
+                        style="position:absolute;top:6px;right:6px;background:rgba(220,38,38,.85);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center">\
+                    <i class="fa fa-trash"></i></button>\
+            ';
+            grid.appendChild(card);
+        });
+    }
+
+    // Subida via file input change
+    var fileInput = document.getElementById('galeriaFileInput');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) galeriaSubirFoto(this.files[0]);
+            this.value = '';
+        });
+    }
+
+    window.galeriaHandleDrop = function(e) {
+        e.preventDefault();
+        var zone = document.getElementById('galeriaUploadZone');
+        if (zone) { zone.style.borderColor = '#3b82f6'; zone.style.background = '#fff'; }
+        var file = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files[0] : null;
+        if (file && file.type.startsWith('image/')) galeriaSubirFoto(file);
+        else if (window.toastr) toastr.warning('Solo se aceptan archivos de imagen.');
+    };
+
+    function galeriaSubirFoto(file) {
+        if (!_galeriaTaskId) return;
+        var content  = document.getElementById('galeriaUploadContent');
+        var progress = document.getElementById('galeriaUploadProgress');
+        if (content) content.classList.add('d-none');
+        if (progress) progress.classList.remove('d-none');
+
+        var formData = new FormData();
+        formData.append('photo', file);
+        formData.append('_token', _galeriaCsrf);
+
+        fetch(_galeriaBase + '/' + _galeriaTaskId + '/fotos', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (content) content.classList.remove('d-none');
+            if (progress) progress.classList.add('d-none');
+            if (data.error) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'error', title: 'No se pudo subir la foto', text: data.error });
+                } else if (window.toastr) toastr.error(data.error);
+            } else {
+                if (window.toastr) toastr.success(data.success || 'Foto subida y optimizada.');
+                galeriaCargarFotos();
+            }
+        })
+        .catch(function() {
+            if (content) content.classList.remove('d-none');
+            if (progress) progress.classList.add('d-none');
+            if (window.toastr) toastr.error('Error al subir la imagen.');
+        });
+    }
+
+    window.galeriaEliminarFoto = function(photoId) {
+        if (typeof Swal === 'undefined') {
+            if (!confirm('¿Eliminar esta foto?')) return;
+            _galeriaDoDelete(photoId);
+            return;
+        }
+        Swal.fire({
+            title: '¿Eliminar esta foto?',
+            text: 'La imagen se borrará permanentemente del servidor.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fa fa-trash mr-1"></i> Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then(function(res) {
+            if (res.isConfirmed) _galeriaDoDelete(photoId);
+        });
+    };
+
+    function _galeriaDoDelete(photoId) {
+        fetch(_galeriaDelBase + '/' + photoId, {
+            method: 'DELETE',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': _galeriaCsrf }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.error) {
+                if (window.toastr) toastr.error(data.error);
+            } else {
+                if (window.toastr) toastr.success(data.success || 'Foto eliminada.');
+                galeriaCargarFotos();
+            }
+        })
+        .catch(function() { if (window.toastr) toastr.error('Error al eliminar la foto.'); });
+    }
+
+    window.galeriaOpenLightbox = function(url, caption) {
+        var box = document.getElementById('galeriaLightbox');
+        var img = document.getElementById('galeriaLightboxImg');
+        var cap = document.getElementById('galeriaLightboxCaption');
+        if (img) img.src = url;
+        if (cap) cap.textContent = caption || '';
+        if (box) box.style.display = 'flex';
+    };
+
+    window.galeriaCloseLightbox = function() {
+        var box = document.getElementById('galeriaLightbox');
+        if (box) box.style.display = 'none';
+    };
+
+    // Resetear a vista tabla al abrir o cerrar modal de reuniones
+    $('#modalReuniones').on('show.bs.modal hidden.bs.modal', function() {
+        $('#reunionesViewGaleria').addClass('d-none');
+        $('#reunionesViewTable').removeClass('d-none');
+    });
+
+    // Mantener clase modal-open en body al cerrar modales secundarios
+    $(document).on('hidden.bs.modal', '.modal', function () {
+        if ($('.modal.show').length > 0) {
+            $('body').addClass('modal-open');
         }
     });
 

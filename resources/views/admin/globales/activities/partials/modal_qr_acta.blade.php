@@ -1,5 +1,4 @@
-{{-- ══ Modal Código QR de la Reunión MECIP ════════════════════════════════════ --}}
-<div class="modal fade" id="modalQrActa" tabindex="-1" role="dialog" aria-hidden="true" style="background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); z-index: 1060;">
+<div class="modal fade" id="modalQrActa" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1070;">
     <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 520px;">
         <div class="modal-content border-0 shadow-2xl" style="border-radius: 20px; overflow: hidden; background: #ffffff;">
             

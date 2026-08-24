@@ -369,20 +369,15 @@
     $(document).on('click', '.btnRedactarActaMecip', function(e) {
         e.preventDefault();
         e.stopPropagation();
+        if (document.activeElement) document.activeElement.blur();
+
         var taskId = $(this).data('task-id');
         if (!taskId) {
             console.warn('btnRedactarActaMecip: no data-task-id found');
             return;
         }
 
-        // Si se abrió desde el detalle de tarea o modal de reuniones, cerrarlos limpiamente
-        $('#modalDetalleTask').modal('hide');
-        $('#modalReuniones').modal('hide');
-        $('#modalDocumentos').modal('hide');
-
-        setTimeout(function() {
-            openEditorActaMecip(taskId);
-        }, 150);
+        openEditorActaMecip(taskId);
     });
 
     // Mantener scroll del body si hay otros modales abiertos al cerrar este
