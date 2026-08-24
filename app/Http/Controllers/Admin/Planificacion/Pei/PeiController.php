@@ -1624,9 +1624,17 @@ class PeiController extends Controller
                     $editorName = 'Sistema (Planificación PEI)';
                 }
 
-                $eliminadoPorName = optional($node->deleter)->name ?? (optional($node->updater)->name ?? (optional($node->user)->name ?? 'Usuario del Sistema'));
-                if (str_contains($eliminadoPorName, 'Maffiodo')) {
-                    $eliminadoPorName = 'Usuario del Sistema';
+                $eliminadoPorName = optional($node->deleter)->name ?? (optional($node->updater)->name ?? optional($node->user)->name);
+
+                if (!$eliminadoPorName) {
+                    $lastEdit = PeiProfileEdit::where('pei_profile_id', $node->id)->with('user')->latest()->first();
+                    if ($lastEdit && $lastEdit->user) {
+                        $eliminadoPorName = $lastEdit->user->name;
+                    }
+                }
+
+                if (empty($eliminadoPorName) || str_contains($eliminadoPorName, 'Maffiodo')) {
+                    $eliminadoPorName = 'Sistema (Planificación PEI)';
                 }
 
                 // Trazabilidad de Últimas Ediciones
