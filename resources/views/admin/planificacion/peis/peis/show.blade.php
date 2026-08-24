@@ -82,6 +82,24 @@
         font-size: 0.98rem !important;
         padding: 6px 12px !important;
     }
+
+    /* Corrección de Scroll Interno en Modal Basurero & Bloqueo de Fondo */
+    #modalBasureroPei .modal-dialog {
+        max-height: 90vh !important;
+        margin-top: 25px !important;
+        margin-bottom: 25px !important;
+    }
+    #modalBasureroPei .modal-content {
+        max-height: 90vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    #modalBasureroPei .modal-body {
+        max-height: calc(90vh - 130px) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
+    }
     </style>
 
     <div class="card">
@@ -5925,6 +5943,23 @@ function revertirEdicionPei(editId) {
         }
     });
 }
+
+$('#modalBasureroPei').on('shown.bs.modal', function () {
+    $('body').css({
+        'overflow': 'hidden',
+        'padding-right': '0px'
+    });
+    if ($.fn.DataTable) {
+        $.fn.DataTable.tables({ visible: true, api: true }).columns.adjust();
+    }
+});
+
+$('#modalBasureroPei').on('hidden.bs.modal', function () {
+    $('body').css({
+        'overflow': '',
+        'padding-right': ''
+    });
+});
 
 $(document).on('click', '.btnVerReporteAportes', function () {
     var peiId = $(this).data('pei-id') || "{{ $profile->id }}";

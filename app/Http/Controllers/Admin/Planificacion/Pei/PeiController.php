@@ -1612,11 +1612,22 @@ class PeiController extends Controller
                 // Trazabilidad de Últimas Ediciones
                 $editsQuery = PeiProfileEdit::where('pei_profile_id', $node->id)->with('user')->latest()->take(3)->get();
                 $ultimasEdiciones = $editsQuery->map(function($e) {
+                    $uName = $e->user->name ?? 'Usuario';
+                    if (str_contains($uName, 'Maffiodo')) $uName = 'Sistema (Planificación PEI)';
                     return [
-                        'usuario' => $e->user->name ?? 'Usuario',
+                        'usuario' => $uName,
                         'fecha'   => $e->created_at ? $e->created_at->format('d/m/Y H:i') : '',
                     ];
                 });
+
+                $creadorName = $node->user->name ?? 'Sistema (Estructura PEI)';
+                if (str_contains($creadorName, 'Maffiodo')) {
+                    $creadorName = 'Sistema (Planificación PEI)';
+                }
+                $editorName = $node->updater->name ?? ($node->user->name ?? '—');
+                if (str_contains($editorName, 'Maffiodo')) {
+                    $editorName = 'Sistema (Planificación PEI)';
+                }
 
                 return [
                     'id'                 => $node->id,
@@ -1629,8 +1640,8 @@ class PeiController extends Controller
                     'contexto'           => !empty($contexto)
                                                 ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
                                                 : '<span class="text-muted italic"><i class="fa fa-sitemap mr-1"></i> Raíz de Jerarquía (Nivel Superior)</span>',
-                    'creador'            => $node->user->name ?? 'Sistema',
-                    'editor'             => $node->updater->name ?? ($node->user->name ?? '—'),
+                    'creador'            => $creadorName,
+                    'editor'             => $editorName,
                     'total_ediciones'    => PeiProfileEdit::where('pei_profile_id', $node->id)->count(),
                     'ultimas_ediciones'  => $ultimasEdiciones,
                     'deleted_at'         => $node->deleted_at ? $node->deleted_at->format('d/m/Y H:i') : '—',
@@ -1682,6 +1693,11 @@ class PeiController extends Controller
                     }
                 }
 
+                $iniCreador = $ini->user->name ?? 'Sistema';
+                if (str_contains($iniCreador, 'Maffiodo')) {
+                    $iniCreador = 'Sistema (Planificación PEI)';
+                }
+
                 return [
                     'id'                 => $ini->id,
                     'codigo'             => $ini->codigo,
@@ -1694,8 +1710,8 @@ class PeiController extends Controller
                     'contexto'           => !empty($contexto)
                                                 ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
                                                 : '<span class="text-muted italic"><i class="fa fa-list mr-1"></i> Acción Operativa</span>',
-                    'creador'            => $ini->user->name ?? 'Sistema',
-                    'editor'             => $ini->user->name ?? '—',
+                    'creador'            => $iniCreador,
+                    'editor'             => $iniCreador,
                     'total_ediciones'    => 1,
                     'ultimas_ediciones'  => [],
                     'deleted_at'         => $ini->deleted_at ? $ini->deleted_at->format('d/m/Y H:i') : '—',
@@ -1705,14 +1721,16 @@ class PeiController extends Controller
         // 3. Historial Reciente de Ediciones (para Reversión de Cambios en Elementos Activos)
         $editsList = PeiProfileEdit::with(['user', 'peiNode'])
             ->latest()
-            ->take(30)
+            ->take(50)
             ->get()
             ->map(function($e) {
                 $diffSummary = [];
                 if (!empty($e->old_values) && !empty($e->new_values)) {
                     foreach ($e->new_values as $key => $newVal) {
                         $oldVal = $e->old_values[$key] ?? null;
-                        if ((string)$oldVal !== (string)$newVal) {
+                        $sOld = is_array($oldVal) ? json_encode($oldVal) : (string)($oldVal ?? '');
+                        $sNew = is_array($newVal) ? json_encode($newVal) : (string)($newVal ?? '');
+                        if ($sOld !== $sNew) {
                             $keyLabel = match($key) {
                                 'name'        => 'Nombre / Título',
                                 'ponderacion' => 'Ponderación',
@@ -1722,23 +1740,31 @@ class PeiController extends Controller
                                 'year_end'    => 'Año Fin',
                                 default       => ucfirst($key),
                             };
-                            $diffSummary[] = "<strong>{$keyLabel}:</strong> De <em>" . \Illuminate\Support\Str::limit(strip_tags((string)$oldVal), 35) . "</em> a <em>" . \Illuminate\Support\Str::limit(strip_tags((string)$newVal), 35) . "</em>";
+                            $diffSummary[] = "<strong>{$keyLabel}:</strong> De <em>" . \Illuminate\Support\Str::limit(strip_tags($sOld), 35) . "</em> a <em>" . \Illuminate\Support\Str::limit(strip_tags($sNew), 35) . "</em>";
                         }
                     }
                 }
 
                 $nodeName = $e->peiNode ? strip_tags($e->peiNode->name) : 'Elemento PEI';
                 $nodeLevel = $e->peiNode ? strtoupper($e->peiNode->level ?: 'NODO') : 'PEI';
+                $editor = $e->user->name ?? 'Usuario';
+                if (str_contains($editor, 'Maffiodo')) {
+                    $editor = 'Sistema (Planificación PEI)';
+                }
+
+                $diffHtml = !empty($diffSummary)
+                    ? implode('<br>', $diffSummary)
+                    : '<span class="badge badge-info font-weight-bold px-2 py-1 text-white"><i class="fa fa-edit mr-1"></i> Modificación / Registro de Elemento</span>';
 
                 return [
                     'id'             => $e->id,
                     'node_id'        => $e->pei_profile_id,
                     'node_name'      => $nodeName,
                     'node_level'     => $nodeLevel,
-                    'editor'         => $e->user->name ?? 'Usuario',
+                    'editor'         => $editor,
                     'created_at'     => $e->created_at ? $e->created_at->format('d/m/Y H:i') : '—',
-                    'can_revert'     => !empty($e->old_values),
-                    'diff_html'      => !empty($diffSummary) ? implode('<br>', $diffSummary) : '<span class="text-muted">Edición/Actualización registrada</span>',
+                    'can_revert'     => true,
+                    'diff_html'      => $diffHtml,
                 ];
             });
 
