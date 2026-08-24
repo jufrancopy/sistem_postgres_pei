@@ -309,8 +309,11 @@
 
                 <div class="d-flex justify-content-lg-end flex-wrap" style="gap: 0.5rem;">
                     @if($selectedPei)
-                        <a href="{{ route('pei-profiles.matriz', $selectedPei->id) }}" class="btn btn-light btn-round font-weight-bold shadow-sm px-3 py-2" target="_blank">
-                            <i class="fa fa-table text-primary mr-1"></i> Matriz PEI
+                        <a href="{{ url('pei-profiles/' . $selectedPei->id) }}" class="btn btn-light btn-round font-weight-bold shadow-sm px-3 py-2">
+                            <i class="fa fa-sitemap text-success mr-1"></i> Ver Estructura PEI
+                        </a>
+                        <a href="{{ route('pei-profiles.matriz', $selectedPei->id) }}" class="btn btn-outline-light btn-round font-weight-bold shadow-sm px-3 py-2" target="_blank">
+                            <i class="fa fa-table text-warning mr-1"></i> Matriz PEI (PDF/Tabla)
                         </a>
                     @endif
                     <button type="button" class="btn btn-outline-light btn-round px-3 py-2" onclick="location.reload();">
@@ -2530,7 +2533,11 @@
         <div class="modal-content border-0 shadow-lg rounded-lg" style="background-color: #f8fafc;">
             <div class="modal-header bg-dark text-white d-flex align-items-center justify-content-between p-3" style="border-top-left-radius: .5rem; border-top-right-radius: .5rem;">
                 <h5 class="modal-title font-weight-bold mb-0 text-white" id="modalTelHeading">
-                    <i class="fa fa-chart-line text-warning mr-2"></i> Telemetría y Analítica de Funcionario
+                    @hasanyrole('Administrador|Super Admin')
+                        <i class="fa fa-chart-line text-warning mr-2"></i> Telemetría y Analítica de Funcionario
+                    @else
+                        <i class="fa fa-history text-warning mr-2"></i> Historial Reciente de Actividad y Puntos
+                    @endhasanyrole
                 </h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
                     <span aria-hidden="true">&times;</span>
@@ -2559,20 +2566,21 @@
 
                 {{-- Rejilla de KPIs --}}
                 <div class="row mb-4">
-                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                    <div class="col-12 @hasanyrole('Administrador|Super Admin') col-md-4 @else col-md-6 @endhasanyrole mb-3 mb-md-0">
                         <div class="card border-0 shadow-sm p-3 bg-white text-center" style="border-radius: 10px;">
                             <div class="text-primary font-weight-bold text-uppercase mb-1" style="font-size: 0.75rem;">Total Interacciones</div>
                             <h3 class="font-weight-bold text-dark mb-0" id="tel_kpi_total">0</h3>
                             <small class="text-muted">Acciones registradas</small>
                         </div>
                     </div>
-                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                    <div class="col-12 @hasanyrole('Administrador|Super Admin') col-md-4 @else col-md-6 @endhasanyrole mb-3 mb-md-0">
                         <div class="card border-0 shadow-sm p-3 bg-white text-center" style="border-radius: 10px;">
                             <div class="text-success font-weight-bold text-uppercase mb-1" style="font-size: 0.75rem;">Última Actividad</div>
                             <h6 class="font-weight-bold text-dark mb-0 mt-1" id="tel_kpi_last_act">—</h6>
                             <small class="text-muted">Sello de tiempo</small>
                         </div>
                     </div>
+                    @hasanyrole('Administrador|Super Admin')
                     <div class="col-12 col-md-4">
                         <div class="card border-0 shadow-sm p-3 bg-white text-center" style="border-radius: 10px;">
                             <div class="text-info font-weight-bold text-uppercase mb-1" style="font-size: 0.75rem;">Conexión IP Reciente</div>
@@ -2580,6 +2588,7 @@
                             <small class="text-muted">Dirección IP</small>
                         </div>
                     </div>
+                    @endhasanyrole
                 </div>
 
                 {{-- Cronología Reciente --}}
@@ -3636,11 +3645,13 @@ $(document).ready(function() {
 
                     var $list = $('#tel_timeline_list');
                     $list.empty();
+                    var isUserAdmin = {{ auth()->user()->hasAnyRole(['Administrador', 'Super Admin']) ? 'true' : 'false' }};
                     if (res.timeline && res.timeline.length > 0) {
                         $.each(res.timeline, function(i, item) {
                             var modBadge = '<span class="badge badge-info mr-2" style="font-size:0.7rem">' + item.module + '</span>';
+                            var ipSnippet = isUserAdmin ? '<div class="small text-muted" style="font-size:0.72rem"><i class="fa fa-laptop mr-1"></i>IP: ' + item.ip + '</div>' : '';
                             var html = '<li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-bottom">' +
-                                '<div>' + modBadge + '<strong class="small text-dark">' + item.description + '</strong><div class="small text-muted" style="font-size:0.72rem"><i class="fa fa-laptop mr-1"></i>IP: ' + item.ip + '</div></div>' +
+                                '<div>' + modBadge + '<strong class="small text-dark">' + item.description + '</strong>' + ipSnippet + '</div>' +
                                 '<span class="badge badge-light border text-muted" style="font-size:0.7rem"><i class="fa fa-clock mr-1"></i>' + item.hace + '</span>' +
                                 '</li>';
                             $list.append(html);

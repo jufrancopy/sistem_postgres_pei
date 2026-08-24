@@ -121,6 +121,15 @@
                 <i class="fa fa-table"></i> Formulación
             </button>
 
+            <button type="button"
+                    class="btn btn-sm font-weight-bold text-dark d-inline-flex align-items-center px-3"
+                    data-toggle="modal" data-target="#modalBasureroPei"
+                    onclick="cargarBasureroPeiAdmin()"
+                    style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #f59e0b; border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+                    title="Histórico de Cambios, Trazabilidad y Revertir / Restaurar Elementos del PEI">
+                <i class="fa fa-undo text-danger mr-1"></i> Histórico & Revertir Cambios
+            </button>
+
             {{-- Separador visual --}}
             <div style="width: 1px; height: 28px; background: #e2e8f0; margin: 0 4px;"></div>
 
