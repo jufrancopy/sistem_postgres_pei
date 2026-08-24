@@ -1839,12 +1839,60 @@
                             <input type="hidden" name="group_id" id="modal_detalle_subgrupo_id">
                             
                             <div class="card border shadow-sm mb-3">
-                                <div class="card-header bg-light py-2 px-3">
+                                <div class="card-header bg-light py-2 px-3 d-flex align-items-center justify-content-between flex-wrap" style="gap: 6px;">
                                     <span class="font-weight-bold text-dark small text-uppercase">
                                         <i class="fa fa-user-plus text-info mr-1"></i> Asignar Integrantes al Subgrupo (Select2)
                                     </span>
+                                    <button type="button" class="btn btn-xs btn-outline-success font-weight-bold shadow-xs d-inline-flex align-items-center" 
+                                            onclick="toggleFormNuevoFuncionarioRapido()" 
+                                            style="border-radius: 6px; font-size: 0.75rem; padding: 3px 10px; background: #ecfdf5; border-color: #10b981; color: #065f46;">
+                                        <i class="fa fa-user-plus text-success mr-1"></i> + Registrar Nuevo Funcionario
+                                    </button>
                                 </div>
                                 <div class="card-body p-3">
+                                    {{-- Formulario Desplegable para Crear Funcionario si no existe en el sistema --}}
+                                    <div id="collapseNuevoFuncionarioRapido" class="p-3 mb-3 border rounded shadow-xs" style="display: none; background: #f0fdf4; border-color: #86efac !important; border-left: 4px solid #10b981 !important;">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <h6 class="font-weight-bold text-success mb-0" style="font-size: 0.88rem;">
+                                                <i class="fa fa-user-plus mr-1"></i> Registrar e Integrar Nuevo Funcionario al Grupo
+                                            </h6>
+                                            <button type="button" class="close text-muted" onclick="toggleFormNuevoFuncionarioRapido()" style="font-size: 1.1rem; line-height: 1;">&times;</button>
+                                        </div>
+                                        <p class="text-muted small mb-3" style="font-size: 0.78rem;">
+                                            Si el funcionario no aparece en la búsqueda, completá sus datos para registrarlo en el sistema e integrarlo automáticamente a este grupo.
+                                        </p>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-2">
+                                                <label class="font-weight-bold text-dark small mb-1">Nombre Completo (*)</label>
+                                                <input type="text" id="nuevo_func_name" class="form-control form-control-sm font-weight-bold" placeholder="Ej: María Benítez" style="border-color: #86efac; color: #0f172a !important;">
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <label class="font-weight-bold text-dark small mb-1">Correo Institucional (*)</label>
+                                                <input type="email" id="nuevo_func_email" class="form-control form-control-sm" placeholder="Ej: mbenitez@ips.gov.py" style="border-color: #86efac; color: #0f172a !important;">
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <label class="font-weight-bold text-dark small mb-1">Contraseña de Acceso (Opcional)</label>
+                                                <input type="text" id="nuevo_func_password" class="form-control form-control-sm font-weight-bold text-monospace" value="12345678" placeholder="Por defecto: 12345678" style="border-color: #86efac; color: #0f172a !important;">
+                                                <small class="text-muted" style="font-size: 0.68rem;">Contraseña provisional que el usuario podrá cambiar luego.</small>
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <label class="font-weight-bold text-dark small mb-1">Rol / Perfil Inicial</label>
+                                                <select id="nuevo_func_role" class="form-control form-control-sm" style="border-color: #86efac;">
+                                                    <option value="Usuario" selected>Usuario / Funcionario Estándar</option>
+                                                    <option value="Coordinador de Planificación">Coordinador de Planificación</option>
+                                                    <option value="Analista de Planificación">Analista de Planificación</option>
+                                                    <option value="Analista PEI">Analista PEI</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="text-right mt-2">
+                                            <button type="button" class="btn btn-sm btn-secondary mr-1 font-weight-bold" onclick="toggleFormNuevoFuncionarioRapido()">Cancelar</button>
+                                            <button type="button" class="btn btn-sm btn-success font-weight-bold px-3 shadow-xs" id="btnGuardarNuevoFuncionarioRapido" onclick="guardarNuevoFuncionarioRapido()" style="background: #10b981; border-color: #059669;">
+                                                <i class="fa fa-check mr-1"></i> Crear y Añadir al Grupo
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     <div class="form-group mb-3">
                                         <label class="font-weight-bold text-dark small mb-1">Buscar y Seleccionar Integrantes</label>
                                         <select name="user_id[]" id="modal_subgrupo_users_select2" class="form-control" multiple style="width: 100%;">
@@ -3958,6 +4006,85 @@ $(document).ready(function() {
             },
             error: function() {
                 toastr.error('No se pudo cargar la información del grupo.');
+            }
+        });
+    };
+
+    window.toggleFormNuevoFuncionarioRapido = function() {
+        var $c = $('#collapseNuevoFuncionarioRapido');
+        if ($c.is(':visible')) {
+            $c.slideUp(200);
+        } else {
+            $c.slideDown(200);
+            $('#nuevo_func_name').focus();
+        }
+    };
+
+    window.guardarNuevoFuncionarioRapido = function() {
+        var groupId = $('#modal_detalle_subgrupo_id').val();
+        var name = $('#nuevo_func_name').val().trim();
+        var email = $('#nuevo_func_email').val().trim();
+        var password = $('#nuevo_func_password').val().trim();
+        var role = $('#nuevo_func_role').val();
+
+        if (!groupId) {
+            toastr.error('Identificador de grupo inválido.');
+            return;
+        }
+        if (!name) {
+            toastr.warning('Por favor ingresá el nombre completo del funcionario.');
+            $('#nuevo_func_name').focus();
+            return;
+        }
+        if (!email) {
+            toastr.warning('Por favor ingresá el correo electrónico institucional.');
+            $('#nuevo_func_email').focus();
+            return;
+        }
+
+        var $btn = $('#btnGuardarNuevoFuncionarioRapido');
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Creando...');
+
+        $.ajax({
+            url: '{{ url("admin/globales/groups") }}/' + groupId + '/crear-asignar-funcionario',
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                name: name,
+                email: email,
+                password: password,
+                role: role
+            },
+            success: function(res) {
+                $btn.prop('disabled', false).html('<i class="fa fa-check mr-1"></i> Crear y Añadir al Grupo');
+                if (res.success) {
+                    // 1. Agregar la opción al Select2 y seleccionarla
+                    var newOption = new Option(res.user.name + ' (' + res.user.email + ')', res.user.id, true, true);
+                    $('#modal_subgrupo_users_select2').append(newOption).trigger('change');
+
+                    // 2. Limpiar inputs y cerrar formulario
+                    $('#nuevo_func_name').val('');
+                    $('#nuevo_func_email').val('');
+                    $('#nuevo_func_password').val('12345678');
+                    $('#collapseNuevoFuncionarioRapido').slideUp(200);
+
+                    // 3. Notificar y recargar la tabla del modal
+                    toastr.success(res.message || 'Funcionario creado y asignado al grupo.');
+                    
+                    var groupName = $('#nombreGrupoSubHeading').text();
+                    abrirModalDetalleGrupo(groupId, groupName);
+                } else {
+                    toastr.error(res.message || res.error || 'Error al registrar el funcionario.');
+                }
+            },
+            error: function(xhr) {
+                $btn.prop('disabled', false).html('<i class="fa fa-check mr-1"></i> Crear y Añadir al Grupo');
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : (xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Error al registrar el funcionario.');
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    var firstErr = Object.values(xhr.responseJSON.errors)[0];
+                    if (Array.isArray(firstErr)) msg = firstErr[0];
+                }
+                toastr.error(msg);
             }
         });
     };

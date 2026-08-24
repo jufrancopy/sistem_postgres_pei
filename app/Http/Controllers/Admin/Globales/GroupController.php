@@ -238,6 +238,62 @@ class GroupController extends Controller
         ]);
     }
 
+    /**
+     * Crear un nuevo funcionario en el sistema y asignarlo automáticamente al grupo actual.
+     */
+    public function crearYAsignarFuncionario(Request $request, $id)
+    {
+        if (!auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Coordinación de Planificación'])) {
+            return response()->json(['error' => 'No tienes permisos para registrar nuevos funcionarios.'], 403);
+        }
+
+        $group = Group::findOrFail($id);
+
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|max:255|unique:users,email',
+            'password' => 'nullable|string|min:6',
+            'role'     => 'nullable|string',
+        ], [
+            'name.required'  => 'El nombre completo del funcionario es requerido.',
+            'email.required' => 'El correo electrónico es requerido.',
+            'email.email'    => 'Debe ser un correo electrónico válido.',
+            'email.unique'   => 'El correo electrónico ya se encuentra registrado en el sistema.',
+            'password.min'   => 'La contraseña debe tener al menos 6 caracteres.',
+        ]);
+
+        $rawPassword = $validated['password'] ?: '12345678';
+        $user = User::create([
+            'name'     => trim($validated['name']),
+            'email'    => strtolower(trim($validated['email'])),
+            'password' => \Illuminate\Support\Facades\Hash::make($rawPassword),
+            'group_id' => $group->id,
+        ]);
+
+        // Asignar rol por defecto o el seleccionado
+        $roleName = $validated['role'] ?? 'Usuario';
+        if (\Spatie\Permission\Models\Role::where('name', $roleName)->exists()) {
+            $user->assignRole($roleName);
+        }
+
+        // Asociar al grupo
+        if (!$group->members()->where('user_id', $user->id)->exists()) {
+            $group->members()->attach($user->id);
+            $gamificationService = app(\App\Services\GamificationService::class);
+            $gamificationService->syncNewMemberGroupRewards($group, $user);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "¡Funcionario {$user->name} registrado e integrado exitosamente al grupo!",
+            'user'    => [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email,
+            ]
+        ]);
+    }
+
     public function getRootGroups(Request $request)
     {
         $search = $request->get('q', '');
