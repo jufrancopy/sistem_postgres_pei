@@ -561,7 +561,7 @@ class RecalculateGamificationPoints extends Command
                                 'git_commit',
                                 '🚀 Desarrollo & Aporte de Código: ' . Str::limit($subject, 45),
                                 100,
-                                \App\Models\User::class,
+                                null,
                                 $hash,
                                 null,
                                 $date

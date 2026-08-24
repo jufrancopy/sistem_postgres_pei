@@ -211,19 +211,24 @@ class GamificationService
         }
 
         try {
-            // Si el modelo usa UUID y el ID no es un UUID válido de 36 caracteres
-            if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $referenceId)) {
+            $model = app($referenceType);
+            $keyName = $model->getKeyName();
+            $keyType = $model->getKeyType();
+
+            // Si la clave primaria del modelo es numérica pero reference_id no lo es (ej: commit hash git), no intentar casteo inválido en PostgreSQL
+            if (in_array($keyType, ['int', 'integer']) && !is_numeric($referenceId)) {
+                return true;
+            }
+
+            // Si el modelo usa UUID de 36 caracteres
+            if ($keyType === 'string' && strlen($referenceId) > 36) {
                 if (preg_match('/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i', $referenceId, $matches)) {
                     $referenceId = $matches[0];
-                } else {
-                    return true;
                 }
             }
 
-            $model = app($referenceType);
-
             return $model->newQuery()
-                ->where($model->getKeyName(), $referenceId)
+                ->where($keyName, $referenceId)
                 ->exists();
         } catch (\Throwable $e) {
             return true;

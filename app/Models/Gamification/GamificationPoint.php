@@ -66,14 +66,25 @@ class GamificationPoint extends Model
             return true;
         }
 
-        if (!class_exists($this->reference_type)) {
-            return false;
+        if ($this->action_type === 'git_commit' || !class_exists($this->reference_type)) {
+            return true;
         }
 
-        $model = app($this->reference_type);
+        try {
+            $model = app($this->reference_type);
+            $keyName = $model->getKeyName();
+            $keyType = $model->getKeyType();
 
-        return $model->newQuery()
-            ->where($model->getKeyName(), $this->reference_id)
-            ->exists();
+            // Si la clave primaria del modelo es entera/numérica pero el reference_id no lo es, evitar error de sintaxis en PostgreSQL
+            if (in_array($keyType, ['int', 'integer']) && !is_numeric($this->reference_id)) {
+                return true;
+            }
+
+            return $model->newQuery()
+                ->where($keyName, $this->reference_id)
+                ->exists();
+        } catch (\Throwable $e) {
+            return true;
+        }
     }
 }
