@@ -16,7 +16,7 @@ use App\Models\HomeConfiguration;
 class GlobalesController extends Controller
 {
     public function __construct(){
-        $this->middleware(['auth', 'role:Administrador']);
+        $this->middleware(['auth', 'role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI']);
     }
     
     public function dashboard(Request $request)
