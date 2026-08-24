@@ -1481,19 +1481,28 @@ $('#btnLimpiarFiltro').on('click', function(e) {
     // ── Galería de Fotos de Reunión ─────────────────────────────────────────
     $(document).on('click', '.btnVerGaleriaReunion', function() {
         if (document.activeElement) document.activeElement.blur();
-        var taskId    = $(this).data('task-id');
-        var titulo    = $(this).data('titulo');
-        var canUpload = $(this).data('can-upload') == 1;
-        abrirGaleriaReunion(taskId, titulo, canUpload);
+        var taskId = $(this).data('task-id');
+        var titulo = $(this).data('titulo');
+
+        // Esperar a que modalReuniones se oculte del todo antes de abrir la galería
+        if ($('#modalReuniones').hasClass('show')) {
+            $('#modalReuniones').one('hidden.bs.modal', function () {
+                abrirGaleriaReunion(taskId, titulo);
+            }).modal('hide');
+        } else {
+            abrirGaleriaReunion(taskId, titulo);
+        }
     });
 
     $('#modalGaleriaReunion').on('hidden.bs.modal', function() {
         if (document.activeElement) document.activeElement.blur();
-        // Actualizar datos de las reuniones en el modal de fondo
-        $.getJSON(_reunionesUrl, function(data) {
-            _reunionesData = data;
-            filtrarDt(_filtroActivo);
-        });
+        if ($('#modalReuniones').length) {
+            $('#modalReuniones').modal('show');
+            $.getJSON(_reunionesUrl, function(data) {
+                _reunionesData = data;
+                filtrarDt(_filtroActivo);
+            });
+        }
     });
 
 })();

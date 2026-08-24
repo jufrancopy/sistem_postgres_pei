@@ -1,5 +1,5 @@
 {{-- ══ Modal Galería de Fotos — Reunión ════════════════════════════════════ --}}
-<div class="modal fade" id="modalGaleriaReunion" tabindex="-1" aria-hidden="true" style="z-index:1060">
+<div class="modal fade" id="modalGaleriaReunion" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable" style="max-width:800px">
         <div class="modal-content border-0 shadow-lg" style="border-radius:14px;overflow:hidden">
 
@@ -92,29 +92,11 @@ var _galeriaBase   = "{{ url('admin/globales/activities/reuniones') }}";
 var _galeriaDelBase = "{{ url('admin/globales/activities/reuniones/fotos') }}";
 var _galeriaCanUpload = false;
 
-// ── Soporte de modales apilados (Stacked Modals) ────────────────────────────
-$(document).on('show.bs.modal', '.modal', function () {
-    var zIndex = 1040 + (10 * $('.modal:visible').length);
-    $(this).css('z-index', zIndex);
-    setTimeout(function() {
-        $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
-    }, 0);
-});
-
-$(document).on('hidden.bs.modal', '.modal', function () {
-    if ($('.modal:visible').length > 0) {
-        setTimeout(function() {
-            $(document.body).addClass('modal-open');
-        }, 0);
-    }
-});
-
 // ── Abrir Galería ───────────────────────────────────────────────────────────
-function abrirGaleriaReunion(taskId, titulo, canUpload) {
-    _galeriaTaskId    = taskId;
-    _galeriaCanUpload = canUpload;
+function abrirGaleriaReunion(taskId, titulo) {
+    _galeriaTaskId = taskId;
     document.getElementById('galeriaTituloReunion').textContent = titulo || 'Fotos de la Reunión';
-    document.getElementById('galeriaUploadZone').style.display = canUpload ? '' : 'none';
+    document.getElementById('galeriaUploadZone').style.display = '';
     galeriaCargarFotos();
     $('#modalGaleriaReunion').modal('show');
 }
@@ -136,15 +118,13 @@ function galeriaRenderizar(photos, count) {
     var pbar   = document.getElementById('galeriaProgressBar');
     var zone   = document.getElementById('galeriaUploadZone');
 
-    count  = count || photos.length;
+    count  = count || (photos ? photos.length : 0);
     ccount.textContent = count;
     pbar.style.width   = Math.round((count / 3) * 100) + '%';
     pbar.className     = 'progress-bar ' + (count >= 3 ? 'bg-danger' : 'bg-info');
 
-    // Mostrar/ocultar zona de upload según límite
-    if (_galeriaCanUpload) {
-        zone.style.display = (count >= 3) ? 'none' : '';
-    }
+    // Mostrar/ocultar zona de upload según límite de 3 fotos
+    zone.style.display = (count >= 3) ? 'none' : '';
 
     grid.innerHTML = '';
     if (!photos || photos.length === 0) {
@@ -166,10 +146,9 @@ function galeriaRenderizar(photos, count) {
                     <i class="fa fa-image mr-1" style="opacity:.7"></i>' + (p.original_name || 'foto') + '</p>\
                 <p class="mb-0 text-white" style="font-size:.63rem;opacity:.7">' + (p.size_human || '') + ' WebP · ' + (p.created_at || '') + '</p>\
             </div>\
-            ' + (_galeriaCanUpload ? '\
             <button onclick="galeriaEliminarFoto(' + p.id + ',this)" title="Eliminar foto"\
                     style="position:absolute;top:6px;right:6px;background:rgba(220,38,38,.85);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center">\
-                <i class="fa fa-trash"></i></button>' : '') + '\
+                <i class="fa fa-trash"></i></button>\
         ';
         grid.appendChild(card);
     });
