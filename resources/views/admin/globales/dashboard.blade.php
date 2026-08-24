@@ -432,21 +432,25 @@
                 <li class="nav-item">
                     <a class="nav-link active" id="tab-usuarios-link" data-toggle="pill" href="#tab-usuarios" role="tab" aria-selected="true">
                         <i class="fa fa-user-shield mr-2"></i> Usuarios y Accesos
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalUsuarios }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="tab-grupos-link" data-toggle="pill" href="#tab-grupos" role="tab" aria-selected="false">
                         <i class="fa fa-layer-group mr-2"></i> Grupos de Trabajo
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ isset($gruposList) && $gruposList->count() > 0 ? $gruposList->count() : $totalGrupos }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="tab-organigrama-link" data-toggle="pill" href="#tab-organigrama" role="tab" aria-selected="false">
                         <i class="fa fa-sitemap mr-2"></i> Estructura Orgánica
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalDependencias }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="tab-planes-link" data-toggle="pill" href="#tab-planes" role="tab" aria-selected="false">
                         <i class="fa fa-chart-line mr-2"></i> Planes Institucionales (PEI)
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ isset($peiPerfiles) ? $peiPerfiles->count() : 1 }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
