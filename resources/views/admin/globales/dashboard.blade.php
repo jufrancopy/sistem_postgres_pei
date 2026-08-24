@@ -557,7 +557,7 @@
                                             <button type="button" class="btn btn-circle btn-info" onclick="abrirModalEditarUsuario('{{ $u->id }}')" title="Editar Usuario In-Situ">
                                                 <i class="fa fa-edit"></i>
                                             </button>
-                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarUsuario('{{ $u->id }}', '{{ addslashes($u->name) }}')" title="Eliminar Usuario">
+                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarUsuario('{{ $u->id }}', '{{ e(addslashes($u->name)) }}')" title="Eliminar Usuario">
                                                 <i class="fa fa-trash"></i>
                                             </button>
                                             @else
@@ -598,7 +598,7 @@
                                 </select>
                             </div>
                             @endif
-                            <button type="button" class="btn btn-warning btn-round shadow-sm px-3 text-dark font-weight-bold" onclick="abrirModalPremioCierreSemana('{{ $selectedGroup->id ?? '' }}', '{{ addslashes($selectedGroup->name ?? 'Ámbito Institucional') }}')" title="Otorgar 100 Pts masivos a los integrantes del grupo y subgrupos">
+                            <button type="button" class="btn btn-warning btn-round shadow-sm px-3 text-dark font-weight-bold" onclick="abrirModalPremioCierreSemana('{{ $selectedGroup->id ?? '' }}', '{{ e(addslashes($selectedGroup->name ?? 'Ámbito Institucional')) }}')" title="Otorgar 100 Pts masivos a los integrantes del grupo y subgrupos">
                                 <i class="fa fa-gift mr-1 text-dark"></i> 🎉 +100 PTS CIERRE DE SEMANA
                             </button>
                             <button type="button" class="btn btn-info btn-round shadow-sm px-3 text-white font-weight-bold" onclick="abrirModalNuevoGrupo()">
@@ -693,7 +693,7 @@
                                                             <i class="fa fa-star mr-1"></i> {{ number_format($topUser->puntos_gamificacion) }} Pts
                                                         </div>
                                                         <button type="button" class="btn btn-sm btn-block font-weight-bold rounded-pill shadow-sm"
-                                                                onclick="generarFichaWhatsApp('{{ addslashes($topUser->name) }}', '{{ addslashes($topUser->group->name ?? 'IPS Institucional') }}', '{{ $topUser->puntos_gamificacion }}', '{{ $topUser->puesto_ranking }}')"
+                                                                onclick="generarFichaWhatsApp('{{ e(addslashes($topUser->name)) }}', '{{ e(addslashes($topUser->group->name ?? 'IPS Institucional')) }}', '{{ $topUser->puntos_gamificacion }}', '{{ $topUser->puesto_ranking }}')"
                                                                 style="background: #25D366 !important; color: #ffffff !important; border: none !important; font-size: 0.73rem; padding: 6px 10px; font-weight: 700 !important;"
                                                                 title="Generar y compartir Ficha Visual de Reconocimiento en WhatsApp">
                                                             <i class="fab fa-whatsapp mr-1" style="font-size: 0.85rem;"></i> FICHA WHATSAPP
@@ -778,16 +778,16 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 5px;">
-                                            <button type="button" class="btn btn-circle btn-warning text-dark font-weight-bold" onclick="abrirModalPremioCierreSemana('{{ $g->id }}', '{{ addslashes($g->name) }}')" title="Otorgar +100 Pts por Cierre de Semana Exitoso a todos los integrantes">
+                                            <button type="button" class="btn btn-circle btn-warning text-dark font-weight-bold" onclick="abrirModalPremioCierreSemana('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Otorgar +100 Pts por Cierre de Semana Exitoso a todos los integrantes">
                                                 <i class="fa fa-gift"></i>
                                             </button>
-                                            <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalDetalleGrupo('{{ $g->id }}', '{{ addslashes($g->name) }}')" title="Gestionar Integrantes">
+                                            <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalDetalleGrupo('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Gestionar Integrantes">
                                                 <i class="fa fa-user-plus"></i>
                                             </button>
                                             <button type="button" class="btn btn-circle" style="background:#8b5cf6; border-color:#8b5cf6; color:#fff;" onclick="abrirModalEditarGrupo('{{ $g->id }}')" title="Editar Grupo">
                                                 <i class="fa fa-edit"></i>
                                             </button>
-                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarGrupo('{{ $g->id }}', '{{ addslashes($g->name) }}')" title="Eliminar Grupo">
+                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarGrupo('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Eliminar Grupo">
                                                 <i class="fa fa-trash"></i>
                                             </button>
                                         </div>
@@ -1427,7 +1427,7 @@
                                                 <i class="fa fa-inbox"></i>
                                             </a>
                                             @hasanyrole('Administrador|Super Admin')
-                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarJuntaConsultiva('{{ $jta->id }}', '{{ addslashes($jta->nombre) }}')" title="Eliminar Junta Consultiva">
+                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarJuntaConsultiva('{{ $jta->id }}', '{{ e(addslashes($jta->nombre)) }}')" title="Eliminar Junta Consultiva">
                                                 <i class="fa fa-trash"></i>
                                             </button>
                                             @endhasanyrole
