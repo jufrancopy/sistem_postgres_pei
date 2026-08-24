@@ -187,6 +187,57 @@ class GroupController extends Controller
         ]);
     }
 
+    /**
+     * Otorgar puntos manuales de reconocimiento a un funcionario individual.
+     */
+    public function otorgarPuntosUsuario(Request $request, $id)
+    {
+        if (!auth()->user()->hasAnyRole(['Administrador', 'Super Admin'])) {
+            return response()->json(['error' => 'La asignación manual de puntos está reservada exclusivamente al Administrador del Sistema.'], 403);
+        }
+
+        $targetUser = \App\Models\User::findOrFail($id);
+
+        $validated = $request->validate([
+            'points'         => 'required|integer|min:1|max:10000',
+            'title'          => 'required|string|max:255',
+            'description'    => 'nullable|string|max:1000',
+            'pei_profile_id' => 'nullable|string',
+        ], [
+            'points.required' => 'La cantidad de puntos es requerida.',
+            'points.min'      => 'La cantidad mínima es 1 punto.',
+            'title.required'  => 'El motivo o título del reconocimiento es requerido.',
+        ]);
+
+        $points      = (int) $validated['points'];
+        $title       = trim($validated['title']);
+        $description = trim($validated['description'] ?? '');
+        $fullDesc    = $description ? "{$title} — {$description}" : $title;
+        $peiId       = $validated['pei_profile_id'] ?? session('selected_pei_id') ?? \App\Models\HomeConfiguration::first()?->pei_profile_id;
+
+        $gamificationService = app(\App\Services\GamificationService::class);
+        $pointRecord = $gamificationService->awardPoints(
+            $targetUser,
+            'manual_admin',
+            $fullDesc,
+            $points,
+            null,
+            $peiId,
+            true
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "¡Se han otorgado exitosamente +{$points} Pts a {$targetUser->name}!",
+            'point'   => $pointRecord,
+            'user'    => [
+                'id'     => $targetUser->id,
+                'name'   => $targetUser->name,
+                'points' => $gamificationService->getUserTotalPoints($targetUser, $peiId),
+            ]
+        ]);
+    }
+
     public function getRootGroups(Request $request)
     {
         $search = $request->get('q', '');

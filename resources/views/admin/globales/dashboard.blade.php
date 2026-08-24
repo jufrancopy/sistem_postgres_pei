@@ -774,14 +774,24 @@
                                                         $medal = $medals[$tIdx] ?? '⭐';
                                                         $st = $styles[$tIdx] ?? 'background: #f8fafc; color: #475569; border: 1px solid #e2e8f0;';
                                                     @endphp
-                                                    <div class="badge d-inline-flex align-items-center justify-content-between p-1 px-2 pointer-hover" 
-                                                         style="{{ $st }} font-size: 0.72rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: transform 0.15s ease;" 
-                                                         onclick="abrirModalTelemetriaUsuario('{{ $topMember->id }}')" 
-                                                         title="🏆 Clic para ver Historial de Puntos y Actividad de {{ $topMember->name }}">
-                                                        <span class="text-truncate" style="max-width: 130px;">{{ $medal }} {{ $topMember->name }}</span>
-                                                        <span class="badge badge-pill badge-dark ml-2" style="font-size: 0.65rem;">
-                                                            <i class="fa fa-chart-line text-warning mr-1"></i>{{ number_format($topMember->puntos_gamificacion) }} pts
-                                                        </span>
+                                                    <div class="d-flex align-items-center mb-1" style="gap: 4px;">
+                                                        <div class="badge d-inline-flex align-items-center justify-content-between p-1 px-2 pointer-hover flex-grow-1" 
+                                                             style="{{ $st }} font-size: 0.72rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: transform 0.15s ease;" 
+                                                             onclick="abrirModalTelemetriaUsuario('{{ $topMember->id }}')" 
+                                                             title="🏆 Clic para ver Historial de Puntos y Actividad de {{ $topMember->name }}">
+                                                            <span class="text-truncate" style="max-width: 120px;">{{ $medal }} {{ $topMember->name }}</span>
+                                                            <span class="badge badge-pill badge-dark ml-2" style="font-size: 0.65rem;">
+                                                                <i class="fa fa-chart-line text-warning mr-1"></i>{{ number_format($topMember->puntos_gamificacion) }} pts
+                                                            </span>
+                                                        </div>
+                                                        @if($isAdmin)
+                                                            <button type="button" class="btn btn-xs btn-outline-warning text-dark font-weight-bold px-1 py-0 shadow-xs" 
+                                                                    style="border-radius: 4px; font-size: 0.65rem; height: 22px; line-height: 20px; background: #fffbe8;"
+                                                                    onclick="event.stopPropagation(); abrirModalPuntosManualesUsuario('{{ $topMember->id }}', '{{ e(addslashes($topMember->name)) }}')" 
+                                                                    title="⭐ Asignar Puntos Manuales a {{ $topMember->name }}">
+                                                                <i class="fa fa-star text-warning"></i>
+                                                            </button>
+                                                        @endif
                                                     </div>
                                                 @endforeach
                                                 @if($g->members_count > 3)
@@ -801,14 +811,21 @@
                                             <span class="text-muted small">Sin miembros asignados</span>
                                         @else
                                             @foreach($g->members as $m)
-                                                <span class="badge badge-light text-dark border mr-1 mb-1 shadow-sm px-2 py-1 pointer-hover" 
-                                                      style="font-size:0.75rem; font-weight:500; cursor: pointer; transition: all 0.2s; border-radius: 6px;" 
-                                                      onclick="abrirModalTelemetriaUsuario('{{ $m->id }}')" 
-                                                      title="🏆 Clic para ver Historial de Puntos y Actividad de {{ $m->name }}">
-                                                    <i class="fa fa-user-circle text-info mr-1"></i>{{ $m->name }}
-                                                    <span class="badge badge-pill badge-dark ml-1" style="font-size:0.64rem;">
-                                                        {{ number_format($m->puntos_gamificacion ?? 0) }} pts
+                                                <span class="badge badge-light text-dark border mr-1 mb-1 shadow-sm px-2 py-1 d-inline-flex align-items-center" 
+                                                      style="font-size:0.75rem; font-weight:500; border-radius: 6px;">
+                                                    <span class="pointer-hover" onclick="abrirModalTelemetriaUsuario('{{ $m->id }}')" title="🏆 Clic para ver Historial de {{ $m->name }}">
+                                                        <i class="fa fa-user-circle text-info mr-1"></i>{{ $m->name }}
+                                                        <span class="badge badge-pill badge-dark ml-1" style="font-size:0.64rem;">
+                                                            {{ number_format($m->puntos_gamificacion ?? 0) }} pts
+                                                        </span>
                                                     </span>
+                                                    @if($isAdmin)
+                                                        <button type="button" class="btn btn-xs btn-link text-warning p-0 ml-2" 
+                                                                onclick="event.stopPropagation(); abrirModalPuntosManualesUsuario('{{ $m->id }}', '{{ e(addslashes($m->name)) }}')" 
+                                                                title="⭐ Asignar Puntos Manuales a {{ $m->name }}" style="line-height: 1; text-decoration: none;">
+                                                            <i class="fa fa-star text-warning"></i>
+                                                        </button>
+                                                    @endif
                                                 </span>
                                             @endforeach
                                         @endif
@@ -4702,37 +4719,59 @@ window.guardarNuevoUsuarioInline = function() {
 {{-- ════════════════════════════════════════════════════════════════════════════
      MODAL: PREMIO MASIVO CIERRE DE SEMANA (+100 PTS)
      ════════════════════════════════════════════════════════════════════════════ --}}
-<div class="modal fade" id="modalPremioCierreSemana" tabindex="-1" role="dialog" aria-hidden="true">
+{{-- ════════════════════════════════════════════════════════════════════════════
+     MODAL: PREMIO MASIVO / ASIGNAR PUNTOS A EQUIPO DE TRABAJO
+     ════════════════════════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalPremioCierreSemana" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-lg">
+        <div class="modal-content border-0 shadow-lg rounded-lg" style="border-radius: 14px; overflow: hidden;">
             <div class="modal-header text-white" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                <h5 class="modal-title font-weight-bold mb-0 text-white">
-                    <i class="fa fa-gift mr-2"></i> 🎉 Premio Masivo — Cierre de Semana Exitoso
-                </h5>
+                <div>
+                    <h5 class="modal-title font-weight-bold mb-0 text-white">
+                        <i class="fa fa-gift mr-2"></i> Asignar Puntos a Equipo de Trabajo
+                    </h5>
+                    <small class="text-white-50" style="font-size: 0.75rem;">Reconocimiento masivo para todos los integrantes del grupo</small>
+                </div>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="formPremioCierreSemana">
                 @csrf
-                <div class="modal-body p-4">
+                <div class="modal-body p-4" style="background: #ffffff;">
                     <input type="hidden" id="cierre_sem_group_id" name="group_id">
                     
-                    <div class="alert alert-warning border-0 shadow-xs mb-3 font-weight-bold" style="background: #fffbeeb0; color: #92400e; font-size: 0.85rem;">
-                        <i class="fa fa-info-circle mr-1"></i> Este premio otorgará puntos de reconocimiento masivo a <strong>todos los integrantes</strong> del equipo seleccionado y sus subgrupos subordinados.
+                    <div class="alert alert-warning border-0 shadow-xs mb-3 font-weight-bold" style="background: #fffbeeb0; color: #92400e; font-size: 0.85rem; border-radius: 8px;">
+                        <i class="fa fa-info-circle mr-1"></i> Este premio otorgará puntos de reconocimiento a <strong>todos los integrantes</strong> del equipo seleccionado.
                     </div>
 
                     <div class="form-group mb-3">
                         <label class="font-weight-bold text-dark small mb-1">Equipo / Grupo Seleccionado</label>
-                        <input type="text" id="cierre_sem_group_name" class="form-control font-weight-bold bg-light" readonly style="color: #0f172a !important;">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-light border-right-0"><i class="fa fa-users text-warning"></i></span>
+                            </div>
+                            <input type="text" id="cierre_sem_group_name" class="form-control font-weight-bold bg-light border-left-0" readonly style="color: #0f172a !important;">
+                        </div>
                     </div>
 
                     <div class="form-group mb-3">
-                        <label class="font-weight-bold text-dark small mb-1">Puntos de Reconocimiento</label>
+                        <label class="font-weight-bold text-dark small mb-1">Categoría / Tipo de Reconocimiento</label>
+                        <select id="cierre_sem_categoria" class="form-control font-weight-bold" onchange="seleccionarCategoriaGrupo(this.value)" style="border-color: #cbd5e1; border-radius: 8px;">
+                            <option value="cierre_semana" data-points="100" data-title="🎉 Cierre de Semana Exitoso — Aporte en SIPLAN GO!" data-desc="Reconocimiento al esfuerzo, compromiso y colaboración activa en la gestión institucional del SIPLAN PEI.">🎉 Cierre de Semana Exitoso (+100 pts)</option>
+                            <option value="meta_cumplida" data-points="200" data-title="🏆 Cumplimiento Sobresaliente de Metas y Objetivos" data-desc="Felicitaciones al equipo por alcanzar y superar las metas programadas en el Plan Estratégico Institucional.">🏆 Cumplimiento de Metas (+200 pts)</option>
+                            <option value="liderazgo" data-points="150" data-title="💼 Liderazgo y Coordinación de Proyectos Estratégicos" data-desc="Reconocimiento a la coordinación eficaz, gestión de tareas y liderazgo interdepartamental.">💼 Liderazgo en Proyectos (+150 pts)</option>
+                            <option value="innovacion" data-points="250" data-title="💡 Innovación, Mejora de Procesos y Eficiencia" data-desc="Por implementar mejoras significativas en los procesos operativos e impulsar la transformación institucional.">💡 Innovación y Mejora (+250 pts)</option>
+                            <option value="otro" data-points="" data-title="" data-desc="">✨ Otro / Puntos y Motivo Personalizados (Libre)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small mb-1">Puntos de Reconocimiento (*)</label>
                         <div class="input-group">
-                            <input type="number" id="cierre_sem_points" name="points" class="form-control font-weight-bold text-warning" value="100" min="1" max="5000" required style="font-size: 1.1rem; color: #d97706 !important;">
+                            <input type="number" id="cierre_sem_points" name="points" class="form-control font-weight-bold" value="100" min="1" max="10000" required style="font-size: 1.15rem; color: #d97706 !important; border-color: #f59e0b;">
                             <div class="input-group-append">
-                                <span class="input-group-text font-weight-bold bg-warning text-dark border-0">PTS PER CAPITA</span>
+                                <span class="input-group-text font-weight-bold text-dark border-0" style="background: #fef3c7; color: #92400e !important;">PTS POR INTEGRANTE</span>
                             </div>
                         </div>
                     </div>
@@ -4740,22 +4779,115 @@ window.guardarNuevoUsuarioInline = function() {
                     <div class="form-group mb-3">
                         <div class="d-flex align-items-center justify-content-between mb-1">
                             <label class="font-weight-bold text-dark small mb-0">Título del Premio / Motivo (*)</label>
-                            <button type="button" class="btn btn-xs font-weight-bold text-dark shadow-sm" onclick="generarTextoConIA()" style="background: linear-gradient(135deg, #fef08a 0%, #fde047 100%); border: 1px solid #facc15; border-radius: 12px; font-size: 0.72rem; padding: 2px 10px;">
-                                <i class="fa fa-magic mr-1 text-warning"></i> 🤖 Redactor IA Generativo
+                            <button type="button" class="btn btn-xs font-weight-bold text-dark shadow-xs" onclick="generarTextoConIA()" style="background: linear-gradient(135deg, #fef08a 0%, #fde047 100%); border: 1px solid #facc15; border-radius: 12px; font-size: 0.72rem; padding: 2px 10px;">
+                                <i class="fa fa-magic mr-1 text-warning"></i> 🤖 Redactor IA
                             </button>
                         </div>
-                        <input type="text" id="cierre_sem_title" name="title" class="form-control font-weight-bold" value="🎉 Cierre de Semana Exitoso — Aporte en SIPLAN GO!" required style="color: #0f172a !important;">
+                        <input type="text" id="cierre_sem_title" name="title" class="form-control font-weight-bold" value="🎉 Cierre de Semana Exitoso — Aporte en SIPLAN GO!" required style="color: #0f172a !important; border-color: #cbd5e1;">
                     </div>
 
                     <div class="form-group mb-0">
-                        <label class="font-weight-bold text-dark small mb-1">Mensaje de Felicitación (Opcional)</label>
-                        <textarea id="cierre_sem_desc" name="description" class="form-control" rows="3" style="color: #0f172a !important;" placeholder="Ej: Felicitaciones a todo el equipo por su excelente desempeño, compromiso y cumplimiento de objetivos en la presente semana.">Reconocimiento al esfuerzo, compromiso y colaboración activa en la gestión institucional del SIPLAN PEI.</textarea>
+                        <label class="font-weight-bold text-dark small mb-1">Mensaje de Felicitación / Justificación (Opcional)</label>
+                        <textarea id="cierre_sem_desc" name="description" class="form-control" rows="3" style="color: #0f172a !important; border-color: #cbd5e1;" placeholder="Ej: Felicitaciones a todo el equipo por su excelente desempeño, compromiso y cumplimiento de objetivos.">Reconocimiento al esfuerzo, compromiso y colaboración activa en la gestión institucional del SIPLAN PEI.</textarea>
                     </div>
                 </div>
-                <div class="modal-footer bg-light px-4 py-3">
+                <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between">
                     <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-warning font-weight-bold text-dark px-4 shadow-sm" id="btnOtorgarCierreSemana">
-                        <i class="fa fa-gift mr-1"></i> 🎉 OTORGAR PUNTOS MASIVOS
+                    <button type="submit" class="btn btn-warning font-weight-bold text-dark px-4 shadow-sm" id="btnOtorgarCierreSemana" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none;">
+                        <i class="fa fa-gift mr-1"></i> 🎉 OTORGAR PUNTOS AL EQUIPO
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- ════════════════════════════════════════════════════════════════════════════
+     MODAL: ASIGNAR PUNTOS MANUALES A FUNCIONARIO INDIVIDUAL
+     ════════════════════════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalPuntosManualesUsuario" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-lg" style="border-radius: 14px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);">
+                <div>
+                    <h5 class="modal-title font-weight-bold mb-0 text-white">
+                        <i class="fa fa-star text-warning mr-2"></i> Asignar Puntos Manuales
+                    </h5>
+                    <small class="text-white-50" style="font-size: 0.75rem;">Reconocimiento individual de méritos y aportes institucionales</small>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formPuntosManualesUsuario">
+                @csrf
+                <div class="modal-body p-4" style="background: #ffffff;">
+                    <input type="hidden" id="manual_user_id" name="user_id">
+                    
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small mb-1">Funcionario / Destinatario</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-light border-right-0"><i class="fa fa-user-circle text-info"></i></span>
+                            </div>
+                            <input type="text" id="manual_user_name" class="form-control font-weight-bold bg-light border-left-0" readonly style="color: #0f172a !important; font-size: 0.95rem;">
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small mb-1">Categoría / Tipo de Reconocimiento</label>
+                        <select id="manual_user_categoria" class="form-control font-weight-bold" onchange="seleccionarCategoriaUsuario(this.value)" style="border-color: #cbd5e1; border-radius: 8px;">
+                            <option value="otro" data-points="" data-title="" data-desc="" selected>✨ Otro / Puntos y Motivo Personalizados (Libre)</option>
+                            <option value="desempeno" data-points="150" data-title="🏆 Aporte Extraordinario / Desempeño Sobresaliente" data-desc="Reconocimiento al alto rendimiento, compromiso excepcional y cumplimiento ejemplar de funciones.">🏆 Desempeño Sobresaliente (+150 pts)</option>
+                            <option value="liderazgo" data-points="200" data-title="💼 Liderazgo en Proyecto / Coordinación Técnica" data-desc="Por liderar con éxito iniciativas estratégicas y coordinar mesas de trabajo institucionales.">💼 Liderazgo en Proyecto (+200 pts)</option>
+                            <option value="cierre_semana" data-points="100" data-title="🎉 Cierre de Semana Exitoso — Aporte en SIPLAN GO!" data-desc="Reconocimiento al esfuerzo y cumplimiento de tareas durante la presente semana.">🎉 Cierre de Semana (+100 pts)</option>
+                            <option value="capacitacion" data-points="80" data-title="📚 Capacitación / Transferencia de Conocimiento" data-desc="Por brindar inducción, tutoría o transferir conocimientos técnicos clave al equipo de trabajo.">📚 Capacitación / Mentoría (+80 pts)</option>
+                            <option value="colaboracion" data-points="50" data-title="🤝 Colaboración y Apoyo Interdepartamental" data-desc="Por su predisposición constante y asistencia activa a otras áreas institucionales.">🤝 Colaboración Interdepartamental (+50 pts)</option>
+                            <option value="incidencia" data-points="120" data-title="🛠️ Resolución Efectiva de Incidencia Crítica" data-desc="Por solucionar de manera ágil y eficaz una contingencia de alta prioridad.">🛠️ Resolución de Incidencia (+120 pts)</option>
+                        </select>
+                    </div>
+
+                    {{-- Cantidad de Puntos y Accesos Rápidos --}}
+                    <div class="form-group mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <label class="font-weight-bold text-dark small mb-0">Cantidad de Puntos (*)</label>
+                            <div class="d-flex" style="gap: 4px;">
+                                <button type="button" class="btn btn-xs btn-outline-secondary font-weight-bold px-2 py-0" onclick="setPuntosRapidosUsuario(50)" style="font-size: 0.7rem;">+50</button>
+                                <button type="button" class="btn btn-xs btn-outline-secondary font-weight-bold px-2 py-0" onclick="setPuntosRapidosUsuario(100)" style="font-size: 0.7rem;">+100</button>
+                                <button type="button" class="btn btn-xs btn-outline-secondary font-weight-bold px-2 py-0" onclick="setPuntosRapidosUsuario(150)" style="font-size: 0.7rem;">+150</button>
+                                <button type="button" class="btn btn-xs btn-outline-secondary font-weight-bold px-2 py-0" onclick="setPuntosRapidosUsuario(200)" style="font-size: 0.7rem;">+200</button>
+                                <button type="button" class="btn btn-xs btn-outline-secondary font-weight-bold px-2 py-0" onclick="setPuntosRapidosUsuario(500)" style="font-size: 0.7rem;">+500</button>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <input type="number" id="manual_user_points" name="points" class="form-control font-weight-bold" value="100" min="1" max="10000" required style="font-size: 1.15rem; color: #b45309 !important; border-color: #f59e0b;">
+                            <div class="input-group-append">
+                                <span class="input-group-text font-weight-bold text-dark border-0" style="background: #fef3c7; color: #92400e !important;">PUNTOS REPUTACIÓN</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Motivo / Título --}}
+                    <div class="form-group mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <label class="font-weight-bold text-dark small mb-0">Motivo / Título del Reconocimiento (*)</label>
+                            <button type="button" class="btn btn-xs font-weight-bold text-dark shadow-xs" onclick="generarTextoIAUsuario()" style="background: linear-gradient(135deg, #fef08a 0%, #fde047 100%); border: 1px solid #facc15; border-radius: 12px; font-size: 0.72rem; padding: 2px 10px;">
+                                <i class="fa fa-magic mr-1 text-warning"></i> 🤖 Redactor IA
+                            </button>
+                        </div>
+                        <input type="text" id="manual_user_title" name="title" class="form-control font-weight-bold" placeholder="Ej: Reconocimiento por aporte extraordinario" required style="color: #0f172a !important; border-color: #cbd5e1;">
+                    </div>
+
+                    {{-- Descripción / Justificación --}}
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold text-dark small mb-1">Justificación / Mensaje Personalizado (Opcional)</label>
+                        <textarea id="manual_user_desc" name="description" class="form-control" rows="3" style="color: #0f172a !important; border-color: #cbd5e1;" placeholder="Ej: Se asignan puntos extraordinarios por su destacada labor en el cumplimiento institucional."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning font-weight-bold text-dark px-4 shadow-sm" id="btnOtorgarPuntosUsuario" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none;">
+                        <i class="fa fa-star text-dark mr-1"></i> ⭐ ASIGNAR PUNTOS AL FUNCIONARIO
                     </button>
                 </div>
             </form>
@@ -4905,6 +5037,109 @@ window.abrirModalPremioCierreSemana = function(groupId, groupName) {
     $('#modalPremioCierreSemana').modal('show');
 };
 
+window.seleccionarCategoriaGrupo = function(cat) {
+    var $opt = $('#cierre_sem_categoria option:selected');
+    var pts  = $opt.data('points');
+    var tit  = $opt.data('title');
+    var desc = $opt.data('desc');
+
+    if (pts)  $('#cierre_sem_points').val(pts);
+    if (tit)  $('#cierre_sem_title').val(tit);
+    if (desc) $('#cierre_sem_desc').val(desc);
+    if (cat === 'otro' && !tit) {
+        $('#cierre_sem_title').focus();
+    }
+};
+
+window.abrirModalPuntosManualesUsuario = function(userId, userName) {
+    $('#manual_user_id').val(userId || '');
+    $('#manual_user_name').val(userName || '');
+    $('#manual_user_categoria').val('otro');
+    $('#manual_user_points').val(100);
+    $('#manual_user_title').val('');
+    $('#manual_user_desc').val('');
+    $('#modalPuntosManualesUsuario').modal('show');
+};
+
+window.seleccionarCategoriaUsuario = function(cat) {
+    var $opt = $('#manual_user_categoria option:selected');
+    var pts  = $opt.data('points');
+    var tit  = $opt.data('title');
+    var desc = $opt.data('desc');
+
+    if (pts)  $('#manual_user_points').val(pts);
+    if (tit)  $('#manual_user_title').val(tit);
+    if (desc) $('#manual_user_desc').val(desc);
+    if (cat === 'otro' && !tit) {
+        $('#manual_user_title').focus();
+    }
+};
+
+window.setPuntosRapidosUsuario = function(pts) {
+    $('#manual_user_points').val(pts);
+};
+
+window.generarTextoIAUsuario = function() {
+    var name = $('#manual_user_name').val() || 'el funcionario';
+    var plantillas = [
+        {
+            title: "⭐ Reconocimiento al Desempeño y Compromiso Institucional",
+            desc: "Felicitaciones a " + name + " por su destacada dedicación, eficiencia y valiosa colaboración en el cumplimiento de los objetivos estratégicos."
+        },
+        {
+            title: "🏆 Aporte Extraordinario en la Gestión del PEI",
+            desc: "Reconocimiento especial a " + name + " por su proactividad, liderazgo técnico y constante aporte al fortalecimiento institucional."
+        },
+        {
+            title: "💡 Excelencia y Proactividad Técnica",
+            desc: "Se otorga este reconocimiento a " + name + " por su alto nivel de compromiso, agilidad en la resolución de tareas y apoyo continuo al equipo."
+        }
+    ];
+    var random = plantillas[Math.floor(Math.random() * plantillas.length)];
+    $('#manual_user_title').val(random.title);
+    $('#manual_user_desc').val(random.desc);
+    if (typeof toastr !== 'undefined') toastr.info('Motivo generado con estilo institucional.');
+};
+
+$('#formPuntosManualesUsuario').on('submit', function(e) {
+    e.preventDefault();
+    var userId = $('#manual_user_id').val();
+    if (!userId) {
+        toastr.error('No se ha seleccionado ningún funcionario.');
+        return;
+    }
+
+    var $btn = $('#btnOtorgarPuntosUsuario');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Asignando...');
+
+    $.ajax({
+        url: "{{ url('admin/globales/users') }}/" + userId + "/otorgar-puntos-manuales",
+        type: "POST",
+        data: $(this).serialize(),
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-star text-dark mr-1"></i> ⭐ ASIGNAR PUNTOS AL FUNCIONARIO');
+            if (res.success) {
+                $('#modalPuntosManualesUsuario').modal('hide');
+                Swal.fire({
+                    title: '¡Puntos Asignados!',
+                    text: res.message || 'Puntos acreditados exitosamente.',
+                    icon: 'success',
+                    confirmButtonColor: '#f59e0b'
+                }).then(function() {
+                    location.reload();
+                });
+            } else {
+                toastr.error(res.message || 'Error al asignar los puntos.');
+            }
+        },
+        error: function(err) {
+            $btn.prop('disabled', false).html('<i class="fa fa-star text-dark mr-1"></i> ⭐ ASIGNAR PUNTOS AL FUNCIONARIO');
+            var msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : (err.responseJSON && err.responseJSON.error ? err.responseJSON.error : 'Error al procesar la solicitud.');
+            toastr.error(msg);
+        }
+    });
+});
+
 $('#formPremioCierreSemana').on('submit', function(e) {
     e.preventDefault();
     var groupId = $('#cierre_sem_group_id').val();
@@ -4926,7 +5161,7 @@ $('#formPremioCierreSemana').on('submit', function(e) {
                 $('#modalPremioCierreSemana').modal('hide');
                 Swal.fire({
                     title: '¡Puntos Otorgados!',
-                    text: res.message || 'Se han acreditado los 100 Pts de Cierre de Semana Exitoso.',
+                    text: res.message || 'Se han acreditado los puntos al equipo de trabajo.',
                     icon: 'success',
                     confirmButtonColor: '#0284c7'
                 }).then(function() {

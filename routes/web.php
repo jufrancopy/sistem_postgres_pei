@@ -637,6 +637,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::resource('groups', 'Admin\Globales\GroupController');
         Route::post('groups/{id}/otorgar-puntos', 'Admin\Globales\GroupController@otorgarPuntosGrupo')->name('groups.otorgar-puntos');
         Route::post('groups/{id}/otorgar-puntos-cierre-semana', 'Admin\Globales\GroupController@otorgarPuntosCierreSemana')->name('groups.otorgar-puntos-cierre-semana');
+        Route::post('users/{id}/otorgar-puntos-manuales', 'Admin\Globales\GroupController@otorgarPuntosUsuario')->name('users.otorgar-puntos-manuales');
         Route::get('get-root-groups', 'Admin\Globales\GroupController@getRootGroups')->name('get-root-groups');
         Route::get('get-groups/{idRoot}', 'Admin\Globales\GroupController@getGroupsFromRoot')->name('get-groups');
         Route::get('get-group-parent/{idSelection}', 'Admin\Globales\GroupController@dataGroupParent')->name('get-group-parent');
