@@ -5901,27 +5901,75 @@ function cargarBasureroPeiAdmin() {
 }
 
 function revertirEdicionPei(editId) {
-    if (!confirm('¿Estás seguro de revertir esta edición al estado anterior registrado?')) return;
-
-    $.ajax({
-        url: "{{ url('pei-profiles/' . $profile->id . '/revertir-edicion') }}/" + editId,
-        type: "POST",
-        data: { _token: "{{ csrf_token() }}" },
-        success: function(resp) {
-            if (resp.ok) {
-                if (window.toastr) toastr.success(resp.message);
-                cargarBasureroPeiAdmin();
-                if (typeof recargarAcordeon === 'function') {
-                    recargarAcordeon();
+    var doRevert = function() {
+        $.ajax({
+            url: "{{ url('pei-profiles/' . $profile->id . '/revertir-edicion') }}/" + editId,
+            type: "POST",
+            data: { _token: "{{ csrf_token() }}" },
+            success: function(resp) {
+                if (resp.ok) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Edición Revertida!',
+                            text: resp.message || 'Se ha restaurado el estado anterior exitosamente.',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    } else if (window.toastr) {
+                        toastr.success(resp.message);
+                    }
+                    cargarBasureroPeiAdmin();
+                    if (typeof recargarAcordeon === 'function') {
+                        recargarAcordeon();
+                    }
+                } else {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: resp.message || 'No se pudo revertir la edición.'
+                        });
+                    } else if (window.toastr) {
+                        toastr.error(resp.message || 'No se pudo revertir la edición.');
+                    }
                 }
-            } else {
-                if (window.toastr) toastr.error(resp.message || 'No se pudo revertir la edición.');
+            },
+            error: function(xhr) {
+                var errText = xhr.responseJSON?.message || 'Error al revertir la edición.';
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de Reversión',
+                        text: errText
+                    });
+                } else if (window.toastr) {
+                    toastr.error(errText);
+                }
             }
-        },
-        error: function(xhr) {
-            if (window.toastr) toastr.error(xhr.responseJSON?.message || 'Error al revertir la edición.');
+        });
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '¿Revertir esta edición?',
+            text: 'El elemento PEI volverá exactamente al texto, indicadores y ponderaciones registradas antes de este cambio.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#f59e0b',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fa fa-undo mr-1"></i> Sí, revertir cambio',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then(function(res) {
+            if (res.isConfirmed) {
+                doRevert();
+            }
+        });
+    } else {
+        if (confirm('¿Estás seguro de revertir esta edición al estado anterior registrado?')) {
+            doRevert();
         }
-    });
+    }
 }
 
 $('#modalBasureroPei').on('shown.bs.modal', function () {
@@ -5978,23 +6026,63 @@ function restaurarElementoPei(id, type) {
         ? baseUrl + "/restaurar-iniciativa/" + id
         : baseUrl + "/restaurar-nodo/" + id;
 
-    $.ajax({
-        url: url,
-        type: "POST",
-        data: { _token: "{{ csrf_token() }}" },
-        success: function(resp) {
-            if (window.toastr) toastr.success(resp.message || 'Elemento restaurado con éxito.');
-            cargarBasureroPeiAdmin();
-            if (typeof recargarAcordeon === 'function') {
-                recargarAcordeon();
-            } else {
-                setTimeout(function() { location.reload(); }, 1000);
+    var doRestore = function() {
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: { _token: "{{ csrf_token() }}" },
+            success: function(resp) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Elemento Restaurado!',
+                        text: resp.message || 'El elemento ha reaparecido exitosamente en el árbol PEI.',
+                        confirmButtonColor: '#10b981'
+                    });
+                } else if (window.toastr) {
+                    toastr.success(resp.message || 'Elemento restaurado con éxito.');
+                }
+                cargarBasureroPeiAdmin();
+                if (typeof recargarAcordeon === 'function') {
+                    recargarAcordeon();
+                } else {
+                    setTimeout(function() { location.reload(); }, 1000);
+                }
+            },
+            error: function(xhr) {
+                var errText = xhr.responseJSON?.message || 'Error al restaurar el elemento.';
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de Restauración',
+                        text: errText
+                    });
+                } else if (window.toastr) {
+                    toastr.error(errText);
+                }
             }
-        },
-        error: function(xhr) {
-            if (window.toastr) toastr.error(xhr.responseJSON?.message || 'Error al restaurar el elemento.');
-        }
-    });
+        });
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '¿Restaurar este elemento?',
+            text: 'El elemento reaparecerá en su ubicación original dentro del árbol PEI.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fa fa-recycle mr-1"></i> Sí, restaurar elemento',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then(function(res) {
+            if (res.isConfirmed) {
+                doRestore();
+            }
+        });
+    } else {
+        doRestore();
+    }
 }
 
 function parseCommentsData(raw) {
