@@ -1,5 +1,5 @@
 {{-- ══ Modal Galería de Fotos — Reunión ════════════════════════════════════ --}}
-<div class="modal fade" id="modalGaleriaReunion" tabindex="-1" aria-hidden="true" style="z-index:1055">
+<div class="modal fade" id="modalGaleriaReunion" tabindex="-1" aria-hidden="true" style="z-index:1060">
     <div class="modal-dialog modal-lg modal-dialog-scrollable" style="max-width:800px">
         <div class="modal-content border-0 shadow-lg" style="border-radius:14px;overflow:hidden">
 
@@ -30,8 +30,8 @@
                     <small class="text-muted" style="font-size:.7rem"><i class="fa fa-leaf mr-1 text-success"></i>Imagen convertida a WebP</small>
                 </div>
 
-                {{-- Zona de Upload --}}
-                <div id="galeriaUploadZone" class="mb-3 p-3 text-center"
+                {{-- Zona de Upload (Label nativo) --}}
+                <label id="galeriaUploadZone" for="galeriaFileInput" class="d-block mb-3 p-3 text-center"
                      style="border:2px dashed #94a3b8;border-radius:12px;cursor:pointer;background:#fff;transition:border-color .2s"
                      ondragover="event.preventDefault();this.style.borderColor='#2563eb'"
                      ondragleave="this.style.borderColor='#94a3b8'"
@@ -39,8 +39,7 @@
                     <div id="galeriaUploadContent">
                         <i class="fa fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                         <p class="mb-1 text-muted" style="font-size:.85rem">
-                            Arrastrá una imagen aquí o
-                            <label for="galeriaFileInput" class="text-primary font-weight-bold" style="cursor:pointer;margin:0">hacé clic para seleccionar</label>
+                            Arrastrá una imagen aquí o <span class="text-primary font-weight-bold">hacé clic para seleccionar</span>
                         </p>
                         <small class="text-muted" style="font-size:.72rem">JPG, PNG, WebP · Máx. 10 MB · Se convierte automáticamente a WebP</small>
                     </div>
@@ -49,7 +48,7 @@
                         <p class="mb-0 text-primary font-weight-bold" style="font-size:.85rem">Optimizando y subiendo imagen...</p>
                     </div>
                     <input type="file" id="galeriaFileInput" accept="image/*" class="d-none">
-                </div>
+                </label>
 
                 {{-- Grid de Fotos --}}
                 <div id="galeriaGrid" class="d-flex flex-wrap" style="gap:12px;min-height:80px">

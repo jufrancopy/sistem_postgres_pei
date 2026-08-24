@@ -1480,18 +1480,16 @@ $('#btnLimpiarFiltro').on('click', function(e) {
 
     // ── Galería de Fotos de Reunión ─────────────────────────────────────────
     $(document).on('click', '.btnVerGaleriaReunion', function() {
+        if (document.activeElement) document.activeElement.blur();
         var taskId    = $(this).data('task-id');
         var titulo    = $(this).data('titulo');
         var canUpload = $(this).data('can-upload') == 1;
-        $('#modalReuniones').modal('hide');
-        setTimeout(function() {
-            abrirGaleriaReunion(taskId, titulo, canUpload);
-        }, 350);
+        abrirGaleriaReunion(taskId, titulo, canUpload);
     });
 
     $('#modalGaleriaReunion').on('hidden.bs.modal', function() {
-        // Reabrir el listado de reuniones y actualizar contadores de fotos
-        $('#modalReuniones').modal('show');
+        if (document.activeElement) document.activeElement.blur();
+        // Actualizar datos de las reuniones en el modal de fondo
         $.getJSON(_reunionesUrl, function(data) {
             _reunionesData = data;
             filtrarDt(_filtroActivo);
