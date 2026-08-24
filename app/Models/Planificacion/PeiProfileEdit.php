@@ -23,6 +23,6 @@ class PeiProfileEdit extends Model
 
     public function peiNode()
     {
-        return $this->belongsTo(PeiProfile::class, 'pei_profile_id');
+        return $this->belongsTo(\App\Admin\Planificacion\Pei\PeiProfile::class, 'pei_profile_id');
     }
 }

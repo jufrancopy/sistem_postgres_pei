@@ -78,9 +78,9 @@ class GlobalesController extends Controller
         $totalAdmins        = User::role('Administrador')->count();
         $totalParticipantes = User::role('Participantes')->count();
 
-        // ── Organigramas ──────────────────────────────────────────────────────
+        // ── Organigramas (Solo Estructura Orgánica Raíz) ──────────────────────
         $totalOrganigramas     = Organigrama::whereIsRoot()->count();
-        $totalDependencias     = Organigrama::count();
+        $totalDependencias     = Organigrama::whereIsRoot()->count();
         $totalEstablecimientos = Organigrama::whereNotNull('tipo_establecimiento')->count();
         $establecimientos_aop  = Organigrama::where('tiene_aop', true)->count();
         $establecimientos_por_tenencia = Organigrama::whereNotNull('tipo_establecimiento')
@@ -191,6 +191,8 @@ class GlobalesController extends Controller
                 ->orderBy('id', 'desc')
                 ->get();
         }
+
+        $totalUsuarios = $usuariosList->count();
 
         // ── Actividades del PEI (Filtradas por Contexto PEI Activo) ────────────
         if ($selectedPei) {

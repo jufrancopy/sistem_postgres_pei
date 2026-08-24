@@ -271,6 +271,11 @@ class PeiProfile extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
     public function edits()
     {
         return $this->hasMany(\App\Models\Planificacion\PeiProfileEdit::class, 'pei_profile_id');
