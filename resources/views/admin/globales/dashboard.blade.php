@@ -615,12 +615,14 @@
                                 </select>
                             </div>
                             @endif
+                            @hasanyrole('Administrador|Super Admin')
                             <button type="button" class="btn btn-warning btn-round shadow-sm px-3 text-dark font-weight-bold" onclick="abrirModalPremioCierreSemana('{{ $selectedGroup->id ?? '' }}', '{{ e(addslashes($selectedGroup->name ?? 'Ámbito Institucional')) }}')" title="Otorgar 100 Pts masivos a los integrantes del grupo y subgrupos">
                                 <i class="fa fa-gift mr-1 text-dark"></i> 🎉 +100 PTS CIERRE DE SEMANA
                             </button>
                             <button type="button" class="btn btn-info btn-round shadow-sm px-3 text-white font-weight-bold" onclick="abrirModalNuevoGrupo()">
                                 <i class="fa fa-plus-circle mr-1"></i> NUEVO GRUPO DE TRABAJO
                             </button>
+                            @endhasanyrole
                         </div>
                     </div>
 
@@ -795,18 +797,32 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 5px;">
-                                            <button type="button" class="btn btn-circle btn-warning text-dark font-weight-bold" onclick="abrirModalPremioCierreSemana('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Otorgar +100 Pts por Cierre de Semana Exitoso a todos los integrantes">
-                                                <i class="fa fa-gift"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalDetalleGrupo('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Gestionar Integrantes">
-                                                <i class="fa fa-user-plus"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-circle" style="background:#8b5cf6; border-color:#8b5cf6; color:#fff;" onclick="abrirModalEditarGrupo('{{ $g->id }}')" title="Editar Grupo">
-                                                <i class="fa fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarGrupo('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Eliminar Grupo">
-                                                <i class="fa fa-trash"></i>
-                                            </button>
+                                            @php
+                                                $authUser = auth()->user();
+                                                $isAdmin = $authUser->hasAnyRole(['Administrador', 'Super Admin']);
+                                                $isUserGroup = ($authUser->group_id && $authUser->group_id == $g->id) || ($g->members && $g->members->pluck('id')->contains($authUser->id));
+                                            @endphp
+
+                                            @if($isAdmin)
+                                                <button type="button" class="btn btn-circle btn-warning text-dark font-weight-bold" onclick="abrirModalPremioCierreSemana('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Otorgar +100 Pts por Cierre de Semana Exitoso a todos los integrantes">
+                                                    <i class="fa fa-gift"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalDetalleGrupo('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Gestionar Integrantes">
+                                                    <i class="fa fa-user-plus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-circle" style="background:#8b5cf6; border-color:#8b5cf6; color:#fff;" onclick="abrirModalEditarGrupo('{{ $g->id }}')" title="Editar Grupo">
+                                                    <i class="fa fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-circle btn-danger" onclick="eliminarGrupo('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Eliminar Grupo">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            @elseif($isUserGroup)
+                                                <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalDetalleGrupo('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Asignar Integrantes a Mi Grupo de Trabajo">
+                                                    <i class="fa fa-user-plus"></i>
+                                                </button>
+                                            @else
+                                                <span class="badge badge-light border text-muted px-2 py-1" style="font-size: 0.72rem;"><i class="fa fa-lock mr-1"></i>Lectura</span>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
