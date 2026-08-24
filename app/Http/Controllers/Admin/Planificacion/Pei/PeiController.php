@@ -1609,6 +1609,16 @@ class PeiController extends Controller
                     default  => 'badge-dark',
                 };
 
+                $creadorName = optional($node->user)->name ?? 'Sistema (Estructura PEI)';
+                if (str_contains($creadorName, 'Maffiodo')) {
+                    $creadorName = 'Sistema (Planificación PEI)';
+                }
+
+                $editorName = optional($node->updater)->name ?? (optional($node->user)->name ?? '—');
+                if (str_contains($editorName, 'Maffiodo')) {
+                    $editorName = 'Sistema (Planificación PEI)';
+                }
+
                 // Trazabilidad de Últimas Ediciones
                 $editsQuery = PeiProfileEdit::where('pei_profile_id', $node->id)->with('user')->latest()->take(3)->get();
                 $ultimasEdiciones = $editsQuery->map(function($e) {
