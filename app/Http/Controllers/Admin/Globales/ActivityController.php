@@ -301,9 +301,7 @@ class ActivityController extends Controller
     {
         $activity  = \App\Admin\Globales\Activity::findOrFail($activityId);
         $authUser  = Auth::user();
-        $isAdmin   = $authUser->hasAnyRole(['superadmin', 'admin', 'coordinador_planificacion']);
-
-        $today = now()->startOfDay();
+        $today     = now()->startOfDay();
 
         $reuniones = ActivityTask::with(['assignedTo', 'evidences', 'acta.participantes'])
             ->withCount('reunionPhotos')
@@ -330,7 +328,7 @@ class ActivityController extends Controller
             'acta_participantes_count' => $t->acta ? $t->acta->participantes->count() : 0,
             'acta_public_url'   => $t->acta ? route('actas.public.show', $t->acta->uuid) : null,
             'foto_count'        => $t->reunion_photos_count ?? 0,
-            'can_upload'        => $isAdmin || $t->assigned_to === $authUser->id,
+            'can_upload'        => true, // Permitir a cualquier usuario autenticado en el sistema
             'fecha_raw'         => $t->fecha_inicio?->format('Y-m-d'),   // ISO para ordenar en JS
             'is_today'          => $t->fecha_inicio && $t->fecha_inicio->isSameDay($today),
             'is_future'         => $t->fecha_inicio && $t->fecha_inicio->startOfDay()->gt($today),
@@ -797,13 +795,10 @@ class ActivityController extends Controller
     {
         $task = ActivityTask::where('es_reunion', true)->findOrFail($taskId);
 
-        // Control de permisos: responsable asignado o admin/coordinador
-        $user     = Auth::user();
-        $isAdmin  = $user->hasAnyRole(['superadmin', 'admin', 'coordinador_planificacion']);
-        $isOwner  = $task->assigned_to === $user->id;
-
-        if (!$isAdmin && !$isOwner) {
-            return response()->json(['error' => 'No tienes permiso para subir fotos a esta reunión.'], 403);
+        // Cualquier usuario autenticado puede subir fotos a la reunión
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Debe iniciar sesión para realizar esta acción.'], 401);
         }
 
         // Límite máximo de fotos
@@ -887,12 +882,9 @@ class ActivityController extends Controller
     {
         $photo = ActivityReunionPhoto::findOrFail($photoId);
 
-        $user    = Auth::user();
-        $isAdmin = $user->hasAnyRole(['superadmin', 'admin', 'coordinador_planificacion']);
-        $isOwner = $photo->uploaded_by === $user->id;
-
-        if (!$isAdmin && !$isOwner) {
-            return response()->json(['error' => 'No tienes permiso para eliminar esta foto.'], 403);
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Debe iniciar sesión para realizar esta acción.'], 401);
         }
 
         // Eliminar archivos físicos
