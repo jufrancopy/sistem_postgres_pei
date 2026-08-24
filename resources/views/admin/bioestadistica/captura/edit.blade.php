@@ -55,7 +55,7 @@
             'periodHelp' => 'Al aplicarlo se recarga el formulario; esto ajusta correctamente calendarios como SP11.',
         ])
 
-        <form method="POST" action="{{ route('bioestadistica.captura.update', $record) }}">
+        <form id="bio-captura-form" method="POST" action="{{ route('bioestadistica.captura.update', $record) }}" @if($record->isEditable() && auth()->user()->can('bio.record.update')) data-autosave-url="{{ route('bioestadistica.captura.autosave', $record) }}" @endif>
             @csrf @method('PUT')
             @foreach($record->formulario->secciones as $seccion)
                 <div class="card border mb-3">
@@ -74,6 +74,7 @@
             <div class="form-group"><label>Observación del digitador</label><textarea class="form-control" name="observacion" rows="2" @disabled(!$record->isEditable())>{{ old('observacion', $record->estado === 'objetado' ? '' : $record->observacion) }}</textarea></div>
             @if($record->isEditable() && auth()->user()->can('bio.record.update'))
                 <button class="btn btn-primary">Guardar borrador</button>
+                <span id="bio-autosave-status" class="text-muted small ml-2" aria-live="polite"></span>
             @endif
         </form>
 
@@ -128,6 +129,131 @@ document.addEventListener('DOMContentLoaded', function () {
         table.addEventListener('input', recalculate);
         recalculate();
     });
+
+    (function () {
+        const form = document.getElementById('bio-captura-form');
+        const url = form && form.getAttribute('data-autosave-url');
+        if (!form || !url) {
+            return;
+        }
+
+        const DEBOUNCE_MS = 3000;
+        const MAX_INTERVAL_MS = 30000;
+        const statusEl = document.getElementById('bio-autosave-status');
+        let dirty = false;
+        let saving = false;
+        let debounceTimer = null;
+        let maxTimer = null;
+        let queued = false;
+
+        const snapshot = function () {
+            return new URLSearchParams(new FormData(form)).toString();
+        };
+        let lastSaved = snapshot();
+
+        const setStatus = function (text, kind) {
+            if (!statusEl) {
+                return;
+            }
+            statusEl.textContent = text;
+            statusEl.className = 'small ml-2 ' + (kind === 'error' ? 'text-danger' : (kind === 'saving' ? 'text-info' : 'text-muted'));
+        };
+
+        const payload = function () {
+            const body = new FormData(form);
+            body.delete('_method');
+            return body;
+        };
+
+        const save = function () {
+            const current = snapshot();
+            if (saving) {
+                queued = true;
+                return Promise.resolve();
+            }
+            if (current === lastSaved) {
+                dirty = false;
+                return Promise.resolve();
+            }
+            saving = true;
+            dirty = false;
+            queued = false;
+            setStatus('Guardando…', 'saving');
+
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': (form.querySelector('[name="_token"]') || {}).value || ''
+                },
+                body: payload(),
+                credentials: 'same-origin'
+            }).then(function (res) {
+                return res.json().then(function (data) {
+                    if (!res.ok || !data.ok) {
+                        throw new Error(data.message || 'No se pudo autoguardar');
+                    }
+                    lastSaved = current;
+                    setStatus('Autoguardado ' + (data.saved_at || ''), 'ok');
+                });
+            }).catch(function (err) {
+                dirty = true;
+                setStatus(err.message || 'Autoguardado pendiente', 'error');
+            }).finally(function () {
+                saving = false;
+                if (maxTimer && !dirty) {
+                    clearTimeout(maxTimer);
+                    maxTimer = null;
+                }
+                if (queued || dirty) {
+                    queued = false;
+                    return save();
+                }
+            });
+        };
+
+        const schedule = function () {
+            dirty = true;
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(save, DEBOUNCE_MS);
+            if (!maxTimer) {
+                maxTimer = setTimeout(function () {
+                    maxTimer = null;
+                    save();
+                }, MAX_INTERVAL_MS);
+            }
+        };
+
+        form.addEventListener('input', schedule);
+        form.addEventListener('change', schedule);
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'hidden' && dirty) {
+                save();
+            }
+        });
+        window.addEventListener('pagehide', function () {
+            if (!dirty || saving) {
+                return;
+            }
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon(url, payload());
+            }
+        });
+
+        document.querySelectorAll('form[action*="/enviar"]').forEach(function (submitForm) {
+            submitForm.addEventListener('submit', function (event) {
+                if (!dirty && !saving) {
+                    return;
+                }
+                event.preventDefault();
+                save().finally(function () {
+                    submitForm.submit();
+                });
+            });
+        });
+    })();
 });
 </script>
 @endsection

@@ -15,6 +15,7 @@ use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\HospEpisodio;
 use App\Models\Bioestadistica\ImportJob;
 use App\Models\Bioestadistica\Record;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -235,6 +236,61 @@ class HospitalizacionController extends Controller
             "Planilla guardada: {$summary['creados']} creados, "
             ."{$summary['actualizados']} actualizados y {$summary['eliminados']} eliminados."
         );
+    }
+
+    public function autosaveSpreadsheet(
+        HospEpisodioBatchRequest $request,
+        HospitalizationService $service
+    ): JsonResponse {
+        $data = $request->validated();
+        $formulario = Formulario::where('codigo', 'SP10')->firstOrFail();
+        [$departamentoId, $servicioId] = $this->optionalCorte(
+            (int) $data['establecimiento_id'],
+            $data['estructura_servicio_id'] ?? null
+        );
+        $record = Record::firstOrCreate([
+            'formulario_id' => $formulario->id,
+            'establecimiento_id' => $data['establecimiento_id'],
+            'periodo_anio' => $data['periodo_anio'],
+            'periodo_mes' => $data['periodo_mes'],
+            'estructura_departamento_id' => $departamentoId,
+            'estructura_servicio_id' => $servicioId,
+        ], [
+            'estado' => Record::ESTADO_BORRADOR,
+            'created_by' => $request->user()->id,
+        ]);
+
+        if (! $record->isEditable()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'El registro SP10 no está disponible para edición.',
+            ], 422);
+        }
+
+        $rows = $data['rows'] ?? [];
+        if ($rows === []) {
+            return response()->json([
+                'ok' => true,
+                'saved_at' => now()->timezone(config('app.timezone'))->format('H:i:s'),
+                'empty' => true,
+            ]);
+        }
+
+        $summary = $service->saveBatch(
+            (int) $data['establecimiento_id'],
+            (int) $data['periodo_anio'],
+            (int) $data['periodo_mes'],
+            $rows,
+            $request->user(),
+            $record,
+            false
+        );
+
+        return response()->json([
+            'ok' => true,
+            'saved_at' => now()->timezone(config('app.timezone'))->format('H:i:s'),
+            'summary' => $summary,
+        ]);
     }
 
     public function update(HospEpisodioRequest $request, HospEpisodio $episodio, HospitalizationService $service): RedirectResponse

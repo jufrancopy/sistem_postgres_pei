@@ -367,6 +367,8 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.record.view')->name('captura.edit');
         Route::put('/captura/{record}', 'Admin\Bioestadistica\CapturaController@update')
             ->middleware('permission:bio.record.update')->name('captura.update');
+        Route::post('/captura/{record}/autosave', 'Admin\Bioestadistica\CapturaController@autosave')
+            ->middleware('permission:bio.record.update')->name('captura.autosave');
         Route::put('/captura/{record}/periodo', 'Admin\Bioestadistica\CapturaController@updatePeriod')
             ->middleware('permission:bio.record.update')->name('captura.period.update');
         Route::post('/captura/{record}/enviar', 'Admin\Bioestadistica\CapturaController@submit')
@@ -476,6 +478,8 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.hosp.manage')->name('hospitalizacion.spreadsheet');
         Route::post('/hospitalizacion/planilla', 'Admin\Bioestadistica\HospitalizacionController@saveSpreadsheet')
             ->middleware('permission:bio.hosp.manage')->name('hospitalizacion.spreadsheet.save');
+        Route::post('/hospitalizacion/planilla/autosave', 'Admin\Bioestadistica\HospitalizacionController@autosaveSpreadsheet')
+            ->middleware('permission:bio.hosp.manage')->name('hospitalizacion.spreadsheet.autosave');
         Route::get('/hospitalizacion/crear', 'Admin\Bioestadistica\HospitalizacionController@create')
             ->middleware('permission:bio.hosp.manage')->name('hospitalizacion.create');
         Route::post('/hospitalizacion', 'Admin\Bioestadistica\HospitalizacionController@store')

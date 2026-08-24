@@ -11,7 +11,12 @@ use Illuminate\Validation\ValidationException;
 
 class RecordCaptureService
 {
-    public function save(Record $record, array $values, bool $system = false): Record
+    public function saveDraft(Record $record, array $values): Record
+    {
+        return $this->save($record, $values, false, false);
+    }
+
+    public function save(Record $record, array $values, bool $system = false, bool $strict = true): Record
     {
         if (! $system && ! $record->isEditable()) {
             throw ValidationException::withMessages([
@@ -30,10 +35,13 @@ class RecordCaptureService
             ->flatMap(fn ($section) => $section->fields)
             ->keyBy('code');
 
-        $normalized = $this->validate($fields, $values, $record);
+        $normalized = $this->validate($fields, $values, $record, $strict);
 
-        DB::transaction(function () use ($record, $fields, $normalized) {
+        DB::transaction(function () use ($record, $fields, $normalized, $strict) {
             foreach ($fields as $code => $field) {
+                if (! $strict && ! array_key_exists($code, $normalized)) {
+                    continue;
+                }
                 $payload = $normalized[$code] ?? null;
                 if ($payload === null) {
                     $record->values()->where('field_id', $field->id)->delete();
@@ -52,12 +60,14 @@ class RecordCaptureService
                 );
             }
         });
-        app(IndicatorCacheService::class)->invalidateForRecord($record);
+        if ($strict) {
+            app(IndicatorCacheService::class)->invalidateForRecord($record);
+        }
 
         return $record->fresh(['values.field']);
     }
 
-    public function validate(Collection $fields, array $values, ?Record $record = null): array
+    public function validate(Collection $fields, array $values, ?Record $record = null, bool $strict = true): array
     {
         $normalized = [];
         $errors = [];
@@ -66,18 +76,26 @@ class RecordCaptureService
             $value = $values[$code] ?? null;
             $empty = $value === null || $value === '' || $value === [];
 
-            if ($field->required && $empty) {
+            if ($field->required && $empty && $strict) {
                 $errors["values.{$code}"][] = "{$field->label} es obligatorio.";
                 continue;
             }
             if ($empty) {
+                $normalized[$code] = null;
                 continue;
             }
 
             try {
-                $normalized[$code] = $this->normalizeValue($field, $value, $record);
+                $payload = $this->normalizeValue($field, $value, $record, $strict);
+                if ($payload === null) {
+                    // Borrador: valor inválido a medio escribir; se conserva lo ya guardado.
+                    continue;
+                }
+                $normalized[$code] = $payload;
             } catch (ValidationException $exception) {
-                $errors["values.{$code}"] = $exception->errors()['value'] ?? [$exception->getMessage()];
+                if ($strict) {
+                    $errors["values.{$code}"] = $exception->errors()['value'] ?? [$exception->getMessage()];
+                }
             }
         }
 
@@ -88,64 +106,88 @@ class RecordCaptureService
         return $normalized;
     }
 
-    private function normalizeValue(Field $field, mixed $value, ?Record $record = null): array
+    private function normalizeValue(Field $field, mixed $value, ?Record $record = null, bool $strict = true): ?array
     {
         $this->validateCatalog($field, $value);
 
-        return match ($field->type) {
-            'integer' => ['value_num' => $this->number($field, $value, true)],
-            'decimal' => ['value_num' => $this->number($field, $value, false)],
-            'date' => ['value_date' => $this->date($field, $value)],
-            'time' => ['value_text' => $this->time($field, $value)],
+        $payload = match ($field->type) {
+            'integer' => ['value_num' => $this->number($field, $value, true, $strict)],
+            'decimal' => ['value_num' => $this->number($field, $value, false, $strict)],
+            'date' => ['value_date' => $this->date($field, $value, $strict)],
+            'time' => ['value_text' => $this->time($field, $value, $strict)],
             'boolean' => ['value_bool' => filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false],
-            'tabla' => ['value_json' => $this->tabla($field, $value)],
+            'tabla' => ['value_json' => $this->tabla($field, $value, $strict)],
             'matriz' => ['value_json' => $this->matriz($field, $value, $record)],
             'multiselect', 'subtabla' => ['value_json' => $this->json($field, $value)],
-            default => ['value_text' => $this->text($field, $value)],
+            default => ['value_text' => $this->text($field, $value, $strict)],
         };
+
+        if (! $strict && array_key_exists(array_key_first($payload), $payload) && reset($payload) === null) {
+            return null;
+        }
+
+        return $payload;
     }
 
-    private function number(Field $field, mixed $value, bool $integer): int|float
+    private function number(Field $field, mixed $value, bool $integer, bool $strict = true): int|float|null
     {
         if (! is_numeric($value) || ($integer && filter_var($value, FILTER_VALIDATE_INT) === false)) {
+            if (! $strict) {
+                return null;
+            }
             $this->fail("{$field->label} debe ser " . ($integer ? 'un número entero.' : 'numérico.'));
         }
         $number = $integer ? (int) $value : (float) $value;
         if ($field->min_value !== null && $number < (float) $field->min_value) {
+            if (! $strict) {
+                return null;
+            }
             $this->fail("{$field->label} no puede ser menor a {$field->min_value}.");
         }
         if ($field->max_value !== null && $number > (float) $field->max_value) {
+            if (! $strict) {
+                return null;
+            }
             $this->fail("{$field->label} no puede ser mayor a {$field->max_value}.");
         }
 
         return $number;
     }
 
-    private function text(Field $field, mixed $value): string
+    private function text(Field $field, mixed $value, bool $strict = true): ?string
     {
         $value = trim((string) $value);
         if ($field->validation_regex && @preg_match($field->validation_regex, '') !== false
             && ! preg_match($field->validation_regex, $value)) {
+            if (! $strict) {
+                return null;
+            }
             $this->fail("{$field->label} no cumple el formato requerido.");
         }
 
         return $value;
     }
 
-    private function date(Field $field, mixed $value): string
+    private function date(Field $field, mixed $value, bool $strict = true): ?string
     {
         $date = \DateTimeImmutable::createFromFormat('Y-m-d', (string) $value);
         if (! $date || $date->format('Y-m-d') !== $value) {
+            if (! $strict) {
+                return null;
+            }
             $this->fail("{$field->label} debe ser una fecha válida.");
         }
 
         return $value;
     }
 
-    private function time(Field $field, mixed $value): string
+    private function time(Field $field, mixed $value, bool $strict = true): ?string
     {
         $time = (string) $value;
         if (! preg_match('/^(?:[01]\\d|2[0-3]):[0-5]\\d$/', $time)) {
+            if (! $strict) {
+                return null;
+            }
             $this->fail("{$field->label} debe ser una hora válida.");
         }
 
@@ -173,7 +215,7 @@ class RecordCaptureService
      * El id es prestación (diccionario) o ítem de catálogo auxiliar.
      * descartando las filas sin datos para no almacenar el catálogo completo en vacío.
      */
-    private function tabla(Field $field, mixed $value): array
+    private function tabla(Field $field, mixed $value, bool $strict = true): array
     {
         $payload = $this->json($field, $value);
         $rows = $payload['rows'] ?? $payload;
@@ -190,22 +232,35 @@ class RecordCaptureService
         $normalized = [];
         foreach ($rows as $itemId => $cells) {
             if ($validItems && ! in_array((string) $itemId, $validItems, true)) {
-                $this->fail("{$field->label} contiene una fila que no pertenece al diccionario o catálogo.");
+                if ($strict) {
+                    $this->fail("{$field->label} contiene una fila que no pertenece al diccionario o catálogo.");
+                }
+                continue;
             }
             if (! is_array($cells)) {
-                $this->fail("{$field->label} contiene una fila con formato inválido.");
+                if ($strict) {
+                    $this->fail("{$field->label} contiene una fila con formato inválido.");
+                }
+                continue;
             }
 
             $row = [];
             foreach ($cells as $columnCode => $cell) {
                 $column = $columns->get($columnCode);
                 if (! $column) {
-                    $this->fail("{$field->label} contiene la columna desconocida «{$columnCode}».");
+                    if ($strict) {
+                        $this->fail("{$field->label} contiene la columna desconocida «{$columnCode}».");
+                    }
+                    continue;
                 }
                 if ($cell === null || $cell === '') {
                     continue;
                 }
-                $row[$columnCode] = $this->tablaCell($field, $column, $cell);
+                $parsed = $this->tablaCell($field, $column, $cell, $strict);
+                if ($parsed === null) {
+                    continue;
+                }
+                $row[$columnCode] = $parsed;
             }
 
             if ($row !== []) {
@@ -213,11 +268,12 @@ class RecordCaptureService
             }
         }
 
-        if ($normalized === [] && $field->required) {
+        if ($normalized === [] && $field->required && $strict) {
             $this->fail("{$field->label} requiere al menos una fila con datos.");
         }
 
-        return ['rows' => $normalized];
+        // json_encode([]) is a JSON array; the numeric view uses jsonb_each, which needs an object.
+        return ['rows' => $normalized === [] ? new \stdClass() : $normalized];
     }
 
     private function matriz(Field $field, mixed $value, ?Record $record): array
@@ -232,7 +288,7 @@ class RecordCaptureService
         return $payload;
     }
 
-    private function tablaCell(Field $field, array $column, mixed $cell): int|float|string
+    private function tablaCell(Field $field, array $column, mixed $cell, bool $strict = true): int|float|string|null
     {
         $type = $column['type'] ?? 'integer';
         $label = "{$field->label} — " . ($column['label'] ?? $column['code']);
@@ -240,13 +296,22 @@ class RecordCaptureService
         if (in_array($type, ['integer', 'decimal'], true)) {
             $integer = $type === 'integer';
             if (! is_numeric($cell) || ($integer && filter_var($cell, FILTER_VALIDATE_INT) === false)) {
+                if (! $strict) {
+                    return null;
+                }
                 $this->fail("{$label} debe ser " . ($integer ? 'un número entero.' : 'numérico.'));
             }
             $number = $integer ? (int) $cell : (float) $cell;
             if (isset($column['min']) && $number < (float) $column['min']) {
+                if (! $strict) {
+                    return null;
+                }
                 $this->fail("{$label} no puede ser menor a {$column['min']}.");
             }
             if (isset($column['max']) && $number > (float) $column['max']) {
+                if (! $strict) {
+                    return null;
+                }
                 $this->fail("{$label} no puede ser mayor a {$column['max']}.");
             }
 
