@@ -485,8 +485,13 @@ Route::group(['middleware' => ['auth']], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
 
-        // ── Globales administrativas: solo Administrador ───────────────────────
-        Route::middleware(['role:Administrador'])->group(function () {
+        // ── Users: Administradores y Coordinadores de Planificación ───────────
+        Route::middleware(['role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI'])->group(function () {
+            Route::resource('users', 'Admin\UserController');
+        });
+
+        // ── Globales administrativas estrictas: solo Administrador ───────────────────────
+        Route::middleware(['role:Administrador|Super Admin'])->group(function () {
             Route::get('configuracion-sistema',  'Admin\HomeConfigController@editGlobalSettings')->name('configuracion-sistema');
             Route::post('configuracion-sistema', 'Admin\HomeConfigController@updateGlobalSettings')->name('configuracion-sistema.update');
 
@@ -494,7 +499,6 @@ Route::group(['middleware' => ['auth']], function () {
             Route::resource('localities', 'Admin\Globales\LocalityController');
             Route::resource('patrimonies', 'Admin\Globales\PatrimonyController');
             Route::resource('patrimony-profiles', 'Admin\Globales\PatrimonyProfileController');
-            Route::resource('users', 'Admin\UserController');
             Route::resource('permisos', 'Admin\PermissionController');
             Route::resource('roles', 'Admin\RoleController');
             Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');

@@ -438,11 +438,13 @@
                         <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalActividadesPei }}</span>
                     </a>
                 </li>
+                @hasanyrole('Administrador|Super Admin')
                 <li class="nav-item">
                     <a class="nav-link" id="tab-publico-link" data-toggle="pill" href="#tab-publico" role="tab" aria-selected="false">
                         <i class="fa fa-globe mr-2"></i> Visibilidad & Sitio Público
                     </a>
                 </li>
+                @endhasanyrole
                 <li class="nav-item">
                     <a class="nav-link" id="tab-juntas-link" data-toggle="pill" href="#tab-juntas" role="tab" aria-selected="false">
                         <i class="fa fa-balance-scale mr-2"></i> Juntas Consultivas
@@ -485,6 +487,7 @@
                                 </label>
                             </div>
 
+                            @hasanyrole('Administrador|Super Admin')
                             <button type="button" class="btn btn-outline-info btn-round px-3" onclick="abrirModalGestionRoles()">
                                 <i class="fa fa-shield-alt mr-1"></i> Roles (<span id="cantRolesMainBtn">{{ $totalRoles }}</span>)
                             </button>
@@ -494,6 +497,7 @@
                             <button type="button" class="btn btn-primary btn-round px-3" onclick="abrirModalNuevoUsuario()">
                                 <i class="fa fa-user-plus mr-1"></i> Nuevo Usuario
                             </button>
+                            @endhasanyrole
                         </div>
                     </div>
 
@@ -541,6 +545,7 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 4px;">
+                                            @hasanyrole('Administrador|Super Admin')
                                             @if(auth()->id() != $u->id)
                                                 <a href="{{ route('impersonate.take', $u->id) }}" class="btn btn-circle btn-warning text-dark font-weight-bold" title="👁️ Ver como {{ $u->name }} (Simular Rol)">
                                                     <i class="fa fa-eye"></i>
@@ -555,6 +560,9 @@
                                             <button type="button" class="btn btn-circle btn-danger" onclick="eliminarUsuario('{{ $u->id }}', '{{ addslashes($u->name) }}')" title="Eliminar Usuario">
                                                 <i class="fa fa-trash"></i>
                                             </button>
+                                            @else
+                                            <span class="badge badge-light border text-muted px-2 py-1"><i class="fa fa-lock mr-1"></i>Lectura</span>
+                                            @endhasanyrole
                                         </div>
                                     </td>
                                 </tr>
@@ -1412,12 +1420,17 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 5px;">
-                                            <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalEditarJunta('{{ $jta->id }}')" title="Editar Junta Consultiva">
+                                            <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalEditarJunta('{{ $jta->id }}')" title="Editar Junta Consultiva / Agregar Miembros">
                                                 <i class="fa fa-edit"></i>
                                             </button>
                                             <a href="{{ route('admin.juntas.intervenciones', ['junta_id' => $jta->id]) }}" class="btn btn-circle btn-warning text-dark" title="Ver Bandeja de Dictámenes">
                                                 <i class="fa fa-inbox"></i>
                                             </a>
+                                            @hasanyrole('Administrador|Super Admin')
+                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarJuntaConsultiva('{{ $jta->id }}', '{{ addslashes($jta->nombre) }}')" title="Eliminar Junta Consultiva">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                            @endhasanyrole
                                         </div>
                                     </td>
                                 </tr>

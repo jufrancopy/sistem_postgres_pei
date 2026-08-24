@@ -18,7 +18,7 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth', 'role:Administrador'])->except(['getUsers', 'getUser', 'getUsersForGroup']);
+        $this->middleware(['auth', 'role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI'])->except(['getUsers', 'getUser', 'getUsersForGroup']);
     }
 
     public function index(Request $request)
@@ -28,14 +28,17 @@ class UserController extends Controller
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editUser"><i class="far fa-edit"></i></a>';
+                    $btn = '';
 
-                    if (auth()->user()->hasRole('Administrador') || session()->has('impersonator_id')) {
+                    if (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Super Admin')) {
+                        $btn .= '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-circle editUser"><i class="far fa-edit"></i></a>';
                         if ($row->id !== auth()->id()) {
                             $impUrl = route('impersonate.take', $row->id);
                             $btn .= ' <a href="' . $impUrl . '" data-toggle="tooltip" title="Ver sistema como este usuario" class="btn btn-info btn-circle"><i class="fa fa-eye" aria-hidden="true"></i></a>';
                         }
                         $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-circle deleteUser"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+                    } else {
+                        $btn .= '<span class="badge badge-light text-muted">— Lectura —</span>';
                     }
 
                     return $btn;
