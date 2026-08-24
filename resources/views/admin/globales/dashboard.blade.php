@@ -777,7 +777,7 @@
                                                     <div class="badge d-inline-flex align-items-center justify-content-between p-1 px-2 pointer-hover" 
                                                          style="{{ $st }} font-size: 0.72rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: transform 0.15s ease;" 
                                                          onclick="abrirModalTelemetriaUsuario('{{ $topMember->id }}')" 
-                                                         title="📊 Clic para ver Ficha de Productividad & Telemetría de {{ $topMember->name }}">
+                                                         title="🏆 Clic para ver Historial de Puntos y Actividad de {{ $topMember->name }}">
                                                         <span class="text-truncate" style="max-width: 130px;">{{ $medal }} {{ $topMember->name }}</span>
                                                         <span class="badge badge-pill badge-dark ml-2" style="font-size: 0.65rem;">
                                                             <i class="fa fa-chart-line text-warning mr-1"></i>{{ number_format($topMember->puntos_gamificacion) }} pts
@@ -804,7 +804,7 @@
                                                 <span class="badge badge-light text-dark border mr-1 mb-1 shadow-sm px-2 py-1 pointer-hover" 
                                                       style="font-size:0.75rem; font-weight:500; cursor: pointer; transition: all 0.2s; border-radius: 6px;" 
                                                       onclick="abrirModalTelemetriaUsuario('{{ $m->id }}')" 
-                                                      title="📊 Clic para abrir Ficha de Productividad & Telemetría de {{ $m->name }}">
+                                                      title="🏆 Clic para ver Historial de Puntos y Actividad de {{ $m->name }}">
                                                     <i class="fa fa-user-circle text-info mr-1"></i>{{ $m->name }}
                                                     <span class="badge badge-pill badge-dark ml-1" style="font-size:0.64rem;">
                                                         {{ number_format($m->puntos_gamificacion ?? 0) }} pts
@@ -2591,14 +2591,29 @@
                     @endhasanyrole
                 </div>
 
-                {{-- Cronología Reciente --}}
+                {{-- Historial de Puntos de Gamificación --}}
+                <div class="card border shadow-sm mb-4" style="border-radius: 10px; overflow: hidden;">
+                    <div class="card-header bg-light py-2 px-3 font-weight-bold text-dark small text-uppercase d-flex align-items-center justify-content-between">
+                        <div>
+                            <i class="fa fa-star text-warning mr-1"></i> Historial de Puntos de Gamificación
+                        </div>
+                        <span class="badge badge-pill badge-primary font-weight-bold" style="font-size:0.7rem;">Puntos Válidos</span>
+                    </div>
+                    <div class="card-body p-0 bg-white" style="max-height: 240px; overflow-y: auto;" id="tel_points_container">
+                        <div id="tel_points_list" class="p-3">
+                            <div class="text-center py-3 text-muted small"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando historial de puntos...</div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Cronología Reciente de Actividades --}}
                 <div class="card border shadow-sm" style="border-radius: 10px;">
                     <div class="card-header bg-light py-2 px-3 font-weight-bold text-dark small text-uppercase">
-                        <i class="fa fa-history text-info mr-1"></i> Cronología Transaccional Reciente (Últimas Actividades)
+                        <i class="fa fa-history text-info mr-1"></i> Actividades Recientes en el Sistema
                     </div>
-                    <div class="card-body p-3 bg-white" style="max-height: 280px; overflow-y: auto;">
+                    <div class="card-body p-3 bg-white" style="max-height: 240px; overflow-y: auto;">
                         <ul class="list-group list-group-flush" id="tel_timeline_list">
-                            <li class="list-group-item text-center text-muted small py-4">Cargando datos de telemetría...</li>
+                            <li class="list-group-item text-center text-muted small py-4">Cargando actividades...</li>
                         </ul>
                     </div>
                 </div>
@@ -3616,9 +3631,45 @@ $(document).ready(function() {
         $('#tel_kpi_total').text('0');
         $('#tel_kpi_last_act').text('—');
         $('#tel_kpi_ip').text('—');
-        $('#tel_timeline_list').html('<li class="list-group-item text-center text-muted small py-4"><i class="fa fa-spinner fa-spin mr-1"></i> Consultando telemetría...</li>');
+        $('#tel_points_list').html('<div class="text-center py-3 text-muted small"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando historial de puntos...</div>');
+        $('#tel_timeline_list').html('<li class="list-group-item text-center text-muted small py-4"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando actividades...</li>');
         $('#modalTelemetriaUsuario').modal('show');
 
+        // 1. Obtener Historial de Puntos desde /perfil/{id}/puntos
+        $.ajax({
+            url: '{{ url("perfil") }}/' + userId + '/puntos',
+            type: 'GET',
+            success: function(pRes) {
+                if (pRes.ok && pRes.points) {
+                    var $pList = $('#tel_points_list');
+                    $pList.empty();
+                    if (pRes.points.length > 0) {
+                        var tableHtml = '<table class="table table-sm table-hover mb-0" style="font-size:0.82rem;">' +
+                            '<thead class="bg-light">' +
+                            '<tr><th>Descripción / Aporte</th><th class="text-center">Categoría</th><th class="text-center">Puntos</th><th class="text-right">Fecha</th></tr>' +
+                            '</thead><tbody>';
+                        
+                        $.each(pRes.points, function(i, pt) {
+                            var ptsBadge = '<span class="badge badge-success font-weight-bold px-2 py-1" style="font-size:0.75rem;">+' + (pt.points || 0) + ' PTS</span>';
+                            var catBadge = '<span class="badge badge-light border text-dark">' + (pt.action_type_label || 'Puntos') + '</span>';
+                            var fFecha = pt.created_at ? new Date(pt.created_at).toLocaleDateString('es-PY', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+                            tableHtml += '<tr>' +
+                                '<td><strong class="text-dark">' + (pt.description || 'Aporte') + '</strong></td>' +
+                                '<td class="text-center">' + catBadge + '</td>' +
+                                '<td class="text-center">' + ptsBadge + '</td>' +
+                                '<td class="text-right text-muted font-mono" style="font-size:0.75rem;">' + fFecha + '</td>' +
+                                '</tr>';
+                        });
+                        tableHtml += '</tbody></table>';
+                        $pList.html(tableHtml);
+                    } else {
+                        $pList.html('<div class="text-center py-4 text-muted small"><i class="fa fa-info-circle mr-1"></i> Aún no registra historial de puntos en este período.</div>');
+                    }
+                }
+            }
+        });
+
+        // 2. Obtener Perfil & Actividades
         $.ajax({
             url: '{{ url("admin/globales/users") }}/' + userId + '/telemetry',
             type: 'GET',
@@ -3657,12 +3708,12 @@ $(document).ready(function() {
                             $list.append(html);
                         });
                     } else {
-                        $list.html('<li class="list-group-item text-center text-muted small py-4"><i class="fa fa-info-circle mr-1"></i> El funcionario aún no registra interacciones en el módulo.</li>');
+                        $list.html('<li class="list-group-item text-center text-muted small py-4"><i class="fa fa-info-circle mr-1"></i> Sin actividades recientes registradas.</li>');
                     }
                 }
             },
             error: function() {
-                toastr.error('No se pudo consultar la información de telemetría del funcionario.');
+                toastr.error('No se pudo consultar la información del funcionario.');
             }
         });
     };
