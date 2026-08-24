@@ -1764,7 +1764,15 @@ class PeiController extends Controller
                 }
 
                 $nodeName = $e->peiNode ? strip_tags($e->peiNode->name) : 'Elemento PEI';
-                $nodeLevel = $e->peiNode ? strtoupper($e->peiNode->level ?: 'NODO') : 'PEI';
+                $rawLvl = strtolower($e->peiNode->level ?? '');
+                $nodeLevel = match($rawLvl) {
+                    'axi'    => 'OBJ. ESTRATÉGICO',
+                    'goal'   => 'OBJ. ESPECÍFICO / META',
+                    'action' => 'ACCIÓN ESTRATÉGICA',
+                    'master' => 'PLAN PEI MASTER',
+                    default  => strtoupper($e->peiNode->level ?: 'NODO PEI'),
+                };
+
                 $editor = $e->user->name ?? 'Usuario';
                 if (str_contains($editor, 'Maffiodo')) {
                     $editor = 'Sistema (Planificación PEI)';
