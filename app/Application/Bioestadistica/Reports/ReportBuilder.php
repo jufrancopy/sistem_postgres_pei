@@ -13,12 +13,14 @@ class ReportBuilder
 {
     public const MAX_ROWS = 5000;
 
+    public const MAX_ROWS_CONSOLIDADO = 20000;
+
     private const DIMENSIONS = [
         'departamento' => [
             'select' => 'g.departamento_nombre AS departamento',
             'group' => 'g.departamento_id, g.departamento_nombre',
             'order' => 'g.departamento_nombre',
-            'label' => 'Departamento',
+            'label' => 'Departamento-región',
         ],
         'distrito' => [
             'select' => 'g.distrito_nombre AS distrito',
@@ -78,7 +80,43 @@ class ReportBuilder
             'select' => 'COALESCE(pr.nombre, v.catalog_item_id::text) AS catalogo_item',
             'group' => 'v.catalog_item_id, pr.nombre',
             'order' => 'pr.nombre',
-            'label' => 'Prestación',
+            'label' => 'Prestaciones',
+        ],
+        'estructura_departamento' => [
+            'select' => 'COALESCE(ed.nombre, \'—\') AS estructura_departamento',
+            'group' => 'ed.id, ed.nombre',
+            'order' => 'ed.nombre',
+            'label' => 'Departamento',
+        ],
+        'estructura_servicio' => [
+            'select' => 'COALESCE(es.nombre, \'—\') AS estructura_servicio',
+            'group' => 'es.id, es.nombre',
+            'order' => 'es.nombre',
+            'label' => 'Servicio',
+        ],
+        'variable' => [
+            'select' => "COALESCE(var.codigo || ' — ' || var.nombre, '—') AS variable",
+            'group' => 'var.id, var.codigo, var.nombre',
+            'order' => 'var.codigo, var.nombre',
+            'label' => 'Variable',
+        ],
+        'tipo_prestacion' => [
+            'select' => 'COALESCE(vd.nombre, \'—\') AS tipo_prestacion',
+            'group' => 'vd.id, vd.nombre',
+            'order' => 'vd.nombre',
+            'label' => 'Tipo de prestaciones',
+        ],
+        'campo' => [
+            'select' => 'COALESCE(fld.label, v.field_code) AS campo',
+            'group' => 'v.field_id, fld.label, v.field_code',
+            'order' => 'fld.label, v.field_code',
+            'label' => 'Campo / especialidad',
+        ],
+        'prestador' => [
+            'select' => 'COALESCE(est.situacion_inmueble, \'—\') AS prestador',
+            'group' => 'est.situacion_inmueble',
+            'order' => 'est.situacion_inmueble',
+            'label' => 'Prestador',
         ],
     ];
 
@@ -98,11 +136,14 @@ class ReportBuilder
     public function execute(array $definition, User $user, array $overrides = []): array
     {
         $definition = $this->validator->validate($this->mergeOverrides($definition, $overrides));
-        $definition = $this->resolveIndicatorSource($definition);
-        if (empty($definition['form']) || empty($definition['field'])) {
-            throw ValidationException::withMessages([
-                'definicion' => 'No se pudo resolver una fuente numérica ejecutable.',
-            ]);
+        $consolidado = (bool) ($definition['consolidado'] ?? false);
+        if (! $consolidado) {
+            $definition = $this->resolveIndicatorSource($definition);
+            if (empty($definition['form']) || empty($definition['field'])) {
+                throw ValidationException::withMessages([
+                    'definicion' => 'No se pudo resolver una fuente numérica ejecutable.',
+                ]);
+            }
         }
 
         $from = PeriodContext::normalize($definition['filtros']['periodo_desde'] ?? null);
@@ -115,7 +156,8 @@ class ReportBuilder
         $definition['filtros']['periodo_desde'] = $from;
         $definition['filtros']['periodo_hasta'] = $to;
 
-        $limit = min((int) $definition['limit'], self::MAX_ROWS);
+        $maxRows = $consolidado ? self::MAX_ROWS_CONSOLIDADO : self::MAX_ROWS;
+        $limit = min((int) $definition['limit'], $maxRows);
         $query = $this->baseQuery($definition, $user);
         $dimensions = $definition['dimensions'];
         $selects = [];
@@ -142,6 +184,7 @@ class ReportBuilder
                 $item[$dimension] = $row->{$dimension};
             }
             $item['valor'] = $row->valor === null ? null : (float) $row->valor;
+
             return $item;
         })->values()->all();
 
@@ -165,8 +208,10 @@ class ReportBuilder
                 'cobertura' => $this->coverage($definition, $user),
                 'truncated' => $truncated,
                 'limit' => $limit,
+                'max_rows' => $maxRows,
                 'row_count' => count($rows),
                 'agg' => $definition['agg'],
+                'consolidado' => $consolidado,
                 'form' => $definition['form'],
                 'field' => $definition['field'],
                 'metric' => $definition['metric'],
@@ -191,21 +236,49 @@ class ReportBuilder
 
     private function baseQuery(array $definition, User $user): Builder
     {
+        $consolidado = (bool) ($definition['consolidado'] ?? false);
+        $dimensions = $definition['dimensions'] ?? [];
+
         $query = DB::connection('pgsql')
             ->table('bioestadistica.v_valores_numericos as v')
             ->join('bioestadistica.v_establecimientos_geo as g', 'g.establecimiento_id', '=', 'v.establecimiento_id')
-            ->where('v.formulario_codigo', $definition['form'])
-            ->where('v.field_code', $definition['field'])
             ->where('v.estado', $definition['filtros']['estado_record'] ?? 'aprobado');
 
-        if (in_array('catalogo_item', $definition['dimensions'], true)) {
-            $query->leftJoin('bioestadistica.prestaciones as pr', 'pr.id', '=', 'v.catalog_item_id');
+        if ($consolidado) {
+            $query->whereNotNull('v.metric_code')
+                ->whereNotNull('v.catalog_item_id');
+        } else {
+            $query->where('v.formulario_codigo', $definition['form'])
+                ->where('v.field_code', $definition['field']);
+            if (($definition['metric'] ?? null) === null) {
+                $query->whereNull('v.metric_code');
+            } else {
+                $query->where('v.metric_code', $definition['metric']);
+            }
         }
 
-        if (($definition['metric'] ?? null) === null) {
-            $query->whereNull('v.metric_code');
-        } else {
-            $query->where('v.metric_code', $definition['metric']);
+        $needsRecord = (bool) array_intersect($dimensions, [
+            'estructura_departamento', 'estructura_servicio', 'campo', 'variable', 'tipo_prestacion', 'catalogo_item',
+        ]);
+        if ($needsRecord || $consolidado) {
+            $query->leftJoin('bioestadistica.records as rec', 'rec.id', '=', 'v.record_id');
+        }
+        if (array_intersect($dimensions, ['estructura_departamento', 'estructura_servicio'])) {
+            $query->leftJoin('bioestadistica.estructura_departamentos as ed', 'ed.id', '=', 'rec.estructura_departamento_id')
+                ->leftJoin('bioestadistica.estructura_servicios as es', 'es.id', '=', 'rec.estructura_servicio_id');
+        }
+        if (array_intersect($dimensions, ['catalogo_item', 'variable', 'tipo_prestacion'])) {
+            $query->leftJoin('bioestadistica.prestaciones as pr', 'pr.id', '=', 'v.catalog_item_id');
+        }
+        if (array_intersect($dimensions, ['variable', 'tipo_prestacion'])) {
+            $query->leftJoin('bioestadistica.variable_detalles as vd', 'vd.id', '=', 'pr.detalle_id')
+                ->leftJoin('bioestadistica.variables as var', 'var.id', '=', 'vd.variable_id');
+        }
+        if (in_array('campo', $dimensions, true)) {
+            $query->leftJoin('bioestadistica.fields as fld', 'fld.id', '=', 'v.field_id');
+        }
+        if (in_array('prestador', $dimensions, true)) {
+            $query->leftJoin('bioestadistica.establecimientos as est', 'est.id', '=', 'v.establecimiento_id');
         }
 
         $from = $definition['filtros']['periodo_desde'];
@@ -255,6 +328,7 @@ class ReportBuilder
                     $query->orderByRaw(self::DIMENSIONS[$dimension]['order']);
                 }
             }
+
             return;
         }
         foreach ($orders as $order) {
@@ -338,11 +412,13 @@ class ReportBuilder
             ->join('bioestadistica.v_establecimientos_geo as g', 'g.establecimiento_id', '=', 'r.establecimiento_id')
             ->whereNull('r.deleted_at')
             ->where('r.estado', $definition['filtros']['estado_record'] ?? 'aprobado')
-            ->where('f.codigo', $definition['form'])
             ->whereRaw('(r.periodo_anio * 100 + r.periodo_mes) BETWEEN ? AND ?', [
                 $from['anio'] * 100 + $from['mes'],
                 $to['anio'] * 100 + $to['mes'],
             ]);
+        if (! empty($definition['form']) && empty($definition['consolidado'])) {
+            $reportedQuery->where('f.codigo', $definition['form']);
+        }
         foreach ([
             'establecimiento_id' => 'r.establecimiento_id',
             'departamento_id' => 'g.departamento_id',

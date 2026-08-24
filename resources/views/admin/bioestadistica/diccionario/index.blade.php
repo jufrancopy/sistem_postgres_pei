@@ -52,7 +52,7 @@
                         <td>{{ $variable->prestaciones_count }}</td>
                         <td>
                             <div class="bio-actions">
-                                <a class="btn btn-outline-primary btn-sm" href="{{ route('bioestadistica.diccionario.show', $variable) }}">Ver</a>
+                                <a class="btn btn-outline-primary btn-sm" href="{{ route('bioestadistica.diccionario.show', $variable) }}">Abrir</a>
                             </div>
                         </td>
                     </tr>

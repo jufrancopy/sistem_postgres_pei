@@ -41,7 +41,7 @@ class BioestadisticaProductionAnalyticsTest extends TestCase
             );
         }
 
-        foreach (['CONSULTAS_SP1', 'CONSULTAS_POR_PRESTACION', 'EGRESOS_ESTABLECIMIENTO'] as $code) {
+        foreach (['CONSULTAS_SP1', 'CONSULTAS_POR_PRESTACION', 'EGRESOS_ESTABLECIMIENTO', 'SALUD_CONSOLIDADO'] as $code) {
             $this->assertTrue(Reporte::where('codigo', $code)->exists(), "Falta el reporte {$code}.");
         }
 
@@ -66,5 +66,20 @@ class BioestadisticaProductionAnalyticsTest extends TestCase
         );
         $this->assertIsArray($report['rows']);
         $this->assertSame('sum', $report['meta']['agg']);
+
+        $consolidadoDef = Reporte::where('codigo', 'SALUD_CONSOLIDADO')->first()->definicion;
+        $this->assertTrue($consolidadoDef['consolidado'] ?? false);
+        $consolidado = app(ReportBuilder::class)->execute(
+            $consolidadoDef,
+            $user,
+            ['periodo_desde' => $period, 'periodo_hasta' => $period]
+        );
+        $this->assertIsArray($consolidado['rows']);
+        $this->assertTrue($consolidado['meta']['consolidado']);
+        $this->assertContains('variable', array_column($consolidado['columns'], 'key'));
+        $this->assertContains('catalogo_item', array_column($consolidado['columns'], 'key'));
+        $this->assertContains('prestador', array_column($consolidado['columns'], 'key'));
+        $this->assertSame('Prestador', collect($consolidado['columns'])->firstWhere('key', 'prestador')['label'] ?? null);
+        $this->assertSame('Cantidad', collect($consolidado['columns'])->firstWhere('key', 'valor')['label'] ?? null);
     }
 }

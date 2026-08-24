@@ -46,10 +46,17 @@
             </div>
 
             <h5 class="mt-3">Fuente numérica</h5>
-            <div class="form-row">
+            <div class="form-group">
+                <label class="d-block">
+                    <input type="checkbox" name="consolidado" value="1" id="bio-report-consolidado" @checked(old('consolidado', $def['consolidado'] ?? false))>
+                    Consolidado (todos los SP tabulares)
+                </label>
+                <small class="text-muted">Equivalente a la planilla Salud consolidado: suma cantidades de todas las tablas SP, sin una sola fuente.</small>
+            </div>
+            <div class="form-row" id="bio-report-source-row">
                 <div class="form-group col-md-6">
                     <label>Campo / métrica</label>
-                    <select class="form-control" name="source">
+                    <select class="form-control" name="source" id="bio-report-source">
                         <option value="">— Usar indicador —</option>
                         @foreach($sources as $source)
                             <option value="{{ $source['key'] }}" @selected($sourceKey === $source['key'])>{{ $source['label'] }}</option>
@@ -58,7 +65,7 @@
                 </div>
                 <div class="form-group col-md-3">
                     <label>Indicador (opcional)</label>
-                    <select class="form-control" name="indicator">
+                    <select class="form-control" name="indicator" id="bio-report-indicator">
                         <option value="">Ninguno</option>
                         @foreach($indicators as $indicator)
                             <option value="{{ $indicator->codigo }}" @selected(old('indicator', $def['indicator'] ?? '') === $indicator->codigo)>{{ $indicator->codigo }}</option>
@@ -73,6 +80,10 @@
                         @endforeach
                     </select>
                 </div>
+            </div>
+            <div class="form-group">
+                <label>Etiqueta de la métrica</label>
+                <input class="form-control" name="label" value="{{ old('label', $def['label'] ?? '') }}" placeholder="Cantidad, Consultas, …">
             </div>
 
             <h5>Dimensiones</h5>
@@ -125,7 +136,8 @@
                 </div>
                 <div class="form-group col-md-2">
                     <label>Límite</label>
-                    <input class="form-control" type="number" name="limit" min="1" max="5000" value="{{ old('limit', $def['limit'] ?? 500) }}" required>
+                    <input class="form-control" type="number" name="limit" min="1" max="20000" value="{{ old('limit', $def['limit'] ?? 500) }}" required>
+                    <small class="text-muted">Máx. 5000 (normal) o 20000 (consolidado).</small>
                 </div>
             </div>
             <div class="form-row">
@@ -185,5 +197,18 @@
 document.getElementById('useJson')?.addEventListener('change', function () {
     document.getElementById('definitionMode').value = this.checked ? 'advanced' : 'visual';
 });
+(function () {
+    var box = document.getElementById('bio-report-consolidado');
+    var source = document.getElementById('bio-report-source');
+    var indicator = document.getElementById('bio-report-indicator');
+    if (!box) return;
+    function sync() {
+        var on = box.checked;
+        if (source) source.disabled = on;
+        if (indicator) indicator.disabled = on;
+    }
+    box.addEventListener('change', sync);
+    sync();
+})();
 </script>
 @endsection

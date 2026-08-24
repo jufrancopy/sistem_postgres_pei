@@ -42,7 +42,16 @@
             $storedRows = $value['rows'] ?? [];
         @endphp
         @if($columns === [] || $rows->isEmpty())
-            <div class="alert alert-warning mb-0">El campo no tiene columnas configuradas o su diccionario/catálogo está vacío.</div>
+            <div class="alert alert-warning mb-0">
+                @if($columns === [])
+                    El campo no tiene columnas métricas configuradas. Edite el formulario SP y agregue
+                    <code>{"columns":[{"code":"total","label":"Total","type":"integer","min":0}]}</code>
+                    en la configuración del campo, o vuelva a guardar el campo tipo tabla.
+                @else
+                    El diccionario/catálogo del campo no tiene prestaciones activas. Agregue ítems en Variables
+                    (detalle enlazado al campo) y recargue.
+                @endif
+            </div>
         @else
             <div class="table-responsive">
                 <table class="table table-sm table-bordered bio-tabla mb-0" data-totals="{{ ($field->config['totals'] ?? false) ? '1' : '0' }}">

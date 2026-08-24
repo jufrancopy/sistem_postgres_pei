@@ -130,6 +130,31 @@ class BioestadisticaReportesDashboardsSeeder extends Seeder
             'Entregas'
         );
 
+        $this->report(
+            'SALUD_CONSOLIDADO',
+            'Salud consolidado',
+            'Consolidado dinámico de cantidades tabulares de todos los SP (equivalente a la planilla Salud consolidado).',
+            [
+                'consolidado' => true,
+                'agg' => 'sum',
+                'label' => 'Cantidad',
+                'dimensions' => [
+                    'area_gestion', 'departamento', 'establecimiento',
+                    'estructura_departamento', 'estructura_servicio',
+                    'variable', 'tipo_prestacion', 'campo', 'catalogo_item', 'prestador', 'periodo',
+                ],
+                'order_by' => [
+                    ['ref' => 'periodo', 'dir' => 'asc'],
+                    ['ref' => 'establecimiento', 'dir' => 'asc'],
+                    ['ref' => 'variable', 'dir' => 'asc'],
+                    ['ref' => 'catalogo_item', 'dir' => 'asc'],
+                ],
+                'limit' => 5000,
+                'totales' => true,
+                'filtros' => ['estado_record' => 'aprobado'],
+            ]
+        );
+
         $urgencias = BioestadisticaAnalyticsSupport::firstTableSource('SP9', 'total');
         $lab = BioestadisticaAnalyticsSupport::firstTableSource('SP5', 'determinaciones');
         $odonto = BioestadisticaAnalyticsSupport::firstTableSource('SP6', 'prestaciones');
@@ -278,7 +303,8 @@ class BioestadisticaReportesDashboardsSeeder extends Seeder
             'limit' => 500,
             'totales' => true,
         ], $definition);
-        if (in_array('catalogo_item', $definition['dimensions'] ?? [], true)) {
+        if (empty($definition['consolidado'])
+            && in_array('catalogo_item', $definition['dimensions'] ?? [], true)) {
             $definition['order_by'] = [
                 ['ref' => 'valor', 'dir' => 'desc'],
             ];
