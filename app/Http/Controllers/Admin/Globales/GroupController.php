@@ -17,7 +17,7 @@ class GroupController extends Controller
     public function __construct()
     {
         $this->middleware(['auth']);
-        $this->middleware(['role:Administrador'])->except(['getRootGroups', 'getGroupsFromRoot', 'dataGroupParent', 'dataGroup']);
+        $this->middleware(['role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI'])->except(['getRootGroups', 'getGroupsFromRoot', 'dataGroupParent', 'dataGroup']);
     }
 
     public function index(Request $request)
@@ -45,6 +45,23 @@ class GroupController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+        $isAdmin = $user->hasAnyRole(['Administrador', 'Super Admin']);
+
+        if (!$isAdmin) {
+            $targetGroupId = $request->group_id ?? $request->parent_id;
+            $userGroupId = $user->group_id;
+            $isMember = $targetGroupId && \DB::table('globales.groups_has_users')->where('group_id', $targetGroupId)->where('user_id', $user->id)->exists();
+
+            if ($targetGroupId != $userGroupId && !$isMember) {
+                return response()->json(['error' => 'No tienes permisos para modificar integrantes de otro grupo.'], 403);
+            }
+
+            if ($request->has('name') && !$request->group_id) {
+                return response()->json(['error' => 'No tienes permisos para crear nuevos grupos de trabajo.'], 403);
+            }
+        }
+
         if ($request->ajax() && (!$request->group_id || $request->has('name'))) {
             $request->validate(
                 ['name' => 'required'],
@@ -60,8 +77,12 @@ class GroupController extends Controller
             } else {
                 $group = Group::findOrFail($request->group_id);
                 if ($request->has('name') && !empty($request->name)) {
-                    $group->name = $request->name;
-                    $group->save();
+                    if (!$isAdmin) {
+                        // Coordinadores solo gestionan integrantes, no renombran el grupo
+                    } else {
+                        $group->name = $request->name;
+                        $group->save();
+                    }
                 }
             }
 
@@ -95,6 +116,10 @@ class GroupController extends Controller
      */
     public function otorgarPuntosGrupo(Request $request, $id)
     {
+        if (!auth()->user()->hasAnyRole(['Administrador', 'Super Admin'])) {
+            return response()->json(['error' => 'La asignación de puntos está reservada exclusivamente al Administrador del Sistema.'], 403);
+        }
+
         $group = Group::findOrFail($id);
 
         $validated = $request->validate([
@@ -135,6 +160,10 @@ class GroupController extends Controller
      */
     public function otorgarPuntosCierreSemana(Request $request, $id)
     {
+        if (!auth()->user()->hasAnyRole(['Administrador', 'Super Admin'])) {
+            return response()->json(['error' => 'La asignación de puntos está reservada exclusivamente al Administrador del Sistema.'], 403);
+        }
+
         $group = Group::findOrFail($id);
 
         $points = (int) $request->input('points', 100);
@@ -237,6 +266,10 @@ class GroupController extends Controller
 
     public function destroy(Request $request, $id)
     {
+        if (!auth()->user()->hasAnyRole(['Administrador', 'Super Admin'])) {
+            return response()->json(['error' => 'No tienes permisos para eliminar grupos.'], 403);
+        }
+
         $profile = Group::find($id)->delete();
 
         return response()->json([$profile]);
