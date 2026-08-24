@@ -71,8 +71,14 @@ class PeiProfile extends Model
         'public_token',
         'is_active',
         'updated_by',
+        'deleted_by',
         'creado_con_ia',
     ];
+
+    public function deleter()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'deleted_by');
+    }
 
     protected $casts = [
         'creado_con_ia' => 'boolean',

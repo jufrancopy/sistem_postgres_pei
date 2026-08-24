@@ -12,13 +12,18 @@ class PlanAccion extends Model
     protected $table = 'plan_acciones';
 
     protected $fillable = [
-        'plan_id', 'eje_id', 'pei_profile_id', 'user_id', 'codigo', 'momento', 'accion',
+        'plan_id', 'eje_id', 'pei_profile_id', 'user_id', 'deleted_by', 'codigo', 'momento', 'accion',
         'justificacion', 'kpi', 'plazo', 'responsable', 'estado', 'detalle', 'orden',
     ];
 
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+
+    public function deleter()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'deleted_by');
     }
 
     // Momentos disponibles

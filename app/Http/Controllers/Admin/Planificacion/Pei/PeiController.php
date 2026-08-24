@@ -1278,9 +1278,14 @@ class PeiController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $profile = PeiProfile::find($id)->delete();
+        $node = PeiProfile::find($id);
+        if ($node) {
+            $node->deleted_by = auth()->id();
+            $node->saveQuietly();
+            $node->delete();
+        }
 
-        return response()->json([$profile]);
+        return response()->json(['success' => true]);
     }
 
     public function getSemaforo(Request $request, $idProfile)
@@ -1548,7 +1553,7 @@ class PeiController extends Controller
 
         // 1. Nodos soft-deleted en la jerarquía PEI
         $trashedNodes = PeiProfile::onlyTrashed()
-            ->with(['user', 'updater'])
+            ->with(['user', 'updater', 'deleter'])
             ->orderBy('deleted_at', 'desc')
             ->get()
             ->map(function($node) {
@@ -1619,6 +1624,11 @@ class PeiController extends Controller
                     $editorName = 'Sistema (Planificación PEI)';
                 }
 
+                $eliminadoPorName = optional($node->deleter)->name ?? (optional($node->updater)->name ?? (optional($node->user)->name ?? 'Usuario del Sistema'));
+                if (str_contains($eliminadoPorName, 'Maffiodo')) {
+                    $eliminadoPorName = 'Usuario del Sistema';
+                }
+
                 // Trazabilidad de Últimas Ediciones
                 $editsQuery = PeiProfileEdit::where('pei_profile_id', $node->id)->with('user')->latest()->take(3)->get();
                 $ultimasEdiciones = $editsQuery->map(function($e) {
@@ -1629,15 +1639,6 @@ class PeiController extends Controller
                         'fecha'   => $e->created_at ? $e->created_at->format('d/m/Y H:i') : '',
                     ];
                 });
-
-                $creadorName = $node->user->name ?? 'Sistema (Estructura PEI)';
-                if (str_contains($creadorName, 'Maffiodo')) {
-                    $creadorName = 'Sistema (Planificación PEI)';
-                }
-                $editorName = $node->updater->name ?? ($node->user->name ?? '—');
-                if (str_contains($editorName, 'Maffiodo')) {
-                    $editorName = 'Sistema (Planificación PEI)';
-                }
 
                 return [
                     'id'                 => $node->id,
@@ -1652,6 +1653,7 @@ class PeiController extends Controller
                                                 : '<span class="text-muted italic"><i class="fa fa-sitemap mr-1"></i> Raíz de Jerarquía (Nivel Superior)</span>',
                     'creador'            => $creadorName,
                     'editor'             => $editorName,
+                    'eliminado_por'      => $eliminadoPorName,
                     'total_ediciones'    => PeiProfileEdit::where('pei_profile_id', $node->id)->count(),
                     'ultimas_ediciones'  => $ultimasEdiciones,
                     'deleted_at'         => $node->deleted_at ? $node->deleted_at->format('d/m/Y H:i') : '—',
@@ -1660,7 +1662,7 @@ class PeiController extends Controller
 
         // 2. Acciones Operativas soft-deleted
         $trashedInis = \App\Models\PlanMaestro\PlanAccion::onlyTrashed()
-            ->with(['user'])
+            ->with(['user', 'deleter'])
             ->orderBy('deleted_at', 'desc')
             ->get()
             ->map(function($ini) {
@@ -1703,9 +1705,14 @@ class PeiController extends Controller
                     }
                 }
 
-                $iniCreador = $ini->user->name ?? 'Sistema';
+                $iniCreador = optional($ini->user)->name ?? 'Sistema';
                 if (str_contains($iniCreador, 'Maffiodo')) {
                     $iniCreador = 'Sistema (Planificación PEI)';
+                }
+
+                $iniEliminadoPor = optional($ini->deleter)->name ?? (optional($ini->user)->name ?? 'Usuario del Sistema');
+                if (str_contains($iniEliminadoPor, 'Maffiodo')) {
+                    $iniEliminadoPor = 'Usuario del Sistema';
                 }
 
                 return [
@@ -1722,6 +1729,7 @@ class PeiController extends Controller
                                                 : '<span class="text-muted italic"><i class="fa fa-list mr-1"></i> Acción Operativa</span>',
                     'creador'            => $iniCreador,
                     'editor'             => $iniCreador,
+                    'eliminado_por'      => $iniEliminadoPor,
                     'total_ediciones'    => 1,
                     'ultimas_ediciones'  => [],
                     'deleted_at'         => $ini->deleted_at ? $ini->deleted_at->format('d/m/Y H:i') : '—',

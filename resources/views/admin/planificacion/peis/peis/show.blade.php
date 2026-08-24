@@ -5843,8 +5843,8 @@ function cargarBasureroPeiAdmin() {
                                          ${n.contexto || '—'}
                                        </div>`;
 
-                    var colTrazabilidad = `<div class="mb-1"><i class="fa fa-user-circle text-primary mr-1"></i> <strong>Autor:</strong> ${n.creador || 'Sistema'}</div>
-                                           <div><i class="fa fa-edit text-warning mr-1"></i> <strong>Editor:</strong> ${n.editor || '—'}</div>`;
+                    var colTrazabilidad = `<div class="mb-1"><i class="fa fa-user-circle text-primary mr-1"></i> <strong>Creador:</strong> ${n.creador || 'Sistema'}</div>
+                                           <div class="font-weight-bold text-danger" style="font-size:0.78rem;"><i class="fa fa-user-times text-danger mr-1"></i> <strong>Eliminado por:</strong> ${n.eliminado_por || 'Usuario del Sistema'}</div>`;
 
                     var colDate = `<span class="text-muted small font-mono">${n.deleted_at || '—'}</span>`;
 
@@ -5869,7 +5869,8 @@ function cargarBasureroPeiAdmin() {
                                          ${i.contexto || '—'}
                                        </div>`;
 
-                    var colTrazabilidad = `<div class="mb-1"><i class="fa fa-user-circle text-primary mr-1"></i> <strong>Autor:</strong> ${i.creador || 'Sistema'}</div>`;
+                    var colTrazabilidad = `<div class="mb-1"><i class="fa fa-user-circle text-primary mr-1"></i> <strong>Creador:</strong> ${i.creador || 'Sistema'}</div>
+                                           <div class="font-weight-bold text-danger" style="font-size:0.78rem;"><i class="fa fa-user-times text-danger mr-1"></i> <strong>Eliminado por:</strong> ${i.eliminado_por || 'Usuario del Sistema'}</div>`;
 
                     var colDate = `<span class="text-muted small font-mono">${i.deleted_at || '—'}</span>`;
 
