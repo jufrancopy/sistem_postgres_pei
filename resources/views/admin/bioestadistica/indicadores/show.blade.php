@@ -35,25 +35,66 @@
         <div class="card">
             <div class="card-header card-header-warning"><h4 class="card-title">Constructor visual</h4></div>
             <div class="card-body">
+                <p class="text-muted small mb-3">
+                    Este bloque sirve para <strong>guardar una nueva versión</strong> de la fórmula.
+                    La fórmula que realmente se usa al evaluar está en <strong>Historial de fórmulas</strong> (abajo).
+                </p>
+                @if($currentFormula)
+                    <div class="alert alert-light border small">
+                        <strong>Fórmula vigente (id {{ $currentFormula->id }}):</strong>
+                        <code class="d-block mt-1" style="white-space:pre-wrap">{{ json_encode($currentFormula->expresion, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</code>
+                        @unless($simpleConstructor)
+                            <span class="d-block mt-2 text-warning">
+                                Esta fórmula es compuesta (p. ej. porcentaje u operadores con varios argumentos).
+                                Use el <strong>modo avanzado AST</strong> para editarla; el constructor simple solo cubre suma/promedio/conteo de una fuente.
+                            </span>
+                        @endunless
+                    </div>
+                @else
+                    <div class="alert alert-warning small">Todavía no hay fórmula. Defina una abajo y guarde.</div>
+                @endif
+
                 <form method="POST" action="{{ route('bioestadistica.indicadores.formulas.store', $indicador) }}">
                     @csrf
                     <input type="hidden" name="formula_mode" value="simple">
-                    <div class="form-group"><label>Operación</label><select class="form-control" name="operator">@foreach(['sum'=>'Suma','avg'=>'Promedio','count'=>'Conteo','count_distinct'=>'Valores distintos','max'=>'Máximo','min'=>'Mínimo'] as $value=>$label)<option value="{{ $value }}">{{ $label }}</option>@endforeach</select></div>
-                    <div class="form-group"><label>Fuente numérica</label><select class="form-control" name="source" required>@foreach($sources as $source)<option value="{{ $source['key'] }}">{{ $source['label'] }}</option>@endforeach</select></div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6"><label>Vigente desde</label><input class="form-control" type="date" name="vigente_desde"></div>
-                        <div class="form-group col-md-6"><label>Vigente hasta</label><input class="form-control" type="date" name="vigente_hasta"></div>
+                    <div class="form-group">
+                        <label>Operación</label>
+                        <select class="form-control" name="operator">
+                            @foreach(['sum'=>'Suma','avg'=>'Promedio','count'=>'Conteo','count_distinct'=>'Valores distintos','max'=>'Máximo','min'=>'Mínimo'] as $value=>$label)
+                                <option value="{{ $value }}" @selected(old('operator', $simpleConstructor['operator'] ?? 'sum') === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
                     </div>
-                    <button class="btn btn-success">Guardar fórmula</button>
+                    <div class="form-group">
+                        <label>Fuente numérica</label>
+                        <select class="form-control" name="source" required>
+                            @foreach($sources as $source)
+                                <option value="{{ $source['key'] }}" @selected(old('source', $simpleConstructor['source'] ?? '') === $source['key'])>{{ $source['label'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Vigente desde</label>
+                            <input class="form-control" type="date" name="vigente_desde" value="{{ old('vigente_desde', $simpleConstructor['vigente_desde'] ?? '') }}">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Vigente hasta</label>
+                            <input class="form-control" type="date" name="vigente_hasta" value="{{ old('vigente_hasta') }}">
+                        </div>
+                    </div>
+                    <button class="btn btn-success">Guardar nueva versión (simple)</button>
                 </form>
                 <hr>
-                <button class="btn btn-outline-secondary btn-sm" data-toggle="collapse" data-target="#formulaAvanzada">Modo avanzado AST</button>
-                <form method="POST" action="{{ route('bioestadistica.indicadores.formulas.store', $indicador) }}" class="collapse mt-3" id="formulaAvanzada">
+                <button class="btn btn-outline-secondary btn-sm" data-toggle="collapse" data-target="#formulaAvanzada" @if($currentFormula && ! $simpleConstructor) aria-expanded="true" @endif>
+                    Modo avanzado AST
+                </button>
+                <form method="POST" action="{{ route('bioestadistica.indicadores.formulas.store', $indicador) }}" class="collapse mt-3 {{ ($currentFormula && ! $simpleConstructor) ? 'show' : '' }}" id="formulaAvanzada">
                     @csrf
                     <input type="hidden" name="formula_mode" value="advanced">
-                    <textarea class="form-control font-monospace" name="expresion" rows="10" placeholder='{"op":"pct","args":[...]}'>{{ old('expresion') }}</textarea>
+                    <textarea class="form-control font-monospace" name="expresion" rows="10" placeholder='{"op":"pct","args":[...]}'>{{ old('expresion', $currentFormula ? json_encode($currentFormula->expresion, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : '') }}</textarea>
                     <div class="form-row mt-2">
-                        <div class="col-md-6"><input class="form-control" type="date" name="vigente_desde" placeholder="Desde"></div>
+                        <div class="col-md-6"><input class="form-control" type="date" name="vigente_desde" placeholder="Desde" value="{{ old('vigente_desde') }}"></div>
                         <div class="col-md-6"><input class="form-control" type="date" name="vigente_hasta" placeholder="Hasta"></div>
                     </div>
                     <button class="btn btn-success">Validar y guardar AST</button>

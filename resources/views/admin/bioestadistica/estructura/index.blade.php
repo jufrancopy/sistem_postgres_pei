@@ -2,7 +2,9 @@
 @section('title', 'Bioestadística — Departamentos y servicios por establecimiento')
 
 @section('content')
-<div class="card">
+@include('admin.bioestadistica._siplan-styles')
+@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Deptos. y servicios']]])
+<div class="card bio-siplan">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">account_tree</i> Departamentos y servicios por establecimiento</h4>
         <p class="card-category">Asocie los cortes IPS que se podrán elegir al cargar un SP. Un establecimiento puede tener varios pares.</p>
@@ -12,36 +14,46 @@
         @if($errors->any()) <div class="alert alert-danger">{{ $errors->first() }}</div> @endif
 
         @can('bio.geo.create')
-        <form method="POST" action="{{ route('bioestadistica.estructura.store') }}" class="form-row bg-light p-3 rounded mb-4">
+        <form method="POST" action="{{ route('bioestadistica.estructura.store') }}" class="bio-filters">
             @csrf
-            <div class="col-md-4">
-                <select class="form-control" name="establecimiento_id" required>
-                    <option value="">Establecimiento</option>
-                    @foreach($establecimientosLista as $item)
-                        <option value="{{ $item->id }}">{{ $item->codigo }} — {{ $item->nombre }}</option>
-                    @endforeach
-                </select>
+            <div class="form-row align-items-end">
+                <div class="col-md-4 mb-2">
+                    <label class="small text-muted mb-1">Establecimiento</label>
+                    <select class="form-control bio-select2" name="establecimiento_id" data-placeholder="Establecimiento" required>
+                        <option value="">Establecimiento</option>
+                        @foreach($establecimientosLista as $item)
+                            <option value="{{ $item->id }}">{{ $item->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="small text-muted mb-1">Departamento</label>
+                    <select class="form-control bio-select2 bio-estructura-departamento" name="departamento_id" data-target="estructura-servicio" data-placeholder="Departamento" required>
+                        <option value="">Departamento</option>
+                        @foreach($departamentos as $departamento)
+                            <option value="{{ $departamento->id }}">{{ $departamento->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="small text-muted mb-1">Servicio</label>
+                    <select class="form-control" id="estructura-servicio" name="servicio_id" required>
+                        <option value="">Seleccione departamento</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2"><button class="btn btn-success btn-sm btn-block">Asociar</button></div>
             </div>
-            <div class="col-md-3">
-                <select class="form-control bio-estructura-departamento" name="departamento_id" data-target="estructura-servicio" required>
-                    <option value="">Departamento</option>
-                    @foreach($departamentos as $departamento)
-                        <option value="{{ $departamento->id }}">{{ $departamento->nombre }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select class="form-control" id="estructura-servicio" name="servicio_id" required>
-                    <option value="">Seleccione departamento</option>
-                </select>
-            </div>
-            <div class="col-md-2"><button class="btn btn-success btn-sm">Asociar</button></div>
         </form>
         @endcan
 
-        <form method="GET" class="form-row mb-3">
-            <div class="col-md-6"><input class="form-control" name="q" value="{{ request('q') }}" placeholder="Buscar establecimiento"></div>
-            <div class="col-md-2"><button class="btn btn-primary btn-sm">Filtrar</button></div>
+        <form method="GET" class="bio-filters">
+            <div class="form-row align-items-end">
+                <div class="col-md-8 mb-2">
+                    <label class="small text-muted mb-1">Buscar establecimiento</label>
+                    <input class="form-control" name="q" value="{{ request('q') }}" placeholder="Nombre o código">
+                </div>
+                <div class="col-md-4 mb-2"><button class="btn btn-primary btn-sm btn-block">Filtrar</button></div>
+            </div>
         </form>
 
         @forelse($establecimientos as $establecimiento)
@@ -54,9 +66,9 @@
                         <li class="list-group-item py-2 d-flex justify-content-between align-items-center">
                             <span>{{ $unidad->etiqueta() }}</span>
                             @can('bio.geo.delete')
-                                <form method="POST" action="{{ route('bioestadistica.estructura.destroy', $unidad) }}" onsubmit="return confirm('¿Quitar esta asociación?');">
+                                <form method="POST" action="{{ route('bioestadistica.estructura.destroy', $unidad) }}" class="bio-confirm-form" data-confirm="¿Quitar esta asociación?">
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-link btn-sm text-danger p-0" type="submit">Quitar</button>
+                                    <button class="btn btn-outline-danger btn-sm" type="submit">Quitar</button>
                                 </form>
                             @endcan
                         </li>
@@ -74,12 +86,13 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('scripts')
+@include('admin.bioestadistica._siplan-scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.bio-estructura-departamento').forEach(function (departmentSelect) {
         const serviceSelect = document.getElementById(departmentSelect.dataset.target);
-        departmentSelect.addEventListener('change', function () {
+        const onChange = function () {
             const departmentId = departmentSelect.value;
             serviceSelect.innerHTML = '<option value="">Cargando...</option>';
             if (!departmentId) {
@@ -99,8 +112,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         serviceSelect.appendChild(option);
                     });
                 });
-        });
+        };
+        if (window.jQuery) {
+            window.jQuery(departmentSelect).on('change', onChange);
+        } else {
+            departmentSelect.addEventListener('change', onChange);
+        }
     });
 });
 </script>
-@endpush
+@endsection

@@ -60,7 +60,7 @@ Todas las planillas, con SP11 como excepción parcial, comparten el mismo encabe
 - Planilla estadística del mes
 - Año
 
-En el motor, este encabezado **no genera campos**: se resuelve con la sección de contexto de la UI
+En el motor, este encabezado **no genera campos**: se resuelve en la UI de carga
 y con las columnas de `records` (`establecimiento_id`, `periodo_anio`, `periodo_mes`).
 
 ### Período del dato contra fecha de carga

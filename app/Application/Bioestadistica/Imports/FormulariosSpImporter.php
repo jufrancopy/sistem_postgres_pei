@@ -122,13 +122,14 @@ class FormulariosSpImporter
                 ])->save();
                 $createdForms += (int) $created;
 
-                $context = $formulario->secciones()->withTrashed()->firstOrCreate(
-                    ['titulo' => 'Contexto'],
-                    ['descripcion' => 'Establecimiento y período estadístico.', 'orden' => 0]
-                );
-                if ($context->trashed()) {
-                    $context->restore();
-                }
+                $formulario->secciones()
+                    ->withTrashed()
+                    ->where('titulo', 'Contexto')
+                    ->get()
+                    ->each(function ($section): void {
+                        $section->fields()->withTrashed()->get()->each->forceDelete();
+                        $section->forceDelete();
+                    });
 
                 if ($form['codigo'] === 'SP10') {
                     $createdFields += $this->syncNominativo($formulario, $form);

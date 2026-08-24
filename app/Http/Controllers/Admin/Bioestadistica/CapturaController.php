@@ -6,8 +6,10 @@ use App\Application\Bioestadistica\Audit\AuditService;
 use App\Application\Bioestadistica\Hospitalization\HospitalizationService;
 use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
 use App\Application\Bioestadistica\RecordCaptureService;
+use App\Application\Bioestadistica\Reports\PeriodContext;
 use App\Application\Bioestadistica\Sp11Matrix;
 use App\Http\Controllers\Admin\Bioestadistica\Concerns\BuildsCaptureNavigator;
+use App\Http\Controllers\Admin\Bioestadistica\Concerns\RespondsWithDataTables;
 use App\Http\Controllers\Controller;
 use App\Models\Bioestadistica\Establecimiento;
 use App\Models\Bioestadistica\EstablecimientoServicio;
@@ -16,6 +18,7 @@ use App\Models\Bioestadistica\Record;
 use App\Models\Bioestadistica\UsuarioEstablecimiento;
 use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,26 +29,125 @@ use Illuminate\View\View;
 class CapturaController extends Controller
 {
     use BuildsCaptureNavigator;
+    use RespondsWithDataTables;
 
     public function index(Request $request): View
     {
+        $closed = PeriodContext::lastClosed();
+        $periodoAnio = $request->filled('periodo_anio')
+            ? $request->integer('periodo_anio')
+            : $closed['anio'];
+        $periodoMes = $request->filled('periodo_mes')
+            ? $request->integer('periodo_mes')
+            : $closed['mes'];
+
         $records = Record::query()
             ->forUser($request->user())
-            ->with(['formulario', 'establecimiento.distrito.departamento', 'estructuraDepartamento', 'estructuraServicio'])
+            ->with([
+                'formulario',
+                'establecimiento.distrito.departamento',
+                'estructuraDepartamento',
+                'estructuraServicio',
+            ])
             ->when($request->filled('estado'), fn ($query) => $query->where('estado', $request->string('estado')))
-            ->when($request->filled('periodo_anio'), fn ($query) => $query->where('periodo_anio', $request->integer('periodo_anio')))
-            ->when($request->filled('periodo_mes'), fn ($query) => $query->where('periodo_mes', $request->integer('periodo_mes')))
+            ->when($periodoAnio, fn ($query) => $query->where('periodo_anio', $periodoAnio))
+            ->when($periodoMes, fn ($query) => $query->where('periodo_mes', $periodoMes))
             ->when($request->filled('formulario_id'), fn ($query) => $query->where('formulario_id', $request->integer('formulario_id')))
-            ->latest('updated_at')
-            ->paginate(30)
-            ->withQueryString();
+            ->when($request->filled('establecimiento_id'), fn ($query) => $query->where('establecimiento_id', $request->integer('establecimiento_id')))
+            ->get()
+            ->sortBy([
+                fn (Record $record) => $record->formulario->codigo ?? '',
+                fn (Record $record) => $record->estructuraDepartamento?->nombre ?? '',
+                fn (Record $record) => $record->estructuraServicio?->nombre ?? '',
+            ])
+            ->values();
+
+        $groups = $records
+            ->groupBy('establecimiento_id')
+            ->map(function ($items) {
+                $establecimiento = $items->first()->establecimiento;
+
+                return [
+                    'establecimiento' => $establecimiento,
+                    'records' => $items->values(),
+                    'count' => $items->count(),
+                ];
+            })
+            ->sortBy(fn (array $group) => $group['establecimiento']->nombre ?? '')
+            ->values();
 
         return view('admin.bioestadistica.captura.index', [
-            'records' => $records,
             'formularios' => Formulario::where('estado', 'activo')->ordenSp()->get(),
             'establecimientos' => $this->allowedEstablishments(),
             'months' => $this->months(),
+            'groups' => $groups,
+            'periodo_anio' => $periodoAnio,
+            'periodo_mes' => $periodoMes,
         ]);
+    }
+
+    public function datatable(Request $request): JsonResponse
+    {
+        $months = $this->months();
+        $canView = $request->user()->can('bio.record.view');
+
+        $base = Record::query()
+            ->forUser($request->user())
+            ->with(['formulario', 'establecimiento', 'estructuraDepartamento', 'estructuraServicio'])
+            ->when($request->filled('estado'), fn ($query) => $query->where('estado', $request->string('estado')))
+            ->when($request->filled('periodo_anio'), fn ($query) => $query->where('periodo_anio', $request->integer('periodo_anio')))
+            ->when($request->filled('periodo_mes'), fn ($query) => $query->where('periodo_mes', $request->integer('periodo_mes')))
+            ->when($request->filled('formulario_id'), fn ($query) => $query->where('formulario_id', $request->integer('formulario_id')));
+
+        return $this->dataTablesJson(
+            $request,
+            $base,
+            function ($query, string $search): void {
+                $query->where(function ($inner) use ($search) {
+                    $inner->whereHas('formulario', function ($forms) use ($search) {
+                        $forms->where('codigo', 'ilike', "%{$search}%")
+                            ->orWhere('nombre', 'ilike', "%{$search}%");
+                    })->orWhereHas('establecimiento', function ($ests) use ($search) {
+                        $ests->where('nombre', 'ilike', "%{$search}%")
+                            ->orWhere('codigo', 'ilike', "%{$search}%");
+                    })->orWhereHas('estructuraDepartamento', fn ($q) => $q->where('nombre', 'ilike', "%{$search}%"))
+                        ->orWhereHas('estructuraServicio', fn ($q) => $q->where('nombre', 'ilike', "%{$search}%"))
+                        ->orWhere('estado', 'ilike', "%{$search}%");
+                });
+            },
+            [
+                0 => null,
+                1 => null,
+                2 => null,
+                3 => null,
+                4 => 'periodo_anio',
+                5 => 'estado',
+                6 => 'updated_at',
+                7 => null,
+            ],
+            function (Record $record) use ($months, $canView) {
+                $periodo = ($months[$record->periodo_mes] ?? $record->periodo_mes).'/'.$record->periodo_anio;
+                $badge = e(Record::estadoLabel($record->estado));
+                $badgeClass = e(Record::estadoBadge($record->estado));
+                $action = $canView
+                    ? '<div class="bio-actions"><a class="btn btn-outline-primary btn-sm" href="'.e(route('bioestadistica.captura.edit', $record)).'">'
+                        .($record->isEditable() ? 'Editar' : 'Ver').'</a></div>'
+                    : '';
+
+                return [
+                    'formulario' => e(($record->formulario->codigo ?? '').' — '.($record->formulario->nombre ?? '')),
+                    'establecimiento' => e($record->establecimiento->nombre ?? '—'),
+                    'departamento' => e($record->estructuraDepartamento?->nombre ?? '—'),
+                    'servicio' => e($record->estructuraServicio?->nombre ?? '—'),
+                    'periodo' => e($periodo),
+                    'estado' => '<span class="badge '.$badgeClass.'">'.$badge.'</span>',
+                    'actualizado' => e(optional($record->updated_at)->format('d/m/Y H:i') ?? '—'),
+                    'acciones' => $action,
+                ];
+            },
+            'updated_at',
+            'desc'
+        );
     }
 
     public function create(Request $request): View
@@ -154,8 +256,21 @@ class CapturaController extends Controller
             }
         }
 
+        $groups = $rows
+            ->groupBy(fn (array $row) => $row['establecimiento']->id)
+            ->map(function ($slices) {
+                $first = $slices->first();
+
+                return [
+                    'establecimiento' => $first['establecimiento'],
+                    'slices' => $slices->values(),
+                    'pending_count' => $slices->sum(fn (array $slice) => $slice['missing']->count()),
+                ];
+            })
+            ->values();
+
         return view('admin.bioestadistica.captura.pending', [
-            'rows' => $rows,
+            'groups' => $groups,
             'periodo_anio' => $year,
             'periodo_mes' => $month,
             'months' => $this->months(),

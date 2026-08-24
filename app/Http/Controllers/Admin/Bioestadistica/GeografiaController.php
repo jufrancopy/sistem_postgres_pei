@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Bioestadistica;
 
+use App\Http\Controllers\Admin\Bioestadistica\Concerns\RespondsWithDataTables;
 use App\Http\Controllers\Controller;
 use App\Models\Bioestadistica\AreaGestion;
 use App\Models\Bioestadistica\Departamento;
@@ -18,9 +19,19 @@ use Illuminate\View\View;
 
 class GeografiaController extends Controller
 {
+    use RespondsWithDataTables;
+
     public function index(Request $request): View
     {
-        $establecimientos = Establecimiento::query()
+        return view('admin.bioestadistica.geografia.index', $this->formOptions());
+    }
+
+    public function datatable(Request $request): JsonResponse
+    {
+        $canUpdate = $request->user()->can('bio.geo.update');
+        $canDelete = $request->user()->can('bio.geo.delete');
+
+        $base = Establecimiento::query()
             ->with([
                 'distrito.departamento',
                 'microred',
@@ -28,19 +39,78 @@ class GeografiaController extends Controller
                 'gradoComplejidad',
                 'areaGestion',
             ])
-            ->buscar($request->string('q')->toString())
+            ->when($request->filled('q'), fn ($query) => $query->buscar($request->string('q')->toString()))
             ->when($request->filled('departamento_id'), fn ($query) => $query
                 ->whereHas('distrito', fn ($distritos) => $distritos
                     ->where('departamento_id', $request->integer('departamento_id'))))
             ->when($request->filled('distrito_id'), fn ($query) => $query
-                ->where('distrito_id', $request->integer('distrito_id')))
-            ->orderBy('nombre')
-            ->paginate(30)
-            ->withQueryString();
+                ->where('distrito_id', $request->integer('distrito_id')));
 
-        return view('admin.bioestadistica.geografia.index', array_merge([
-            'establecimientos' => $establecimientos,
-        ], $this->formOptions()));
+        return $this->dataTablesJson(
+            $request,
+            $base,
+            function ($query, string $search): void {
+                $query->buscar($search);
+            },
+            [
+                0 => 'codigo',
+                1 => 'nombre',
+                2 => 'codigo_sih',
+                3 => null,
+                4 => 'nivel_atencion',
+                5 => null,
+                6 => null,
+                7 => null,
+                8 => null,
+                9 => 'prestador',
+                10 => 'latitud',
+                11 => 'longitud',
+                12 => null,
+                13 => 'situacion_inmueble',
+                14 => 'observacion',
+                15 => null,
+            ],
+            function (Establecimiento $establecimiento) use ($canUpdate, $canDelete) {
+                $complejidad = $establecimiento->gradoComplejidad
+                    ? 'Complejidad '.$establecimiento->gradoComplejidad->codigo.' — '.$establecimiento->gradoComplejidad->descripcion
+                    : '';
+                $distrito = $establecimiento->distrito
+                    ? e($establecimiento->distrito->nombre)
+                    : '<span class="badge badge-warning">Pendiente</span>';
+
+                $actions = '<div class="bio-actions">';
+                if ($canUpdate) {
+                    $actions .= '<a class="btn btn-outline-primary btn-sm" href="'.e(route('bioestadistica.geografia.establecimientos.edit', $establecimiento)).'" title="Editar"><i class="material-icons">edit</i></a>';
+                }
+                if ($canDelete) {
+                    $actions .= '<form method="POST" action="'.e(route('bioestadistica.geografia.establecimientos.destroy', $establecimiento)).'" class="d-inline bio-confirm-form" data-confirm="¿Eliminar este establecimiento?">'
+                        .csrf_field().method_field('DELETE')
+                        .'<button class="btn btn-outline-danger btn-sm" type="submit" title="Eliminar"><i class="material-icons">delete</i></button></form>';
+                }
+                $actions .= '</div>';
+
+                return [
+                    'codigo' => e($establecimiento->codigo),
+                    'nombre' => e($establecimiento->nombre),
+                    'codigo_sih' => e((string) $establecimiento->codigo_sih),
+                    'tipo' => e($establecimiento->tipoEstablecimiento?->nombre ?? ''),
+                    'nivel' => e((string) $establecimiento->nivel_atencion),
+                    'complejidad' => e($complejidad),
+                    'departamento' => e($establecimiento->distrito?->departamento?->nombre ?? ''),
+                    'distrito' => $distrito,
+                    'microred' => e($establecimiento->microred?->nombre ?? ''),
+                    'prestador' => e((string) $establecimiento->prestador),
+                    'latitud' => e((string) $establecimiento->latitud),
+                    'longitud' => e((string) $establecimiento->longitud),
+                    'area' => e($establecimiento->areaGestion?->nombre ?? ''),
+                    'situacion' => e((string) $establecimiento->situacion_inmueble),
+                    'observacion' => e((string) $establecimiento->observacion),
+                    'acciones' => $actions,
+                ];
+            },
+            'nombre',
+            'asc'
+        );
     }
 
     public function editEstablecimiento(Establecimiento $establecimiento): View

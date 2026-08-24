@@ -25,7 +25,7 @@ class IndicadorController extends Controller
     public function index(): View
     {
         return view('admin.bioestadistica.indicadores.index', [
-            'indicadores' => Indicador::with('formulas')->orderBy('codigo')->paginate(30),
+            'indicadores' => Indicador::with('formulas')->orderBy('codigo')->limit(500)->get(),
         ]);
     }
 
@@ -161,9 +161,32 @@ class IndicadorController extends Controller
     private function renderShow(Indicador $indicator, array $extra = []): View
     {
         $indicator->load('formulas');
+        $currentFormula = $indicator->formulas
+            ->sortByDesc('id')
+            ->first(fn ($formula) => $formula->vigente_hasta === null)
+            ?? $indicator->formulas->sortByDesc('id')->first();
+
+        $simpleConstructor = null;
+        if ($currentFormula && is_array($currentFormula->expresion)) {
+            $expr = $currentFormula->expresion;
+            if ($this->singleSource($expr)) {
+                $key = $expr['form'].':'.$expr['field'];
+                if (! empty($expr['metric'])) {
+                    $key .= ':'.$expr['metric'];
+                }
+                $simpleConstructor = [
+                    'operator' => $expr['op'],
+                    'source' => $key,
+                    'vigente_desde' => optional($currentFormula->vigente_desde)->format('Y-m-d'),
+                    'vigente_hasta' => optional($currentFormula->vigente_hasta)->format('Y-m-d'),
+                ];
+            }
+        }
 
         return view('admin.bioestadistica.indicadores.show', array_merge([
             'indicador' => $indicator,
+            'currentFormula' => $currentFormula,
+            'simpleConstructor' => $simpleConstructor,
             'sources' => $this->numericSources(),
             'indicators' => Indicador::activos()->where('id', '<>', $indicator->id)->orderBy('codigo')->get(),
             'establecimientos' => Establecimiento::query()

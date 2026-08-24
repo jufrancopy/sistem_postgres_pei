@@ -61,8 +61,13 @@
             @endunless
         @endcan
         @can('bio.report.manage')
-            <a class="btn btn-sm btn-secondary" href="{{ route('bioestadistica.reportes.edit', $reporte) }}">Diseñar</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ route('bioestadistica.reportes.edit', $reporte) }}">Editar definición</a>
+            <form method="POST" action="{{ route('bioestadistica.reportes.destroy', $reporte) }}" class="d-inline bio-confirm-form" data-confirm="¿Archivar este reporte?">
+                @csrf @method('DELETE')
+                <button class="btn btn-sm btn-outline-danger" type="submit">Archivar</button>
+            </form>
         @endcan
+        <a class="btn btn-sm btn-outline-secondary" href="{{ route('bioestadistica.reportes.index') }}">Volver al listado</a>
 
         <div class="table-responsive mt-3">
             <table id="reporteTabla" class="table table-striped table-sm">
@@ -98,6 +103,7 @@
 @endsection
 
 @section('scripts')
+@include('admin.bioestadistica._siplan-scripts')
 <script>
 $(function () {
     if ($.fn.DataTable) {

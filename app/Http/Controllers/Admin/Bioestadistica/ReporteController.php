@@ -23,7 +23,7 @@ class ReporteController extends Controller
     public function index(): View
     {
         return view('admin.bioestadistica.reportes.index', [
-            'reportes' => Reporte::with('formulario')->orderBy('codigo')->paginate(30),
+            'reportes' => Reporte::with('formulario')->orderBy('codigo')->limit(500)->get(),
         ]);
     }
 
@@ -125,8 +125,9 @@ class ReporteController extends Controller
     {
         $result = $builder->execute($reporte->definicion, $request->user(), $this->filterOverrides($request));
         if ($result['meta']['truncated']) {
+            $max = $result['meta']['max_rows'] ?? ReportBuilder::MAX_ROWS;
             throw ValidationException::withMessages([
-                'reporte' => 'El resultado supera '.ReportBuilder::MAX_ROWS
+                'reporte' => 'El resultado supera '.$max
                     .' filas. Ajuste filtros o el límite; la cola asíncrona se habilitará en una fase posterior.',
             ]);
         }
@@ -181,7 +182,8 @@ class ReporteController extends Controller
             'agg' => ['required', Rule::in(ReportDefinitionValidator::AGGREGATIONS)],
             'dimensions' => ['nullable', 'array'],
             'dimensions.*' => [Rule::in(ReportDefinitionValidator::DIMENSIONS)],
-            'limit' => ['required', 'integer', 'min:1', 'max:'.ReportBuilder::MAX_ROWS],
+            'limit' => ['required', 'integer', 'min:1', 'max:'.ReportBuilder::MAX_ROWS_CONSOLIDADO],
+            'consolidado' => ['nullable', 'boolean'],
             'periodo_desde_anio' => ['nullable', 'integer'],
             'periodo_desde_mes' => ['nullable', 'integer', 'between:1,12'],
             'periodo_hasta_anio' => ['nullable', 'integer'],
@@ -189,14 +191,18 @@ class ReporteController extends Controller
             'estado_record' => ['nullable', Rule::in(['borrador', 'enviado', 'aprobado', 'objetado'])],
             'order_ref' => ['nullable', 'string'],
             'order_dir' => ['nullable', Rule::in(['asc', 'desc'])],
+            'label' => ['nullable', 'string', 'max:100'],
         ]);
 
+        $consolidado = $request->boolean('consolidado');
         $definition = [
+            'consolidado' => $consolidado,
             'agg' => $data['agg'],
-            'indicator' => $data['indicator'] ?: null,
+            'indicator' => $consolidado ? null : ($data['indicator'] ?: null),
             'dimensions' => array_values($data['dimensions'] ?? []),
             'limit' => (int) $data['limit'],
             'totales' => $request->boolean('totales', true),
+            'label' => $data['label'] ?? null,
             'filtros' => array_filter([
                 'estado_record' => $data['estado_record'] ?? 'aprobado',
                 'periodo_desde' => isset($data['periodo_desde_anio'], $data['periodo_desde_mes'])
@@ -208,7 +214,7 @@ class ReporteController extends Controller
             ]),
         ];
 
-        if (! empty($data['source'])) {
+        if (! $consolidado && ! empty($data['source'])) {
             $parts = explode(':', $data['source']);
             $definition['form'] = $parts[0] ?? null;
             $definition['field'] = $parts[1] ?? null;

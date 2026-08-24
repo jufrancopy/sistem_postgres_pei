@@ -9,12 +9,20 @@
 @endphp
 
 @section('content')
-<div class="card">
+@include('admin.bioestadistica._siplan-styles')
+@include('admin.bioestadistica._breadcrumbs', [
+    'items' => [
+        ['label' => 'Reportes', 'url' => route('bioestadistica.reportes.index')],
+        ['label' => $reporte->exists ? 'Editar '.$reporte->codigo : 'Nuevo reporte'],
+    ],
+])
+<div class="card bio-siplan">
     <div class="card-header card-header-info">
-        <h4 class="card-title">{{ $reporte->exists ? 'Diseñar reporte' : 'Nuevo reporte' }}</h4>
+        <h4 class="card-title">{{ $reporte->exists ? 'Editar reporte' : 'Nuevo reporte' }}</h4>
         <p class="card-category">Solo fuentes numéricas calificadas. No se acepta SQL ni columnas arbitrarias.</p>
     </div>
     <div class="card-body">
+        @if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
         <form method="POST" action="{{ $reporte->exists ? route('bioestadistica.reportes.update', $reporte) : route('bioestadistica.reportes.store') }}">
             @csrf
             @if($reporte->exists) @method('PUT') @endif
@@ -38,10 +46,17 @@
             </div>
 
             <h5 class="mt-3">Fuente numérica</h5>
-            <div class="form-row">
+            <div class="form-group">
+                <label class="d-block">
+                    <input type="checkbox" name="consolidado" value="1" id="bio-report-consolidado" @checked(old('consolidado', $def['consolidado'] ?? false))>
+                    Consolidado (todos los SP tabulares)
+                </label>
+                <small class="text-muted">Equivalente a la planilla Salud consolidado: suma cantidades de todas las tablas SP, sin una sola fuente.</small>
+            </div>
+            <div class="form-row" id="bio-report-source-row">
                 <div class="form-group col-md-6">
                     <label>Campo / métrica</label>
-                    <select class="form-control" name="source">
+                    <select class="form-control" name="source" id="bio-report-source">
                         <option value="">— Usar indicador —</option>
                         @foreach($sources as $source)
                             <option value="{{ $source['key'] }}" @selected($sourceKey === $source['key'])>{{ $source['label'] }}</option>
@@ -50,7 +65,7 @@
                 </div>
                 <div class="form-group col-md-3">
                     <label>Indicador (opcional)</label>
-                    <select class="form-control" name="indicator">
+                    <select class="form-control" name="indicator" id="bio-report-indicator">
                         <option value="">Ninguno</option>
                         @foreach($indicators as $indicator)
                             <option value="{{ $indicator->codigo }}" @selected(old('indicator', $def['indicator'] ?? '') === $indicator->codigo)>{{ $indicator->codigo }}</option>
@@ -65,6 +80,10 @@
                         @endforeach
                     </select>
                 </div>
+            </div>
+            <div class="form-group">
+                <label>Etiqueta de la métrica</label>
+                <input class="form-control" name="label" value="{{ old('label', $def['label'] ?? '') }}" placeholder="Cantidad, Consultas, …">
             </div>
 
             <h5>Dimensiones</h5>
@@ -117,7 +136,8 @@
                 </div>
                 <div class="form-group col-md-2">
                     <label>Límite</label>
-                    <input class="form-control" type="number" name="limit" min="1" max="5000" value="{{ old('limit', $def['limit'] ?? 500) }}" required>
+                    <input class="form-control" type="number" name="limit" min="1" max="20000" value="{{ old('limit', $def['limit'] ?? 500) }}" required>
+                    <small class="text-muted">Máx. 5000 (normal) o 20000 (consolidado).</small>
                 </div>
             </div>
             <div class="form-row">
@@ -153,14 +173,17 @@
 
             <div class="mt-3">
                 <button class="btn btn-success">Guardar definición</button>
-                <a class="btn btn-link" href="{{ route('bioestadistica.reportes.index') }}">Cancelar</a>
                 @if($reporte->exists)
-                    <button class="btn btn-danger float-right" form="deleteReporte">Archivar</button>
+                    <a class="btn btn-outline-primary" href="{{ route('bioestadistica.reportes.run', $reporte) }}">Ejecutar</a>
+                @endif
+                <a class="btn btn-secondary" href="{{ route('bioestadistica.reportes.index') }}">Volver al listado</a>
+                @if($reporte->exists)
+                    <button class="btn btn-outline-danger float-right" type="submit" form="deleteReporte">Archivar</button>
                 @endif
             </div>
         </form>
         @if($reporte->exists)
-            <form id="deleteReporte" method="POST" action="{{ route('bioestadistica.reportes.destroy', $reporte) }}" onsubmit="return confirm('¿Archivar este reporte?')">
+            <form id="deleteReporte" method="POST" action="{{ route('bioestadistica.reportes.destroy', $reporte) }}" class="bio-confirm-form" data-confirm="¿Archivar este reporte?">
                 @csrf @method('DELETE')
             </form>
         @endif
@@ -169,9 +192,23 @@
 @endsection
 
 @section('scripts')
+@include('admin.bioestadistica._siplan-scripts')
 <script>
 document.getElementById('useJson')?.addEventListener('change', function () {
     document.getElementById('definitionMode').value = this.checked ? 'advanced' : 'visual';
 });
+(function () {
+    var box = document.getElementById('bio-report-consolidado');
+    var source = document.getElementById('bio-report-source');
+    var indicator = document.getElementById('bio-report-indicator');
+    if (!box) return;
+    function sync() {
+        var on = box.checked;
+        if (source) source.disabled = on;
+        if (indicator) indicator.disabled = on;
+    }
+    box.addEventListener('change', sync);
+    sync();
+})();
 </script>
 @endsection

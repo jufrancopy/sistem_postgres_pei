@@ -19,18 +19,18 @@
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label>Establecimiento *</label>
-                        <select class="form-control" name="establecimiento_id" id="captura-establecimiento" required>
+                        <select class="form-control bio-select2" name="establecimiento_id" id="captura-establecimiento" data-placeholder="Seleccione" required>
                             <option value="">Seleccione</option>
                             @foreach($establecimientos as $establecimiento)
                                 <option value="{{ $establecimiento->id }}" @selected((string) $selectedEstablecimientoId === (string) $establecimiento->id)>
-                                    {{ $establecimiento->distrito?->departamento?->nombre }} / {{ $establecimiento->distrito?->nombre }} — {{ $establecimiento->nombre }}
+                                    {{ $establecimiento->nombre }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
                     <div class="form-group col-md-6">
                         <label>Formulario (SP) *</label>
-                        <select class="form-control" name="formulario_id" required>
+                        <select class="form-control bio-select2" name="formulario_id" data-placeholder="Seleccione" required>
                             <option value="">Seleccione</option>
                             @foreach($formularios as $formulario)
                                 <option value="{{ $formulario->id }}" @selected((string) $selectedFormularioId === (string) $formulario->id)>
@@ -54,7 +54,7 @@
                     </div>
                     <div class="form-group col-md-4">
                         <label>Mes del período *</label>
-                        <select class="form-control" name="periodo_mes" required>
+                        <select class="form-control bio-select2" name="periodo_mes" data-placeholder="Seleccione" required>
                             <option value="">Seleccione</option>
                             @foreach($months as $number => $month)
                                 <option value="{{ $number }}" @selected((int) $selectedMes === (int) $number)>{{ $month }}</option>
@@ -71,6 +71,7 @@
 @endsection
 
 @push('scripts')
+@include('admin.bioestadistica._siplan-scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const establishmentSelect = document.getElementById('captura-establecimiento');
@@ -115,7 +116,11 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    establishmentSelect.addEventListener('change', loadCortes);
+    if (window.jQuery) {
+        window.jQuery(establishmentSelect).on('change', loadCortes);
+    } else {
+        establishmentSelect.addEventListener('change', loadCortes);
+    }
     loadCortes();
 });
 </script>

@@ -14,6 +14,8 @@ class ReportDefinitionValidator
         'departamento', 'distrito', 'establecimiento', 'microred',
         'tipo_establecimiento', 'grado_complejidad', 'area_gestion',
         'periodo', 'anio', 'mes', 'catalogo_item',
+        'estructura_departamento', 'estructura_servicio',
+        'variable', 'tipo_prestacion', 'campo', 'prestador',
     ];
 
     public const AGGREGATIONS = ['sum', 'avg', 'count', 'count_distinct', 'max', 'min'];
@@ -36,15 +38,17 @@ class ReportDefinitionValidator
         $unknown = array_diff(array_keys($definition), [
             'form', 'field', 'metric', 'agg', 'indicator', 'dimensions',
             'filtros', 'order_by', 'limit', 'totales', 'label', 'formulario_id',
+            'consolidado',
         ]);
         if ($unknown) {
             $errors[] = 'La definición contiene claves no permitidas: '.implode(', ', $unknown).'.';
         }
 
+        $consolidado = (bool) ($definition['consolidado'] ?? false);
         $hasSource = ! empty($definition['form']) && ! empty($definition['field']);
         $hasIndicator = ! empty($definition['indicator']);
-        if (! $hasSource && ! $hasIndicator) {
-            $errors[] = 'Debe indicar una fuente numérica (form, field, metric) o un indicador.';
+        if (! $consolidado && ! $hasSource && ! $hasIndicator) {
+            $errors[] = 'Debe indicar una fuente numérica (form, field, metric), un indicador o marcar consolidado.';
         }
 
         if ($hasSource) {
@@ -55,10 +59,11 @@ class ReportDefinitionValidator
             } elseif (! $this->sources->exists($definition['form'], $definition['field'], $metric)) {
                 $errors[] = 'La fuente numérica no existe o no es un campo numérico publicado.';
             }
-            $agg = $definition['agg'] ?? 'sum';
-            if (! in_array($agg, self::AGGREGATIONS, true)) {
-                $errors[] = 'La agregación no está permitida.';
-            }
+        }
+
+        $agg = $definition['agg'] ?? 'sum';
+        if (! in_array($agg, self::AGGREGATIONS, true)) {
+            $errors[] = 'La agregación no está permitida.';
         }
 
         if ($hasIndicator) {
@@ -82,11 +87,12 @@ class ReportDefinitionValidator
         $this->validateFilters($definition['filtros'] ?? [], $errors);
         $this->validateOrder($definition['order_by'] ?? [], $dimensions, $errors);
 
+        $maxRows = $consolidado ? ReportBuilder::MAX_ROWS_CONSOLIDADO : ReportBuilder::MAX_ROWS;
         $limit = $definition['limit'] ?? 500;
         if (! is_int($limit) && ! ctype_digit((string) $limit)) {
             $errors[] = 'El límite debe ser un entero.';
-        } elseif ((int) $limit < 1 || (int) $limit > ReportBuilder::MAX_ROWS) {
-            $errors[] = 'El límite debe estar entre 1 y '.ReportBuilder::MAX_ROWS.'.';
+        } elseif ((int) $limit < 1 || (int) $limit > $maxRows) {
+            $errors[] = 'El límite debe estar entre 1 y '.$maxRows.'.';
         }
 
         if (array_key_exists('totales', $definition) && ! is_bool($definition['totales'])) {
@@ -98,11 +104,12 @@ class ReportDefinitionValidator
         }
 
         $normalized = [
-            'form' => $definition['form'] ?? null,
-            'field' => $definition['field'] ?? null,
-            'metric' => $definition['metric'] ?? null,
+            'consolidado' => $consolidado,
+            'form' => $consolidado ? null : ($definition['form'] ?? null),
+            'field' => $consolidado ? null : ($definition['field'] ?? null),
+            'metric' => $consolidado ? null : ($definition['metric'] ?? null),
             'agg' => $definition['agg'] ?? 'sum',
-            'indicator' => $definition['indicator'] ?? null,
+            'indicator' => $consolidado ? null : ($definition['indicator'] ?? null),
             'dimensions' => array_values(array_unique($dimensions)),
             'filtros' => $this->normalizeFilters($definition['filtros'] ?? []),
             'order_by' => $definition['order_by'] ?? [],

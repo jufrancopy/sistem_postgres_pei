@@ -8,10 +8,19 @@
         default => $stored?->value_text,
     };
     $editable = $record->isEditable() && auth()->user()->can('bio.record.update');
+    $isBlock = in_array($field->type, ['textarea', 'tabla', 'subtabla', 'matriz'], true);
 @endphp
-<div class="form-group">
-    <label for="field-{{ $field->id }}">{{ $field->label }} @if($field->required)<span class="text-danger">*</span>@endif</label>
-    @if($field->help_text)<small class="form-text text-muted">{{ $field->help_text }}</small>@endif
+<div class="bio-capture-field mb-3 {{ $isBlock ? 'bio-capture-field--block' : '' }}">
+    <div class="bio-capture-field__head mb-2">
+        <label class="bio-capture-field__label mb-0" for="field-{{ $field->id }}">
+            {{ $field->label }}
+            @if($field->required)<span class="text-danger">*</span>@endif
+        </label>
+        @if($field->help_text)
+            <small class="bio-capture-field__help text-muted d-block mt-1">{{ $field->help_text }}</small>
+        @endif
+    </div>
+
     @if($field->type === 'textarea')
         <textarea class="form-control" id="field-{{ $field->id }}" name="values[{{ $field->code }}]" rows="3" @disabled(!$editable)>{{ old("values.{$field->code}", $value) }}</textarea>
     @elseif(in_array($field->type, ['integer', 'decimal']))
@@ -33,7 +42,16 @@
             $storedRows = $value['rows'] ?? [];
         @endphp
         @if($columns === [] || $rows->isEmpty())
-            <div class="alert alert-warning mb-0">El campo no tiene columnas configuradas o su diccionario/catálogo está vacío.</div>
+            <div class="alert alert-warning mb-0">
+                @if($columns === [])
+                    El campo no tiene columnas métricas configuradas. Edite el formulario SP y agregue
+                    <code>{"columns":[{"code":"total","label":"Total","type":"integer","min":0}]}</code>
+                    en la configuración del campo, o vuelva a guardar el campo tipo tabla.
+                @else
+                    El diccionario/catálogo del campo no tiene prestaciones activas. Agregue ítems en Variables
+                    (detalle enlazado al campo) y recargue.
+                @endif
+            </div>
         @else
             <div class="table-responsive">
                 <table class="table table-sm table-bordered bio-tabla mb-0" data-totals="{{ ($field->config['totals'] ?? false) ? '1' : '0' }}">
@@ -121,10 +139,10 @@
                 </tbody>
             </table>
         </div>
-        <small class="form-text text-muted">El mes {{ $record->periodo_mes }}/{{ $record->periodo_anio }} tiene {{ $days }} días. Los totales se calculan al guardar.</small>
+        <small class="text-muted d-block mt-2">El mes {{ $record->periodo_mes }}/{{ $record->periodo_anio }} tiene {{ $days }} días. Los totales se calculan al guardar.</small>
     @elseif(in_array($field->type, ['subtabla']))
     @else
         <input class="form-control" id="field-{{ $field->id }}" type="text" name="values[{{ $field->code }}]" value="{{ old("values.{$field->code}", $value) }}" pattern="{{ $field->validation_regex }}" @disabled(!$editable)>
     @endif
-    @error("values.{$field->code}")<span class="text-danger small">{{ $message }}</span>@enderror
+    @error("values.{$field->code}")<span class="text-danger small d-block mt-1">{{ $message }}</span>@enderror
 </div>

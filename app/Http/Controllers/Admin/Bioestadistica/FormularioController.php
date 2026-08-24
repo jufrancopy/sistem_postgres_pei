@@ -18,18 +18,13 @@ class FormularioController extends Controller
     public function index(): View
     {
         return view('admin.bioestadistica.formularios.index', [
-            'formularios' => Formulario::withCount('secciones')->orderBy('codigo')->paginate(30),
+            'formularios' => Formulario::withCount('secciones')->ordenSp()->limit(500)->get(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $formulario = Formulario::create($this->validateFormulario($request));
-        $formulario->secciones()->create([
-            'titulo' => 'Contexto',
-            'descripcion' => 'Establecimiento y período estadístico (gestionados por el motor).',
-            'orden' => 0,
-        ]);
 
         return redirect()->route('bioestadistica.formularios.edit', $formulario)
             ->with('success', 'Formulario creado.');
@@ -96,8 +91,23 @@ class FormularioController extends Controller
         return back()->with('success', 'Sección agregada.');
     }
 
+    public function updateSeccion(Request $request, FormSeccion $seccion): RedirectResponse
+    {
+        $seccion->update($request->validate([
+            'titulo' => ['required', 'string', 'max:250'],
+            'descripcion' => ['nullable', 'string', 'max:2000'],
+            'orden' => ['nullable', 'integer', 'min:0'],
+        ]));
+
+        return back()->with('success', 'Sección actualizada.');
+    }
+
     public function destroySeccion(FormSeccion $seccion): RedirectResponse
     {
+        $seccion->load('fields');
+        foreach ($seccion->fields as $field) {
+            $field->delete();
+        }
         $seccion->delete();
 
         return back()->with('success', 'Sección eliminada.');
@@ -181,12 +191,31 @@ class FormularioController extends Controller
      */
     private function syncFieldSource(array $data): array
     {
+        $config = is_array($data['config'] ?? null) ? $data['config'] : [];
+
         if (! empty($data['detalle_id'])) {
-            $data['config'] = array_merge($data['config'] ?? [], [
+            $config = array_merge($config, [
                 'row_source' => 'diccionario',
                 'row_detalle_id' => (int) $data['detalle_id'],
             ]);
         }
+
+        if (($data['type'] ?? null) === 'tabla') {
+            $config['row_label'] = $config['row_label'] ?? 'Prestación';
+            if (! array_key_exists('totals', $config)) {
+                $config['totals'] = true;
+            }
+            if (empty($config['columns']) || ! is_array($config['columns'])) {
+                $config['columns'] = [[
+                    'code' => 'total',
+                    'label' => 'Total',
+                    'type' => 'integer',
+                    'min' => 0,
+                ]];
+            }
+        }
+
+        $data['config'] = $config === [] ? null : $config;
 
         return $data;
     }
