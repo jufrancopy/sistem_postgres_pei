@@ -18,8 +18,39 @@
     $enModulosSiess  = str_contains($path, 'siess/modulos');
     $enFoda          = str_contains($path, 'foda');
 
-    // Helper para marcar link activo
-    $isActive = fn($routePattern) => request()->is($routePattern) ? 'active' : '';
+    // Helper para marcar link activo (varios patrones; nunca usar || entre llamados).
+    $isActive = function (...$routePatterns) {
+        foreach ($routePatterns as $pattern) {
+            if (str_contains((string) $pattern, '.') && request()->routeIs($pattern)) {
+                return 'active';
+            }
+            if (request()->is($pattern) || request()->is('*/'.$pattern)) {
+                return 'active';
+            }
+        }
+
+        return '';
+    };
+
+    $bioDashboard = $isActive('bioestadistica.dashboard', 'bioestadistica', 'bioestadistica/dashboard');
+    $bioFormularios = $isActive('bioestadistica.formularios.*', 'bioestadistica.secciones.*', 'bioestadistica.fields.*', 'bioestadistica/formularios*', 'bioestadistica/secciones*', 'bioestadistica/campos*');
+    $bioVariables = $isActive('bioestadistica.diccionario.*', 'bioestadistica/diccionario*');
+    $bioPendientes = $isActive('bioestadistica.captura.pending', 'bioestadistica/captura/pendientes*');
+    $bioCarga = $bioPendientes ? '' : $isActive(
+        'bioestadistica.captura.*',
+        'bioestadistica.hospitalizacion.*',
+        'bioestadistica/captura*',
+        'bioestadistica/captura-asignaciones*',
+        'bioestadistica/hospitalizacion*'
+    );
+    $bioIndicadores = $isActive('bioestadistica.indicadores.*', 'bioestadistica/indicadores*');
+    $bioReportes = $isActive('bioestadistica.reportes.*', 'bioestadistica/reportes*');
+    $bioTableros = $isActive('bioestadistica.dashboards.*', 'bioestadistica/dashboards*');
+    $bioImportaciones = $isActive('bioestadistica.importaciones.*', 'bioestadistica/importaciones*');
+    $bioAuditoria = $isActive('bioestadistica.auditoria.*', 'bioestadistica/auditoria*');
+    $bioGeografia = $isActive('bioestadistica.geografia.*', 'bioestadistica/geografia*');
+    $bioEstructura = $isActive('bioestadistica.estructura.*', 'bioestadistica/estructura*');
+    $bioClasificaciones = $isActive('bioestadistica.clasificaciones.*', 'bioestadistica/clasificaciones*');
 @endphp
 @php
     $sysLogoUrl  = \App\Models\HomeConfiguration::getSetting('logo_url');
@@ -311,76 +342,76 @@
                             </a>
                             <div class="collapse {{ $enBioestadistica ? 'show' : '' }}" id="bioestadisticaSubMenu">
                                 <ul class="nav" style="padding-left:10px">
-                                    <li class="nav-item {{ $isActive('bioestadistica') || $isActive('bioestadistica/dashboard') }}">
+                                    <li class="nav-item {{ $bioDashboard }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.dashboard') }}">
                                             <span class="sidebar-mini"><i class="fa fa-tachometer-alt" style="font-size:.8rem; color: #f59e0b;"></i></span>
                                             <span class="sidebar-normal">Dashboard</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $isActive('bioestadistica/formularios*') }}">
+                                    <li class="nav-item {{ $bioFormularios }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.formularios.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">FR</span><span class="sidebar-normal">Formularios</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $isActive('bioestadistica/diccionario*') }}">
+                                    <li class="nav-item {{ $bioVariables }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.diccionario.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">VA</span><span class="sidebar-normal">Variables</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $isActive('bioestadistica/captura*') || $isActive('bioestadistica/captura-asignaciones*') }}">
+                                    <li class="nav-item {{ $bioCarga }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.captura.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">CD</span><span class="sidebar-normal">Carga de datos</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $isActive('bioestadistica/captura/pendientes*') }}">
+                                    <li class="nav-item {{ $bioPendientes }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.captura.pending') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">PD</span><span class="sidebar-normal">Pendientes</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $isActive('bioestadistica/indicadores*') }}">
+                                    <li class="nav-item {{ $bioIndicadores }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.indicadores.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">IN</span><span class="sidebar-normal">Indicadores</span>
                                         </a>
                                     </li>
                                     @can('bio.report.view')
-                                    <li class="nav-item {{ $isActive('bioestadistica/reportes*') }}">
+                                    <li class="nav-item {{ $bioReportes }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.reportes.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">RP</span><span class="sidebar-normal">Reportes</span>
                                         </a>
                                     </li>
                                     @endcan
                                     @can('bio.dashboard.view')
-                                    <li class="nav-item {{ $isActive('bioestadistica/dashboards*') }}">
+                                    <li class="nav-item {{ $bioTableros }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.dashboards.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">TB</span><span class="sidebar-normal">Dashboards</span>
                                         </a>
                                     </li>
                                     @endcan
                                     @can('bio.import.view')
-                                    <li class="nav-item {{ $isActive('bioestadistica/importaciones*') }}">
+                                    <li class="nav-item {{ $bioImportaciones }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.importaciones.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">IM</span><span class="sidebar-normal">Importaciones</span>
                                         </a>
                                     </li>
                                     @endcan
                                     @can('bio.audit.view')
-                                    <li class="nav-item {{ $isActive('bioestadistica/auditoria*') }}">
+                                    <li class="nav-item {{ $bioAuditoria }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.auditoria.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">AU</span><span class="sidebar-normal">Auditoría</span>
                                         </a>
                                     </li>
                                     @endcan
-                                    <li class="nav-item {{ $isActive('bioestadistica/geografia*') }}">
+                                    <li class="nav-item {{ $bioGeografia }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">ES</span><span class="sidebar-normal">Establecimientos</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $isActive('bioestadistica/estructura*') }}">
+                                    <li class="nav-item {{ $bioEstructura }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.estructura.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">DS</span><span class="sidebar-normal">Deptos. y servicios</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $isActive('bioestadistica/clasificaciones*') }}">
+                                    <li class="nav-item {{ $bioClasificaciones }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.clasificaciones.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">CL</span><span class="sidebar-normal">Clasificaciones</span>
                                         </a>

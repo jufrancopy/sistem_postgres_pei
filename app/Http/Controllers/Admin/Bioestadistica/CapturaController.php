@@ -328,6 +328,26 @@ class CapturaController extends Controller
         return back()->with('success', 'Borrador guardado.');
     }
 
+    public function autosave(Request $request, Record $record, RecordCaptureService $capture): JsonResponse
+    {
+        $this->ensureCanEdit($record);
+        $record->loadMissing('formulario');
+        if ($record->formulario->layout_type === 'nominativo') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'El consolidado SP10 no se edita en captura.',
+            ], 422);
+        }
+
+        $capture->saveDraft($record, $request->input('values', []));
+        $record->update(['observacion' => $request->input('observacion')]);
+
+        return response()->json([
+            'ok' => true,
+            'saved_at' => now()->timezone(config('app.timezone'))->format('H:i:s'),
+        ]);
+    }
+
     public function updatePeriod(
         Request $request,
         Record $record,

@@ -379,7 +379,8 @@ class HospitalizacionServiceTest extends TestCase
             ]))
             ->assertOk()
             ->assertSee('SP10')
-            ->assertSee('Guardar planilla')
+            ->assertSee('Guardar borrador')
+            ->assertDontSee('Guardar planilla')
             ->assertSee($establecimiento->nombre)
             ->assertSee('Planillas de')
             ->assertSeeInOrder(['SP1', 'SP2', 'SP3', 'SP4', 'SP5'])
@@ -608,6 +609,62 @@ class HospitalizacionServiceTest extends TestCase
             HospEpisodio::where('cedula_hash', HospEpisodio::hashCedula($cedula))
                 ->where('periodo_anio', 2097)
                 ->where('periodo_mes', 6)
+                ->exists()
+        );
+    }
+
+    public function test_spreadsheet_autosave_persists_complete_rows_and_skips_incomplete(): void
+    {
+        $user = User::role('Administrador')->first() ?? User::first();
+        $establecimiento = Establecimiento::first();
+        if (! $user || ! $establecimiento || ! Formulario::where('codigo', 'SP10')->exists()) {
+            $this->markTestSkipped('Faltan usuario, establecimiento o SP10.');
+        }
+        $cedula = (string) random_int(10000000, 99999999);
+
+        $this->actingAs($user)
+            ->postJson(route('bioestadistica.hospitalizacion.spreadsheet.autosave'), [
+                'establecimiento_id' => $establecimiento->id,
+                'periodo_anio' => 2098,
+                'periodo_mes' => 7,
+                'rows' => [
+                    [
+                        'cedula' => $cedula,
+                        'sexo' => 'M',
+                        'edad' => 40,
+                        'fecha_ingreso' => '2026-07-01',
+                        'fecha_egreso' => '2026-07-03',
+                        'servicio' => 'CLINICA_MEDICA',
+                        'tipo_alta' => 'MEJORADO',
+                        'cirugia' => '0',
+                        'cesarea' => '0',
+                        'recien_nacido' => '0',
+                        'eliminar' => '0',
+                    ],
+                    [
+                        'cedula' => '111',
+                        'sexo' => 'F',
+                        // sin fecha_ingreso: se omite en borrador
+                        'cirugia' => '0',
+                        'cesarea' => '0',
+                        'recien_nacido' => '0',
+                        'eliminar' => '0',
+                    ],
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonPath('ok', true);
+
+        $this->assertTrue(
+            HospEpisodio::where('cedula_hash', HospEpisodio::hashCedula($cedula))
+                ->where('periodo_anio', 2098)
+                ->where('periodo_mes', 7)
+                ->exists()
+        );
+        $this->assertFalse(
+            HospEpisodio::where('cedula_hash', HospEpisodio::hashCedula('111'))
+                ->where('periodo_anio', 2098)
+                ->where('periodo_mes', 7)
                 ->exists()
         );
     }

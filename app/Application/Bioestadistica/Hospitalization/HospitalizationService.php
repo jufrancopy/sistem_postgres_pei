@@ -87,7 +87,7 @@ class HospitalizationService
      * Guarda hasta 200 episodios y consolida una sola vez cada período afectado.
      *
      * @param  array<int, array<string, mixed>>  $rows
-     * @return array{creados:int,actualizados:int,eliminados:int}
+     * @return array{creados:int,actualizados:int,eliminados:int,omitidos:int}
      */
     public function saveBatch(
         int $establecimientoId,
@@ -95,11 +95,12 @@ class HospitalizationService
         int $month,
         array $rows,
         User $user,
-        ?Record $record = null
+        ?Record $record = null,
+        bool $strict = true
     ): array {
         $this->assertEstablishment($establecimientoId, $user);
         $periods = [];
-        $summary = ['creados' => 0, 'actualizados' => 0, 'eliminados' => 0];
+        $summary = ['creados' => 0, 'actualizados' => 0, 'eliminados' => 0, 'omitidos' => 0];
 
         app(AuditService::class)->withoutAuditing(function () use (
             $establecimientoId,
@@ -108,6 +109,7 @@ class HospitalizationService
             $rows,
             $user,
             $record,
+            $strict,
             &$periods,
             &$summary
         ) {
@@ -118,6 +120,7 @@ class HospitalizationService
                 $rows,
                 $user,
                 $record,
+                $strict,
                 &$periods,
                 &$summary
             ) {
@@ -159,6 +162,10 @@ class HospitalizationService
                         'periodo_mes' => $month,
                     ], $user, $episodio, false);
                 } catch (ValidationException $exception) {
+                    if (! $strict) {
+                        $summary['omitidos']++;
+                        continue;
+                    }
                     $errors = [];
                     foreach ($exception->errors() as $field => $messages) {
                         $errors["rows.{$index}.{$field}"] = $messages;
@@ -431,7 +438,7 @@ class HospitalizationService
     private function normalize(array $input): array
     {
         $ingreso = $input['fecha_ingreso'] ?? null;
-        $egreso = $input['fecha_egreso'] ?: null;
+        $egreso = ($input['fecha_egreso'] ?? null) ?: null;
         if (! $ingreso) {
             throw ValidationException::withMessages(['fecha_ingreso' => 'La fecha de ingreso es obligatoria.']);
         }

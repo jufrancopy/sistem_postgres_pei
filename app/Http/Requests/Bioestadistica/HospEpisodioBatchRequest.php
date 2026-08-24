@@ -15,15 +15,30 @@ class HospEpisodioBatchRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $rows = collect($this->input('rows', []))
-            ->map(function (array $row) {
+        $this->merge(['rows' => $this->normalizeRows($this->input('rows', []))]);
+    }
+
+    /**
+     * @param  array<int, mixed>  $rows
+     * @return array<int, array<string, mixed>>
+     */
+    public function normalizeRows(array $rows): array
+    {
+        return collect($rows)
+            ->map(function ($row) {
+                if (! is_array($row)) {
+                    return null;
+                }
                 foreach (['cirugia', 'cesarea', 'recien_nacido', 'eliminar'] as $field) {
                     $row[$field] = filter_var($row[$field] ?? false, FILTER_VALIDATE_BOOLEAN);
                 }
 
                 return $row;
             })
-            ->filter(function (array $row) {
+            ->filter(function ($row) {
+                if (! is_array($row)) {
+                    return false;
+                }
                 if (! empty($row['id']) || ! empty($row['eliminar'])) {
                     return true;
                 }
@@ -34,12 +49,12 @@ class HospEpisodioBatchRequest extends FormRequest
             })
             ->values()
             ->all();
-
-        $this->merge(['rows' => $rows]);
     }
 
     public function rules(): array
     {
+        $autosave = $this->routeIs('bioestadistica.hospitalizacion.spreadsheet.autosave');
+
         return [
             'establecimiento_id' => [
                 'required',
@@ -49,19 +64,19 @@ class HospEpisodioBatchRequest extends FormRequest
             'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
             'periodo_mes' => ['required', 'integer', 'between:1,12'],
             'estructura_servicio_id' => ['nullable', 'integer'],
-            'rows' => ['required', 'array', 'min:1', 'max:200'],
+            'rows' => $autosave
+                ? ['nullable', 'array', 'max:200']
+                : ['required', 'array', 'min:1', 'max:200'],
             'rows.*.id' => ['nullable', 'integer'],
             'rows.*.eliminar' => ['nullable', 'boolean'],
             'rows.*.cedula' => ['nullable', 'string', 'max:30'],
-            'rows.*.sexo' => ['nullable', Rule::in(['M', 'F'])],
+            'rows.*.sexo' => ['nullable', Rule::in(['M', 'F', ''])],
             'rows.*.seguro' => ['nullable', 'string', 'max:80'],
             'rows.*.edad' => ['nullable', 'integer', 'between:0,130'],
-            'rows.*.fecha_ingreso' => ['nullable', 'date'],
-            'rows.*.fecha_egreso' => [
-                'nullable',
-                'date',
-                'after_or_equal:rows.*.fecha_ingreso',
-            ],
+            'rows.*.fecha_ingreso' => $autosave ? ['nullable', 'string', 'max:20'] : ['nullable', 'date'],
+            'rows.*.fecha_egreso' => $autosave
+                ? ['nullable', 'string', 'max:20']
+                : ['nullable', 'date', 'after_or_equal:rows.*.fecha_ingreso'],
             'rows.*.servicio' => ['nullable', 'string', 'max:150'],
             'rows.*.diagnostico' => ['nullable', 'string', 'max:400'],
             'rows.*.cie10' => ['nullable', 'string', 'max:10'],
