@@ -749,6 +749,11 @@
                             </thead>
                             <tbody>
                                 @foreach($gruposList as $gIdx => $g)
+                                @php
+                                    $authUser = auth()->user();
+                                    $isAdmin = $authUser ? $authUser->hasAnyRole(['Administrador', 'Super Admin']) : false;
+                                    $isUserGroup = $authUser ? (($authUser->group_id && $authUser->group_id == $g->id) || ($g->members && $g->members->pluck('id')->contains($authUser->id))) : false;
+                                @endphp
                                 <tr id="group_row_{{ $g->id }}">
                                     <td class="font-weight-bold text-center">{{ count($gruposList) - $gIdx }}</td>
                                     <td>
