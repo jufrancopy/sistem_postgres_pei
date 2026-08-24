@@ -5769,153 +5769,132 @@ function cargarBasureroPeiAdmin() {
         $('#tablaEdicionesPeiAdmin').DataTable().clear().destroy();
     }
 
-    var $tbodyEdits = $('#tablaEdicionesPeiAdmin tbody');
-    var $tbodyBasurero = $('#tablaBasureroPeiAdmin tbody');
-
-    $tbodyEdits.html('<tr><td colspan="4" class="text-center py-4 text-muted"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando historial de ediciones...</td></tr>');
-    $tbodyBasurero.html('<tr><td colspan="6" class="text-center py-4 text-muted"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando elementos del basurero...</td></tr>');
+    var datatablesSpanish = {
+        "sProcessing":     "Procesando...",
+        "sLengthMenu":     "Mostrar _MENU_ registros",
+        "sZeroRecords":    "No se encontraron elementos",
+        "sEmptyTable":     "No hay registros disponibles",
+        "sInfo":           "Mostrando _START_ al _END_ de _TOTAL_ elementos",
+        "sInfoEmpty":      "Mostrando 0 al 0 de 0 elementos",
+        "sInfoFiltered":   "(filtrado de _MAX_ totales)",
+        "sSearch":         "Buscar:",
+        "oPaginate": { "sFirst": "Primero", "sLast": "Último", "sNext": "Siguiente", "sPrevious": "Anterior" }
+    };
 
     $.ajax({
         url: "{{ route('pei.basurero.list', $profile->id) }}",
         type: "GET",
         success: function(resp) {
-            // 1. Cargar Pestaña de Ediciones (Trazabilidad y Reversión)
-            $tbodyEdits.empty();
-            var editsCount = 0;
-
+            // 1. Cargar DataTables Ediciones
+            var editsDataSet = [];
             if (resp.edits_list && resp.edits_list.length > 0) {
                 resp.edits_list.forEach(function(e) {
-                    editsCount++;
                     var revertBtn = e.can_revert
                         ? `<button type="button" class="btn btn-xs btn-warning font-weight-bold rounded-pill px-3 py-1 shadow-xs" onclick="revertirEdicionPei('${e.id}')" title="Revertir este cambio al estado anterior">
                              <i class="fa fa-undo mr-1"></i> Revertir Edición
                            </button>`
                         : `<span class="badge badge-light border text-muted">Sin valores previos</span>`;
 
-                    var trEdit = `
-                        <tr>
-                            <td class="align-middle">
-                                <span class="badge badge-dark font-weight-bold px-2 py-1 mb-1 d-block text-left" style="font-size:0.7rem;">
-                                    <i class="fa fa-layer-group mr-1"></i> ${e.node_level}
-                                </span>
-                                <strong class="text-dark d-block" style="font-size:0.84rem;">${e.node_name}</strong>
-                            </td>
-                            <td class="align-middle small">
-                                <div class="p-2 rounded bg-light border text-dark shadow-xs" style="font-size:0.78rem; line-height:1.3;">
-                                    ${e.diff_html}
-                                </div>
-                            </td>
-                            <td class="align-middle small">
-                                <div><i class="fa fa-user-circle text-primary mr-1"></i> <strong>${e.editor}</strong></div>
-                                <div class="text-muted font-mono" style="font-size:0.75rem;"><i class="fa fa-clock mr-1"></i> ${e.created_at}</div>
-                            </td>
-                            <td class="align-middle text-center">
-                                ${revertBtn}
-                            </td>
-                        </tr>
-                    `;
-                    $tbodyEdits.append(trEdit);
+                    var colNode = `<span class="badge badge-dark font-weight-bold px-2 py-1 mb-1 d-block text-left" style="font-size:0.7rem;">
+                                     <i class="fa fa-layer-group mr-1"></i> ${e.node_level}
+                                   </span>
+                                   <strong class="text-dark d-block" style="font-size:0.84rem;">${e.node_name}</strong>`;
+
+                    var colDiff = `<div class="p-2 rounded bg-light border text-dark shadow-xs" style="font-size:0.78rem; line-height:1.3;">
+                                     ${e.diff_html}
+                                   </div>`;
+
+                    var colEditor = `<div><i class="fa fa-user-circle text-primary mr-1"></i> <strong>${e.editor}</strong></div>
+                                     <div class="text-muted font-mono" style="font-size:0.75rem;"><i class="fa fa-clock mr-1"></i> ${e.created_at}</div>`;
+
+                    editsDataSet.push([colNode, colDiff, colEditor, revertBtn]);
                 });
-            } else {
-                $tbodyEdits.html('<tr><td colspan="4" class="text-center py-4 text-muted"><i class="fa fa-info-circle mr-1"></i> Aún no se registran modificaciones de edición en los elementos del PEI.</td></tr>');
             }
-            $('#cntTotalEdiciones').text(editsCount);
 
-            // 2. Cargar Pestaña de Basurero (Elementos Eliminados)
-            $tbodyBasurero.empty();
-            var trashedCount = 0;
+            $('#cntTotalEdiciones').text(editsDataSet.length);
 
+            $('#tablaEdicionesPeiAdmin').DataTable({
+                data: editsDataSet,
+                deferRender: true,
+                pageLength: 8,
+                lengthMenu: [[8, 15, 30, -1], [8, 15, 30, "Todos"]],
+                language: datatablesSpanish,
+                order: [[2, "desc"]],
+                columnDefs: [
+                    { className: "align-middle", targets: [0, 1, 2] },
+                    { className: "align-middle text-center", targets: [3] }
+                ]
+            });
+
+            // 2. Cargar DataTables Basurero
+            var trashedDataSet = [];
             if (resp.trashed_nodes && resp.trashed_nodes.length > 0) {
                 resp.trashed_nodes.forEach(function(n) {
-                    trashedCount++;
                     var badgeType = n.nivel_badge || 'badge-dark';
                     var nivelNombre = n.nivel_nombre || 'Nivel PEI';
 
-                    var trNode = `
-                        <tr>
-                            <td class="align-middle">
-                                <span class="badge ${badgeType} font-weight-bold px-2.5 py-1 mb-1 d-block text-left" style="font-size:0.72rem;">
-                                    <i class="fa fa-layer-group mr-1"></i> ${nivelNombre}
-                                </span>
-                            </td>
-                            <td class="align-middle">
-                                <strong class="text-dark d-block" style="font-size:0.86rem; line-height: 1.3;">${n.name}</strong>
-                            </td>
-                            <td class="align-middle small">
-                                <div class="p-2 rounded bg-light border text-dark font-weight-500 shadow-xs" style="font-size:0.78rem;">
-                                    ${n.contexto || '—'}
-                                </div>
-                            </td>
-                            <td class="align-middle small">
-                                <div class="mb-1"><i class="fa fa-user-circle text-primary mr-1"></i> <strong>Autor:</strong> ${n.creador || 'Sistema'}</div>
-                                <div><i class="fa fa-edit text-warning mr-1"></i> <strong>Editor:</strong> ${n.editor || '—'}</div>
-                            </td>
-                            <td class="align-middle text-center text-muted small font-mono">${n.deleted_at || '—'}</td>
-                            <td class="align-middle text-center">
-                                <button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3 py-1 shadow-xs" onclick="restaurarElementoPei('${n.id}', 'node')">
-                                    <i class="fa fa-recycle mr-1"></i> Restaurar
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                    $tbodyBasurero.append(trNode);
+                    var colNivel = `<span class="badge ${badgeType} font-weight-bold px-2.5 py-1 mb-1 d-block text-left" style="font-size:0.72rem;">
+                                      <i class="fa fa-layer-group mr-1"></i> ${nivelNombre}
+                                    </span>`;
+
+                    var colName = `<strong class="text-dark d-block" style="font-size:0.86rem; line-height: 1.3;">${n.name}</strong>`;
+
+                    var colContexto = `<div class="p-2 rounded bg-light border text-dark font-weight-500 shadow-xs" style="font-size:0.78rem;">
+                                         ${n.contexto || '—'}
+                                       </div>`;
+
+                    var colTrazabilidad = `<div class="mb-1"><i class="fa fa-user-circle text-primary mr-1"></i> <strong>Autor:</strong> ${n.creador || 'Sistema'}</div>
+                                           <div><i class="fa fa-edit text-warning mr-1"></i> <strong>Editor:</strong> ${n.editor || '—'}</div>`;
+
+                    var colDate = `<span class="text-muted small font-mono">${n.deleted_at || '—'}</span>`;
+
+                    var colAction = `<button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3 py-1 shadow-xs" onclick="restaurarElementoPei('${n.id}', 'node')">
+                                       <i class="fa fa-recycle mr-1"></i> Restaurar
+                                     </button>`;
+
+                    trashedDataSet.push([colNivel, colName, colContexto, colTrazabilidad, colDate, colAction]);
                 });
             }
 
             if (resp.trashed_inis && resp.trashed_inis.length > 0) {
                 resp.trashed_inis.forEach(function(i) {
-                    trashedCount++;
-                    var trIni = `
-                        <tr>
-                            <td class="align-middle">
-                                <span class="badge badge-success font-weight-bold px-2.5 py-1 mb-1 d-block text-left" style="font-size:0.72rem;">
-                                    <i class="fa fa-tasks mr-1"></i> Acción Operativa
-                                </span>
-                            </td>
-                            <td class="align-middle">
-                                ${i.codigo ? `<span class="badge badge-dark font-weight-bold mr-1">${i.codigo}</span>` : ''}
-                                <strong class="text-dark" style="font-size:0.86rem; line-height: 1.3;">${i.accion}</strong>
-                            </td>
-                            <td class="align-middle small">
-                                <div class="p-2 rounded bg-light border text-dark font-weight-500 shadow-xs" style="font-size:0.78rem;">
-                                    ${i.contexto || '—'}
-                                </div>
-                            </td>
-                            <td class="align-middle small">
-                                <div class="mb-1"><i class="fa fa-user-circle text-primary mr-1"></i> <strong>Autor:</strong> ${i.creador || 'Sistema'}</div>
-                            </td>
-                            <td class="align-middle text-center text-muted small font-mono">${i.deleted_at || '—'}</td>
-                            <td class="align-middle text-center">
-                                <button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3 py-1 shadow-xs" onclick="restaurarElementoPei('${i.id}', 'iniciativa')">
-                                    <i class="fa fa-recycle mr-1"></i> Restaurar
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                    $tbodyBasurero.append(trIni);
+                    var colNivel = `<span class="badge badge-success font-weight-bold px-2.5 py-1 mb-1 d-block text-left" style="font-size:0.72rem;">
+                                      <i class="fa fa-tasks mr-1"></i> Acción Operativa
+                                    </span>`;
+
+                    var colName = `${i.codigo ? `<span class="badge badge-dark font-weight-bold mr-1">${i.codigo}</span>` : ''}
+                                   <strong class="text-dark" style="font-size:0.86rem; line-height: 1.3;">${i.accion}</strong>`;
+
+                    var colContexto = `<div class="p-2 rounded bg-light border text-dark font-weight-500 shadow-xs" style="font-size:0.78rem;">
+                                         ${i.contexto || '—'}
+                                       </div>`;
+
+                    var colTrazabilidad = `<div class="mb-1"><i class="fa fa-user-circle text-primary mr-1"></i> <strong>Autor:</strong> ${i.creador || 'Sistema'}</div>`;
+
+                    var colDate = `<span class="text-muted small font-mono">${i.deleted_at || '—'}</span>`;
+
+                    var colAction = `<button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3 py-1 shadow-xs" onclick="restaurarElementoPei('${i.id}', 'iniciativa')">
+                                       <i class="fa fa-recycle mr-1"></i> Restaurar
+                                     </button>`;
+
+                    trashedDataSet.push([colNivel, colName, colContexto, colTrazabilidad, colDate, colAction]);
                 });
             }
 
-            if (trashedCount === 0) {
-                $tbodyBasurero.html('<tr><td colspan="6" class="text-center py-4 text-muted"><i class="fa fa-info-circle mr-1"></i> El basurero está vacío. No hay elementos eliminados.</td></tr>');
-            }
+            $('#cntTotalBasurero').text(trashedDataSet.length);
 
-            $('#cntTotalBasurero').text(trashedCount);
-
-            if ($.fn.DataTable && $('#tablaEdicionesPeiAdmin').length) {
-                $('#tablaEdicionesPeiAdmin').DataTable({
-                    "language": datatablesSpanish,
-                    "order": [[2, "desc"]],
-                    "pageLength": 8
-                });
-            }
-            if ($.fn.DataTable && $('#tablaBasureroPeiAdmin').length) {
-                $('#tablaBasureroPeiAdmin').DataTable({
-                    "language": datatablesSpanish,
-                    "order": [[4, "desc"]],
-                    "pageLength": 8
-                });
-            }
+            $('#tablaBasureroPeiAdmin').DataTable({
+                data: trashedDataSet,
+                deferRender: true,
+                pageLength: 8,
+                lengthMenu: [[8, 15, 30, -1], [8, 15, 30, "Todos"]],
+                language: datatablesSpanish,
+                order: [[4, "desc"]],
+                columnDefs: [
+                    { className: "align-middle", targets: [0, 1, 2, 3] },
+                    { className: "align-middle text-center", targets: [4, 5] }
+                ]
+            });
         }
     });
 }
@@ -5945,20 +5924,29 @@ function revertirEdicionPei(editId) {
 }
 
 $('#modalBasureroPei').on('shown.bs.modal', function () {
-    $('body').css({
-        'overflow': 'hidden',
-        'padding-right': '0px'
-    });
+    $('body').css('overflow', 'hidden');
+    var $modalBody = $(this).find('.modal-body');
+    $modalBody.attr('tabindex', '-1').focus();
+
     if ($.fn.DataTable) {
         $.fn.DataTable.tables({ visible: true, api: true }).columns.adjust();
     }
 });
 
+$(document).on('wheel touchmove', '#modalBasureroPei .modal-body', function(e) {
+    var st = this.scrollTop;
+    var sh = this.scrollHeight;
+    var h = $(this).innerHeight();
+    var delta = (e.type === 'wheel') ? e.originalEvent.deltaY : 0;
+
+    if ((delta > 0 && st + h >= sh - 2) || (delta < 0 && st <= 2)) {
+        e.preventDefault();
+    }
+    e.stopPropagation();
+});
+
 $('#modalBasureroPei').on('hidden.bs.modal', function () {
-    $('body').css({
-        'overflow': '',
-        'padding-right': ''
-    });
+    $('body').css('overflow', '');
 });
 
 $(document).on('click', '.btnVerReporteAportes', function () {
