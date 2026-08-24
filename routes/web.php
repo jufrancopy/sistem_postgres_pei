@@ -117,6 +117,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/basurero', 'Admin\Planificacion\Pei\PeiController@basureroList')->name('pei.basurero.list');
     Route::post('pei-profiles/{idProfile}/basurero/restaurar-nodo/{nodeId}', 'Admin\Planificacion\Pei\PeiController@restaurarNodo')->name('pei.basurero.restaurar-nodo');
     Route::post('pei-profiles/{idProfile}/basurero/restaurar-iniciativa/{iniId}', 'Admin\Planificacion\Pei\PeiController@restaurarIniciativa')->name('pei.basurero.restaurar-iniciativa');
+    Route::post('pei-profiles/{idProfile}/revertir-edicion/{editId}', 'Admin\Planificacion\Pei\PeiController@revertirEdicion')->name('pei.edicion.revertir');
 
     // ── Coordinador de Planificación ─────────────────────────────────────────
     Route::prefix('coordinador-planificacion')->name('coordinador.')->middleware(['role:Coordinador de Planificación|Analista de Planificación|Administrador'])->group(function () {

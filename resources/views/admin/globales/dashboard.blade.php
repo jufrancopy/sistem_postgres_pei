@@ -2564,23 +2564,23 @@
                     </div>
                 </div>
 
-                {{-- Rejilla de KPIs --}}
+                @hasanyrole('Administrador|Super Admin')
+                {{-- Rejilla de KPIs de Telemetría (Solo Administradores) --}}
                 <div class="row mb-4">
-                    <div class="col-12 @hasanyrole('Administrador|Super Admin') col-md-4 @else col-md-6 @endhasanyrole mb-3 mb-md-0">
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
                         <div class="card border-0 shadow-sm p-3 bg-white text-center" style="border-radius: 10px;">
                             <div class="text-primary font-weight-bold text-uppercase mb-1" style="font-size: 0.75rem;">Total Interacciones</div>
                             <h3 class="font-weight-bold text-dark mb-0" id="tel_kpi_total">0</h3>
                             <small class="text-muted">Acciones registradas</small>
                         </div>
                     </div>
-                    <div class="col-12 @hasanyrole('Administrador|Super Admin') col-md-4 @else col-md-6 @endhasanyrole mb-3 mb-md-0">
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
                         <div class="card border-0 shadow-sm p-3 bg-white text-center" style="border-radius: 10px;">
                             <div class="text-success font-weight-bold text-uppercase mb-1" style="font-size: 0.75rem;">Última Actividad</div>
                             <h6 class="font-weight-bold text-dark mb-0 mt-1" id="tel_kpi_last_act">—</h6>
                             <small class="text-muted">Sello de tiempo</small>
                         </div>
                     </div>
-                    @hasanyrole('Administrador|Super Admin')
                     <div class="col-12 col-md-4">
                         <div class="card border-0 shadow-sm p-3 bg-white text-center" style="border-radius: 10px;">
                             <div class="text-info font-weight-bold text-uppercase mb-1" style="font-size: 0.75rem;">Conexión IP Reciente</div>
@@ -2588,10 +2588,10 @@
                             <small class="text-muted">Dirección IP</small>
                         </div>
                     </div>
-                    @endhasanyrole
                 </div>
+                @endhasanyrole
 
-                {{-- Historial de Puntos de Gamificación --}}
+                {{-- Historial de Puntos de Gamificación del Perfil --}}
                 <div class="card border shadow-sm mb-4" style="border-radius: 10px; overflow: hidden;">
                     <div class="card-header bg-light py-2 px-3 font-weight-bold text-dark small text-uppercase d-flex align-items-center justify-content-between">
                         <div>
@@ -2599,17 +2599,18 @@
                         </div>
                         <span class="badge badge-pill badge-primary font-weight-bold" style="font-size:0.7rem;">Puntos Válidos</span>
                     </div>
-                    <div class="card-body p-0 bg-white" style="max-height: 240px; overflow-y: auto;" id="tel_points_container">
+                    <div class="card-body p-0 bg-white" style="max-height: 380px; overflow-y: auto;" id="tel_points_container">
                         <div id="tel_points_list" class="p-3">
                             <div class="text-center py-3 text-muted small"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando historial de puntos...</div>
                         </div>
                     </div>
                 </div>
 
-                {{-- Cronología Reciente de Actividades --}}
+                @hasanyrole('Administrador|Super Admin')
+                {{-- Cronología de Auditoría Teleférica (Solo Administradores) --}}
                 <div class="card border shadow-sm" style="border-radius: 10px;">
                     <div class="card-header bg-light py-2 px-3 font-weight-bold text-dark small text-uppercase">
-                        <i class="fa fa-history text-info mr-1"></i> Actividades Recientes en el Sistema
+                        <i class="fa fa-chart-line text-info mr-1"></i> Auditoría Teleférica Reciente (Rutas HTTP & IPs)
                     </div>
                     <div class="card-body p-3 bg-white" style="max-height: 240px; overflow-y: auto;">
                         <ul class="list-group list-group-flush" id="tel_timeline_list">
@@ -2617,6 +2618,7 @@
                         </ul>
                     </div>
                 </div>
+                @endhasanyrole
             </div>
             <div class="modal-footer bg-light py-2 px-4">
                 <button type="button" class="btn btn-secondary btn-round px-4" data-dismiss="modal">Cerrar</button>

@@ -335,6 +335,9 @@ class PeiController extends Controller
                 'creado_con_ia'        => $request->has('creado_con_ia') ? filter_var($request->creado_con_ia, FILTER_VALIDATE_BOOLEAN) : ($existing?->creado_con_ia ?? false),
         ];
 
+        // Capturar valores anteriores antes de guardar
+        $oldNodeValues = $existing ? $existing->only(['name', 'level', 'year_start', 'year_end', 'ponderacion', 'indicador', 'meta_texto', 'type', 'group_id']) : null;
+
         // Si es un nodo nuevo con parent_id, lo insertamos directamente en el
         // árbol NestedSet. updateOrCreate no maneja parent_id porque no está en $fillable.
         if (!$profileId && $request->parent_id) {
@@ -351,6 +354,7 @@ class PeiController extends Controller
         }
 
         $wasChanged = $profile->wasChanged();
+        $newNodeValues = $profile->only(['name', 'level', 'year_start', 'year_end', 'ponderacion', 'indicador', 'meta_texto', 'type', 'group_id']);
 
         // Manejo de relaciones (Solo sincronizar si el campo viene en la petición para no desvincular al editar)
         $syncAnalysts = $request->has('analyst_id') ? $profile->analysts()->sync($request->analyst_id) : [];
@@ -372,6 +376,8 @@ class PeiController extends Controller
             $peiEditRecord = PeiProfileEdit::create([
                 'pei_profile_id' => $profile->id,
                 'user_id'        => $user->id,
+                'old_values'     => $oldNodeValues,
+                'new_values'     => $newNodeValues,
             ]);
 
             // Resolver el PEI raíz para asociar el pei_profile_id correcto al punto
@@ -1696,10 +1702,51 @@ class PeiController extends Controller
                 ];
             });
 
+        // 3. Historial Reciente de Ediciones (para Reversión de Cambios en Elementos Activos)
+        $editsList = PeiProfileEdit::with(['user', 'peiNode'])
+            ->latest()
+            ->take(30)
+            ->get()
+            ->map(function($e) {
+                $diffSummary = [];
+                if (!empty($e->old_values) && !empty($e->new_values)) {
+                    foreach ($e->new_values as $key => $newVal) {
+                        $oldVal = $e->old_values[$key] ?? null;
+                        if ((string)$oldVal !== (string)$newVal) {
+                            $keyLabel = match($key) {
+                                'name'        => 'Nombre / Título',
+                                'ponderacion' => 'Ponderación',
+                                'meta_texto'  => 'Texto de Meta',
+                                'indicador'   => 'Indicador',
+                                'year_start'  => 'Año Inicio',
+                                'year_end'    => 'Año Fin',
+                                default       => ucfirst($key),
+                            };
+                            $diffSummary[] = "<strong>{$keyLabel}:</strong> De <em>" . \Illuminate\Support\Str::limit(strip_tags((string)$oldVal), 35) . "</em> a <em>" . \Illuminate\Support\Str::limit(strip_tags((string)$newVal), 35) . "</em>";
+                        }
+                    }
+                }
+
+                $nodeName = $e->peiNode ? strip_tags($e->peiNode->name) : 'Elemento PEI';
+                $nodeLevel = $e->peiNode ? strtoupper($e->peiNode->level ?: 'NODO') : 'PEI';
+
+                return [
+                    'id'             => $e->id,
+                    'node_id'        => $e->pei_profile_id,
+                    'node_name'      => $nodeName,
+                    'node_level'     => $nodeLevel,
+                    'editor'         => $e->user->name ?? 'Usuario',
+                    'created_at'     => $e->created_at ? $e->created_at->format('d/m/Y H:i') : '—',
+                    'can_revert'     => !empty($e->old_values),
+                    'diff_html'      => !empty($diffSummary) ? implode('<br>', $diffSummary) : '<span class="text-muted">Edición/Actualización registrada</span>',
+                ];
+            });
+
         return response()->json([
             'ok'            => true,
             'trashed_nodes' => $trashedNodes,
             'trashed_inis'  => $trashedInis,
+            'edits_list'    => $editsList,
             'total'         => $trashedNodes->count() + $trashedInis->count(),
         ]);
     }
@@ -1722,5 +1769,43 @@ class PeiController extends Controller
             return response()->json(['ok' => true, 'message' => 'Acción Operativa restaurada con éxito.']);
         }
         return response()->json(['ok' => false, 'message' => 'No se encontró la Acción Operativa eliminada.'], 404);
+    }
+
+    public function revertirEdicion(Request $request, $idProfile, $editId)
+    {
+        $edit = PeiProfileEdit::where('id', $editId)->firstOrFail();
+        $node = PeiProfile::withTrashed()->where('id', $edit->pei_profile_id)->first();
+
+        if (!$node) {
+            return response()->json(['ok' => false, 'message' => 'El elemento PEI asociado a esta edición no existe.'], 404);
+        }
+
+        if (empty($edit->old_values)) {
+            return response()->json(['ok' => false, 'message' => 'Esta edición no posee registro de valores anteriores para revertir.'], 400);
+        }
+
+        $oldValues = $edit->old_values;
+        $currentState = $node->only(array_keys($oldValues));
+
+        if ($node->trashed()) {
+            $node->restore();
+        }
+
+        $node->fill($oldValues);
+        $node->updated_by = auth()->id();
+        $node->save();
+
+        // Registrar la reversión en el historial de ediciones
+        PeiProfileEdit::create([
+            'pei_profile_id' => $node->id,
+            'user_id'        => auth()->id(),
+            'old_values'     => $currentState,
+            'new_values'     => $oldValues,
+        ]);
+
+        return response()->json([
+            'ok'      => true,
+            'message' => 'Edición revertida con éxito al estado anterior.',
+        ]);
     }
 }
