@@ -276,6 +276,7 @@
 
             {{-- Selector de Plan PEI & Accesos Directos ── --}}
             <div class="col-lg-5 text-lg-right mt-3 mt-lg-0">
+                @hasanyrole('Administrador|Super Admin')
                 <div class="p-3 rounded-lg border text-left mb-3 shadow-sm" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border-color: rgba(255,255,255,0.25) !important;">
                     <label class="text-white small font-weight-bold text-uppercase mb-2 d-block" style="letter-spacing:.05em">
                         <i class="fa fa-filter text-warning mr-1"></i> Filtrar Panel por Plan PEI Raíz:
@@ -289,6 +290,22 @@
                         @endforeach
                     </select>
                 </div>
+                @else
+                <div class="p-3 rounded-lg border text-left mb-3 shadow-sm" style="background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); border-color: rgba(255,255,255,0.3) !important;">
+                    <label class="text-white small font-weight-bold text-uppercase mb-1 d-block" style="letter-spacing:.05em">
+                        <i class="fa fa-bullseye text-warning mr-1"></i> Plan PEI Institucional Activo:
+                    </label>
+                    <div class="h6 text-white font-weight-bold mb-0">
+                        <i class="fa fa-check-circle text-success mr-1"></i>
+                        {{ $selectedPei ? strip_tags($selectedPei->name) : 'Plan Estratégico Institucional' }}
+                        @if($selectedPei)
+                            <span class="badge badge-pill badge-light border text-dark ml-1" style="font-size:0.72rem;">
+                                {{ \Carbon\Carbon::parse($selectedPei->year_start)->format('Y') }}–{{ \Carbon\Carbon::parse($selectedPei->year_end)->format('Y') }}
+                            </span>
+                        @endif
+                    </div>
+                </div>
+                @endhasanyrole
 
                 <div class="d-flex justify-content-lg-end flex-wrap" style="gap: 0.5rem;">
                     @if($selectedPei)
@@ -964,6 +981,7 @@
                                     </td>
                                     <td class="text-center" style="white-space: nowrap;">
                                         <div class="d-flex justify-content-center align-items-center flex-nowrap" style="gap: 4px;">
+                                            @hasanyrole('Administrador|Super Admin')
                                             {{-- 1. Seleccionar PEI Activo --}}
                                             <a href="?pei_id={{ $plan->id }}#tab-planes" class="btn btn-circle" style="background:#2563eb; border-color:#2563eb; color:#fff;" title="Seleccionar como PEI Activo en Panel">
                                                 <i class="fa fa-check-circle"></i>
@@ -973,6 +991,7 @@
                                             <button type="button" class="btn btn-circle editProfile" style="background:#8b5cf6; border-color:#8b5cf6; color:#fff;" data-id="{{ $plan->id }}" title="Editar Perfil PEI In-Situ">
                                                 <i class="fa fa-edit"></i>
                                             </button>
+                                            @endhasanyrole
 
                                             {{-- 3. Ver y Gestionar Estructura PEI (Icono Números Verde) --}}
                                             <a href="{{ url('pei-profiles/' . $plan->id) }}" class="btn btn-circle" style="background:#10b981; border-color:#10b981; color:#fff;" title="Ver y Gestionar Estructura PEI">
@@ -980,23 +999,22 @@
                                             </a>
 
                                             {{-- 4. Certificación MEF --}}
-                                            <button type="button" class="btn btn-circle btn-info text-white btnVerCertificacionMef" data-id="{{ $plan->id }}" data-name="{{ addslashes(strip_tags($plan->name)) }}" title="Certificación MEF">
+                                            <button type="button" class="btn btn-circle btn-info text-white btnVerCertificacionMef" data-id="{{ $plan->id }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}" title="Certificación MEF">
                                                 <i class="fa fa-certificate"></i>
                                             </button>
 
-                                            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI')
-                                            {{-- Lectura Cómoda de Aportes de Asesoría --}}
+                                            {{-- 5. Lectura Cómoda de Aportes de Asesoría --}}
                                             <button type="button" class="btn btn-circle btn-dark text-warning btnVerReporteAportes" data-pei-id="{{ $plan->id }}" title="Lectura Cómoda de Aportes y Dictámenes de Asesoría">
                                                 <i class="fa fa-book-open"></i>
                                             </button>
-                                            @endhasanyrole
 
-                                            {{-- 5. Cruce de Ambientes FODA --}}
-                                            <button type="button" class="btn btn-circle btn-warning text-white btnVerFodaCrossing" data-url="{{ route('foda-cruce-ambientes', $plan->id) }}" data-name="{{ addslashes(strip_tags($plan->name)) }}" title="Análisis FODA & Cruce de Ambientes">
+                                            {{-- 6. Cruce de Ambientes FODA --}}
+                                            <button type="button" class="btn btn-circle btn-warning text-white btnVerFodaCrossing" data-url="{{ route('foda-cruce-ambientes', $plan->id) }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}" title="Análisis FODA & Cruce de Ambientes">
                                                 <i class="fa fa-random"></i>
                                             </button>
 
-                                            {{-- 6. Visibilidad / Alternar Estado --}}
+                                            @hasanyrole('Administrador|Super Admin')
+                                            {{-- 7. Visibilidad / Alternar Estado --}}
                                             @php
                                                 $isVis = isset($plan->is_active) ? (bool)$plan->is_active : true;
                                             @endphp
@@ -1004,10 +1022,11 @@
                                                 <i class="fa {{ $isVis ? 'fa-eye' : 'fa-eye-slash' }}"></i>
                                             </button>
 
-                                            {{-- 7. Eliminar Perfil PEI --}}
-                                            <button type="button" class="btn btn-circle btn-danger deleteProfile" data-id="{{ $plan->id }}" data-name="{{ addslashes(strip_tags($plan->name)) }}" title="Eliminar Perfil PEI">
+                                            {{-- 8. Eliminar Perfil PEI --}}
+                                            <button type="button" class="btn btn-circle btn-danger deleteProfile" data-id="{{ $plan->id }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}" title="Eliminar Perfil PEI">
                                                 <i class="fa fa-trash"></i>
                                             </button>
+                                            @endhasanyrole
                                         </div>
                                     </td>
                                 </tr>

@@ -153,16 +153,10 @@
 
         {{-- Menú específico para Coordinador / Analista de Planificación --}}
         @hasanyrole('Coordinador de Planificación|Analista de Planificación')
-            <li class="nav-item {{ request()->is('planificacion-dashboard*') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('planificacion-dashboard') }}">
+            <li class="nav-item {{ request()->is('admin/globales/dashboard*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('globales.dashboard') }}">
                     <i class="material-icons" style="color: #4f46e5 !important;">dashboard</i>
-                    <p>Planificación</p>
-                </a>
-            </li>
-            <li class="nav-item {{ request()->is('coordinador-planificacion*') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('coordinador.index') }}">
-                    <i class="material-icons" style="color: #4f46e5 !important;">groups</i>
-                    <p>Coordinación</p>
+                    <p>Dashboard PEI</p>
                 </a>
             </li>
         @endhasanyrole

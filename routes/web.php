@@ -120,7 +120,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     // ── Coordinador de Planificación ─────────────────────────────────────────
     Route::prefix('coordinador-planificacion')->name('coordinador.')->middleware(['role:Coordinador de Planificación|Analista de Planificación|Administrador'])->group(function () {
-        Route::get('/', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@index')->name('index');
+        Route::get('/', function() { return redirect()->route('globales.dashboard'); })->name('index');
         Route::get('gestionar-grupos', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@gestionarGrupos')->name('gestionar-grupos');
         Route::get('crear-actividad', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@crearActividad')->name('crear-actividad');
         Route::get('ver-grupos-usuarios', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@verGruposYUsuarios')->name('ver-grupos-usuarios');
