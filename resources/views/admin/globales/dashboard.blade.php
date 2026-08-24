@@ -767,9 +767,14 @@
                                                         $medal = $medals[$tIdx] ?? '⭐';
                                                         $st = $styles[$tIdx] ?? 'background: #f8fafc; color: #475569; border: 1px solid #e2e8f0;';
                                                     @endphp
-                                                    <div class="badge d-inline-flex align-items-center justify-content-between p-1 px-2" style="{{ $st }} font-size: 0.72rem; font-weight: 600; border-radius: 6px;" title="{{ $topMember->name }} — {{ number_format($topMember->puntos_gamificacion) }} pts">
+                                                    <div class="badge d-inline-flex align-items-center justify-content-between p-1 px-2 pointer-hover" 
+                                                         style="{{ $st }} font-size: 0.72rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: transform 0.15s ease;" 
+                                                         onclick="abrirModalTelemetriaUsuario('{{ $topMember->id }}')" 
+                                                         title="📊 Clic para ver Ficha de Productividad & Telemetría de {{ $topMember->name }}">
                                                         <span class="text-truncate" style="max-width: 130px;">{{ $medal }} {{ $topMember->name }}</span>
-                                                        <span class="badge badge-pill badge-dark ml-2" style="font-size: 0.65rem;">{{ number_format($topMember->puntos_gamificacion) }} pts</span>
+                                                        <span class="badge badge-pill badge-dark ml-2" style="font-size: 0.65rem;">
+                                                            <i class="fa fa-chart-line text-warning mr-1"></i>{{ number_format($topMember->puntos_gamificacion) }} pts
+                                                        </span>
                                                     </div>
                                                 @endforeach
                                                 @if($g->members_count > 3)
@@ -789,8 +794,14 @@
                                             <span class="text-muted small">Sin miembros asignados</span>
                                         @else
                                             @foreach($g->members as $m)
-                                                <span class="badge badge-light text-dark border mr-1 mb-1" style="font-size:0.75rem; font-weight:500;">
-                                                    {{ $m->name }}
+                                                <span class="badge badge-light text-dark border mr-1 mb-1 shadow-sm px-2 py-1 pointer-hover" 
+                                                      style="font-size:0.75rem; font-weight:500; cursor: pointer; transition: all 0.2s; border-radius: 6px;" 
+                                                      onclick="abrirModalTelemetriaUsuario('{{ $m->id }}')" 
+                                                      title="📊 Clic para abrir Ficha de Productividad & Telemetría de {{ $m->name }}">
+                                                    <i class="fa fa-user-circle text-info mr-1"></i>{{ $m->name }}
+                                                    <span class="badge badge-pill badge-dark ml-1" style="font-size:0.64rem;">
+                                                        {{ number_format($m->puntos_gamificacion ?? 0) }} pts
+                                                    </span>
                                                 </span>
                                             @endforeach
                                         @endif
@@ -1834,9 +1845,10 @@
                                     <table class="table table-hover table-custom w-100 mb-0" id="tablaMiembrosGrupoModal">
                                         <thead>
                                             <tr>
-                                                <th style="width: 10%;">#</th>
-                                                <th style="width: 50%;">Nombre Completo</th>
-                                                <th style="width: 40%;">Correo Electrónico</th>
+                                                <th style="width: 5%;">#</th>
+                                                <th style="width: 40%;">Nombre Completo</th>
+                                                <th style="width: 35%;">Correo Electrónico</th>
+                                                <th style="width: 20%; text-align: center;">Productividad</th>
                                             </tr>
                                         </thead>
                                         <tbody></tbody>
@@ -3799,8 +3811,9 @@ $(document).ready(function() {
                 members.forEach(function(m, idx) {
                     tbodyM.append('<tr>' +
                         '<td>' + (idx + 1) + '</td>' +
-                        '<td class="font-weight-bold text-dark">' + $('<div>').text(m.name).html() + '</td>' +
+                        '<td class="font-weight-bold text-dark"><i class="fa fa-user-circle text-info mr-1"></i>' + $('<div>').text(m.name).html() + '</td>' +
                         '<td><span class="text-muted"><i class="fa fa-envelope mr-1"></i>' + $('<div>').text(m.email).html() + '</span></td>' +
+                        '<td class="text-center"><button type="button" class="btn btn-xs btn-outline-info font-weight-bold shadow-sm" onclick="abrirModalTelemetriaUsuario(' + m.id + ')" title="Ver Productividad y Telemetría del Funcionario"><i class="fa fa-chart-line mr-1"></i> Telemetría</button></td>' +
                         '</tr>');
                 });
 

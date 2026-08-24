@@ -167,6 +167,7 @@ class GlobalesController extends Controller
                 })->sortByDesc('puntos_gamificacion')->values();
 
                 $g->top_miembros = $sortedMembers->take(3);
+                $g->setRelation('members', $sortedMembers);
             });
         } else {
             $gruposList = collect();
