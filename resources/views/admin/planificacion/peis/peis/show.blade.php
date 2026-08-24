@@ -3,7 +3,10 @@
 
 @section('content')
     <style>
-    /* Modo Pantalla Completa (Full Width PEI Workspace) */
+    /* Modo Pantalla Completa (Full Width PEI Workspace + Fuente Ampliada) */
+    body.pei-full-width-mode {
+        font-size: 1.05rem !important;
+    }
     body.pei-full-width-mode .sidebar {
         display: none !important;
     }
@@ -16,16 +19,17 @@
         transition: all 0.25s ease-in-out;
     }
     body.pei-full-width-mode .content {
-        padding: 10px 5px !important;
+        padding: 12px 10px !important;
         width: 100% !important;
         max-width: 100% !important;
+        font-size: 1.05rem !important;
     }
     body.pei-full-width-mode .container,
     body.pei-full-width-mode .container-fluid {
         width: 100% !important;
         max-width: 100% !important;
-        padding-left: 5px !important;
-        padding-right: 5px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
         margin: 0 !important;
     }
     body.pei-full-width-mode .card {
@@ -35,8 +39,9 @@
         margin-right: 0 !important;
     }
     body.pei-full-width-mode .card-body {
-        padding-left: 10px !important;
-        padding-right: 10px !important;
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+        font-size: 1.02rem !important;
     }
     body.pei-full-width-mode .row {
         margin-left: 0 !important;
@@ -44,6 +49,38 @@
     }
     body.pei-full-width-mode nav.navbar {
         width: 100% !important;
+    }
+
+    /* Ampliación de Tamaños de Fuente y Elementos en Pantalla Completa */
+    body.pei-full-width-mode .card-title {
+        font-size: 1.25rem !important;
+    }
+    body.pei-full-width-mode .accordion .card-header {
+        font-size: 1.12rem !important;
+        padding: 12px 16px !important;
+    }
+    body.pei-full-width-mode .accordion .btn-link {
+        font-size: 1.08rem !important;
+        line-height: 1.4 !important;
+    }
+    body.pei-full-width-mode .badge {
+        font-size: 0.85rem !important;
+        padding: 5px 10px !important;
+    }
+    body.pei-full-width-mode .badge-pill {
+        font-size: 0.82rem !important;
+    }
+    body.pei-full-width-mode table {
+        font-size: 0.96rem !important;
+    }
+    body.pei-full-width-mode .small, 
+    body.pei-full-width-mode small {
+        font-size: 0.88rem !important;
+    }
+    body.pei-full-width-mode .form-control,
+    body.pei-full-width-mode .custom-select {
+        font-size: 0.98rem !important;
+        padding: 6px 12px !important;
     }
     </style>
 
@@ -159,9 +196,22 @@
                     id="btnToggleFullWidth"
                     class="btn btn-sm btn-outline-secondary font-weight-bold d-inline-flex align-items-center px-3"
                     style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
-                    title="Alternar Modo Pantalla Completa (Ocultar Menú Lateral)">
+                    title="Alternar Modo Pantalla Completa (Ocultar Menú Lateral y Ampliar Fuente)">
                 <i class="fa fa-expand" id="iconToggleFullWidth"></i> <span id="lblToggleFullWidth">Pantalla Completa</span>
             </button>
+
+            {{-- Control de Tamaño de Fuente (Zoom PEI) --}}
+            <div class="btn-group btn-group-sm d-inline-flex align-items-center" role="group" id="zoomControlsGroup" style="border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1;">
+                <button type="button" class="btn btn-sm btn-light font-weight-bold text-dark px-2" id="btnZoomOut" title="Disminuir Tamaño de Texto (-)">
+                    <i class="fa fa-minus" style="font-size: 0.72rem;"></i> A-
+                </button>
+                <button type="button" class="btn btn-sm btn-white font-weight-bold text-dark px-2 font-mono" id="btnZoomReset" title="Restablecer Tamaño Original (100%)" style="font-size: 0.75rem; background: #fff;">
+                    100%
+                </button>
+                <button type="button" class="btn btn-sm btn-light font-weight-bold text-dark px-2" id="btnZoomIn" title="Ampliación de Texto (+)">
+                    <i class="fa fa-plus" style="font-size: 0.72rem;"></i> A+
+                </button>
+            </div>
 
             {{-- Dropdown Más Opciones --}}
             <div class="dropdown">
@@ -6103,6 +6153,20 @@ $(document).off('click', '.btn-eliminar-aporte').on('click', '.btn-eliminar-apor
     }
 });
 
+var currentPeiZoom = parseInt(localStorage.getItem('pei_font_zoom') || '100');
+
+function applyFontZoom(zoom) {
+    currentPeiZoom = zoom;
+    if (currentPeiZoom < 85) currentPeiZoom = 85;
+    if (currentPeiZoom > 150) currentPeiZoom = 150;
+
+    localStorage.setItem('pei_font_zoom', currentPeiZoom);
+    $('#btnZoomReset').text(currentPeiZoom + '%');
+
+    var zoomScale = currentPeiZoom / 100;
+    $('.content, .accordion, #treeRootContainer, .card-body').css('zoom', zoomScale);
+}
+
 function applyFullWidthMode(enable) {
     if (enable) {
         $('body').addClass('pei-full-width-mode');
@@ -6110,6 +6174,11 @@ function applyFullWidthMode(enable) {
         $('#iconToggleFullWidth').removeClass('fa-expand').addClass('fa-compress');
         $('#btnToggleFullWidth').removeClass('btn-outline-secondary').addClass('btn-success text-white');
         localStorage.setItem('pei_full_width_mode', 'true');
+        if (!localStorage.getItem('pei_font_zoom')) {
+            applyFontZoom(115);
+        } else {
+            applyFontZoom(currentPeiZoom);
+        }
     } else {
         $('body').removeClass('pei-full-width-mode');
         $('#lblToggleFullWidth').text('Pantalla Completa');
@@ -6123,6 +6192,9 @@ $(document).ready(function() {
     if (localStorage.getItem('pei_full_width_mode') === 'true') {
         applyFullWidthMode(true);
     }
+    if (localStorage.getItem('pei_font_zoom')) {
+        applyFontZoom(parseInt(localStorage.getItem('pei_font_zoom')));
+    }
 });
 
 $(document).off('click', '#btnToggleFullWidth').on('click', '#btnToggleFullWidth', function(e) {
@@ -6130,6 +6202,19 @@ $(document).off('click', '#btnToggleFullWidth').on('click', '#btnToggleFullWidth
     e.stopPropagation();
     var isFull = $('body').hasClass('pei-full-width-mode');
     applyFullWidthMode(!isFull);
+});
+
+$(document).off('click', '#btnZoomIn').on('click', '#btnZoomIn', function(e) {
+    e.preventDefault();
+    applyFontZoom(currentPeiZoom + 10);
+});
+$(document).off('click', '#btnZoomOut').on('click', '#btnZoomOut', function(e) {
+    e.preventDefault();
+    applyFontZoom(currentPeiZoom - 10);
+});
+$(document).off('click', '#btnZoomReset').on('click', '#btnZoomReset', function(e) {
+    e.preventDefault();
+    applyFontZoom(100);
 });
 </script>
 
