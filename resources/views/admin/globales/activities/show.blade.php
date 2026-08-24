@@ -1351,7 +1351,12 @@ $('#btnLimpiarFiltro').on('click', function(e) {
                 { data: 'status',     title: 'Estado', width: '90px', className: 'text-center',
                   render: function(d) { var s = _statusLabels[d] || _statusLabels[0]; return '<span class="badge ' + s.cls + '" style="font-size:.68rem">' + s.label + '</span>'; } },
                 { data: 'fecha_inicio', title: 'Fecha', width: '90px', className: 'text-center',
-                  render: function(d) { return '<span style="font-size:.78rem">' + (d || '—') + '</span>'; } },
+                  render: function(d, t, r) {
+                      if (r.is_today) {
+                          return '<span class="badge badge-warning font-weight-bold text-dark border border-warning shadow-sm" style="font-size:.75rem;padding:3px 8px" title="¡Reunión del día!"><i class="fa fa-star text-danger mr-1"></i>' + (d || 'HOY') + '</span>';
+                      }
+                      return '<span style="font-size:.78rem">' + (d || '—') + '</span>';
+                  } },
                 { data: null,         title: 'Acta MECIP / Evidencias', width: '180px', className: 'text-center', orderable: false,
                   render: function(d, t, r) { return buildActa(r); } },
                 { data: null,         title: '<i class="fa fa-camera mr-1 text-info"></i>Fotos', width: '90px', className: 'text-center', orderable: false,
@@ -1367,6 +1372,7 @@ $('#btnLimpiarFiltro').on('click', function(e) {
                           + '<i class="fa fa-camera"></i></button>';
                   } },
             ],
+            order: [], // Preservar el ordenamiento personalizado (Hoy primero)
             dom: '<"d-flex align-items-center mb-2"f>t',
             drawCallback: function() {
                 $('#reunionesCount').text(this.api().rows({ search: 'applied' }).count());
@@ -1374,10 +1380,31 @@ $('#btnLimpiarFiltro').on('click', function(e) {
         });
     }
 
+    function ordenarReuniones(list) {
+        return list.sort(function(a, b) {
+            // 1. Reuniones del día primero
+            if (a.is_today && !b.is_today) return -1;
+            if (!a.is_today && b.is_today) return 1;
+
+            // 2. Si ambas son futuras (orden ascendente: la más próxima primero)
+            if (a.is_future && b.is_future) {
+                return (a.fecha_raw || '').localeCompare(b.fecha_raw || '');
+            }
+            if (a.is_future && !b.is_future) return -1;
+            if (!a.is_future && b.is_future) return 1;
+
+            // 3. Pasadas o sin fecha (orden descendente: la más reciente primero)
+            return (b.fecha_raw || '').localeCompare(a.fecha_raw || '');
+        });
+    }
+
     function filtrarDt(filtro) {
         var data = _reunionesData.slice();
         if (filtro === 'pendientes')  data = data.filter(function(r) { return r.status !== 2; });
         if (filtro === 'finalizadas') data = data.filter(function(r) { return r.status === 2; });
+        
+        data = ordenarReuniones(data);
+
         if (_dt) {
             _dt.clear().rows.add(data).draw();
         } else {

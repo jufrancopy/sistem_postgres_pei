@@ -303,12 +303,13 @@ class ActivityController extends Controller
         $authUser  = Auth::user();
         $isAdmin   = $authUser->hasAnyRole(['superadmin', 'admin', 'coordinador_planificacion']);
 
+        $today = now()->startOfDay();
+
         $reuniones = ActivityTask::with(['assignedTo', 'evidences', 'acta.participantes'])
             ->withCount('reunionPhotos')
             ->where('activity_id', $activityId)
             ->where('es_reunion', true)
-            ->orderBy('fecha_inicio')
-            ->get();
+            ->get(); // El orden lo aplica el JS (hoy primero, futuras, pasadas)
 
         return response()->json($reuniones->map(fn($t) => [
             'id'                => $t->id,
@@ -330,6 +331,9 @@ class ActivityController extends Controller
             'acta_public_url'   => $t->acta ? route('actas.public.show', $t->acta->uuid) : null,
             'foto_count'        => $t->reunion_photos_count ?? 0,
             'can_upload'        => $isAdmin || $t->assigned_to === $authUser->id,
+            'fecha_raw'         => $t->fecha_inicio?->format('Y-m-d'),   // ISO para ordenar en JS
+            'is_today'          => $t->fecha_inicio && $t->fecha_inicio->isSameDay($today),
+            'is_future'         => $t->fecha_inicio && $t->fecha_inicio->startOfDay()->gt($today),
             'evidencias'        => $t->evidences->map(fn($e) => [
                 'id'    => $e->id,
                 'type'  => $e->type,
