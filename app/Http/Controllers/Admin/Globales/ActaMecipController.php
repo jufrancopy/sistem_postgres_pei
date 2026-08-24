@@ -260,6 +260,26 @@ class ActaMecipController extends Controller
             $task->save();
         }
 
+        // ── Otorgar 100 Puntos de Gamificación al Redactor/Moderador por Oficializar Acta MECIP ──
+        $redactorId = $acta->created_by ?? Auth::id();
+        $redactor = \App\Models\User::find($redactorId);
+        if ($redactor) {
+            $yaOtorgado = \App\Models\Gamification\GamificationPoint::where('user_id', $redactor->id)
+                ->where('action_type', 'acta_mecip_oficializada')
+                ->where('reference_id', (string)$acta->id)
+                ->exists();
+
+            if (!$yaOtorgado) {
+                app(\App\Services\GamificationService::class)->awardPoints(
+                    $redactor,
+                    'acta_mecip_oficializada',
+                    '✍️ Redacción y Firma Completa de Acta MECIP N° ' . $acta->numero_acta,
+                    100,
+                    $acta
+                );
+            }
+        }
+
         return response()->json([
             'ok'      => true,
             'success' => true,
