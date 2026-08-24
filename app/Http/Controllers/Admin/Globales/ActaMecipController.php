@@ -384,7 +384,7 @@ class ActaMecipController extends Controller
      */
     public function imprimir(int $taskId)
     {
-        $task = ActivityTask::with(['activity', 'acta.participantes', 'assignedTo'])->findOrFail($taskId);
+        $task = ActivityTask::with(['activity', 'acta.participantes', 'assignedTo', 'reunionPhotos.uploader'])->findOrFail($taskId);
         $acta = $task->acta;
 
         if (!$acta) {
@@ -414,7 +414,7 @@ class ActaMecipController extends Controller
      */
     public function descargarPdf(int $taskId)
     {
-        $task = ActivityTask::with(['activity', 'acta.participantes', 'assignedTo'])->findOrFail($taskId);
+        $task = ActivityTask::with(['activity', 'acta.participantes', 'assignedTo', 'reunionPhotos.uploader'])->findOrFail($taskId);
         $acta = $task->acta;
 
         if (!$acta) {
@@ -441,7 +441,7 @@ class ActaMecipController extends Controller
      */
     public function publicView(string $token)
     {
-        $acta = ActivityTaskActa::with(['task.activity', 'participantes'])->where('uuid', $token)->firstOrFail();
+        $acta = ActivityTaskActa::with(['task.activity', 'task.reunionPhotos.uploader', 'participantes'])->where('uuid', $token)->firstOrFail();
         $task = $acta->task;
 
         $defaults = $this->resolveDefaultsForTask($task);

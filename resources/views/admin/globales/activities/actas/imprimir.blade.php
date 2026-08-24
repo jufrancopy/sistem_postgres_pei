@@ -272,6 +272,32 @@
             </tbody>
         </table>
 
+        {{-- REGISTRO FOTOGRÁFICO / EVIDENCIA TESTIMONIAL --}}
+        @if($task->reunionPhotos && $task->reunionPhotos->count() > 0)
+            <div class="section-title" style="margin-top: 20px; page-break-inside: avoid;">
+                REGISTRO FOTOGRÁFICO / EVIDENCIA TESTIMONIAL (MECIP:2015):
+            </div>
+            <div style="margin-top: 8px; margin-bottom: 20px; page-break-inside: avoid;">
+                <table style="width: 100%; border-collapse: separate; border-spacing: 12px 0;">
+                    <tr>
+                        @foreach($task->reunionPhotos as $idx => $foto)
+                            <td style="width: {{ round(100 / $task->reunionPhotos->count()) }}%; vertical-align: top; text-align: center; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 10px; background: #fafbfc; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                <div style="width: 100%; height: 180px; overflow: hidden; border-radius: 6px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; border: 1px solid #e2e8f0;">
+                                    <img src="{{ $foto->url }}" alt="{{ $foto->original_name }}" style="max-width: 100%; max-height: 180px; object-fit: contain; display: block; margin: 0 auto;">
+                                </div>
+                                <div style="font-size: 8.5pt; font-weight: bold; color: #1e293b; line-height: 1.2;">
+                                    Evidencia {{ $idx + 1 }}: {{ $foto->original_name ?? 'Fotografía de Reunión' }}
+                                </div>
+                                <div style="font-size: 7.5pt; color: #64748b; margin-top: 3px;">
+                                    {{ $foto->size_human }} WebP · Subida el {{ $foto->created_at ? $foto->created_at->format('d/m/Y H:i') : '' }} hs.
+                                </div>
+                            </td>
+                        @endforeach
+                    </tr>
+                </table>
+            </div>
+        @endif
+
         {{-- FIRMA DEL MODERADOR / ENCARGADO --}}
         @if($acta->firma_moderador && $acta->estado === 'finalizada')
         <div style="margin-top: 40px; margin-bottom: 20px; text-align: center;">

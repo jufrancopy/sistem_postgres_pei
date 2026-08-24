@@ -178,6 +178,34 @@
         </table>
     @endif
 
+    {{-- REGISTRO FOTOGRÁFICO / EVIDENCIAS TESTIMONIALES --}}
+    @if($task->reunionPhotos && $task->reunionPhotos->count() > 0)
+        <div class="section-title" style="margin-top: 15px; page-break-inside: avoid;">
+            REGISTRO FOTOGRÁFICO / EVIDENCIA TESTIMONIAL (MECIP:2015):
+        </div>
+        <table style="width: 100%; margin-top: 6px; margin-bottom: 15px; page-break-inside: avoid; border-collapse: separate; border-spacing: 8px 0;">
+            <tr>
+                @foreach($task->reunionPhotos as $idx => $foto)
+                    @php
+                        $localPath = storage_path('app/public/' . $foto->filename);
+                        $imgSrc = file_exists($localPath) ? $localPath : $foto->url;
+                    @endphp
+                    <td style="width: {{ round(100 / $task->reunionPhotos->count()) }}%; vertical-align: top; text-align: center; border: 1px solid #cbd5e1; padding: 6px; background: #fafafa;">
+                        <div style="width: 100%; height: 130px; overflow: hidden; margin-bottom: 4px;">
+                            <img src="{{ $imgSrc }}" alt="Evidencia {{ $idx + 1 }}" style="max-width: 100%; max-height: 130px; object-fit: contain;">
+                        </div>
+                        <div style="font-size: 7.5pt; font-weight: bold; color: #1e293b;">
+                            Evidencia {{ $idx + 1 }}: {{ Str::limit($foto->original_name ?? 'Foto', 25) }}
+                        </div>
+                        <div style="font-size: 6.5pt; color: #64748b;">
+                            {{ $foto->size_human }} WebP · {{ $foto->created_at ? $foto->created_at->format('d/m/Y') : '' }}
+                        </div>
+                    </td>
+                @endforeach
+            </tr>
+        </table>
+    @endif
+
     {{-- FIRMA DEL MODERADOR --}}
     @if($acta->firma_moderador && $acta->estado === 'finalizada')
         <div style="margin-top: 25px; margin-bottom: 15px; text-align: center;">

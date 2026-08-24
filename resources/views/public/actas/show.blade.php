@@ -472,6 +472,41 @@
             </div>
         </div>
 
+        {{-- ── 4. CARD REGISTRO FOTOGRÁFICO / EVIDENCIAS ── --}}
+        @if($task->reunionPhotos && $task->reunionPhotos->count() > 0)
+        <div class="card card-custom">
+            <div class="card-body p-4 card-body-custom">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="section-header mb-0">
+                        <h6 class="section-title"><i class="fa fa-camera text-primary mr-1"></i> REGISTRO FOTOGRÁFICO / EVIDENCIAS ({{ $task->reunionPhotos->count() }})</h6>
+                    </div>
+                    <span class="badge badge-pill badge-info px-3 py-1 font-weight-bold" style="font-size: 0.75rem;">
+                        <i class="fa fa-images mr-1"></i> Evidencia Testimonial
+                    </span>
+                </div>
+                <div class="row">
+                    @foreach($task->reunionPhotos as $idx => $foto)
+                        <div class="col-md-{{ 12 / min(3, max(1, $task->reunionPhotos->count())) }} mb-3">
+                            <div class="rounded-lg overflow-hidden border shadow-sm h-100 bg-white" style="border-radius: 12px; border-color: #e2e8f0 !important;">
+                                <div style="height: 200px; background: #0f172a; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                    <img src="{{ $foto->url }}" alt="{{ $foto->original_name }}" style="max-width: 100%; max-height: 200px; object-fit: contain;">
+                                </div>
+                                <div class="p-3 bg-light">
+                                    <div class="font-weight-bold text-dark mb-1" style="font-size: 0.88rem;">
+                                        Evidencia {{ $idx + 1 }}: {{ $foto->original_name }}
+                                    </div>
+                                    <div class="text-muted small" style="font-size: 0.78rem;">
+                                        {{ $foto->size_human }} WebP · Subida el {{ $foto->created_at ? $foto->created_at->format('d/m/Y H:i') : '' }} hs.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @endif
+
         {{-- Footer informativo --}}
         <footer class="text-center text-muted small py-3">
             <div>{{ $acta->institucion ?? 'Instituto de Previsión Social' }} &copy; {{ date('Y') }}</div>
