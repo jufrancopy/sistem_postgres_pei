@@ -291,8 +291,7 @@ class PeiController extends Controller
         $masterOnlyFields = ['group_id', 'dependency_id', 'nivel_label', 'bsc_perspectiva',
                              'foda_perfil_id', 'mision', 'vision', 'values', 'year_start', 'year_end'];
 
-        $existing = $profileId ? PeiProfile::where('id', $profileId)
-            ->first($masterOnlyFields) : null;
+        $existing = $profileId ? PeiProfile::find($profileId) : null;
 
         $resolve = fn(string $field, $requestValue) =>
             $request->has($field) ? ($requestValue ?: null) : ($existing?->$field ?? null);
@@ -307,34 +306,37 @@ class PeiController extends Controller
                 'vision'               => $resolve('vision', $request->vision),
                 'values'               => $resolve('values', $request->values),
                 'period'               => $request->period,
-                'numerator'            => $request->numerator,
-                'operator'             => $request->operator,
-                'denominator'          => $denominator,
-                'goal'                 => $request->goal,
-                'progress'             => $request->progress,
+                'numerator'            => $resolve('numerator', $request->numerator),
+                'operator'             => $resolve('operator', $request->operator),
+                'denominator'          => $request->has('denominator') ? $denominator : ($existing?->denominator ?? null),
+                'goal'                 => $resolve('goal', $request->goal),
+                'progress'             => $resolve('progress', $request->progress),
                 'group_id'             => $resolve('group_id', $request->group_id),
                 'dependency_id'        => $resolve('dependency_id', $request->dependency_id),
-                'action'               => $request->action,
-                'indicator'            => $request->indicator,
-                'baseline'             => $request->baseline,
-                'target'               => $request->target,
+                'action'               => $resolve('action', $request->action),
+                'indicator'            => $resolve('indicator', $request->indicator),
+                'baseline'             => $resolve('baseline', $request->baseline),
+                'target'               => $resolve('target', $request->target),
                 'user_id'              => $user->id,
-                'order_item'           => $request->order_item,
-                'report_type'          => $request->report_type,
+                'order_item'           => $resolve('order_item', $request->order_item),
+                'report_type'          => $resolve('report_type', $request->report_type),
                 'parameters'           => $parametersJson,
                 'nivel_label'          => $resolve('nivel_label', $request->nivel_label),
                 'foda_perfil_id'       => $resolve('foda_perfil_id', $request->foda_perfil_id),
                 'bsc_perspectiva'      => $resolve('bsc_perspectiva', $request->bsc_perspectiva),
-                'indicador_id'         => $request->indicador_id ?: null,
-                'junta_id'             => $request->junta_id ?: null,
-                'activity_id'          => $request->activity_id ?: null,
-                'resultado_intermedio' => $request->resultado_intermedio ?: null,
-                'ri_presupuestario'    => $request->ri_presupuestario ?: null,
-                'ri_programa'          => $request->ri_programa ?: null,
-                'ri_recursos_gs'       => $request->ri_recursos_gs ?: null,
-                'ri_metas'             => json_encode($request->input('ri_metas', [])),
+                'indicador_id'         => $resolve('indicador_id', $request->indicador_id),
+                'junta_id'             => $resolve('junta_id', $request->junta_id),
+                'activity_id'          => $resolve('activity_id', $request->activity_id),
+                'resultado_intermedio' => $resolve('resultado_intermedio', $request->resultado_intermedio),
+                'ri_presupuestario'    => $resolve('ri_presupuestario', $request->ri_presupuestario),
+                'ri_programa'          => $resolve('ri_programa', $request->ri_programa),
+                'ri_recursos_gs'       => $resolve('ri_recursos_gs', $request->ri_recursos_gs),
+                'ri_metas'             => $request->has('ri_metas') ? json_encode($request->input('ri_metas', [])) : ($existing?->ri_metas ?? null),
                 'creado_con_ia'        => $request->has('creado_con_ia') ? filter_var($request->creado_con_ia, FILTER_VALIDATE_BOOLEAN) : ($existing?->creado_con_ia ?? false),
         ];
+
+        // Capturar valores anteriores antes de guardar
+        $oldNodeValues = $existing ? $existing->only(['name', 'level', 'year_start', 'year_end', 'ponderacion', 'indicador', 'meta_texto', 'type', 'group_id']) : null;
 
         // Si es un nodo nuevo con parent_id, lo insertamos directamente en el
         // árbol NestedSet. updateOrCreate no maneja parent_id porque no está en $fillable.
@@ -352,6 +354,7 @@ class PeiController extends Controller
         }
 
         $wasChanged = $profile->wasChanged();
+        $newNodeValues = $profile->only(['name', 'level', 'year_start', 'year_end', 'ponderacion', 'indicador', 'meta_texto', 'type', 'group_id']);
 
         // Manejo de relaciones (Solo sincronizar si el campo viene en la petición para no desvincular al editar)
         $syncAnalysts = $request->has('analyst_id') ? $profile->analysts()->sync($request->analyst_id) : [];
@@ -373,6 +376,8 @@ class PeiController extends Controller
             $peiEditRecord = PeiProfileEdit::create([
                 'pei_profile_id' => $profile->id,
                 'user_id'        => $user->id,
+                'old_values'     => $oldNodeValues,
+                'new_values'     => $newNodeValues,
             ]);
 
             // Resolver el PEI raíz para asociar el pei_profile_id correcto al punto
@@ -1273,9 +1278,14 @@ class PeiController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $profile = PeiProfile::find($id)->delete();
+        $node = PeiProfile::find($id);
+        if ($node) {
+            $node->deleted_by = auth()->id();
+            $node->saveQuietly();
+            $node->delete();
+        }
 
-        return response()->json([$profile]);
+        return response()->json(['success' => true]);
     }
 
     public function getSemaforo(Request $request, $idProfile)
@@ -1543,10 +1553,12 @@ class PeiController extends Controller
 
         // 1. Nodos soft-deleted en la jerarquía PEI
         $trashedNodes = PeiProfile::onlyTrashed()
+            ->with(['user', 'updater', 'deleter'])
             ->orderBy('deleted_at', 'desc')
             ->get()
             ->map(function($node) {
                 $contexto = [];
+                $depth = 1;
                 $currId = $node->parent_id;
 
                 while ($currId) {
@@ -1557,6 +1569,8 @@ class PeiController extends Controller
                         $currId = $parent->parent_id;
                         continue;
                     }
+
+                    $depth++;
 
                     $lvlLabel = match($parent->level) {
                         'axi'    => 'OBJ. ESTRATÉGICO',
@@ -1578,24 +1592,90 @@ class PeiController extends Controller
                     $currId = $parent->parent_id;
                 }
 
+                // Determinar el Nivel Exacto en la Estructura PEI
+                $nivelNum = match($node->level) {
+                    'axi'    => 1,
+                    'goal'   => 2,
+                    'action' => 3,
+                    default  => $depth,
+                };
+
+                $nivelNombre = match($node->level) {
+                    'axi'    => 'Nivel 1 &bull; Objetivo Estratégico',
+                    'goal'   => 'Nivel 2 &bull; Objetivo Específico / Meta',
+                    'action' => 'Nivel 3 &bull; Acción Estratégica',
+                    default  => "Nivel {$nivelNum} &bull; " . strtoupper($node->level ?: 'NODO'),
+                };
+
+                $nivelBadgeClass = match($node->level) {
+                    'axi'    => 'badge-primary',
+                    'goal'   => 'badge-info',
+                    'action' => 'badge-purple',
+                    default  => 'badge-dark',
+                };
+
+                $creadorName = optional($node->user)->name ?? 'Sistema (Estructura PEI)';
+                if (str_contains($creadorName, 'Maffiodo')) {
+                    $creadorName = 'Sistema (Planificación PEI)';
+                }
+
+                $editorName = optional($node->updater)->name ?? (optional($node->user)->name ?? '—');
+                if (str_contains($editorName, 'Maffiodo')) {
+                    $editorName = 'Sistema (Planificación PEI)';
+                }
+
+                $eliminadoPorName = optional($node->deleter)->name ?? (optional($node->updater)->name ?? optional($node->user)->name);
+
+                if (!$eliminadoPorName) {
+                    $lastEdit = PeiProfileEdit::where('pei_profile_id', $node->id)->with('user')->latest()->first();
+                    if ($lastEdit && $lastEdit->user) {
+                        $eliminadoPorName = $lastEdit->user->name;
+                    }
+                }
+
+                if (empty($eliminadoPorName) || str_contains($eliminadoPorName, 'Maffiodo')) {
+                    $eliminadoPorName = 'Sistema (Planificación PEI)';
+                }
+
+                // Trazabilidad de Últimas Ediciones
+                $editsQuery = PeiProfileEdit::where('pei_profile_id', $node->id)->with('user')->latest()->take(3)->get();
+                $ultimasEdiciones = $editsQuery->map(function($e) {
+                    $uName = $e->user->name ?? 'Usuario';
+                    if (str_contains($uName, 'Maffiodo')) $uName = 'Sistema (Planificación PEI)';
+                    return [
+                        'usuario' => $uName,
+                        'fecha'   => $e->created_at ? $e->created_at->format('d/m/Y H:i') : '',
+                    ];
+                });
+
                 return [
-                    'id'          => $node->id,
-                    'name'        => strip_tags($node->name),
-                    'level'       => $node->level,
-                    'type'        => $node->type,
-                    'contexto'    => !empty($contexto)
-                                        ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
-                                        : '<span class="text-muted italic"><i class="fa fa-sitemap mr-1"></i> Objetivo Estratégico (Nivel Superior)</span>',
-                    'deleted_at'  => $node->deleted_at ? $node->deleted_at->format('d/m/Y H:i') : '—',
+                    'id'                 => $node->id,
+                    'name'               => strip_tags($node->name),
+                    'level'              => $node->level,
+                    'nivel_num'          => $nivelNum,
+                    'nivel_nombre'       => $nivelNombre,
+                    'nivel_badge'        => $nivelBadgeClass,
+                    'type'               => $node->type,
+                    'contexto'           => !empty($contexto)
+                                                ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
+                                                : '<span class="text-muted italic"><i class="fa fa-sitemap mr-1"></i> Raíz de Jerarquía (Nivel Superior)</span>',
+                    'creador'            => $creadorName,
+                    'editor'             => $editorName,
+                    'eliminado_por'      => $eliminadoPorName,
+                    'total_ediciones'    => PeiProfileEdit::where('pei_profile_id', $node->id)->count(),
+                    'ultimas_ediciones'  => $ultimasEdiciones,
+                    'deleted_at'         => $node->deleted_at ? $node->deleted_at->format('d/m/Y H:i') : '—',
                 ];
             });
 
         // 2. Acciones Operativas soft-deleted
         $trashedInis = \App\Models\PlanMaestro\PlanAccion::onlyTrashed()
+            ->with(['user', 'deleter'])
             ->orderBy('deleted_at', 'desc')
             ->get()
             ->map(function($ini) {
                 $contexto = [];
+                $depth = 4;
                 if ($ini->pei_profile_id) {
                     $currId = $ini->pei_profile_id;
                     while ($currId) {
@@ -1633,15 +1713,92 @@ class PeiController extends Controller
                     }
                 }
 
+                $iniCreador = optional($ini->user)->name ?? 'Sistema';
+                if (str_contains($iniCreador, 'Maffiodo')) {
+                    $iniCreador = 'Sistema (Planificación PEI)';
+                }
+
+                $iniEliminadoPor = optional($ini->deleter)->name ?? (optional($ini->user)->name ?? 'Usuario del Sistema');
+                if (str_contains($iniEliminadoPor, 'Maffiodo')) {
+                    $iniEliminadoPor = 'Usuario del Sistema';
+                }
+
                 return [
-                    'id'         => $ini->id,
-                    'codigo'     => $ini->codigo,
-                    'accion'     => strip_tags($ini->accion),
-                    'estado'     => $ini->estado,
-                    'contexto'   => !empty($contexto)
-                                        ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
-                                        : '<span class="text-muted italic"><i class="fa fa-list mr-1"></i> Acción Operativa</span>',
-                    'deleted_at' => $ini->deleted_at ? $ini->deleted_at->format('d/m/Y H:i') : '—',
+                    'id'                 => $ini->id,
+                    'codigo'             => $ini->codigo,
+                    'accion'             => strip_tags($ini->accion),
+                    'estado'             => $ini->estado,
+                    'level'              => 'iniciativa',
+                    'nivel_num'          => 4,
+                    'nivel_nombre'       => 'Nivel 4 &bull; Acción Operativa (Ejecución)',
+                    'nivel_badge'        => 'badge-success',
+                    'contexto'           => !empty($contexto)
+                                                ? implode('<br><i class="fa fa-level-down-alt text-primary mx-2 my-1" style="font-size:0.75rem;"></i>', $contexto)
+                                                : '<span class="text-muted italic"><i class="fa fa-list mr-1"></i> Acción Operativa</span>',
+                    'creador'            => $iniCreador,
+                    'editor'             => $iniCreador,
+                    'eliminado_por'      => $iniEliminadoPor,
+                    'total_ediciones'    => 1,
+                    'ultimas_ediciones'  => [],
+                    'deleted_at'         => $ini->deleted_at ? $ini->deleted_at->format('d/m/Y H:i') : '—',
+                ];
+            });
+
+        // 3. Historial Reciente de Ediciones (para Reversión de Cambios en Elementos Activos)
+        $editsList = PeiProfileEdit::with(['user', 'peiNode'])
+            ->latest()
+            ->take(50)
+            ->get()
+            ->map(function($e) {
+                $diffSummary = [];
+                if (!empty($e->old_values) && !empty($e->new_values)) {
+                    foreach ($e->new_values as $key => $newVal) {
+                        $oldVal = $e->old_values[$key] ?? null;
+                        $sOld = is_array($oldVal) ? json_encode($oldVal) : (string)($oldVal ?? '');
+                        $sNew = is_array($newVal) ? json_encode($newVal) : (string)($newVal ?? '');
+                        if ($sOld !== $sNew) {
+                            $keyLabel = match($key) {
+                                'name'        => 'Nombre / Título',
+                                'ponderacion' => 'Ponderación',
+                                'meta_texto'  => 'Texto de Meta',
+                                'indicador'   => 'Indicador',
+                                'year_start'  => 'Año Inicio',
+                                'year_end'    => 'Año Fin',
+                                default       => ucfirst($key),
+                            };
+                            $diffSummary[] = "<strong>{$keyLabel}:</strong> De <em>" . \Illuminate\Support\Str::limit(strip_tags($sOld), 35) . "</em> a <em>" . \Illuminate\Support\Str::limit(strip_tags($sNew), 35) . "</em>";
+                        }
+                    }
+                }
+
+                $nodeName = $e->peiNode ? strip_tags($e->peiNode->name) : 'Elemento PEI';
+                $rawLvl = strtolower($e->peiNode->level ?? '');
+                $nodeLevel = match($rawLvl) {
+                    'axi'    => 'OBJ. ESTRATÉGICO',
+                    'goal'   => 'OBJ. ESPECÍFICO / META',
+                    'action' => 'ACCIÓN ESTRATÉGICA',
+                    'master' => 'PLAN PEI MASTER',
+                    default  => strtoupper($e->peiNode->level ?: 'NODO PEI'),
+                };
+
+                $editor = $e->user->name ?? 'Usuario';
+                if (str_contains($editor, 'Maffiodo')) {
+                    $editor = 'Sistema (Planificación PEI)';
+                }
+
+                $diffHtml = !empty($diffSummary)
+                    ? implode('<br>', $diffSummary)
+                    : '<span class="badge badge-info font-weight-bold px-2 py-1 text-white"><i class="fa fa-edit mr-1"></i> Modificación / Registro de Elemento</span>';
+
+                return [
+                    'id'             => $e->id,
+                    'node_id'        => $e->pei_profile_id,
+                    'node_name'      => $nodeName,
+                    'node_level'     => $nodeLevel,
+                    'editor'         => $editor,
+                    'created_at'     => $e->created_at ? $e->created_at->format('d/m/Y H:i') : '—',
+                    'can_revert'     => true,
+                    'diff_html'      => $diffHtml,
                 ];
             });
 
@@ -1649,6 +1806,7 @@ class PeiController extends Controller
             'ok'            => true,
             'trashed_nodes' => $trashedNodes,
             'trashed_inis'  => $trashedInis,
+            'edits_list'    => $editsList,
             'total'         => $trashedNodes->count() + $trashedInis->count(),
         ]);
     }
@@ -1671,5 +1829,43 @@ class PeiController extends Controller
             return response()->json(['ok' => true, 'message' => 'Acción Operativa restaurada con éxito.']);
         }
         return response()->json(['ok' => false, 'message' => 'No se encontró la Acción Operativa eliminada.'], 404);
+    }
+
+    public function revertirEdicion(Request $request, $idProfile, $editId)
+    {
+        $edit = PeiProfileEdit::where('id', $editId)->firstOrFail();
+        $node = PeiProfile::withTrashed()->where('id', $edit->pei_profile_id)->first();
+
+        if (!$node) {
+            return response()->json(['ok' => false, 'message' => 'El elemento PEI asociado a esta edición no existe.'], 404);
+        }
+
+        if (empty($edit->old_values)) {
+            return response()->json(['ok' => false, 'message' => 'Esta edición no posee registro de valores anteriores para revertir.'], 400);
+        }
+
+        $oldValues = $edit->old_values;
+        $currentState = $node->only(array_keys($oldValues));
+
+        if ($node->trashed()) {
+            $node->restore();
+        }
+
+        $node->fill($oldValues);
+        $node->updated_by = auth()->id();
+        $node->save();
+
+        // Registrar la reversión en el historial de ediciones
+        PeiProfileEdit::create([
+            'pei_profile_id' => $node->id,
+            'user_id'        => auth()->id(),
+            'old_values'     => $currentState,
+            'new_values'     => $oldValues,
+        ]);
+
+        return response()->json([
+            'ok'      => true,
+            'message' => 'Edición revertida con éxito al estado anterior.',
+        ]);
     }
 }

@@ -190,6 +190,15 @@
                             </div>
                         </div>
 
+                        <div class="form-group row">
+                            <label class="col-md-4 col-form-label text-md-right font-weight-bold small text-dark">Rol(es) en el Sistema:</label>
+                            <div class="col-md-7 d-flex align-items-center">
+                                <span class="badge badge-info py-1.5 px-3 font-weight-bold text-white shadow-xs" style="font-size: .82rem; background-color: #00acc1 !important; border-radius: 6px;">
+                                    <i class="fa fa-user-shield mr-1.5"></i> {{ $targetUser->roles->pluck('name')->implode(', ') ?: 'Sin Rol Asignado' }}
+                                </span>
+                            </div>
+                        </div>
+
                         <div class="form-group row mb-0">
                             <div class="col-md-7 offset-md-4">
                                 <button type="submit" class="btn btn-info font-weight-bold" style="background-color: #00acc1 !important; border-color: #00acc1 !important; text-transform: none;">
@@ -310,7 +319,7 @@
             </div>
 
             {{-- Historial Reciente de Puntos --}}
-            <div class="card border-0 shadow-sm bg-white">
+            <div class="card border-0 shadow-sm bg-white mb-4">
                 <div class="card-header bg-white py-3 border-bottom">
                     <h6 class="mb-0 font-weight-bold text-dark">
                         <i class="fa fa-history text-info mr-2"></i>Historial Reciente de Actividad y Puntos
@@ -322,28 +331,28 @@
                         <table class="table table-hover align-middle mb-0" style="font-size: .85rem">
                             <thead class="bg-light">
                                 <tr>
-                                    <th>Fecha</th>
-                                    <th>Acción realizada</th>
-                                    <th>Puntos</th>
+                                    <th style="color: #475569 !important; font-weight: 700;">Fecha</th>
+                                    <th style="color: #475569 !important; font-weight: 700;">Acción realizada</th>
+                                    <th style="color: #475569 !important; font-weight: 700;">Puntos</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($gamification['recent_history'] as $item)
                                 @php $validRef = $item->isReferenceValid(); @endphp
-                                <tr class="{{ $validRef ? '' : 'bg-light text-muted' }}">
-                                    <td class="text-muted" style="width: 140px">
+                                <tr class="{{ $validRef ? '' : 'bg-light' }}" style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="width: 140px; color: #64748b !important;">
                                         {{ $item->created_at->format('d/m/Y H:i') }}
                                     </td>
                                     <td>
-                                        <span class="font-weight-bold d-block {{ $validRef ? 'text-dark' : 'text-muted' }}" style="{{ $validRef ? '' : 'text-decoration: line-through;' }}">{{ $item->description }}</span>
-                                        <small class="text-uppercase" style="font-size: .68rem">
+                                        <span class="font-weight-bold d-block" style="{{ $validRef ? 'color: #0f172a !important;' : 'color: #94a3b8 !important; text-decoration: line-through;' }}">{{ $item->description }}</span>
+                                        <small class="text-uppercase font-weight-bold d-block mt-1" style="font-size: .68rem; {{ $validRef ? 'color: #475569 !important;' : 'color: #94a3b8 !important;' }}">
                                             {{ $item->getActionTypeLabel() }}
                                             @unless($validRef)
                                             <span class="badge badge-warning ml-1" style="font-size: .6rem">Referencia inválida</span>
                                             @endunless
                                         </small>
                                     </td>
-                                    <td class="font-weight-bold {{ $validRef ? 'text-success' : 'text-muted' }}" style="{{ $validRef ? '' : 'text-decoration: line-through;' }}">
+                                    <td class="font-weight-bold" style="{{ $validRef ? 'color: #10b981 !important;' : 'color: #94a3b8 !important; text-decoration: line-through;' }}">
                                         +{{ $item->points }} pts
                                     </td>
                                 </tr>
@@ -352,9 +361,9 @@
                         </table>
                     </div>
                     @else
-                    <div class="text-center text-muted py-4">
-                        <i class="fa fa-ghost fa-2x mb-2"></i>
-                        <p class="mb-0">Aún no hay registro de puntos en este periodo.</p>
+                    <div class="text-center py-4" style="color: #64748b !important;">
+                        <i class="fa fa-ghost fa-2x mb-2" style="color: #94a3b8 !important;"></i>
+                        <p class="mb-0 font-weight-bold" style="color: #64748b !important;">Aún no hay registro de puntos en este periodo.</p>
                     </div>
                     @endif
                 </div>
@@ -398,7 +407,7 @@
                             <i class="fa {{ $meta['icon'] }} text-{{ $meta['color'] }} mr-2" style="width: 16px"></i>
                             <div>
                                 <span class="font-weight-bold text-dark d-block" style="font-size: .8rem">{{ $meta['label'] }}</span>
-                                <small class="text-muted" style="font-size: .68rem">{{ $cnt }} acciones ({{ $meta['pts'] }})</small>
+                                <small class="text-muted" style="font-size: .68rem; color: #64748b !important;">{{ $cnt }} acciones ({{ $meta['pts'] }})</small>
                             </div>
                         </div>
                         <span class="font-weight-bold text-dark" style="font-size: .85rem">+{{ $pts }} pts</span>
@@ -413,7 +422,7 @@
                     <h6 class="mb-0 font-weight-bold text-dark">
                         <i class="fa fa-trophy text-warning mr-2"></i>Tabla de Posiciones (Top 10)
                     </h6>
-                    <small class="text-muted font-weight-bold" style="font-size:.68rem">Ranking</small>
+                    <small class="font-weight-bold" style="font-size:.68rem; color: #64748b !important;">Ranking</small>
                 </div>
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
@@ -440,7 +449,7 @@
                                         {{ $u->name }}
                                     </a>
                                     @if($u->group)
-                                    <small class="d-block text-muted" style="font-size: .68rem">{{ $u->group->name }}</small>
+                                    <small class="d-block text-muted" style="font-size: .68rem; color: #64748b !important;">{{ $u->group->name }}</small>
                                     @endif
                                 </div>
                             </div>

@@ -77,7 +77,10 @@
                         <span class="font-weight-bold text-dark" style="font-size: .85rem;">
                             <i class="fa fa-sitemap mr-1 text-primary"></i> Estructura Jerárquica Completa
                         </span>
-                        <div style="gap: 6px;" class="d-flex align-items-center">
+                        <div style="gap: 6px;" class="d-flex align-items-center flex-wrap">
+                            <button type="button" class="btn btn-xs btn-outline-warning text-dark font-weight-bold py-1 px-2.5 shadow-xs" id="btnMinimizarAccionesTreePei" title="Minimizar/Colapsar Acciones Estratégicas y Operativas (Nivel 3 y 4) para mejor organización">
+                                <i class="fa fa-compress-alt mr-1 text-warning"></i> Minimizar Acciones (N3 y N4)
+                            </button>
                             <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2.5" id="btnExpandirTodoTreePei">
                                 <i class="fa fa-plus-square mr-1"></i> Expandir Todo
                             </button>

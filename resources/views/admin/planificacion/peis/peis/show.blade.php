@@ -3,7 +3,10 @@
 
 @section('content')
     <style>
-    /* Modo Pantalla Completa (Full Width PEI Workspace) */
+    /* Modo Pantalla Completa (Full Width PEI Workspace + Fuente Ampliada) */
+    body.pei-full-width-mode {
+        font-size: 1.05rem !important;
+    }
     body.pei-full-width-mode .sidebar {
         display: none !important;
     }
@@ -16,16 +19,17 @@
         transition: all 0.25s ease-in-out;
     }
     body.pei-full-width-mode .content {
-        padding: 10px 5px !important;
+        padding: 12px 10px !important;
         width: 100% !important;
         max-width: 100% !important;
+        font-size: 1.05rem !important;
     }
     body.pei-full-width-mode .container,
     body.pei-full-width-mode .container-fluid {
         width: 100% !important;
         max-width: 100% !important;
-        padding-left: 5px !important;
-        padding-right: 5px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
         margin: 0 !important;
     }
     body.pei-full-width-mode .card {
@@ -35,8 +39,9 @@
         margin-right: 0 !important;
     }
     body.pei-full-width-mode .card-body {
-        padding-left: 10px !important;
-        padding-right: 10px !important;
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+        font-size: 1.02rem !important;
     }
     body.pei-full-width-mode .row {
         margin-left: 0 !important;
@@ -44,6 +49,56 @@
     }
     body.pei-full-width-mode nav.navbar {
         width: 100% !important;
+    }
+
+    /* Ampliación de Tamaños de Fuente y Elementos en Pantalla Completa */
+    body.pei-full-width-mode .card-title {
+        font-size: 1.25rem !important;
+    }
+    body.pei-full-width-mode .accordion .card-header {
+        font-size: 1.12rem !important;
+        padding: 12px 16px !important;
+    }
+    body.pei-full-width-mode .accordion .btn-link {
+        font-size: 1.08rem !important;
+        line-height: 1.4 !important;
+    }
+    body.pei-full-width-mode .badge {
+        font-size: 0.85rem !important;
+        padding: 5px 10px !important;
+    }
+    body.pei-full-width-mode .badge-pill {
+        font-size: 0.82rem !important;
+    }
+    body.pei-full-width-mode table {
+        font-size: 0.96rem !important;
+    }
+    body.pei-full-width-mode .small, 
+    body.pei-full-width-mode small {
+        font-size: 0.88rem !important;
+    }
+    body.pei-full-width-mode .form-control,
+    body.pei-full-width-mode .custom-select {
+        font-size: 0.98rem !important;
+        padding: 6px 12px !important;
+    }
+
+    /* Corrección de Scroll Interno en Modal Basurero & Bloqueo de Fondo */
+    #modalBasureroPei .modal-dialog {
+        max-height: 90vh !important;
+        margin-top: 25px !important;
+        margin-bottom: 25px !important;
+    }
+    #modalBasureroPei .modal-content {
+        max-height: 90vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    #modalBasureroPei .modal-body {
+        max-height: calc(90vh - 130px) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
     }
     </style>
 
@@ -121,6 +176,15 @@
                 <i class="fa fa-table"></i> Formulación
             </button>
 
+            <button type="button"
+                    class="btn btn-sm font-weight-bold text-dark d-inline-flex align-items-center px-3"
+                    data-toggle="modal" data-target="#modalBasureroPei"
+                    onclick="cargarBasureroPeiAdmin()"
+                    style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #f59e0b; border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+                    title="Histórico de Cambios, Trazabilidad y Revertir / Restaurar Elementos del PEI">
+                <i class="fa fa-undo text-danger mr-1"></i> Histórico & Revertir Cambios
+            </button>
+
             {{-- Separador visual --}}
             <div style="width: 1px; height: 28px; background: #e2e8f0; margin: 0 4px;"></div>
 
@@ -150,9 +214,22 @@
                     id="btnToggleFullWidth"
                     class="btn btn-sm btn-outline-secondary font-weight-bold d-inline-flex align-items-center px-3"
                     style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
-                    title="Alternar Modo Pantalla Completa (Ocultar Menú Lateral)">
+                    title="Alternar Modo Pantalla Completa (Ocultar Menú Lateral y Ampliar Fuente)">
                 <i class="fa fa-expand" id="iconToggleFullWidth"></i> <span id="lblToggleFullWidth">Pantalla Completa</span>
             </button>
+
+            {{-- Control de Tamaño de Fuente (Zoom PEI) --}}
+            <div class="btn-group btn-group-sm d-inline-flex align-items-center" role="group" id="zoomControlsGroup" style="border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1;">
+                <button type="button" class="btn btn-sm btn-light font-weight-bold text-dark px-2" id="btnZoomOut" title="Disminuir Tamaño de Texto (-)">
+                    <i class="fa fa-minus" style="font-size: 0.72rem;"></i> A-
+                </button>
+                <button type="button" class="btn btn-sm btn-white font-weight-bold text-dark px-2 font-mono" id="btnZoomReset" title="Restablecer Tamaño Original (100%)" style="font-size: 0.75rem; background: #fff;">
+                    100%
+                </button>
+                <button type="button" class="btn btn-sm btn-light font-weight-bold text-dark px-2" id="btnZoomIn" title="Ampliación de Texto (+)">
+                    <i class="fa fa-plus" style="font-size: 0.72rem;"></i> A+
+                </button>
+            </div>
 
             {{-- Dropdown Más Opciones --}}
             <div class="dropdown">
@@ -4842,6 +4919,25 @@ $(document).on('click', '#btnColapsarTodoTreePei', function() {
     $('#contenedorArbolDraggablePei .btn-toggle-pei-children i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
 });
 
+$(document).on('click', '#btnMinimizarAccionesTreePei', function() {
+    // 1. Desplegar los Ejes (Nivel 1), Objetivos Estratégicos y Objetivos Específicos (Nivel 2)
+    $('#contenedorArbolDraggablePei li[data-level="eje"] > .nodo-pei-children').slideDown(150);
+    $('#contenedorArbolDraggablePei li[data-level="objetivo"] > .nodo-pei-children').slideDown(150);
+    $('#contenedorArbolDraggablePei li[data-level="objetivo_especifico"] > .nodo-pei-children').slideDown(150);
+
+    // 2. Minimizar/Colapsar las Acciones Estratégicas (Nivel 3) y Acciones Operativas (Nivel 4)
+    $('#contenedorArbolDraggablePei li[data-level="accion_estrategica"] > .nodo-pei-children').slideUp(150);
+    $('#contenedorArbolDraggablePei li[data-level="accion_operativa"] > .nodo-pei-children').slideUp(150);
+
+    // 3. Ajustar los iconos de despliegue
+    $('#contenedorArbolDraggablePei li[data-level="eje"] > div .btn-toggle-pei-children i').removeClass('fa-chevron-right').addClass('fa-chevron-down');
+    $('#contenedorArbolDraggablePei li[data-level="objetivo"] > div .btn-toggle-pei-children i').removeClass('fa-chevron-right').addClass('fa-chevron-down');
+    $('#contenedorArbolDraggablePei li[data-level="objetivo_especifico"] > div .btn-toggle-pei-children i').removeClass('fa-chevron-right').addClass('fa-chevron-down');
+
+    $('#contenedorArbolDraggablePei li[data-level="accion_estrategica"] > div .btn-toggle-pei-children i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
+    $('#contenedorArbolDraggablePei li[data-level="accion_operativa"] > div .btn-toggle-pei-children i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
+});
+
 @php
     $descendantIds = $profile->descendants->pluck('id')->push($profile->id)->map(fn($v) => (string)$v)->toArray();
     $numericIds    = array_values(array_filter($descendantIds, 'is_numeric'));
@@ -5564,46 +5660,96 @@ $('#btnCopiarCredencialesAsesor').click(function() {
 });
 </script>
 
-<!-- MODAL BASURERO PEI (RESTAURACIÓN DE ELEMENTOS ELIMINADOS) -->
-<!-- MODAL BASURERO PEI (RESTAURACIÓN DE ELEMENTOS ELIMINADOS) -->
+<!-- MODAL HISTÓRICO DE CAMBIOS & BASURERO PEI (RESTRUCTURACIÓN Y REVERSIÓN) -->
 <div class="modal fade" id="modalBasureroPei" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 1250px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
                 <h5 class="modal-title font-weight-bold d-flex align-items-center mb-0">
-                    <i class="fa fa-trash-alt text-warning mr-2" style="font-size: 1.3rem;"></i>
-                    <span>Basurero del PEI — Papelera de Reciclaje y Restauración</span>
+                    <i class="fa fa-history text-warning mr-2" style="font-size: 1.3rem;"></i>
+                    <span>Trazabilidad de Cambios, Ediciones y Papelera del PEI</span>
                 </h5>
                 <button type="button" class="close text-white opacity-9" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body p-4 bg-light">
-                <div class="alert alert-info border-0 shadow-xs mb-3 font-weight-bold d-flex align-items-center justify-content-between" style="border-radius: 10px; background: #e0f2fe; color: #0369a1;">
-                    <div>
-                        <i class="fa fa-info-circle mr-1"></i> En el PEI nada se pierde. Todo elemento u Acción Operativa eliminada se conserva aquí con su <strong>ubicación y contexto de origen</strong> para poder recuperarse con un solo clic.
-                    </div>
-                    <span class="badge badge-primary font-weight-bold px-3 py-1.5" id="cntTotalBasurero">0 Elementos</span>
-                </div>
+                
+                {{-- Navegación por Pestañas del Modal --}}
+                <ul class="nav nav-pills mb-3" id="tabHistoricoReversion" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active font-weight-bold" id="subtab-ediciones-link" data-toggle="pill" href="#subtab-ediciones" role="tab" style="border-radius: 8px;">
+                            <i class="fa fa-history text-warning mr-1"></i> Histórico de Ediciones &amp; Revertir Cambios
+                            <span class="badge badge-warning text-dark ml-1" id="cntTotalEdiciones">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link font-weight-bold" id="subtab-basurero-link" data-toggle="pill" href="#subtab-basurero" role="tab" style="border-radius: 8px;">
+                            <i class="fa fa-trash-alt text-danger mr-1"></i> Basurero (Elementos Eliminados)
+                            <span class="badge badge-danger ml-1" id="cntTotalBasurero">0</span>
+                        </a>
+                    </li>
+                </ul>
 
-                <div class="card border shadow-xs" style="border-radius: 12px; overflow: hidden;">
-                    <div class="p-3 bg-white">
-                        <table class="table table-hover table-striped w-100 mb-0" id="tablaBasureroPeiAdmin" style="font-size: 0.84rem;">
-                            <thead class="bg-dark text-white">
-                                <tr>
-                                    <th style="width: 130px;">Tipo Elemento</th>
-                                    <th>Elemento Eliminado</th>
-                                    <th>📍 Contexto / Ubicación donde se Insertará</th>
-                                    <th style="width: 140px;" class="text-center">Fecha Eliminación</th>
-                                    <th style="width: 130px;" class="text-center">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">Cargando elementos del basurero...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="tab-content" id="tabHistoricoReversionContent">
+                    {{-- ── SUBTAB 1: HISTÓRICO DE EDICIONES & REVERTIR CAMBIOS ── --}}
+                    <div class="tab-pane fade show active" id="subtab-ediciones" role="tabpanel">
+                        <div class="alert alert-warning border-0 shadow-xs mb-3 font-weight-bold d-flex align-items-center justify-content-between" style="border-radius: 10px; background: #fffbeb; color: #92400e; border-left: 4px solid #f59e0b !important;">
+                            <div>
+                                <i class="fa fa-info-circle mr-1"></i> Trazabilidad completa de modificaciones. Al presionar <strong>"Revertir Edición"</strong>, el sistema restaura el texto, ponderaciones e indicadores al estado previo registrado.
+                            </div>
+                        </div>
+
+                        <div class="card border shadow-xs" style="border-radius: 12px; overflow: hidden;">
+                            <div class="p-3 bg-white">
+                                <table class="table table-hover table-striped w-100 mb-0" id="tablaEdicionesPeiAdmin" style="font-size: 0.84rem;">
+                                    <thead class="bg-dark text-white">
+                                        <tr>
+                                            <th style="width: 160px;">Nivel & Elemento</th>
+                                            <th>Resumen del Cambio (Valor Previo vs Actual)</th>
+                                            <th style="width: 200px;">👤 Editor & Marca de Tiempo</th>
+                                            <th style="width: 140px;" class="text-center">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="4" class="text-center py-4 text-muted">Cargando historial de ediciones...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- ── SUBTAB 2: BASURERO DE ELEMENTOS ELIMINADOS ── --}}
+                    <div class="tab-pane fade" id="subtab-basurero" role="tabpanel">
+                        <div class="alert alert-info border-0 shadow-xs mb-3 font-weight-bold d-flex align-items-center justify-content-between" style="border-radius: 10px; background: #e0f2fe; color: #0369a1;">
+                            <div>
+                                <i class="fa fa-info-circle mr-1"></i> Todo elemento u Acción Operativa eliminada se conserva aquí con su <strong>ubicación de origen</strong> para restaurarse en el árbol PEI con un clic.
+                            </div>
+                        </div>
+
+                        <div class="card border shadow-xs" style="border-radius: 12px; overflow: hidden;">
+                            <div class="p-3 bg-white">
+                                <table class="table table-hover table-striped w-100 mb-0" id="tablaBasureroPeiAdmin" style="font-size: 0.84rem;">
+                                    <thead class="bg-dark text-white">
+                                        <tr>
+                                            <th style="width: 160px;">Nivel & Tipo</th>
+                                            <th>Elemento Eliminado</th>
+                                            <th>📍 Ruta Jerárquica donde Reaparecerá</th>
+                                            <th style="width: 220px;">👤 Trazabilidad & Últimos Cambios</th>
+                                            <th style="width: 120px;" class="text-center">Fecha Eliminación</th>
+                                            <th style="width: 120px;" class="text-center">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4 text-muted">Cargando elementos del basurero...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5619,103 +5765,238 @@ function cargarBasureroPeiAdmin() {
     if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tablaBasureroPeiAdmin')) {
         $('#tablaBasureroPeiAdmin').DataTable().clear().destroy();
     }
+    if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tablaEdicionesPeiAdmin')) {
+        $('#tablaEdicionesPeiAdmin').DataTable().clear().destroy();
+    }
 
-    var $tbody = $('#tablaBasureroPeiAdmin tbody');
-    $tbody.html('<tr><td colspan="5" class="text-center py-4 text-muted"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando elementos del basurero...</td></tr>');
+    var datatablesSpanish = {
+        "sProcessing":     "Procesando...",
+        "sLengthMenu":     "Mostrar _MENU_ registros",
+        "sZeroRecords":    "No se encontraron elementos",
+        "sEmptyTable":     "No hay registros disponibles",
+        "sInfo":           "Mostrando _START_ al _END_ de _TOTAL_ elementos",
+        "sInfoEmpty":      "Mostrando 0 al 0 de 0 elementos",
+        "sInfoFiltered":   "(filtrado de _MAX_ totales)",
+        "sSearch":         "Buscar:",
+        "oPaginate": { "sFirst": "Primero", "sLast": "Último", "sNext": "Siguiente", "sPrevious": "Anterior" }
+    };
 
     $.ajax({
         url: "{{ route('pei.basurero.list', $profile->id) }}",
         type: "GET",
         success: function(resp) {
-            $tbody.empty();
-            var count = 0;
+            // 1. Cargar DataTables Ediciones
+            var editsDataSet = [];
+            if (resp.edits_list && resp.edits_list.length > 0) {
+                resp.edits_list.forEach(function(e) {
+                    var revertBtn = e.can_revert
+                        ? `<button type="button" class="btn btn-xs btn-warning font-weight-bold rounded-pill px-3 py-1 shadow-xs" onclick="revertirEdicionPei('${e.id}')" title="Revertir este cambio al estado anterior">
+                             <i class="fa fa-undo mr-1"></i> Revertir Edición
+                           </button>`
+                        : `<span class="badge badge-light border text-muted">Sin valores previos</span>`;
 
+                    var colNode = `<span class="badge badge-dark font-weight-bold px-2 py-1 mb-1 d-block text-left" style="font-size:0.7rem;">
+                                     <i class="fa fa-layer-group mr-1"></i> ${e.node_level}
+                                   </span>
+                                   <strong class="text-dark d-block" style="font-size:0.84rem;">${e.node_name}</strong>`;
+
+                    var colDiff = `<div class="p-2 rounded bg-light border text-dark shadow-xs" style="font-size:0.78rem; line-height:1.3;">
+                                     ${e.diff_html}
+                                   </div>`;
+
+                    var colEditor = `<div><i class="fa fa-user-circle text-primary mr-1"></i> <strong>${e.editor}</strong></div>
+                                     <div class="text-muted font-mono" style="font-size:0.75rem;"><i class="fa fa-clock mr-1"></i> ${e.created_at}</div>`;
+
+                    editsDataSet.push([colNode, colDiff, colEditor, revertBtn]);
+                });
+            }
+
+            $('#cntTotalEdiciones').text(editsDataSet.length);
+
+            $('#tablaEdicionesPeiAdmin').DataTable({
+                data: editsDataSet,
+                deferRender: true,
+                pageLength: 8,
+                lengthMenu: [[8, 15, 30, -1], [8, 15, 30, "Todos"]],
+                language: datatablesSpanish,
+                order: [[2, "desc"]],
+                columnDefs: [
+                    { className: "align-middle", targets: [0, 1, 2] },
+                    { className: "align-middle text-center", targets: [3] }
+                ]
+            });
+
+            // 2. Cargar DataTables Basurero
+            var trashedDataSet = [];
             if (resp.trashed_nodes && resp.trashed_nodes.length > 0) {
                 resp.trashed_nodes.forEach(function(n) {
-                    count++;
-                    var badgeType = n.level === 'axi' ? 'badge-primary' : (n.level === 'goal' ? 'badge-info' : 'badge-purple');
-                    var levelName = (n.level === 'axi' ? 'OBJ. ESTRATÉGICO' : (n.level === 'goal' ? 'OBJ. ESPECÍFICO' : (n.level === 'action' ? 'ACCIÓN ESTRATÉGICA' : (n.level||'NODO').toUpperCase())));
-                    var tr = `
-                        <tr>
-                            <td class="align-middle">
-                                <span class="badge ${badgeType} font-weight-bold px-2.5 py-1" style="font-size:0.72rem;">${levelName}</span>
-                            </td>
-                            <td class="align-middle">
-                                <strong class="text-dark d-block" style="font-size:0.86rem;">${n.name}</strong>
-                            </td>
-                            <td class="align-middle small">
-                                <div class="p-1.5 rounded bg-light border text-dark font-weight-500" style="font-size:0.78rem;">
-                                    ${n.contexto || '—'}
-                                </div>
-                            </td>
-                            <td class="align-middle text-center text-muted small font-mono">${n.deleted_at || '—'}</td>
-                            <td class="align-middle text-center">
-                                <button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3 py-1 shadow-xs" onclick="restaurarElementoPei('${n.id}', 'node')">
-                                    <i class="fa fa-undo mr-1"></i> Restaurar
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                    $tbody.append(tr);
+                    var badgeType = n.nivel_badge || 'badge-dark';
+                    var nivelNombre = n.nivel_nombre || 'Nivel PEI';
+
+                    var colNivel = `<span class="badge ${badgeType} font-weight-bold px-2.5 py-1 mb-1 d-block text-left" style="font-size:0.72rem;">
+                                      <i class="fa fa-layer-group mr-1"></i> ${nivelNombre}
+                                    </span>`;
+
+                    var colName = `<strong class="text-dark d-block" style="font-size:0.86rem; line-height: 1.3;">${n.name}</strong>`;
+
+                    var colContexto = `<div class="p-2 rounded bg-light border text-dark font-weight-500 shadow-xs" style="font-size:0.78rem;">
+                                         ${n.contexto || '—'}
+                                       </div>`;
+
+                    var colTrazabilidad = `<div class="mb-1"><i class="fa fa-user-circle text-primary mr-1"></i> <strong>Creador:</strong> ${n.creador || 'Sistema'}</div>
+                                           <div class="font-weight-bold text-danger" style="font-size:0.78rem;"><i class="fa fa-user-times text-danger mr-1"></i> <strong>Eliminado por:</strong> ${n.eliminado_por || 'Usuario del Sistema'}</div>`;
+
+                    var colDate = `<span class="text-muted small font-mono">${n.deleted_at || '—'}</span>`;
+
+                    var colAction = `<button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3 py-1 shadow-xs" onclick="restaurarElementoPei('${n.id}', 'node')">
+                                       <i class="fa fa-recycle mr-1"></i> Restaurar
+                                     </button>`;
+
+                    trashedDataSet.push([colNivel, colName, colContexto, colTrazabilidad, colDate, colAction]);
                 });
             }
 
             if (resp.trashed_inis && resp.trashed_inis.length > 0) {
                 resp.trashed_inis.forEach(function(i) {
-                    count++;
-                    var tr = `
-                        <tr>
-                            <td class="align-middle">
-                                <span class="badge badge-success font-weight-bold px-2.5 py-1" style="font-size:0.72rem;">ACCIÓN OPERATIVA</span>
-                            </td>
-                            <td class="align-middle">
-                                ${i.codigo ? `<span class="badge badge-dark font-weight-bold mr-1">${i.codigo}</span>` : ''}
-                                <strong class="text-dark">${i.accion}</strong>
-                            </td>
-                            <td class="align-middle small">
-                                <div class="p-1.5 rounded bg-light border text-dark font-weight-500" style="font-size:0.78rem;">
-                                    ${i.contexto || '—'}
-                                </div>
-                            </td>
-                            <td class="align-middle text-center text-muted small font-mono">${i.deleted_at || '—'}</td>
-                            <td class="align-middle text-center">
-                                <button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3 py-1 shadow-xs" onclick="restaurarElementoPei('${i.id}', 'iniciativa')">
-                                    <i class="fa fa-undo mr-1"></i> Restaurar
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                    $tbody.append(tr);
+                    var colNivel = `<span class="badge badge-success font-weight-bold px-2.5 py-1 mb-1 d-block text-left" style="font-size:0.72rem;">
+                                      <i class="fa fa-tasks mr-1"></i> Acción Operativa
+                                    </span>`;
+
+                    var colName = `${i.codigo ? `<span class="badge badge-dark font-weight-bold mr-1">${i.codigo}</span>` : ''}
+                                   <strong class="text-dark" style="font-size:0.86rem; line-height: 1.3;">${i.accion}</strong>`;
+
+                    var colContexto = `<div class="p-2 rounded bg-light border text-dark font-weight-500 shadow-xs" style="font-size:0.78rem;">
+                                         ${i.contexto || '—'}
+                                       </div>`;
+
+                    var colTrazabilidad = `<div class="mb-1"><i class="fa fa-user-circle text-primary mr-1"></i> <strong>Creador:</strong> ${i.creador || 'Sistema'}</div>
+                                           <div class="font-weight-bold text-danger" style="font-size:0.78rem;"><i class="fa fa-user-times text-danger mr-1"></i> <strong>Eliminado por:</strong> ${i.eliminado_por || 'Usuario del Sistema'}</div>`;
+
+                    var colDate = `<span class="text-muted small font-mono">${i.deleted_at || '—'}</span>`;
+
+                    var colAction = `<button type="button" class="btn btn-xs btn-success font-weight-bold rounded-pill px-3 py-1 shadow-xs" onclick="restaurarElementoPei('${i.id}', 'iniciativa')">
+                                       <i class="fa fa-recycle mr-1"></i> Restaurar
+                                     </button>`;
+
+                    trashedDataSet.push([colNivel, colName, colContexto, colTrazabilidad, colDate, colAction]);
                 });
             }
 
-            $('#cntTotalBasurero').text(count + ' Elementos Eliminados');
+            $('#cntTotalBasurero').text(trashedDataSet.length);
 
-            if ($.fn.DataTable && $('#tablaBasureroPeiAdmin').length) {
-                $('#tablaBasureroPeiAdmin').DataTable({
-                    "language": {
-                        "sProcessing":     "Procesando...",
-                        "sLengthMenu":     "Mostrar _MENU_ registros",
-                        "sZeroRecords":    "No se encontraron elementos en el basurero",
-                        "sEmptyTable":     "El basurero está vacío. No hay elementos eliminados.",
-                        "sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ elementos",
-                        "sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 elementos",
-                        "sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
-                        "sSearch":         "Buscar en el basurero:",
-                        "oPaginate": {
-                            "sFirst":    "Primero",
-                            "sLast":     "Último",
-                            "sNext":     "Siguiente",
-                            "sPrevious": "Anterior"
-                        }
-                    },
-                    "order": [[3, "desc"]],
-                    "pageLength": 10
-                });
-            }
+            $('#tablaBasureroPeiAdmin').DataTable({
+                data: trashedDataSet,
+                deferRender: true,
+                pageLength: 8,
+                lengthMenu: [[8, 15, 30, -1], [8, 15, 30, "Todos"]],
+                language: datatablesSpanish,
+                order: [[4, "desc"]],
+                columnDefs: [
+                    { className: "align-middle", targets: [0, 1, 2, 3] },
+                    { className: "align-middle text-center", targets: [4, 5] }
+                ]
+            });
         }
     });
 }
+
+function revertirEdicionPei(editId) {
+    var doRevert = function() {
+        $.ajax({
+            url: "{{ url('pei-profiles/' . $profile->id . '/revertir-edicion') }}/" + editId,
+            type: "POST",
+            data: { _token: "{{ csrf_token() }}" },
+            success: function(resp) {
+                if (resp.ok) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Edición Revertida!',
+                            text: resp.message || 'Se ha restaurado el estado anterior exitosamente.',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    } else if (window.toastr) {
+                        toastr.success(resp.message);
+                    }
+                    cargarBasureroPeiAdmin();
+                    if (typeof recargarAcordeon === 'function') {
+                        recargarAcordeon();
+                    }
+                } else {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: resp.message || 'No se pudo revertir la edición.'
+                        });
+                    } else if (window.toastr) {
+                        toastr.error(resp.message || 'No se pudo revertir la edición.');
+                    }
+                }
+            },
+            error: function(xhr) {
+                var errText = xhr.responseJSON?.message || 'Error al revertir la edición.';
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de Reversión',
+                        text: errText
+                    });
+                } else if (window.toastr) {
+                    toastr.error(errText);
+                }
+            }
+        });
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '¿Revertir esta edición?',
+            text: 'El elemento PEI volverá exactamente al texto, indicadores y ponderaciones registradas antes de este cambio.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#f59e0b',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fa fa-undo mr-1"></i> Sí, revertir cambio',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then(function(res) {
+            if (res.isConfirmed) {
+                doRevert();
+            }
+        });
+    } else {
+        if (confirm('¿Estás seguro de revertir esta edición al estado anterior registrado?')) {
+            doRevert();
+        }
+    }
+}
+
+$('#modalBasureroPei').on('shown.bs.modal', function () {
+    $('body').css('overflow', 'hidden');
+    var $modalBody = $(this).find('.modal-body');
+    $modalBody.attr('tabindex', '-1').focus();
+
+    if ($.fn.DataTable) {
+        $.fn.DataTable.tables({ visible: true, api: true }).columns.adjust();
+    }
+});
+
+$(document).on('wheel touchmove', '#modalBasureroPei .modal-body', function(e) {
+    var st = this.scrollTop;
+    var sh = this.scrollHeight;
+    var h = $(this).innerHeight();
+    var delta = (e.type === 'wheel') ? e.originalEvent.deltaY : 0;
+
+    if ((delta > 0 && st + h >= sh - 2) || (delta < 0 && st <= 2)) {
+        e.preventDefault();
+    }
+    e.stopPropagation();
+});
+
+$('#modalBasureroPei').on('hidden.bs.modal', function () {
+    $('body').css('overflow', '');
+});
 
 $(document).on('click', '.btnVerReporteAportes', function () {
     var peiId = $(this).data('pei-id') || "{{ $profile->id }}";
@@ -5745,23 +6026,63 @@ function restaurarElementoPei(id, type) {
         ? baseUrl + "/restaurar-iniciativa/" + id
         : baseUrl + "/restaurar-nodo/" + id;
 
-    $.ajax({
-        url: url,
-        type: "POST",
-        data: { _token: "{{ csrf_token() }}" },
-        success: function(resp) {
-            if (window.toastr) toastr.success(resp.message || 'Elemento restaurado con éxito.');
-            cargarBasureroPeiAdmin();
-            if (typeof recargarAcordeon === 'function') {
-                recargarAcordeon();
-            } else {
-                setTimeout(function() { location.reload(); }, 1000);
+    var doRestore = function() {
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: { _token: "{{ csrf_token() }}" },
+            success: function(resp) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Elemento Restaurado!',
+                        text: resp.message || 'El elemento ha reaparecido exitosamente en el árbol PEI.',
+                        confirmButtonColor: '#10b981'
+                    });
+                } else if (window.toastr) {
+                    toastr.success(resp.message || 'Elemento restaurado con éxito.');
+                }
+                cargarBasureroPeiAdmin();
+                if (typeof recargarAcordeon === 'function') {
+                    recargarAcordeon();
+                } else {
+                    setTimeout(function() { location.reload(); }, 1000);
+                }
+            },
+            error: function(xhr) {
+                var errText = xhr.responseJSON?.message || 'Error al restaurar el elemento.';
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de Restauración',
+                        text: errText
+                    });
+                } else if (window.toastr) {
+                    toastr.error(errText);
+                }
             }
-        },
-        error: function(xhr) {
-            if (window.toastr) toastr.error(xhr.responseJSON?.message || 'Error al restaurar el elemento.');
-        }
-    });
+        });
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '¿Restaurar este elemento?',
+            text: 'El elemento reaparecerá en su ubicación original dentro del árbol PEI.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fa fa-recycle mr-1"></i> Sí, restaurar elemento',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then(function(res) {
+            if (res.isConfirmed) {
+                doRestore();
+            }
+        });
+    } else {
+        doRestore();
+    }
 }
 
 function parseCommentsData(raw) {
@@ -5944,6 +6265,20 @@ $(document).off('click', '.btn-eliminar-aporte').on('click', '.btn-eliminar-apor
     }
 });
 
+var currentPeiZoom = parseInt(localStorage.getItem('pei_font_zoom') || '100');
+
+function applyFontZoom(zoom) {
+    currentPeiZoom = zoom;
+    if (currentPeiZoom < 85) currentPeiZoom = 85;
+    if (currentPeiZoom > 150) currentPeiZoom = 150;
+
+    localStorage.setItem('pei_font_zoom', currentPeiZoom);
+    $('#btnZoomReset').text(currentPeiZoom + '%');
+
+    var zoomScale = currentPeiZoom / 100;
+    $('.content, .accordion, #treeRootContainer, .card-body').css('zoom', zoomScale);
+}
+
 function applyFullWidthMode(enable) {
     if (enable) {
         $('body').addClass('pei-full-width-mode');
@@ -5951,6 +6286,11 @@ function applyFullWidthMode(enable) {
         $('#iconToggleFullWidth').removeClass('fa-expand').addClass('fa-compress');
         $('#btnToggleFullWidth').removeClass('btn-outline-secondary').addClass('btn-success text-white');
         localStorage.setItem('pei_full_width_mode', 'true');
+        if (!localStorage.getItem('pei_font_zoom')) {
+            applyFontZoom(115);
+        } else {
+            applyFontZoom(currentPeiZoom);
+        }
     } else {
         $('body').removeClass('pei-full-width-mode');
         $('#lblToggleFullWidth').text('Pantalla Completa');
@@ -5964,6 +6304,9 @@ $(document).ready(function() {
     if (localStorage.getItem('pei_full_width_mode') === 'true') {
         applyFullWidthMode(true);
     }
+    if (localStorage.getItem('pei_font_zoom')) {
+        applyFontZoom(parseInt(localStorage.getItem('pei_font_zoom')));
+    }
 });
 
 $(document).off('click', '#btnToggleFullWidth').on('click', '#btnToggleFullWidth', function(e) {
@@ -5971,6 +6314,19 @@ $(document).off('click', '#btnToggleFullWidth').on('click', '#btnToggleFullWidth
     e.stopPropagation();
     var isFull = $('body').hasClass('pei-full-width-mode');
     applyFullWidthMode(!isFull);
+});
+
+$(document).off('click', '#btnZoomIn').on('click', '#btnZoomIn', function(e) {
+    e.preventDefault();
+    applyFontZoom(currentPeiZoom + 10);
+});
+$(document).off('click', '#btnZoomOut').on('click', '#btnZoomOut', function(e) {
+    e.preventDefault();
+    applyFontZoom(currentPeiZoom - 10);
+});
+$(document).off('click', '#btnZoomReset').on('click', '#btnZoomReset', function(e) {
+    e.preventDefault();
+    applyFontZoom(100);
 });
 </script>
 

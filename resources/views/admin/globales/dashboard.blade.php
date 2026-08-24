@@ -276,6 +276,7 @@
 
             {{-- Selector de Plan PEI & Accesos Directos ── --}}
             <div class="col-lg-5 text-lg-right mt-3 mt-lg-0">
+                @hasanyrole('Administrador|Super Admin')
                 <div class="p-3 rounded-lg border text-left mb-3 shadow-sm" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border-color: rgba(255,255,255,0.25) !important;">
                     <label class="text-white small font-weight-bold text-uppercase mb-2 d-block" style="letter-spacing:.05em">
                         <i class="fa fa-filter text-warning mr-1"></i> Filtrar Panel por Plan PEI Raíz:
@@ -289,11 +290,30 @@
                         @endforeach
                     </select>
                 </div>
+                @else
+                <div class="p-3 rounded-lg border text-left mb-3 shadow-sm" style="background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); border-color: rgba(255,255,255,0.3) !important;">
+                    <label class="text-white small font-weight-bold text-uppercase mb-1 d-block" style="letter-spacing:.05em">
+                        <i class="fa fa-bullseye text-warning mr-1"></i> Plan PEI Institucional Activo:
+                    </label>
+                    <div class="h6 text-white font-weight-bold mb-0">
+                        <i class="fa fa-check-circle text-success mr-1"></i>
+                        {{ $selectedPei ? strip_tags($selectedPei->name) : 'Plan Estratégico Institucional' }}
+                        @if($selectedPei)
+                            <span class="badge badge-pill badge-light border text-dark ml-1" style="font-size:0.72rem;">
+                                {{ \Carbon\Carbon::parse($selectedPei->year_start)->format('Y') }}–{{ \Carbon\Carbon::parse($selectedPei->year_end)->format('Y') }}
+                            </span>
+                        @endif
+                    </div>
+                </div>
+                @endhasanyrole
 
                 <div class="d-flex justify-content-lg-end flex-wrap" style="gap: 0.5rem;">
                     @if($selectedPei)
-                        <a href="{{ route('pei-profiles.matriz', $selectedPei->id) }}" class="btn btn-light btn-round font-weight-bold shadow-sm px-3 py-2" target="_blank">
-                            <i class="fa fa-table text-primary mr-1"></i> Matriz PEI
+                        <a href="{{ url('pei-profiles/' . $selectedPei->id) }}" class="btn btn-light btn-round font-weight-bold shadow-sm px-3 py-2">
+                            <i class="fa fa-sitemap text-success mr-1"></i> Ver Estructura PEI
+                        </a>
+                        <a href="{{ route('pei-profiles.matriz', $selectedPei->id) }}" class="btn btn-outline-light btn-round font-weight-bold shadow-sm px-3 py-2" target="_blank">
+                            <i class="fa fa-table text-warning mr-1"></i> Matriz PEI (PDF/Tabla)
                         </a>
                     @endif
                     <button type="button" class="btn btn-outline-light btn-round px-3 py-2" onclick="location.reload();">
@@ -415,21 +435,25 @@
                 <li class="nav-item">
                     <a class="nav-link active" id="tab-usuarios-link" data-toggle="pill" href="#tab-usuarios" role="tab" aria-selected="true">
                         <i class="fa fa-user-shield mr-2"></i> Usuarios y Accesos
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalUsuarios }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="tab-grupos-link" data-toggle="pill" href="#tab-grupos" role="tab" aria-selected="false">
                         <i class="fa fa-layer-group mr-2"></i> Grupos de Trabajo
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ isset($gruposList) && $gruposList->count() > 0 ? $gruposList->count() : $totalGrupos }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="tab-organigrama-link" data-toggle="pill" href="#tab-organigrama" role="tab" aria-selected="false">
                         <i class="fa fa-sitemap mr-2"></i> Estructura Orgánica
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalDependencias }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="tab-planes-link" data-toggle="pill" href="#tab-planes" role="tab" aria-selected="false">
                         <i class="fa fa-chart-line mr-2"></i> Planes Institucionales (PEI)
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ isset($peiPerfiles) ? $peiPerfiles->count() : 1 }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -438,11 +462,13 @@
                         <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalActividadesPei }}</span>
                     </a>
                 </li>
+                @hasanyrole('Administrador|Super Admin')
                 <li class="nav-item">
                     <a class="nav-link" id="tab-publico-link" data-toggle="pill" href="#tab-publico" role="tab" aria-selected="false">
                         <i class="fa fa-globe mr-2"></i> Visibilidad & Sitio Público
                     </a>
                 </li>
+                @endhasanyrole
                 <li class="nav-item">
                     <a class="nav-link" id="tab-juntas-link" data-toggle="pill" href="#tab-juntas" role="tab" aria-selected="false">
                         <i class="fa fa-balance-scale mr-2"></i> Juntas Consultivas
@@ -485,6 +511,7 @@
                                 </label>
                             </div>
 
+                            @hasanyrole('Administrador|Super Admin')
                             <button type="button" class="btn btn-outline-info btn-round px-3" onclick="abrirModalGestionRoles()">
                                 <i class="fa fa-shield-alt mr-1"></i> Roles (<span id="cantRolesMainBtn">{{ $totalRoles }}</span>)
                             </button>
@@ -494,6 +521,7 @@
                             <button type="button" class="btn btn-primary btn-round px-3" onclick="abrirModalNuevoUsuario()">
                                 <i class="fa fa-user-plus mr-1"></i> Nuevo Usuario
                             </button>
+                            @endhasanyrole
                         </div>
                     </div>
 
@@ -541,6 +569,7 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 4px;">
+                                            @hasanyrole('Administrador|Super Admin')
                                             @if(auth()->id() != $u->id)
                                                 <a href="{{ route('impersonate.take', $u->id) }}" class="btn btn-circle btn-warning text-dark font-weight-bold" title="👁️ Ver como {{ $u->name }} (Simular Rol)">
                                                     <i class="fa fa-eye"></i>
@@ -552,9 +581,12 @@
                                             <button type="button" class="btn btn-circle btn-info" onclick="abrirModalEditarUsuario('{{ $u->id }}')" title="Editar Usuario In-Situ">
                                                 <i class="fa fa-edit"></i>
                                             </button>
-                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarUsuario('{{ $u->id }}', '{{ addslashes($u->name) }}')" title="Eliminar Usuario">
+                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarUsuario('{{ $u->id }}', '{{ e(addslashes($u->name)) }}')" title="Eliminar Usuario">
                                                 <i class="fa fa-trash"></i>
                                             </button>
+                                            @else
+                                            <span class="badge badge-light border text-muted px-2 py-1"><i class="fa fa-lock mr-1"></i>Lectura</span>
+                                            @endhasanyrole
                                         </div>
                                     </td>
                                 </tr>
@@ -578,10 +610,10 @@
                                 Instancias subordinadas y equipos operativos. Podés gestionar, incorporar o desvincular integrantes con el botón <i class="fa fa-user-plus text-info"></i>.
                             </p>
                         </div>
-                        <div class="d-flex align-items-center mt-3 mt-md-0" style="gap: 10px;">
+                        <div class="d-flex align-items-center flex-wrap mt-3 mt-md-0" style="gap: 10px;">
                             @if(isset($eventosRaizList) && $eventosRaizList->count() > 0)
                             <div class="form-group mb-0">
-                                <select id="eventoGroupFilterSelect" class="form-control select2 font-weight-bold border-info" style="min-width: 240px;" title="Cambiar Evento Raíz">
+                                <select id="eventoGroupFilterSelect" class="form-control select2 font-weight-bold border-info" style="min-width: 200px;" title="Cambiar Evento Raíz">
                                     @foreach($eventosRaizList as $ev)
                                         <option value="{{ $ev->id }}" {{ (isset($selectedGroup) && $selectedGroup && $selectedGroup->id == $ev->id) ? 'selected' : '' }}>
                                             Evento: {{ $ev->name }}
@@ -590,11 +622,118 @@
                                 </select>
                             </div>
                             @endif
+                            @hasanyrole('Administrador|Super Admin')
+                            <button type="button" class="btn btn-warning btn-round shadow-sm px-3 text-dark font-weight-bold" onclick="abrirModalPremioCierreSemana('{{ $selectedGroup->id ?? '' }}', '{{ e(addslashes($selectedGroup->name ?? 'Ámbito Institucional')) }}')" title="Otorgar 100 Pts masivos a los integrantes del grupo y subgrupos">
+                                <i class="fa fa-gift mr-1 text-dark"></i> 🎉 +100 PTS CIERRE DE SEMANA
+                            </button>
                             <button type="button" class="btn btn-info btn-round shadow-sm px-3 text-white font-weight-bold" onclick="abrirModalNuevoGrupo()">
                                 <i class="fa fa-plus-circle mr-1"></i> NUEVO GRUPO DE TRABAJO
                             </button>
+                            @endhasanyrole
                         </div>
                     </div>
+
+                    {{-- ── WIDGET TOP 10 FUNCIONARIOS DESTACADOS MARQUESINA CONTINUA PURA CSS ── --}}
+                    @if(isset($top5RankingReconocimiento) && $top5RankingReconocimiento->count() > 0)
+                    <style>
+                    @keyframes top10MarqueeAnim {
+                        0% { transform: translate3d(0, 0, 0); }
+                        100% { transform: translate3d(-50%, 0, 0); }
+                    }
+                    .top10-marquee-wrapper {
+                        overflow: hidden;
+                        width: 100%;
+                        position: relative;
+                        padding: 6px 0;
+                    }
+                    .top10-marquee-track {
+                        display: flex;
+                        gap: 16px;
+                        width: max-content;
+                        animation: top10MarqueeAnim 35s linear infinite;
+                        will-change: transform;
+                    }
+                    .top10-marquee-wrapper:hover .top10-marquee-track {
+                        animation-play-state: paused;
+                    }
+                    .top10-card-item {
+                        min-width: 200px;
+                        max-width: 220px;
+                        flex: 0 0 auto;
+                    }
+                    </style>
+                    <div class="shadow-lg mb-4 overflow-hidden position-relative" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important; color: #ffffff !important; border-radius: 16px !important; border: 1px solid #334155 !important;">
+                        <div class="py-3 px-4 d-flex align-items-center justify-content-between flex-wrap" style="background: rgba(255,255,255,0.06) !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important;">
+                            <div>
+                                <h5 class="mb-0 font-weight-bold d-flex align-items-center" style="color: #ffffff !important; font-size: 1.1rem;">
+                                    <i class="fa fa-trophy text-warning mr-2.5" style="font-size: 1.3rem;"></i>
+                                    TOP 10 — FUNCIONARIOS DESTACADOS DEL SISTEMA
+                                </h5>
+                                <small style="color: #cbd5e1 !important; font-weight: 500;">Reconocimiento a la excelencia, constancia y colaboración en la gestión del SIPLAN PEI</small>
+                            </div>
+                            <div class="mt-2 mt-sm-0">
+                                <span class="badge badge-pill px-3 py-1.5 font-weight-bold" style="background: linear-gradient(135deg, #f59e0b, #d97706) !important; color: #ffffff !important; font-size: 0.78rem;">
+                                    <span class="spinner-grow spinner-grow-sm text-light mr-1" style="width: 8px; height: 8px;" role="status"></span> 🌟 TIRA EN VIVO
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-3" style="background: #0f172a !important;">
+                            <div class="top10-marquee-wrapper">
+                                <div class="top10-marquee-track">
+                                    {{-- Duplicación exacta en 2 tandas para bucle infinito imperceptible --}}
+                                    @foreach([1, 2] as $tanda)
+                                        @foreach($top5RankingReconocimiento as $topIdx => $topUser)
+                                            @php
+                                                $medals = ['🥇', '🥈', '🥉', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️', '🎖️'];
+                                                $medal  = $medals[$topIdx] ?? '⭐';
+                                                $bgBox  = match($topIdx) {
+                                                    0 => 'linear-gradient(135deg, rgba(245,158,11,0.25) 0%, rgba(217,119,6,0.15) 100%)',
+                                                    1 => 'linear-gradient(135deg, rgba(203,213,225,0.25) 0%, rgba(148,163,184,0.15) 100%)',
+                                                    2 => 'linear-gradient(135deg, rgba(251,146,60,0.25) 0%, rgba(194,65,12,0.15) 100%)',
+                                                    default => 'rgba(255,255,255,0.06)',
+                                                };
+                                                $borderColor = match($topIdx) {
+                                                    0 => '#f59e0b',
+                                                    1 => '#cbd5e1',
+                                                    2 => '#fb923c',
+                                                    default => 'rgba(255,255,255,0.2)',
+                                                };
+                                            @endphp
+                                            <div class="top10-card-item">
+                                                <div class="p-3 rounded-lg text-center h-100 d-flex flex-column justify-content-between position-relative shadow-sm"
+                                                     style="background: {{ $bgBox }} !important; border: 1.5px solid {{ $borderColor }} !important; border-radius: 12px !important;">
+                                                    <div>
+                                                        <div class="display-4 mb-1" style="font-size: 1.8rem; line-height: 1;">{{ $medal }}</div>
+                                                        <div class="badge badge-pill mb-2 px-2.5 py-1 font-weight-bold" style="background: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-size: 0.68rem; letter-spacing: 0.5px;">
+                                                            PUESTO #{{ $topUser->puesto_ranking }}
+                                                        </div>
+                                                        <h6 class="font-weight-bold mb-1 text-truncate" title="{{ $topUser->name }}" style="font-size: 0.88rem; color: #ffffff !important;">
+                                                            {{ $topUser->name }}
+                                                        </h6>
+                                                        <small class="d-block text-truncate mb-2" style="font-size: 0.72rem; color: #cbd5e1 !important; font-weight: 500;">
+                                                            {{ $topUser->group->name ?? 'IPS Institucional' }}
+                                                        </small>
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-weight-bold text-warning mb-2.5" style="font-size: 0.95rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
+                                                            <i class="fa fa-star mr-1"></i> {{ number_format($topUser->puntos_gamificacion) }} Pts
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-block font-weight-bold rounded-pill shadow-sm"
+                                                                onclick="generarFichaWhatsApp('{{ e(addslashes($topUser->name)) }}', '{{ e(addslashes($topUser->group->name ?? 'IPS Institucional')) }}', '{{ $topUser->puntos_gamificacion }}', '{{ $topUser->puesto_ranking }}')"
+                                                                style="background: #25D366 !important; color: #ffffff !important; border: none !important; font-size: 0.73rem; padding: 6px 10px; font-weight: 700 !important;"
+                                                                title="Generar y compartir Ficha Visual de Reconocimiento en WhatsApp">
+                                                            <i class="fab fa-whatsapp mr-1" style="font-size: 0.85rem;"></i> FICHA WHATSAPP
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                     <div class="table-responsive">
                         <table class="table table-hover table-custom w-100 dataTableInit" id="tablaGruposGlobal">
@@ -635,9 +774,14 @@
                                                         $medal = $medals[$tIdx] ?? '⭐';
                                                         $st = $styles[$tIdx] ?? 'background: #f8fafc; color: #475569; border: 1px solid #e2e8f0;';
                                                     @endphp
-                                                    <div class="badge d-inline-flex align-items-center justify-content-between p-1 px-2" style="{{ $st }} font-size: 0.72rem; font-weight: 600; border-radius: 6px;" title="{{ $topMember->name }} — {{ number_format($topMember->puntos_gamificacion) }} pts">
+                                                    <div class="badge d-inline-flex align-items-center justify-content-between p-1 px-2 pointer-hover" 
+                                                         style="{{ $st }} font-size: 0.72rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: transform 0.15s ease;" 
+                                                         onclick="abrirModalTelemetriaUsuario('{{ $topMember->id }}')" 
+                                                         title="🏆 Clic para ver Historial de Puntos y Actividad de {{ $topMember->name }}">
                                                         <span class="text-truncate" style="max-width: 130px;">{{ $medal }} {{ $topMember->name }}</span>
-                                                        <span class="badge badge-pill badge-dark ml-2" style="font-size: 0.65rem;">{{ number_format($topMember->puntos_gamificacion) }} pts</span>
+                                                        <span class="badge badge-pill badge-dark ml-2" style="font-size: 0.65rem;">
+                                                            <i class="fa fa-chart-line text-warning mr-1"></i>{{ number_format($topMember->puntos_gamificacion) }} pts
+                                                        </span>
                                                     </div>
                                                 @endforeach
                                                 @if($g->members_count > 3)
@@ -657,23 +801,46 @@
                                             <span class="text-muted small">Sin miembros asignados</span>
                                         @else
                                             @foreach($g->members as $m)
-                                                <span class="badge badge-light text-dark border mr-1 mb-1" style="font-size:0.75rem; font-weight:500;">
-                                                    {{ $m->name }}
+                                                <span class="badge badge-light text-dark border mr-1 mb-1 shadow-sm px-2 py-1 pointer-hover" 
+                                                      style="font-size:0.75rem; font-weight:500; cursor: pointer; transition: all 0.2s; border-radius: 6px;" 
+                                                      onclick="abrirModalTelemetriaUsuario('{{ $m->id }}')" 
+                                                      title="🏆 Clic para ver Historial de Puntos y Actividad de {{ $m->name }}">
+                                                    <i class="fa fa-user-circle text-info mr-1"></i>{{ $m->name }}
+                                                    <span class="badge badge-pill badge-dark ml-1" style="font-size:0.64rem;">
+                                                        {{ number_format($m->puntos_gamificacion ?? 0) }} pts
+                                                    </span>
                                                 </span>
                                             @endforeach
                                         @endif
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 5px;">
-                                            <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalDetalleGrupo('{{ $g->id }}', '{{ addslashes($g->name) }}')" title="Gestionar Integrantes">
-                                                <i class="fa fa-user-plus"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-circle" style="background:#8b5cf6; border-color:#8b5cf6; color:#fff;" onclick="abrirModalEditarGrupo('{{ $g->id }}')" title="Editar Grupo">
-                                                <i class="fa fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarGrupo('{{ $g->id }}', '{{ addslashes($g->name) }}')" title="Eliminar Grupo">
-                                                <i class="fa fa-trash"></i>
-                                            </button>
+                                            @php
+                                                $authUser = auth()->user();
+                                                $isAdmin = $authUser->hasAnyRole(['Administrador', 'Super Admin']);
+                                                $isUserGroup = ($authUser->group_id && $authUser->group_id == $g->id) || ($g->members && $g->members->pluck('id')->contains($authUser->id));
+                                            @endphp
+
+                                            @if($isAdmin)
+                                                <button type="button" class="btn btn-circle btn-warning text-dark font-weight-bold" onclick="abrirModalPremioCierreSemana('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Otorgar +100 Pts por Cierre de Semana Exitoso a todos los integrantes">
+                                                    <i class="fa fa-gift"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalDetalleGrupo('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Gestionar Integrantes">
+                                                    <i class="fa fa-user-plus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-circle" style="background:#8b5cf6; border-color:#8b5cf6; color:#fff;" onclick="abrirModalEditarGrupo('{{ $g->id }}')" title="Editar Grupo">
+                                                    <i class="fa fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-circle btn-danger" onclick="eliminarGrupo('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Eliminar Grupo">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            @elseif($isUserGroup)
+                                                <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalDetalleGrupo('{{ $g->id }}', '{{ e(addslashes($g->name)) }}')" title="Asignar Integrantes a Mi Grupo de Trabajo">
+                                                    <i class="fa fa-user-plus"></i>
+                                                </button>
+                                            @else
+                                                <span class="badge badge-light border text-muted px-2 py-1" style="font-size: 0.72rem;"><i class="fa fa-lock mr-1"></i>Lectura</span>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -848,6 +1015,7 @@
                                     </td>
                                     <td class="text-center" style="white-space: nowrap;">
                                         <div class="d-flex justify-content-center align-items-center flex-nowrap" style="gap: 4px;">
+                                            @hasanyrole('Administrador|Super Admin')
                                             {{-- 1. Seleccionar PEI Activo --}}
                                             <a href="?pei_id={{ $plan->id }}#tab-planes" class="btn btn-circle" style="background:#2563eb; border-color:#2563eb; color:#fff;" title="Seleccionar como PEI Activo en Panel">
                                                 <i class="fa fa-check-circle"></i>
@@ -857,6 +1025,7 @@
                                             <button type="button" class="btn btn-circle editProfile" style="background:#8b5cf6; border-color:#8b5cf6; color:#fff;" data-id="{{ $plan->id }}" title="Editar Perfil PEI In-Situ">
                                                 <i class="fa fa-edit"></i>
                                             </button>
+                                            @endhasanyrole
 
                                             {{-- 3. Ver y Gestionar Estructura PEI (Icono Números Verde) --}}
                                             <a href="{{ url('pei-profiles/' . $plan->id) }}" class="btn btn-circle" style="background:#10b981; border-color:#10b981; color:#fff;" title="Ver y Gestionar Estructura PEI">
@@ -864,23 +1033,22 @@
                                             </a>
 
                                             {{-- 4. Certificación MEF --}}
-                                            <button type="button" class="btn btn-circle btn-info text-white btnVerCertificacionMef" data-id="{{ $plan->id }}" data-name="{{ addslashes(strip_tags($plan->name)) }}" title="Certificación MEF">
+                                            <button type="button" class="btn btn-circle btn-info text-white btnVerCertificacionMef" data-id="{{ $plan->id }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}" title="Certificación MEF">
                                                 <i class="fa fa-certificate"></i>
                                             </button>
 
-                                            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI')
-                                            {{-- Lectura Cómoda de Aportes de Asesoría --}}
+                                            {{-- 5. Lectura Cómoda de Aportes de Asesoría --}}
                                             <button type="button" class="btn btn-circle btn-dark text-warning btnVerReporteAportes" data-pei-id="{{ $plan->id }}" title="Lectura Cómoda de Aportes y Dictámenes de Asesoría">
                                                 <i class="fa fa-book-open"></i>
                                             </button>
-                                            @endhasanyrole
 
-                                            {{-- 5. Cruce de Ambientes FODA --}}
-                                            <button type="button" class="btn btn-circle btn-warning text-white btnVerFodaCrossing" data-url="{{ route('foda-cruce-ambientes', $plan->id) }}" data-name="{{ addslashes(strip_tags($plan->name)) }}" title="Análisis FODA & Cruce de Ambientes">
+                                            {{-- 6. Cruce de Ambientes FODA --}}
+                                            <button type="button" class="btn btn-circle btn-warning text-white btnVerFodaCrossing" data-url="{{ route('foda-cruce-ambientes', $plan->id) }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}" title="Análisis FODA & Cruce de Ambientes">
                                                 <i class="fa fa-random"></i>
                                             </button>
 
-                                            {{-- 6. Visibilidad / Alternar Estado --}}
+                                            @hasanyrole('Administrador|Super Admin')
+                                            {{-- 7. Visibilidad / Alternar Estado --}}
                                             @php
                                                 $isVis = isset($plan->is_active) ? (bool)$plan->is_active : true;
                                             @endphp
@@ -888,10 +1056,11 @@
                                                 <i class="fa {{ $isVis ? 'fa-eye' : 'fa-eye-slash' }}"></i>
                                             </button>
 
-                                            {{-- 7. Eliminar Perfil PEI --}}
-                                            <button type="button" class="btn btn-circle btn-danger deleteProfile" data-id="{{ $plan->id }}" data-name="{{ addslashes(strip_tags($plan->name)) }}" title="Eliminar Perfil PEI">
+                                            {{-- 8. Eliminar Perfil PEI --}}
+                                            <button type="button" class="btn btn-circle btn-danger deleteProfile" data-id="{{ $plan->id }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}" title="Eliminar Perfil PEI">
                                                 <i class="fa fa-trash"></i>
                                             </button>
+                                            @endhasanyrole
                                         </div>
                                     </td>
                                 </tr>
@@ -1304,12 +1473,17 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 5px;">
-                                            <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalEditarJunta('{{ $jta->id }}')" title="Editar Junta Consultiva">
+                                            <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalEditarJunta('{{ $jta->id }}')" title="Editar Junta Consultiva / Agregar Miembros">
                                                 <i class="fa fa-edit"></i>
                                             </button>
                                             <a href="{{ route('admin.juntas.intervenciones', ['junta_id' => $jta->id]) }}" class="btn btn-circle btn-warning text-dark" title="Ver Bandeja de Dictámenes">
                                                 <i class="fa fa-inbox"></i>
                                             </a>
+                                            @hasanyrole('Administrador|Super Admin')
+                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarJuntaConsultiva('{{ $jta->id }}', '{{ e(addslashes($jta->nombre)) }}')" title="Eliminar Junta Consultiva">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                            @endhasanyrole
                                         </div>
                                     </td>
                                 </tr>
@@ -1574,15 +1748,63 @@
                 </button>
             </div>
             <div class="modal-body p-4">
+                <style>
+                    #modalDetalleGrupoSub .nav-tabs {
+                        border-bottom: 2px solid #cbd5e1 !important;
+                        gap: 6px !important;
+                    }
+                    #modalDetalleGrupoSub .nav-tabs .nav-link {
+                        color: #1e293b !important;
+                        background-color: #f1f5f9 !important;
+                        border: 1px solid #cbd5e1 !important;
+                        border-bottom: none !important;
+                        border-radius: 8px 8px 0 0 !important;
+                        padding: 9px 18px !important;
+                        font-weight: 700 !important;
+                        font-size: 0.86rem !important;
+                        transition: all 0.2s ease-in-out !important;
+                    }
+                    #modalDetalleGrupoSub .nav-tabs .nav-link i {
+                        color: #0284c7 !important;
+                    }
+                    #modalDetalleGrupoSub .nav-tabs .nav-link:hover {
+                        color: #0284c7 !important;
+                        background-color: #e2e8f0 !important;
+                    }
+                    #modalDetalleGrupoSub .nav-tabs .nav-link.active {
+                        color: #ffffff !important;
+                        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+                        border-color: #0284c7 !important;
+                        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3) !important;
+                    }
+                    #modalDetalleGrupoSub .nav-tabs .nav-link.active i,
+                    #modalDetalleGrupoSub .nav-tabs .nav-link.active span {
+                        color: #ffffff !important;
+                    }
+                    #modalDetalleGrupoSub .select2-container--default .select2-selection--multiple .select2-selection__choice {
+                        background-color: #e0f2fe !important;
+                        border: 1px solid #bae6fd !important;
+                        color: #0369a1 !important;
+                        font-weight: 700 !important;
+                        font-size: 0.82rem !important;
+                        padding: 4px 10px !important;
+                        border-radius: 6px !important;
+                    }
+                    #modalDetalleGrupoSub .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+                        color: #ef4444 !important;
+                        margin-right: 6px !important;
+                        font-weight: bold !important;
+                    }
+                </style>
                 <ul class="nav nav-tabs mb-3" id="grupoDetalleTabs" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link active font-weight-bold" id="tab-miembros-grupo-link" data-toggle="tab" href="#tab-miembros-grupo" role="tab">
-                            <i class="fa fa-users text-info mr-1"></i> Integrantes Directos (<span id="cantMiembrosGrupo">0</span>)
+                            <i class="fa fa-users mr-1"></i> Integrantes Directos (<span id="cantMiembrosGrupo">0</span>)
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link font-weight-bold" id="tab-subgrupos-grupo-link" data-toggle="tab" href="#tab-subgrupos-grupo" role="tab">
-                            <i class="fa fa-layer-group text-warning mr-1"></i> Subgrupos Hijos (<span id="cantSubgruposGrupo">0</span>)
+                            <i class="fa fa-layer-group mr-1"></i> Subgrupos Hijos (<span id="cantSubgruposGrupo">0</span>)
                         </a>
                     </li>
                 </ul>
@@ -1611,7 +1833,7 @@
                                         <small class="text-muted d-block mt-1">Selecciona o remueve usuarios para gestionar el equipo del subgrupo.</small>
                                     </div>
                                     <div class="text-right">
-                                        <button type="submit" class="btn btn-info font-weight-bold text-white btn-round px-4" id="btnGuardarIntegrantesSubgrupo">
+                                        <button type="submit" class="btn font-weight-bold text-white btn-round px-4 shadow-sm" id="btnGuardarIntegrantesSubgrupo" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: none;">
                                             <i class="fa fa-save mr-1"></i> Guardar Integrantes
                                         </button>
                                     </div>
@@ -1630,9 +1852,10 @@
                                     <table class="table table-hover table-custom w-100 mb-0" id="tablaMiembrosGrupoModal">
                                         <thead>
                                             <tr>
-                                                <th style="width: 10%;">#</th>
-                                                <th style="width: 50%;">Nombre Completo</th>
-                                                <th style="width: 40%;">Correo Electrónico</th>
+                                                <th style="width: 5%;">#</th>
+                                                <th style="width: 40%;">Nombre Completo</th>
+                                                <th style="width: 35%;">Correo Electrónico</th>
+                                                <th style="width: 20%; text-align: center;">Productividad</th>
                                             </tr>
                                         </thead>
                                         <tbody></tbody>
@@ -2310,7 +2533,11 @@
         <div class="modal-content border-0 shadow-lg rounded-lg" style="background-color: #f8fafc;">
             <div class="modal-header bg-dark text-white d-flex align-items-center justify-content-between p-3" style="border-top-left-radius: .5rem; border-top-right-radius: .5rem;">
                 <h5 class="modal-title font-weight-bold mb-0 text-white" id="modalTelHeading">
-                    <i class="fa fa-chart-line text-warning mr-2"></i> Telemetría y Analítica de Funcionario
+                    @hasanyrole('Administrador|Super Admin')
+                        <i class="fa fa-chart-line text-warning mr-2"></i> Telemetría y Analítica de Funcionario
+                    @else
+                        <i class="fa fa-history text-warning mr-2"></i> Historial Reciente de Actividad y Puntos
+                    @endhasanyrole
                 </h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
                     <span aria-hidden="true">&times;</span>
@@ -2337,7 +2564,8 @@
                     </div>
                 </div>
 
-                {{-- Rejilla de KPIs --}}
+                @hasanyrole('Administrador|Super Admin')
+                {{-- Rejilla de KPIs de Telemetría (Solo Administradores) --}}
                 <div class="row mb-4">
                     <div class="col-12 col-md-4 mb-3 mb-md-0">
                         <div class="card border-0 shadow-sm p-3 bg-white text-center" style="border-radius: 10px;">
@@ -2361,18 +2589,36 @@
                         </div>
                     </div>
                 </div>
+                @endhasanyrole
 
-                {{-- Cronología Reciente --}}
+                {{-- Historial de Puntos de Gamificación del Perfil --}}
+                <div class="card border shadow-sm mb-4" style="border-radius: 10px; overflow: hidden;">
+                    <div class="card-header bg-light py-2 px-3 font-weight-bold text-dark small text-uppercase d-flex align-items-center justify-content-between">
+                        <div>
+                            <i class="fa fa-star text-warning mr-1"></i> Historial de Puntos de Gamificación
+                        </div>
+                        <span class="badge badge-pill badge-primary font-weight-bold" style="font-size:0.7rem;">Puntos Válidos</span>
+                    </div>
+                    <div class="card-body p-0 bg-white" style="max-height: 380px; overflow-y: auto;" id="tel_points_container">
+                        <div id="tel_points_list" class="p-3">
+                            <div class="text-center py-3 text-muted small"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando historial de puntos...</div>
+                        </div>
+                    </div>
+                </div>
+
+                @hasanyrole('Administrador|Super Admin')
+                {{-- Cronología de Auditoría Teleférica (Solo Administradores) --}}
                 <div class="card border shadow-sm" style="border-radius: 10px;">
                     <div class="card-header bg-light py-2 px-3 font-weight-bold text-dark small text-uppercase">
-                        <i class="fa fa-history text-info mr-1"></i> Cronología Transaccional Reciente (Últimas Actividades)
+                        <i class="fa fa-chart-line text-info mr-1"></i> Auditoría Teleférica Reciente (Rutas HTTP & IPs)
                     </div>
-                    <div class="card-body p-3 bg-white" style="max-height: 280px; overflow-y: auto;">
+                    <div class="card-body p-3 bg-white" style="max-height: 240px; overflow-y: auto;">
                         <ul class="list-group list-group-flush" id="tel_timeline_list">
-                            <li class="list-group-item text-center text-muted small py-4">Cargando datos de telemetría...</li>
+                            <li class="list-group-item text-center text-muted small py-4">Cargando actividades...</li>
                         </ul>
                     </div>
                 </div>
+                @endhasanyrole
             </div>
             <div class="modal-footer bg-light py-2 px-4">
                 <button type="button" class="btn btn-secondary btn-round px-4" data-dismiss="modal">Cerrar</button>
@@ -3387,9 +3633,45 @@ $(document).ready(function() {
         $('#tel_kpi_total').text('0');
         $('#tel_kpi_last_act').text('—');
         $('#tel_kpi_ip').text('—');
-        $('#tel_timeline_list').html('<li class="list-group-item text-center text-muted small py-4"><i class="fa fa-spinner fa-spin mr-1"></i> Consultando telemetría...</li>');
+        $('#tel_points_list').html('<div class="text-center py-3 text-muted small"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando historial de puntos...</div>');
+        $('#tel_timeline_list').html('<li class="list-group-item text-center text-muted small py-4"><i class="fa fa-spinner fa-spin mr-1"></i> Cargando actividades...</li>');
         $('#modalTelemetriaUsuario').modal('show');
 
+        // 1. Obtener Historial de Puntos desde /perfil/{id}/puntos
+        $.ajax({
+            url: '{{ url("perfil") }}/' + userId + '/puntos',
+            type: 'GET',
+            success: function(pRes) {
+                if (pRes.ok && pRes.points) {
+                    var $pList = $('#tel_points_list');
+                    $pList.empty();
+                    if (pRes.points.length > 0) {
+                        var tableHtml = '<table class="table table-sm table-hover mb-0" style="font-size:0.82rem;">' +
+                            '<thead class="bg-light">' +
+                            '<tr><th>Descripción / Aporte</th><th class="text-center">Categoría</th><th class="text-center">Puntos</th><th class="text-right">Fecha</th></tr>' +
+                            '</thead><tbody>';
+                        
+                        $.each(pRes.points, function(i, pt) {
+                            var ptsBadge = '<span class="badge badge-success font-weight-bold px-2 py-1" style="font-size:0.75rem;">+' + (pt.points || 0) + ' PTS</span>';
+                            var catBadge = '<span class="badge badge-light border text-dark">' + (pt.action_type_label || 'Puntos') + '</span>';
+                            var fFecha = pt.created_at ? new Date(pt.created_at).toLocaleDateString('es-PY', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+                            tableHtml += '<tr>' +
+                                '<td><strong class="text-dark">' + (pt.description || 'Aporte') + '</strong></td>' +
+                                '<td class="text-center">' + catBadge + '</td>' +
+                                '<td class="text-center">' + ptsBadge + '</td>' +
+                                '<td class="text-right text-muted font-mono" style="font-size:0.75rem;">' + fFecha + '</td>' +
+                                '</tr>';
+                        });
+                        tableHtml += '</tbody></table>';
+                        $pList.html(tableHtml);
+                    } else {
+                        $pList.html('<div class="text-center py-4 text-muted small"><i class="fa fa-info-circle mr-1"></i> Aún no registra historial de puntos en este período.</div>');
+                    }
+                }
+            }
+        });
+
+        // 2. Obtener Perfil & Actividades
         $.ajax({
             url: '{{ url("admin/globales/users") }}/' + userId + '/telemetry',
             type: 'GET',
@@ -3416,22 +3698,24 @@ $(document).ready(function() {
 
                     var $list = $('#tel_timeline_list');
                     $list.empty();
+                    var isUserAdmin = {{ auth()->user()->hasAnyRole(['Administrador', 'Super Admin']) ? 'true' : 'false' }};
                     if (res.timeline && res.timeline.length > 0) {
                         $.each(res.timeline, function(i, item) {
                             var modBadge = '<span class="badge badge-info mr-2" style="font-size:0.7rem">' + item.module + '</span>';
+                            var ipSnippet = isUserAdmin ? '<div class="small text-muted" style="font-size:0.72rem"><i class="fa fa-laptop mr-1"></i>IP: ' + item.ip + '</div>' : '';
                             var html = '<li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-bottom">' +
-                                '<div>' + modBadge + '<strong class="small text-dark">' + item.description + '</strong><div class="small text-muted" style="font-size:0.72rem"><i class="fa fa-laptop mr-1"></i>IP: ' + item.ip + '</div></div>' +
+                                '<div>' + modBadge + '<strong class="small text-dark">' + item.description + '</strong>' + ipSnippet + '</div>' +
                                 '<span class="badge badge-light border text-muted" style="font-size:0.7rem"><i class="fa fa-clock mr-1"></i>' + item.hace + '</span>' +
                                 '</li>';
                             $list.append(html);
                         });
                     } else {
-                        $list.html('<li class="list-group-item text-center text-muted small py-4"><i class="fa fa-info-circle mr-1"></i> El funcionario aún no registra interacciones en el módulo.</li>');
+                        $list.html('<li class="list-group-item text-center text-muted small py-4"><i class="fa fa-info-circle mr-1"></i> Sin actividades recientes registradas.</li>');
                     }
                 }
             },
             error: function() {
-                toastr.error('No se pudo consultar la información de telemetría del funcionario.');
+                toastr.error('No se pudo consultar la información del funcionario.');
             }
         });
     };
@@ -3595,8 +3879,9 @@ $(document).ready(function() {
                 members.forEach(function(m, idx) {
                     tbodyM.append('<tr>' +
                         '<td>' + (idx + 1) + '</td>' +
-                        '<td class="font-weight-bold text-dark">' + $('<div>').text(m.name).html() + '</td>' +
+                        '<td class="font-weight-bold text-dark"><i class="fa fa-user-circle text-info mr-1"></i>' + $('<div>').text(m.name).html() + '</td>' +
                         '<td><span class="text-muted"><i class="fa fa-envelope mr-1"></i>' + $('<div>').text(m.email).html() + '</span></td>' +
+                        '<td class="text-center"><button type="button" class="btn btn-xs btn-outline-info font-weight-bold shadow-sm" onclick="abrirModalTelemetriaUsuario(' + m.id + ')" title="Ver Productividad y Telemetría del Funcionario"><i class="fa fa-chart-line mr-1"></i> Telemetría</button></td>' +
                         '</tr>');
                 });
 
@@ -4411,5 +4696,345 @@ window.guardarNuevoUsuarioInline = function() {
         }
     });
 };
+
+</script>
+
+{{-- ════════════════════════════════════════════════════════════════════════════
+     MODAL: PREMIO MASIVO CIERRE DE SEMANA (+100 PTS)
+     ════════════════════════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalPremioCierreSemana" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-lg">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                <h5 class="modal-title font-weight-bold mb-0 text-white">
+                    <i class="fa fa-gift mr-2"></i> 🎉 Premio Masivo — Cierre de Semana Exitoso
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formPremioCierreSemana">
+                @csrf
+                <div class="modal-body p-4">
+                    <input type="hidden" id="cierre_sem_group_id" name="group_id">
+                    
+                    <div class="alert alert-warning border-0 shadow-xs mb-3 font-weight-bold" style="background: #fffbeeb0; color: #92400e; font-size: 0.85rem;">
+                        <i class="fa fa-info-circle mr-1"></i> Este premio otorgará puntos de reconocimiento masivo a <strong>todos los integrantes</strong> del equipo seleccionado y sus subgrupos subordinados.
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small mb-1">Equipo / Grupo Seleccionado</label>
+                        <input type="text" id="cierre_sem_group_name" class="form-control font-weight-bold bg-light" readonly style="color: #0f172a !important;">
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small mb-1">Puntos de Reconocimiento</label>
+                        <div class="input-group">
+                            <input type="number" id="cierre_sem_points" name="points" class="form-control font-weight-bold text-warning" value="100" min="1" max="5000" required style="font-size: 1.1rem; color: #d97706 !important;">
+                            <div class="input-group-append">
+                                <span class="input-group-text font-weight-bold bg-warning text-dark border-0">PTS PER CAPITA</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <label class="font-weight-bold text-dark small mb-0">Título del Premio / Motivo (*)</label>
+                            <button type="button" class="btn btn-xs font-weight-bold text-dark shadow-sm" onclick="generarTextoConIA()" style="background: linear-gradient(135deg, #fef08a 0%, #fde047 100%); border: 1px solid #facc15; border-radius: 12px; font-size: 0.72rem; padding: 2px 10px;">
+                                <i class="fa fa-magic mr-1 text-warning"></i> 🤖 Redactor IA Generativo
+                            </button>
+                        </div>
+                        <input type="text" id="cierre_sem_title" name="title" class="form-control font-weight-bold" value="🎉 Cierre de Semana Exitoso — Aporte en SIPLAN GO!" required style="color: #0f172a !important;">
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold text-dark small mb-1">Mensaje de Felicitación (Opcional)</label>
+                        <textarea id="cierre_sem_desc" name="description" class="form-control" rows="3" style="color: #0f172a !important;" placeholder="Ej: Felicitaciones a todo el equipo por su excelente desempeño, compromiso y cumplimiento de objetivos en la presente semana.">Reconocimiento al esfuerzo, compromiso y colaboración activa en la gestión institucional del SIPLAN PEI.</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3">
+                    <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning font-weight-bold text-dark px-4 shadow-sm" id="btnOtorgarCierreSemana">
+                        <i class="fa fa-gift mr-1"></i> 🎉 OTORGAR PUNTOS MASIVOS
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- ════════════════════════════════════════════════════════════════════════════
+     MODAL: FICHA VISUAL DE RECONOCIMIENTO PARA WHATSAPP
+     ════════════════════════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalFichaReconocimientoWhatsApp" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-lg">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                <h5 class="modal-title font-weight-bold text-white mb-0 d-flex align-items-center">
+                    <i class="fab fa-whatsapp text-success mr-2" style="font-size: 1.3rem;"></i>
+                    Tarjetas de Reconocimiento e Incentivo Institucional
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 text-center" style="background: #f8fafc;">
+                
+                {{-- Tarjeta Renderizada en HTML/CSS --}}
+                <div id="fichaReconocimientoCardContainer" class="mx-auto shadow-lg p-4 rounded-xl text-white position-relative"
+                     style="max-width: 620px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0369a1 100%); border: 3px solid #f59e0b; border-radius: 20px; font-family: system-ui, -apple-system, sans-serif; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important;">
+                    
+                    @php
+                        $sysLogoRaw = \App\Models\HomeConfiguration::getSetting('logo_url');
+                        $sysLogoUrl = !empty($sysLogoRaw) ? (str_starts_with($sysLogoRaw, 'http') ? $sysLogoRaw : asset($sysLogoRaw)) : asset('material/img/new_logo.png');
+                    @endphp
+
+                    {{-- Sello e Isologo Institucional SIPLAN PEI Superior Centrado --}}
+                    <div class="d-flex flex-column align-items-center justify-content-center mb-3 border-bottom pb-3" style="border-color: rgba(255,255,255,0.15) !important;">
+                        <img src="{{ $sysLogoUrl }}" alt="Logo SIPLAN" style="max-height: 58px; width: auto; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4)); margin-bottom: 8px;">
+                        <span class="badge px-3.5 py-1.5 font-weight-bold text-center" style="background: rgba(255,255,255,0.1); color: #7dd3fc; border: 1px solid rgba(125,211,252,0.35); font-size: 0.78rem; letter-spacing: 0.8px;">
+                            🛡️ INSTITUTO DE PREVISIÓN SOCIAL (IPS)
+                        </span>
+                    </div>
+
+                    {{-- Trofeo e Insignia --}}
+                    <div class="my-2">
+                        <div style="font-size: 3.5rem; line-height: 1; text-shadow: 0 4px 10px rgba(245,158,11,0.5);" id="ficha_card_medal">🥇</div>
+                        <div class="text-uppercase font-weight-bold mt-1" style="color: #fef08a; font-size: 0.78rem; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                            MÉRITO A LA EXCELENCIA E INNOVACIÓN INSTITUCIONAL
+                        </div>
+                    </div>
+
+                    {{-- Nombre del Funcionario --}}
+                    <div class="my-3 py-2 px-3 rounded-lg" style="background: rgba(255,255,255,0.06); border: 1px dashed rgba(245,158,11,0.5);">
+                        <h2 class="font-weight-bold text-white mb-1" id="ficha_card_name" style="font-size: 1.6rem; letter-spacing: 0.3px; text-shadow: 0 2px 6px rgba(0,0,0,0.6);">
+                            Cristóbal Martínez
+                        </h2>
+                        <div class="font-weight-semibold" id="ficha_card_group" style="color: #93c5fd; font-size: 0.9rem;">
+                            Dpto. de Coordinación de Proyectos
+                        </div>
+                    </div>
+
+                    {{-- Mensaje Motivador y Sobrio --}}
+                    <p class="mb-3 px-2 text-white-50 italic" style="font-size: 0.84rem; line-height: 1.5; font-style: italic;">
+                        "Reconocimiento al constante compromiso, destacada colaboración activa y valioso aporte en la gestión estratégica del Sistema de Planificación PEI."
+                    </p>
+
+                    {{-- Puntuación e Insignia de Posición --}}
+                    <div class="d-flex align-items-center justify-content-center flex-wrap" style="gap: 10px;">
+                        <span class="badge badge-pill px-3 py-2 font-weight-bold" id="ficha_card_rank" style="background: rgba(255,255,255,0.15); color: #fff; font-size: 0.82rem;">
+                            🏆 Puesto #1 en Ranking
+                        </span>
+                        <span class="badge badge-pill px-3 py-2 font-weight-bold" id="ficha_card_points" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; font-size: 0.88rem; box-shadow: 0 4px 10px rgba(245,158,11,0.3);">
+                            ⭐ 1.250 PUNTOS ACUMULADOS
+                        </span>
+                    </div>
+
+                    {{-- Pie de Ficha --}}
+                    <div class="mt-3 pt-2 text-muted" style="border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.68rem; color: #94a3b8 !important;">
+                        Dirección de Planificación Institucional • Cierre de Semana Exitoso
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between flex-wrap">
+                <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Cerrar</button>
+                <div class="d-flex flex-wrap" style="gap: 8px;">
+                    <button type="button" class="btn font-weight-bold text-white px-3 shadow-sm" id="btnCopiarFichaClipboard" style="background: #8b5cf6; border: none;" title="Copiar directamente al portapapeles para pegar con Ctrl+V en WhatsApp">
+                        <i class="fa fa-copy mr-1"></i> 📋 COPIAR IMAGEN (Ctrl+V en WhatsApp)
+                    </button>
+                    <button type="button" class="btn font-weight-bold text-white px-3 shadow-sm" id="btnDescargarFichaPNG" style="background: #0284c7; border: none;">
+                        <i class="fa fa-download mr-1"></i> 📥 DESCARGAR FOTO (JPG HD)
+                    </button>
+                    <button type="button" class="btn font-weight-bold text-white px-3 shadow-sm" id="btnCompartirWhatsAppDirecto" style="background: #25D366; border: none;">
+                        <i class="fab fa-whatsapp mr-1"></i> 📲 TEXTO A WHATSAPP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const inspiracionesIA = [
+    {
+        title: "🎉 Cierre de Semana Exitoso — Aporte Destacado en SIPLAN GO!",
+        desc: "Felicitaciones a todo el equipo por su excepcional compromiso, constancia y aporte estratégico en el logro de las metas semanales de la institución."
+    },
+    {
+        title: "🌟 Mérito a la Innovación y Colaboración de Equipo",
+        desc: "Reconocimiento especial a cada integrante por mantener un ritmo de trabajo ejemplar, impulsando la excelencia y la transformación digital en el IPS."
+    },
+    {
+        title: "🏆 Impulsores del Plan Estratégico PEI — Cierre de Semana",
+        desc: "En mérito a su esfuerzo coordinado, liderazgo colaborativo y cumplimiento impecable de hitos prioritarios durante la presente semana."
+    },
+    {
+        title: "🚀 Excelencia Operativa y Compromiso Institucional",
+        desc: "Valoramos profundamente la dedicación y energía entregadas por el equipo para concretar los avances estratégicos en el sistema SIPLAN PEI."
+    },
+    {
+        title: "🛡️ Aporte de Alto Valor Institucional IPS",
+        desc: "Reconocimiento a la sinergia, proactividad y resultados colectivos que fortalecen el cumplimiento de los objetivos estratégicos institucionales."
+    }
+];
+
+let lastIaIndex = -1;
+window.generarTextoConIA = function() {
+    let nextIdx = Math.floor(Math.random() * inspiracionesIA.length);
+    if (nextIdx === lastIaIndex) {
+        nextIdx = (nextIdx + 1) % inspiracionesIA.length;
+    }
+    lastIaIndex = nextIdx;
+
+    const item = inspiracionesIA[nextIdx];
+    $('#cierre_sem_title').val(item.title).addClass('is-valid');
+    $('#cierre_sem_desc').val(item.desc).addClass('is-valid');
+    
+    setTimeout(function() {
+        $('#cierre_sem_title, #cierre_sem_desc').removeClass('is-valid');
+    }, 1200);
+
+    toastr.success('Redacción motivacional generada con éxito.', '🤖 Redactor IA Generativo');
+};
+
+window.abrirModalPremioCierreSemana = function(groupId, groupName) {
+    $('#cierre_sem_group_id').val(groupId || '');
+    $('#cierre_sem_group_name').val(groupName || 'Ámbito Institucional');
+    $('#modalPremioCierreSemana').modal('show');
+};
+
+$('#formPremioCierreSemana').on('submit', function(e) {
+    e.preventDefault();
+    var groupId = $('#cierre_sem_group_id').val();
+    if (!groupId) {
+        toastr.error('Por favor seleccione un grupo para otorgar el premio.');
+        return;
+    }
+
+    var $btn = $('#btnOtorgarCierreSemana');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Otorgando Puntos...');
+
+    $.ajax({
+        url: "{{ url('admin/globales/groups') }}/" + groupId + "/otorgar-puntos-cierre-semana",
+        type: "POST",
+        data: $(this).serialize(),
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-gift mr-1"></i> 🎉 OTORGAR PUNTOS MASIVOS');
+            if (res.success) {
+                $('#modalPremioCierreSemana').modal('hide');
+                Swal.fire({
+                    title: '¡Puntos Otorgados!',
+                    text: res.message || 'Se han acreditado los 100 Pts de Cierre de Semana Exitoso.',
+                    icon: 'success',
+                    confirmButtonColor: '#0284c7'
+                }).then(function() {
+                    location.reload();
+                });
+            } else {
+                toastr.error(res.message || 'Error al otorgar los puntos.');
+            }
+        },
+        error: function(err) {
+            $btn.prop('disabled', false).html('<i class="fa fa-gift mr-1"></i> 🎉 OTORGAR PUNTOS MASIVOS');
+            var msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Error al procesar la solicitud.';
+            toastr.error(msg);
+        }
+    });
+});
+
+let currentFichaData = {};
+
+window.generarFichaWhatsApp = function(name, group, points, rank) {
+    currentFichaData = { name: name, group: group, points: points, rank: rank };
+    var medals = ['🥇', '🥈', '🥉', '🎖️', '🎖️'];
+    var medal = medals[rank - 1] || '⭐';
+
+    $('#ficha_card_medal').text(medal);
+    $('#ficha_card_name').text(name);
+    $('#ficha_card_group').text(group);
+    $('#ficha_card_rank').text('🏆 Puesto #' + rank + ' en Ranking');
+    $('#ficha_card_points').text('⭐ ' + Number(points).toLocaleString() + ' PUNTOS ACUMULADOS');
+
+    $('#modalFichaReconocimientoWhatsApp').modal('show');
+};
+
+// ── COPIAR IMAGEN DIRECTAMENTE AL PORTAPAPELES (Ctrl+V en WhatsApp) ──
+$('#btnCopiarFichaClipboard').on('click', function() {
+    var $btn = $(this);
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Copiando Imagen...');
+
+    var element = document.getElementById('fichaReconocimientoCardContainer');
+    html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#0f172a'
+    }).then(function(canvas) {
+        canvas.toBlob(function(blob) {
+            if (navigator.clipboard && window.ClipboardItem) {
+                navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]).then(function() {
+                    $btn.prop('disabled', false).html('<i class="fa fa-check mr-1"></i> 📋 ¡COPIADO! Pegar con Ctrl+V');
+                    toastr.success('¡Imagen copiada al portapapeles! Abrí WhatsApp Web y presioná Ctrl + V (o Cmd + V) para pegar como foto.', '📋 Lista para WhatsApp');
+                    setTimeout(function() {
+                        $btn.html('<i class="fa fa-copy mr-1"></i> 📋 COPIAR IMAGEN (Ctrl+V en WhatsApp)');
+                    }, 4000);
+                }).catch(function(err) {
+                    descargarFichaFallback(canvas, $btn);
+                });
+            } else {
+                descargarFichaFallback(canvas, $btn);
+            }
+        }, 'image/png');
+    }).catch(function(err) {
+        $btn.prop('disabled', false).html('<i class="fa fa-copy mr-1"></i> 📋 COPIAR IMAGEN (Ctrl+V en WhatsApp)');
+        toastr.error('Error al generar la imagen.');
+    });
+});
+
+function descargarFichaFallback(canvas, $btn) {
+    $btn.prop('disabled', false).html('<i class="fa fa-copy mr-1"></i> 📋 COPIAR IMAGEN (Ctrl+V en WhatsApp)');
+    var link = document.createElement('a');
+    link.download = 'reconocimiento_' + (currentFichaData.name || 'funcionario').replace(/\s+/g, '_') + '.jpg';
+    link.href = canvas.toDataURL('image/jpeg', 0.95);
+    link.click();
+    toastr.info('Imagen descargada en formato JPG HD. Adjuntala como Foto en WhatsApp Web.', '📥 Descargada');
+}
+
+// ── DESCARGAR FOTO JPG HD CON FONDO SOLIDO ──
+$('#btnDescargarFichaPNG').on('click', function() {
+    var $btn = $(this);
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Generando Foto...');
+
+    var element = document.getElementById('fichaReconocimientoCardContainer');
+    html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#0f172a'
+    }).then(function(canvas) {
+        $btn.prop('disabled', false).html('<i class="fa fa-download mr-1"></i> 📥 DESCARGAR FOTO (JPG HD)');
+        var link = document.createElement('a');
+        link.download = 'reconocimiento_' + (currentFichaData.name || 'funcionario').replace(/\s+/g, '_') + '.jpg';
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.click();
+    }).catch(function(err) {
+        $btn.prop('disabled', false).html('<i class="fa fa-download mr-1"></i> 📥 DESCARGAR FOTO (JPG HD)');
+        toastr.error('No se pudo generar la imagen. Intente nuevamente.');
+    });
+});
+
+$('#btnCompartirWhatsAppDirecto').on('click', function() {
+    var mensaje = "🌟 *RECONOCIMIENTO A LA EXCELENCIA E INNOVACIÓN INSTITUCIONAL — SIPLAN GO! (IPS)*\n\n" +
+                  "🥇 *Funcionario Destacado*: " + (currentFichaData.name || '') + "\n" +
+                  "🏢 *Equipo/Dependencia*: " + (currentFichaData.group || '') + "\n" +
+                  "🏆 *Posición en Ranking*: Puesto #" + (currentFichaData.rank || '1') + "\n" +
+                  "⭐ *Puntuación Acumulada*: " + Number(currentFichaData.points || 0).toLocaleString() + " Pts\n\n" +
+                  "👏 ¡Felicitaciones por tu esfuerzo, constancia y valioso aporte en el Cierre de Semana Exitoso del Sistema de Planificación PEI!";
+
+    var url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensaje);
+    window.open(url, '_blank');
+});
 </script>
 @endsection

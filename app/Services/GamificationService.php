@@ -631,7 +631,20 @@ class GamificationService
                 'is_retroactive' => $isRetroactive,
             ]);
 
-            $members = $group->users()->get();
+            // Obtener todos los integrantes del grupo y sus subgrupos subordinados
+            $subGroupIds = \App\Admin\Globales\Group::where('parent_id', $group->id)
+                ->orWhere('id', $group->id)
+                ->pluck('id');
+
+            $groups = \App\Admin\Globales\Group::with('members')->whereIn('id', $subGroupIds)->get();
+            $memberIds = collect();
+            foreach ($groups as $g) {
+                $memberIds = $memberIds->merge($g->members->pluck('id'));
+            }
+            $directMemberIds = User::whereIn('group_id', $subGroupIds)->pluck('id');
+            $allUserIds = $memberIds->merge($directMemberIds)->unique();
+
+            $members = User::whereIn('id', $allUserIds)->get();
 
             foreach ($members as $member) {
                 $exists = GamificationPoint::where('user_id', $member->id)
@@ -645,7 +658,7 @@ class GamificationService
                         'pei_profile_id' => null,
                         'points'         => $points,
                         'action_type'    => 'group_award',
-                        'description'    => "Premio de Equipo ({$group->name}): {$title}" . ($description ? " — {$description}" : ""),
+                        'description'    => \Illuminate\Support\Str::limit("Premio de Equipo ({$group->name}): {$title}" . ($description ? " — {$description}" : ""), 450),
                         'reference_type' => \App\Models\Gamification\GroupReward::class,
                         'reference_id'   => (string)$reward->id,
                     ]);

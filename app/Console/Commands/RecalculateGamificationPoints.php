@@ -94,6 +94,7 @@ class RecalculateGamificationPoints extends Command
         $this->collectPeiEdits();
         $this->collectAccionesOperativas();
         $this->collectGitCommits();
+        $this->collectSoporteTickets();
 
         $this->info('Insertando ' . count($this->pendingRows) . ' registros de puntos...');
         $inserted = $gamificationService->insertPointsBatch($this->pendingRows);
@@ -539,12 +540,14 @@ class RecalculateGamificationPoints extends Command
                             $userName = strtolower(trim($u->name ?? ''));
                             $authorName = strtolower(trim($author ?? ''));
 
-                            // Coincidencia específica para Ángel Rojas
-                            if (str_contains($userName, 'rojas') && str_contains($authorName, 'rojas')) {
-                                return true;
+                            // Coincidencia específica para Ángel Rojas (arojas@ips.gov.py / Angel Rojas)
+                            if (str_contains($userMail, 'arojas') || (str_contains($userName, 'angel') && str_contains($userName, 'rojas'))) {
+                                if (str_contains($commitMail, 'arojas') || str_contains($commitMail, 'angel') || str_contains($authorName, 'angel') || str_contains($authorName, 'rojas')) {
+                                    return true;
+                                }
                             }
 
-                            // Coincidencia exacta de nombre
+                            // Coincidencia exacta de nombre o email
                             if ($userName === $authorName) {
                                 return true;
                             }
@@ -557,7 +560,7 @@ class RecalculateGamificationPoints extends Command
                                 $matchedUser->id,
                                 'git_commit',
                                 '🚀 Desarrollo & Aporte de Código: ' . Str::limit($subject, 45),
-                                50,
+                                100,
                                 \App\Models\User::class,
                                 $hash,
                                 null,
@@ -569,6 +572,28 @@ class RecalculateGamificationPoints extends Command
             }
         } catch (\Exception $e) {
             $this->error('Error recopilando commits: ' . $e->getMessage());
+        }
+    }
+
+    protected function collectSoporteTickets(): void
+    {
+        $this->info('Recopilando reportes de fallas técnicas y tickets...');
+
+        foreach (\App\Models\Soporte\SoporteTicket::whereNotNull('user_id')->cursor() as $ticket) {
+            if (!$this->usersById->has($ticket->user_id)) {
+                continue;
+            }
+
+            $this->queuePoint(
+                $ticket->user_id,
+                'reporte_falla',
+                'Reporte de falla técnica ' . $ticket->codigo . ': ' . Str::limit($ticket->titulo, 35),
+                50,
+                \App\Models\Soporte\SoporteTicket::class,
+                $ticket->id,
+                (string) ($ticket->pei_profile_id ?: $this->defaultPeiId),
+                $ticket->created_at?->toDateTimeString()
+            );
         }
     }
 }

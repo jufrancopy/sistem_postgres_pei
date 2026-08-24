@@ -176,7 +176,7 @@ class ActivityController extends Controller
             'color'              => $request->color ?? '#6b7280',
             'fecha_inicio'      => $request->fecha_inicio ?: null,
             'fecha_vencimiento'  => $request->fecha_vencimiento ?: null,
-            'assigned_to'        => $request->assigned_to,
+            'assigned_to'        => $request->assigned_to ?: Auth::id(),
             'status'             => $request->status ?? 0,
             'es_reunion'         => $request->boolean('es_reunion'),
             'es_documento'       => $request->boolean('es_documento'),

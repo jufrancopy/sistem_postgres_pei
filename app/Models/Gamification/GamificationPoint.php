@@ -55,6 +55,7 @@ class GamificationPoint extends Model
             'chat_context_query' => 'Consulta vinculada en chat',
             'pei_edit'           => 'Edición de elemento PEI',
             'git_commit'         => '🚀 Desarrollo & Aporte de Código',
+            'reporte_falla'      => '🛠️ Reporte de Falla / Mejora Técnica',
         ];
         return $labels[$this->action_type] ?? ucfirst(str_replace('_', ' ', $this->action_type));
     }

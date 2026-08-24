@@ -16,7 +16,7 @@ use App\Models\HomeConfiguration;
 class GlobalesController extends Controller
 {
     public function __construct(){
-        $this->middleware(['auth', 'role:Administrador']);
+        $this->middleware(['auth', 'role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI']);
     }
     
     public function dashboard(Request $request)
@@ -41,7 +41,7 @@ class GlobalesController extends Controller
                 ->find($peiProfileId);
         }
         if (!$selectedPei && $peiPerfiles->count() > 0) {
-            $selectedPei  = $peiPerfiles->first();
+            $selectedPei = $peiPerfiles->firstWhere('id', 'ce99f883-fdd0-4723-8f75-cf689aa8f0fa') ?: $peiPerfiles->first();
         }
 
         if ($selectedPei) {
@@ -78,9 +78,9 @@ class GlobalesController extends Controller
         $totalAdmins        = User::role('Administrador')->count();
         $totalParticipantes = User::role('Participantes')->count();
 
-        // ── Organigramas ──────────────────────────────────────────────────────
+        // ── Organigramas (Solo Estructura Orgánica Raíz) ──────────────────────
         $totalOrganigramas     = Organigrama::whereIsRoot()->count();
-        $totalDependencias     = Organigrama::count();
+        $totalDependencias     = Organigrama::whereIsRoot()->count();
         $totalEstablecimientos = Organigrama::whereNotNull('tipo_establecimiento')->count();
         $establecimientos_aop  = Organigrama::where('tiene_aop', true)->count();
         $establecimientos_por_tenencia = Organigrama::whereNotNull('tipo_establecimiento')
@@ -143,9 +143,19 @@ class GlobalesController extends Controller
                 ->orderBy('id', 'desc')
                 ->get();
 
-            // Calcular Top 3 miembros por Puntos de Gamificación para cada grupo
+            // Calcular Top 3 miembros por Puntos de Gamificación para cada grupo (Filtrados por Contexto PEI Activo)
             $allMemberIds = $gruposList->pluck('members')->flatten()->pluck('id')->unique();
-            $pointsPerUser = \App\Models\Gamification\GamificationPoint::whereIn('user_id', $allMemberIds)
+            $peiProfileIds = $selectedPei ? $selectedPei->descendants()->pluck('id')->push($selectedPei->id)->toArray() : [];
+
+            $pointsPerUserQuery = \App\Models\Gamification\GamificationPoint::whereIn('user_id', $allMemberIds);
+            if (!empty($peiProfileIds)) {
+                $pointsPerUserQuery->where(function($q) use ($peiProfileIds) {
+                    $q->whereIn('pei_profile_id', $peiProfileIds)
+                      ->orWhereNull('pei_profile_id');
+                });
+            }
+
+            $pointsPerUser = $pointsPerUserQuery
                 ->selectRaw('user_id, SUM(points) as total_points')
                 ->groupBy('user_id')
                 ->pluck('total_points', 'user_id');
@@ -157,6 +167,7 @@ class GlobalesController extends Controller
                 })->sortByDesc('puntos_gamificacion')->values();
 
                 $g->top_miembros = $sortedMembers->take(3);
+                $g->setRelation('members', $sortedMembers);
             });
         } else {
             $gruposList = collect();
@@ -180,6 +191,8 @@ class GlobalesController extends Controller
                 ->orderBy('id', 'desc')
                 ->get();
         }
+
+        $totalUsuarios = $usuariosList->count();
 
         // ── Actividades del PEI (Filtradas por Contexto PEI Activo) ────────────
         if ($selectedPei) {
@@ -234,6 +247,37 @@ class GlobalesController extends Controller
         $totalJuntas = $juntasList->count();
         $totalJuntasActivas = $juntasList->where('activo', true)->count();
         $totalIntervencionesJuntas = \App\Models\Planificacion\JuntaIntervencion::count();
+
+        // ── Top 10 Funcionarios Destacados (Filtrados por PEI Seleccionado y Sin Admins) ──
+        $adminUserIds = User::role('Administrador')->pluck('id')->toArray();
+        $descendantPeiIds = $selectedPei ? $selectedPei->descendants()->pluck('id')->push($selectedPei->id)->toArray() : [];
+
+        $top10PointsMap = \App\Models\Gamification\GamificationPoint::selectRaw('user_id, SUM(points) as total_points')
+            ->whereNotIn('user_id', $adminUserIds)
+            ->where(function($q) use ($descendantPeiIds) {
+                if (!empty($descendantPeiIds)) {
+                    $q->whereIn('pei_profile_id', $descendantPeiIds)
+                      ->orWhereNull('pei_profile_id');
+                }
+            })
+            ->groupBy('user_id')
+            ->orderByDesc('total_points')
+            ->limit(10)
+            ->get();
+
+        $top10UserIds = $top10PointsMap->pluck('user_id');
+        $top10Users   = User::with('group')->whereIn('id', $top10UserIds)->get()->keyBy('id');
+
+        $top10RankingReconocimiento = $top10PointsMap->map(function($item, $idx) use ($top10Users) {
+            $u = $top10Users->get($item->user_id);
+            if (!$u) return null;
+            $u->puntos_gamificacion = (int) $item->total_points;
+            $u->puesto_ranking      = $idx + 1;
+            return $u;
+        })->filter(fn($u) => $u->puntos_gamificacion > 0)->values();
+
+        // Mantener compatibilidad con variable en vista
+        $top5RankingReconocimiento = $top10RankingReconocimiento;
 
         return view('admin.globales.dashboard', get_defined_vars());
     }

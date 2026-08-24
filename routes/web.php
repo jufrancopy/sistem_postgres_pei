@@ -117,10 +117,11 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/basurero', 'Admin\Planificacion\Pei\PeiController@basureroList')->name('pei.basurero.list');
     Route::post('pei-profiles/{idProfile}/basurero/restaurar-nodo/{nodeId}', 'Admin\Planificacion\Pei\PeiController@restaurarNodo')->name('pei.basurero.restaurar-nodo');
     Route::post('pei-profiles/{idProfile}/basurero/restaurar-iniciativa/{iniId}', 'Admin\Planificacion\Pei\PeiController@restaurarIniciativa')->name('pei.basurero.restaurar-iniciativa');
+    Route::post('pei-profiles/{idProfile}/revertir-edicion/{editId}', 'Admin\Planificacion\Pei\PeiController@revertirEdicion')->name('pei.edicion.revertir');
 
     // ── Coordinador de Planificación ─────────────────────────────────────────
     Route::prefix('coordinador-planificacion')->name('coordinador.')->middleware(['role:Coordinador de Planificación|Analista de Planificación|Administrador'])->group(function () {
-        Route::get('/', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@index')->name('index');
+        Route::get('/', function() { return redirect()->route('globales.dashboard'); })->name('index');
         Route::get('gestionar-grupos', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@gestionarGrupos')->name('gestionar-grupos');
         Route::get('crear-actividad', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@crearActividad')->name('crear-actividad');
         Route::get('ver-grupos-usuarios', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@verGruposYUsuarios')->name('ver-grupos-usuarios');
@@ -493,8 +494,13 @@ Route::group(['middleware' => ['auth']], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
 
-        // ── Globales administrativas: solo Administrador ───────────────────────
-        Route::middleware(['role:Administrador'])->group(function () {
+        // ── Users: Administradores y Coordinadores de Planificación ───────────
+        Route::middleware(['role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI'])->group(function () {
+            Route::resource('users', 'Admin\UserController');
+        });
+
+        // ── Globales administrativas estrictas: solo Administrador ───────────────────────
+        Route::middleware(['role:Administrador|Super Admin'])->group(function () {
             Route::get('configuracion-sistema',  'Admin\HomeConfigController@editGlobalSettings')->name('configuracion-sistema');
             Route::post('configuracion-sistema', 'Admin\HomeConfigController@updateGlobalSettings')->name('configuracion-sistema.update');
 
@@ -502,17 +508,25 @@ Route::group(['middleware' => ['auth']], function () {
             Route::resource('localities', 'Admin\Globales\LocalityController');
             Route::resource('patrimonies', 'Admin\Globales\PatrimonyController');
             Route::resource('patrimony-profiles', 'Admin\Globales\PatrimonyProfileController');
-            Route::resource('users', 'Admin\UserController');
             Route::resource('permisos', 'Admin\PermissionController');
             Route::resource('roles', 'Admin\RoleController');
             Route::resource('formularios', 'Admin\Globales\Formulario\FormularioController');
         });
 
+        // ── Helper endpoints abiertos a usuarios autenticados para asignación ──
+        Route::get('get-root-groups', 'Admin\Globales\GroupController@getRootGroups')->name('get-root-groups');
+        Route::get('get-groups/{idRoot}', 'Admin\Globales\GroupController@getGroupsFromRoot')->name('get-groups');
+        Route::get('get-group-parent/{idSelection}', 'Admin\Globales\GroupController@dataGroupParent')->name('get-group-parent');
+        Route::get('get-group/{idSelection}', 'Admin\Globales\GroupController@dataGroup')->name('get-group');
+        Route::get('get-users', 'Admin\UserController@getUsers')->name('get-users');
+        Route::get('get-user/{id}', 'Admin\UserController@getUser')->name('get-user');
+        Route::get('get-pei-profiles', 'Admin\Globales\ActivityController@getPeiProfiles')->name('get-pei-profiles');
+
         // ── Show: Administrador + Gestor + Colaborador ───────────────────────
         Route::get('activities/{activity}', 'Admin\Globales\ActivityController@show')->name('activities.show');
 
-        // ── Creación de tareas y Notificaciones por correo: Solo Administrador y Gestor ──
-        Route::middleware(['role:Administrador|Gestor de Actividades'])->group(function () {
+        // ── Creación de tareas y Notificaciones por correo: Administrador, Gestores y Analistas ──
+        Route::middleware(['role:Administrador|Gestor de Actividades|Coordinador de Planificación|Analista de Planificación|Analista PEI|Líder MECIP|Analista|Colaborador de Actividades'])->group(function () {
             Route::post('activities/{activityId}/tareas', 'Admin\Globales\ActivityController@storeTarea')->name('activities.tareas.store');
             Route::post('activities/{activityId}/notificar-todos', 'Admin\Globales\ActivityController@notificarTodos')->name('activities.notificar-todos');
             Route::post('activities/tareas/{taskId}/notificar', 'Admin\Globales\ActivityController@notificarTarea')->name('activities.tareas.notificar');
@@ -598,6 +612,7 @@ Route::group(['middleware' => ['auth']], function () {
         //Groups
         Route::resource('groups', 'Admin\Globales\GroupController');
         Route::post('groups/{id}/otorgar-puntos', 'Admin\Globales\GroupController@otorgarPuntosGrupo')->name('groups.otorgar-puntos');
+        Route::post('groups/{id}/otorgar-puntos-cierre-semana', 'Admin\Globales\GroupController@otorgarPuntosCierreSemana')->name('groups.otorgar-puntos-cierre-semana');
         Route::get('get-root-groups', 'Admin\Globales\GroupController@getRootGroups')->name('get-root-groups');
         Route::get('get-groups/{idRoot}', 'Admin\Globales\GroupController@getGroupsFromRoot')->name('get-groups');
         Route::get('get-group-parent/{idSelection}', 'Admin\Globales\GroupController@dataGroupParent')->name('get-group-parent');
@@ -1001,4 +1016,19 @@ Route::middleware(['auth'])->group(function () {
 
     // ── Módulo de Novedades y Desarrollos del Sistema (Git Changelog) ───────
     Route::get('/admin/novedades', [\App\Http\Controllers\Admin\NovedadesController::class, 'index'])->name('admin.novedades.index');
+});
+
+// ── Módulo de Sincronización y Control MECIP (IPS) (Manejado con Auth interno en Controller) ───
+Route::prefix('admin/mecip/control')->name('admin.mecip.control.')->group(function() {
+    Route::get('/', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'index'])->name('index');
+    Route::post('/', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'store'])->name('store');
+    Route::post('/importar-json', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'importarJson'])->name('importarJson');
+    Route::get('/{id}', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'show'])->name('show');
+    Route::post('/{id}/remitir-lider', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'remitirALider'])->name('remitirALider');
+    Route::post('/{id}/resolver-elemento', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'resolverElemento'])->name('resolverElemento');
+    Route::post('/{id}/cerrar-analisis', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'cerrarAnalisis'])->name('cerrarAnalisis');
+    Route::post('/{id}/actividades', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'agregarActividad'])->name('agregarActividad');
+    Route::post('/actividades/{actividadId}/tareas', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'agregarTarea'])->name('agregarTarea');
+    Route::post('/sync-bpm', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'syncFromBpm'])->name('syncFromBpm');
+    Route::post('/parse-html', [\App\Http\Controllers\Admin\Mecip\MecipControlController::class, 'parseHtmlPayload'])->name('parseHtmlPayload');
 });

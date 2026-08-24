@@ -87,7 +87,8 @@ $(document).ready(function() {
     var ultimaFecha = localStorage.getItem(storageKey);
     var isImpersonating = {{ session()->has('impersonator_id') ? 'true' : 'false' }};
 
-    function cargarReflexion(random = 0) {
+    function cargarReflexion(random) {
+        random = random || 0;
         var url = "{{ route('globales.reflexion.diaria') }}";
         if (random === 1) url += "?random=1";
 
