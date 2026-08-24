@@ -18,9 +18,8 @@ class PlanificacionController extends Controller
 {
     public function dashboard(Request $request)
     {
-        // ── Cargar configuración del dashboard ─────────────────────────────────
-        $config = HomeConfiguration::firstOrNew([]);
-        $config->save();
+        return redirect()->route('globales.dashboard', $request->all());
+    }
 
         // ── Solo PEIs corporativos activos (planes estratégicos institucionales) ──
         $user = auth()->user();
