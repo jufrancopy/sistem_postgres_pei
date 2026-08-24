@@ -30,12 +30,13 @@
                     <small class="text-muted" style="font-size:.7rem"><i class="fa fa-leaf mr-1 text-success"></i>Imagen convertida a WebP</small>
                 </div>
 
-                {{-- Zona de Upload (Label nativo) --}}
-                <label id="galeriaUploadZone" for="galeriaFileInput" class="d-block mb-3 p-3 text-center"
+                {{-- Zona de Upload --}}
+                <div id="galeriaUploadZone" class="mb-3 p-3 text-center"
                      style="border:2px dashed #94a3b8;border-radius:12px;cursor:pointer;background:#fff;transition:border-color .2s"
                      ondragover="event.preventDefault();this.style.borderColor='#2563eb'"
                      ondragleave="this.style.borderColor='#94a3b8'"
-                     ondrop="galeriaHandleDrop(event)">
+                     ondrop="galeriaHandleDrop(event)"
+                     onclick="document.getElementById('galeriaFileInput').click()">
                     <div id="galeriaUploadContent">
                         <i class="fa fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                         <p class="mb-1 text-muted" style="font-size:.85rem">
@@ -47,8 +48,8 @@
                         <i class="fa fa-spinner fa-spin fa-2x text-primary mb-2"></i>
                         <p class="mb-0 text-primary font-weight-bold" style="font-size:.85rem">Optimizando y subiendo imagen...</p>
                     </div>
-                    <input type="file" id="galeriaFileInput" accept="image/*" class="d-none">
-                </label>
+                </div>
+                <input type="file" id="galeriaFileInput" accept="image/*" class="d-none">
 
                 {{-- Grid de Fotos --}}
                 <div id="galeriaGrid" class="d-flex flex-wrap" style="gap:12px;min-height:80px">
@@ -90,6 +91,23 @@ var _galeriaCsrf   = "{{ csrf_token() }}";
 var _galeriaBase   = "{{ url('admin/globales/activities/reuniones') }}";
 var _galeriaDelBase = "{{ url('admin/globales/activities/reuniones/fotos') }}";
 var _galeriaCanUpload = false;
+
+// ── Soporte de modales apilados (Stacked Modals) ────────────────────────────
+$(document).on('show.bs.modal', '.modal', function () {
+    var zIndex = 1040 + (10 * $('.modal:visible').length);
+    $(this).css('z-index', zIndex);
+    setTimeout(function() {
+        $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
+    }, 0);
+});
+
+$(document).on('hidden.bs.modal', '.modal', function () {
+    if ($('.modal:visible').length > 0) {
+        setTimeout(function() {
+            $(document.body).addClass('modal-open');
+        }, 0);
+    }
+});
 
 // ── Abrir Galería ───────────────────────────────────────────────────────────
 function abrirGaleriaReunion(taskId, titulo, canUpload) {
