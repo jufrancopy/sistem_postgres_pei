@@ -815,6 +815,9 @@
                                     </select>
                                 </div>
                             @endif
+                            <a href="{{ route('admin.estructura-solicitudes.index') }}" class="btn btn-primary btn-round shadow-sm px-3 text-white mr-1" title="Gestionar Solicitudes de Ajuste de Estructura con QR">
+                                <i class="fa fa-clipboard-list mr-1"></i> Solicitudes de Reorganización
+                            </a>
                             @hasanyrole('Administrador|Super Admin|Coordinador de Planificación')
                             <button type="button" class="btn btn-info btn-round shadow-sm px-3 text-white mr-1" id="btnNuevoOrganigramaRaiz">
                                 <i class="fa fa-plus-circle mr-1"></i> Nuevo Organigrama Raíz

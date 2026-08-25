@@ -508,6 +508,17 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('proyectos-institucionales/{id}/estado',      'Admin\Proyectos\ProyectoInstitucionalController@cambiarEstado')->name('proyectos-institucionales.estado');
     Route::post('proyectos-institucionales/{id}/checklist',   'Admin\Proyectos\ProyectoInstitucionalController@updateChecklist')->name('proyectos-institucionales.checklist');
 
+    // ── Módulo de Solicitudes de Ajuste de Estructura Organizacional ───────────
+    Route::get('admin/planificacion/estructura-solicitudes',
+        [\App\Http\Controllers\Admin\Planificacion\Estructura\SolicitudAjusteEstructuraController::class, 'index'])
+        ->name('admin.estructura-solicitudes.index');
+    Route::get('admin/planificacion/estructura-solicitudes/{id}',
+        [\App\Http\Controllers\Admin\Planificacion\Estructura\SolicitudAjusteEstructuraController::class, 'show'])
+        ->name('admin.estructura-solicitudes.show');
+    Route::post('admin/planificacion/estructura-solicitudes/{id}/estado',
+        [\App\Http\Controllers\Admin\Planificacion\Estructura\SolicitudAjusteEstructuraController::class, 'cambiarEstado'])
+        ->name('admin.estructura-solicitudes.estado');
+
     Route::group(['prefix' => 'admin/globales', 'as' => 'globales.'], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
@@ -1006,6 +1017,21 @@ Route::post('pei-profiles/{profileId}/solicitar-proyecto',
 Route::get('pei-profiles/{profileId}/proyectos/acciones-publico',
     [\App\Http\Controllers\Admin\Proyectos\ProyectoInstitucionalController::class, 'getAccionesDePerfil'])
     ->name('proyectos.solicitar.acciones');
+
+// ── Rutas públicas Solicitud de Ajuste de Estructura Organizacional (sin auth) ─
+Route::get('pei-profiles/{profileId}/solicitar-ajuste-estructura',
+    [\App\Http\Controllers\Admin\Planificacion\Estructura\SolicitudAjusteEstructuraController::class, 'solicitarForm'])
+    ->name('proyectos.solicitar.ajuste-estructura.form');
+Route::post('pei-profiles/{profileId}/solicitar-ajuste-estructura',
+    [\App\Http\Controllers\Admin\Planificacion\Estructura\SolicitudAjusteEstructuraController::class, 'solicitarStore'])
+    ->name('proyectos.solicitar.ajuste-estructura.store');
+Route::get('solicitar-ajuste-estructura',
+    [\App\Http\Controllers\Admin\Planificacion\Estructura\SolicitudAjusteEstructuraController::class, 'solicitarForm'])
+    ->name('estructura.solicitar.directo');
+Route::get('solicitud-estructura/{token}',
+    [\App\Http\Controllers\Admin\Planificacion\Estructura\SolicitudAjusteEstructuraController::class, 'consultarPublica'])
+    ->name('solicitud-estructura.consulta');
+
 Route::get('/debug-patrimonies', function() { return Illuminate\Support\Facades\Schema::getColumnListing('patrimonies'); });
 
 // ── Módulo de Soporte Técnico y Reporte de Fallas ─────────────────────────

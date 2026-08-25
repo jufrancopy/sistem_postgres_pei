@@ -177,6 +177,14 @@
                                 </ul>
                             </div>
                         </li>
+
+                        {{-- Solicitudes de Reorganización Estructural --}}
+                        <li class="nav-item {{ $isActive('admin/planificacion/estructura-solicitudes*') }}">
+                            <a class="nav-link" href="{{ route('admin.estructura-solicitudes.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-clipboard-list" style="font-size:.8rem; color: #0284c7;"></i></span>
+                                <span class="sidebar-normal">Ajustes de Estructura</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
