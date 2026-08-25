@@ -413,18 +413,20 @@
 
         {{-- Proyectos --}}
         <div class="col-xl col-md-4 col-sm-6 mb-3 mb-xl-0">
-            <div class="card kpi-card p-3 h-100">
-                <div class="d-flex align-items-center">
-                    <div class="kpi-icon-box mr-3" style="background: #ede9fe; color: #6d28d9;">
-                        <i class="fa fa-project-diagram"></i>
-                    </div>
-                    <div>
-                        <div class="text-muted small font-weight-bold text-uppercase">Proyectos</div>
-                        <div class="h3 font-weight-bold text-dark mb-0">{{ $totalProyectos }}</div>
-                        <small class="text-muted">{{ $proyectosEjecucion }} en ejecución</small>
+            <a href="{{ $selectedPei ? url('pei-profiles/' . $selectedPei->id . '/proyectos') : url('pei-profiles/ce99f883-fdd0-4723-8f75-cf689aa8f0fa/proyectos') }}" class="text-decoration-none" title="Ir al Módulo de Proyectos del Plan PEI">
+                <div class="card kpi-card p-3 h-100">
+                    <div class="d-flex align-items-center">
+                        <div class="kpi-icon-box mr-3" style="background: #ede9fe; color: #6d28d9;">
+                            <i class="fa fa-project-diagram"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small font-weight-bold text-uppercase">Proyectos PEI</div>
+                            <div class="h3 font-weight-bold text-dark mb-0">{{ $totalProyectos }}</div>
+                            <small class="text-muted">{{ $proyectosEjecucion }} en ejecución <i class="fa fa-arrow-right ml-1"></i></small>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -460,6 +462,12 @@
                     <a class="nav-link" id="tab-actividades-link" data-toggle="pill" href="#tab-actividades" role="tab" aria-selected="false">
                         <i class="fa fa-rocket mr-2"></i> Actividades del PEI
                         <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalActividadesPei }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-proyectos-link" href="{{ $selectedPei ? url('pei-profiles/' . $selectedPei->id . '/proyectos') : url('pei-profiles/ce99f883-fdd0-4723-8f75-cf689aa8f0fa/proyectos') }}">
+                        <i class="fa fa-project-diagram mr-2"></i> Proyectos
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalProyectos }}</span>
                     </a>
                 </li>
                 @hasanyrole('Administrador|Super Admin')
@@ -898,16 +906,20 @@
                                     </select>
                                 </div>
                             @endif
+                            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación')
                             <button type="button" class="btn btn-info btn-round shadow-sm px-3 text-white mr-1" id="btnNuevoOrganigramaRaiz">
                                 <i class="fa fa-plus-circle mr-1"></i> Nuevo Organigrama Raíz
                             </button>
+                            @endhasanyrole
                             <button type="button" class="btn btn-outline-info btn-round px-3 text-dark font-weight-bold mr-1 shadow-sm" onclick="abrirModalVisualOrganigrama()">
                                 <i class="fa fa-sitemap mr-1 text-primary"></i> Diagrama Visual
                             </button>
                             @if($organigramaRaiz)
+                                @hasanyrole('Administrador|Super Admin|Coordinador de Planificación')
                                 <button type="button" class="btn btn-success btn-round shadow-sm px-3" id="btnAgregarSubRaiz" data-id="{{ $organigramaRaiz->id }}" data-nombre="{{ $organigramaRaiz->dependency }}">
                                     <i class="fa fa-plus-circle mr-1"></i> Agregar Sub-dependencia
                                 </button>
+                                @endhasanyrole
                             @endif
                         </div>
                     </div>
@@ -1377,9 +1389,11 @@
                             <a href="{{ route('admin.juntas.intervenciones') }}" class="btn btn-outline-info btn-round px-3 font-weight-bold">
                                 <i class="fa fa-inbox mr-1"></i> Bandeja de Dictámenes / Intervenciones
                             </a>
+                            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación')
                             <button type="button" class="btn btn-primary btn-round px-3 shadow-sm font-weight-bold" onclick="abrirModalNuevaJunta()">
                                 <i class="fa fa-plus-circle mr-1"></i> Nueva Junta Consultiva
                             </button>
+                            @endhasanyrole
                         </div>
                     </div>
 
@@ -1495,9 +1509,11 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 5px;">
+                                            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación')
                                             <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalEditarJunta('{{ $jta->id }}')" title="Editar Junta Consultiva / Agregar Miembros">
                                                 <i class="fa fa-edit"></i>
                                             </button>
+                                            @endhasanyrole
                                             <a href="{{ route('admin.juntas.intervenciones', ['junta_id' => $jta->id]) }}" class="btn btn-circle btn-warning text-dark" title="Ver Bandeja de Dictámenes">
                                                 <i class="fa fa-inbox"></i>
                                             </a>
@@ -1879,6 +1895,7 @@
                                                 <label class="font-weight-bold text-dark small mb-1">Rol / Perfil Inicial</label>
                                                 <select id="nuevo_func_role" class="form-control form-control-sm" style="border-color: #86efac;">
                                                     <option value="Usuario" selected>Usuario / Funcionario Estándar</option>
+                                                    <option value="Coordinador de Proyectos">Coordinador de Proyectos</option>
                                                     <option value="Coordinador de Planificación">Coordinador de Planificación</option>
                                                     <option value="Analista de Planificación">Analista de Planificación</option>
                                                     <option value="Analista PEI">Analista PEI</option>

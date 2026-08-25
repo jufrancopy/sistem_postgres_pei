@@ -18,7 +18,7 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth', 'role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI'])->except(['getUsers', 'getUser', 'getUsersForGroup']);
+        $this->middleware(['auth', 'role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI|Coordinador de Proyectos|Coordinación de Proyectos'])->except(['getUsers', 'getUser', 'getUsersForGroup']);
     }
 
     public function index(Request $request)

@@ -94,7 +94,7 @@
         </li>
 
         {{-- ── Botón Diagnóstico Servidor (Escritorio) ── --}}
-        @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista PEI|Analista de Planificación')
+        @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista PEI|Analista de Planificación|Coordinador de Proyectos|Coordinación de Proyectos')
         <li class="nav-item d-none d-md-flex align-items-center mr-2">
             <button type="button" class="btn btn-xs btn-outline-danger font-weight-bold px-2 py-1 btn-trigger-diagnostico-global" style="border-radius:20px; font-size:11px;" title="Ejecutar Diagnóstico del Servidor y Respaldo DB">
                 <i class="fa fa-heartbeat mr-1"></i> Diagnóstico Servidor
@@ -127,7 +127,7 @@
                 <i class="fa fa-user-secret text-primary mr-2" style="width: 18px;"></i> Ver como otro Usuario / Rol
             </a>
             @endhasrole
-            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista PEI|Analista de Planificación')
+            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista PEI|Analista de Planificación|Coordinador de Proyectos|Coordinación de Proyectos')
             <a href="#" class="dropdown-item px-3 py-2 text-danger font-weight-bold btn-trigger-diagnostico-global" onclick="event.preventDefault();">
                 <i class="fa fa-heartbeat text-danger mr-2" style="width: 18px;"></i> Respaldo & Diagnóstico DB
             </a>

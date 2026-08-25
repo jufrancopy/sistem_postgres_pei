@@ -30,8 +30,8 @@ class HomeController extends Controller
             return redirect()->route('riiss.index');
         }
 
-        // Analista de Planificación / Coordinador de Planificación → dashboard global unificado
-        if ($user->hasRole(['Analista de Planificación', 'Coordinador de Planificación', 'Coordinación de Planificación'])) {
+        // Analista de Planificación / Coordinador de Planificación / Coordinador de Proyectos → dashboard global unificado
+        if ($user->hasRole(['Analista de Planificación', 'Coordinador de Planificación', 'Coordinación de Planificación', 'Coordinador de Proyectos', 'Coordinación de Proyectos'])) {
             return redirect()->route('globales.dashboard');
         }
 

@@ -273,6 +273,7 @@
                         <i class="fa fa-ruler-combined mr-1"></i>[{{ $axi->indicador->codigoCompleto() }}] {{ \Illuminate\Support\Str::limit($axi->indicador->nombre, 35) }}
                     </button>
                     @endif
+                    @if($canEditPei ?? true)
                     <a class="btn btn-sm btn-outline-light py-0 px-2" data-id="{{ $axi->id }}"
                        data-type="edit" href="javascript:void(0)" id="createAxis" title="Editar">
                         <i class="fa fa-edit" style="font-size:.75rem"></i>
@@ -287,6 +288,7 @@
                        href="javascript:void(0)" id="deleteProfile" title="Enviar a la Papelera">
                         <i class="fa fa-trash" style="font-size:.75rem"></i>
                     </a>
+                    @endif
                     @endif
                 </div>
                 {{-- Editores del Objetivo --}}
@@ -449,31 +451,34 @@
                                      <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosGoal->count() }} {{ $comentariosGoal->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
                                  </button>
                                  @endif
-                                <a class="btn btn-sm btn-outline-primary py-0 px-2" data-id="{{ $goal->id }}"
-                                   data-type="edit" href="javascript:void(0)" id="createGoals" title="Editar">
-                                    <i class="fa fa-edit" style="font-size:.7rem"></i>
-                                </a>
-                                <a class="btn btn-sm btn-success py-0 px-2 createActionsButton"
-                                   data-id="{{ $goal->id }}" data-type="create"
-                                   href="javascript:void(0)" id="createActions"
-                                   title="Agregar {{ $niveles['action'] ?? 'Acción' }}">
-                                    <i class="fa fa-plus" style="font-size:.7rem"></i>
-                                </a>
-                                 @if(auth()->check() && (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('Admin') || auth()->user()->id == 1))
-                                 <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold py-0 px-2 ml-1 createActionsButton shadow-xs"
-                                         data-id="{{ $goal->id }}" data-type="create" id="createActions"
-                                         title="Crear nueva Acción Estratégica e Indicador con Inteligencia Artificial (Llama 3.3 70B)"
-                                         style="border-radius: 12px; font-size: 0.72rem;">
-                                     <i class="fa fa-robot text-warning mr-1"></i> + Acción IA
-                                 </button>
-                                 @endif
-                                 @if(auth()->check() && (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Gestor de Actividades') || auth()->user()->hasRole('Coordinador de Planificación') || auth()->user()->hasRole('Analista de Planificación') || auth()->user()->hasRole('Analista PEI') || auth()->user()->hasRole('Líder MECIP') || auth()->user()->hasRole('Analista') || auth()->user()->hasRole('Colaborador de Actividades')))
-                                 <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
-                                    data-id="{{ $goal->id }}" href="javascript:void(0)"
-                                    id="deleteProfile" title="Eliminar">
-                                     <i class="fa fa-trash" style="font-size:.7rem"></i>
+                                 @if($canEditPei ?? true)
+                                 <a class="btn btn-sm btn-outline-secondary py-0 px-2"
+                                    data-id="{{ $goal->id }}" data-type="edit"
+                                    href="javascript:void(0)" id="createGoals" title="Editar">
+                                     <i class="fa fa-edit" style="font-size:.7rem"></i>
                                  </a>
-                                 @endif
+                                 <a class="btn btn-sm btn-success py-0 px-2 createActionsButton"
+                                    data-id="{{ $goal->id }}" data-type="create"
+                                    href="javascript:void(0)" id="createActions"
+                                    title="Agregar {{ $niveles['action'] ?? 'Acción' }}">
+                                     <i class="fa fa-plus" style="font-size:.7rem"></i>
+                                 </a>
+                                  @if(auth()->check() && (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('Admin') || auth()->user()->id == 1))
+                                  <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold py-0 px-2 ml-1 createActionsButton shadow-xs"
+                                          data-id="{{ $goal->id }}" data-type="create" id="createActions"
+                                          title="Crear nueva Acción Estratégica e Indicador con Inteligencia Artificial (Llama 3.3 70B)"
+                                          style="border-radius: 12px; font-size: 0.72rem;">
+                                      <i class="fa fa-robot text-warning mr-1"></i> + Acción IA
+                                  </button>
+                                  @endif
+                                  @if(auth()->check() && (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Gestor de Actividades') || auth()->user()->hasRole('Coordinador de Planificación') || auth()->user()->hasRole('Analista de Planificación') || auth()->user()->hasRole('Analista PEI') || auth()->user()->hasRole('Líder MECIP') || auth()->user()->hasRole('Analista') || auth()->user()->hasRole('Colaborador de Actividades')))
+                                  <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
+                                     data-id="{{ $goal->id }}" href="javascript:void(0)"
+                                     id="deleteProfile" title="Eliminar">
+                                      <i class="fa fa-trash" style="font-size:.7rem"></i>
+                                  </a>
+                                  @endif
+                                  @endif
                              </div>
                              {{-- Editores de la Meta --}}
                              @php $uniqueEditorsGoal = $goal->edits->pluck('user')->filter()->unique('id'); @endphp
@@ -570,7 +575,16 @@
                                                                 style="font-size:.7rem">
                                                             <i class="fa fa-comment-dots mr-1"></i> Consultar
                                                         </button>
-                                                        <a class="btn btn-sm btn-outline-info py-0 px-2"
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-success py-0 px-2 btnNotificarAccion"
+                                                                data-id="{{ $action->id }}"
+                                                                data-profile="{{ $action->parent->parent->id ?? '' }}"
+                                                                title="Notificar al responsable de esta acción"
+                                                                style="font-size:.7rem">
+                                                            <i class="fa fa-paper-plane"></i>
+                                                        </button>
+                                                        @if($canEditPei ?? true)
+                                                        <a class="btn btn-sm btn-outline-secondary py-0 px-2"
                                                            data-id="{{ $action->id }}" data-type="edit"
                                                            href="javascript:void(0)" id="createActions" title="Editar">
                                                             <i class="fa fa-edit" style="font-size:.7rem"></i>
@@ -580,21 +594,13 @@
                                                            id="reportProgress" title="Reportar Avance">
                                                             <i class="fa fa-chart-line" style="font-size:.7rem"></i>
                                                         </a>
-
-                                                        <button type="button"
-                                                                class="btn btn-sm btn-outline-success py-0 px-2 btnNotificarAccion"
-                                                                data-id="{{ $action->id }}"
-                                                                data-profile="{{ $action->parent->parent->id ?? '' }}"
-                                                                title="Notificar al responsable de esta acción"
-                                                                style="font-size:.7rem">
-                                                            <i class="fa fa-paper-plane"></i>
-                                                        </button>
                                                         @if(auth()->check() && (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Gestor de Actividades') || auth()->user()->hasRole('Coordinador de Planificación') || auth()->user()->hasRole('Analista de Planificación') || auth()->user()->hasRole('Analista PEI') || auth()->user()->hasRole('Líder MECIP') || auth()->user()->hasRole('Analista') || auth()->user()->hasRole('Colaborador de Actividades')))
                                                           <a class="btn btn-sm btn-outline-danger py-0 px-2 deleteItem"
                                                              data-id="{{ $action->id }}" href="javascript:void(0)"
                                                              id="deleteProfile" title="Enviar a la Papelera">
                                                               <i class="fa fa-trash" style="font-size:.7rem"></i>
                                                           </a>
+                                                        @endif
                                                         @endif
                                                         @php
                                                             $comentariosAction = isset($comentariosAsesoria) ? (

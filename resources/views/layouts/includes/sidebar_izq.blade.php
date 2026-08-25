@@ -182,8 +182,8 @@
             </li>
         @endrole
 
-        {{-- Menú específico para Coordinador / Analista de Planificación --}}
-        @hasanyrole('Coordinador de Planificación|Analista de Planificación')
+        {{-- Menú específico para Coordinador / Analista de Planificación / Coordinador de Proyectos --}}
+        @hasanyrole('Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Coordinador de Proyectos|Coordinación de Proyectos')
             <li class="nav-item {{ request()->is('admin/globales/dashboard*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('globales.dashboard') }}">
                     <i class="material-icons" style="color: #4f46e5 !important;">dashboard</i>
@@ -193,7 +193,7 @@
         @endhasanyrole
 
         {{-- ── DEPARTAMENTO 2: PROYECTOS (Verde Esmeralda #10b981 / PMO) ── --}}
-        @role('Administrador')
+        @hasanyrole('Administrador|Super Admin|Coordinador de Proyectos|Coordinación de Proyectos|Coordinador de Planificación')
             <li class="nav-item">
                 <a class="nav-link" data-toggle="collapse" href="#proyectosMenu" aria-expanded="{{ $enProyectos ? 'true' : 'false' }}">
                     <i class="material-icons" style="color: #10b981 !important; font-weight: bold;">account_tree</i>
@@ -217,7 +217,7 @@
                     </ul>
                 </div>
             </li>
-        @endrole
+        @endhasanyrole
 
         {{-- ── DEPARTAMENTO 3: ESTADÍSTICAS (Ámbar / Naranja Datos #f59e0b / DATA) ── --}}
         @hasanyrole('Administrador|Analista de Bioestadística|Digitador Bioestadística|Consultor Bioestadística|Auditor Bioestadística')

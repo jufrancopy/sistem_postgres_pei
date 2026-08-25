@@ -119,8 +119,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('pei-profiles/{idProfile}/basurero/restaurar-iniciativa/{iniId}', 'Admin\Planificacion\Pei\PeiController@restaurarIniciativa')->name('pei.basurero.restaurar-iniciativa');
     Route::post('pei-profiles/{idProfile}/revertir-edicion/{editId}', 'Admin\Planificacion\Pei\PeiController@revertirEdicion')->name('pei.edicion.revertir');
 
-    // ── Coordinador de Planificación ─────────────────────────────────────────
-    Route::prefix('coordinador-planificacion')->name('coordinador.')->middleware(['role:Coordinador de Planificación|Analista de Planificación|Administrador'])->group(function () {
+    // ── Coordinador de Planificación & Proyectos ─────────────────────────────────────────
+    Route::prefix('coordinador-planificacion')->name('coordinador.')->middleware(['role:Coordinador de Planificación|Analista de Planificación|Administrador|Coordinador de Proyectos|Coordinación de Proyectos'])->group(function () {
         Route::get('/', function() { return redirect()->route('globales.dashboard'); })->name('index');
         Route::get('gestionar-grupos', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@gestionarGrupos')->name('gestionar-grupos');
         Route::get('crear-actividad', 'Admin\Planificacion\Coordinador\CoordinadorPlanificacionController@crearActividad')->name('crear-actividad');
@@ -512,9 +512,10 @@ Route::group(['middleware' => ['auth']], function () {
         //Dashboard
         Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'Admin\Globales\GlobalesController@dashboard']);
 
-        // ── Users: Administradores y Coordinadores de Planificación ───────────
-        Route::middleware(['role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI'])->group(function () {
+        // ── Users: Administradores y Coordinadores ───────────
+        Route::middleware(['role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI|Coordinador de Proyectos|Coordinación de Proyectos'])->group(function () {
             Route::resource('users', 'Admin\UserController');
+            Route::resource('activities', 'Admin\Globales\ActivityController', ['except' => ['show']]);
         });
 
         // ── Globales administrativas estrictas: solo Administrador ───────────────────────
@@ -522,7 +523,6 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('configuracion-sistema',  'Admin\HomeConfigController@editGlobalSettings')->name('configuracion-sistema');
             Route::post('configuracion-sistema', 'Admin\HomeConfigController@updateGlobalSettings')->name('configuracion-sistema.update');
 
-            Route::resource('activities', 'Admin\Globales\ActivityController', ['except' => ['show']]);
             Route::resource('localities', 'Admin\Globales\LocalityController');
             Route::resource('patrimonies', 'Admin\Globales\PatrimonyController');
             Route::resource('patrimony-profiles', 'Admin\Globales\PatrimonyProfileController');
@@ -544,20 +544,20 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('activities/{activity}', 'Admin\Globales\ActivityController@show')->name('activities.show');
 
         // ── Creación de tareas y Notificaciones por correo: Administrador, Gestores y Analistas ──
-        Route::middleware(['role:Administrador|Gestor de Actividades|Coordinador de Planificación|Analista de Planificación|Analista PEI|Líder MECIP|Analista|Colaborador de Actividades'])->group(function () {
+        Route::middleware(['role:Administrador|Gestor de Actividades|Coordinador de Planificación|Analista de Planificación|Analista PEI|Líder MECIP|Analista|Colaborador de Actividades|Coordinador de Proyectos|Coordinación de Proyectos'])->group(function () {
             Route::post('activities/{activityId}/tareas', 'Admin\Globales\ActivityController@storeTarea')->name('activities.tareas.store');
             Route::post('activities/{activityId}/notificar-todos', 'Admin\Globales\ActivityController@notificarTodos')->name('activities.notificar-todos');
             Route::post('activities/tareas/{taskId}/notificar', 'Admin\Globales\ActivityController@notificarTarea')->name('activities.tareas.notificar');
         });
 
         // ── Evidencias y Eliminación de Tareas ──
-        Route::middleware(['role:Administrador|Gestor de Actividades|Analista de Planificación|Analista PEI|Analista'])->group(function () {
+        Route::middleware(['role:Administrador|Gestor de Actividades|Analista de Planificación|Analista PEI|Analista|Coordinador de Proyectos|Coordinación de Proyectos'])->group(function () {
             Route::delete('activities/tareas/{taskId}', 'Admin\Globales\ActivityController@destroyTarea')->name('activities.tareas.destroy');
             Route::post('activities/tareas/{taskId}/evidencias', 'Admin\Globales\ActivityController@storeEvidencia')->name('activities.tareas.evidencias.store');
             Route::delete('activities/tareas/evidencias/{evidenceId}', 'Admin\Globales\ActivityController@destroyEvidencia')->name('activities.tareas.evidencias.destroy');
         });
 
-        Route::middleware(['role:Administrador|Gestor de Actividades|Colaborador de Actividades|Analista de Planificación|Analista PEI|Analista'])->group(function () {
+        Route::middleware(['role:Administrador|Gestor de Actividades|Colaborador de Actividades|Analista de Planificación|Analista PEI|Analista|Coordinador de Proyectos|Coordinación de Proyectos'])->group(function () {
             Route::patch('activities/tareas/{taskId}/reasignar', 'Admin\Globales\ActivityController@reasignarTarea')->name('activities.tareas.reasignar');
         });
 
@@ -786,7 +786,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('pei-profiles/{profileId}/marcos/sync',  'Admin\Planificacion\MarcoReferencialController@sync')->name('pei.marcos.sync');
 
     // ── Módulo PGN ────────────────────────────────────────────────────────────
-    Route::prefix('pgn')->name('pgn.')->middleware(['role:Administrador|Coordinador de Planificación|Analista PEI|Analista de Planificación|Analista'])->group(function () {
+    Route::prefix('pgn')->name('pgn.')->middleware(['role:Administrador|Coordinador de Planificación|Analista PEI|Analista de Planificación|Analista|Coordinador de Proyectos|Coordinación de Proyectos'])->group(function () {
         Route::get('/',                                     'Admin\Planificacion\Pgn\PgnController@index')->name('index');
         // Estructura de niveles
         Route::get('estructura/{anio}',                    'Admin\Planificacion\Pgn\PgnController@estructuraDeAnio')->name('estructura.anio');

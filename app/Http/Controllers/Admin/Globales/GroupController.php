@@ -17,7 +17,7 @@ class GroupController extends Controller
     public function __construct()
     {
         $this->middleware(['auth']);
-        $this->middleware(['role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI'])->except(['getRootGroups', 'getGroupsFromRoot', 'dataGroupParent', 'dataGroup']);
+        $this->middleware(['role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI|Coordinador de Proyectos|Coordinación de Proyectos'])->except(['getRootGroups', 'getGroupsFromRoot', 'dataGroupParent', 'dataGroup']);
     }
 
     public function index(Request $request)
@@ -243,7 +243,7 @@ class GroupController extends Controller
      */
     public function crearYAsignarFuncionario(Request $request, $id)
     {
-        if (!auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Coordinación de Planificación'])) {
+        if (!auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Coordinación de Planificación', 'Coordinador de Proyectos', 'Coordinación de Proyectos'])) {
             return response()->json(['error' => 'No tienes permisos para registrar nuevos funcionarios.'], 403);
         }
 
