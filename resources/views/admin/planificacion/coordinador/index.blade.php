@@ -1903,6 +1903,21 @@
             $('#modalDependencia').modal('show');
         });
 
+        // Inicializar Select2 en Modal Dependencia
+        $('#dep_user_id').select2({
+            dropdownParent: $('#modalDependencia'),
+            placeholder: "-- Buscar y seleccionar responsable --",
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('#dep_tipo_establecimiento').select2({
+            dropdownParent: $('#modalDependencia'),
+            placeholder: "-- Seleccionar tipología RIISS --",
+            allowClear: true,
+            width: '100%'
+        });
+
         // Auto-asignar nombre y sugerir email al seleccionar Responsable
         $('#dep_user_id').on('change', function () {
             var opt = $(this).find('option:selected');

@@ -358,7 +358,14 @@
             abrirModalCrear($(this).data('id'), $(this).data('nombre'));
         });
 
-        // ── Inicializar Select2 de usuario ────────────────────────────────────────
+        // ── Inicializar Select2 ───────────────────────────────────────────────────
+        $('#dep_tipo_establecimiento').select2({
+            dropdownParent: $('#modalDependencia'),
+            placeholder: '-- Seleccionar tipología RIISS --',
+            allowClear: true,
+            width: '100%'
+        });
+
         function initUserSelect(userId, userName, userEmail) {
             var $sel = $('#dep_user_id');
             if ($sel.hasClass('select2-hidden-accessible')) $sel.select2('destroy');
