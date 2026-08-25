@@ -855,7 +855,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('profile/password', function () { return redirect()->route('user.profile'); })->name('profile.password');
 
     // ── RIISS - Red Integrada e Integral de Servicios de Salud ───────────────
-    Route::prefix('riiss')->name('riiss.')->middleware(['role:Administrador|Analista - RIISS'])->group(function () {
+    Route::prefix('riiss')->name('riiss.')->middleware(['role:Administrador|Super Admin|Analista - RIISS|Analista RIISS|Coordinador RIISS|Coordinador - RIISS|Coordinación RIISS'])->group(function () {
 
         // Centro de Control Unificado RIISS
         Route::get('/', [\App\Http\Controllers\Admin\Riiss\RiissCenterController::class, 'index'])
@@ -939,8 +939,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::patch('establecimientos/{id}', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'update'])
             ->name('establecimientos.update');
 
-        // Grados de Complejidad (solo Administrador)
-        Route::middleware(['role:Administrador'])->group(function () {
+        // Grados de Complejidad (Administrador y Coordinador RIISS)
+        Route::middleware(['role:Administrador|Super Admin|Coordinador RIISS|Coordinador - RIISS|Coordinación RIISS'])->group(function () {
             Route::get('complejidad', [\App\Http\Controllers\Admin\Riiss\ComplejidadTipoController::class, 'index'])
                 ->name('complejidad.index');
             Route::get('complejidad/{complejidadTipo}/edit', [\App\Http\Controllers\Admin\Riiss\ComplejidadTipoController::class, 'edit'])

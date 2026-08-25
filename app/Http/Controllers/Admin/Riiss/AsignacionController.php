@@ -51,6 +51,8 @@ class AsignacionController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $this->checkManagePermission();
+
         $validated = $request->validate([
             'id_establecimiento' => 'required|string|exists:establecimientos,id_establecimiento',
             'evaluador_id'       => 'required|integer|exists:users,id',
@@ -122,6 +124,8 @@ class AsignacionController extends Controller
      */
     public function actualizarEstado(Request $request, Asignacion $asignacion): JsonResponse
     {
+        $this->checkManagePermission();
+
         $request->validate([
             'estado' => 'required|in:pendiente,en_progreso,completada,vencida,cancelada',
         ]);
@@ -137,6 +141,8 @@ class AsignacionController extends Controller
      */
     public function renotificar(Asignacion $asignacion): JsonResponse
     {
+        $this->checkManagePermission();
+
         try {
             $asignacion->load(['establecimiento', 'evaluador', 'asignadoPor']);
             $asignacion->evaluador->notify(new AsignacionEvaluacionNotification($asignacion));
@@ -153,6 +159,8 @@ class AsignacionController extends Controller
      */
     public function destroy(Asignacion $asignacion): JsonResponse
     {
+        $this->checkManagePermission();
+
         $asignacion->update(['estado' => 'cancelada']);
         $asignacion->delete();
         return response()->json(['ok' => true, 'message' => 'Asignación cancelada.']);
@@ -196,6 +204,8 @@ class AsignacionController extends Controller
      */
     public function update(Request $request, Asignacion $asignacion): JsonResponse
     {
+        $this->checkManagePermission();
+
         $validated = $request->validate([
             'evaluador_id'   => 'required|integer|exists:users,id',
             'pei_profile_id' => 'nullable|string',
@@ -264,5 +274,13 @@ class AsignacionController extends Controller
             'evaluacion_estado'  => $evaluacion?->estado,
             'created_at'         => $a->created_at?->format('d/m/Y'),
         ];
+    }
+
+    private function checkManagePermission(): void
+    {
+        $user = Auth::user();
+        if ($user && $user->hasAnyRole(['Analista - RIISS', 'Analista RIISS']) && !$user->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS'])) {
+            abort(403, 'No tienes permisos para gestionar asignaciones.');
+        }
     }
 }

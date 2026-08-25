@@ -1897,6 +1897,8 @@
                                                     <option value="Usuario" selected>Usuario / Funcionario Estándar</option>
                                                     <option value="Coordinador de Proyectos">Coordinador de Proyectos</option>
                                                     <option value="Coordinador de Planificación">Coordinador de Planificación</option>
+                                                    <option value="Coordinador RIISS">Coordinador RIISS</option>
+                                                    <option value="Analista RIISS">Analista RIISS</option>
                                                     <option value="Analista de Planificación">Analista de Planificación</option>
                                                     <option value="Analista PEI">Analista PEI</option>
                                                 </select>

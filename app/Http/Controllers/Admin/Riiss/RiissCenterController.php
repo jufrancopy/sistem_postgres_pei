@@ -32,6 +32,12 @@ class RiissCenterController extends Controller
      */
     public function configuracion()
     {
+        $user = auth()->user();
+        if ($user && $user->hasAnyRole(['Analista - RIISS', 'Analista RIISS']) && !$user->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS'])) {
+            return redirect()->route('riiss.index')
+                ->with('warning', 'La configuración de formularios y complejidad está reservada a la Coordinación y Administración.');
+        }
+
         return view('admin.riiss.configuracion');
     }
 
@@ -114,20 +120,33 @@ class RiissCenterController extends Controller
                 return '<div style="height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;width:70px"><div style="height:100%;width:' . $pct . '%;background:#e91e63"></div></div><small>' . $pct . '%</small>';
             })
             ->addColumn('acciones', function ($est) {
+                $user = auth()->user();
+                $canManage = $user && $user->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS']);
+
                 $asig = $est->asignaciones->first();
                 $eval = $est->evaluaciones->first();
                 $asigIdStr = $asig ? $asig->id : 'null';
                 $evalIdStr = $eval ? $eval->id : 'null';
                 $nomEsc = addslashes($est->nombre_oficial);
 
+                // Determinar si el usuario actual es el evaluador asignado
+                $isAssignedEvaluator = $asig && $user && ($asig->evaluador_id == $user->id);
+
                 $btn = '<div class="dt-body-center">';
-                $btn .= '<button class="circle-btn ' . ($asig ? 'circle-btn-warning' : 'circle-btn-info') . ' btn-sm" onclick="abrirModalAsignacion(' . $asigIdStr . ', \'' . e($est->id_establecimiento) . '\', \'' . e($nomEsc) . '\')" title="' . ($asig ? 'Editar asignación' : 'Nueva Asignación') . '"><i class="fa ' . ($asig ? 'fa-pencil-alt' : 'fa-plus') . '"></i></button>';
-                $btn .= '<button class="circle-btn circle-btn-info btn-sm" onclick="abrirEditarEstablecimiento(\'' . e($est->id_establecimiento) . '\')" title="Editar establecimiento"><i class="fa fa-edit"></i></button>';
+                if ($canManage) {
+                    $btn .= '<button class="circle-btn ' . ($asig ? 'circle-btn-warning' : 'circle-btn-info') . ' btn-sm" onclick="abrirModalAsignacion(' . $asigIdStr . ', \'' . e($est->id_establecimiento) . '\', \'' . e($nomEsc) . '\')" title="' . ($asig ? 'Editar asignación' : 'Nueva Asignación') . '"><i class="fa ' . ($asig ? 'fa-pencil-alt' : 'fa-plus') . '"></i></button>';
+                    $btn .= '<button class="circle-btn circle-btn-info btn-sm" onclick="abrirEditarEstablecimiento(\'' . e($est->id_establecimiento) . '\')" title="Editar establecimiento"><i class="fa fa-edit"></i></button>';
+                }
+
                 if ($eval) {
-                    $btn .= '<a href="/riiss/evaluaciones/nueva/' . e($est->id_establecimiento) . '?evaluacion=' . $eval->id . '" class="circle-btn circle-btn-primary btn-sm" title="Continuar evaluación"><i class="fa fa-play"></i></a>';
+                    if ($canManage || $isAssignedEvaluator) {
+                        $btn .= '<a href="/riiss/evaluaciones/nueva/' . e($est->id_establecimiento) . '?evaluacion=' . $eval->id . '" class="circle-btn circle-btn-primary btn-sm" title="Continuar evaluación"><i class="fa fa-play"></i></a>';
+                    }
                     $btn .= '<a href="/riiss/evaluaciones/' . $eval->id . '" class="circle-btn circle-btn-success btn-sm" title="Ver evaluación"><i class="fa fa-eye"></i></a>';
                 } else {
-                    $btn .= '<a href="/riiss/evaluaciones/nueva/' . e($est->id_establecimiento) . '" class="circle-btn circle-btn-primary btn-sm" title="Nueva evaluación"><i class="fa fa-play"></i></a>';
+                    if ($canManage || $isAssignedEvaluator) {
+                        $btn .= '<a href="/riiss/evaluaciones/nueva/' . e($est->id_establecimiento) . '" class="circle-btn circle-btn-primary btn-sm" title="Nueva evaluación"><i class="fa fa-play"></i></a>';
+                    }
                 }
                 $btn .= '</div>';
 

@@ -90,6 +90,11 @@ class EstablecimientoController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
+        $user = auth()->user();
+        if ($user && $user->hasAnyRole(['Analista - RIISS', 'Analista RIISS']) && !$user->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS'])) {
+            return response()->json(['ok' => false, 'message' => 'No tienes permisos para modificar datos del establecimiento.'], 403);
+        }
+
         $est = Establecimiento::where('id_establecimiento', $id)->firstOrFail();
 
         $validated = $request->validate([

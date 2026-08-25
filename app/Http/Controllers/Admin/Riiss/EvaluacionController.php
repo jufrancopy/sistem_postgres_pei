@@ -177,6 +177,19 @@ class EvaluacionController extends Controller
      */
     public function nueva(string $idEstablecimiento)
     {
+        $user = auth()->user();
+        $isAnalista = $user && $user->hasAnyRole(['Analista - RIISS', 'Analista RIISS']) && !$user->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS']);
+        if ($isAnalista) {
+            $tieneAsignacion = \App\Models\Riiss\Asignacion::where('id_establecimiento', $idEstablecimiento)
+                ->where('evaluador_id', $user->id)
+                ->whereIn('estado', ['pendiente', 'en_progreso', 'completada'])
+                ->exists();
+            if (!$tieneAsignacion) {
+                return redirect()->route('riiss.mis-asignaciones')
+                    ->with('warning', 'Solo puedes cargar formularios de establecimientos que te hayan sido asignados.');
+            }
+        }
+
         $est = Establecimiento::where('id_establecimiento', $idEstablecimiento)->firstOrFail();
         return view('admin.riiss.evaluaciones.nueva', compact('est'));
     }
@@ -194,10 +207,26 @@ class EvaluacionController extends Controller
             'evaluadores'                     => 'nullable|array',
             'evaluadores.*.id'                => 'required|integer',
             'evaluadores.*.text'              => 'required|string',
+            'evaluadores.*.email'             => 'nullable|string',
             'evaluador_telefono'              => 'nullable|string|max:50',
-            'evaluador_usuario_institucional' => 'nullable|string|max:100',
+            'observaciones_generales'         => 'nullable|string',
+            'aspectos_positivos'              => 'nullable|string',
+            'latitud'                         => 'nullable|numeric',
+            'longitud'                        => 'nullable|numeric',
             'metadata'                        => 'nullable|array',
         ]);
+
+        $user = auth()->user();
+        $isAnalista = $user && $user->hasAnyRole(['Analista - RIISS', 'Analista RIISS']) && !$user->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS']);
+        if ($isAnalista) {
+            $tieneAsignacion = \App\Models\Riiss\Asignacion::where('id_establecimiento', $validated['id_establecimiento'])
+                ->where('evaluador_id', $user->id)
+                ->whereIn('estado', ['pendiente', 'en_progreso', 'completada'])
+                ->exists();
+            if (!$tieneAsignacion) {
+                return response()->json(['ok' => false, 'message' => 'Solo puedes iniciar o cargar evaluaciones de establecimientos asignados a tu usuario.'], 403);
+            }
+        }
 
         // 1. Buscar si ya existe una evaluación activa (borrador o en progreso) para este establecimiento
         $evaluacion = Evaluacion::where('id_establecimiento', $validated['id_establecimiento'])
@@ -421,10 +450,15 @@ class EvaluacionController extends Controller
      */
     public function destroy(Evaluacion $evaluacion): JsonResponse
     {
+        $user = auth()->user();
+        if ($user && $user->hasAnyRole(['Analista - RIISS', 'Analista RIISS']) && !$user->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS'])) {
+            return response()->json(['ok' => false, 'message' => 'No tienes permisos para eliminar evaluaciones.'], 403);
+        }
+
         $this->authorizeEvaluacion($evaluacion);
         $evaluacion->delete();
 
-        return response()->json(['ok' => true, 'message' => 'Evaluación eliminada']);
+        return response()->json(['ok' => true, 'message' => 'Evaluación eliminada correctamente.']);
     }
 
     /**
@@ -474,7 +508,7 @@ class EvaluacionController extends Controller
 
     private function authorizeEvaluacion(Evaluacion $evaluacion): void
     {
-        if (!auth()->user()->hasAnyRole(['Administrador', 'Analista - RIISS'])) {
+        if (!auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Analista - RIISS', 'Analista RIISS', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS'])) {
             abort(403, 'No estás autorizado para acceder a esta evaluación.');
         }
     }
