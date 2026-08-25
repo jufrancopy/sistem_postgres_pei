@@ -1928,48 +1928,81 @@
                 <input type="hidden" id="dep_parent_id" name="parent_id">
                 <input type="hidden" id="is_root_dep" name="is_root" value="0">
                 <div class="modal-body p-4">
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold small">Nombre de la Dependencia <span class="text-danger">*</span></label>
-                        <input type="text" name="dependency" id="dep_dependency" class="form-control font-weight-bold" required placeholder="Ej: Departamento de Estadística y Control">
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12 form-group">
-                            <label class="font-weight-bold small">Responsable / Encargado <span class="text-muted">(Usuarios del Sistema)</span></label>
-                            <select name="user_id" id="dep_user_id" class="form-control select2" style="width:100%">
-                                <option value="">-- Sin responsable asignado --</option>
-                                @foreach($usuariosList as $u)
-                                    <option value="{{ $u->id }}" data-name="{{ $u->name }}" data-email="{{ $u->email }}">{{ $u->name }} ({{ $u->email }})</option>
-                                @endforeach
-                            </select>
-                            <input type="hidden" name="manager" id="dep_manager">
+                    {{-- Checkbox Inicial: ¿Es un Establecimiento de Salud? --}}
+                    <div class="p-3 mb-3 rounded border" style="background: #f0fdf4; border-color: #86efac !important;">
+                        <div class="custom-control custom-checkbox d-flex align-items-center">
+                            <input type="checkbox" class="custom-control-input" id="dep_es_establecimiento" name="es_establecimiento" value="1">
+                            <label class="custom-control-label font-weight-bold text-dark mb-0 ml-1" for="dep_es_establecimiento" style="font-size: 0.92rem; cursor:pointer;">
+                                <i class="fa fa-hospital text-success mr-1"></i> ¿Es un Establecimiento de Salud? <span class="text-muted font-weight-normal">(Conectar con RIISS)</span>
+                            </label>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-12 col-md-6 form-group">
-                            <label class="font-weight-bold small">Email</label>
-                            <input type="email" name="email" id="dep_email" class="form-control" placeholder="correo@ips.gov.py">
-                        </div>
-                        <div class="col-12 col-md-6 form-group">
-                            <label class="font-weight-bold small">Teléfono / Interno</label>
-                            <input type="text" name="phone" id="dep_phone" class="form-control" placeholder="021-xxxxxx / Int. 123">
-                        </div>
+                    {{-- Selector de Establecimiento de Salud RIISS (Solo visible si el checkbox está marcado) --}}
+                    <div class="form-group mb-3" id="grupo_establecimiento_riiss" style="display:none;">
+                        <label class="font-weight-bold small text-success">
+                            <i class="fa fa-search mr-1"></i> Seleccionar Establecimiento de Salud (RIISS) <span class="text-danger">*</span>
+                        </label>
+                        <select name="establecimiento_id" id="dep_establecimiento_id" class="form-control select2" style="width:100%">
+                            <option value="">-- Buscar por código o nombre del establecimiento --</option>
+                            @foreach($establecimientosRiiss ?? [] as $est)
+                                <option value="{{ $est->id_establecimiento }}"
+                                    data-nombre="{{ $est->nombre_oficial }}"
+                                    data-tipologia="{{ $est->tipologia_clasificacion }}"
+                                    data-region="{{ $est->departamento }}">
+                                    {{ $est->codigo ? '[' . $est->codigo . '] ' : '' }}{{ $est->nombre_oficial }} @if($est->tipologia_clasificacion) ({{ $est->tipologia_clasificacion }}) @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted d-block mt-1">
+                            Al seleccionar el establecimiento, se asocian y vinculan automáticamente su denominación, tipología y región oficial.
+                        </small>
                     </div>
 
-                    <div class="row">
-                        <div class="col-12 col-md-6 form-group mb-0">
-                            <label class="font-weight-bold small">Tipo de Establecimiento <span class="text-muted">(Tipología RIISS)</span></label>
-                            <select name="tipo_establecimiento" id="dep_tipo_establecimiento" class="form-control select2" style="width:100%">
-                                <option value="">-- Ninguno / Administrativo --</option>
-                                @foreach($tipologiasRiiss ?? [] as $tipo)
-                                    <option value="{{ $tipo }}">{{ $tipo }}</option>
-                                @endforeach
-                            </select>
+                    <div id="bloque_campos_dependencia">
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold small">Nombre de la Dependencia <span class="text-danger">*</span></label>
+                            <input type="text" name="dependency" id="dep_dependency" class="form-control font-weight-bold" required placeholder="Ej: Departamento de Estadística y Control">
                         </div>
-                        <div class="col-12 col-md-6 form-group mb-0">
-                            <label class="font-weight-bold small">Región / Ubicación</label>
-                            <input type="text" name="region" id="dep_region" class="form-control" placeholder="Ej: ASUNCIÓN Y CENTRAL">
+
+                        <div class="row">
+                            <div class="col-12 form-group">
+                                <label class="font-weight-bold small">Responsable / Encargado <span class="text-muted">(Usuarios del Sistema)</span></label>
+                                <select name="user_id" id="dep_user_id" class="form-control select2" style="width:100%">
+                                    <option value="">-- Sin responsable asignado --</option>
+                                    @foreach($usuariosList as $u)
+                                        <option value="{{ $u->id }}" data-name="{{ $u->name }}" data-email="{{ $u->email }}">{{ $u->name }} ({{ $u->email }})</option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" name="manager" id="dep_manager">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 form-group">
+                                <label class="font-weight-bold small">Email</label>
+                                <input type="email" name="email" id="dep_email" class="form-control" placeholder="correo@ips.gov.py">
+                            </div>
+                            <div class="col-12 col-md-6 form-group">
+                                <label class="font-weight-bold small">Teléfono / Interno</label>
+                                <input type="text" name="phone" id="dep_phone" class="form-control" placeholder="021-xxxxxx / Int. 123">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 form-group mb-0">
+                                <label class="font-weight-bold small">Tipo de Establecimiento <span class="text-muted">(Tipología RIISS)</span></label>
+                                <select name="tipo_establecimiento" id="dep_tipo_establecimiento" class="form-control select2" style="width:100%">
+                                    <option value="">-- Ninguno / Administrativo --</option>
+                                    @foreach($tipologiasRiiss ?? [] as $tipo)
+                                        <option value="{{ $tipo }}">{{ $tipo }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6 form-group mb-0">
+                                <label class="font-weight-bold small">Región / Ubicación</label>
+                                <input type="text" name="region" id="dep_region" class="form-control" placeholder="Ej: ASUNCIÓN Y CENTRAL">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3215,6 +3248,9 @@ $(document).ready(function() {
         $('#dep_parent_id').val('');
         $('#is_root_dep').val('1');
         $('#dep_manager').val('');
+        $('#dep_es_establecimiento').prop('checked', false);
+        $('#dep_establecimiento_id').val('').trigger('change');
+        toggleEsEstablecimiento(false);
         $('#dep_user_id').val('').trigger('change');
         $('#dep_tipo_establecimiento').val('').trigger('change');
         $('#modalDepTitulo').html('<i class="fa fa-sitemap text-info mr-2"></i> Crear Nuevo Organigrama Raíz');
@@ -3230,6 +3266,9 @@ $(document).ready(function() {
         $('#dep_parent_id').val(rootId);
         $('#is_root_dep').val('0');
         $('#dep_manager').val('');
+        $('#dep_es_establecimiento').prop('checked', false);
+        $('#dep_establecimiento_id').val('').trigger('change');
+        toggleEsEstablecimiento(false);
         $('#dep_user_id').val('').trigger('change');
         $('#dep_tipo_establecimiento').val('').trigger('change');
         $('#modalDepTitulo').html('<i class="fa fa-plus-circle mr-2"></i> Agregar Sub-dependencia a: ' + rootName);
@@ -3237,6 +3276,13 @@ $(document).ready(function() {
     });
 
     // Inicializar Select2 en Modal Dependencia
+    $('#dep_establecimiento_id').select2({
+        dropdownParent: $('#modalDependencia'),
+        placeholder: "-- Buscar por código o nombre del establecimiento --",
+        allowClear: true,
+        width: '100%'
+    });
+
     $('#dep_user_id').select2({
         dropdownParent: $('#modalDependencia'),
         placeholder: "-- Buscar y seleccionar responsable --",
@@ -3250,6 +3296,44 @@ $(document).ready(function() {
         allowClear: true,
         width: '100%'
     });
+
+    // Toggle de Establecimiento de Salud (RIISS)
+    function toggleEsEstablecimiento(isEst) {
+        if (isEst) {
+            $('#grupo_establecimiento_riiss').slideDown(150);
+            $('#dep_dependency').prop('readonly', true).addClass('bg-light');
+            $('#dep_tipo_establecimiento').prop('disabled', true);
+            $('#dep_region').prop('readonly', true).addClass('bg-light');
+            syncEstablecimientoSeleccionado();
+        } else {
+            $('#grupo_establecimiento_riiss').slideUp(150);
+            $('#dep_establecimiento_id').val('').trigger('change');
+            $('#dep_dependency').prop('readonly', false).removeClass('bg-light');
+            $('#dep_tipo_establecimiento').prop('disabled', false);
+            $('#dep_region').prop('readonly', false).removeClass('bg-light');
+        }
+    }
+
+    $('#dep_es_establecimiento').on('change', function () {
+        toggleEsEstablecimiento($(this).is(':checked'));
+    });
+
+    $('#dep_establecimiento_id').on('change', function () {
+        syncEstablecimientoSeleccionado();
+    });
+
+    function syncEstablecimientoSeleccionado() {
+        if (!$('#dep_es_establecimiento').is(':checked')) return;
+        var opt = $('#dep_establecimiento_id').find('option:selected');
+        if (opt.val()) {
+            var nombre = opt.data('nombre') || '';
+            var tipologia = opt.data('tipologia') || '';
+            var region = opt.data('region') || '';
+            if (nombre) $('#dep_dependency').val(nombre);
+            if (tipologia) $('#dep_tipo_establecimiento').val(tipologia).trigger('change');
+            if (region) $('#dep_region').val(region);
+        }
+    }
 
     // Auto-asignar nombre y sugerir email al seleccionar Responsable
     $('#dep_user_id').on('change', function () {
@@ -3402,6 +3486,9 @@ $(document).ready(function() {
         $('#dep_id').val('');
         $('#dep_parent_id').val(id);
         $('#dep_manager').val('');
+        $('#dep_es_establecimiento').prop('checked', false);
+        $('#dep_establecimiento_id').val('').trigger('change');
+        toggleEsEstablecimiento(false);
         $('#dep_user_id').val('').trigger('change');
         $('#dep_tipo_establecimiento').val('').trigger('change');
         $('#modalDepTitulo').html('<i class="fa fa-plus-circle mr-2"></i> Agregar Sub-dependencia a: ' + nombre);
@@ -3425,6 +3512,17 @@ $(document).ready(function() {
                 $('#dep_region').val(dep.region);
                 $('#dep_user_id').val(dep.user_id).trigger('change');
                 $('#dep_tipo_establecimiento').val(dep.tipo_establecimiento).trigger('change');
+
+                if (dep.establecimiento_id || dep.es_establecimiento) {
+                    $('#dep_es_establecimiento').prop('checked', true);
+                    $('#dep_establecimiento_id').val(dep.establecimiento_id).trigger('change');
+                    toggleEsEstablecimiento(true);
+                } else {
+                    $('#dep_es_establecimiento').prop('checked', false);
+                    $('#dep_establecimiento_id').val('').trigger('change');
+                    toggleEsEstablecimiento(false);
+                }
+
                 $('#modalDepTitulo').html('<i class="fa fa-edit mr-2"></i> Editar Dependencia');
                 $('#modalDependencia').modal('show');
             }
@@ -3438,6 +3536,9 @@ $(document).ready(function() {
         var btn = $(this);
         btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
 
+        // Asegurar que valores bloqueados se envíen
+        $('#formDependencia').find(':input').prop('disabled', false);
+
         $.ajax({
             url: "{{ route('coordinador.organigrama.store') }}",
             method: "POST",
@@ -3446,6 +3547,7 @@ $(document).ready(function() {
                 $('#modalDependencia').modal('hide');
                 toastr.success(res.message || 'Dependencia guardada correctamente.');
                 btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Dependencia');
+                setTimeout(function () { location.reload(); }, 600);
             },
             error: function (xhr) {
                 var msg = xhr.responseJSON?.message || 'Error al guardar la dependencia.';
@@ -3453,7 +3555,13 @@ $(document).ready(function() {
                     msg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
                 }
                 toastr.error(msg);
-            },
+                btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Dependencia');
+                if ($('#dep_es_establecimiento').is(':checked')) {
+                    $('#dep_tipo_establecimiento').prop('disabled', true);
+                }
+            }
+        });
+    });
             complete: function () {
                 btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Dependencia');
             }

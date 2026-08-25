@@ -296,6 +296,12 @@ class GlobalesController extends Controller
                 ->pluck('tipologia_clasificacion');
         }
 
+        // ── Establecimientos de Salud (RIISS) para asociación directa ──────────
+        $establecimientosRiiss = \App\Models\Riiss\Establecimiento::where('activo', true)
+            ->orWhereNull('activo')
+            ->orderBy('nombre_oficial')
+            ->get(['id_establecimiento', 'nombre_oficial', 'codigo', 'tipologia_clasificacion', 'departamento', 'complejidad']);
+
         return view('admin.globales.dashboard', get_defined_vars());
     }
 

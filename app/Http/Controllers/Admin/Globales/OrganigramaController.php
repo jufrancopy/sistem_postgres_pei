@@ -182,17 +182,33 @@ class OrganigramaController extends Controller
             }
         }
 
+        $esEstablecimiento = $request->boolean('es_establecimiento');
+        $establecimientoId = $request->establecimiento_id ?: null;
+        $dependency = $request->dependency;
+        $tipoEst = $request->tipo_establecimiento ?: null;
+        $region = $request->region ?: null;
+
+        if ($esEstablecimiento && $establecimientoId) {
+            $est = \App\Models\Riiss\Establecimiento::find($establecimientoId);
+            if ($est) {
+                $dependency = $dependency ?: $est->nombre_oficial;
+                $tipoEst = $tipoEst ?: $est->tipologia_clasificacion;
+                $region = $region ?: $est->departamento;
+            }
+        }
+
         $dependencia = Organigrama::create([
-            'dependency'           => $request->dependency,
+            'dependency'           => $dependency,
             'manager'              => $manager,
             'phone'                => $request->phone,
             'email'                => $email,
             'user_id'              => $userId,
-            'tipo_establecimiento' => $request->tipo_establecimiento ?: null,
+            'establecimiento_id'   => ($esEstablecimiento && $establecimientoId) ? $establecimientoId : null,
+            'tipo_establecimiento' => $tipoEst,
             'nivel_complejidad'    => $request->nivel_complejidad ?: null,
             'tenencia'             => $request->tenencia ?: null,
             'tiene_aop'            => $request->has('tiene_aop'),
-            'region'               => $request->region ?: null,
+            'region'               => $region,
         ]);
 
         if ($request->parent_id) {

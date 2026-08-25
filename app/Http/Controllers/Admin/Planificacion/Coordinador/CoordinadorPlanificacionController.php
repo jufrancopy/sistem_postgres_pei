@@ -222,11 +222,18 @@ class CoordinadorPlanificacionController extends Controller
                 ->pluck('tipologia_clasificacion');
         }
 
+        // ── Establecimientos de Salud (RIISS) para asociación directa ──────────
+        $establecimientosRiiss = \App\Models\Riiss\Establecimiento::where('activo', true)
+            ->orWhereNull('activo')
+            ->orderBy('nombre_oficial')
+            ->get(['id_establecimiento', 'nombre_oficial', 'codigo', 'tipologia_clasificacion', 'departamento', 'complejidad']);
+
         return view('admin.planificacion.coordinador.index', array_merge($context, [
-            'kpis'             => $kpis,
-            'kpisProyectos'    => $kpisProyectos,
-            'estadosProyectos' => ProyectoInstitucional::ESTADOS,
-            'tipologiasRiiss'  => $tipologiasRiiss,
+            'kpis'                 => $kpis,
+            'kpisProyectos'        => $kpisProyectos,
+            'estadosProyectos'     => ProyectoInstitucional::ESTADOS,
+            'tipologiasRiiss'      => $tipologiasRiiss,
+            'establecimientosRiiss' => $establecimientosRiiss,
         ]));
     }
 
@@ -793,7 +800,29 @@ class CoordinadorPlanificacionController extends Controller
             }
         }
 
-        $dep->dependency = $request->dependency;
+        $esEstablecimiento = $request->boolean('es_establecimiento');
+        $establecimientoId = $request->establecimiento_id ?: null;
+
+        if ($esEstablecimiento && $establecimientoId) {
+            $est = \App\Models\Riiss\Establecimiento::find($establecimientoId);
+            if ($est) {
+                $dep->establecimiento_id = $est->id_establecimiento;
+                $dep->dependency = $request->dependency ?: $est->nombre_oficial;
+                $dep->tipo_establecimiento = $request->tipo_establecimiento ?: $est->tipologia_clasificacion;
+                $dep->region = $request->region ?: $est->departamento;
+            } else {
+                $dep->establecimiento_id = $establecimientoId;
+                $dep->dependency = $request->dependency;
+                $dep->tipo_establecimiento = $request->tipo_establecimiento;
+                $dep->region = $request->region;
+            }
+        } else {
+            $dep->establecimiento_id = null;
+            $dep->dependency = $request->dependency;
+            $dep->tipo_establecimiento = $request->tipo_establecimiento;
+            $dep->region = $request->region;
+        }
+
         $dep->user_id = $request->user_id ?: null;
         if ($dep->user_id) {
             $assignedUser = User::find($dep->user_id);
@@ -810,8 +839,6 @@ class CoordinadorPlanificacionController extends Controller
 
         $phoneDigits = preg_replace('/\D/', '', (string)$request->phone);
         $dep->phone = $phoneDigits !== '' ? (int)$phoneDigits : null;
-        $dep->region = $request->region;
-        $dep->tipo_establecimiento = $request->tipo_establecimiento;
         $dep->save();
 
         return response()->json([
@@ -836,7 +863,10 @@ class CoordinadorPlanificacionController extends Controller
 
         return response()->json([
             'success'     => true,
-            'dependencia' => $dep,
+            'dependencia' => array_merge($dep->toArray(), [
+                'es_establecimiento' => !is_null($dep->establecimiento_id),
+                'establecimiento_id' => $dep->establecimiento_id,
+            ]),
         ]);
     }
 
