@@ -2022,18 +2022,15 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-12 col-md-6 form-group">
-                            <label class="font-weight-bold small">Responsable / Encargado</label>
-                            <input type="text" name="manager" id="dep_manager" class="form-control" placeholder="Ej: Dr. Roberto Benítez">
-                        </div>
-                        <div class="col-12 col-md-6 form-group">
-                            <label class="font-weight-bold small">Usuario asignado del Sistema</label>
+                        <div class="col-12 form-group">
+                            <label class="font-weight-bold small">Responsable / Encargado <span class="text-muted">(Usuarios del Sistema)</span></label>
                             <select name="user_id" id="dep_user_id" class="form-control select2" style="width:100%">
-                                <option value="">-- Sin usuario asignado --</option>
+                                <option value="">-- Sin responsable asignado --</option>
                                 @foreach($usuariosList as $u)
-                                    <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
+                                    <option value="{{ $u->id }}" data-name="{{ $u->name }}" data-email="{{ $u->email }}">{{ $u->name }} ({{ $u->email }})</option>
                                 @endforeach
                             </select>
+                            <input type="hidden" name="manager" id="dep_manager">
                         </div>
                     </div>
 
@@ -2050,14 +2047,12 @@
 
                     <div class="row">
                         <div class="col-12 col-md-6 form-group mb-0">
-                            <label class="font-weight-bold small">Tipo de Establecimiento</label>
-                            <select name="tipo_establecimiento" id="dep_tipo_establecimiento" class="form-control">
+                            <label class="font-weight-bold small">Tipo de Establecimiento <span class="text-muted">(Tipología RIISS)</span></label>
+                            <select name="tipo_establecimiento" id="dep_tipo_establecimiento" class="form-control select2" style="width:100%">
                                 <option value="">-- Ninguno / Administrativo --</option>
-                                <option value="HOSPITAL">Hospital</option>
-                                <option value="CLINICA">Clínica</option>
-                                <option value="PUESTO_SANITARIO">Puesto Sanitario</option>
-                                <option value="CENTRO_ATENCION">Centro de Atención</option>
-                                <option value="OTRO">Otro</option>
+                                @foreach($tipologiasRiiss ?? [] as $tipo)
+                                    <option value="{{ $tipo }}">{{ $tipo }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-12 col-md-6 form-group mb-0">
@@ -3307,7 +3302,9 @@ $(document).ready(function() {
         $('#dep_id').val('');
         $('#dep_parent_id').val('');
         $('#is_root_dep').val('1');
+        $('#dep_manager').val('');
         $('#dep_user_id').val('').trigger('change');
+        $('#dep_tipo_establecimiento').val('').trigger('change');
         $('#modalDepTitulo').html('<i class="fa fa-sitemap text-info mr-2"></i> Crear Nuevo Organigrama Raíz');
         $('#modalDependencia').modal('show');
     });
@@ -3320,9 +3317,24 @@ $(document).ready(function() {
         $('#dep_id').val('');
         $('#dep_parent_id').val(rootId);
         $('#is_root_dep').val('0');
+        $('#dep_manager').val('');
         $('#dep_user_id').val('').trigger('change');
+        $('#dep_tipo_establecimiento').val('').trigger('change');
         $('#modalDepTitulo').html('<i class="fa fa-plus-circle mr-2"></i> Agregar Sub-dependencia a: ' + rootName);
         $('#modalDependencia').modal('show');
+    });
+
+    // Auto-asignar nombre y sugerir email al seleccionar Responsable
+    $('#dep_user_id').on('change', function () {
+        var opt = $(this).find('option:selected');
+        var uname = opt.data('name') || '';
+        var uemail = opt.data('email') || '';
+        if (uname) {
+            $('#dep_manager').val(uname);
+        }
+        if (uemail && !$('#dep_email').val()) {
+            $('#dep_email').val(uemail);
+        }
     });
 
     // Select2 en Selector de Organigrama de Estructura
@@ -3462,7 +3474,9 @@ $(document).ready(function() {
         $('#formDependencia')[0].reset();
         $('#dep_id').val('');
         $('#dep_parent_id').val(id);
+        $('#dep_manager').val('');
         $('#dep_user_id').val('').trigger('change');
+        $('#dep_tipo_establecimiento').val('').trigger('change');
         $('#modalDepTitulo').html('<i class="fa fa-plus-circle mr-2"></i> Agregar Sub-dependencia a: ' + nombre);
         $('#modalDependencia').modal('show');
     });
@@ -3482,8 +3496,8 @@ $(document).ready(function() {
                 $('#dep_email').val(dep.email);
                 $('#dep_phone').val(dep.phone);
                 $('#dep_region').val(dep.region);
-                $('#dep_tipo_establecimiento').val(dep.tipo_establecimiento);
                 $('#dep_user_id').val(dep.user_id).trigger('change');
+                $('#dep_tipo_establecimiento').val(dep.tipo_establecimiento).trigger('change');
                 $('#modalDepTitulo').html('<i class="fa fa-edit mr-2"></i> Editar Dependencia');
                 $('#modalDependencia').modal('show');
             }

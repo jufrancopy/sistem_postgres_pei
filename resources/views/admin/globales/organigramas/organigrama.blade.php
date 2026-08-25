@@ -85,20 +85,22 @@
                                placeholder="Ej: Dirección de Tecnología">
                     </div>
 
-                    <div class="form-group">
-                        <label class="font-weight-bold">Responsable / Encargado</label>
-                        <input type="text" name="manager" id="dep_manager" class="form-control"
-                               placeholder="Ej: Lic. Juan Pérez">
-                    </div>
+                    @php
+                        $tipologiasRiissOrg = \App\Models\Riiss\ReglaSeccionFormulario::select('tipologia_clasificacion')->distinct()->whereNotNull('tipologia_clasificacion')->where('tipologia_clasificacion', '!=', '')->orderBy('tipologia_clasificacion')->pluck('tipologia_clasificacion');
+                        if ($tipologiasRiissOrg->isEmpty()) {
+                            $tipologiasRiissOrg = \App\Models\Riiss\Establecimiento::select('tipologia_clasificacion')->distinct()->whereNotNull('tipologia_clasificacion')->where('tipologia_clasificacion', '!=', '')->orderBy('tipologia_clasificacion')->pluck('tipologia_clasificacion');
+                        }
+                    @endphp
 
                     <div class="form-group">
-                        <label class="font-weight-bold">Usuario asignado del Sistema</label>
+                        <label class="font-weight-bold">Responsable / Encargado <span class="text-muted">(Usuarios del Sistema)</span></label>
                         <select name="user_id" id="dep_user_id" class="form-control select2" style="width:100%">
-                            <option value="">-- Sin usuario asignado --</option>
+                            <option value="">-- Sin responsable asignado --</option>
                             @foreach(\App\Models\User::orderBy('name')->get() as $u)
-                                <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
+                                <option value="{{ $u->id }}" data-name="{{ $u->name }}" data-email="{{ $u->email }}">{{ $u->name }} ({{ $u->email }})</option>
                             @endforeach
                         </select>
+                        <input type="hidden" name="manager" id="dep_manager">
                     </div>
 
                     <div class="row">
@@ -119,14 +121,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="font-weight-bold">Tipo de Establecimiento</label>
-                        <select name="tipo_establecimiento" id="dep_tipo_establecimiento" class="form-control">
+                        <label class="font-weight-bold">Tipo de Establecimiento <span class="text-muted">(Tipología RIISS)</span></label>
+                        <select name="tipo_establecimiento" id="dep_tipo_establecimiento" class="form-control select2" style="width:100%">
                             <option value="">-- Ninguno / Administrativo --</option>
-                            <option value="HOSPITAL">Hospital</option>
-                            <option value="CLINICA">Clínica</option>
-                            <option value="PUESTO_SANITARIO">Puesto Sanitario</option>
-                            <option value="CENTRO_ATENCION">Centro de Atención</option>
-                            <option value="OTRO">Otro</option>
+                            @foreach($tipologiasRiissOrg as $tipo)
+                                <option value="{{ $tipo }}">{{ $tipo }}</option>
+                            @endforeach
                         </select>
                     </div>
 

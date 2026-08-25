@@ -279,6 +279,23 @@ class GlobalesController extends Controller
         // Mantener compatibilidad con variable en vista
         $top5RankingReconocimiento = $top10RankingReconocimiento;
 
+        // ── Tipologías de Establecimiento conectadas desde RIISS ───────────────
+        $tipologiasRiiss = \App\Models\Riiss\ReglaSeccionFormulario::select('tipologia_clasificacion')
+            ->distinct()
+            ->whereNotNull('tipologia_clasificacion')
+            ->where('tipologia_clasificacion', '!=', '')
+            ->orderBy('tipologia_clasificacion')
+            ->pluck('tipologia_clasificacion');
+
+        if ($tipologiasRiiss->isEmpty()) {
+            $tipologiasRiiss = \App\Models\Riiss\Establecimiento::select('tipologia_clasificacion')
+                ->distinct()
+                ->whereNotNull('tipologia_clasificacion')
+                ->where('tipologia_clasificacion', '!=', '')
+                ->orderBy('tipologia_clasificacion')
+                ->pluck('tipologia_clasificacion');
+        }
+
         return view('admin.globales.dashboard', get_defined_vars());
     }
 

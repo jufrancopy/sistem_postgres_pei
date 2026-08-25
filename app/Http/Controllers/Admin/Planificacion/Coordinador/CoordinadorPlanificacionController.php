@@ -205,10 +205,28 @@ class CoordinadorPlanificacionController extends Controller
             'total_proyectos'    => $kpisProyectos['total'],
         ];
 
+        // ── Tipologías de Establecimiento conectadas desde RIISS ───────────────
+        $tipologiasRiiss = \App\Models\Riiss\ReglaSeccionFormulario::select('tipologia_clasificacion')
+            ->distinct()
+            ->whereNotNull('tipologia_clasificacion')
+            ->where('tipologia_clasificacion', '!=', '')
+            ->orderBy('tipologia_clasificacion')
+            ->pluck('tipologia_clasificacion');
+
+        if ($tipologiasRiiss->isEmpty()) {
+            $tipologiasRiiss = \App\Models\Riiss\Establecimiento::select('tipologia_clasificacion')
+                ->distinct()
+                ->whereNotNull('tipologia_clasificacion')
+                ->where('tipologia_clasificacion', '!=', '')
+                ->orderBy('tipologia_clasificacion')
+                ->pluck('tipologia_clasificacion');
+        }
+
         return view('admin.planificacion.coordinador.index', array_merge($context, [
             'kpis'             => $kpis,
             'kpisProyectos'    => $kpisProyectos,
             'estadosProyectos' => ProyectoInstitucional::ESTADOS,
+            'tipologiasRiiss'  => $tipologiasRiiss,
         ]));
     }
 
@@ -776,9 +794,20 @@ class CoordinadorPlanificacionController extends Controller
         }
 
         $dep->dependency = $request->dependency;
-        $dep->manager = $request->manager;
         $dep->user_id = $request->user_id ?: null;
-        $dep->email = $request->email ?: null;
+        if ($dep->user_id) {
+            $assignedUser = User::find($dep->user_id);
+            $dep->manager = $request->manager ?: ($assignedUser ? $assignedUser->name : null);
+            if (!$request->filled('email') && $assignedUser) {
+                $dep->email = $assignedUser->email;
+            } else {
+                $dep->email = $request->email ?: null;
+            }
+        } else {
+            $dep->manager = $request->manager ?: null;
+            $dep->email = $request->email ?: null;
+        }
+
         $phoneDigits = preg_replace('/\D/', '', (string)$request->phone);
         $dep->phone = $phoneDigits !== '' ? (int)$phoneDigits : null;
         $dep->region = $request->region;

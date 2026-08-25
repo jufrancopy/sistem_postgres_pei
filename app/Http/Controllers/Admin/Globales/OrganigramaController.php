@@ -171,12 +171,23 @@ class OrganigramaController extends Controller
 
     public function store(Request $request)
     {
+        $userId = $request->user_id ?: null;
+        $manager = $request->manager;
+        $email = $request->email;
+        if ($userId) {
+            $u = \App\Models\User::find($userId);
+            if ($u) {
+                $manager = $manager ?: $u->name;
+                $email = $email ?: $u->email;
+            }
+        }
+
         $dependencia = Organigrama::create([
             'dependency'           => $request->dependency,
-            'manager'              => $request->manager,
+            'manager'              => $manager,
             'phone'                => $request->phone,
-            'email'                => $request->email,
-            'user_id'              => $request->user_id ?: null,
+            'email'                => $email,
+            'user_id'              => $userId,
             'tipo_establecimiento' => $request->tipo_establecimiento ?: null,
             'nivel_complejidad'    => $request->nivel_complejidad ?: null,
             'tenencia'             => $request->tenencia ?: null,
