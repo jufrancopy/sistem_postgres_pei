@@ -978,7 +978,7 @@
                                             {{-- Dropdown Más Opciones (Estilo PEI) --}}
                                             <div class="dropdown d-inline-block">
                                                 <button class="btn btn-sm btn-outline-secondary font-weight-bold dropdown-toggle d-inline-flex align-items-center px-2.5 shadow-xs"
-                                                        type="button" id="dropdownPeiActions_{{ $plan->id }}" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false"
+                                                        type="button" id="dropdownPeiActions_{{ $plan->id }}" data-toggle="custom-dropdown" data-display="static" aria-haspopup="true" aria-expanded="false"
                                                         style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;">
                                                     <i class="fa fa-ellipsis-h"></i> Más
                                                 </button>
@@ -3890,6 +3890,13 @@ $(document).ready(function() {
     // Solución robusta para dropdowns dentro de table-responsive (evita clipping sin causar reflows)
     var $activeDropdown = null;
     var $activeDropdownParent = null;
+
+    // Forzar el evento click para saltarnos conflictos con DataTables
+    $(document).on('click', '[data-toggle="custom-dropdown"]', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).dropdown('toggle');
+    });
 
     $(document).on('show.bs.dropdown', '.table-responsive', function (e) {
         $activeDropdownParent = $(e.target);
