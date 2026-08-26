@@ -173,6 +173,7 @@ class GenericFormImporter
                     'periodo_mes' => (int) $period['mes'],
                     'estado' => Record::ESTADO_BORRADOR,
                     'created_by' => $user->id,
+                    'updated_by' => $user->id,
                 ]);
 
                 $values = [];
@@ -185,7 +186,7 @@ class GenericFormImporter
                         $values[$column['code']] = $value;
                     }
                 }
-                app(RecordCaptureService::class)->save($record->load('formulario'), $values);
+                app(RecordCaptureService::class)->save($record->load('formulario'), $values, false, true, $user->id);
                 $saved++;
             }
 

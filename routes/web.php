@@ -382,6 +382,17 @@ Route::group(['middleware' => ['auth']], function () {
         Route::put('/captura-asignaciones/{user}', 'Admin\Bioestadistica\CapturaController@updateAssignments')
             ->middleware('permission:bio.record.approve')->name('captura.assignments.update');
 
+        Route::get('/seguimiento', 'Admin\Bioestadistica\SeguimientoController@index')
+            ->middleware('permission:bio.record.view')->name('seguimiento.index');
+        Route::get('/seguimiento/exportar', 'Admin\Bioestadistica\SeguimientoController@export')
+            ->middleware('permission:bio.report.export')->name('seguimiento.export');
+        Route::get('/seguimiento/exportar/csv', 'Admin\Bioestadistica\SeguimientoController@exportCsv')
+            ->middleware('permission:bio.report.export')->name('seguimiento.export.csv');
+        Route::get('/seguimiento/exportar/xlsx', 'Admin\Bioestadistica\SeguimientoController@exportXlsx')
+            ->middleware('permission:bio.report.export')->name('seguimiento.export.xlsx');
+        Route::get('/seguimiento/exportar/pdf', 'Admin\Bioestadistica\SeguimientoController@exportPdf')
+            ->middleware('permission:bio.report.export')->name('seguimiento.export.pdf');
+
         Route::get('/indicadores', 'Admin\Bioestadistica\IndicadorController@index')
             ->middleware('permission:bio.indicator.view')->name('indicadores.index');
         Route::post('/indicadores', 'Admin\Bioestadistica\IndicadorController@store')

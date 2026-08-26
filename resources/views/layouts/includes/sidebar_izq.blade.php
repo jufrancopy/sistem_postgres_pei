@@ -36,6 +36,7 @@
     $bioFormularios = $isActive('bioestadistica.formularios.*', 'bioestadistica.secciones.*', 'bioestadistica.fields.*', 'bioestadistica/formularios*', 'bioestadistica/secciones*', 'bioestadistica/campos*');
     $bioVariables = $isActive('bioestadistica.diccionario.*', 'bioestadistica/diccionario*');
     $bioPendientes = $isActive('bioestadistica.captura.pending', 'bioestadistica/captura/pendientes*');
+    $bioSeguimiento = $isActive('bioestadistica.seguimiento.*', 'bioestadistica/seguimiento*');
     $bioCarga = $bioPendientes ? '' : $isActive(
         'bioestadistica.captura.*',
         'bioestadistica.hospitalizacion.*',
@@ -374,6 +375,11 @@
                                     <li class="nav-item {{ $bioPendientes }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.captura.pending') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">PD</span><span class="sidebar-normal">Pendientes</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ $bioSeguimiento }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.seguimiento.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">SD</span><span class="sidebar-normal">Seguimiento de datos</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ $bioIndicadores }}">

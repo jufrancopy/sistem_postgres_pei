@@ -146,6 +146,7 @@ class HospitalizacionController extends Controller
             'estructura_servicio_id' => $servicioId,
             'estado' => Record::ESTADO_BORRADOR,
             'created_by' => $request->user()->id,
+            'updated_by' => $request->user()->id,
         ]);
         $record->load(['formulario', 'establecimiento', 'estructuraDepartamento', 'estructuraServicio']);
 
@@ -212,6 +213,7 @@ class HospitalizacionController extends Controller
         ], [
             'estado' => Record::ESTADO_BORRADOR,
             'created_by' => $request->user()->id,
+            'updated_by' => $request->user()->id,
         ]);
         abort_unless($record->isEditable(), 422, 'El registro SP10 no está disponible para edición.');
 
@@ -258,6 +260,7 @@ class HospitalizacionController extends Controller
         ], [
             'estado' => Record::ESTADO_BORRADOR,
             'created_by' => $request->user()->id,
+            'updated_by' => $request->user()->id,
         ]);
 
         if (! $record->isEditable()) {

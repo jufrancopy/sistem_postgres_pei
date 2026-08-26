@@ -6,18 +6,24 @@ use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
 use App\Models\Bioestadistica\Field;
 use App\Models\Bioestadistica\Record;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class RecordCaptureService
 {
-    public function saveDraft(Record $record, array $values): Record
+    public function saveDraft(Record $record, array $values, ?int $userId = null): Record
     {
-        return $this->save($record, $values, false, false);
+        return $this->save($record, $values, false, false, $userId);
     }
 
-    public function save(Record $record, array $values, bool $system = false, bool $strict = true): Record
-    {
+    public function save(
+        Record $record,
+        array $values,
+        bool $system = false,
+        bool $strict = true,
+        ?int $userId = null
+    ): Record {
         if (! $system && ! $record->isEditable()) {
             throw ValidationException::withMessages([
                 'record' => 'Solo se pueden editar registros en borrador u objetados.',
@@ -36,8 +42,9 @@ class RecordCaptureService
             ->keyBy('code');
 
         $normalized = $this->validate($fields, $values, $record, $strict);
+        $actorId = $userId ?? Auth::id();
 
-        DB::transaction(function () use ($record, $fields, $normalized, $strict) {
+        DB::transaction(function () use ($record, $fields, $normalized, $strict, $actorId) {
             foreach ($fields as $code => $field) {
                 if (! $strict && ! array_key_exists($code, $normalized)) {
                     continue;
@@ -48,16 +55,27 @@ class RecordCaptureService
                     continue;
                 }
 
-                $record->values()->updateOrCreate(
-                    ['field_id' => $field->id],
-                    array_merge([
-                        'value_text' => null,
-                        'value_num' => null,
-                        'value_date' => null,
-                        'value_bool' => null,
-                        'value_json' => null,
-                    ], $payload)
-                );
+                $value = $record->values()->firstOrNew(['field_id' => $field->id]);
+                $value->fill(array_merge([
+                    'value_text' => null,
+                    'value_num' => null,
+                    'value_date' => null,
+                    'value_bool' => null,
+                    'value_json' => null,
+                ], $payload));
+
+                if ($actorId) {
+                    if (! $value->exists) {
+                        $value->created_by = (int) $actorId;
+                    }
+                    $value->updated_by = (int) $actorId;
+                }
+
+                $value->save();
+            }
+
+            if ($actorId) {
+                $record->forceFill(['updated_by' => (int) $actorId])->save();
             }
         });
         if ($strict) {

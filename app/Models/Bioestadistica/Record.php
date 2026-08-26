@@ -72,6 +72,26 @@ class Record extends BioestadisticaModel
         return $this->hasMany(RecordValue::class)->with('field');
     }
 
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updater(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function submitter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'submitted_by');
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
     public function isEditable(): bool
     {
         return in_array($this->estado, [self::ESTADO_BORRADOR, self::ESTADO_OBJETADO], true);
@@ -126,6 +146,7 @@ class Record extends BioestadisticaModel
             'estado' => self::ESTADO_ENVIADO,
             'submitted_by' => $userId,
             'submitted_at' => now(),
+            'updated_by' => $userId,
         ]);
         app(IndicatorCacheService::class)->invalidateForRecord($this);
     }
@@ -142,6 +163,7 @@ class Record extends BioestadisticaModel
             'estado' => self::ESTADO_APROBADO,
             'approved_by' => $userId,
             'approved_at' => now(),
+            'updated_by' => $userId,
         ]);
         app(IndicatorCacheService::class)->invalidateForRecord($this);
     }
@@ -159,6 +181,7 @@ class Record extends BioestadisticaModel
             'observacion' => $observacion,
             'approved_by' => $userId,
             'approved_at' => now(),
+            'updated_by' => $userId,
         ]);
         app(IndicatorCacheService::class)->invalidateForRecord($this);
     }

@@ -258,13 +258,20 @@ class HospitalizationService
                     $record = Record::create($lookup + [
                         'estado' => Record::ESTADO_BORRADOR,
                         'created_by' => $user?->id,
+                        'updated_by' => $user?->id,
                         'observacion' => 'Consolidado automáticamente desde episodios SP10.',
                     ]);
                 }
 
                 $metrics = $this->metrics($establecimientoId, $year, $month, (int) $record->id, $record->estructura_servicio_id);
                 $values = $this->toRecordValues($formulario, $metrics);
-                $this->capture->save($record->load('formulario.secciones.fields.detalle.prestaciones'), $values, true);
+                $this->capture->save(
+                    $record->load('formulario.secciones.fields.detalle.prestaciones'),
+                    $values,
+                    true,
+                    true,
+                    $user?->id
+                );
 
                 HospEpisodio::query()
                     ->where('establecimiento_id', $establecimientoId)

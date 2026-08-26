@@ -191,6 +191,7 @@ class CapturaController extends Controller
             $record = Record::create($lookup + [
                 'estado' => Record::ESTADO_BORRADOR,
                 'created_by' => $request->user()->id,
+                'updated_by' => $request->user()->id,
             ]);
         } catch (UniqueConstraintViolationException) {
             $exists = Record::where($lookup)->firstOrFail();
@@ -322,8 +323,11 @@ class CapturaController extends Controller
         if ($record->formulario->layout_type === 'nominativo') {
             abort(422, 'El consolidado SP10 no se edita en captura.');
         }
-        $capture->save($record, $request->input('values', []));
-        $record->update(['observacion' => $request->input('observacion')]);
+        $capture->save($record, $request->input('values', []), false, true, $request->user()->id);
+        $record->update([
+            'observacion' => $request->input('observacion'),
+            'updated_by' => $request->user()->id,
+        ]);
 
         return back()->with('success', 'Borrador guardado.');
     }
@@ -339,8 +343,11 @@ class CapturaController extends Controller
             ], 422);
         }
 
-        $capture->saveDraft($record, $request->input('values', []));
-        $record->update(['observacion' => $request->input('observacion')]);
+        $capture->saveDraft($record, $request->input('values', []), $request->user()->id);
+        $record->update([
+            'observacion' => $request->input('observacion'),
+            'updated_by' => $request->user()->id,
+        ]);
 
         return response()->json([
             'ok' => true,
@@ -395,7 +402,7 @@ class CapturaController extends Controller
         $previousContext = $record->replicate();
 
         try {
-            DB::transaction(function () use ($record, $period, $isNominative, $corteUpdate) {
+            DB::transaction(function () use ($record, $period, $isNominative, $corteUpdate, $request) {
                 $locked = Record::query()->whereKey($record->id)->lockForUpdate()->firstOrFail();
                 $locked->loadMissing('formulario');
                 if ($isNominative) {
@@ -415,6 +422,7 @@ class CapturaController extends Controller
                 $locked->update([
                     'periodo_anio' => (int) $period['periodo_anio'],
                     'periodo_mes' => (int) $period['periodo_mes'],
+                    'updated_by' => $request->user()->id,
                 ] + $corteUpdate);
                 $record->refresh();
             });
@@ -448,7 +456,7 @@ class CapturaController extends Controller
         $this->authorize('submit', $record);
         $this->ensureCanEdit($record);
         if ($record->formulario->layout_type !== 'nominativo') {
-            $capture->save($record, $this->savedValues($record));
+            $capture->save($record, $this->savedValues($record), false, true, $request->user()->id);
         }
         $record->submit($request->user()->id);
 
