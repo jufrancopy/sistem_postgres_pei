@@ -1128,24 +1128,29 @@
                         </div>
                     </div>
 
-                    {{-- Selector de Establecimiento de Salud RIISS (Solo visible si el checkbox está marcado) --}}
+                    {{-- Selector de Establecimiento de Salud (Bioestadística / Geografía) --}}
                     <div class="form-group mb-3" id="grupo_establecimiento_riiss" style="display:none;">
                         <label class="font-weight-bold small text-success">
-                            <i class="fa fa-search mr-1"></i> Seleccionar Establecimiento de Salud (RIISS) <span class="text-danger">*</span>
+                            <i class="fa fa-search mr-1"></i> Seleccionar Establecimiento de Salud (Bioestadística / Geografía) <span class="text-danger">*</span>
                         </label>
                         <select name="establecimiento_id" id="dep_establecimiento_id" class="form-control select2" style="width:100%">
                             <option value="">-- Buscar por código o nombre del establecimiento --</option>
                             @foreach($establecimientosRiiss ?? [] as $est)
-                                <option value="{{ $est->id_establecimiento }}"
-                                    data-nombre="{{ $est->nombre_oficial }}"
-                                    data-tipologia="{{ $est->tipologia_clasificacion }}"
-                                    data-region="{{ $est->departamento }}">
-                                    {{ $est->codigo ? '[' . $est->codigo . '] ' : '' }}{{ $est->nombre_oficial }} @if($est->tipologia_clasificacion) ({{ $est->tipologia_clasificacion }}) @endif
+                                @php
+                                    $tipologiaNom = $est->tipoEstablecimiento ? $est->tipoEstablecimiento->nombre : '';
+                                    $deptoNom = ($est->distrito && $est->distrito->departamento) ? $est->distrito->departamento->nombre : '';
+                                    $regionFull = $deptoNom ? ($deptoNom . ($est->distrito ? ' / ' . $est->distrito->nombre : '')) : '';
+                                @endphp
+                                <option value="{{ $est->id }}"
+                                    data-nombre="{{ $est->nombre }}"
+                                    data-tipologia="{{ $tipologiaNom }}"
+                                    data-region="{{ $regionFull ?: $deptoNom }}">
+                                    {{ $est->codigo ? '[' . $est->codigo . '] ' : '' }}{{ $est->nombre }} @if($tipologiaNom) ({{ $tipologiaNom }}) @endif @if($deptoNom) — {{ $deptoNom }} @endif
                                 </option>
                             @endforeach
                         </select>
                         <small class="text-muted d-block mt-1">
-                            Al seleccionar el establecimiento, se asocian y vinculan automáticamente su denominación, tipología y región oficial.
+                            Al seleccionar el establecimiento, se asocian y vinculan automáticamente su denominación, tipología y región oficial de Bioestadística.
                         </small>
                     </div>
 

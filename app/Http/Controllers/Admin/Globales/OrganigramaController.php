@@ -189,11 +189,11 @@ class OrganigramaController extends Controller
         $region = $request->region ?: null;
 
         if ($esEstablecimiento && $establecimientoId) {
-            $est = \App\Models\Riiss\Establecimiento::find($establecimientoId);
+            $est = \App\Models\Bioestadistica\Establecimiento::with(['distrito.departamento', 'tipoEstablecimiento'])->find($establecimientoId);
             if ($est) {
-                $dependency = $dependency ?: $est->nombre_oficial;
-                $tipoEst = $tipoEst ?: $est->tipologia_clasificacion;
-                $region = $region ?: $est->departamento;
+                $dependency = $dependency ?: $est->nombre;
+                $tipoEst = $tipoEst ?: ($est->tipoEstablecimiento ? $est->tipoEstablecimiento->nombre : null);
+                $region = $region ?: ($est->distrito && $est->distrito->departamento ? $est->distrito->departamento->nombre : null);
             }
         }
 

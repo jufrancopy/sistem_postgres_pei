@@ -25,7 +25,7 @@ class Organigrama extends Model
 
     public function establecimiento()
     {
-        return $this->belongsTo(\App\Models\Riiss\Establecimiento::class, 'establecimiento_id', 'id_establecimiento');
+        return $this->belongsTo(\App\Models\Bioestadistica\Establecimiento::class, 'establecimiento_id');
     }
 
     public function parent()

@@ -279,28 +279,28 @@ class GlobalesController extends Controller
         // Mantener compatibilidad con variable en vista
         $top5RankingReconocimiento = $top10RankingReconocimiento;
 
-        // ── Tipologías de Establecimiento conectadas desde RIISS ───────────────
-        $tipologiasRiiss = \App\Models\Riiss\ReglaSeccionFormulario::select('tipologia_clasificacion')
-            ->distinct()
-            ->whereNotNull('tipologia_clasificacion')
-            ->where('tipologia_clasificacion', '!=', '')
-            ->orderBy('tipologia_clasificacion')
-            ->pluck('tipologia_clasificacion');
+        // ── Tipologías de Establecimiento desde Bioestadística (Geografía) ──────
+        $tipologiasRiiss = \App\Models\Bioestadistica\TipoEstablecimiento::where('activo', true)
+            ->orderBy('nombre')
+            ->pluck('nombre');
 
         if ($tipologiasRiiss->isEmpty()) {
-            $tipologiasRiiss = \App\Models\Riiss\Establecimiento::select('tipologia_clasificacion')
+            $tipologiasRiiss = \App\Models\Bioestadistica\Establecimiento::join('bioestadistica.tipos_establecimiento', 'bioestadistica.establecimientos.tipo_establecimiento_id', '=', 'bioestadistica.tipos_establecimiento.id')
                 ->distinct()
-                ->whereNotNull('tipologia_clasificacion')
-                ->where('tipologia_clasificacion', '!=', '')
-                ->orderBy('tipologia_clasificacion')
-                ->pluck('tipologia_clasificacion');
+                ->orderBy('bioestadistica.tipos_establecimiento.nombre')
+                ->pluck('bioestadistica.tipos_establecimiento.nombre');
         }
 
-        // ── Establecimientos de Salud (RIISS) para asociación directa ──────────
-        $establecimientosRiiss = \App\Models\Riiss\Establecimiento::where('activo', true)
-            ->orWhereNull('activo')
-            ->orderBy('nombre_oficial')
-            ->get(['id_establecimiento', 'nombre_oficial', 'codigo', 'tipologia_clasificacion', 'departamento', 'complejidad']);
+        // ── Establecimientos de Salud desde bioestadistica.establecimientos ──────
+        $establecimientosRiiss = \App\Models\Bioestadistica\Establecimiento::with([
+                'distrito.departamento',
+                'tipoEstablecimiento',
+                'gradoComplejidad',
+                'microred',
+                'areaGestion'
+            ])
+            ->orderBy('nombre')
+            ->get();
 
         return view('admin.globales.dashboard', get_defined_vars());
     }

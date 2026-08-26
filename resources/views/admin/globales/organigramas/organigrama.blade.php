@@ -80,11 +80,14 @@
                     <input type="hidden" id="dep_method" name="_method" value="POST">
 
                     @php
-                        $tipologiasRiissOrg = \App\Models\Riiss\ReglaSeccionFormulario::select('tipologia_clasificacion')->distinct()->whereNotNull('tipologia_clasificacion')->where('tipologia_clasificacion', '!=', '')->orderBy('tipologia_clasificacion')->pluck('tipologia_clasificacion');
+                        $tipologiasRiissOrg = \App\Models\Bioestadistica\TipoEstablecimiento::where('activo', true)->orderBy('nombre')->pluck('nombre');
                         if ($tipologiasRiissOrg->isEmpty()) {
-                            $tipologiasRiissOrg = \App\Models\Riiss\Establecimiento::select('tipologia_clasificacion')->distinct()->whereNotNull('tipologia_clasificacion')->where('tipologia_clasificacion', '!=', '')->orderBy('tipologia_clasificacion')->pluck('tipologia_clasificacion');
+                            $tipologiasRiissOrg = \App\Models\Bioestadistica\Establecimiento::join('bioestadistica.tipos_establecimiento', 'bioestadistica.establecimientos.tipo_establecimiento_id', '=', 'bioestadistica.tipos_establecimiento.id')
+                                ->distinct()
+                                ->orderBy('bioestadistica.tipos_establecimiento.nombre')
+                                ->pluck('bioestadistica.tipos_establecimiento.nombre');
                         }
-                        $establecimientosRiissOrg = \App\Models\Riiss\Establecimiento::where('activo', true)->orWhereNull('activo')->orderBy('nombre_oficial')->get(['id_establecimiento', 'nombre_oficial', 'codigo', 'tipologia_clasificacion', 'departamento']);
+                        $establecimientosRiissOrg = \App\Models\Bioestadistica\Establecimiento::with(['distrito.departamento', 'tipoEstablecimiento'])->orderBy('nombre')->get();
                     @endphp
 
                     {{-- Checkbox Inicial: ¿Es un Establecimiento de Salud? --}}
@@ -92,29 +95,34 @@
                         <div class="custom-control custom-checkbox d-flex align-items-center">
                             <input type="checkbox" class="custom-control-input" id="dep_es_establecimiento" name="es_establecimiento" value="1">
                             <label class="custom-control-label font-weight-bold text-dark mb-0 ml-1" for="dep_es_establecimiento" style="font-size: 0.92rem; cursor:pointer;">
-                                <i class="fa fa-hospital text-success mr-1"></i> ¿Es un Establecimiento de Salud? <span class="text-muted font-weight-normal">(Conectar con RIISS)</span>
+                                <i class="fa fa-hospital text-success mr-1"></i> ¿Es un Establecimiento de Salud? <span class="text-muted font-weight-normal">(Bioestadística / Geografía)</span>
                             </label>
                         </div>
                     </div>
 
-                    {{-- Selector de Establecimiento de Salud RIISS --}}
+                    {{-- Selector de Establecimiento de Salud (Bioestadística / Geografía) --}}
                     <div class="form-group mb-3" id="grupo_establecimiento_riiss" style="display:none;">
                         <label class="font-weight-bold small text-success">
-                            <i class="fa fa-search mr-1"></i> Seleccionar Establecimiento de Salud (RIISS) <span class="text-danger">*</span>
+                            <i class="fa fa-search mr-1"></i> Seleccionar Establecimiento de Salud (Bioestadística / Geografía) <span class="text-danger">*</span>
                         </label>
                         <select name="establecimiento_id" id="dep_establecimiento_id" class="form-control select2" style="width:100%">
                             <option value="">-- Buscar por código o nombre del establecimiento --</option>
                             @foreach($establecimientosRiissOrg as $est)
-                                <option value="{{ $est->id_establecimiento }}"
-                                    data-nombre="{{ $est->nombre_oficial }}"
-                                    data-tipologia="{{ $est->tipologia_clasificacion }}"
-                                    data-region="{{ $est->departamento }}">
-                                    {{ $est->codigo ? '[' . $est->codigo . '] ' : '' }}{{ $est->nombre_oficial }} @if($est->tipologia_clasificacion) ({{ $est->tipologia_clasificacion }}) @endif
+                                @php
+                                    $tipologiaNom = $est->tipoEstablecimiento ? $est->tipoEstablecimiento->nombre : '';
+                                    $deptoNom = ($est->distrito && $est->distrito->departamento) ? $est->distrito->departamento->nombre : '';
+                                    $regionFull = $deptoNom ? ($deptoNom . ($est->distrito ? ' / ' . $est->distrito->nombre : '')) : '';
+                                @endphp
+                                <option value="{{ $est->id }}"
+                                    data-nombre="{{ $est->nombre }}"
+                                    data-tipologia="{{ $tipologiaNom }}"
+                                    data-region="{{ $regionFull ?: $deptoNom }}">
+                                    {{ $est->codigo ? '[' . $est->codigo . '] ' : '' }}{{ $est->nombre }} @if($tipologiaNom) ({{ $tipologiaNom }}) @endif @if($deptoNom) — {{ $deptoNom }} @endif
                                 </option>
                             @endforeach
                         </select>
                         <small class="text-muted d-block mt-1">
-                            Al seleccionar el establecimiento, se asocian y vinculan automáticamente su denominación, tipología y región oficial.
+                            Al seleccionar el establecimiento, se asocian y vinculan automáticamente su denominación, tipología y región oficial de Bioestadística.
                         </small>
                     </div>
 
