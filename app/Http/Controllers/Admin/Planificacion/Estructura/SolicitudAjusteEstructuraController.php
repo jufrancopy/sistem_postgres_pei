@@ -179,7 +179,14 @@ class SolicitudAjusteEstructuraController extends Controller
             'solicitante_cargo'    => 'nullable|string|max:255',
             'solicitante_email'    => 'required|email|max:255',
             'solicitante_telefono' => 'nullable|string|max:100',
-            'pei_profile_id'       => 'required|exists:planificacion.pei_profiles,id',
+            'pei_profile_id'       => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    if (!PeiProfile::where('id', $value)->exists()) {
+                        $fail('Debe vincular la solicitud con una Acción / Objetivo válido del Plan Estratégico.');
+                    }
+                }
+            ],
             'dependencia_solicitante_id' => 'nullable|exists:organigramas,id',
             'dependencia_solicitante_texto' => 'nullable|string|max:255',
             'fundamentacion_general' => 'nullable|string',
