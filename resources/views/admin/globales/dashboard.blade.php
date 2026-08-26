@@ -3874,7 +3874,9 @@ $(document).ready(function() {
                 $(this).DataTable({
                     language: datatablesSpanish,
                     pageLength: 10,
-                    responsive: true,
+                    responsive: {
+                        details: false  // Desactivar expansión de filas responsiva para evitar conflictos de clic
+                    },
                     autoWidth: false,
                     order: [[0, 'desc']]
                 });
@@ -3894,22 +3896,18 @@ $(document).ready(function() {
     }
 
     // Solución para dropdowns dentro de table-responsive:
-    // 1. stopPropagation evita que DataTables "responsive" se coma el primer clic
-    // 2. El overflow se cambia en mousedown (antes de que Bootstrap abra el menú)
-    //    para evitar que el reflow reposicione el menú al abrirse
-    $(document).on('mousedown', '[data-toggle="dropdown"]', function(e) {
-        // Si el botón está dentro de un table-responsive, cambiamos overflow ya
+    // El overflow se cambia en mousedown (ANTES de que Bootstrap/Popper abra el menú)
+    // para que Popper ya tenga espacio libre al calcular la posición.
+    // stopPropagation se hace directamente en el botón (nivel elemento), que se ejecuta
+    // ANTES del handler de DataTables en el nivel td, evitando que consuma el primer clic.
+    $(document).on('mousedown', '[data-toggle="dropdown"]', function() {
         var $tr = $(this).closest('.table-responsive');
         if ($tr.length) {
             $tr.css('overflow', 'visible');
         }
     });
-    $(document).on('click', '[data-toggle="dropdown"]', function(e) {
-        // Evitar que DataTables responsive intercepte este clic
-        e.stopPropagation();
-    });
-    $(document).on('hidden.bs.dropdown', '.table-responsive, .dropdown', function () {
-        $(this).closest('.table-responsive').css('overflow', 'auto');
+    $(document).on('hidden.bs.dropdown', function () {
+        $('.table-responsive').css('overflow', 'auto');
     });
 
     // ── Switches AJAX en tiempo real ──
