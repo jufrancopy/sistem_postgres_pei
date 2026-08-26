@@ -3878,7 +3878,12 @@ $(document).ready(function() {
                         details: false  // Desactivar expansión de filas responsiva para evitar conflictos de clic
                     },
                     autoWidth: false,
-                    order: [[0, 'desc']]
+                    order: [[0, 'desc']],
+                    initComplete: function() {
+                        // Pre-inicializar dropdowns de Bootstrap para que el primer clic abra el menú
+                        // (en lugar de solo inicializar el plugin sin abrirlo)
+                        $(this.api().table().container()).find('[data-toggle="dropdown"]').dropdown();
+                    }
                 });
             }
         });
