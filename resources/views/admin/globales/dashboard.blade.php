@@ -156,10 +156,18 @@
         letter-spacing: 0.5px;
         border-bottom: 2px solid #e2e8f0;
     }
-    #tab-planes .table-responsive {
+    #tab-planes .table-responsive,
+    #tab-proyectos .table-responsive {
         overflow: visible !important;
+        min-height: 420px;
+        padding-bottom: 220px;
     }
-    #tablaPlanesGlobal .dropdown-menu {
+    #tablaPlanesGlobal .dropdown-menu,
+    #tablaProyectosDashboard .dropdown-menu {
+        top: 100% !important;
+        bottom: auto !important;
+        transform: none !important;
+        margin-top: 6px !important;
         z-index: 1060 !important;
     }
 
