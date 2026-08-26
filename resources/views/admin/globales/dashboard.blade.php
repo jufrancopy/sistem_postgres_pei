@@ -3730,13 +3730,10 @@ $(document).ready(function() {
                     msg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
                 }
                 toastr.error(msg);
-                btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Dependencia');
                 if ($('#dep_es_establecimiento').is(':checked')) {
                     $('#dep_tipo_establecimiento').prop('disabled', true);
                 }
-            }
-        });
-    });
+            },
             complete: function () {
                 btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Dependencia');
             }
