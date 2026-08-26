@@ -978,7 +978,7 @@
                                             {{-- Dropdown Más Opciones (Estilo PEI) --}}
                                             <div class="dropdown d-inline-block">
                                                 <button class="btn btn-sm btn-outline-secondary font-weight-bold dropdown-toggle d-inline-flex align-items-center px-2.5 shadow-xs"
-                                                        type="button" id="dropdownPeiActions_{{ $plan->id }}" data-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false"
+                                                        type="button" id="dropdownPeiActions_{{ $plan->id }}" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false"
                                                         style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;">
                                                     <i class="fa fa-ellipsis-h"></i> Más
                                                 </button>
@@ -3887,12 +3887,50 @@ $(document).ready(function() {
         });
     }
 
-    // Solución para dropdowns dentro de contenedores table-responsive que evitan que se corten (clipping)
-    $(document).on('show.bs.dropdown', '.table-responsive', function () {
-        $(this).css('overflow', 'inherit');
+    // Solución robusta para dropdowns dentro de table-responsive (evita clipping sin causar reflows)
+    var $activeDropdown = null;
+    var $activeDropdownParent = null;
+
+    $(document).on('show.bs.dropdown', '.table-responsive', function (e) {
+        $activeDropdownParent = $(e.target);
+        $activeDropdown = $activeDropdownParent.find('.dropdown-menu');
+        
+        if ($activeDropdown.length) {
+            // Respaldamos la posición original
+            $activeDropdown.data('original-parent', $activeDropdownParent);
+            
+            // Movemos el menú al body
+            $('body').append($activeDropdown.detach());
+            
+            // Calculamos posición
+            var eOffset = $activeDropdownParent.offset();
+            $activeDropdown.css({
+                'display': 'block',
+                'position': 'absolute',
+                'top': eOffset.top + $activeDropdownParent.outerHeight(),
+                'left': eOffset.left,
+                'right': 'auto',
+                'z-index': 9999
+            });
+            
+            // Si es dropdown-menu-right, ajustamos
+            if ($activeDropdown.hasClass('dropdown-menu-right')) {
+                $activeDropdown.css({
+                    'left': 'auto',
+                    'right': $(window).width() - (eOffset.left + $activeDropdownParent.outerWidth())
+                });
+            }
+        }
     });
-    $(document).on('hide.bs.dropdown', '.table-responsive', function () {
-        $(this).css('overflow', 'auto');
+
+    $(document).on('hidden.bs.dropdown', function (e) {
+        if ($activeDropdown && $activeDropdownParent) {
+            // Regresamos el menú a su contenedor original
+            $activeDropdown.css({ 'display': '', 'position': '', 'top': '', 'left': '', 'right': '', 'z-index': '' });
+            $activeDropdownParent.append($activeDropdown.detach());
+            $activeDropdown = null;
+            $activeDropdownParent = null;
+        }
     });
 
     // ── Switches AJAX en tiempo real ──
