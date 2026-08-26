@@ -106,9 +106,13 @@ class GlobalesController extends Controller
         $extractosPendientes = \App\Models\Estadistica\SiessExtracto::pendientes()->count();
 
         // ── Proyectos Institucionales ─────────────────────────────────────────
-        $totalProyectos     = \App\Models\Proyectos\ProyectoInstitucional::count();
-        $proyectosActivos   = \App\Models\Proyectos\ProyectoInstitucional::activos()->count();
-        $proyectosEjecucion = \App\Models\Proyectos\ProyectoInstitucional::enEjecucion()->count();
+        $proyectosList = \App\Models\Proyectos\ProyectoInstitucional::with(['peiProfile', 'dependenciaSolicitante', 'dependenciaEjecutora', 'analista', 'creadoPor'])
+            ->orderBy('id', 'desc')
+            ->get();
+        $totalProyectos     = $proyectosList->count();
+        $proyectosActivos   = $proyectosList->whereNotIn('estado', ['finalizado','rechazado_docs','rechazado_tecnico'])->count();
+        $proyectosEjecucion = $proyectosList->where('estado', 'en_ejecucion')->count();
+        $proyectosAprobados = $proyectosList->where('estado', 'aprobado')->count();
 
         // ── Roles, Permisos, Grupos ───────────────────────────────────────────
         $totalRoles    = Role::count();

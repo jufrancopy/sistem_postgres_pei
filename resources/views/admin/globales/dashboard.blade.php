@@ -374,7 +374,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="tab-proyectos-link" href="{{ $selectedPei ? url('pei-profiles/' . $selectedPei->id . '/proyectos') : url('pei-profiles/ce99f883-fdd0-4723-8f75-cf689aa8f0fa/proyectos') }}">
+                    <a class="nav-link" id="tab-proyectos-link" data-toggle="pill" href="#tab-proyectos" role="tab" aria-selected="false">
                         <i class="fa fa-project-diagram mr-2"></i> Proyectos
                         <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalProyectos }}</span>
                     </a>
@@ -1162,6 +1162,176 @@
                         <div>
                             <a href="{{ route('globales.activities.create') }}{{ $selectedPei ? '?pei_profile_id='.$selectedPei->id : '' }}" class="btn btn-primary btn-round px-4 font-weight-bold">
                                 <i class="fa fa-plus-circle mr-1"></i> Crear Actividad PEI
+                            </a>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+
+                {{-- ════════════════════════════════════════════════════════════════════════════
+                     PESTAÑA 5: PROYECTOS INSTITUCIONALES (PORTAFOLIO & SEGUIMIENTO)
+                     ════════════════════════════════════════════════════════════════════════════ --}}
+                <div class="tab-pane fade" id="tab-proyectos" role="tabpanel">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                        <div>
+                            <h4 class="font-weight-bold text-dark mb-1">
+                                <i class="fa fa-project-diagram text-primary mr-2"></i> Portafolio de Proyectos Institucionales
+                            </h4>
+                            <p class="text-muted mb-0 small">
+                                Monitoreo y gestión de proyectos alineados al Plan Estratégico Institucional (PEI).
+                            </p>
+                        </div>
+                        <div class="d-flex align-items-center mt-3 mt-md-0" style="gap: 10px;">
+                            <a href="{{ route('proyectos.solicitar.form', $selectedPei ? $selectedPei->id : 'ce99f883-fdd0-4723-8f75-cf689aa8f0fa') }}" target="_blank" class="btn btn-primary btn-round px-3 text-white font-weight-bold shadow-sm">
+                                <i class="fa fa-plus-circle mr-1"></i> NUEVO PROYECTO
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Cards de Resumen de Estado de Proyectos --}}
+                    <div class="row mb-4">
+                        <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                            <div class="card border-0 shadow-sm rounded-lg p-3 bg-white" style="border-left: 4px solid #2563eb !important;">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Total Proyectos</div>
+                                        <div class="h3 font-weight-bold text-dark mb-0">{{ $totalProyectos }}</div>
+                                    </div>
+                                    <div class="p-3 bg-light rounded-circle text-primary">
+                                        <i class="fa fa-folder-open fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                            <div class="card border-0 shadow-sm rounded-lg p-3 bg-white" style="border-left: 4px solid #10b981 !important;">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">En Ejecución</div>
+                                        <div class="h3 font-weight-bold text-success mb-0">{{ $proyectosEjecucion }}</div>
+                                    </div>
+                                    <div class="p-3 bg-light rounded-circle text-success">
+                                        <i class="fa fa-play-circle fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                            <div class="card border-0 shadow-sm rounded-lg p-3 bg-white" style="border-left: 4px solid #06b6d4 !important;">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Aprobados</div>
+                                        <div class="h3 font-weight-bold text-info mb-0">{{ $proyectosAprobados }}</div>
+                                    </div>
+                                    <div class="p-3 bg-light rounded-circle text-info">
+                                        <i class="fa fa-check-double fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                            <div class="card border-0 shadow-sm rounded-lg p-3 bg-white" style="border-left: 4px solid #f59e0b !important;">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Portafolio Activo</div>
+                                        <div class="h3 font-weight-bold text-warning mb-0">{{ $proyectosActivos }}</div>
+                                    </div>
+                                    <div class="p-3 bg-light rounded-circle text-warning">
+                                        <i class="fa fa-tasks fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Tabla DataTables de Proyectos --}}
+                    @if(isset($proyectosList) && $proyectosList->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom w-100 dataTableInit" id="tablaProyectosDashboard">
+                            <thead>
+                                <tr>
+                                    <th style="width: 4%;">#</th>
+                                    <th style="width: 28%;">CÓDIGO &amp; PROYECTO</th>
+                                    <th style="width: 22%;">DEPENDENCIA RESPONSABLE</th>
+                                    <th style="width: 18%;">ALINEACIÓN PEI</th>
+                                    <th style="width: 14%;">ESTADO &amp; AVANCE</th>
+                                    <th style="width: 14%; text-align: center;">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($proyectosList as $pIdx => $proy)
+                                @php
+                                    $stBadge = \App\Models\Proyectos\ProyectoInstitucional::estadoBadge($proy->estado);
+                                    $stLabel = \App\Models\Proyectos\ProyectoInstitucional::estadoLabel($proy->estado);
+                                @endphp
+                                <tr>
+                                    <td class="font-weight-bold text-center">{{ $pIdx + 1 }}</td>
+                                    <td>
+                                        <a href="{{ route('proyectos-institucionales.show', $proy->id) }}" class="font-weight-bold text-dark text-decoration-none" style="font-size:0.92rem;">
+                                            <span class="badge badge-dark mr-1" style="font-size:0.68rem;">{{ $proy->codigo }}</span>
+                                            {{ $proy->nombre }}
+                                        </a>
+                                        @if($proy->descripcion)
+                                            <small class="text-muted d-block mt-1 text-truncate" style="max-width:320px;">{{ strip_tags($proy->descripcion) }}</small>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="badge badge-light border text-dark p-1.5 mb-1" style="font-size:0.75rem;">
+                                            <i class="fa fa-sitemap text-info mr-1"></i> {{ $proy->dependenciaSolicitante->dependency ?? 'Dependencia no asignada' }}
+                                        </div>
+                                        @if($proy->creadoPor)
+                                            <div class="small text-muted">
+                                                <i class="fa fa-user mr-1"></i> Solicitado por: {{ $proy->creadoPor->name }}
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($proy->peiProfile)
+                                            <span class="badge badge-light border text-primary p-1.5" style="font-size:0.72rem;">
+                                                <i class="fa fa-bullseye mr-1"></i> {{ strip_tags($proy->peiProfile->name) }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted small">— Sin vincular —</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ $stBadge }} px-2 py-1 font-weight-bold mb-1" style="font-size:0.72rem;">
+                                            {{ $stLabel }}
+                                        </span>
+                                        <div class="d-flex align-items-center mt-1">
+                                            <div class="progress flex-grow-1 mr-2" style="height: 6px; border-radius: 8px; background-color: #e2e8f0;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ $proy->avance_pct ?? 0 }}%;" aria-valuenow="{{ $proy->avance_pct ?? 0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <span class="font-weight-bold small text-muted" style="font-size:0.7rem;">{{ $proy->avance_pct ?? 0 }}%</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center" style="white-space: nowrap;">
+                                        <div class="d-flex justify-content-center" style="gap: 4px;">
+                                            <a href="{{ route('proyectos-institucionales.show', $proy->id) }}" class="btn btn-circle btn-info text-white" title="Ver Ficha y Seguimiento del Proyecto">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            @if($proy->peiProfile)
+                                            <a href="{{ url('pei-profiles/' . ($proy->peiProfile->parent_id ?? $proy->peiProfile->id)) }}" class="btn btn-circle btn-success" title="Ver en Estructura del PEI">
+                                                <i class="fa fa-sitemap"></i>
+                                            </a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="text-center py-5 bg-light rounded-lg border border-dashed">
+                        <div class="mb-3">
+                            <i class="fa fa-project-diagram fa-3x text-muted" style="opacity: 0.5;"></i>
+                        </div>
+                        <h5 class="font-weight-bold text-dark">No hay proyectos institucionales registrados aún</h5>
+                        <p class="text-muted small max-w-md mx-auto">Comenzá creando una solicitud o proyecto institucional vinculado al Plan Estratégico.</p>
+                        <div>
+                            <a href="{{ route('proyectos.solicitar.form', $selectedPei ? $selectedPei->id : 'ce99f883-fdd0-4723-8f75-cf689aa8f0fa') }}" target="_blank" class="btn btn-primary btn-round px-4 font-weight-bold">
+                                <i class="fa fa-plus-circle mr-1"></i> Solicitar Proyecto
                             </a>
                         </div>
                     </div>
