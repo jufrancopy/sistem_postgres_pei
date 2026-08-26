@@ -642,6 +642,17 @@
                                                             <i class="fa fa-comment-alt mr-1 text-warning"></i> {{ $comentariosAction->count() }} {{ $comentariosAction->count() === 1 ? 'Aporte Asesoría' : 'Aportes Asesoría' }}
                                                         </button>
                                                         @endif
+
+                                                        {{-- Badge Solicitudes de Estructura --}}
+                                                        @php
+                                                            $cantSolEst = \App\Models\Estructura\SolicitudAjusteEstructura::where('pei_profile_id', (string)$action->id)->count();
+                                                        @endphp
+                                                        @if($cantSolEst > 0)
+                                                        <a href="#collapseEstructura_{{ $action->id }}" data-toggle="collapse" class="btn btn-xs text-white font-weight-bold shadow-sm"
+                                                           style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: none; border-radius: 20px; padding: 2px 10px; font-size: 0.71rem; cursor: pointer; text-decoration: none;">
+                                                            <i class="fa fa-sitemap mr-1 text-warning"></i> {{ $cantSolEst }} {{ $cantSolEst === 1 ? 'Ajuste Estructura' : 'Ajustes Estructura' }}
+                                                        </a>
+                                                        @endif
                                                     </div>
                                                 </div>
                                                 {{-- Editores de la Acción --}}
@@ -880,6 +891,102 @@
                                                     @endif
                                                 </a>
                                                 @endforeach
+                                            </div>
+                                            @endif
+
+                                            {{-- Solicitudes de Ajuste de Estructura Organizacional (Dirección de Organización y Calidad) --}}
+                                            @php
+                                                $solicitudesAccion = \App\Models\Estructura\SolicitudAjusteEstructura::with(['items', 'dependenciaSolicitante'])
+                                                    ->where('pei_profile_id', (string)$action->id)
+                                                    ->latest()
+                                                    ->get();
+                                            @endphp
+                                            @if($solicitudesAccion->count() > 0)
+                                            <div class="px-3 py-2" style="border-top:1px solid #bae6fd; background:#f0f9ff; font-size:.78rem">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <a class="font-weight-bold text-uppercase text-decoration-none d-flex align-items-center"
+                                                       data-toggle="collapse"
+                                                       href="#collapseEstructura_{{ $action->id }}"
+                                                       role="button"
+                                                       aria-expanded="true"
+                                                       aria-controls="collapseEstructura_{{ $action->id }}"
+                                                       style="font-size:.72rem; letter-spacing:.04em; color: #0369a1 !important; cursor:pointer;"
+                                                       title="Desplegar u ocultar Solicitudes de Ajuste de Estructura Organizacional">
+                                                        <i class="fa fa-sitemap mr-1.5 text-primary"></i> Reorganización de Estructura (Org. y Calidad)
+                                                        <span class="badge badge-primary ml-1.5 px-2 py-0.5" style="border-radius: 10px;">{{ $solicitudesAccion->count() }}</span>
+                                                    </a>
+                                                    <a href="{{ route('proyectos.solicitar.ajuste-estructura.form', $profile->id) }}" target="_blank" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size:.68rem; border-radius:12px;" title="Nueva Solicitud de Ajuste Estructural">
+                                                        <i class="fa fa-plus-circle mr-1"></i> + Nueva Solicitud
+                                                    </a>
+                                                </div>
+
+                                                <div class="collapse show mt-2" id="collapseEstructura_{{ $action->id }}">
+                                                    <div class="d-flex flex-column" style="gap: .45rem;">
+                                                        @foreach($solicitudesAccion as $sol)
+                                                            @php
+                                                                $stBadge = match($sol->estado) {
+                                                                    'aprobado'    => ['cls' => 'badge-success', 'label' => 'APROBADO', 'color' => '#10b981'],
+                                                                    'en_analisis' => ['cls' => 'badge-warning text-dark', 'label' => 'EN ANÁLISIS', 'color' => '#f59e0b'],
+                                                                    'observado'   => ['cls' => 'badge-info', 'label' => 'OBSERVADO', 'color' => '#0284c7'],
+                                                                    'rechazado'   => ['cls' => 'badge-danger', 'label' => 'RECHAZADO', 'color' => '#ef4444'],
+                                                                    default       => ['cls' => 'badge-secondary', 'label' => 'RECIBIDO', 'color' => '#64748b'],
+                                                                };
+                                                                $depNom = $sol->dependenciaSolicitante?->dependency ?: ($sol->dependencia_solicitante_texto ?: 'Dependencia no especificada');
+                                                            @endphp
+                                                            <div class="p-2.5 rounded border shadow-xs bg-white" style="border-left: 4px solid {{ $stBadge['color'] }} !important; border-color: #bae6fd !important;">
+                                                                <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: .4rem;">
+                                                                    <div class="d-flex align-items-center flex-wrap" style="gap: .4rem;">
+                                                                        <span class="badge badge-dark font-weight-bold" style="font-size:.65rem">{{ $sol->codigo }}</span>
+                                                                        <span class="badge {{ $stBadge['cls'] }} font-weight-bold" style="font-size:.65rem">{{ $stBadge['label'] }}</span>
+                                                                        <span class="text-dark font-weight-bold" style="font-size:.8rem;">
+                                                                            <i class="fa fa-building text-muted mr-1"></i> {{ $depNom }}
+                                                                        </span>
+                                                                        <span class="text-muted small" style="font-size:.7rem;">
+                                                                            (Solicitante: {{ $sol->solicitante_nombre }})
+                                                                        </span>
+                                                                    </div>
+                                                                    <div class="d-flex align-items-center" style="gap: .3rem;">
+                                                                        <a href="{{ route('solicitud-estructura.consulta', $sol->token_qr) }}" target="_blank" class="btn btn-xs btn-outline-info py-0 px-2 font-weight-bold" style="font-size:.65rem; border-radius:10px;" title="Ver Comprobante Oficial & QR">
+                                                                            <i class="fa fa-qrcode mr-1"></i> Comprobante / QR
+                                                                        </a>
+                                                                        @hasanyrole('Administrador|Super Admin|Coordinador de Planificación')
+                                                                        <a href="{{ route('admin.estructura-solicitudes.show', $sol->id) }}" class="btn btn-xs btn-primary py-0 px-2 font-weight-bold" style="font-size:.65rem; border-radius:10px;" title="Evaluar y Registrar Dictamen Técnico">
+                                                                            <i class="fa fa-clipboard-check mr-1"></i> Dictaminar
+                                                                        </a>
+                                                                        @endhasanyrole
+                                                                    </div>
+                                                                </div>
+
+                                                                {{-- Lista de Items Solicitados --}}
+                                                                <div class="mt-2 pt-1 border-top" style="font-size:.73rem;">
+                                                                    <div class="mb-1 text-muted">
+                                                                        <strong>Cambios Estructurales Propuestos ({{ $sol->items->count() }}):</strong>
+                                                                    </div>
+                                                                    @foreach($sol->items as $item)
+                                                                        <div class="ml-2 mb-1">
+                                                                            <span class="badge badge-light border text-dark font-weight-bold mr-1">{{ $item->tipo_reorganizacion }}</span>
+                                                                            <span class="text-dark font-weight-bold">{{ $item->denominacion_propuesta }}</span>
+                                                                            @if($item->denominacion_actual)
+                                                                                <span class="text-muted small">(Actual: {{ $item->denominacion_actual }})</span>
+                                                                            @endif
+                                                                            @if($item->objetivo_dependencia_propuesta)
+                                                                                <div class="text-muted italic ml-3 small" style="font-size:.7rem;">
+                                                                                    <i class="fa fa-caret-right text-primary mr-1"></i> {{ \Illuminate\Support\Str::limit($item->objetivo_dependencia_propuesta, 120) }}
+                                                                                </div>
+                                                                            @endif
+                                                                        </div>
+                                                                    @endforeach
+
+                                                                    @if($sol->dictamen_tecnico)
+                                                                        <div class="mt-1.5 p-1.5 rounded bg-light border text-success" style="font-size:.72rem;">
+                                                                            <strong><i class="fa fa-clipboard-check mr-1"></i> Dictamen Dirección de Organización y Calidad:</strong> {{ $sol->dictamen_tecnico }}
+                                                                        </div>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
                                             </div>
                                             @endif
 
