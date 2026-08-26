@@ -2779,7 +2779,7 @@
                 <div class="card border shadow-sm mb-4" style="border-radius: 10px; overflow: hidden;">
                     <div class="card-body p-3 bg-white d-flex flex-column flex-md-row align-items-md-center justify-content-between">
                         <div class="d-flex align-items-center mb-3 mb-md-0">
-                            <img id="tel_user_avatar" src="{{ asset('assets/images/user-avatar.png') }}" class="rounded-circle border shadow-sm mr-3" style="width: 54px; height: 54px; object-fit: cover;">
+                            <img id="tel_user_avatar" src="{{ asset('assets/images/user-avatar.png') }}" class="rounded-circle border shadow-sm mr-3" style="width: 54px; height: 54px; object-fit: cover;" onerror="this.src='https://ui-avatars.com/api/?name=Funcionario&background=e2e8f0&color=475569';">
                             <div>
                                 <h5 class="font-weight-bold text-dark mb-0" id="tel_user_name">—</h5>
                                 <div class="small text-muted mb-1" id="tel_user_email">—</div>
@@ -3883,7 +3883,13 @@ $(document).ready(function() {
 
         // Recalcular columnas automáticamente al cambiar de pestaña
         $('a[data-toggle="pill"], a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-            $($.fn.dataTable.tables(true)).DataTable().columns.adjust().responsive.recalc();
+            try {
+                var dt = $($.fn.dataTable.tables(true)).DataTable();
+                dt.columns.adjust();
+                if (typeof dt.responsive !== 'undefined' && typeof dt.responsive.recalc === 'function') {
+                    dt.responsive.recalc();
+                }
+            } catch (e) { }
         });
     }
 
