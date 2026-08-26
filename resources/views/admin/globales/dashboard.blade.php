@@ -3899,17 +3899,33 @@ $(document).ready(function() {
             // Respaldamos la posición original
             $activeDropdown.data('original-parent', $activeDropdownParent);
             
-            // Movemos el menú al body
+            // Movemos el menú al body y lo pre-mostramos para medir su altura real
             $('body').append($activeDropdown.detach());
+            $activeDropdown.css({ 'display': 'block', 'visibility': 'hidden', 'position': 'absolute' });
             
-            // Calculamos posición
+            // Calculamos dimensiones
             var eOffset = $activeDropdownParent.offset();
+            var btnHeight = $activeDropdownParent.outerHeight();
+            var menuHeight = $activeDropdown.outerHeight();
+            
+            // Detección de colisión inferior (espacio disponible en la ventana)
+            var spaceBelow = $(window).height() - (eOffset.top - $(window).scrollTop() + btnHeight);
+            
+            var topPos;
+            if (spaceBelow < menuHeight && (eOffset.top - $(window).scrollTop()) > menuHeight) {
+                // Si no hay espacio abajo pero sí arriba, lo abrimos hacia ARRIBA (Dropup)
+                topPos = eOffset.top - menuHeight - 5;
+            } else {
+                // Por defecto hacia abajo
+                topPos = eOffset.top + btnHeight + 2;
+            }
+
+            // Aplicamos posición final
             $activeDropdown.css({
-                'display': 'block',
-                'position': 'absolute',
-                'top': eOffset.top + $activeDropdownParent.outerHeight(),
+                'top': topPos,
                 'left': eOffset.left,
                 'right': 'auto',
+                'visibility': 'visible',
                 'z-index': 9999
             });
             
@@ -3926,7 +3942,7 @@ $(document).ready(function() {
     $(document).on('hidden.bs.dropdown', function (e) {
         if ($activeDropdown && $activeDropdownParent) {
             // Regresamos el menú a su contenedor original
-            $activeDropdown.css({ 'display': '', 'position': '', 'top': '', 'left': '', 'right': '', 'z-index': '' });
+            $activeDropdown.css({ 'display': '', 'position': '', 'top': '', 'left': '', 'right': '', 'visibility': '', 'z-index': '' });
             $activeDropdownParent.append($activeDropdown.detach());
             $activeDropdown = null;
             $activeDropdownParent = null;
