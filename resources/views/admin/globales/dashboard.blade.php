@@ -3895,7 +3895,38 @@ $(document).ready(function() {
     $(document).on('click', '[data-toggle="custom-dropdown"]', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        $(this).dropdown('toggle');
+        
+        var $btn = $(this);
+        var $parent = $btn.closest('.dropdown');
+        
+        // Si ya está abierto, lo cerramos
+        if ($parent.hasClass('show')) {
+            $btn.dropdown('toggle');
+            return;
+        }
+
+        // Cerramos cualquier otro menú custom abierto
+        $('[data-toggle="custom-dropdown"]').each(function() {
+            var $otherParent = $(this).closest('.dropdown');
+            if ($otherParent.hasClass('show')) {
+                $(this).dropdown('toggle');
+            }
+        });
+
+        // Abrimos este
+        $btn.dropdown('toggle');
+    });
+
+    // Cerrar al hacer clic afuera
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.dropdown').length) {
+            $('[data-toggle="custom-dropdown"]').each(function() {
+                var $parent = $(this).closest('.dropdown');
+                if ($parent.hasClass('show')) {
+                    $(this).dropdown('toggle'); // Toggle cerrará el menú
+                }
+            });
+        }
     });
 
     $(document).on('show.bs.dropdown', '.table-responsive', function (e) {
