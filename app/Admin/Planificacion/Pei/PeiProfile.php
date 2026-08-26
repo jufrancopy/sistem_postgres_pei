@@ -105,6 +105,14 @@ class PeiProfile extends Model
         return $this->hasMany(\App\Models\PlanMaestro\PlanAccion::class, 'pei_profile_id');
     }
 
+    /**
+     * Relación con las Solicitudes de Ajuste de Estructura Organizacional (Dirección de Organización y Calidad)
+     */
+    public function solicitudesEstructura(): HasMany
+    {
+        return $this->hasMany(\App\Models\Estructura\SolicitudAjusteEstructura::class, 'pei_profile_id');
+    }
+
     const BSC_PERSPECTIVAS = [
         'financiera'  => 'Perspectiva Financiera',
         'clientes'    => 'Perspectiva de Clientes / Usuarios',

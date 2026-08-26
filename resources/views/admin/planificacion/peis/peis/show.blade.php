@@ -267,6 +267,9 @@
                     <a class="dropdown-item py-2" href="javascript:void(0)" onclick="mostrarModalQrJunta({ url_intervenciones: '{{ route('admin.juntas.intervenciones') }}', junta_nombre: 'Junta Consultiva Institucional', codigos: 'Bandeja de Intervenciones' })">
                         <i class="fa fa-qrcode text-warning mr-2"></i> Ver QR / Enlace para Junta
                     </a>
+                    <a class="dropdown-item py-2" href="{{ route('admin.estructura-solicitudes.index', ['pei_profile_id' => $profile->id]) }}">
+                        <i class="fa fa-sitemap text-info mr-2"></i> Solicitudes de Estructura (Org. y Calidad)
+                    </a>
 
                     <div class="dropdown-divider"></div>
                     <h6 class="dropdown-header text-uppercase text-muted small">Análisis Complementario</h6>
