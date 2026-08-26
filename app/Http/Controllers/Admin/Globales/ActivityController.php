@@ -42,9 +42,13 @@ class ActivityController extends Controller
                 })
                 ->addColumn('responsibles', fn(Activity $a) => $a->responsibles->pluck('name')->implode(', '))
                 ->addColumn('action', function ($row) {
+                    $u = auth()->user();
+                    $isCoordProyectos = $u && $u->hasRole('Coordinador de Proyectos') && !$u->hasAnyRole(['Administrador', 'Super Admin']);
                     $btn  = '<a href="' . route('globales.activities.show', $row->id) . '" class="btn btn-info btn-circle" title="Ver Tablero"><i class="fas fa-columns"></i></a>';
                     $btn .= ' <a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-primary btn-circle editActivity"><i class="far fa-edit"></i></a>';
-                    $btn .= ' <a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-danger btn-circle deleteActivity"><i class="fa fa-trash"></i></a>';
+                    if (!$isCoordProyectos) {
+                        $btn .= ' <a href="javascript:void(0)" data-id="' . $row->id . '" class="btn btn-danger btn-circle deleteActivity"><i class="fa fa-trash"></i></a>';
+                    }
                     return $btn;
                 })
                 ->rawColumns(['pei_profile', 'group', 'action'])
@@ -146,6 +150,11 @@ class ActivityController extends Controller
 
     public function destroy($id)
     {
+        $u = auth()->user();
+        if ($u && $u->hasRole('Coordinador de Proyectos') && !$u->hasAnyRole(['Administrador', 'Super Admin'])) {
+            return response()->json(['error' => 'No tienes permisos para eliminar la Actividad.'], 403);
+        }
+
         Activity::findOrFail($id)->delete();
         return response()->json(['success' => 'Eliminado correctamente']);
     }

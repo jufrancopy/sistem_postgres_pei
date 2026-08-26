@@ -156,7 +156,6 @@
         letter-spacing: 0.5px;
         border-bottom: 2px solid #e2e8f0;
     }
-
     /* ── Árbol Jerárquico de Organigrama ── */
     .sortable-group {
         list-style: none;
@@ -337,100 +336,11 @@
         </div>
     </div>
 
-    {{-- ── Fila de KPIs Principales ── --}}
-    <div class="row mb-4">
-        {{-- Usuarios --}}
-        <div class="col-xl col-md-4 col-sm-6 mb-3 mb-xl-0">
-            <a href="javascript:void(0)" onclick="$('#tab-usuarios-link').tab('show');" class="text-decoration-none">
-                <div class="card kpi-card p-3 h-100">
-                    <div class="d-flex align-items-center">
-                        <div class="kpi-icon-box mr-3" style="background: #dbeafe; color: #1e40af;">
-                            <i class="fa fa-users"></i>
-                        </div>
-                        <div>
-                            <div class="text-muted small font-weight-bold text-uppercase">Usuarios Totales</div>
-                            <div class="h3 font-weight-bold text-dark mb-0">{{ $totalUsuarios }}</div>
-                            <small class="text-muted">{{ $totalAdmins }} admins</small>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
 
-        {{-- Grupos de Trabajo --}}
-        <div class="col-xl col-md-4 col-sm-6 mb-3 mb-xl-0">
-            <a href="javascript:void(0)" onclick="$('#tab-grupos-link').tab('show');" class="text-decoration-none">
-                <div class="card kpi-card p-3 h-100">
-                    <div class="d-flex align-items-center">
-                        <div class="kpi-icon-box mr-3" style="background: #e0f2fe; color: #0369a1;">
-                            <i class="fa fa-layer-group"></i>
-                        </div>
-                        <div>
-                            <div class="text-muted small font-weight-bold text-uppercase">Grupos de Trabajo</div>
-                            <div class="h3 font-weight-bold text-dark mb-0">{{ $totalGrupos }}</div>
-                            <small class="text-muted">Instancias operativas</small>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        {{-- Estructura Orgánica --}}
-        <div class="col-xl col-md-4 col-sm-6 mb-3 mb-xl-0">
-            <a href="javascript:void(0)" onclick="$('#tab-organigrama-link').tab('show');" class="text-decoration-none">
-                <div class="card kpi-card p-3 h-100">
-                    <div class="d-flex align-items-center">
-                        <div class="kpi-icon-box mr-3" style="background: #fef3c7; color: #b45309;">
-                            <i class="fa fa-sitemap"></i>
-                        </div>
-                        <div>
-                            <div class="text-muted small font-weight-bold text-uppercase">Dependencias Orgánicas</div>
-                            <div class="h3 font-weight-bold text-dark mb-0">{{ $totalDependencias }}</div>
-                            <small class="text-muted">{{ $totalOrganigramas }} raíces jerárquicas</small>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        {{-- Objetivos y Acciones del Plan --}}
-        <div class="col-xl col-md-4 col-sm-6 mb-3 mb-xl-0">
-            <a href="javascript:void(0)" onclick="$('#tab-planes-link').tab('show');" class="text-decoration-none">
-                <div class="card kpi-card p-3 h-100">
-                    <div class="d-flex align-items-center">
-                        <div class="kpi-icon-box mr-3" style="background: #dcfce7; color: #15803d;">
-                            <i class="fa fa-bullseye"></i>
-                        </div>
-                        <div>
-                            <div class="text-muted small font-weight-bold text-uppercase">Objetivos PEI</div>
-                            <div class="h3 font-weight-bold text-dark mb-0">{{ $totalObjetivos }}</div>
-                            <small class="text-muted">{{ $totalAcciones }} acciones del plan</small>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        {{-- Proyectos --}}
-        <div class="col-xl col-md-4 col-sm-6 mb-3 mb-xl-0">
-            <div class="card kpi-card p-3 h-100">
-                <div class="d-flex align-items-center">
-                    <div class="kpi-icon-box mr-3" style="background: #ede9fe; color: #6d28d9;">
-                        <i class="fa fa-project-diagram"></i>
-                    </div>
-                    <div>
-                        <div class="text-muted small font-weight-bold text-uppercase">Proyectos</div>
-                        <div class="h3 font-weight-bold text-dark mb-0">{{ $totalProyectos }}</div>
-                        <small class="text-muted">{{ $proyectosEjecucion }} en ejecución</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     {{-- ── Pestañas de Gestión Integral ── --}}
-    <div class="card shadow border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
-        <div class="card-header bg-white border-bottom p-3">
+    <div class="card shadow border-0 mb-4" style="border-radius: 12px;">
+        <div class="card-header bg-white border-bottom p-3" style="border-radius: 12px 12px 0 0;">
             <ul class="nav nav-pills nav-pills-admin" id="adminTabs" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" id="tab-usuarios-link" data-toggle="pill" href="#tab-usuarios" role="tab" aria-selected="true">
@@ -460,6 +370,12 @@
                     <a class="nav-link" id="tab-actividades-link" data-toggle="pill" href="#tab-actividades" role="tab" aria-selected="false">
                         <i class="fa fa-rocket mr-2"></i> Actividades del PEI
                         <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalActividadesPei }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-proyectos-link" data-toggle="pill" href="#tab-proyectos" role="tab" aria-selected="false">
+                        <i class="fa fa-project-diagram mr-2"></i> Proyectos
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalProyectos }}</span>
                     </a>
                 </li>
                 @hasanyrole('Administrador|Super Admin')
@@ -898,16 +814,23 @@
                                     </select>
                                 </div>
                             @endif
+                            <a href="{{ route('admin.estructura-solicitudes.index') }}" class="btn btn-primary btn-round shadow-sm px-3 text-white mr-1" title="Gestionar Solicitudes de Ajuste de Estructura con QR">
+                                <i class="fa fa-clipboard-list mr-1"></i> Solicitudes de Reorganización
+                            </a>
+                            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación')
                             <button type="button" class="btn btn-info btn-round shadow-sm px-3 text-white mr-1" id="btnNuevoOrganigramaRaiz">
                                 <i class="fa fa-plus-circle mr-1"></i> Nuevo Organigrama Raíz
                             </button>
+                            @endhasanyrole
                             <button type="button" class="btn btn-outline-info btn-round px-3 text-dark font-weight-bold mr-1 shadow-sm" onclick="abrirModalVisualOrganigrama()">
                                 <i class="fa fa-sitemap mr-1 text-primary"></i> Diagrama Visual
                             </button>
                             @if($organigramaRaiz)
+                                @hasanyrole('Administrador|Super Admin|Coordinador de Planificación')
                                 <button type="button" class="btn btn-success btn-round shadow-sm px-3" id="btnAgregarSubRaiz" data-id="{{ $organigramaRaiz->id }}" data-nombre="{{ $organigramaRaiz->dependency }}">
                                     <i class="fa fa-plus-circle mr-1"></i> Agregar Sub-dependencia
                                 </button>
+                                @endhasanyrole
                             @endif
                         </div>
                     </div>
@@ -1036,53 +959,81 @@
                                         </span>
                                     </td>
                                     <td class="text-center" style="white-space: nowrap;">
-                                        <div class="d-flex justify-content-center align-items-center flex-nowrap" style="gap: 4px;">
-                                            @hasanyrole('Administrador|Super Admin')
-                                            {{-- 1. Seleccionar PEI Activo --}}
-                                            <a href="?pei_id={{ $plan->id }}#tab-planes" class="btn btn-circle" style="background:#2563eb; border-color:#2563eb; color:#fff;" title="Seleccionar como PEI Activo en Panel">
-                                                <i class="fa fa-check-circle"></i>
+                                        <div class="d-flex justify-content-center align-items-center" style="gap: 6px;">
+                                            <a href="{{ url('pei-profiles/' . $plan->id) }}"
+                                               class="btn btn-sm btn-success font-weight-bold d-inline-flex align-items-center px-2.5 shadow-xs"
+                                               style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;"
+                                               title="Ver y Gestionar Plan Estratégico">
+                                                <i class="fa fa-sitemap"></i> Gestionar Plan
                                             </a>
-
-                                            {{-- 2. Editar Perfil PEI (Modal Original pei-profiles) --}}
-                                            <button type="button" class="btn btn-circle editProfile" style="background:#8b5cf6; border-color:#8b5cf6; color:#fff;" data-id="{{ $plan->id }}" title="Editar Perfil PEI In-Situ">
-                                                <i class="fa fa-edit"></i>
-                                            </button>
-                                            @endhasanyrole
-
-                                            {{-- 3. Ver y Gestionar Estructura PEI (Icono Números Verde) --}}
-                                            <a href="{{ url('pei-profiles/' . $plan->id) }}" class="btn btn-circle" style="background:#10b981; border-color:#10b981; color:#fff;" title="Ver y Gestionar Estructura PEI">
-                                                <i class="fa fa-list-ol"></i>
-                                            </a>
-
-                                            {{-- 4. Certificación MEF --}}
-                                            <button type="button" class="btn btn-circle btn-info text-white btnVerCertificacionMef" data-id="{{ $plan->id }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}" title="Certificación MEF">
-                                                <i class="fa fa-certificate"></i>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-info text-white font-weight-bold d-inline-flex align-items-center px-2.5 shadow-xs btnVerCertificacionMef"
+                                                    data-id="{{ $plan->id }}"
+                                                    data-name="{{ e(addslashes(strip_tags($plan->name))) }}"
+                                                    style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;"
+                                                    title="Certificación MEF del Plan">
+                                                <i class="fa fa-certificate"></i> MEF
                                             </button>
 
-                                            {{-- 5. Lectura Cómoda de Aportes de Asesoría --}}
-                                            <button type="button" class="btn btn-circle btn-dark text-warning btnVerReporteAportes" data-pei-id="{{ $plan->id }}" title="Lectura Cómoda de Aportes y Dictámenes de Asesoría">
-                                                <i class="fa fa-book-open"></i>
-                                            </button>
+                                            {{-- Dropdown Más Opciones (Estilo PEI) --}}
+                                            <div class="dropdown d-inline-block">
+                                                <button class="btn btn-sm btn-outline-secondary font-weight-bold dropdown-toggle d-inline-flex align-items-center px-2.5 shadow-xs"
+                                                        type="button" id="dropdownPeiActions_{{ $plan->id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                        style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;">
+                                                    <i class="fa fa-ellipsis-h"></i> Más
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-right shadow-lg border-0 text-left" aria-labelledby="dropdownPeiActions_{{ $plan->id }}" style="border-radius: 12px; min-width: 260px; max-height: 420px; overflow-y: auto; font-size: 0.86rem; z-index: 1060;">
+                                                    <h6 class="dropdown-header text-uppercase text-muted small font-weight-bold" style="font-size: 0.72rem; letter-spacing: .5px;">Estructura &amp; Organización</h6>
 
-                                            {{-- 6. Cruce de Ambientes FODA --}}
-                                            <button type="button" class="btn btn-circle btn-warning text-white btnVerFodaCrossing" data-url="{{ route('foda-cruce-ambientes', $plan->id) }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}" title="Análisis FODA & Cruce de Ambientes">
-                                                <i class="fa fa-random"></i>
-                                            </button>
+                                                    @hasanyrole('Administrador|Super Admin')
+                                                    <a class="dropdown-item py-2" href="?pei_id={{ $plan->id }}#tab-planes">
+                                                        <i class="fa fa-check-circle text-primary mr-2"></i> Seleccionar como Plan Activo
+                                                    </a>
+                                                    <a class="dropdown-item py-2 editProfile" href="javascript:void(0)" data-id="{{ $plan->id }}">
+                                                        <i class="fa fa-edit text-purple mr-2" style="color:#8b5cf6;"></i> Editar Perfil PEI
+                                                    </a>
+                                                    @endhasanyrole
 
-                                            @hasanyrole('Administrador|Super Admin')
-                                            {{-- 7. Visibilidad / Alternar Estado --}}
-                                            @php
-                                                $isVis = isset($plan->is_active) ? (bool)$plan->is_active : true;
-                                            @endphp
-                                            <button type="button" class="btn btn-circle toggleShowRiiss" style="background: {{ $isVis ? '#06b6d4' : '#f59e0b' }}; border-color: {{ $isVis ? '#06b6d4' : '#f59e0b' }}; color:#fff;" data-id="{{ $plan->id }}" title="{{ $isVis ? 'Visible / Activo — Clic para Ocultar' : 'Oculto — Clic para Activar' }}">
-                                                <i class="fa {{ $isVis ? 'fa-eye' : 'fa-eye-slash' }}"></i>
-                                            </button>
+                                                    <a class="dropdown-item py-2" href="{{ url('pei-profiles/' . $plan->id) }}">
+                                                        <i class="fa fa-list-ol text-success mr-2"></i> Ver Estructura y Árbol PEI
+                                                    </a>
+                                                    <a class="dropdown-item py-2 btnVerCertificacionMef" href="javascript:void(0)" data-id="{{ $plan->id }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}">
+                                                        <i class="fa fa-certificate text-info mr-2"></i> Certificación MEF
+                                                    </a>
+                                                    <a class="dropdown-item py-2 btnVerReporteAportes" href="javascript:void(0)" data-pei-id="{{ $plan->id }}">
+                                                        <i class="fa fa-book-open text-warning mr-2"></i> Lectura de Aportes de Asesoría
+                                                    </a>
+                                                    <a class="dropdown-item py-2" href="{{ route('admin.estructura-solicitudes.index', ['pei_profile_id' => $plan->id]) }}">
+                                                        <i class="fa fa-building text-primary mr-2"></i> Solicitudes de Estructura (Org. y Calidad)
+                                                    </a>
 
-                                            {{-- 8. Eliminar Perfil PEI --}}
-                                            <button type="button" class="btn btn-circle btn-danger deleteProfile" data-id="{{ $plan->id }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}" title="Eliminar Perfil PEI">
-                                                <i class="fa fa-trash"></i>
-                                            </button>
-                                            @endhasanyrole
+                                                    <div class="dropdown-divider"></div>
+                                                    <h6 class="dropdown-header text-uppercase text-muted small font-weight-bold" style="font-size: 0.72rem; letter-spacing: .5px;">Análisis Estratégico</h6>
+                                                    <a class="dropdown-item py-2 btnVerFodaCrossing" href="javascript:void(0)" data-url="{{ route('foda-cruce-ambientes', $plan->id) }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}">
+                                                        <i class="fa fa-random text-warning mr-2"></i> FODA &amp; Cruce de Ambientes
+                                                    </a>
+                                                    <a class="dropdown-item py-2" href="{{ route('pei.indicadores.modulo', $plan->id) }}">
+                                                        <i class="fa fa-ruler-combined text-info mr-2"></i> Indicadores del Plan
+                                                    </a>
+                                                    <a class="dropdown-item py-2" href="{{ route('pei.mee.modulo', $plan->id) }}">
+                                                        <i class="fa fa-balance-scale text-secondary mr-2"></i> Marco Estratégico Específico
+                                                    </a>
+
+                                                    @hasanyrole('Administrador|Super Admin')
+                                                    <div class="dropdown-divider"></div>
+                                                    <h6 class="dropdown-header text-uppercase text-muted small font-weight-bold" style="font-size: 0.72rem; letter-spacing: .5px;">Administración</h6>
+                                                    @php
+                                                        $isVis = isset($plan->is_active) ? (bool)$plan->is_active : true;
+                                                    @endphp
+                                                    <a class="dropdown-item py-2 toggleShowRiiss" href="javascript:void(0)" data-id="{{ $plan->id }}">
+                                                        <i class="fa {{ $isVis ? 'fa-eye-slash text-warning' : 'fa-eye text-success' }} mr-2"></i> {{ $isVis ? 'Ocultar Plan' : 'Activar / Hacer Visible' }}
+                                                    </a>
+                                                    <a class="dropdown-item py-2 text-danger font-weight-bold deleteProfile" href="javascript:void(0)" data-id="{{ $plan->id }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}">
+                                                        <i class="fa fa-trash text-danger mr-2"></i> Eliminar Plan Estratégico
+                                                    </a>
+                                                    @endhasanyrole
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -1245,6 +1196,176 @@
                 </div>
 
                 {{-- ════════════════════════════════════════════════════════════════════════════
+                     PESTAÑA 5: PROYECTOS INSTITUCIONALES (PORTAFOLIO & SEGUIMIENTO)
+                     ════════════════════════════════════════════════════════════════════════════ --}}
+                <div class="tab-pane fade" id="tab-proyectos" role="tabpanel">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                        <div>
+                            <h4 class="font-weight-bold text-dark mb-1">
+                                <i class="fa fa-project-diagram text-primary mr-2"></i> Portafolio de Proyectos Institucionales
+                            </h4>
+                            <p class="text-muted mb-0 small">
+                                Monitoreo y gestión de proyectos alineados al Plan Estratégico Institucional (PEI).
+                            </p>
+                        </div>
+                        <div class="d-flex align-items-center mt-3 mt-md-0" style="gap: 10px;">
+                            <a href="{{ route('proyectos.solicitar.form', $selectedPei ? $selectedPei->id : 'ce99f883-fdd0-4723-8f75-cf689aa8f0fa') }}" target="_blank" class="btn btn-primary btn-round px-3 text-white font-weight-bold shadow-sm">
+                                <i class="fa fa-plus-circle mr-1"></i> NUEVO PROYECTO
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Cards de Resumen de Estado de Proyectos --}}
+                    <div class="row mb-4">
+                        <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                            <div class="card border-0 shadow-sm rounded-lg p-3 bg-white" style="border-left: 4px solid #2563eb !important;">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Total Proyectos</div>
+                                        <div class="h3 font-weight-bold text-dark mb-0">{{ $totalProyectos }}</div>
+                                    </div>
+                                    <div class="p-3 bg-light rounded-circle text-primary">
+                                        <i class="fa fa-folder-open fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                            <div class="card border-0 shadow-sm rounded-lg p-3 bg-white" style="border-left: 4px solid #10b981 !important;">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">En Ejecución</div>
+                                        <div class="h3 font-weight-bold text-success mb-0">{{ $proyectosEjecucion }}</div>
+                                    </div>
+                                    <div class="p-3 bg-light rounded-circle text-success">
+                                        <i class="fa fa-play-circle fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                            <div class="card border-0 shadow-sm rounded-lg p-3 bg-white" style="border-left: 4px solid #06b6d4 !important;">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Aprobados</div>
+                                        <div class="h3 font-weight-bold text-info mb-0">{{ $proyectosAprobados }}</div>
+                                    </div>
+                                    <div class="p-3 bg-light rounded-circle text-info">
+                                        <i class="fa fa-check-double fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                            <div class="card border-0 shadow-sm rounded-lg p-3 bg-white" style="border-left: 4px solid #f59e0b !important;">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Portafolio Activo</div>
+                                        <div class="h3 font-weight-bold text-warning mb-0">{{ $proyectosActivos }}</div>
+                                    </div>
+                                    <div class="p-3 bg-light rounded-circle text-warning">
+                                        <i class="fa fa-tasks fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Tabla DataTables de Proyectos --}}
+                    @if(isset($proyectosList) && $proyectosList->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom w-100 dataTableInit" id="tablaProyectosDashboard">
+                            <thead>
+                                <tr>
+                                    <th style="width: 4%;">#</th>
+                                    <th style="width: 28%;">CÓDIGO &amp; PROYECTO</th>
+                                    <th style="width: 22%;">DEPENDENCIA RESPONSABLE</th>
+                                    <th style="width: 18%;">ALINEACIÓN PEI</th>
+                                    <th style="width: 14%;">ESTADO &amp; AVANCE</th>
+                                    <th style="width: 14%; text-align: center;">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($proyectosList as $pIdx => $proy)
+                                @php
+                                    $stBadge = \App\Models\Proyectos\ProyectoInstitucional::estadoBadge($proy->estado);
+                                    $stLabel = \App\Models\Proyectos\ProyectoInstitucional::estadoLabel($proy->estado);
+                                @endphp
+                                <tr>
+                                    <td class="font-weight-bold text-center">{{ $pIdx + 1 }}</td>
+                                    <td>
+                                        <a href="{{ route('proyectos-institucionales.show', $proy->id) }}" class="font-weight-bold text-dark text-decoration-none" style="font-size:0.92rem;">
+                                            <span class="badge badge-dark mr-1" style="font-size:0.68rem;">{{ $proy->codigo }}</span>
+                                            {{ $proy->nombre }}
+                                        </a>
+                                        @if($proy->descripcion)
+                                            <small class="text-muted d-block mt-1 text-truncate" style="max-width:320px;">{{ strip_tags($proy->descripcion) }}</small>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="badge badge-light border text-dark p-1.5 mb-1" style="font-size:0.75rem;">
+                                            <i class="fa fa-sitemap text-info mr-1"></i> {{ $proy->dependenciaSolicitante->dependency ?? 'Dependencia no asignada' }}
+                                        </div>
+                                        @if($proy->creadoPor)
+                                            <div class="small text-muted">
+                                                <i class="fa fa-user mr-1"></i> Solicitado por: {{ $proy->creadoPor->name }}
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($proy->peiProfile)
+                                            <span class="badge badge-light border text-primary p-1.5" style="font-size:0.72rem;">
+                                                <i class="fa fa-bullseye mr-1"></i> {{ strip_tags($proy->peiProfile->name) }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted small">— Sin vincular —</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ $stBadge }} px-2 py-1 font-weight-bold mb-1" style="font-size:0.72rem;">
+                                            {{ $stLabel }}
+                                        </span>
+                                        <div class="d-flex align-items-center mt-1">
+                                            <div class="progress flex-grow-1 mr-2" style="height: 6px; border-radius: 8px; background-color: #e2e8f0;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ $proy->avance_pct ?? 0 }}%;" aria-valuenow="{{ $proy->avance_pct ?? 0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <span class="font-weight-bold small text-muted" style="font-size:0.7rem;">{{ $proy->avance_pct ?? 0 }}%</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center" style="white-space: nowrap;">
+                                        <div class="d-flex justify-content-center" style="gap: 4px;">
+                                            <a href="{{ route('proyectos-institucionales.show', $proy->id) }}" class="btn btn-circle btn-info text-white" title="Ver Ficha y Seguimiento del Proyecto">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            @if($proy->peiProfile)
+                                            <a href="{{ url('pei-profiles/' . ($proy->peiProfile->parent_id ?? $proy->peiProfile->id)) }}" class="btn btn-circle btn-success" title="Ver en Estructura del PEI">
+                                                <i class="fa fa-sitemap"></i>
+                                            </a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="text-center py-5 bg-light rounded-lg border border-dashed">
+                        <div class="mb-3">
+                            <i class="fa fa-project-diagram fa-3x text-muted" style="opacity: 0.5;"></i>
+                        </div>
+                        <h5 class="font-weight-bold text-dark">No hay proyectos institucionales registrados aún</h5>
+                        <p class="text-muted small max-w-md mx-auto">Comenzá creando una solicitud o proyecto institucional vinculado al Plan Estratégico.</p>
+                        <div>
+                            <a href="{{ route('proyectos.solicitar.form', $selectedPei ? $selectedPei->id : 'ce99f883-fdd0-4723-8f75-cf689aa8f0fa') }}" target="_blank" class="btn btn-primary btn-round px-4 font-weight-bold">
+                                <i class="fa fa-plus-circle mr-1"></i> Solicitar Proyecto
+                            </a>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+
+                {{-- ════════════════════════════════════════════════════════════════════════════
                      PESTAÑA 5: VISIBILIDAD & SITIO PÚBLICO (FODA, PEI, RIISS)
                      ════════════════════════════════════════════════════════════════════════════ --}}
                 <div class="tab-pane fade" id="tab-publico" role="tabpanel">
@@ -1377,9 +1498,11 @@
                             <a href="{{ route('admin.juntas.intervenciones') }}" class="btn btn-outline-info btn-round px-3 font-weight-bold">
                                 <i class="fa fa-inbox mr-1"></i> Bandeja de Dictámenes / Intervenciones
                             </a>
+                            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación')
                             <button type="button" class="btn btn-primary btn-round px-3 shadow-sm font-weight-bold" onclick="abrirModalNuevaJunta()">
                                 <i class="fa fa-plus-circle mr-1"></i> Nueva Junta Consultiva
                             </button>
+                            @endhasanyrole
                         </div>
                     </div>
 
@@ -1495,9 +1618,11 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 5px;">
+                                            @hasanyrole('Administrador|Super Admin|Coordinador de Planificación')
                                             <button type="button" class="btn btn-circle btn-info text-white" onclick="abrirModalEditarJunta('{{ $jta->id }}')" title="Editar Junta Consultiva / Agregar Miembros">
                                                 <i class="fa fa-edit"></i>
                                             </button>
+                                            @endhasanyrole
                                             <a href="{{ route('admin.juntas.intervenciones', ['junta_id' => $jta->id]) }}" class="btn btn-circle btn-warning text-dark" title="Ver Bandeja de Dictámenes">
                                                 <i class="fa fa-inbox"></i>
                                             </a>
@@ -1879,7 +2004,10 @@
                                                 <label class="font-weight-bold text-dark small mb-1">Rol / Perfil Inicial</label>
                                                 <select id="nuevo_func_role" class="form-control form-control-sm" style="border-color: #86efac;">
                                                     <option value="Usuario" selected>Usuario / Funcionario Estándar</option>
+                                                    <option value="Coordinador de Proyectos">Coordinador de Proyectos</option>
                                                     <option value="Coordinador de Planificación">Coordinador de Planificación</option>
+                                                    <option value="Coordinador RIISS">Coordinador RIISS</option>
+                                                    <option value="Analista RIISS">Analista RIISS</option>
                                                     <option value="Analista de Planificación">Analista de Planificación</option>
                                                     <option value="Analista PEI">Analista PEI</option>
                                                 </select>
@@ -1997,53 +2125,86 @@
                 <input type="hidden" id="dep_parent_id" name="parent_id">
                 <input type="hidden" id="is_root_dep" name="is_root" value="0">
                 <div class="modal-body p-4">
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold small">Nombre de la Dependencia <span class="text-danger">*</span></label>
-                        <input type="text" name="dependency" id="dep_dependency" class="form-control font-weight-bold" required placeholder="Ej: Departamento de Estadística y Control">
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12 col-md-6 form-group">
-                            <label class="font-weight-bold small">Responsable / Encargado</label>
-                            <input type="text" name="manager" id="dep_manager" class="form-control" placeholder="Ej: Dr. Roberto Benítez">
-                        </div>
-                        <div class="col-12 col-md-6 form-group">
-                            <label class="font-weight-bold small">Usuario asignado del Sistema</label>
-                            <select name="user_id" id="dep_user_id" class="form-control select2" style="width:100%">
-                                <option value="">-- Sin usuario asignado --</option>
-                                @foreach($usuariosList as $u)
-                                    <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
-                                @endforeach
-                            </select>
+                    {{-- Checkbox Inicial: ¿Es un Establecimiento de Salud? --}}
+                    <div class="p-3 mb-3 rounded border" style="background: #f0fdf4; border-color: #86efac !important;">
+                        <div class="custom-control custom-checkbox d-flex align-items-center">
+                            <input type="checkbox" class="custom-control-input" id="dep_es_establecimiento" name="es_establecimiento" value="1">
+                            <label class="custom-control-label font-weight-bold text-dark mb-0 ml-1" for="dep_es_establecimiento" style="font-size: 0.92rem; cursor:pointer;">
+                                <i class="fa fa-hospital text-success mr-1"></i> ¿Es un Establecimiento de Salud? <span class="text-muted font-weight-normal">(Conectar con RIISS)</span>
+                            </label>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-12 col-md-6 form-group">
-                            <label class="font-weight-bold small">Email</label>
-                            <input type="email" name="email" id="dep_email" class="form-control" placeholder="correo@ips.gov.py">
-                        </div>
-                        <div class="col-12 col-md-6 form-group">
-                            <label class="font-weight-bold small">Teléfono / Interno</label>
-                            <input type="text" name="phone" id="dep_phone" class="form-control" placeholder="021-xxxxxx / Int. 123">
-                        </div>
+                    {{-- Selector de Establecimiento de Salud (Bioestadística / Geografía) --}}
+                    <div class="form-group mb-3" id="grupo_establecimiento_riiss" style="display:none;">
+                        <label class="font-weight-bold small text-success">
+                            <i class="fa fa-search mr-1"></i> Seleccionar Establecimiento de Salud (Bioestadística / Geografía) <span class="text-danger">*</span>
+                        </label>
+                        <select name="establecimiento_id" id="dep_establecimiento_id" class="form-control select2" style="width:100%">
+                            <option value="">-- Buscar por código o nombre del establecimiento --</option>
+                            @foreach($establecimientosRiiss ?? [] as $est)
+                                @php
+                                    $tipologiaNom = $est->tipoEstablecimiento ? $est->tipoEstablecimiento->nombre : '';
+                                    $deptoNom = ($est->distrito && $est->distrito->departamento) ? $est->distrito->departamento->nombre : '';
+                                    $regionFull = $deptoNom ? ($deptoNom . ($est->distrito ? ' / ' . $est->distrito->nombre : '')) : '';
+                                @endphp
+                                <option value="{{ $est->id }}"
+                                    data-nombre="{{ $est->nombre }}"
+                                    data-tipologia="{{ $tipologiaNom }}"
+                                    data-region="{{ $regionFull ?: $deptoNom }}">
+                                    {{ $est->codigo ? '[' . $est->codigo . '] ' : '' }}{{ $est->nombre }} @if($tipologiaNom) ({{ $tipologiaNom }}) @endif @if($deptoNom) — {{ $deptoNom }} @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted d-block mt-1">
+                            Al seleccionar el establecimiento, se asocian y vinculan automáticamente su denominación, tipología y región oficial de Bioestadística.
+                        </small>
                     </div>
 
-                    <div class="row">
-                        <div class="col-12 col-md-6 form-group mb-0">
-                            <label class="font-weight-bold small">Tipo de Establecimiento</label>
-                            <select name="tipo_establecimiento" id="dep_tipo_establecimiento" class="form-control">
-                                <option value="">-- Ninguno / Administrativo --</option>
-                                <option value="HOSPITAL">Hospital</option>
-                                <option value="CLINICA">Clínica</option>
-                                <option value="PUESTO_SANITARIO">Puesto Sanitario</option>
-                                <option value="CENTRO_ATENCION">Centro de Atención</option>
-                                <option value="OTRO">Otro</option>
-                            </select>
+                    <div id="bloque_campos_dependencia">
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold small">Nombre de la Dependencia <span class="text-danger">*</span></label>
+                            <input type="text" name="dependency" id="dep_dependency" class="form-control font-weight-bold" required placeholder="Ej: Departamento de Estadística y Control">
                         </div>
-                        <div class="col-12 col-md-6 form-group mb-0">
-                            <label class="font-weight-bold small">Región / Ubicación</label>
-                            <input type="text" name="region" id="dep_region" class="form-control" placeholder="Ej: ASUNCIÓN Y CENTRAL">
+
+                        <div class="row">
+                            <div class="col-12 form-group">
+                                <label class="font-weight-bold small">Responsable / Encargado <span class="text-muted">(Usuarios del Sistema)</span></label>
+                                <select name="user_id" id="dep_user_id" class="form-control select2" style="width:100%">
+                                    <option value="">-- Sin responsable asignado --</option>
+                                    @foreach($usuariosList as $u)
+                                        <option value="{{ $u->id }}" data-name="{{ $u->name }}" data-email="{{ $u->email }}">{{ $u->name }} ({{ $u->email }})</option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" name="manager" id="dep_manager">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 form-group">
+                                <label class="font-weight-bold small">Email</label>
+                                <input type="email" name="email" id="dep_email" class="form-control" placeholder="correo@ips.gov.py">
+                            </div>
+                            <div class="col-12 col-md-6 form-group">
+                                <label class="font-weight-bold small">Teléfono / Interno</label>
+                                <input type="text" name="phone" id="dep_phone" class="form-control" placeholder="021-xxxxxx / Int. 123">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 form-group mb-0">
+                                <label class="font-weight-bold small">Tipo de Establecimiento <span class="text-muted">(Tipología RIISS)</span></label>
+                                <select name="tipo_establecimiento" id="dep_tipo_establecimiento" class="form-control select2" style="width:100%">
+                                    <option value="">-- Ninguno / Administrativo --</option>
+                                    @foreach($tipologiasRiiss ?? [] as $tipo)
+                                        <option value="{{ $tipo }}">{{ $tipo }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6 form-group mb-0">
+                                <label class="font-weight-bold small">Región / Ubicación</label>
+                                <input type="text" name="region" id="dep_region" class="form-control" placeholder="Ej: ASUNCIÓN Y CENTRAL">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2618,7 +2779,7 @@
                 <div class="card border shadow-sm mb-4" style="border-radius: 10px; overflow: hidden;">
                     <div class="card-body p-3 bg-white d-flex flex-column flex-md-row align-items-md-center justify-content-between">
                         <div class="d-flex align-items-center mb-3 mb-md-0">
-                            <img id="tel_user_avatar" src="{{ asset('assets/images/user-avatar.png') }}" class="rounded-circle border shadow-sm mr-3" style="width: 54px; height: 54px; object-fit: cover;">
+                            <img id="tel_user_avatar" src="{{ asset('assets/images/user-avatar.png') }}" class="rounded-circle border shadow-sm mr-3" style="width: 54px; height: 54px; object-fit: cover;" onerror="this.src='https://ui-avatars.com/api/?name=Funcionario&background=e2e8f0&color=475569';">
                             <div>
                                 <h5 class="font-weight-bold text-dark mb-0" id="tel_user_name">—</h5>
                                 <div class="small text-muted mb-1" id="tel_user_email">—</div>
@@ -3288,7 +3449,12 @@ $(document).ready(function() {
         $('#dep_id').val('');
         $('#dep_parent_id').val('');
         $('#is_root_dep').val('1');
+        $('#dep_manager').val('');
+        $('#dep_es_establecimiento').prop('checked', false);
+        $('#dep_establecimiento_id').val('').trigger('change');
+        toggleEsEstablecimiento(false);
         $('#dep_user_id').val('').trigger('change');
+        $('#dep_tipo_establecimiento').val('').trigger('change');
         $('#modalDepTitulo').html('<i class="fa fa-sitemap text-info mr-2"></i> Crear Nuevo Organigrama Raíz');
         $('#modalDependencia').modal('show');
     });
@@ -3301,9 +3467,87 @@ $(document).ready(function() {
         $('#dep_id').val('');
         $('#dep_parent_id').val(rootId);
         $('#is_root_dep').val('0');
+        $('#dep_manager').val('');
+        $('#dep_es_establecimiento').prop('checked', false);
+        $('#dep_establecimiento_id').val('').trigger('change');
+        toggleEsEstablecimiento(false);
         $('#dep_user_id').val('').trigger('change');
+        $('#dep_tipo_establecimiento').val('').trigger('change');
         $('#modalDepTitulo').html('<i class="fa fa-plus-circle mr-2"></i> Agregar Sub-dependencia a: ' + rootName);
         $('#modalDependencia').modal('show');
+    });
+
+    // Inicializar Select2 en Modal Dependencia
+    $('#dep_establecimiento_id').select2({
+        dropdownParent: $('#modalDependencia'),
+        placeholder: "-- Buscar por código o nombre del establecimiento --",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('#dep_user_id').select2({
+        dropdownParent: $('#modalDependencia'),
+        placeholder: "-- Buscar y seleccionar responsable --",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('#dep_tipo_establecimiento').select2({
+        dropdownParent: $('#modalDependencia'),
+        placeholder: "-- Seleccionar tipología RIISS --",
+        allowClear: true,
+        width: '100%'
+    });
+
+    // Toggle de Establecimiento de Salud (RIISS)
+    function toggleEsEstablecimiento(isEst) {
+        if (isEst) {
+            $('#grupo_establecimiento_riiss').slideDown(150);
+            $('#dep_dependency').prop('readonly', true).addClass('bg-light');
+            $('#dep_tipo_establecimiento').prop('disabled', true);
+            $('#dep_region').prop('readonly', true).addClass('bg-light');
+            syncEstablecimientoSeleccionado();
+        } else {
+            $('#grupo_establecimiento_riiss').slideUp(150);
+            $('#dep_establecimiento_id').val('').trigger('change');
+            $('#dep_dependency').prop('readonly', false).removeClass('bg-light');
+            $('#dep_tipo_establecimiento').prop('disabled', false);
+            $('#dep_region').prop('readonly', false).removeClass('bg-light');
+        }
+    }
+
+    $('#dep_es_establecimiento').on('change', function () {
+        toggleEsEstablecimiento($(this).is(':checked'));
+    });
+
+    $('#dep_establecimiento_id').on('change', function () {
+        syncEstablecimientoSeleccionado();
+    });
+
+    function syncEstablecimientoSeleccionado() {
+        if (!$('#dep_es_establecimiento').is(':checked')) return;
+        var opt = $('#dep_establecimiento_id').find('option:selected');
+        if (opt.val()) {
+            var nombre = opt.data('nombre') || '';
+            var tipologia = opt.data('tipologia') || '';
+            var region = opt.data('region') || '';
+            if (nombre) $('#dep_dependency').val(nombre);
+            if (tipologia) $('#dep_tipo_establecimiento').val(tipologia).trigger('change');
+            if (region) $('#dep_region').val(region);
+        }
+    }
+
+    // Auto-asignar nombre y sugerir email al seleccionar Responsable
+    $('#dep_user_id').on('change', function () {
+        var opt = $(this).find('option:selected');
+        var uname = opt.data('name') || '';
+        var uemail = opt.data('email') || '';
+        if (uname) {
+            $('#dep_manager').val(uname);
+        }
+        if (uemail && !$('#dep_email').val()) {
+            $('#dep_email').val(uemail);
+        }
     });
 
     // Select2 en Selector de Organigrama de Estructura
@@ -3443,7 +3687,12 @@ $(document).ready(function() {
         $('#formDependencia')[0].reset();
         $('#dep_id').val('');
         $('#dep_parent_id').val(id);
+        $('#dep_manager').val('');
+        $('#dep_es_establecimiento').prop('checked', false);
+        $('#dep_establecimiento_id').val('').trigger('change');
+        toggleEsEstablecimiento(false);
         $('#dep_user_id').val('').trigger('change');
+        $('#dep_tipo_establecimiento').val('').trigger('change');
         $('#modalDepTitulo').html('<i class="fa fa-plus-circle mr-2"></i> Agregar Sub-dependencia a: ' + nombre);
         $('#modalDependencia').modal('show');
     });
@@ -3463,8 +3712,19 @@ $(document).ready(function() {
                 $('#dep_email').val(dep.email);
                 $('#dep_phone').val(dep.phone);
                 $('#dep_region').val(dep.region);
-                $('#dep_tipo_establecimiento').val(dep.tipo_establecimiento);
                 $('#dep_user_id').val(dep.user_id).trigger('change');
+                $('#dep_tipo_establecimiento').val(dep.tipo_establecimiento).trigger('change');
+
+                if (dep.establecimiento_id || dep.es_establecimiento) {
+                    $('#dep_es_establecimiento').prop('checked', true);
+                    $('#dep_establecimiento_id').val(dep.establecimiento_id).trigger('change');
+                    toggleEsEstablecimiento(true);
+                } else {
+                    $('#dep_es_establecimiento').prop('checked', false);
+                    $('#dep_establecimiento_id').val('').trigger('change');
+                    toggleEsEstablecimiento(false);
+                }
+
                 $('#modalDepTitulo').html('<i class="fa fa-edit mr-2"></i> Editar Dependencia');
                 $('#modalDependencia').modal('show');
             }
@@ -3478,6 +3738,9 @@ $(document).ready(function() {
         var btn = $(this);
         btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
 
+        // Asegurar que valores bloqueados se envíen
+        $('#formDependencia').find(':input').prop('disabled', false);
+
         $.ajax({
             url: "{{ route('coordinador.organigrama.store') }}",
             method: "POST",
@@ -3486,6 +3749,7 @@ $(document).ready(function() {
                 $('#modalDependencia').modal('hide');
                 toastr.success(res.message || 'Dependencia guardada correctamente.');
                 btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Dependencia');
+                setTimeout(function () { location.reload(); }, 600);
             },
             error: function (xhr) {
                 var msg = xhr.responseJSON?.message || 'Error al guardar la dependencia.';
@@ -3493,6 +3757,9 @@ $(document).ready(function() {
                     msg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
                 }
                 toastr.error(msg);
+                if ($('#dep_es_establecimiento').is(':checked')) {
+                    $('#dep_tipo_establecimiento').prop('disabled', true);
+                }
             },
             complete: function () {
                 btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Dependencia');
@@ -3600,15 +3867,64 @@ $(document).ready(function() {
         }
     };
 
-    // Inicializar DataTables en pestañas principales (Ordenados descendentes para ver registros nuevos primero)
+    // Inicializar DataTables en todas las pestañas principales de forma segura
     if ($.fn.DataTable) {
-        $('.dataTableInit').DataTable({
-            language: datatablesSpanish,
-            pageLength: 10,
-            responsive: true,
-            order: [[0, 'desc']]
+        $('.dataTableInit').each(function() {
+            if (!$.fn.DataTable.isDataTable(this)) {
+                $(this).DataTable({
+                    language: datatablesSpanish,
+                    pageLength: 10,
+                    responsive: {
+                        details: false  // Desactivar expansión de filas responsiva para evitar conflictos de clic
+                    },
+                    autoWidth: false,
+                    order: [[0, 'desc']],
+                    initComplete: function() {
+                        // Pre-inicializar dropdowns de Bootstrap para que el primer clic abra el menú
+                        // (en lugar de solo inicializar el plugin sin abrirlo)
+                        $(this.api().table().container()).find('[data-toggle="dropdown"]').dropdown();
+                    }
+                });
+            }
+        });
+
+        // Recalcular columnas automáticamente al cambiar de pestaña
+        $('a[data-toggle="pill"], a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            try {
+                var dt = $($.fn.dataTable.tables(true)).DataTable();
+                dt.columns.adjust();
+                if (typeof dt.responsive !== 'undefined' && typeof dt.responsive.recalc === 'function') {
+                    dt.responsive.recalc();
+                }
+            } catch (e) { }
         });
     }
+
+    // Solución para dropdowns dentro de table-responsive:
+    // overflow:visible se aplica en mousedown Y en show.bs.dropdown para garantizar
+    // que Popper.js no lo revierta durante el hover sobre las opciones del menú.
+    var $activeTableResponsive = null;
+
+    $(document).on('mousedown', '[data-toggle="dropdown"]', function() {
+        var $tr = $(this).closest('.table-responsive');
+        if ($tr.length) {
+            $activeTableResponsive = $tr;
+            $tr.css('overflow', 'visible');
+        }
+    });
+    $(document).on('show.bs.dropdown', function(e) {
+        var $tr = $(e.target).closest('.table-responsive');
+        if ($tr.length) {
+            $activeTableResponsive = $tr;
+            $tr.css('overflow', 'visible');
+        }
+    });
+    $(document).on('hidden.bs.dropdown', function () {
+        if ($activeTableResponsive) {
+            $activeTableResponsive.css('overflow', 'auto');
+            $activeTableResponsive = null;
+        }
+    });
 
     // ── Switches AJAX en tiempo real ──
     $('.cfg-toggle').on('change', function() {

@@ -30,6 +30,8 @@ class FormularioController extends Controller
      */
     public function updateSeccion(Request $request, FormularioSeccion $seccion): JsonResponse
     {
+        $this->checkFormularioPermission();
+
         $validated = $request->validate([
             'seccion'     => 'required|string|max:200',
             'sub_seccion' => 'nullable|string|max:200',
@@ -44,6 +46,8 @@ class FormularioController extends Controller
      */
     public function storeSeccion(Request $request): JsonResponse
     {
+        $this->checkFormularioPermission();
+
         $validated = $request->validate([
             'seccion'     => 'required|string|max:200',
             'sub_seccion' => 'nullable|string|max:200',
@@ -68,6 +72,8 @@ class FormularioController extends Controller
      */
     public function storePregunta(Request $request, FormularioSeccion $seccion): JsonResponse
     {
+        $this->checkFormularioPermission();
+
         $validated = $request->validate([
             'pregunta'      => 'required|string|max:1000',
             'tipo_respuesta'=> 'required|in:si_no,si_no_na,texto,numero,lista,checklist',
@@ -94,6 +100,8 @@ class FormularioController extends Controller
      */
     public function updatePregunta(Request $request, FormularioPregunta $pregunta): JsonResponse
     {
+        $this->checkFormularioPermission();
+
         $validated = $request->validate([
             'pregunta'      => 'sometimes|string|max:1000',
             'tipo_respuesta'=> 'sometimes|in:si_no,si_no_na,texto,numero,lista,checklist',
@@ -111,6 +119,8 @@ class FormularioController extends Controller
      */
     public function destroyPregunta(Request $request, FormularioPregunta $pregunta): JsonResponse
     {
+        $this->checkFormularioPermission();
+
         if ($request->get('force')) {
             $pregunta->delete();
             return response()->json(['ok' => true, 'message' => 'Pregunta eliminada.']);
@@ -283,6 +293,8 @@ class FormularioController extends Controller
      */
     public function actualizarMapeo(Request $request, FormularioPregunta $pregunta): JsonResponse
     {
+        $this->checkFormularioPermission();
+
         $validated = $request->validate([
             'servicio_cartera_grupo'   => 'nullable|string|max:200',
             'especialidad_relacionada' => 'nullable|string|max:200',
@@ -292,5 +304,13 @@ class FormularioController extends Controller
         $pregunta->update($validated);
 
         return response()->json(['ok' => true, 'message' => 'Mapeo actualizado.']);
+    }
+
+    private function checkFormularioPermission(): void
+    {
+        $user = auth()->user();
+        if ($user && $user->hasAnyRole(['Analista - RIISS', 'Analista RIISS']) && !$user->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS'])) {
+            abort(403, 'No tienes permisos para modificar la configuración de formularios.');
+        }
     }
 }

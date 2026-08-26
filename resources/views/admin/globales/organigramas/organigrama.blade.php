@@ -79,61 +79,103 @@
                     <input type="hidden" id="dep_parent_id" name="parent_id">
                     <input type="hidden" id="dep_method" name="_method" value="POST">
 
-                    <div class="form-group">
-                        <label class="font-weight-bold">Nombre <span class="text-danger">*</span></label>
-                        <input type="text" name="dependency" id="dep_dependency" class="form-control" required
-                               placeholder="Ej: Dirección de Tecnología">
+                    @php
+                        $tipologiasRiissOrg = \App\Models\Bioestadistica\TipoEstablecimiento::where('activo', true)->orderBy('nombre')->pluck('nombre');
+                        if ($tipologiasRiissOrg->isEmpty()) {
+                            $tipologiasRiissOrg = \App\Models\Bioestadistica\Establecimiento::join('bioestadistica.tipos_establecimiento', 'bioestadistica.establecimientos.tipo_establecimiento_id', '=', 'bioestadistica.tipos_establecimiento.id')
+                                ->distinct()
+                                ->orderBy('bioestadistica.tipos_establecimiento.nombre')
+                                ->pluck('bioestadistica.tipos_establecimiento.nombre');
+                        }
+                        $establecimientosRiissOrg = \App\Models\Bioestadistica\Establecimiento::with(['distrito.departamento', 'tipoEstablecimiento'])->orderBy('nombre')->get();
+                    @endphp
+
+                    {{-- Checkbox Inicial: ¿Es un Establecimiento de Salud? --}}
+                    <div class="p-3 mb-3 rounded border" style="background: #f0fdf4; border-color: #86efac !important;">
+                        <div class="custom-control custom-checkbox d-flex align-items-center">
+                            <input type="checkbox" class="custom-control-input" id="dep_es_establecimiento" name="es_establecimiento" value="1">
+                            <label class="custom-control-label font-weight-bold text-dark mb-0 ml-1" for="dep_es_establecimiento" style="font-size: 0.92rem; cursor:pointer;">
+                                <i class="fa fa-hospital text-success mr-1"></i> ¿Es un Establecimiento de Salud? <span class="text-muted font-weight-normal">(Bioestadística / Geografía)</span>
+                            </label>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="font-weight-bold">Responsable / Encargado</label>
-                        <input type="text" name="manager" id="dep_manager" class="form-control"
-                               placeholder="Ej: Lic. Juan Pérez">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="font-weight-bold">Usuario asignado del Sistema</label>
-                        <select name="user_id" id="dep_user_id" class="form-control select2" style="width:100%">
-                            <option value="">-- Sin usuario asignado --</option>
-                            @foreach(\App\Models\User::orderBy('name')->get() as $u)
-                                <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
+                    {{-- Selector de Establecimiento de Salud (Bioestadística / Geografía) --}}
+                    <div class="form-group mb-3" id="grupo_establecimiento_riiss" style="display:none;">
+                        <label class="font-weight-bold small text-success">
+                            <i class="fa fa-search mr-1"></i> Seleccionar Establecimiento de Salud (Bioestadística / Geografía) <span class="text-danger">*</span>
+                        </label>
+                        <select name="establecimiento_id" id="dep_establecimiento_id" class="form-control select2" style="width:100%">
+                            <option value="">-- Buscar por código o nombre del establecimiento --</option>
+                            @foreach($establecimientosRiissOrg as $est)
+                                @php
+                                    $tipologiaNom = $est->tipoEstablecimiento ? $est->tipoEstablecimiento->nombre : '';
+                                    $deptoNom = ($est->distrito && $est->distrito->departamento) ? $est->distrito->departamento->nombre : '';
+                                    $regionFull = $deptoNom ? ($deptoNom . ($est->distrito ? ' / ' . $est->distrito->nombre : '')) : '';
+                                @endphp
+                                <option value="{{ $est->id }}"
+                                    data-nombre="{{ $est->nombre }}"
+                                    data-tipologia="{{ $tipologiaNom }}"
+                                    data-region="{{ $regionFull ?: $deptoNom }}">
+                                    {{ $est->codigo ? '[' . $est->codigo . '] ' : '' }}{{ $est->nombre }} @if($tipologiaNom) ({{ $tipologiaNom }}) @endif @if($deptoNom) — {{ $deptoNom }} @endif
+                                </option>
                             @endforeach
                         </select>
+                        <small class="text-muted d-block mt-1">
+                            Al seleccionar el establecimiento, se asocian y vinculan automáticamente su denominación, tipología y región oficial de Bioestadística.
+                        </small>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="font-weight-bold">Email</label>
-                                <input type="email" name="email" id="dep_email" class="form-control"
-                                       placeholder="correo@ips.gov.py">
+                    <div id="bloque_campos_dependencia">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" name="dependency" id="dep_dependency" class="form-control" required
+                                   placeholder="Ej: Dirección de Tecnología">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">Responsable / Encargado <span class="text-muted">(Usuarios del Sistema)</span></label>
+                            <select name="user_id" id="dep_user_id" class="form-control select2" style="width:100%">
+                                <option value="">-- Sin responsable asignado --</option>
+                                @foreach(\App\Models\User::orderBy('name')->get() as $u)
+                                    <option value="{{ $u->id }}" data-name="{{ $u->name }}" data-email="{{ $u->email }}">{{ $u->name }} ({{ $u->email }})</option>
+                                @endforeach
+                            </select>
+                            <input type="hidden" name="manager" id="dep_manager">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="font-weight-bold">Email</label>
+                                    <input type="email" name="email" id="dep_email" class="form-control"
+                                           placeholder="correo@ips.gov.py">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="font-weight-bold">Teléfono / Interno</label>
+                                    <input type="text" name="phone" id="dep_phone" class="form-control"
+                                           placeholder="021-xxxxxx / Int. 123">
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="font-weight-bold">Teléfono / Interno</label>
-                                <input type="text" name="phone" id="dep_phone" class="form-control"
-                                       placeholder="021-xxxxxx / Int. 123">
-                            </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">Tipo de Establecimiento <span class="text-muted">(Tipología RIISS)</span></label>
+                            <select name="tipo_establecimiento" id="dep_tipo_establecimiento" class="form-control select2" style="width:100%">
+                                <option value="">-- Ninguno / Administrativo --</option>
+                                @foreach($tipologiasRiissOrg as $tipo)
+                                    <option value="{{ $tipo }}">{{ $tipo }}</option>
+                                @endforeach
+                            </select>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label class="font-weight-bold">Tipo de Establecimiento</label>
-                        <select name="tipo_establecimiento" id="dep_tipo_establecimiento" class="form-control">
-                            <option value="">-- Ninguno / Administrativo --</option>
-                            <option value="HOSPITAL">Hospital</option>
-                            <option value="CLINICA">Clínica</option>
-                            <option value="PUESTO_SANITARIO">Puesto Sanitario</option>
-                            <option value="CENTRO_ATENCION">Centro de Atención</option>
-                            <option value="OTRO">Otro</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="font-weight-bold">Dirección</label>
-                        <input type="text" name="address" id="dep_address" class="form-control"
-                               placeholder="Dirección física">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Dirección / Región</label>
+                            <input type="text" name="address" id="dep_address" class="form-control"
+                                   placeholder="Dirección o Región física">
+                        </div>
                     </div>
                 </form>
             </div>
@@ -358,7 +400,59 @@
             abrirModalCrear($(this).data('id'), $(this).data('nombre'));
         });
 
-        // ── Inicializar Select2 de usuario ────────────────────────────────────────
+        // ── Inicializar Select2 ───────────────────────────────────────────────────
+        $('#dep_establecimiento_id').select2({
+            dropdownParent: $('#modalDependencia'),
+            placeholder: '-- Buscar por código o nombre del establecimiento --',
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('#dep_tipo_establecimiento').select2({
+            dropdownParent: $('#modalDependencia'),
+            placeholder: '-- Seleccionar tipología RIISS --',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Toggle de Establecimiento de Salud (RIISS)
+        function toggleEsEstablecimiento(isEst) {
+            if (isEst) {
+                $('#grupo_establecimiento_riiss').slideDown(150);
+                $('#dep_dependency').prop('readonly', true).addClass('bg-light');
+                $('#dep_tipo_establecimiento').prop('disabled', true);
+                $('#dep_address').prop('readonly', true).addClass('bg-light');
+                syncEstablecimientoSeleccionado();
+            } else {
+                $('#grupo_establecimiento_riiss').slideUp(150);
+                $('#dep_establecimiento_id').val('').trigger('change');
+                $('#dep_dependency').prop('readonly', false).removeClass('bg-light');
+                $('#dep_tipo_establecimiento').prop('disabled', false);
+                $('#dep_address').prop('readonly', false).removeClass('bg-light');
+            }
+        }
+
+        $('#dep_es_establecimiento').on('change', function () {
+            toggleEsEstablecimiento($(this).is(':checked'));
+        });
+
+        $('#dep_establecimiento_id').on('change', function () {
+            syncEstablecimientoSeleccionado();
+        });
+
+        function syncEstablecimientoSeleccionado() {
+            if (!$('#dep_es_establecimiento').is(':checked')) return;
+            var opt = $('#dep_establecimiento_id').find('option:selected');
+            if (opt.val()) {
+                var nombre = opt.data('nombre') || '';
+                var tipologia = opt.data('tipologia') || '';
+                var region = opt.data('region') || '';
+                if (nombre) $('#dep_dependency').val(nombre);
+                if (tipologia) $('#dep_tipo_establecimiento').val(tipologia).trigger('change');
+                if (region) $('#dep_address').val(region);
+            }
+        }
+
         function initUserSelect(userId, userName, userEmail) {
             var $sel = $('#dep_user_id');
             if ($sel.hasClass('select2-hidden-accessible')) $sel.select2('destroy');
@@ -405,6 +499,9 @@
             $('#dep_id').val('');
             $('#dep_parent_id').val(parentId);
             $('#dep_method').val('POST');
+            $('#dep_es_establecimiento').prop('checked', false);
+            $('#dep_establecimiento_id').val('').trigger('change');
+            toggleEsEstablecimiento(false);
             $('#modalDependencia').modal('show');
             initUserSelect(null, null, null);
         }
@@ -422,6 +519,18 @@
                 $('#dep_manager').val(dep.manager || '');
                 $('#dep_phone').val(dep.phone || '');
                 $('#dep_email').val(dep.email || '');
+                $('#dep_address').val(dep.address || '');
+
+                if (dep.establecimiento_id || dep.tipo_establecimiento) {
+                    $('#dep_es_establecimiento').prop('checked', true);
+                    $('#dep_establecimiento_id').val(dep.establecimiento_id).trigger('change');
+                    toggleEsEstablecimiento(true);
+                } else {
+                    $('#dep_es_establecimiento').prop('checked', false);
+                    $('#dep_establecimiento_id').val('').trigger('change');
+                    toggleEsEstablecimiento(false);
+                }
+
                 $('#modalDependencia').modal('show');
                 initUserSelect(dep.user_id, dep.manager, dep.email);
             });

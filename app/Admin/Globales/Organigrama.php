@@ -13,14 +13,19 @@ class Organigrama extends Model
     
     protected $table = 'organigramas';
     
-    protected $fillable = ['dependency', 'user_id', 'email', 'manager', 'phone',
+    protected $fillable = ['dependency', 'user_id', 'establecimiento_id', 'email', 'manager', 'phone',
         'tipo_establecimiento', 'nivel_complejidad', 'tenencia', 'tiene_aop', 'region', 'locality_id'];
 
     protected $casts = ['tiene_aop' => 'boolean'];
 
     public function esEstablecimiento(): bool
     {
-        return !is_null($this->tipo_establecimiento);
+        return !is_null($this->establecimiento_id) || !is_null($this->tipo_establecimiento);
+    }
+
+    public function establecimiento()
+    {
+        return $this->belongsTo(\App\Models\Bioestadistica\Establecimiento::class, 'establecimiento_id');
     }
 
     public function parent()

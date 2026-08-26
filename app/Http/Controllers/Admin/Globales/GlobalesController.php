@@ -16,7 +16,7 @@ use App\Models\HomeConfiguration;
 class GlobalesController extends Controller
 {
     public function __construct(){
-        $this->middleware(['auth', 'role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI']);
+        $this->middleware(['auth', 'role:Administrador|Super Admin|Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Analista PEI|Coordinador de Proyectos|Coordinación de Proyectos']);
     }
     
     public function dashboard(Request $request)
@@ -106,9 +106,13 @@ class GlobalesController extends Controller
         $extractosPendientes = \App\Models\Estadistica\SiessExtracto::pendientes()->count();
 
         // ── Proyectos Institucionales ─────────────────────────────────────────
-        $totalProyectos     = \App\Models\Proyectos\ProyectoInstitucional::count();
-        $proyectosActivos   = \App\Models\Proyectos\ProyectoInstitucional::activos()->count();
-        $proyectosEjecucion = \App\Models\Proyectos\ProyectoInstitucional::enEjecucion()->count();
+        $proyectosList = \App\Models\Proyectos\ProyectoInstitucional::with(['peiProfile', 'dependenciaSolicitante', 'dependenciaEjecutora', 'analista', 'creadoPor'])
+            ->orderBy('id', 'desc')
+            ->get();
+        $totalProyectos     = $proyectosList->count();
+        $proyectosActivos   = $proyectosList->whereNotIn('estado', ['finalizado','rechazado_docs','rechazado_tecnico'])->count();
+        $proyectosEjecucion = $proyectosList->where('estado', 'en_ejecucion')->count();
+        $proyectosAprobados = $proyectosList->where('estado', 'aprobado')->count();
 
         // ── Roles, Permisos, Grupos ───────────────────────────────────────────
         $totalRoles    = Role::count();
@@ -278,6 +282,29 @@ class GlobalesController extends Controller
 
         // Mantener compatibilidad con variable en vista
         $top5RankingReconocimiento = $top10RankingReconocimiento;
+
+        // ── Tipologías de Establecimiento desde Bioestadística (Geografía) ──────
+        $tipologiasRiiss = \App\Models\Bioestadistica\TipoEstablecimiento::where('activo', true)
+            ->orderBy('nombre')
+            ->pluck('nombre');
+
+        if ($tipologiasRiiss->isEmpty()) {
+            $tipologiasRiiss = \App\Models\Bioestadistica\Establecimiento::join('bioestadistica.tipos_establecimiento', 'bioestadistica.establecimientos.tipo_establecimiento_id', '=', 'bioestadistica.tipos_establecimiento.id')
+                ->distinct()
+                ->orderBy('bioestadistica.tipos_establecimiento.nombre')
+                ->pluck('bioestadistica.tipos_establecimiento.nombre');
+        }
+
+        // ── Establecimientos de Salud desde bioestadistica.establecimientos ──────
+        $establecimientosRiiss = \App\Models\Bioestadistica\Establecimiento::with([
+                'distrito.departamento',
+                'tipoEstablecimiento',
+                'gradoComplejidad',
+                'microred',
+                'areaGestion'
+            ])
+            ->orderBy('nombre')
+            ->get();
 
         return view('admin.globales.dashboard', get_defined_vars());
     }

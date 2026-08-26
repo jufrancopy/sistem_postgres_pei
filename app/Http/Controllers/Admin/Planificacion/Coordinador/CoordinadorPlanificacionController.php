@@ -205,10 +205,43 @@ class CoordinadorPlanificacionController extends Controller
             'total_proyectos'    => $kpisProyectos['total'],
         ];
 
+        // ── Tipologías de Establecimiento conectadas desde RIISS ───────────────
+        $tipologiasRiiss = \App\Models\Riiss\ReglaSeccionFormulario::select('tipologia_clasificacion')
+            ->distinct()
+            ->whereNotNull('tipologia_clasificacion')
+            ->where('tipologia_clasificacion', '!=', '')
+            ->orderBy('tipologia_clasificacion')
+            ->pluck('tipologia_clasificacion');
+
+        // ── Tipologías de Establecimiento desde Bioestadística (Geografía) ──────
+        $tipologiasRiiss = \App\Models\Bioestadistica\TipoEstablecimiento::where('activo', true)
+            ->orderBy('nombre')
+            ->pluck('nombre');
+
+        if ($tipologiasRiiss->isEmpty()) {
+            $tipologiasRiiss = \App\Models\Bioestadistica\Establecimiento::join('bioestadistica.tipos_establecimiento', 'bioestadistica.establecimientos.tipo_establecimiento_id', '=', 'bioestadistica.tipos_establecimiento.id')
+                ->distinct()
+                ->orderBy('bioestadistica.tipos_establecimiento.nombre')
+                ->pluck('bioestadistica.tipos_establecimiento.nombre');
+        }
+
+        // ── Establecimientos de Salud desde bioestadistica.establecimientos ──────
+        $establecimientosRiiss = \App\Models\Bioestadistica\Establecimiento::with([
+                'distrito.departamento',
+                'tipoEstablecimiento',
+                'gradoComplejidad',
+                'microred',
+                'areaGestion'
+            ])
+            ->orderBy('nombre')
+            ->get();
+
         return view('admin.planificacion.coordinador.index', array_merge($context, [
-            'kpis'             => $kpis,
-            'kpisProyectos'    => $kpisProyectos,
-            'estadosProyectos' => ProyectoInstitucional::ESTADOS,
+            'kpis'                 => $kpis,
+            'kpisProyectos'        => $kpisProyectos,
+            'estadosProyectos'     => ProyectoInstitucional::ESTADOS,
+            'tipologiasRiiss'      => $tipologiasRiiss,
+            'establecimientosRiiss' => $establecimientosRiiss,
         ]));
     }
 
@@ -775,14 +808,45 @@ class CoordinadorPlanificacionController extends Controller
             }
         }
 
-        $dep->dependency = $request->dependency;
-        $dep->manager = $request->manager;
+        $esEstablecimiento = $request->boolean('es_establecimiento');
+        $establecimientoId = $request->establecimiento_id ?: null;
+
+        if ($esEstablecimiento && $establecimientoId) {
+            $est = \App\Models\Bioestadistica\Establecimiento::with(['distrito.departamento', 'tipoEstablecimiento'])->find($establecimientoId);
+            if ($est) {
+                $dep->establecimiento_id = $est->id;
+                $dep->dependency = $request->dependency ?: $est->nombre;
+                $dep->tipo_establecimiento = $request->tipo_establecimiento ?: ($est->tipoEstablecimiento ? $est->tipoEstablecimiento->nombre : null);
+                $dep->region = $request->region ?: ($est->distrito && $est->distrito->departamento ? $est->distrito->departamento->nombre : null);
+            } else {
+                $dep->establecimiento_id = $establecimientoId;
+                $dep->dependency = $request->dependency;
+                $dep->tipo_establecimiento = $request->tipo_establecimiento;
+                $dep->region = $request->region;
+            }
+        } else {
+            $dep->establecimiento_id = null;
+            $dep->dependency = $request->dependency;
+            $dep->tipo_establecimiento = $request->tipo_establecimiento;
+            $dep->region = $request->region;
+        }
+
         $dep->user_id = $request->user_id ?: null;
-        $dep->email = $request->email ?: null;
+        if ($dep->user_id) {
+            $assignedUser = User::find($dep->user_id);
+            $dep->manager = $request->manager ?: ($assignedUser ? $assignedUser->name : null);
+            if (!$request->filled('email') && $assignedUser) {
+                $dep->email = $assignedUser->email;
+            } else {
+                $dep->email = $request->email ?: null;
+            }
+        } else {
+            $dep->manager = $request->manager ?: null;
+            $dep->email = $request->email ?: null;
+        }
+
         $phoneDigits = preg_replace('/\D/', '', (string)$request->phone);
         $dep->phone = $phoneDigits !== '' ? (int)$phoneDigits : null;
-        $dep->region = $request->region;
-        $dep->tipo_establecimiento = $request->tipo_establecimiento;
         $dep->save();
 
         return response()->json([
@@ -807,7 +871,10 @@ class CoordinadorPlanificacionController extends Controller
 
         return response()->json([
             'success'     => true,
-            'dependencia' => $dep,
+            'dependencia' => array_merge($dep->toArray(), [
+                'es_establecimiento' => !is_null($dep->establecimiento_id),
+                'establecimiento_id' => $dep->establecimiento_id,
+            ]),
         ]);
     }
 

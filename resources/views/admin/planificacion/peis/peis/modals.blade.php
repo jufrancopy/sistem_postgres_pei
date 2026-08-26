@@ -369,19 +369,6 @@
                         </select>
                     </div>
 
-                    {{-- ── Indicador de la Ficha Técnica (Ámbito: Objetivo Estratégico) ── --}}
-                    <hr class="my-3">
-                    <div class="d-flex align-items-center mb-2">
-                        <h6 class="font-weight-bold mb-0">
-                            <i class="fa fa-ruler-combined mr-1 text-primary"></i> Indicador
-                        </h6>
-                        <a href="{{ route('pei.indicadores.modulo', $profile->id) }}"
-                           target="_blank"
-                           class="btn btn-sm btn-outline-primary py-0 px-2 ml-auto"
-                           style="font-size:.72rem" title="Gestionar fichas de indicadores">
-                            <i class="fa fa-external-link-alt mr-1"></i> Gestionar Indicadores
-                        </a>
-                    </div>
                     {{-- ── Junta Consultiva (Consejo de Sabios) ── --}}
                     <div class="form-group mb-3 p-3 rounded" style="background:#f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #7c3aed;">
                         <label class="control-label font-weight-bold d-flex align-items-center text-dark mb-1">
@@ -400,6 +387,20 @@
                                 <option value="{{ $junta->id }}">{{ $junta->codigo }} - {{ $junta->nombre }}</option>
                             @endforeach
                         </select>
+                    </div>
+
+                    {{-- ── Indicador de la Ficha Técnica (Ámbito: Objetivo Estratégico) ── --}}
+                    <hr class="my-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <h6 class="font-weight-bold mb-0">
+                            <i class="fa fa-ruler-combined mr-1 text-primary"></i> Indicador
+                        </h6>
+                        <a href="{{ route('pei.indicadores.modulo', $profile->id) }}"
+                           target="_blank"
+                           class="btn btn-sm btn-outline-primary py-0 px-2 ml-auto"
+                           style="font-size:.72rem" title="Gestionar fichas de indicadores">
+                            <i class="fa fa-external-link-alt mr-1"></i> Gestionar Indicadores
+                        </a>
                     </div>
 
                     <div class="form-group mb-3 position-relative">
@@ -485,19 +486,6 @@
                         </select>
                     </div>
 
-                    {{-- ── Indicador de la Ficha Técnica (Ámbito: Objetivo Específico) ── --}}
-                    <hr class="my-3">
-                    <div class="d-flex align-items-center mb-2">
-                        <h6 class="font-weight-bold mb-0">
-                            <i class="fa fa-ruler-combined mr-1 text-primary"></i> Indicador
-                        </h6>
-                        <a href="{{ route('pei.indicadores.modulo', $profile->id) }}"
-                           target="_blank"
-                           class="btn btn-sm btn-outline-primary py-0 px-2 ml-auto"
-                           style="font-size:.72rem" title="Gestionar fichas de indicadores">
-                            <i class="fa fa-external-link-alt mr-1"></i> Gestionar Indicadores
-                        </a>
-                    </div>
                     {{-- ── Junta Consultiva (Consejo de Sabios) ── --}}
                     <div class="form-group mb-3 p-3 rounded" style="background:#f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #7c3aed;">
                         <label class="control-label font-weight-bold d-flex align-items-center text-dark mb-1">
@@ -513,6 +501,20 @@
                                 <option value="{{ $junta->id }}">{{ $junta->codigo }} - {{ $junta->nombre }}</option>
                             @endforeach
                         </select>
+                    </div>
+
+                    {{-- ── Indicador de la Ficha Técnica (Ámbito: Objetivo Específico) ── --}}
+                    <hr class="my-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <h6 class="font-weight-bold mb-0">
+                            <i class="fa fa-ruler-combined mr-1 text-primary"></i> Indicador
+                        </h6>
+                        <a href="{{ route('pei.indicadores.modulo', $profile->id) }}"
+                           target="_blank"
+                           class="btn btn-sm btn-outline-primary py-0 px-2 ml-auto"
+                           style="font-size:.72rem" title="Gestionar fichas de indicadores">
+                            <i class="fa fa-external-link-alt mr-1"></i> Gestionar Indicadores
+                        </a>
                     </div>
 
                     <div class="form-group mb-3 position-relative">

@@ -89,7 +89,14 @@ class IndicadorController extends Controller
             });
 
         if (!empty($ambito)) {
-            $query->where('ambito', $ambito);
+            $query->where(function($qAm) use ($ambito, $q) {
+                $qAm->where('ambito', $ambito)
+                    ->orWhere('ambito', str_replace('_', ' ', $ambito))
+                    ->orWhereRaw('LOWER(ambito) = ?', [strtolower($ambito)]);
+                if (!empty($q)) {
+                    $qAm->orWhereNull('ambito');
+                }
+            });
         }
 
         $indicadores = $query->orderBy('codigo_letras')->orderBy('codigo_numeros')

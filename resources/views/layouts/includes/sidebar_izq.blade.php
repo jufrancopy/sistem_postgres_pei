@@ -177,13 +177,21 @@
                                 </ul>
                             </div>
                         </li>
+
+                        {{-- Solicitudes de Reorganización Estructural --}}
+                        <li class="nav-item {{ $isActive('admin/planificacion/estructura-solicitudes*') }}">
+                            <a class="nav-link" href="{{ route('admin.estructura-solicitudes.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-clipboard-list" style="font-size:.8rem; color: #0284c7;"></i></span>
+                                <span class="sidebar-normal">Ajustes de Estructura</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
         @endrole
 
-        {{-- Menú específico para Coordinador / Analista de Planificación --}}
-        @hasanyrole('Coordinador de Planificación|Analista de Planificación')
+        {{-- Menú específico para Coordinador / Analista de Planificación / Coordinador de Proyectos --}}
+        @hasanyrole('Coordinador de Planificación|Coordinación de Planificación|Analista de Planificación|Coordinador de Proyectos|Coordinación de Proyectos')
             <li class="nav-item {{ request()->is('admin/globales/dashboard*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('globales.dashboard') }}">
                     <i class="material-icons" style="color: #4f46e5 !important;">dashboard</i>
@@ -193,7 +201,7 @@
         @endhasanyrole
 
         {{-- ── DEPARTAMENTO 2: PROYECTOS (Verde Esmeralda #10b981 / PMO) ── --}}
-        @role('Administrador')
+        @hasanyrole('Administrador|Super Admin|Coordinador de Proyectos|Coordinación de Proyectos|Coordinador de Planificación')
             <li class="nav-item">
                 <a class="nav-link" data-toggle="collapse" href="#proyectosMenu" aria-expanded="{{ $enProyectos ? 'true' : 'false' }}">
                     <i class="material-icons" style="color: #10b981 !important; font-weight: bold;">account_tree</i>
@@ -217,7 +225,7 @@
                     </ul>
                 </div>
             </li>
-        @endrole
+        @endhasanyrole
 
         {{-- ── DEPARTAMENTO 3: ESTADÍSTICAS (Ámbar / Naranja Datos #f59e0b / DATA) ── --}}
         @hasanyrole('Administrador|Analista de Bioestadística|Digitador Bioestadística|Consultor Bioestadística|Auditor Bioestadística')
@@ -457,6 +465,12 @@
                                             <span class="sidebar-normal">Configuración</span>
                                         </a>
                                     </li>
+                                    <li class="nav-item {{ $isActive('riiss/mis-asignaciones') }}">
+                                        <a class="nav-link" href="{{ route('riiss.mis-asignaciones') }}">
+                                            <span class="sidebar-mini"><i class="fa fa-clipboard-list" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                            <span class="sidebar-normal">Mis Asignaciones</span>
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         </li>
@@ -556,22 +570,42 @@
             </li>
         @endrole
 
-        {{-- Sidebar exclusivo para Analista - RIISS --}}
-        @role('Analista - RIISS')
+        {{-- Sidebar para Coordinador RIISS y Analista RIISS --}}
+        @hasanyrole('Coordinador RIISS|Coordinación RIISS|Coordinador - RIISS|Analista - RIISS|Analista RIISS')
             @php $enRiiss = str_contains($path, 'riiss'); @endphp
-            <li class="nav-item {{ $path === 'riiss' ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('riiss.index') }}">
-                    <i class="material-icons">local_hospital</i>
-                    <p>Centro RIISS</p>
+            <li class="nav-item">
+                <a class="nav-link {{ $enRiiss ? 'active' : '' }}" data-toggle="collapse" href="#riissUserMenu" aria-expanded="{{ $enRiiss ? 'true' : 'false' }}">
+                    <i class="material-icons" style="color: #06b6d4 !important; font-weight: bold;">local_hospital</i>
+                    <p class="font-weight-bold">RIISS (Red de Salud)
+                        <b class="caret"></b>
+                    </p>
                 </a>
+                <div class="collapse {{ $enRiiss ? 'show' : '' }}" id="riissUserMenu">
+                    <ul class="nav" style="padding-left:10px">
+                        <li class="nav-item {{ $path === 'riiss' ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('riiss.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-crosshairs" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                <span class="sidebar-normal">Centro RIISS</span>
+                            </a>
+                        </li>
+                        @hasanyrole('Coordinador RIISS|Coordinación RIISS|Coordinador - RIISS|Administrador|Super Admin')
+                        <li class="nav-item {{ str_contains($path, 'riiss/configuracion') || str_contains($path, 'riiss/formularios') || str_contains($path, 'riiss/complejidad') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('riiss.configuracion') }}">
+                                <span class="sidebar-mini"><i class="fa fa-cog" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                <span class="sidebar-normal">Configuración</span>
+                            </a>
+                        </li>
+                        @endhasanyrole
+                        <li class="nav-item {{ $isActive('riiss/mis-asignaciones') }}">
+                            <a class="nav-link" href="{{ route('riiss.mis-asignaciones') }}">
+                                <span class="sidebar-mini"><i class="fa fa-clipboard-list" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                <span class="sidebar-normal">Mis Asignaciones</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
-            <li class="nav-item {{ $isActive('riiss/mis-asignaciones') }}">
-                <a class="nav-link" href="{{ route('riiss.mis-asignaciones') }}">
-                    <i class="material-icons">assignment</i>
-                    <p>Mis Asignaciones</p>
-                </a>
-            </li>
-        @endrole
+        @endhasanyrole
 
         {{-- Las siguientes secciones NO deben verse para Analista - RIISS ni Administrador --}}
         @hasanyrole('Alta Gerencia|Participante SIESS')

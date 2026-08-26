@@ -185,6 +185,16 @@
                 <i class="fa fa-undo text-danger mr-1"></i> Histórico & Revertir Cambios
             </button>
 
+            {{-- Botón Observatorio Estratégico & APIs de Investigación --}}
+            <button type="button"
+                    class="btn btn-sm font-weight-bold text-white d-inline-flex align-items-center px-3 shadow-sm"
+                    data-toggle="modal" data-target="#modalEstadisticasOms"
+                    onclick="abrirModalEstadisticasOms()"
+                    style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: none; border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+                    title="Centro de Investigación & Observatorio Estratégico (APIs: OMS, Banco Mundial, INE, BCP)">
+                <i class="fa fa-microscope text-warning"></i> Observatorio &amp; APIs
+            </button>
+
             {{-- Separador visual --}}
             <div style="width: 1px; height: 28px; background: #e2e8f0; margin: 0 4px;"></div>
 
@@ -257,9 +267,15 @@
                     <a class="dropdown-item py-2" href="javascript:void(0)" onclick="mostrarModalQrJunta({ url_intervenciones: '{{ route('admin.juntas.intervenciones') }}', junta_nombre: 'Junta Consultiva Institucional', codigos: 'Bandeja de Intervenciones' })">
                         <i class="fa fa-qrcode text-warning mr-2"></i> Ver QR / Enlace para Junta
                     </a>
+                    <a class="dropdown-item py-2" href="{{ route('admin.estructura-solicitudes.index', ['pei_profile_id' => $profile->id]) }}">
+                        <i class="fa fa-sitemap text-info mr-2"></i> Solicitudes de Estructura (Org. y Calidad)
+                    </a>
 
                     <div class="dropdown-divider"></div>
                     <h6 class="dropdown-header text-uppercase text-muted small">Análisis Complementario</h6>
+                    <a class="dropdown-item py-2" href="javascript:void(0)" data-toggle="modal" data-target="#modalEstadisticasOms" onclick="abrirModalEstadisticasOms()">
+                        <i class="fa fa-heartbeat text-primary mr-2"></i> Estadísticas de Salud OMS / OPS
+                    </a>
                     <a class="dropdown-item py-2" href="{{ route('pei.indicadores.modulo', $profile->id) }}">
                         <i class="fa fa-ruler-combined text-info mr-2"></i> Indicadores del Plan
                     </a>
@@ -6364,4 +6380,5 @@ $(document).off('click', '#btnZoomReset').on('click', '#btnZoomReset', function(
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <div id="containerModalReordenarPei"></div>
 @include('admin.planificacion.peis/peis.partials.chat_drawer')
+@include('admin.planificacion.peis.peis.partials.modal_estadisticas_oms')
 @stop

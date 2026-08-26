@@ -188,11 +188,13 @@
                 </h4>
                 <p class="card-category mb-0 text-white-75">Red Integrada e Integral de Servicios de Salud — Gestión & Monitoreo</p>
             </div>
+            @hasanyrole('Administrador|Super Admin|Coordinador RIISS|Coordinador - RIISS|Coordinación RIISS')
             <div class="text-right mt-3 mt-md-0">
                 <button class="btn btn-white btn-sm font-weight-bold" onclick="abrirModalNuevaAsignacion()" style="color: #00acc1; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.95);">
                     <i class="fa fa-plus-circle mr-1 text-info"></i> Nueva Asignación
                 </button>
             </div>
+            @endhasanyrole
         </div>
     </div>
     

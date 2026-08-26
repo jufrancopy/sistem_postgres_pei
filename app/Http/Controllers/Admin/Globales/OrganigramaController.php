@@ -171,17 +171,44 @@ class OrganigramaController extends Controller
 
     public function store(Request $request)
     {
+        $userId = $request->user_id ?: null;
+        $manager = $request->manager;
+        $email = $request->email;
+        if ($userId) {
+            $u = \App\Models\User::find($userId);
+            if ($u) {
+                $manager = $manager ?: $u->name;
+                $email = $email ?: $u->email;
+            }
+        }
+
+        $esEstablecimiento = $request->boolean('es_establecimiento');
+        $establecimientoId = $request->establecimiento_id ?: null;
+        $dependency = $request->dependency;
+        $tipoEst = $request->tipo_establecimiento ?: null;
+        $region = $request->region ?: null;
+
+        if ($esEstablecimiento && $establecimientoId) {
+            $est = \App\Models\Bioestadistica\Establecimiento::with(['distrito.departamento', 'tipoEstablecimiento'])->find($establecimientoId);
+            if ($est) {
+                $dependency = $dependency ?: $est->nombre;
+                $tipoEst = $tipoEst ?: ($est->tipoEstablecimiento ? $est->tipoEstablecimiento->nombre : null);
+                $region = $region ?: ($est->distrito && $est->distrito->departamento ? $est->distrito->departamento->nombre : null);
+            }
+        }
+
         $dependencia = Organigrama::create([
-            'dependency'           => $request->dependency,
-            'manager'              => $request->manager,
+            'dependency'           => $dependency,
+            'manager'              => $manager,
             'phone'                => $request->phone,
-            'email'                => $request->email,
-            'user_id'              => $request->user_id ?: null,
-            'tipo_establecimiento' => $request->tipo_establecimiento ?: null,
+            'email'                => $email,
+            'user_id'              => $userId,
+            'establecimiento_id'   => ($esEstablecimiento && $establecimientoId) ? $establecimientoId : null,
+            'tipo_establecimiento' => $tipoEst,
             'nivel_complejidad'    => $request->nivel_complejidad ?: null,
             'tenencia'             => $request->tenencia ?: null,
             'tiene_aop'            => $request->has('tiene_aop'),
-            'region'               => $request->region ?: null,
+            'region'               => $region,
         ]);
 
         if ($request->parent_id) {
