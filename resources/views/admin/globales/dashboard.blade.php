@@ -3901,18 +3901,29 @@ $(document).ready(function() {
     }
 
     // Solución para dropdowns dentro de table-responsive:
-    // El overflow se cambia en mousedown (ANTES de que Bootstrap/Popper abra el menú)
-    // para que Popper ya tenga espacio libre al calcular la posición.
-    // stopPropagation se hace directamente en el botón (nivel elemento), que se ejecuta
-    // ANTES del handler de DataTables en el nivel td, evitando que consuma el primer clic.
+    // overflow:visible se aplica en mousedown Y en show.bs.dropdown para garantizar
+    // que Popper.js no lo revierta durante el hover sobre las opciones del menú.
+    var $activeTableResponsive = null;
+
     $(document).on('mousedown', '[data-toggle="dropdown"]', function() {
         var $tr = $(this).closest('.table-responsive');
         if ($tr.length) {
+            $activeTableResponsive = $tr;
+            $tr.css('overflow', 'visible');
+        }
+    });
+    $(document).on('show.bs.dropdown', function(e) {
+        var $tr = $(e.target).closest('.table-responsive');
+        if ($tr.length) {
+            $activeTableResponsive = $tr;
             $tr.css('overflow', 'visible');
         }
     });
     $(document).on('hidden.bs.dropdown', function () {
-        $('.table-responsive').css('overflow', 'auto');
+        if ($activeTableResponsive) {
+            $activeTableResponsive.css('overflow', 'auto');
+            $activeTableResponsive = null;
+        }
     });
 
     // ── Switches AJAX en tiempo real ──
