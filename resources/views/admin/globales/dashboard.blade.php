@@ -156,12 +156,6 @@
         letter-spacing: 0.5px;
         border-bottom: 2px solid #e2e8f0;
     }
-    #tab-planes .table-responsive {
-        overflow: visible !important;
-    }
-    #tablaPlanesGlobal .dropdown-menu {
-        z-index: 1060 !important;
-    }
 
     /* ── Árbol Jerárquico de Organigrama ── */
     .sortable-group {
@@ -909,7 +903,7 @@
                         </div>
                     </div>
 
-                    <div class="table-responsive" style="overflow: visible;">
+                    <div class="table-responsive">
                         <table class="table table-hover table-custom w-100 dataTableInit" id="tablaPlanesGlobal">
                             <thead>
                                 <tr>
@@ -966,74 +960,53 @@
                                         </span>
                                     </td>
                                     <td class="text-center" style="white-space: nowrap;">
-                                        <div class="d-flex justify-content-center align-items-center" style="gap: 6px;">
-                                            {{-- Botón Principal: Gestionar Plan --}}
-                                            <a href="{{ url('pei-profiles/' . $plan->id) }}"
-                                               class="btn btn-sm btn-success font-weight-bold d-inline-flex align-items-center px-3 shadow-xs"
-                                               style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;"
-                                               title="Ver y Gestionar Plan Estratégico">
-                                                <i class="fa fa-sitemap"></i> Gestionar Plan
+                                        <div class="d-flex justify-content-center align-items-center flex-nowrap" style="gap: 4px;">
+                                            @hasanyrole('Administrador|Super Admin')
+                                            {{-- 1. Seleccionar PEI Activo --}}
+                                            <a href="?pei_id={{ $plan->id }}#tab-planes" class="btn btn-circle" style="background:#2563eb; border-color:#2563eb; color:#fff;" title="Seleccionar como PEI Activo en Panel">
+                                                <i class="fa fa-check-circle"></i>
                                             </a>
 
-                                            {{-- Dropdown Más Opciones (Estilo PEI) --}}
-                                            <div class="dropdown d-inline-block">
-                                                <button class="btn btn-sm btn-outline-secondary font-weight-bold dropdown-toggle d-inline-flex align-items-center px-2.5 shadow-xs"
-                                                        type="button" id="dropdownPeiActions_{{ $plan->id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                                                        style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;">
-                                                    <i class="fa fa-ellipsis-h"></i> Más
-                                                </button>
-                                                <div class="dropdown-menu dropdown-menu-right shadow-lg border-0 text-left" aria-labelledby="dropdownPeiActions_{{ $plan->id }}" style="border-radius: 12px; min-width: 255px; font-size: 0.86rem; z-index: 1050;">
-                                                    <h6 class="dropdown-header text-uppercase text-muted small font-weight-bold" style="font-size: 0.72rem; letter-spacing: .5px;">Estructura &amp; Organización</h6>
+                                            {{-- 2. Editar Perfil PEI (Modal Original pei-profiles) --}}
+                                            <button type="button" class="btn btn-circle editProfile" style="background:#8b5cf6; border-color:#8b5cf6; color:#fff;" data-id="{{ $plan->id }}" title="Editar Perfil PEI In-Situ">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+                                            @endhasanyrole
 
-                                                    @hasanyrole('Administrador|Super Admin')
-                                                    <a class="dropdown-item py-2" href="?pei_id={{ $plan->id }}#tab-planes">
-                                                        <i class="fa fa-check-circle text-primary mr-2"></i> Seleccionar como Plan Activo
-                                                    </a>
-                                                    <a class="dropdown-item py-2 editProfile" href="javascript:void(0)" data-id="{{ $plan->id }}">
-                                                        <i class="fa fa-edit text-purple mr-2" style="color:#8b5cf6;"></i> Editar Perfil PEI
-                                                    </a>
-                                                    @endhasanyrole
+                                            {{-- 3. Ver y Gestionar Estructura PEI (Icono Números Verde) --}}
+                                            <a href="{{ url('pei-profiles/' . $plan->id) }}" class="btn btn-circle" style="background:#10b981; border-color:#10b981; color:#fff;" title="Ver y Gestionar Estructura PEI">
+                                                <i class="fa fa-list-ol"></i>
+                                            </a>
 
-                                                    <a class="dropdown-item py-2" href="{{ url('pei-profiles/' . $plan->id) }}">
-                                                        <i class="fa fa-list-ol text-success mr-2"></i> Ver Estructura y Árbol PEI
-                                                    </a>
-                                                    <a class="dropdown-item py-2 btnVerCertificacionMef" href="javascript:void(0)" data-id="{{ $plan->id }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}">
-                                                        <i class="fa fa-certificate text-info mr-2"></i> Certificación MEF
-                                                    </a>
-                                                    <a class="dropdown-item py-2 btnVerReporteAportes" href="javascript:void(0)" data-pei-id="{{ $plan->id }}">
-                                                        <i class="fa fa-book-open text-warning mr-2"></i> Lectura de Aportes de Asesoría
-                                                    </a>
-                                                    <a class="dropdown-item py-2" href="{{ route('admin.estructura-solicitudes.index', ['pei_profile_id' => $plan->id]) }}">
-                                                        <i class="fa fa-building text-primary mr-2"></i> Solicitudes de Estructura (Org. y Calidad)
-                                                    </a>
+                                            {{-- 4. Certificación MEF --}}
+                                            <button type="button" class="btn btn-circle btn-info text-white btnVerCertificacionMef" data-id="{{ $plan->id }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}" title="Certificación MEF">
+                                                <i class="fa fa-certificate"></i>
+                                            </button>
 
-                                                    <div class="dropdown-divider"></div>
-                                                    <h6 class="dropdown-header text-uppercase text-muted small font-weight-bold" style="font-size: 0.72rem; letter-spacing: .5px;">Análisis Estratégico</h6>
-                                                    <a class="dropdown-item py-2 btnVerFodaCrossing" href="javascript:void(0)" data-url="{{ route('foda-cruce-ambientes', $plan->id) }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}">
-                                                        <i class="fa fa-random text-warning mr-2"></i> FODA &amp; Cruce de Ambientes
-                                                    </a>
-                                                    <a class="dropdown-item py-2" href="{{ route('pei.indicadores.modulo', $plan->id) }}">
-                                                        <i class="fa fa-ruler-combined text-info mr-2"></i> Indicadores del Plan
-                                                    </a>
-                                                    <a class="dropdown-item py-2" href="{{ route('pei.mee.modulo', $plan->id) }}">
-                                                        <i class="fa fa-balance-scale text-secondary mr-2"></i> Marco Estratégico Específico
-                                                    </a>
+                                            {{-- 5. Lectura Cómoda de Aportes de Asesoría --}}
+                                            <button type="button" class="btn btn-circle btn-dark text-warning btnVerReporteAportes" data-pei-id="{{ $plan->id }}" title="Lectura Cómoda de Aportes y Dictámenes de Asesoría">
+                                                <i class="fa fa-book-open"></i>
+                                            </button>
 
-                                                    @hasanyrole('Administrador|Super Admin')
-                                                    <div class="dropdown-divider"></div>
-                                                    <h6 class="dropdown-header text-uppercase text-muted small font-weight-bold" style="font-size: 0.72rem; letter-spacing: .5px;">Administración</h6>
-                                                    @php
-                                                        $isVis = isset($plan->is_active) ? (bool)$plan->is_active : true;
-                                                    @endphp
-                                                    <a class="dropdown-item py-2 toggleShowRiiss" href="javascript:void(0)" data-id="{{ $plan->id }}">
-                                                        <i class="fa {{ $isVis ? 'fa-eye-slash text-warning' : 'fa-eye text-success' }} mr-2"></i> {{ $isVis ? 'Ocultar Plan' : 'Activar / Hacer Visible' }}
-                                                    </a>
-                                                    <a class="dropdown-item py-2 text-danger font-weight-bold deleteProfile" href="javascript:void(0)" data-id="{{ $plan->id }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}">
-                                                        <i class="fa fa-trash text-danger mr-2"></i> Eliminar Plan Estratégico
-                                                    </a>
-                                                    @endhasanyrole
-                                                </div>
-                                            </div>
+                                            {{-- 6. Cruce de Ambientes FODA --}}
+                                            <button type="button" class="btn btn-circle btn-warning text-white btnVerFodaCrossing" data-url="{{ route('foda-cruce-ambientes', $plan->id) }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}" title="Análisis FODA & Cruce de Ambientes">
+                                                <i class="fa fa-random"></i>
+                                            </button>
+
+                                            @hasanyrole('Administrador|Super Admin')
+                                            {{-- 7. Visibilidad / Alternar Estado --}}
+                                            @php
+                                                $isVis = isset($plan->is_active) ? (bool)$plan->is_active : true;
+                                            @endphp
+                                            <button type="button" class="btn btn-circle toggleShowRiiss" style="background: {{ $isVis ? '#06b6d4' : '#f59e0b' }}; border-color: {{ $isVis ? '#06b6d4' : '#f59e0b' }}; color:#fff;" data-id="{{ $plan->id }}" title="{{ $isVis ? 'Visible / Activo — Clic para Ocultar' : 'Oculto — Clic para Activar' }}">
+                                                <i class="fa {{ $isVis ? 'fa-eye' : 'fa-eye-slash' }}"></i>
+                                            </button>
+
+                                            {{-- 8. Eliminar Perfil PEI --}}
+                                            <button type="button" class="btn btn-circle btn-danger deleteProfile" data-id="{{ $plan->id }}" data-name="{{ e(addslashes(strip_tags($plan->name))) }}" title="Eliminar Perfil PEI">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                            @endhasanyrole
                                         </div>
                                     </td>
                                 </tr>
