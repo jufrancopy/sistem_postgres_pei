@@ -3946,25 +3946,34 @@ $(document).ready(function() {
             // Respaldamos la posición original
             $activeDropdown.data('original-parent', $activeDropdownParent);
             
-            // Movemos el menú al body y lo pre-mostramos para medir su altura real
+            // Movemos el menú al body y lo pre-mostramos
             $('body').append($activeDropdown.detach());
-            $activeDropdown.css({ 'display': 'block', 'visibility': 'hidden', 'position': 'absolute' });
+            $activeDropdown.css({ 'display': 'block', 'visibility': 'hidden', 'position': 'absolute', 'max-height': 'none' });
             
             // Calculamos dimensiones
             var eOffset = $activeDropdownParent.offset();
             var btnHeight = $activeDropdownParent.outerHeight();
-            var menuHeight = $activeDropdown.outerHeight();
+            var realMenuHeight = $activeDropdown.outerHeight();
             
-            // Detección de colisión inferior (espacio disponible en la ventana)
-            var spaceBelow = $(window).height() - (eOffset.top - $(window).scrollTop() + btnHeight);
+            // Detección de colisión y espacios disponibles
+            var spaceAbove = eOffset.top - $(window).scrollTop();
+            var spaceBelow = $(window).height() - (spaceAbove + btnHeight);
             
             var topPos;
-            if (spaceBelow < menuHeight && (eOffset.top - $(window).scrollTop()) > menuHeight) {
-                // Si no hay espacio abajo pero sí arriba, lo abrimos hacia ARRIBA (Dropup)
-                topPos = eOffset.top - menuHeight - 5;
-            } else {
-                // Por defecto hacia abajo
+            var finalMaxHeight = realMenuHeight;
+            
+            if (spaceBelow >= realMenuHeight || spaceBelow >= spaceAbove) {
+                // Abrir hacia ABAJO (hay espacio, o hay más espacio abajo que arriba)
+                if (spaceBelow < realMenuHeight) {
+                    finalMaxHeight = spaceBelow - 20; // Restringir altura para no salir de pantalla
+                }
                 topPos = eOffset.top + btnHeight + 2;
+            } else {
+                // Abrir hacia ARRIBA
+                if (spaceAbove < realMenuHeight) {
+                    finalMaxHeight = spaceAbove - 20;
+                }
+                topPos = eOffset.top - finalMaxHeight - 5;
             }
 
             // Aplicamos posición final
@@ -3973,6 +3982,8 @@ $(document).ready(function() {
                 'left': eOffset.left,
                 'right': 'auto',
                 'visibility': 'visible',
+                'max-height': finalMaxHeight + 'px',
+                'overflow-y': 'auto',
                 'z-index': 9999
             });
             
@@ -3988,8 +3999,8 @@ $(document).ready(function() {
 
     $(document).on('hidden.bs.dropdown', function (e) {
         if ($activeDropdown && $activeDropdownParent) {
-            // Regresamos el menú a su contenedor original
-            $activeDropdown.css({ 'display': '', 'position': '', 'top': '', 'left': '', 'right': '', 'visibility': '', 'z-index': '' });
+            // Regresamos el menú a su contenedor original y restauramos altura
+            $activeDropdown.css({ 'display': '', 'position': '', 'top': '', 'left': '', 'right': '', 'visibility': '', 'max-height': '420px', 'z-index': '' });
             $activeDropdownParent.append($activeDropdown.detach());
             $activeDropdown = null;
             $activeDropdownParent = null;
