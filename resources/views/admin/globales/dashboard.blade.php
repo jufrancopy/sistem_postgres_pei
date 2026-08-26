@@ -3843,13 +3843,23 @@ $(document).ready(function() {
         }
     };
 
-    // Inicializar DataTables en pestañas principales (Ordenados descendentes para ver registros nuevos primero)
+    // Inicializar DataTables en todas las pestañas principales de forma segura
     if ($.fn.DataTable) {
-        $('.dataTableInit').DataTable({
-            language: datatablesSpanish,
-            pageLength: 10,
-            responsive: true,
-            order: [[0, 'desc']]
+        $('.dataTableInit').each(function() {
+            if (!$.fn.DataTable.isDataTable(this)) {
+                $(this).DataTable({
+                    language: datatablesSpanish,
+                    pageLength: 10,
+                    responsive: true,
+                    autoWidth: false,
+                    order: [[0, 'desc']]
+                });
+            }
+        });
+
+        // Recalcular columnas automáticamente al cambiar de pestaña
+        $('a[data-toggle="pill"], a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            $($.fn.dataTable.tables(true)).DataTable().columns.adjust().responsive.recalc();
         });
     }
 
