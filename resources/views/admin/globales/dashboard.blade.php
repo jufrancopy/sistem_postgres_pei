@@ -3893,18 +3893,23 @@ $(document).ready(function() {
         });
     }
 
-    // Solución simple para dropdowns dentro de table-responsive:
-    // Cambiamos overflow a visible cuando se abre un dropdown para que no se corte.
-    // El setTimeout evita que el cambio de overflow cause un reflow que interfiera
-    // con Bootstrap/Popper en el primer clic.
-    $(document).on('show.bs.dropdown', '.table-responsive', function () {
-        var $el = $(this);
-        setTimeout(function() {
-            $el.css('overflow', 'visible');
-        }, 0);
+    // Solución para dropdowns dentro de table-responsive:
+    // 1. stopPropagation evita que DataTables "responsive" se coma el primer clic
+    // 2. El overflow se cambia en mousedown (antes de que Bootstrap abra el menú)
+    //    para evitar que el reflow reposicione el menú al abrirse
+    $(document).on('mousedown', '[data-toggle="dropdown"]', function(e) {
+        // Si el botón está dentro de un table-responsive, cambiamos overflow ya
+        var $tr = $(this).closest('.table-responsive');
+        if ($tr.length) {
+            $tr.css('overflow', 'visible');
+        }
     });
-    $(document).on('hidden.bs.dropdown', '.table-responsive', function () {
-        $(this).css('overflow', 'auto');
+    $(document).on('click', '[data-toggle="dropdown"]', function(e) {
+        // Evitar que DataTables responsive intercepte este clic
+        e.stopPropagation();
+    });
+    $(document).on('hidden.bs.dropdown', '.table-responsive, .dropdown', function () {
+        $(this).closest('.table-responsive').css('overflow', 'auto');
     });
 
     // ── Switches AJAX en tiempo real ──
