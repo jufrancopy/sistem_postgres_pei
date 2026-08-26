@@ -179,7 +179,7 @@
 
                         <div class="form-group mb-3">
                             <label class="font-weight-bold small text-uppercase">Dictamen Técnico / Observaciones</label>
-                            <textarea name="dictamen_tecnico" class="form-control" rows="5" placeholder="Fundamente el dictamen técnico de la Dirección de Planificación (cumplimiento de criterios PEI, impacto de costos, viabilidad organizativa)...">{{ old('dictamen_tecnico', $solicitud->dictamen_tecnico) }}</textarea>
+                            <textarea name="dictamen_tecnico" class="form-control" rows="5" placeholder="Fundamente el dictamen técnico de la Dirección de Organización y Calidad (cumplimiento de criterios PEI, impacto de costos, viabilidad organizativa)...">{{ old('dictamen_tecnico', $solicitud->dictamen_tecnico) }}</textarea>
                         </div>
 
                         @if($solicitud->analista)

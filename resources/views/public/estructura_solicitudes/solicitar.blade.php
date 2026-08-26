@@ -150,7 +150,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     <div class="alert-pei-icon"><i class="fa fa-bullseye"></i></div>
     <div>
       <h3>Alineación Estratégica Obligatoria (PEI)</h3>
-      <p>Todo ajuste o reorganización de dependencias (creación, fusión, cambio de denominación o supresión) debe estar estrictamente vinculado y fundamentado en una <strong>Acción u Objetivo Estratégico</strong> del Plan Estratégico Institucional vigente para ser evaluado por la Dirección de Planificación.</p>
+      <p>Todo ajuste o reorganización de dependencias (creación, fusión, cambio de denominación o supresión) debe estar estrictamente vinculado y fundamentado en una <strong>Acción u Objetivo Estratégico</strong> del Plan Estratégico Institucional vigente para ser evaluado por la Dirección de Organización y Calidad.</p>
     </div>
   </div>
 

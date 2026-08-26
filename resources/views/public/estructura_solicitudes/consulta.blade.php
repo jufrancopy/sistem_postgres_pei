@@ -168,11 +168,11 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
       @if($solicitud->dictamen_tecnico)
         <div style="margin-top:20px;background:#f0fdf4;border:1.5px solid #86efac;padding:18px;border-radius:var(--radius-sm)">
           <div style="font-size:11px;font-weight:800;text-transform:uppercase;color:#166534;margin-bottom:4px">
-            <i class="fa fa-clipboard-check mr-1"></i> Dictamen Técnico de la Dirección de Planificación
+            <i class="fa fa-clipboard-check mr-1"></i> Dictamen Técnico de la Dirección de Organización y Calidad
           </div>
           <p style="margin:0;font-size:13px;color:#14532d;font-weight:600">{{ $solicitud->dictamen_tecnico }}</p>
           <div style="font-size:11px;color:#15803d;margin-top:6px">
-            Evaluado por: <strong>{{ $solicitud->analista?->name ?: 'Dirección de Planificación' }}</strong>
+            Evaluado por: <strong>{{ $solicitud->analista?->name ?: 'Dirección de Organización y Calidad' }}</strong>
             el {{ $solicitud->fecha_dictamen?->format('d/m/Y H:i') }}
           </div>
         </div>
