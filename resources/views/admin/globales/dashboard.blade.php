@@ -969,11 +969,21 @@
                                         <div class="d-flex justify-content-center align-items-center" style="gap: 6px;">
                                             {{-- Botón Principal: Gestionar Plan --}}
                                             <a href="{{ url('pei-profiles/' . $plan->id) }}"
-                                               class="btn btn-sm btn-success font-weight-bold d-inline-flex align-items-center px-3 shadow-xs"
+                                               class="btn btn-sm btn-success font-weight-bold d-inline-flex align-items-center px-2.5 shadow-xs"
                                                style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;"
                                                title="Ver y Gestionar Plan Estratégico">
                                                 <i class="fa fa-sitemap"></i> Gestionar Plan
                                             </a>
+
+                                            {{-- Botón Directo: Certificación MEF --}}
+                                            <button type="button"
+                                                    class="btn btn-sm btn-info text-white font-weight-bold d-inline-flex align-items-center px-2.5 shadow-xs btnVerCertificacionMef"
+                                                    data-id="{{ $plan->id }}"
+                                                    data-name="{{ e(addslashes(strip_tags($plan->name))) }}"
+                                                    style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;"
+                                                    title="Certificación MEF del Plan">
+                                                <i class="fa fa-certificate"></i> MEF
+                                            </button>
 
                                             {{-- Dropdown Más Opciones (Estilo PEI) --}}
                                             <div class="dropdown d-inline-block">
@@ -982,7 +992,7 @@
                                                         style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;">
                                                     <i class="fa fa-ellipsis-h"></i> Más
                                                 </button>
-                                                <div class="dropdown-menu dropdown-menu-right shadow-lg border-0 text-left" aria-labelledby="dropdownPeiActions_{{ $plan->id }}" style="border-radius: 12px; min-width: 255px; font-size: 0.86rem; z-index: 1050;">
+                                                <div class="dropdown-menu dropdown-menu-right shadow-lg border-0 text-left" aria-labelledby="dropdownPeiActions_{{ $plan->id }}" style="border-radius: 12px; min-width: 260px; max-height: 420px; overflow-y: auto; font-size: 0.86rem; z-index: 1060;">
                                                     <h6 class="dropdown-header text-uppercase text-muted small font-weight-bold" style="font-size: 0.72rem; letter-spacing: .5px;">Estructura &amp; Organización</h6>
 
                                                     @hasanyrole('Administrador|Super Admin')
