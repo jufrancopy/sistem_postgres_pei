@@ -185,14 +185,14 @@
                 <i class="fa fa-undo text-danger mr-1"></i> Histórico & Revertir Cambios
             </button>
 
-            {{-- Botón Observatorio Estadísticas OMS / OPS --}}
+            {{-- Botón Observatorio Estratégico & APIs de Investigación --}}
             <button type="button"
                     class="btn btn-sm font-weight-bold text-white d-inline-flex align-items-center px-3 shadow-sm"
                     data-toggle="modal" data-target="#modalEstadisticasOms"
                     onclick="abrirModalEstadisticasOms()"
-                    style="background: linear-gradient(135deg, #0284c7, #0369a1); border: none; border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
-                    title="Observatorio de Estadísticas de Salud e Indicadores OMS / OPS (Mortalidad, Natalidad, Causas de Muerte)">
-                <i class="fa fa-heartbeat text-warning"></i> Estadísticas OMS
+                    style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: none; border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+                    title="Centro de Investigación & Observatorio Estratégico (APIs: OMS, Banco Mundial, INE, BCP)">
+                <i class="fa fa-microscope text-warning"></i> Observatorio &amp; APIs
             </button>
 
             {{-- Separador visual --}}
