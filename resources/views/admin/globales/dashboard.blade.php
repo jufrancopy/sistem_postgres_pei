@@ -978,7 +978,7 @@
                                             {{-- Dropdown Más Opciones (Estilo PEI) --}}
                                             <div class="dropdown d-inline-block">
                                                 <button class="btn btn-sm btn-outline-secondary font-weight-bold dropdown-toggle d-inline-flex align-items-center px-2.5 shadow-xs"
-                                                        type="button" id="dropdownPeiActions_{{ $plan->id }}" data-toggle="custom-dropdown" data-display="static" aria-haspopup="true" aria-expanded="false"
+                                                        type="button" id="dropdownPeiActions_{{ $plan->id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                                                         style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;">
                                                     <i class="fa fa-ellipsis-h"></i> Más
                                                 </button>
@@ -3893,118 +3893,18 @@ $(document).ready(function() {
         });
     }
 
-    // Solución robusta para dropdowns dentro de table-responsive (evita clipping sin causar reflows)
-    var $activeDropdown = null;
-    var $activeDropdownParent = null;
-
-    // Forzar el evento click para saltarnos conflictos con DataTables
-    $(document).on('click', '[data-toggle="custom-dropdown"]', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        var $btn = $(this);
-        var $parent = $btn.closest('.dropdown');
-        
-        // Si ya está abierto, lo cerramos
-        if ($parent.hasClass('show')) {
-            $parent.removeClass('show');
-            if ($activeDropdownParent) $activeDropdownParent.trigger('hidden.bs.dropdown');
-            return;
-        }
-
-        // Cerramos cualquier otro menú custom abierto
-        if ($activeDropdown && $activeDropdownParent) {
-            $activeDropdownParent.removeClass('show');
-            $activeDropdownParent.trigger('hidden.bs.dropdown');
-        }
-
-        // Abrimos este (Bootstrap se encarga de abrir y disparar show.bs.dropdown)
-        $btn.dropdown('toggle');
+    // Solución simple para dropdowns dentro de table-responsive:
+    // Cambiamos overflow a visible cuando se abre un dropdown para que no se corte.
+    // El setTimeout evita que el cambio de overflow cause un reflow que interfiera
+    // con Bootstrap/Popper en el primer clic.
+    $(document).on('show.bs.dropdown', '.table-responsive', function () {
+        var $el = $(this);
+        setTimeout(function() {
+            $el.css('overflow', 'visible');
+        }, 0);
     });
-
-    // Cerrar al hacer clic afuera
-    $(document).on('click', function(e) {
-        // Ignorar si el clic es dentro del menú que está flotando en el body
-        if ($activeDropdown && $(e.target).closest($activeDropdown).length) {
-            return;
-        }
-
-        // Si el clic es fuera de cualquier dropdown
-        if (!$(e.target).closest('.dropdown').length) {
-            if ($activeDropdown && $activeDropdownParent) {
-                $activeDropdownParent.removeClass('show');
-                $activeDropdownParent.trigger('hidden.bs.dropdown');
-            }
-        }
-    });
-
-    $(document).on('show.bs.dropdown', '.table-responsive', function (e) {
-        $activeDropdownParent = $(e.target);
-        $activeDropdown = $activeDropdownParent.find('.dropdown-menu');
-        
-        if ($activeDropdown.length) {
-            // Respaldamos la posición original
-            $activeDropdown.data('original-parent', $activeDropdownParent);
-            
-            // Movemos el menú al body y lo pre-mostramos
-            $('body').append($activeDropdown.detach());
-            $activeDropdown.css({ 'display': 'block', 'visibility': 'hidden', 'position': 'absolute', 'max-height': 'none' });
-            
-            // Calculamos dimensiones
-            var eOffset = $activeDropdownParent.offset();
-            var btnHeight = $activeDropdownParent.outerHeight();
-            var realMenuHeight = $activeDropdown.outerHeight();
-            
-            // Detección de colisión y espacios disponibles
-            var spaceAbove = eOffset.top - $(window).scrollTop();
-            var spaceBelow = $(window).height() - (spaceAbove + btnHeight);
-            
-            var topPos;
-            var finalMaxHeight = realMenuHeight;
-            
-            if (spaceBelow >= realMenuHeight || spaceBelow >= spaceAbove) {
-                // Abrir hacia ABAJO (hay espacio, o hay más espacio abajo que arriba)
-                if (spaceBelow < realMenuHeight) {
-                    finalMaxHeight = spaceBelow - 20; // Restringir altura para no salir de pantalla
-                }
-                topPos = eOffset.top + btnHeight + 2;
-            } else {
-                // Abrir hacia ARRIBA
-                if (spaceAbove < realMenuHeight) {
-                    finalMaxHeight = spaceAbove - 20;
-                }
-                topPos = eOffset.top - finalMaxHeight - 5;
-            }
-
-            // Aplicamos posición final
-            $activeDropdown.css({
-                'top': topPos,
-                'left': eOffset.left,
-                'right': 'auto',
-                'visibility': 'visible',
-                'max-height': finalMaxHeight + 'px',
-                'overflow-y': 'auto',
-                'z-index': 9999
-            });
-            
-            // Si es dropdown-menu-right, ajustamos
-            if ($activeDropdown.hasClass('dropdown-menu-right')) {
-                $activeDropdown.css({
-                    'left': 'auto',
-                    'right': $(window).width() - (eOffset.left + $activeDropdownParent.outerWidth())
-                });
-            }
-        }
-    });
-
-    $(document).on('hidden.bs.dropdown', function (e) {
-        if ($activeDropdown && $activeDropdownParent) {
-            // Regresamos el menú a su contenedor original y restauramos altura
-            $activeDropdown.css({ 'display': '', 'position': '', 'top': '', 'left': '', 'right': '', 'visibility': '', 'max-height': '420px', 'z-index': '' });
-            $activeDropdownParent.append($activeDropdown.detach());
-            $activeDropdown = null;
-            $activeDropdownParent = null;
-        }
+    $(document).on('hidden.bs.dropdown', '.table-responsive', function () {
+        $(this).css('overflow', 'auto');
     });
 
     // ── Switches AJAX en tiempo real ──
