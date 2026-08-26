@@ -156,21 +156,6 @@
         letter-spacing: 0.5px;
         border-bottom: 2px solid #e2e8f0;
     }
-    #tab-planes .table-responsive,
-    #tab-proyectos .table-responsive {
-        overflow: visible !important;
-        min-height: 420px;
-        padding-bottom: 220px;
-    }
-    #tablaPlanesGlobal .dropdown-menu,
-    #tablaProyectosDashboard .dropdown-menu {
-        top: 100% !important;
-        bottom: auto !important;
-        transform: none !important;
-        margin-top: 6px !important;
-        z-index: 1060 !important;
-    }
-
     /* ── Árbol Jerárquico de Organigrama ── */
     .sortable-group {
         list-style: none;
@@ -354,8 +339,8 @@
 
 
     {{-- ── Pestañas de Gestión Integral ── --}}
-    <div class="card shadow border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
-        <div class="card-header bg-white border-bottom p-3">
+    <div class="card shadow border-0 mb-4" style="border-radius: 12px;">
+        <div class="card-header bg-white border-bottom p-3" style="border-radius: 12px 12px 0 0;">
             <ul class="nav nav-pills nav-pills-admin" id="adminTabs" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" id="tab-usuarios-link" data-toggle="pill" href="#tab-usuarios" role="tab" aria-selected="true">
@@ -975,15 +960,12 @@
                                     </td>
                                     <td class="text-center" style="white-space: nowrap;">
                                         <div class="d-flex justify-content-center align-items-center" style="gap: 6px;">
-                                            {{-- Botón Principal: Gestionar Plan --}}
                                             <a href="{{ url('pei-profiles/' . $plan->id) }}"
                                                class="btn btn-sm btn-success font-weight-bold d-inline-flex align-items-center px-2.5 shadow-xs"
                                                style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;"
                                                title="Ver y Gestionar Plan Estratégico">
                                                 <i class="fa fa-sitemap"></i> Gestionar Plan
                                             </a>
-
-                                            {{-- Botón Directo: Certificación MEF --}}
                                             <button type="button"
                                                     class="btn btn-sm btn-info text-white font-weight-bold d-inline-flex align-items-center px-2.5 shadow-xs btnVerCertificacionMef"
                                                     data-id="{{ $plan->id }}"
@@ -996,7 +978,7 @@
                                             {{-- Dropdown Más Opciones (Estilo PEI) --}}
                                             <div class="dropdown d-inline-block">
                                                 <button class="btn btn-sm btn-outline-secondary font-weight-bold dropdown-toggle d-inline-flex align-items-center px-2.5 shadow-xs"
-                                                        type="button" id="dropdownPeiActions_{{ $plan->id }}" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false"
+                                                        type="button" id="dropdownPeiActions_{{ $plan->id }}" data-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false"
                                                         style="border-radius: 8px; gap: 5px; padding-top: 5px; padding-bottom: 5px;">
                                                     <i class="fa fa-ellipsis-h"></i> Más
                                                 </button>
@@ -3894,10 +3876,7 @@ $(document).ready(function() {
                     pageLength: 10,
                     responsive: true,
                     autoWidth: false,
-                    order: [[0, 'desc']],
-                    drawCallback: function () {
-                        $(this).find('[data-toggle="dropdown"]').dropdown();
-                    }
+                    order: [[0, 'desc']]
                 });
             }
         });
@@ -3908,8 +3887,13 @@ $(document).ready(function() {
         });
     }
 
-    // Inicializar dropdowns inmediatamente al cargar la página
-    $('[data-toggle="dropdown"]').dropdown();
+    // Solución para dropdowns dentro de contenedores table-responsive que evitan que se corten (clipping)
+    $(document).on('show.bs.dropdown', '.table-responsive', function () {
+        $(this).css('overflow', 'inherit');
+    });
+    $(document).on('hide.bs.dropdown', '.table-responsive', function () {
+        $(this).css('overflow', 'auto');
+    });
 
     // ── Switches AJAX en tiempo real ──
     $('.cfg-toggle').on('change', function() {
