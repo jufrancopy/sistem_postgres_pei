@@ -156,6 +156,12 @@
         letter-spacing: 0.5px;
         border-bottom: 2px solid #e2e8f0;
     }
+    #tab-planes .table-responsive {
+        overflow: visible !important;
+    }
+    #tablaPlanesGlobal .dropdown-menu {
+        z-index: 1060 !important;
+    }
 
     /* ── Árbol Jerárquico de Organigrama ── */
     .sortable-group {
@@ -903,7 +909,7 @@
                         </div>
                     </div>
 
-                    <div class="table-responsive">
+                    <div class="table-responsive" style="overflow: visible;">
                         <table class="table table-hover table-custom w-100 dataTableInit" id="tablaPlanesGlobal">
                             <thead>
                                 <tr>
@@ -912,7 +918,7 @@
                                     <th style="width: 22%;">DEPENDENCIA / GRUPO</th>
                                     <th style="width: 14%;">PROGRESO</th>
                                     <th style="width: 10%;">ESTADO</th>
-                                    <th style="width: 18%; text-align: center;">ACCIONES</th>
+                                    <th style="width: 20%; text-align: center;">ACCIONES DIRECTAS</th>
                                 </tr>
                             </thead>
                             <tbody>
