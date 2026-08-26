@@ -111,7 +111,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
       <img src="{{ asset('material/img/favicon.png') }}" alt="IPS Logo" class="ips-logo-img" onerror="this.style.display='none'">
       <div>
         <h1 class="ips-header-title">SOLICITUD DE AJUSTE DE LA ESTRUCTURA ORGANIZACIONAL</h1>
-        <div class="ips-header-sub">DIRECCIÓN DE PLANIFICACIÓN — INSTITUTO DE PREVISIÓN SOCIAL</div>
+        <div class="ips-header-sub">DIRECCIÓN DE ORGANIZACIÓN Y CALIDAD — INSTITUTO DE PREVISIÓN SOCIAL</div>
       </div>
     </div>
     <div class="row text-muted small">
