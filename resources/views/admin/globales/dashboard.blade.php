@@ -3901,31 +3901,34 @@ $(document).ready(function() {
         
         // Si ya está abierto, lo cerramos
         if ($parent.hasClass('show')) {
-            $btn.dropdown('toggle');
+            $parent.removeClass('show');
+            if ($activeDropdownParent) $activeDropdownParent.trigger('hidden.bs.dropdown');
             return;
         }
 
         // Cerramos cualquier otro menú custom abierto
-        $('[data-toggle="custom-dropdown"]').each(function() {
-            var $otherParent = $(this).closest('.dropdown');
-            if ($otherParent.hasClass('show')) {
-                $(this).dropdown('toggle');
-            }
-        });
+        if ($activeDropdown && $activeDropdownParent) {
+            $activeDropdownParent.removeClass('show');
+            $activeDropdownParent.trigger('hidden.bs.dropdown');
+        }
 
-        // Abrimos este
+        // Abrimos este (Bootstrap se encarga de abrir y disparar show.bs.dropdown)
         $btn.dropdown('toggle');
     });
 
     // Cerrar al hacer clic afuera
     $(document).on('click', function(e) {
+        // Ignorar si el clic es dentro del menú que está flotando en el body
+        if ($activeDropdown && $(e.target).closest($activeDropdown).length) {
+            return;
+        }
+
+        // Si el clic es fuera de cualquier dropdown
         if (!$(e.target).closest('.dropdown').length) {
-            $('[data-toggle="custom-dropdown"]').each(function() {
-                var $parent = $(this).closest('.dropdown');
-                if ($parent.hasClass('show')) {
-                    $(this).dropdown('toggle'); // Toggle cerrará el menú
-                }
-            });
+            if ($activeDropdown && $activeDropdownParent) {
+                $activeDropdownParent.removeClass('show');
+                $activeDropdownParent.trigger('hidden.bs.dropdown');
+            }
         }
     });
 
