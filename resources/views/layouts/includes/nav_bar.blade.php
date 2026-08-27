@@ -180,7 +180,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        var ultimasNoLeidasCount = 0;
+        var storageKey = 'siplan_last_seen_notif_id_{{ Auth::id() }}';
+        var lastSeenNotifId = localStorage.getItem(storageKey) || null;
+        var initialLoad = true;
 
         function cargarNotificaciones() {
             $.ajax({
@@ -189,20 +191,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 success: function(res) {
                     var badge = $('#siessNotifBadge');
                     if (res.no_leidas > 0) {
-                        if (res.no_leidas > ultimasNoLeidasCount && typeof toastr !== 'undefined') {
-                            toastr.info('Tenés nuevas notificaciones en el sistema.', '🔔 Notificación de Asesoría', { timeOut: 6000 });
-                        }
                         badge.text(res.no_leidas).show();
                     } else {
                         badge.hide();
                     }
-                    ultimasNoLeidasCount = res.no_leidas;
 
                     var lista = $('#siessNotifLista');
                     if (!res.notificaciones || res.notificaciones.length === 0) {
                         lista.html('<div class="text-center text-muted py-3" style="font-size:.8rem">Sin notificaciones</div>');
+                        initialLoad = false;
                         return;
                     }
+
+                    // Encontrar la notificación más reciente
+                    var masReciente = res.notificaciones[0];
+                    var masRecienteId = masReciente ? String(masReciente.id) : null;
+
+                    // Mostrar toast emergente SOLO si llega una notificación NUEVA en tiempo real (no en la carga inicial de página)
+                    if (masRecienteId && masRecienteId !== lastSeenNotifId && !masReciente.leida && !initialLoad) {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.info(masReciente.mensaje || 'Tenés nuevas notificaciones en el sistema.', masReciente.titulo || '🔔 Notificación del Sistema', { timeOut: 6000 });
+                        }
+                    }
+
+                    // Guardar el ID de la más reciente para que no vuelva a alertar por la misma
+                    if (masRecienteId) {
+                        lastSeenNotifId = masRecienteId;
+                        localStorage.setItem(storageKey, masRecienteId);
+                    }
+                    initialLoad = false;
 
                     var html = '';
                     res.notificaciones.forEach(function(n) {
