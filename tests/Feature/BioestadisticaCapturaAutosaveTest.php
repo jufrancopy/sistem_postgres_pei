@@ -72,13 +72,11 @@ class BioestadisticaCapturaAutosaveTest extends TestCase
         $this->actingAs($user)
             ->postJson(route('bioestadistica.captura.autosave', $record), [
                 'values' => ['nota' => 'parcial'],
-                'observacion' => 'en carga',
             ])
             ->assertOk()
             ->assertJsonPath('ok', true);
 
         $record->refresh();
-        $this->assertSame('en carga', $record->observacion);
         $this->assertSame(
             'parcial',
             RecordValue::where('record_id', $record->id)->where('field_id', $optional->id)->value('value_text')

@@ -4,6 +4,25 @@
 @section('content')
 @include('admin.bioestadistica._siplan-styles')
 @include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Importaciones']]])
+<style>
+    /* Material Dashboard oculta input[type=file] dentro de .form-group */
+    .bio-file-picker {
+        border: 1px dashed #94a3b8;
+        border-radius: 8px;
+        background: #fff;
+        padding: 0.85rem 1rem;
+    }
+    .bio-file-picker input[type=file] {
+        display: block !important;
+        width: 100% !important;
+        opacity: 1 !important;
+        position: static !important;
+        height: auto !important;
+        z-index: auto !important;
+        font-size: 0.9rem;
+        padding: 0.35rem 0;
+    }
+</style>
 <div class="card bio-siplan">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">upload_file</i> Importaciones Excel</h4>
@@ -15,13 +34,20 @@
         <form method="POST" action="{{ route('bioestadistica.importaciones.store') }}" enctype="multipart/form-data" class="bio-filters mb-3">
             @csrf
             <div class="form-row align-items-end">
-                <div class="form-group col-md-8 mb-0">
-                    <label class="small text-muted mb-1">Archivo Excel (.xls o .xlsx)</label>
-                    <input class="form-control-file" type="file" name="archivo" accept=".xls,.xlsx" required>
+                <div class="col-md-8 mb-2">
+                    <label class="small text-muted mb-1" for="bio-import-archivo">Archivo Excel (.xls o .xlsx)</label>
+                    <div class="bio-file-picker">
+                        <input id="bio-import-archivo" type="file" name="archivo" accept=".xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+                    </div>
                     <small class="text-muted">Máximo 20 MB. El sistema detecta automáticamente variables, establecimientos, formularios SP o una planilla genérica.</small>
+                    @error('archivo')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
-                <div class="form-group col-md-4 mb-0">
-                    <button class="btn btn-info btn-sm"><i class="material-icons">analytics</i> Subir y analizar</button>
+                <div class="col-md-4 mb-2">
+                    <button class="btn btn-info btn-sm btn-block" type="submit">
+                        <i class="material-icons">analytics</i> Subir y analizar
+                    </button>
                 </div>
             </div>
         </form>

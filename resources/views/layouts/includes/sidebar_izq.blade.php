@@ -357,16 +357,6 @@
                                             <span class="sidebar-normal">Dashboard</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $bioFormularios }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.formularios.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">FR</span><span class="sidebar-normal">Formularios</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ $bioVariables }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.diccionario.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">VA</span><span class="sidebar-normal">Variables</span>
-                                        </a>
-                                    </li>
                                     <li class="nav-item {{ $bioCarga }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.captura.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">CD</span><span class="sidebar-normal">Carga de datos</span>
@@ -380,11 +370,6 @@
                                     <li class="nav-item {{ $bioSeguimiento }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.seguimiento.index') }}">
                                             <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">SD</span><span class="sidebar-normal">Seguimiento de datos</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ $bioIndicadores }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.indicadores.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">IN</span><span class="sidebar-normal">Indicadores</span>
                                         </a>
                                     </li>
                                     @can('bio.report.view')
@@ -401,6 +386,21 @@
                                         </a>
                                     </li>
                                     @endcan
+                                    <li class="nav-item {{ $bioFormularios }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.formularios.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">FR</span><span class="sidebar-normal">Formularios</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ $bioVariables }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.diccionario.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">VA</span><span class="sidebar-normal">Variables</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item {{ $bioIndicadores }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.indicadores.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">IN</span><span class="sidebar-normal">Indicadores</span>
+                                        </a>
+                                    </li>
                                     @can('bio.import.view')
                                     <li class="nav-item {{ $bioImportaciones }}">
                                         <a class="nav-link" href="{{ route('bioestadistica.importaciones.index') }}">

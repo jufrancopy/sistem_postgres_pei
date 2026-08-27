@@ -46,7 +46,6 @@ class BioestadisticaRecordActorTest extends TestCase
         $this->actingAs($actor)
             ->put(route('bioestadistica.captura.update', $record), [
                 'values' => ['nota' => 'guardado'],
-                'observacion' => 'manual',
             ])
             ->assertRedirect()
             ->assertSessionHasNoErrors();

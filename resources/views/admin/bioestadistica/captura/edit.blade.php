@@ -71,7 +71,6 @@
                     </div>
                 </div>
             @endforeach
-            <div class="form-group"><label>Observación del digitador</label><textarea class="form-control" name="observacion" rows="2" @disabled(!$record->isEditable())>{{ old('observacion', $record->estado === 'objetado' ? '' : $record->observacion) }}</textarea></div>
             @if($record->isEditable() && auth()->user()->can('bio.record.update'))
                 <button class="btn btn-primary">Guardar borrador</button>
                 <span id="bio-autosave-status" class="text-muted small ml-2" aria-live="polite"></span>

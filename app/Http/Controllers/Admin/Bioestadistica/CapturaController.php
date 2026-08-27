@@ -325,7 +325,6 @@ class CapturaController extends Controller
         }
         $capture->save($record, $request->input('values', []), false, true, $request->user()->id);
         $record->update([
-            'observacion' => $request->input('observacion'),
             'updated_by' => $request->user()->id,
         ]);
 
@@ -345,7 +344,6 @@ class CapturaController extends Controller
 
         $capture->saveDraft($record, $request->input('values', []), $request->user()->id);
         $record->update([
-            'observacion' => $request->input('observacion'),
             'updated_by' => $request->user()->id,
         ]);
 
