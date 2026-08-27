@@ -20,6 +20,9 @@ class ReportDefinitionValidator
 
     public const AGGREGATIONS = ['sum', 'avg', 'count', 'count_distinct', 'max', 'min'];
 
+    /** Formato de la dimensión periodo en tabla/export. Default mm/yyyy. */
+    public const PERIODO_FORMATS = ['mm/yyyy', 'dd/mm/yyyy'];
+
     public const FILTERS = [
         'periodo_desde', 'periodo_hasta', 'departamento_id', 'distrito_id',
         'establecimiento_id', 'microred_id', 'tipo_establecimiento_id',
@@ -38,10 +41,15 @@ class ReportDefinitionValidator
         $unknown = array_diff(array_keys($definition), [
             'form', 'field', 'metric', 'agg', 'indicator', 'dimensions',
             'filtros', 'order_by', 'limit', 'totales', 'label', 'formulario_id',
-            'consolidado',
+            'consolidado', 'periodo_format',
         ]);
         if ($unknown) {
             $errors[] = 'La definición contiene claves no permitidas: '.implode(', ', $unknown).'.';
+        }
+
+        $periodoFormat = $definition['periodo_format'] ?? 'mm/yyyy';
+        if (! in_array($periodoFormat, self::PERIODO_FORMATS, true)) {
+            $errors[] = 'periodo_format debe ser mm/yyyy o dd/mm/yyyy.';
         }
 
         $consolidado = (bool) ($definition['consolidado'] ?? false);
@@ -116,6 +124,9 @@ class ReportDefinitionValidator
             'limit' => (int) ($definition['limit'] ?? 500),
             'totales' => (bool) ($definition['totales'] ?? true),
             'label' => isset($definition['label']) ? (string) $definition['label'] : null,
+            'periodo_format' => in_array($periodoFormat, self::PERIODO_FORMATS, true)
+                ? $periodoFormat
+                : 'mm/yyyy',
         ];
 
         if ($normalized['form']) {
@@ -135,7 +146,7 @@ class ReportDefinitionValidator
         $unknown = array_diff(array_keys($config), [
             'form', 'field', 'metric', 'agg', 'indicator', 'dimension',
             'dimension_x', 'dimension_y', 'reporte_id', 'filtros', 'umbrales',
-            'label', 'comparar_con',
+            'label', 'comparar_con', 'fuente',
         ]);
         if ($unknown) {
             throw ValidationException::withMessages([

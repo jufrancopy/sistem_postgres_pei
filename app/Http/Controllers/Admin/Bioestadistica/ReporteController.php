@@ -192,6 +192,7 @@ class ReporteController extends Controller
             'order_ref' => ['nullable', 'string'],
             'order_dir' => ['nullable', Rule::in(['asc', 'desc'])],
             'label' => ['nullable', 'string', 'max:100'],
+            'periodo_format' => ['nullable', Rule::in(ReportDefinitionValidator::PERIODO_FORMATS)],
         ]);
 
         $consolidado = $request->boolean('consolidado');
@@ -203,6 +204,7 @@ class ReporteController extends Controller
             'limit' => (int) $data['limit'],
             'totales' => $request->boolean('totales', true),
             'label' => $data['label'] ?? null,
+            'periodo_format' => $data['periodo_format'] ?? 'mm/yyyy',
             'filtros' => array_filter([
                 'estado_record' => $data['estado_record'] ?? 'aprobado',
                 'periodo_desde' => isset($data['periodo_desde_anio'], $data['periodo_desde_mes'])

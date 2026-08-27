@@ -30,6 +30,7 @@
                 <div class="bio-widget-body">
                     <div class="text-muted">Cargando datos…</div>
                 </div>
+                <p class="bio-widget-fuente text-muted small mb-0 mt-2" hidden></p>
             </div>
         </article>
     @empty
@@ -42,6 +43,7 @@
 .bio-widget[draggable="true"] { cursor: grab; }
 .bio-widget.bio-drag-over { outline: 2px dashed #17a2b8; }
 .bio-kpi { font-size: 2rem; font-weight: 700; }
+.bio-widget-fuente { font-size: 0.75rem; opacity: 0.85; }
 .bio-semaforo { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 6px; }
 .bio-semaforo.verde { background: #28a745; }
 .bio-semaforo.amarillo { background: #ffc107; }

@@ -85,6 +85,14 @@
                 <label>Etiqueta de la métrica</label>
                 <input class="form-control" name="label" value="{{ old('label', $def['label'] ?? '') }}" placeholder="Cantidad, Consultas, …">
             </div>
+            <div class="form-group col-md-4 px-0">
+                <label>Formato de período (columna)</label>
+                <select class="form-control" name="periodo_format">
+                    <option value="mm/yyyy" @selected(old('periodo_format', $def['periodo_format'] ?? 'mm/yyyy') === 'mm/yyyy')>mm/yyyy (01/2026)</option>
+                    <option value="dd/mm/yyyy" @selected(old('periodo_format', $def['periodo_format'] ?? '') === 'dd/mm/yyyy')>dd/mm/yyyy — último día del mes (31/01/2026)</option>
+                </select>
+                <small class="text-muted">Solo afecta la columna Período en pantalla y exportes. El resto de reportes puede quedar en mm/yyyy.</small>
+            </div>
 
             <h5>Dimensiones</h5>
             <div class="form-row mb-3">

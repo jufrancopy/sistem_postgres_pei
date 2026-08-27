@@ -104,6 +104,7 @@ class DashboardService
             'chart' => null,
             'table' => null,
             'heatmap' => $widget->tipo === 'heatmap',
+            'fuente' => $this->resolveFuente($config),
         ];
 
         $assigned = Record::userHasGlobalAccess($user) ? null : Record::assignedEstablishmentIds($user);
@@ -214,6 +215,35 @@ class DashboardService
         }
 
         return $payload;
+    }
+
+    private function resolveFuente(array $config): ?string
+    {
+        $override = trim((string) ($config['fuente'] ?? ''));
+        if ($override !== '') {
+            return $override;
+        }
+
+        if (! empty($config['indicator'])) {
+            return 'Indicador '.$config['indicator'];
+        }
+
+        if (! empty($config['form'])) {
+            $parts = array_values(array_filter([
+                (string) $config['form'],
+                ! empty($config['metric']) ? (string) $config['metric'] : null,
+            ]));
+
+            return implode(' · ', $parts);
+        }
+
+        if (! empty($config['reporte_id'])) {
+            $codigo = Reporte::whereKey($config['reporte_id'])->value('codigo');
+
+            return $codigo ? 'Reporte '.$codigo : 'Reporte';
+        }
+
+        return null;
     }
 
     private function definitionFromConfig(array $config, string $tipo): array

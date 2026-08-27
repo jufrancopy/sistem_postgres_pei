@@ -28,7 +28,17 @@
     function renderWidget(el, payload) {
         const period = el.querySelector('.bio-widget-period');
         const body = el.querySelector('.bio-widget-body');
+        const fuenteEl = el.querySelector('.bio-widget-fuente');
         period.textContent = coverageText(payload.cobertura, payload.periodo_label);
+        if (fuenteEl) {
+            if (payload.fuente) {
+                fuenteEl.hidden = false;
+                fuenteEl.textContent = 'Fuente: ' + payload.fuente;
+            } else {
+                fuenteEl.hidden = true;
+                fuenteEl.textContent = '';
+            }
+        }
         if (payload.tipo === 'kpi' || payload.tipo === 'indicador') {
             const color = payload.semaforo ? `<span class="bio-semaforo ${payload.semaforo}"></span>` : '';
             const unidad = payload.unidad ? `<small class="text-muted">${payload.unidad}</small>` : '';

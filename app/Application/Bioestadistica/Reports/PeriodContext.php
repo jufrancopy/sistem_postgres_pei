@@ -35,6 +35,14 @@ class PeriodContext
         return $from === $to ? $fromLabel : "{$fromLabel} — {$toLabel}";
     }
 
+    /** Último día del mes estadístico como dd/mm/yyyy (p. ej. 31/01/2026). */
+    public static function endOfMonthDate(array $period): string
+    {
+        return CarbonImmutable::create((int) $period['anio'], (int) $period['mes'], 1)
+            ->endOfMonth()
+            ->format('d/m/Y');
+    }
+
     public static function normalize(?array $value, ?array $fallback = null): array
     {
         $year = $value['anio'] ?? $value[0] ?? null;

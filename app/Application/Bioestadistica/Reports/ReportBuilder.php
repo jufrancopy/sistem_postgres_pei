@@ -163,7 +163,7 @@ class ReportBuilder
         $selects = [];
         $groups = [];
         foreach ($dimensions as $dimension) {
-            $selects[] = self::DIMENSIONS[$dimension]['select'];
+            $selects[] = $this->dimensionSelect($dimension, $definition);
             $groups[] = self::DIMENSIONS[$dimension]['group'];
         }
         $agg = self::AGGREGATIONS[$definition['agg']];
@@ -212,6 +212,7 @@ class ReportBuilder
                 'row_count' => count($rows),
                 'agg' => $definition['agg'],
                 'consolidado' => $consolidado,
+                'periodo_format' => $definition['periodo_format'] ?? 'mm/yyyy',
                 'form' => $definition['form'],
                 'field' => $definition['field'],
                 'metric' => $definition['metric'],
@@ -232,6 +233,16 @@ class ReportBuilder
                 'data' => array_map(fn (array $row) => $row['valor'], $result['rows']),
             ]],
         ];
+    }
+
+    private function dimensionSelect(string $dimension, array $definition): string
+    {
+        if ($dimension === 'periodo' && ($definition['periodo_format'] ?? 'mm/yyyy') === 'dd/mm/yyyy') {
+            // Último día del mes estadístico (p. ej. 31/01/2026).
+            return "TO_CHAR((MAKE_DATE(v.periodo_anio, v.periodo_mes, 1) + INTERVAL '1 month - 1 day')::date, 'DD/MM/YYYY') AS periodo";
+        }
+
+        return self::DIMENSIONS[$dimension]['select'];
     }
 
     private function baseQuery(array $definition, User $user): Builder

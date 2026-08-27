@@ -298,6 +298,7 @@ class DashboardController extends Controller
             'reporte_id' => $request->filled('reporte_id') ? $request->integer('reporte_id') : null,
             'agg' => $request->input('agg') ?: 'sum',
             'label' => $request->input('label') ?: null,
+            'fuente' => $request->filled('fuente') ? trim((string) $request->input('fuente')) : null,
         ], fn ($value) => $value !== null && $value !== '');
 
         if ($request->filled('source')) {

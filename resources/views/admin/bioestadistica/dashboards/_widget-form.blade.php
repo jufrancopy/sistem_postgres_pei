@@ -111,4 +111,13 @@
             <button class="btn btn-success btn-block">{{ $isEditing ? 'Guardar cambios' : 'Agregar' }}</button>
         </div>
     </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label>Texto de fuente (opcional)</label>
+            <input class="form-control" name="fuente" maxlength="120"
+                   value="{{ old('fuente', $config['fuente'] ?? '') }}"
+                   placeholder="Vacío = automático (indicador / SP / reporte)">
+            <small class="text-muted">Se muestra debajo del widget como “Fuente: …”. Si lo dejás vacío se arma solo.</small>
+        </div>
+    </div>
 </form>
