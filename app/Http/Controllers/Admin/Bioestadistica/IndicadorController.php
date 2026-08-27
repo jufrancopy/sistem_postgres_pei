@@ -95,6 +95,10 @@ class IndicadorController extends Controller
             'vigente_desde' => ['nullable', 'date'],
             'vigente_hasta' => ['nullable', 'date', 'after_or_equal:vigente_desde'],
         ]);
+        // Nueva versión: si no indican inicio, arranca hoy y cierra la fórmula abierta anterior.
+        if (empty($dates['vigente_desde'])) {
+            $dates['vigente_desde'] = now()->toDateString();
+        }
         $expression = $this->expression($request);
         $validator->validate($expression, $indicador);
         DB::transaction(function () use ($indicador, $expression, $dates, $cache) {
@@ -105,6 +109,38 @@ class IndicadorController extends Controller
         });
 
         return back()->with('success', 'Fórmula versionada y guardada.');
+    }
+
+    public function updateFormula(
+        Request $request,
+        Indicador $indicador,
+        IndicadorFormula $formula,
+        FormulaAstValidator $validator,
+        IndicatorCacheService $cache
+    ): RedirectResponse {
+        abort_unless($formula->indicador_id === $indicador->id, 404);
+
+        $dates = $request->validate([
+            'vigente_desde' => ['nullable', 'date'],
+            'vigente_hasta' => ['nullable', 'date', 'after_or_equal:vigente_desde'],
+        ]);
+        $expression = $this->expression($request);
+        $validator->validate($expression, $indicador);
+
+        DB::transaction(function () use ($indicador, $formula, $expression, $dates, $cache) {
+            $this->ensureNoOverlap($indicador, [
+                'vigente_desde' => $dates['vigente_desde'] ?? null,
+                'vigente_hasta' => $dates['vigente_hasta'] ?? null,
+            ], (int) $formula->id);
+            $formula->update([
+                'expresion' => $expression,
+                'vigente_desde' => $dates['vigente_desde'] ?? null,
+                'vigente_hasta' => $dates['vigente_hasta'] ?? null,
+            ]);
+            $cache->invalidateForIndicator($indicador);
+        });
+
+        return back()->with('success', 'Fórmula vigente actualizada.');
     }
 
     public function evaluate(
@@ -177,8 +213,6 @@ class IndicadorController extends Controller
                 $simpleConstructor = [
                     'operator' => $expr['op'],
                     'source' => $key,
-                    'vigente_desde' => optional($currentFormula->vigente_desde)->format('Y-m-d'),
-                    'vigente_hasta' => optional($currentFormula->vigente_hasta)->format('Y-m-d'),
                 ];
             }
         }
@@ -288,11 +322,12 @@ class IndicadorController extends Controller
         return $sources;
     }
 
-    private function ensureNoOverlap(Indicador $indicator, array $dates): void
+    private function ensureNoOverlap(Indicador $indicator, array $dates, ?int $exceptFormulaId = null): void
     {
         $from = $dates['vigente_desde'] ?? '0001-01-01';
         $to = $dates['vigente_hasta'] ?? '9999-12-31';
         $overlap = $indicator->formulas()
+            ->when($exceptFormulaId, fn ($q) => $q->where('id', '<>', $exceptFormulaId))
             ->whereRaw("COALESCE(vigente_desde, DATE '0001-01-01') <= ?", [$to])
             ->whereRaw("COALESCE(vigente_hasta, DATE '9999-12-31') >= ?", [$from])
             ->exists();
@@ -305,21 +340,19 @@ class IndicadorController extends Controller
 
     private function closePreviousFormula(Indicador $indicator, array $dates): void
     {
-        if (empty($dates['vigente_desde'])) {
-            return;
-        }
         $newStart = \Carbon\CarbonImmutable::parse($dates['vigente_desde']);
-        $previous = $indicator->formulas()
-            ->where(fn ($query) => $query
-                ->whereNull('vigente_desde')
-                ->orWhere('vigente_desde', '<', $newStart))
-            ->where(fn ($query) => $query
-                ->whereNull('vigente_hasta')
-                ->orWhere('vigente_hasta', '>=', $newStart))
-            ->first();
-        if ($previous) {
-            $previous->update(['vigente_hasta' => $newStart->subDay()->toDateString()]);
-        }
+        $end = $newStart->subDay()->toDateString();
+
+        $indicator->formulas()
+            ->where(function ($query) use ($newStart) {
+                $query->whereNull('vigente_hasta')
+                    ->orWhere('vigente_hasta', '>=', $newStart->toDateString());
+            })
+            ->where(function ($query) use ($newStart) {
+                $query->whereNull('vigente_desde')
+                    ->orWhere('vigente_desde', '<', $newStart->toDateString());
+            })
+            ->update(['vigente_hasta' => $end]);
     }
 
     private function singleSource(array $expression): ?array

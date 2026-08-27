@@ -407,6 +407,8 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.indicator.manage')->name('indicadores.formulas.validate');
         Route::post('/indicadores/{indicador}/formulas', 'Admin\Bioestadistica\IndicadorController@storeFormula')
             ->middleware('permission:bio.indicator.manage')->name('indicadores.formulas.store');
+        Route::put('/indicadores/{indicador}/formulas/{formula}', 'Admin\Bioestadistica\IndicadorController@updateFormula')
+            ->middleware('permission:bio.indicator.manage')->name('indicadores.formulas.update');
         Route::delete('/indicadores/{indicador}/formulas/{formula}', 'Admin\Bioestadistica\IndicadorController@destroyFormula')
             ->middleware('permission:bio.indicator.manage')->name('indicadores.formulas.destroy');
         Route::post('/indicadores/{indicador}/evaluar', 'Admin\Bioestadistica\IndicadorController@evaluate')
