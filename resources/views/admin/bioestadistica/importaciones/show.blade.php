@@ -151,6 +151,14 @@
             @endif
         @endif
         <a class="btn btn-link mt-3" href="{{ route('bioestadistica.importaciones.index') }}">Volver</a>
+        @can('bio.import.execute')
+            <form method="POST" action="{{ route('bioestadistica.importaciones.destroy', $importacion) }}" class="d-inline mt-3"
+                  onsubmit="return confirm('¿Eliminar esta importación y su archivo? No se revierten datos ya confirmados.');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-outline-danger mt-3">Eliminar importación</button>
+            </form>
+        @endcan
     </div>
 </div>
 @endsection

@@ -57,21 +57,28 @@ class BioestadisticaReportesDashboardsSeeder extends Seeder
             'TOTAL_ENFERMERIA',
             'Prestaciones'
         );
-        $this->reportFromForm(
+        $this->report(
             'LABORATORIO_SP5',
             'Determinaciones de laboratorio por establecimiento',
             'Determinaciones de análisis clínicos (SP5).',
-            'SP5',
-            'determinaciones',
-            'TOTAL_DETERMINACIONES_LAB',
-            'Determinaciones'
+            [
+                'form' => 'SP5',
+                'field' => 'var_10_analisis_clinicos_determinaciones',
+                'metric' => 'total',
+                'agg' => 'sum',
+                'indicator' => \App\Models\Bioestadistica\Indicador::activos()->where('codigo', 'TOTAL_DETERMINACIONES_LAB')->exists()
+                    ? 'TOTAL_DETERMINACIONES_LAB'
+                    : null,
+                'dimensions' => ['establecimiento', 'periodo'],
+                'label' => 'Determinaciones',
+            ]
         );
         $this->reportFromForm(
             'ODONTOLOGIA_SP6',
             'Odontología por establecimiento y período',
             'Prestaciones odontológicas (SP6).',
             'SP6',
-            'prestaciones',
+            'total',
             'TOTAL_ODONTOLOGIA',
             'Prestaciones'
         );
@@ -156,8 +163,12 @@ class BioestadisticaReportesDashboardsSeeder extends Seeder
         );
 
         $urgencias = BioestadisticaAnalyticsSupport::firstTableSource('SP9', 'total');
-        $lab = BioestadisticaAnalyticsSupport::firstTableSource('SP5', 'determinaciones');
-        $odonto = BioestadisticaAnalyticsSupport::firstTableSource('SP6', 'prestaciones');
+        $lab = [
+            'form' => 'SP5',
+            'field' => 'var_10_analisis_clinicos_determinaciones',
+            'metric' => 'total',
+        ];
+        $odonto = BioestadisticaAnalyticsSupport::firstTableSource('SP6', 'total');
         $consultasSource = [
             'form' => 'SP1',
             'field' => 'consultas_por_especialidad',

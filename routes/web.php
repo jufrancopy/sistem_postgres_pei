@@ -363,6 +363,20 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.record.view')->name('captura.pending');
         Route::post('/captura', 'Admin\Bioestadistica\CapturaController@store')
             ->middleware('permission:bio.record.create')->name('captura.store');
+        Route::get('/captura/importar', 'Admin\Bioestadistica\SpPlanillaImportController@index')
+            ->middleware('permission:bio.record.create')->name('captura.import.index');
+        Route::post('/captura/importar/analizar', 'Admin\Bioestadistica\SpPlanillaImportController@analyze')
+            ->middleware('permission:bio.record.create')->name('captura.import.analyze');
+        Route::get('/captura/importar/resumen', 'Admin\Bioestadistica\SpPlanillaImportController@summary')
+            ->middleware('permission:bio.record.create')->name('captura.import.summary');
+        Route::get('/captura/importar/vista-previa', 'Admin\Bioestadistica\SpPlanillaImportController@preview')
+            ->middleware('permission:bio.record.create')->name('captura.import.preview');
+        Route::post('/captura/importar/confirmar', 'Admin\Bioestadistica\SpPlanillaImportController@confirm')
+            ->middleware('permission:bio.record.create')->name('captura.import.confirm');
+        Route::post('/captura/importar/confirmar-lote', 'Admin\Bioestadistica\SpPlanillaImportController@confirmBatch')
+            ->middleware('permission:bio.record.create')->name('captura.import.confirm-batch');
+        Route::post('/captura/importar/descartar', 'Admin\Bioestadistica\SpPlanillaImportController@discard')
+            ->middleware('permission:bio.record.create')->name('captura.import.discard');
         Route::get('/captura/{record}', 'Admin\Bioestadistica\CapturaController@edit')
             ->middleware('permission:bio.record.view')->name('captura.edit');
         Route::put('/captura/{record}', 'Admin\Bioestadistica\CapturaController@update')
@@ -474,6 +488,8 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.import.execute')->name('importaciones.confirm');
         Route::post('/importaciones/{importacion}/datos', 'Admin\Bioestadistica\ImportacionController@importData')
             ->middleware('permission:bio.import.execute')->name('importaciones.data');
+        Route::delete('/importaciones/{importacion}', 'Admin\Bioestadistica\ImportacionController@destroy')
+            ->middleware('permission:bio.import.execute')->name('importaciones.destroy');
 
         Route::get('/hospitalizacion', 'Admin\Bioestadistica\HospitalizacionController@index')
             ->middleware('permission:bio.hosp.view')->name('hospitalizacion.index');

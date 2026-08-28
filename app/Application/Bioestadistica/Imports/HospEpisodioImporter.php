@@ -91,6 +91,82 @@ class HospEpisodioImporter
         }
     }
 
+    /**
+     * @return array<int, array{fila: int, payload: array<string, mixed>}>
+     */
+    public function parseWorksheet(Worksheet $sheet): array
+    {
+        [$headerRow, $headers] = $this->headers($sheet);
+        $episodios = [];
+        for ($row = $headerRow + 1; $row <= $sheet->getHighestDataRow(); $row++) {
+            $raw = $this->row($sheet, $row, $headers);
+            if ($this->isEmpty($raw)) {
+                continue;
+            }
+            try {
+                $episodios[] = [
+                    'fila' => $row,
+                    'payload' => $this->mapRow($raw, false),
+                ];
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        return $episodios;
+    }
+
+    /**
+     * @param  array<int, array{fila: int, payload: array<string, mixed>}>  $episodios
+     * @return array{created: int, updated: int, skipped: array<int, string>, record: ?\App\Models\Bioestadistica\Record}
+     */
+    public function importEpisodes(
+        array $episodios,
+        User $user,
+        int $establecimientoId,
+        int $periodoAnio,
+        int $periodoMes,
+        bool $sobrescribir = false
+    ): array {
+        $created = 0;
+        $updated = 0;
+        $skipped = [];
+        $record = null;
+
+        DB::transaction(function () use (
+            $episodios, $user, $establecimientoId, $periodoAnio, $periodoMes, &$created, &$updated, &$skipped, &$record
+        ) {
+            foreach ($episodios as $item) {
+                try {
+                    $payload = $item['payload'];
+                    $payload['establecimiento_id'] = $establecimientoId;
+                    $payload['periodo_anio'] = $periodoAnio;
+                    $payload['periodo_mes'] = $periodoMes;
+                    $this->assertEstablishment($establecimientoId, $user);
+
+                    $fingerprint = HospEpisodio::fingerprint($payload);
+                    $existing = HospEpisodio::withTrashed()->where('source_fingerprint', $fingerprint)->first();
+                    if ($existing?->trashed()) {
+                        $existing->restore();
+                    }
+                    $payload['source_fingerprint'] = $fingerprint;
+                    $payload['source_row'] = $item['fila'];
+                    $wasExisting = (bool) $existing;
+                    $this->hospitalization->save($payload, $user, $existing, false);
+                    $wasExisting ? $updated++ : $created++;
+                } catch (ValidationException $exception) {
+                    $skipped[] = 'Fila '.$item['fila'].': '.$this->firstError($exception);
+                } catch (\Throwable $exception) {
+                    $skipped[] = 'Fila '.$item['fila'].': '.$exception->getMessage();
+                }
+            }
+
+            $record = $this->hospitalization->consolidate($establecimientoId, $periodoAnio, $periodoMes, $user);
+        });
+
+        return compact('created', 'updated', 'skipped', 'record');
+    }
+
     private function sheet($book): Worksheet
     {
         foreach ($book->getWorksheetIterator() as $sheet) {
@@ -165,19 +241,21 @@ class HospEpisodioImporter
      * @param  array<string, mixed>  $raw
      * @return array<string, mixed>
      */
-    private function mapRow(array $raw): array
+    private function mapRow(array $raw, bool $requireEstablishment = true): array
     {
         $establishment = $this->value($raw, ['codigo_establecimiento', 'establecimiento', 'id_establecimiento', 'codigo']);
-        $establecimiento = Establecimiento::where('codigo', (string) $establishment)->first()
-            ?? Establecimiento::where('codigo_sih', (string) $establishment)->first();
-        if (! $establecimiento) {
+        $establecimiento = null;
+        if ($establishment !== null && $establishment !== '') {
+            $establecimiento = Establecimiento::where('codigo', (string) $establishment)->first()
+                ?? Establecimiento::where('codigo_sih', (string) $establishment)->first();
+        }
+        if (! $establecimiento && $requireEstablishment) {
             throw ValidationException::withMessages([
                 'establecimiento_id' => "Establecimiento «{$establishment}» no encontrado.",
             ]);
         }
 
-        return [
-            'establecimiento_id' => $establecimiento->id,
+        $payload = [
             'cedula' => $this->value($raw, ['cedula', 'documento', 'nro_documento', 'ci']),
             'sexo' => $this->value($raw, ['sexo', 'genero']),
             'seguro' => $this->value($raw, ['seguro', 'aseguradora']),
@@ -193,6 +271,11 @@ class HospEpisodioImporter
             'recien_nacido' => $this->bool($this->value($raw, ['recien_nacido', 'rn', 'nacimiento'])),
             'cesarea' => $this->bool($this->value($raw, ['cesarea', 'cesarea_si'])),
         ];
+        if ($establecimiento) {
+            $payload['establecimiento_id'] = $establecimiento->id;
+        }
+
+        return $payload;
     }
 
     private function canonical(string $header): ?string

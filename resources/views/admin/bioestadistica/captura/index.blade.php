@@ -35,6 +35,9 @@
                     <a href="{{ route('bioestadistica.captura.create') }}" class="btn btn-info btn-sm">
                         <i class="material-icons">add</i> Nueva carga
                     </a>
+                    <a href="{{ route('bioestadistica.captura.import.index') }}" class="btn btn-outline-info btn-sm">
+                        <i class="material-icons">upload_file</i> Importar
+                    </a>
                 @endcan
                 <a href="{{ route('bioestadistica.captura.pending') }}" class="btn btn-outline-warning btn-sm">Períodos pendientes</a>
             </div>

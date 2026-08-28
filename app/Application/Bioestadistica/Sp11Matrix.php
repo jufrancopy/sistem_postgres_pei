@@ -94,17 +94,18 @@ class Sp11Matrix
                     }
                 }
             }
+            if ($sum === 0 && isset($cells['total']) && is_numeric($cells['total'])) {
+                $sum = (int) $cells['total'];
+            }
             $row['total'] = $sum;
             $rows[$code] = $row;
         }
 
         if ($strict) {
-            foreach (['pacientes_dia', 'camas_operativas'] as $required) {
-                if (! isset($rows[$required])) {
-                    throw ValidationException::withMessages([
-                        'value' => "La matriz SP11 requiere la fila «{$required}».",
-                    ]);
-                }
+            if (! isset($rows['pacientes_dia'])) {
+                throw ValidationException::withMessages([
+                    'value' => 'La matriz SP11 requiere la fila «pacientes_dia».',
+                ]);
             }
         }
 

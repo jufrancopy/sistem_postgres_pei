@@ -20,4 +20,9 @@ class ImportJobPolicy
     {
         return $user->can('bio.import.execute');
     }
+
+    public function delete(User $user, $job = null): bool
+    {
+        return $user->can('bio.import.execute');
+    }
 }

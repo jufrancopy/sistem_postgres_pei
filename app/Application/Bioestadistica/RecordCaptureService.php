@@ -281,6 +281,8 @@ class RecordCaptureService
                 $row[$columnCode] = $parsed;
             }
 
+            $row = $this->applyRowTotal($row, $field);
+
             if ($row !== []) {
                 $normalized[(string) $itemId] = $row;
             }
@@ -292,6 +294,41 @@ class RecordCaptureService
 
         // json_encode([]) is a JSON array; the numeric view uses jsonb_each, which needs an object.
         return ['rows' => $normalized === [] ? new \stdClass() : $normalized];
+    }
+
+    /**
+     * @param  array<string, int|float|string>  $row
+     * @return array<string, int|float|string>
+     */
+    private function applyRowTotal(array $row, Field $field): array
+    {
+        $config = $field->config['row_total'] ?? null;
+        if (! is_array($config)) {
+            return $row;
+        }
+
+        $totalCode = (string) ($config['code'] ?? 'total');
+        $sumColumns = $config['sum_columns'] ?? [];
+        if (! is_array($sumColumns) || $sumColumns === []) {
+            return $row;
+        }
+
+        $breakdownSum = 0;
+        foreach ($sumColumns as $columnCode) {
+            $breakdownSum += (int) ($row[$columnCode] ?? 0);
+        }
+
+        $manualTotal = isset($row[$totalCode]) && $row[$totalCode] !== '' ? (int) $row[$totalCode] : null;
+
+        if ($breakdownSum > 0) {
+            $row[$totalCode] = $breakdownSum;
+        } elseif ($manualTotal !== null && $manualTotal > 0) {
+            $row[$totalCode] = $manualTotal;
+        } else {
+            unset($row[$totalCode]);
+        }
+
+        return $row;
     }
 
     private function matriz(Field $field, mixed $value, ?Record $record): array
