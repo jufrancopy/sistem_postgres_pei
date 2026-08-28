@@ -54,7 +54,20 @@
             </div>
         @else
             <div class="table-responsive">
-                <table class="table table-sm table-bordered bio-tabla mb-0" data-totals="{{ ($field->config['totals'] ?? false) ? '1' : '0' }}">
+                @php
+                    $rowTotal = $field->config['row_total'] ?? null;
+                    $rowTotalCode = is_array($rowTotal) ? ($rowTotal['code'] ?? 'total') : 'total';
+                    $rowTotalSumColumns = is_array($rowTotal) ? ($rowTotal['sum_columns'] ?? []) : [];
+                @endphp
+                <table
+                    class="table table-sm table-bordered bio-tabla mb-0"
+                    data-totals="{{ ($field->config['totals'] ?? false) ? '1' : '0' }}"
+                    @if(is_array($rowTotal))
+                        data-row-total="1"
+                        data-row-total-code="{{ $rowTotalCode }}"
+                        data-row-total-sum='@json($rowTotalSumColumns)'
+                    @endif
+                >
                     <thead class="thead-light">
                         <tr>
                             <th style="min-width:260px">{{ $field->config['row_label'] ?? 'Ítem' }}</th>
@@ -65,7 +78,19 @@
                     </thead>
                     <tbody>
                     @foreach($rows as $item)
-                        <tr>
+                        @php
+                            $storedRow = $storedRows[$item->id] ?? [];
+                            $breakdownSum = 0;
+                            foreach ($rowTotalSumColumns as $sumColumn) {
+                                $breakdownSum += (int) ($storedRow[$sumColumn] ?? 0);
+                            }
+                            $hasManualTotal = is_array($rowTotal)
+                                && array_key_exists($rowTotalCode, $storedRow)
+                                && $storedRow[$rowTotalCode] !== null
+                                && $storedRow[$rowTotalCode] !== ''
+                                && ($breakdownSum === 0 || (int) $storedRow[$rowTotalCode] !== $breakdownSum);
+                        @endphp
+                        <tr @if($hasManualTotal) data-total-manual="1" @endif>
                             <td>{{ $item->label }}</td>
                             @foreach($columns as $column)
                                 @php $columnCode = $column['code']; @endphp

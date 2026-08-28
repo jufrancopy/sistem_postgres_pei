@@ -250,6 +250,21 @@ class ImportacionController extends Controller
         return back()->with('success', 'Segunda pasada completada: '.$summary['registros_guardados'].' registros guardados.');
     }
 
+    public function destroy(ImportJob $importacion): RedirectResponse
+    {
+        $this->authorize('delete', $importacion);
+
+        if ($importacion->archivo_path) {
+            Storage::disk('local')->delete($importacion->archivo_path);
+        }
+        $nombre = $importacion->archivo_original;
+        $importacion->delete();
+
+        return redirect()
+            ->route('bioestadistica.importaciones.index')
+            ->with('success', "Importación eliminada: {$nombre}. No se revirtieron formularios ni datos ya confirmados.");
+    }
+
     private function confirmGeneric(
         Request $request,
         ImportJob $importacion,

@@ -3,7 +3,10 @@
 namespace Database\Seeders;
 
 use App\Application\Bioestadistica\Dictionary\DictionaryCodes;
+use App\Application\Bioestadistica\Dictionary\HealthVariableDictionary;
 use App\Models\Bioestadistica\Formulario;
+use App\Models\Bioestadistica\Prestacion;
+use App\Models\Bioestadistica\Variable;
 use App\Models\Bioestadistica\VariableDetalle;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
@@ -41,17 +44,17 @@ class BioestadisticaFormulariosSpSeeder extends Seeder
             'SP5',
             'Determinaciones de laboratorio del período.',
             'Análisis clínicos',
-            'Pacientes y determinaciones por prestación de laboratorio.',
+            'Pacientes atendidos y determinaciones por prestación de laboratorio.',
             $this->detalles('10'),
-            $this->columns(['pacientes' => 'Pacientes', 'determinaciones' => 'Determinaciones'])
+            $this->columns(['total' => 'Total'])
         );
         $configured += $this->publishTabular(
             'SP6',
             'Prestaciones odontológicas del período.',
             'Odontología',
-            'Pacientes y prestaciones odontológicas.',
+            'Pacientes atendidos y prestaciones odontológicas.',
             $this->detalles('14', exact: ['VAR_14_PROCEDIMIENTOS_ODONTOLOGICOS']),
-            $this->columns(['pacientes' => 'Pacientes', 'prestaciones' => 'Prestaciones'])
+            $this->columns(['total' => 'Total'])
         );
         $configured += $this->publishTabular(
             'SP7',
@@ -68,7 +71,13 @@ class BioestadisticaFormulariosSpSeeder extends Seeder
             'Filas de vacuna y columnas cruzadas de sexo por edad.',
             $this->detalles('16', exact: ['VAR_16_CLASIFICACION_DE_VACUNACION']),
             $this->vaccinationColumns(),
-            'Vacuna'
+            'Vacuna',
+            [
+                'row_total' => [
+                    'code' => 'total',
+                    'sum_columns' => $this->vaccinationBreakdownColumnCodes(),
+                ],
+            ]
         );
         $configured += $this->publishTabular(
             'SP9',
@@ -76,8 +85,16 @@ class BioestadisticaFormulariosSpSeeder extends Seeder
             'Urgencias',
             'Consultas, observación y procedimientos de urgencias.',
             $this->detalles('4'),
-            $this->columns(['total' => 'Total'])
+            $this->urgenciasColumns(),
+            'Prestación',
+            [
+                'row_total' => [
+                    'code' => 'total',
+                    'sum_columns' => $this->urgenciasBreakdownColumnCodes(),
+                ],
+            ]
         );
+        $this->syncSp9DictionaryRows();
         $configured += $this->publishTabular(
             'SP12',
             'Indicadores de VIH y tuberculosis del período.',
@@ -125,7 +142,8 @@ class BioestadisticaFormulariosSpSeeder extends Seeder
         string $sectionDescription,
         Collection $detalles,
         array $columns,
-        string $rowLabel = 'Prestación'
+        string $rowLabel = 'Prestación',
+        array $fieldConfigExtra = []
     ): int {
         $formulario = Formulario::where('codigo', $code)->first();
         if (! $formulario) {
@@ -162,7 +180,8 @@ class BioestadisticaFormulariosSpSeeder extends Seeder
                 $columns,
                 $orden++,
                 $index === 0,
-                $rowLabel
+                $rowLabel,
+                $fieldConfigExtra
             );
         }
 
@@ -200,7 +219,8 @@ class BioestadisticaFormulariosSpSeeder extends Seeder
         array $columns,
         int $orden,
         bool $required,
-        string $rowLabel
+        string $rowLabel,
+        array $fieldConfigExtra = []
     ): void {
         $field = $seccion->fields()->withTrashed()->firstOrNew(['code' => $code]);
         if ($field->trashed()) {
@@ -212,13 +232,13 @@ class BioestadisticaFormulariosSpSeeder extends Seeder
             'required' => $required,
             'detalle_id' => $detalle->id,
             'help_text' => 'Las prestaciones sin actividad pueden quedar vacías.',
-            'config' => [
+            'config' => array_merge([
                 'row_source' => 'diccionario',
                 'row_detalle_id' => $detalle->id,
                 'row_label' => $rowLabel,
                 'totals' => true,
                 'columns' => $columns,
-            ],
+            ], $fieldConfigExtra),
             'orden' => $orden,
         ])->save();
     }
@@ -278,6 +298,26 @@ class BioestadisticaFormulariosSpSeeder extends Seeder
      */
     private function vaccinationColumns(): array
     {
+        $columns = [
+            ['code' => 'total', 'label' => 'Total', 'type' => 'integer', 'min' => 0],
+        ];
+        foreach ($this->vaccinationBreakdownColumnCodes() as $code) {
+            $columns[] = [
+                'code' => $code,
+                'label' => $this->vaccinationBreakdownLabel($code),
+                'type' => 'integer',
+                'min' => 0,
+            ];
+        }
+
+        return $columns;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function vaccinationBreakdownColumnCodes(): array
+    {
         $groups = [
             'menores_1' => 'Menores de 1 año',
             '1_3' => '1 a 3 años',
@@ -285,12 +325,97 @@ class BioestadisticaFormulariosSpSeeder extends Seeder
             '15_59' => '15 a 59 años',
             '60_mas' => '60 y más',
         ];
-        $columns = [];
-        foreach ($groups as $code => $label) {
-            $columns[] = ['code' => "m_{$code}", 'label' => "M {$label}", 'type' => 'integer', 'min' => 0];
-            $columns[] = ['code' => "f_{$code}", 'label' => "F {$label}", 'type' => 'integer', 'min' => 0];
+        $codes = [];
+        foreach (array_keys($groups) as $code) {
+            $codes[] = "m_{$code}";
+            $codes[] = "f_{$code}";
         }
 
+        return $codes;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function urgenciasColumns(): array
+    {
+        $columns = [];
+        foreach ($this->urgenciasBreakdownColumnCodes() as $code) {
+            $columns[] = [
+                'code' => $code,
+                'label' => $this->urgenciasBreakdownLabel($code),
+                'type' => 'integer',
+                'min' => 0,
+            ];
+        }
+        $columns[] = [
+            'code' => 'total',
+            'label' => 'Total',
+            'type' => 'integer',
+            'min' => 0,
+        ];
+
         return $columns;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function urgenciasBreakdownColumnCodes(): array
+    {
+        return ['consultas', 'observacion', 'procedimiento'];
+    }
+
+    private function urgenciasBreakdownLabel(string $code): string
+    {
+        return match ($code) {
+            'consultas' => 'Consultas',
+            'observacion' => 'Observación',
+            'procedimiento' => 'Procedimiento',
+            default => $code,
+        };
+    }
+
+    private function syncSp9DictionaryRows(): void
+    {
+        Prestacion::query()
+            ->whereIn('nombre', [
+                'CONSULTA DE URGENCIAS ADULTOS',
+                'OBSERVACION ADULTOS',
+                'PROCEDIMIENTOS URGENCIAS ADULTOS',
+            ])
+            ->update(['activo' => false]);
+
+        $variable = Variable::query()->where('codigo', '4')->first();
+        if (! $variable) {
+            $this->command?->warn('SP9: variable 4 no encontrada; omitiendo ajuste de filas del diccionario.');
+
+            return;
+        }
+
+        (new HealthVariableDictionary())->remember(
+            '4',
+            $variable->nombre,
+            'ATENCION DE URGENCIAS PEDIATRICAS',
+            'ATENCION DE URGENCIAS PEDIATRICAS'
+        );
+    }
+
+    private function vaccinationBreakdownLabel(string $code): string
+    {
+        $map = [
+            'm_menores_1' => 'M Menores de 1 año',
+            'f_menores_1' => 'F Menores de 1 año',
+            'm_1_3' => 'M 1 a 3 años',
+            'f_1_3' => 'F 1 a 3 años',
+            'm_4_14' => 'M 4 a 14 años',
+            'f_4_14' => 'F 4 a 14 años',
+            'm_15_59' => 'M 15 a 59 años',
+            'f_15_59' => 'F 15 a 59 años',
+            'm_60_mas' => 'M 60 y más',
+            'f_60_mas' => 'F 60 y más',
+        ];
+
+        return $map[$code] ?? $code;
     }
 }

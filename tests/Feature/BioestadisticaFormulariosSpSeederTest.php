@@ -36,6 +36,26 @@ class BioestadisticaFormulariosSpSeederTest extends TestCase
         $sp8 = Formulario::where('codigo', 'SP8')->with('secciones.fields')->first();
         $vaccineField = $sp8?->secciones->flatMap->fields->firstWhere('type', 'tabla');
         $this->assertNotNull($vaccineField);
-        $this->assertGreaterThan(2, count($vaccineField->config['columns'] ?? []));
+        $columnCodes = collect($vaccineField->config['columns'] ?? [])->pluck('code')->all();
+        $this->assertSame('total', $columnCodes[0] ?? null);
+        $this->assertGreaterThan(2, count($columnCodes));
+        $this->assertSame('total', $vaccineField->config['row_total']['code'] ?? null);
+
+        $sp9 = Formulario::where('codigo', 'SP9')->with('secciones.fields')->first();
+        $tables = $sp9?->secciones->flatMap->fields->where('type', 'tabla') ?? collect();
+        $this->assertGreaterThanOrEqual(3, $tables->count());
+        foreach ($tables as $table) {
+            $columnCodes = collect($table->config['columns'] ?? [])->pluck('code')->all();
+            $this->assertSame(
+                ['consultas', 'observacion', 'procedimiento', 'total'],
+                $columnCodes,
+                "La tabla {$table->code} debe tener consultas, observación, procedimiento y total."
+            );
+            $this->assertSame('total', $table->config['row_total']['code'] ?? null);
+            $this->assertSame(
+                ['consultas', 'observacion', 'procedimiento'],
+                $table->config['row_total']['sum_columns'] ?? null
+            );
+        }
     }
 }

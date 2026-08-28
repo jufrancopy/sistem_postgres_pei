@@ -28,9 +28,7 @@ class BioestadisticaIndicadoresSeeder extends Seeder
             ['TOTAL_PACIENTES_BAJA', 'Pacientes en estudios de baja complejidad', 'SP3', 'pacientes', 'pacientes', 'Pacientes con estudios de baja complejidad (SP3).'],
             ['TOTAL_ESTUDIOS_ALTA', 'Estudios de alta complejidad', 'SP4', 'estudios', 'estudios', 'Suma de estudios de alta complejidad (SP4).'],
             ['TOTAL_PACIENTES_ALTA', 'Pacientes en estudios de alta complejidad', 'SP4', 'pacientes', 'pacientes', 'Pacientes con estudios de alta complejidad (SP4).'],
-            ['TOTAL_DETERMINACIONES_LAB', 'Determinaciones de laboratorio', 'SP5', 'determinaciones', 'determinaciones', 'Suma de determinaciones de laboratorio (SP5).'],
-            ['TOTAL_PACIENTES_LAB', 'Pacientes de laboratorio', 'SP5', 'pacientes', 'pacientes', 'Pacientes con análisis clínicos (SP5).'],
-            ['TOTAL_ODONTOLOGIA', 'Prestaciones odontológicas', 'SP6', 'prestaciones', 'prestaciones', 'Suma de prestaciones odontológicas (SP6).'],
+            ['TOTAL_ODONTOLOGIA', 'Prestaciones odontológicas', 'SP6', 'total', 'prestaciones', 'Suma de prestaciones odontológicas (SP6).'],
             ['TOTAL_PROCEDIMIENTOS', 'Procedimientos no odontológicos', 'SP7', 'prestaciones', 'prestaciones', 'Suma de procedimientos (SP7).'],
             ['TOTAL_URGENCIAS', 'Atenciones de urgencias', 'SP9', 'total', 'atenciones', 'Suma de atenciones de urgencias (SP9).'],
             ['TOTAL_EPIDEMIOLOGIA', 'Indicadores de VIH y tuberculosis', 'SP12', 'total', 'registros', 'Suma de prestaciones de epidemiología VIH/TB (SP12).'],
@@ -47,17 +45,42 @@ class BioestadisticaIndicadoresSeeder extends Seeder
             $this->upsert($code, $name, $description, $unit, $expression);
         }
 
-        $vacunas = BioestadisticaAnalyticsSupport::sumAllNumericColumns('SP8');
+        $this->upsert(
+            'TOTAL_PACIENTES_LAB',
+            'Pacientes de laboratorio',
+            'Pacientes atendidos en análisis clínicos (SP5).',
+            'pacientes',
+            [
+                'op' => 'sum',
+                'form' => 'SP5',
+                'field' => 'var_10_analisis_clinicos',
+                'metric' => 'total',
+            ]
+        );
+        $this->upsert(
+            'TOTAL_DETERMINACIONES_LAB',
+            'Determinaciones de laboratorio',
+            'Suma de determinaciones de laboratorio (SP5).',
+            'determinaciones',
+            [
+                'op' => 'sum',
+                'form' => 'SP5',
+                'field' => 'var_10_analisis_clinicos_determinaciones',
+                'metric' => 'total',
+            ]
+        );
+
+        $vacunas = BioestadisticaAnalyticsSupport::sumFormMetric('SP8', 'total');
         if ($vacunas) {
             $this->upsert(
                 'TOTAL_VACUNAS',
                 'Dosis de vacunación',
-                'Suma de dosis aplicadas por vacuna, sexo y edad (SP8).',
+                'Suma de dosis aplicadas por vacuna (SP8, columna total).',
                 'dosis',
                 $vacunas
             );
         } else {
-            $this->command?->warn('Indicador TOTAL_VACUNAS omitido: SP8 sin columnas numéricas.');
+            $this->command?->warn('Indicador TOTAL_VACUNAS omitido: SP8 sin columna total.');
         }
 
         if (Indicador::activos()->whereIn('codigo', ['TOTAL_CONSULTAS', 'TOTAL_URGENCIAS'])->count() === 2) {

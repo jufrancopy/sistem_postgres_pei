@@ -76,6 +76,14 @@
                         <td>
                             <div class="bio-actions">
                                 <a class="btn btn-outline-primary btn-sm" href="{{ route('bioestadistica.importaciones.show', $importacion) }}">Ver</a>
+                                @can('bio.import.execute')
+                                    <form method="POST" action="{{ route('bioestadistica.importaciones.destroy', $importacion) }}" class="d-inline"
+                                          onsubmit="return confirm('¿Eliminar esta importación y su archivo? No se revierten datos ya confirmados.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Eliminar</button>
+                                    </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>

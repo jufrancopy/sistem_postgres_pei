@@ -114,6 +114,97 @@ document.addEventListener('DOMContentLoaded', function () {
         table.addEventListener('input', recalculate);
         recalculate();
     });
+    document.querySelectorAll('.bio-tabla[data-row-total="1"]').forEach(function (table) {
+        const totalCode = table.getAttribute('data-row-total-code') || 'total';
+        let sumColumns = [];
+        try {
+            sumColumns = JSON.parse(table.getAttribute('data-row-total-sum') || '[]');
+        } catch (e) {
+            sumColumns = [];
+        }
+
+        table.querySelectorAll('tbody tr').forEach(function (row) {
+            const totalInput = row.querySelector('.bio-tabla-input[data-column="' + totalCode + '"]');
+            if (!totalInput) {
+                return;
+            }
+
+            let suppressTotalManual = false;
+
+            const breakdownSum = function () {
+                let sum = 0;
+                sumColumns.forEach(function (column) {
+                    const input = row.querySelector('.bio-tabla-input[data-column="' + column + '"]');
+                    sum += parseInt(input && input.value, 10) || 0;
+                });
+                return sum;
+            };
+
+            const setTotalValue = function (value) {
+                suppressTotalManual = true;
+                totalInput.value = value;
+                totalInput.dispatchEvent(new Event('input', { bubbles: true }));
+                suppressTotalManual = false;
+            };
+
+            const clearBreakdown = function () {
+                suppressTotalManual = true;
+                sumColumns.forEach(function (column) {
+                    const input = row.querySelector('.bio-tabla-input[data-column="' + column + '"]');
+                    if (input && input.value !== '') {
+                        input.value = '';
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                });
+                suppressTotalManual = false;
+            };
+
+            const recalculateRowTotal = function () {
+                if (row.getAttribute('data-total-manual') === '1') {
+                    return;
+                }
+                const sum = breakdownSum();
+                if (sum > 0) {
+                    if (totalInput.value !== String(sum)) {
+                        setTotalValue(String(sum));
+                    }
+                    return;
+                }
+                if (totalInput.value !== '') {
+                    setTotalValue('');
+                }
+            };
+
+            sumColumns.forEach(function (column) {
+                const input = row.querySelector('.bio-tabla-input[data-column="' + column + '"]');
+                if (!input) {
+                    return;
+                }
+                input.addEventListener('input', function () {
+                    if (suppressTotalManual) {
+                        return;
+                    }
+                    const sum = breakdownSum();
+                    if (sum > 0) {
+                        row.removeAttribute('data-total-manual');
+                        recalculateRowTotal();
+                    }
+                });
+            });
+
+            totalInput.addEventListener('input', function () {
+                if (suppressTotalManual) {
+                    return;
+                }
+                row.setAttribute('data-total-manual', '1');
+                clearBreakdown();
+            });
+
+            if (row.getAttribute('data-total-manual') !== '1') {
+                recalculateRowTotal();
+            }
+        });
+    });
     document.querySelectorAll('.bio-matriz').forEach(function (table) {
         const recalculate = function () {
             table.querySelectorAll('[data-row-total]').forEach(function (cell) {
