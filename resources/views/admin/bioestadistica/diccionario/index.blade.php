@@ -3,7 +3,7 @@
 
 @section('content')
 @include('admin.bioestadistica._siplan-styles')
-@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Variables']]])
+@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Variables']], 'showConfigTabs' => true])
 <div class="card bio-siplan">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">account_tree</i> Variables</h4>

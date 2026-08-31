@@ -26,6 +26,7 @@ Las planillas **SP1 a SP14 no son tablas**: son configuración almacenada en bas
 | [12-analisis-planillas-sp.md](12-analisis-planillas-sp.md) | Análisis de `Formularios SP.xls` y `variables salud.xls` |
 | [13-maestro-establecimientos.md](13-maestro-establecimientos.md) | Análisis de `ESTABLECIMIENTO_CON_ID.xlsx` y jerarquía geográfica |
 | [14-legado-access.md](14-legado-access.md) | Estructura de la base Access 2019 heredada |
+| [15-asignaciones-captura.md](15-asignaciones-captura.md) | Asignación formulario × establecimiento × digitador |
 
 ## Decisiones fijas
 

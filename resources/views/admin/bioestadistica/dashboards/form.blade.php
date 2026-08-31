@@ -8,6 +8,7 @@
         ['label' => 'Dashboards', 'url' => route('bioestadistica.dashboards.index')],
         ['label' => $dashboard->exists ? 'Editar' : 'Nueva plantilla'],
     ],
+    'showConfigTabs' => true,
 ])
 <div class="card bio-siplan">
     <div class="card-header card-header-info">

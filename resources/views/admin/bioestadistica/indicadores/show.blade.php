@@ -2,6 +2,8 @@
 @section('title', "Indicador {$indicador->codigo}")
 
 @section('content')
+@include('admin.bioestadistica._siplan-styles')
+@include('admin.bioestadistica._configuraciones_tabs')
 @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
 @if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 

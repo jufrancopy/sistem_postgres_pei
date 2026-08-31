@@ -1,5 +1,6 @@
 @php
     $items = $items ?? [];
+    $showConfigTabs = $showConfigTabs ?? \App\Application\Bioestadistica\BioestadisticaConfigNavigation::isConfigRoute();
 @endphp
 <nav aria-label="breadcrumb" class="bio-breadcrumb">
     <ol class="breadcrumb mb-0">
@@ -15,3 +16,6 @@
         @endforeach
     </ol>
 </nav>
+@if($showConfigTabs)
+    @include('admin.bioestadistica._configuraciones_tabs')
+@endif

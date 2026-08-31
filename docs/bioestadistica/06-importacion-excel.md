@@ -152,6 +152,21 @@ La segunda pasada opcional carga registros y exige el **período del dato**:
 - Si ya existe un registro para ese formulario, establecimiento y período, el wizard ofrece sobrescribir
   (si está en `borrador`) o rechazar.
 
+## Importación SP desde Carga de datos (sin job persistente)
+
+El botón **Importar** en `/bioestadistica/captura/importar` analiza el Excel **en memoria** (preview en sesión).
+No crea fila en `import_jobs` ni guarda el archivo en disco.
+
+Al confirmar, el `record` resultante guarda:
+
+| Campo | Valores |
+|---|---|
+| `origen_carga` | `manual` (default) o `importacion_sp` |
+| `import_archivo` | Nombre original del archivo subido |
+| `import_hoja` | Título de la hoja importada (ej. `SP3`) |
+
+Si el registro se edita después en pantalla, el origen **permanece** como importación.
+
 ## Errores y trazabilidad
 
 `import_jobs.resumen` guarda el detalle de cada corrida:

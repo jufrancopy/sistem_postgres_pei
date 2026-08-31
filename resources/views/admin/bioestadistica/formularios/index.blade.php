@@ -3,7 +3,7 @@
 
 @section('content')
 @include('admin.bioestadistica._siplan-styles')
-@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Formularios']]])
+@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Formularios']], 'showConfigTabs' => true])
 <div class="card bio-siplan">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">dynamic_form</i> Constructor de formularios</h4>

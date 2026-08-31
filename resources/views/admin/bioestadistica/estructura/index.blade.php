@@ -3,7 +3,7 @@
 
 @section('content')
 @include('admin.bioestadistica._siplan-styles')
-@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Deptos. y servicios']]])
+@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Deptos. y servicios']], 'showConfigTabs' => true])
 <div class="card bio-siplan">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">account_tree</i> Departamentos y servicios por establecimiento</h4>

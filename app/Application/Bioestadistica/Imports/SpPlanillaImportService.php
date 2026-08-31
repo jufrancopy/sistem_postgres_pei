@@ -2,6 +2,7 @@
 
 namespace App\Application\Bioestadistica\Imports;
 
+use App\Application\Bioestadistica\Capture\CaptureScopeService;
 use App\Application\Bioestadistica\RecordCaptureService;
 use App\Application\Bioestadistica\Sp11Matrix;
 use App\Models\Bioestadistica\Establecimiento;
@@ -78,7 +79,7 @@ class SpPlanillaImportService
             ?? Formulario::where('codigo', 'SP1')->where('estado', 'activo')->first();
 
         $establecimiento = $this->resolveEstablecimiento($codigoPlanilla);
-        $this->assertUserCanUseEstablecimiento($user, $establecimiento?->id);
+        $this->assertUserCanCapture($user, $establecimiento?->id, $formulario);
 
         $preview = [
             'token' => Str::random(40),
@@ -283,7 +284,7 @@ class SpPlanillaImportService
         Formulario $formulario
     ): Record {
         $establecimientoId = (int) $context['establecimiento_id'];
-        $this->assertUserCanUseEstablecimiento($user, $establecimientoId);
+        $this->assertUserCanCapture($user, $establecimientoId, $formulario);
         $this->assertEstablecimientoConDistrito($establecimientoId);
 
         $lookup = $this->buildRecordLookup($formulario, $context, $establecimientoId);
@@ -319,6 +320,7 @@ class SpPlanillaImportService
         }
 
         $this->capture->save($record, $values, false, true, $user->id);
+        $this->stampImportOrigin($record, $preview);
 
         return $record->fresh(['formulario', 'establecimiento']);
     }
@@ -372,6 +374,7 @@ class SpPlanillaImportService
         }
 
         $this->capture->save($record, $values, false, true, $user->id);
+        $this->stampImportOrigin($record, $preview);
 
         return $record->fresh(['formulario', 'establecimiento']);
     }
@@ -388,7 +391,7 @@ class SpPlanillaImportService
         Formulario $formulario
     ): Record {
         $establecimientoId = (int) $context['establecimiento_id'];
-        $this->assertUserCanUseEstablecimiento($user, $establecimientoId);
+        $this->assertUserCanCapture($user, $establecimientoId, $formulario);
         $this->assertEstablecimientoConDistrito($establecimientoId);
 
         $lookup = $this->buildRecordLookup($formulario, $context, $establecimientoId);
@@ -426,6 +429,7 @@ class SpPlanillaImportService
         }
 
         $this->capture->save($record, $values, false, true, $user->id);
+        $this->stampImportOrigin($record, $preview);
 
         return $record->fresh(['formulario', 'establecimiento']);
     }
@@ -442,7 +446,7 @@ class SpPlanillaImportService
         Formulario $formulario
     ): Record {
         $establecimientoId = (int) $context['establecimiento_id'];
-        $this->assertUserCanUseEstablecimiento($user, $establecimientoId);
+        $this->assertUserCanCapture($user, $establecimientoId, $formulario);
         $this->assertEstablecimientoConDistrito($establecimientoId);
 
         $episodios = $preview['detectado']['episodios'] ?? [];
@@ -479,6 +483,8 @@ class SpPlanillaImportService
                 'importacion' => 'No se pudo consolidar el registro SP10 desde los episodios importados.',
             ]);
         }
+
+        $this->stampImportOrigin($result['record'], $preview);
 
         return $result['record']->fresh(['formulario', 'establecimiento']);
     }
@@ -1041,15 +1047,37 @@ class SpPlanillaImportService
         return $lookup;
     }
 
-    private function assertUserCanUseEstablecimiento(User $user, ?int $establecimientoId): void
+    private function assertUserCanCapture(User $user, ?int $establecimientoId, ?Formulario $formulario = null): void
     {
-        if ($establecimientoId === null || Record::userHasGlobalAccess($user)) {
-            return;
+        $scope = app(CaptureScopeService::class);
+        $scope->assertCanUseEstablecimiento($user, $establecimientoId);
+
+        if ($establecimientoId !== null && $formulario !== null) {
+            $scope->validateCanCapture($user, (int) $formulario->id, $establecimientoId);
         }
-        if (! in_array($establecimientoId, Record::assignedEstablishmentIds($user), true)) {
-            throw ValidationException::withMessages([
-                'establecimiento_id' => 'No tiene asignado el establecimiento detectado en la planilla.',
-            ]);
-        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $preview
+     * @return array<string, string|null>
+     */
+    private function importOriginPayload(array $preview): array
+    {
+        $archivo = trim((string) ($preview['archivo'] ?? ''));
+        $hoja = trim((string) ($preview['hoja_activa'] ?? ''));
+
+        return [
+            'origen_carga' => Record::ORIGEN_IMPORTACION_SP,
+            'import_archivo' => $archivo !== '' ? Str::limit($archivo, 255, '') : null,
+            'import_hoja' => $hoja !== '' ? Str::limit($hoja, 255, '') : null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $preview
+     */
+    private function stampImportOrigin(Record $record, array $preview): void
+    {
+        $record->update($this->importOriginPayload($preview));
     }
 }

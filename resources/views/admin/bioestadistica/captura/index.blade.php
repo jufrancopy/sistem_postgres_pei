@@ -41,9 +41,9 @@
                 @endcan
                 <a href="{{ route('bioestadistica.captura.pending') }}" class="btn btn-outline-warning btn-sm">Períodos pendientes</a>
             </div>
-            @if(auth()->user()->hasAnyRole(['Administrador', 'Analista de Bioestadística']))
-                <a href="{{ route('bioestadistica.captura.assignments') }}" class="btn btn-outline-info btn-sm">Asignar digitadores</a>
-            @endif
+            @can('bio.assignment.manage')
+                <a href="{{ route('bioestadistica.asignaciones.index') }}" class="btn btn-outline-info btn-sm">Asignar digitadores</a>
+            @endcan
         </div>
 
         <form method="GET" class="bio-filters">
@@ -127,6 +127,7 @@
                                         <th>Departamento</th>
                                         <th>Servicio</th>
                                         <th>Período del dato</th>
+                                        <th>Origen</th>
                                         <th>Estado</th>
                                         <th style="width:100px" class="text-right">Acciones</th>
                                     </tr>
@@ -138,6 +139,7 @@
                                         <td>{{ $record->estructuraDepartamento?->nombre ?? '—' }}</td>
                                         <td>{{ $record->estructuraServicio?->nombre ?? '—' }}</td>
                                         <td>{{ ($months[$record->periodo_mes] ?? $record->periodo_mes) }}/{{ $record->periodo_anio }}</td>
+                                        <td>@include('admin.bioestadistica.captura._origen_carga', ['record' => $record])</td>
                                         <td>
                                             <span class="badge {{ \App\Models\Bioestadistica\Record::estadoBadge($record->estado) }}">
                                                 {{ \App\Models\Bioestadistica\Record::estadoLabel($record->estado) }}

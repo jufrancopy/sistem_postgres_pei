@@ -8,6 +8,7 @@
         ['label' => 'Variables', 'url' => route('bioestadistica.diccionario.index')],
         ['label' => $variable->etiqueta()],
     ],
+    'showConfigTabs' => true,
 ])
 <div class="card bio-siplan">
     <div class="card-header card-header-info d-flex justify-content-between align-items-start">

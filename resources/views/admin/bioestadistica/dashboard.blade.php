@@ -48,9 +48,32 @@
                 <div class="form-group col-md-2 mb-2">
                     <button class="btn btn-info">Aplicar período</button>
                 </div>
+                <div class="form-group col-md-2 mb-2">
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-block"
+                        id="bioDashboardExportJpg"
+                        data-filename="bio_dashboard_{{ \Illuminate\Support\Str::slug($dashboard->nombre ?? 'bioestadistica') }}_{{ $period['desde']['anio'] }}{{ str_pad((string) $period['desde']['mes'], 2, '0', STR_PAD_LEFT) }}-{{ $period['hasta']['anio'] }}{{ str_pad((string) $period['hasta']['mes'], 2, '0', STR_PAD_LEFT) }}"
+                    >
+                        <i class="material-icons align-middle" style="font-size:16px;">image</i> Exportar JPG
+                    </button>
+                </div>
             </form>
-            @php $editable = false; @endphp
-            @include('admin.bioestadistica.dashboards._grid')
+
+            <div id="bioDashboardExportArea" class="bio-dashboard-export bg-white p-2 rounded">
+                <div class="mb-3 px-1">
+                    <h5 class="mb-1">{{ $dashboard->nombre }}</h5>
+                    <p class="text-muted small mb-0">
+                        Período:
+                        {{ $months[$period['desde']['mes']] ?? $period['desde']['mes'] }}/{{ $period['desde']['anio'] }}
+                        —
+                        {{ $months[$period['hasta']['mes']] ?? $period['hasta']['mes'] }}/{{ $period['hasta']['anio'] }}
+                        · Generado {{ now()->format('d/m/Y H:i') }}
+                    </p>
+                </div>
+                @php $editable = false; @endphp
+                @include('admin.bioestadistica.dashboards._grid')
+            </div>
         @else
             <div class="alert alert-warning">Todavía no hay una plantilla institucional activa. Configure un dashboard predeterminado.</div>
         @endif
@@ -80,5 +103,6 @@
 @section('scripts')
     @if($dashboard)
         @include('admin.bioestadistica.dashboards._scripts')
+        @include('admin.bioestadistica.dashboards._export-jpg')
     @endif
 @endsection

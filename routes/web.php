@@ -257,6 +257,9 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/dashboard', 'Admin\Bioestadistica\BioestadisticaDashboardController@index')
             ->middleware('permission:bio.dashboard.view');
 
+        Route::get('/configuraciones', 'Admin\Bioestadistica\ConfiguracionesController@index')
+            ->name('configuraciones.index');
+
         Route::get('/auditoria', 'Admin\Bioestadistica\AuditoriaController@index')
             ->middleware('permission:bio.audit.view')->name('auditoria.index');
         Route::get('/auditoria/datatable', 'Admin\Bioestadistica\AuditoriaController@datatable')
@@ -391,10 +394,19 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.record.approve')->name('captura.approve');
         Route::post('/captura/{record}/objetar', 'Admin\Bioestadistica\CapturaController@reject')
             ->middleware('permission:bio.record.approve')->name('captura.reject');
-        Route::get('/captura-asignaciones', 'Admin\Bioestadistica\CapturaController@assignments')
-            ->middleware('permission:bio.record.approve')->name('captura.assignments');
+        Route::get('/captura-asignaciones', fn () => redirect()->route('bioestadistica.asignaciones.index'))
+            ->middleware('permission:bio.assignment.manage')->name('captura.assignments');
         Route::put('/captura-asignaciones/{user}', 'Admin\Bioestadistica\CapturaController@updateAssignments')
-            ->middleware('permission:bio.record.approve')->name('captura.assignments.update');
+            ->middleware('permission:bio.assignment.manage')->name('captura.assignments.update');
+
+        Route::get('/asignaciones', 'Admin\Bioestadistica\AsignacionesCapturaController@index')
+            ->middleware('permission:bio.assignment.manage')->name('asignaciones.index');
+        Route::post('/asignaciones', 'Admin\Bioestadistica\AsignacionesCapturaController@store')
+            ->middleware('permission:bio.assignment.manage')->name('asignaciones.store');
+        Route::put('/asignaciones/{asignacion}', 'Admin\Bioestadistica\AsignacionesCapturaController@update')
+            ->middleware('permission:bio.assignment.manage')->name('asignaciones.update');
+        Route::delete('/asignaciones/{asignacion}', 'Admin\Bioestadistica\AsignacionesCapturaController@destroy')
+            ->middleware('permission:bio.assignment.manage')->name('asignaciones.destroy');
 
         Route::get('/seguimiento', 'Admin\Bioestadistica\SeguimientoController@index')
             ->middleware('permission:bio.record.view')->name('seguimiento.index');
