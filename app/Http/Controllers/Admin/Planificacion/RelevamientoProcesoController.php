@@ -211,7 +211,7 @@ class RelevamientoProcesoController extends Controller
         $proceso->analisis_ia = $aiService->generarDiagnostico($proceso);
         $proceso->save();
 
-        return response()->json(['status' => 'success', 'message' => 'Estación de atención guardada correctamente.']);
+        return response()->json($this->buildProcesoPayload($proceso, 'Estación de atención guardada correctamente.'));
     }
 
     public function destroyPaso($procesoId, $pasoId, RelevamientoAiAnalysisService $aiService)
@@ -223,7 +223,7 @@ class RelevamientoProcesoController extends Controller
         $proceso->analisis_ia = $aiService->generarDiagnostico($proceso);
         $proceso->save();
 
-        return response()->json(['status' => 'success', 'message' => 'Estación eliminada.']);
+        return response()->json($this->buildProcesoPayload($proceso, 'Estación eliminada correctamente.'));
     }
 
     public function generarIa($id, RelevamientoAiAnalysisService $aiService)
@@ -232,7 +232,54 @@ class RelevamientoProcesoController extends Controller
         $proceso->analisis_ia = $aiService->generarDiagnostico($proceso);
         $proceso->save();
 
-        return response()->json(['status' => 'success', 'analisis_ia' => $proceso->analisis_ia]);
+        return response()->json($this->buildProcesoPayload($proceso, 'Análisis de Inteligencia Artificial actualizado.'));
+    }
+
+    private function buildProcesoPayload(RelevamientoProceso $proceso, string $message): array
+    {
+        $proceso->refresh();
+        $proceso->load(['pasos' => function($q) {
+            $q->orderBy('orden', 'asc');
+        }, 'pasos.organigrama']);
+
+        $mermaidGraph = $this->generarMermaidGraph($proceso);
+
+        $pasosData = $proceso->pasos->map(function($p) {
+            return [
+                'id' => $p->id,
+                'orden' => $p->orden,
+                'nombre' => $p->nombre,
+                'descripcion' => $p->descripcion,
+                'area_nombre' => $p->area_nombre,
+                'area_dependencia_custom' => $p->area_dependencia_custom,
+                'organigrama_id' => $p->organigrama_id,
+                'rol_responsable' => $p->rol_responsable ?: 'N/A',
+                'tiempo_atencion_min' => $p->tiempo_atencion_min,
+                'tiempo_espera_min' => $p->tiempo_espera_min,
+                'tiempo_traslado_min' => $p->tiempo_traslado_min,
+                'herramienta_sistema' => $p->herramienta_sistema ?: 'Manual',
+                'es_cuello_botella' => (bool)$p->es_cuello_botella,
+                'criticidad' => $p->criticidad,
+                'causa_raiz' => $p->causa_raiz,
+                'observacion_campo' => $p->observacion_campo,
+                'propuesta_mejora' => $p->propuesta_mejora ?: 'Sin observaciones',
+            ];
+        });
+
+        return [
+            'status' => 'success',
+            'message' => $message,
+            'lead_time_total' => $proceso->lead_time_total,
+            'lead_time_horas' => round($proceso->lead_time_total / 60, 1),
+            'tiempo_atencion_total' => $proceso->tiempo_atencion_total,
+            'tiempo_espera_total' => $proceso->tiempo_espera_total,
+            'eficiencia' => $proceso->eficiencia,
+            'conteo_cuellos_botella' => $proceso->conteo_cuellos_botella,
+            'analisis_ia_html' => \Illuminate\Support\Str::markdown($proceso->analisis_ia ?: 'Generando análisis de diagnóstico...'),
+            'mermaid_graph' => $mermaidGraph,
+            'pasos' => $pasosData,
+            'next_orden' => $proceso->pasos->count() + 1,
+        ];
     }
 
     public function exportPdf($id)

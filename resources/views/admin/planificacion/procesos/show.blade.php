@@ -175,21 +175,21 @@
         <div class="col-12 col-sm-6 col-lg-3 mb-3 mb-lg-0">
             <div class="card metric-card shadow-sm p-3 bg-white h-100">
                 <small class="text-muted font-weight-bold text-uppercase d-block mb-1">Lead Time Total Paciente</small>
-                <h3 class="font-weight-bold text-dark mb-0">{{ $proceso->lead_time_total }} min</h3>
-                <small class="text-info font-weight-bold"><i class="fas fa-clock mr-1"></i> {{ round($proceso->lead_time_total / 60, 1) }} horas de recorrido</small>
+                <h3 id="kpi_lead_time" class="font-weight-bold text-dark mb-0">{{ $proceso->lead_time_total }} min</h3>
+                <small id="kpi_lead_time_horas" class="text-info font-weight-bold"><i class="fas fa-clock mr-1"></i> {{ round($proceso->lead_time_total / 60, 1) }} horas de recorrido</small>
             </div>
         </div>
         <div class="col-12 col-sm-6 col-lg-3 mb-3 mb-lg-0">
             <div class="card metric-card success shadow-sm p-3 bg-white h-100">
                 <small class="text-muted font-weight-bold text-uppercase d-block mb-1">Tiempo Atención Efectiva</small>
-                <h3 class="font-weight-bold text-success mb-0">{{ $proceso->tiempo_atencion_total }} min</h3>
+                <h3 id="kpi_atencion" class="font-weight-bold text-success mb-0">{{ $proceso->tiempo_atencion_total }} min</h3>
                 <small class="text-muted">Valor agregado al paciente</small>
             </div>
         </div>
         <div class="col-12 col-sm-6 col-lg-3 mb-3 mb-lg-0">
             <div class="card metric-card danger shadow-sm p-3 bg-white h-100">
                 <small class="text-muted font-weight-bold text-uppercase d-block mb-1">Tiempo Espera / Latencia</small>
-                <h3 class="font-weight-bold text-danger mb-0">{{ $proceso->tiempo_espera_total }} min</h3>
+                <h3 id="kpi_espera" class="font-weight-bold text-danger mb-0">{{ $proceso->tiempo_espera_total }} min</h3>
                 <small class="text-danger font-weight-bold"><i class="fas fa-hourglass-half mr-1"></i> Tiempo muerto en cola</small>
             </div>
         </div>
@@ -197,10 +197,10 @@
             <div class="card metric-card shadow-sm p-3 bg-white h-100">
                 <small class="text-muted font-weight-bold text-uppercase d-block mb-1">Eficiencia & Cuellos</small>
                 <div class="d-flex flex-wrap align-items-center justify-content-between mt-1 gap-1">
-                    <span class="badge badge-pill badge-info px-2 py-2 mb-1" style="font-size: 0.92rem; max-width: 100%; white-space: normal;">
+                    <span id="kpi_eficiencia" class="badge badge-pill badge-info px-2 py-2 mb-1" style="font-size: 0.92rem; max-width: 100%; white-space: normal;">
                         <i class="fas fa-chart-pie mr-1"></i>{{ $proceso->eficiencia }}% Eficiencia
                     </span>
-                    <span class="badge badge-pill badge-danger px-2 py-1 mb-1" style="font-size: 0.82rem;">
+                    <span id="kpi_cuellos" class="badge badge-pill badge-danger px-2 py-1 mb-1" style="font-size: 0.82rem;">
                         <i class="fas fa-exclamation-triangle mr-1"></i>{{ $proceso->conteo_cuellos_botella }} Cuello(s)
                     </span>
                 </div>
@@ -384,7 +384,7 @@
                     <div class="row">
                         <div class="col-md-6 form-group">
                             <label class="font-weight-bold text-dark">Criticidad</label>
-                            <select name="criticidad" id="paso_criticidad" class="form-control">
+                            <select name="criticidad" id="paso_criticidad" class="form-control select2-modal-paso" style="width: 100%;">
                                 <option value="baja">Baja</option>
                                 <option value="media">Media</option>
                                 <option value="alta">Alta</option>
@@ -393,7 +393,7 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label class="font-weight-bold text-dark">Causa Raíz Principal</label>
-                            <select name="causa_raiz" id="paso_causa_raiz" class="form-control">
+                            <select name="causa_raiz" id="paso_causa_raiz" class="form-control select2-modal-paso" style="width: 100%;">
                                 <option value="">-- Sin Causa Específica --</option>
                                 <option value="sobredemanda">Sobredemanda de Pacientes</option>
                                 <option value="falta_personal">Falta de Personal en Ventanilla</option>
@@ -432,25 +432,42 @@
 <script>
 mermaid.initialize({ startOnLoad: true, theme: 'default' });
 
+function initSelect2ModalPaso() {
+    if ($.fn.select2) {
+        $('#modalPaso .select2-modal-paso').select2({
+            dropdownParent: $('#modalPaso'),
+            width: '100%'
+        });
+    }
+}
+
 $(document).ready(function() {
-    $('.select2-modal-paso').select2({
-        dropdownParent: $('#modalPaso')
+    initSelect2ModalPaso();
+
+    $('#modalPaso').on('shown.bs.modal', function() {
+        initSelect2ModalPaso();
     });
 
     $('#formPaso').on('submit', function(e) {
         e.preventDefault();
         var form = $(this);
+        var btn = form.find('button[type="submit"]');
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...');
+
         $.ajax({
             url: form.attr('action'),
             method: 'POST',
             data: form.serialize(),
             success: function(res) {
+                btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Guardar Estación');
                 $('#modalPaso').modal('hide');
                 toastr.success(res.message);
-                location.reload();
+                updateProcesoView(res);
             },
             error: function(err) {
-                toastr.error('Error al guardar la estación.');
+                btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Guardar Estación');
+                var msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Error al guardar la estación.';
+                toastr.error(msg);
             }
         });
     });
@@ -465,7 +482,7 @@ $(document).ready(function() {
             success: function(res) {
                 btn.prop('disabled', false).html('<i class="fas fa-magic text-primary mr-1"></i> Regenerar Análisis IA');
                 toastr.success('Análisis de IA actualizado correctamente.');
-                location.reload();
+                updateProcesoView(res);
             },
             error: function() {
                 btn.prop('disabled', false).html('<i class="fas fa-magic text-primary mr-1"></i> Regenerar Análisis IA');
@@ -475,28 +492,114 @@ $(document).ready(function() {
     });
 });
 
+function updateProcesoView(res) {
+    if (!res) return;
+
+    // 1. Actualizar KPIs
+    if (res.lead_time_total !== undefined) $('#kpi_lead_time').text(res.lead_time_total + ' min');
+    if (res.lead_time_horas !== undefined) $('#kpi_lead_time_horas').html('<i class="fas fa-clock mr-1"></i> ' + res.lead_time_horas + ' horas de recorrido');
+    if (res.tiempo_atencion_total !== undefined) $('#kpi_atencion').text(res.tiempo_atencion_total + ' min');
+    if (res.tiempo_espera_total !== undefined) $('#kpi_espera').text(res.tiempo_espera_total + ' min');
+    if (res.eficiencia !== undefined) $('#kpi_eficiencia').html('<i class="fas fa-chart-pie mr-1"></i>' + res.eficiencia + '% Eficiencia');
+    if (res.conteo_cuellos_botella !== undefined) $('#kpi_cuellos').html('<i class="fas fa-exclamation-triangle mr-1"></i>' + res.conteo_cuellos_botella + ' Cuello(s)');
+
+    // 2. Actualizar Informe de IA
+    if (res.analisis_ia_html !== undefined) {
+        $('#boxAnalisisIa').html(res.analisis_ia_html);
+    }
+
+    // 3. Actualizar Flujograma Mermaid sin recargar la página
+    if (res.mermaid_graph) {
+        var $mermaidDiv = $('#mermaidDiagram');
+        $mermaidDiv.removeAttr('data-processed').text(res.mermaid_graph);
+        if (window.mermaid) {
+            try {
+                mermaid.run ? mermaid.run({ nodes: [$mermaidDiv[0]] }) : mermaid.init(undefined, $mermaidDiv[0]);
+            } catch(e) {
+                console.log("Mermaid refresh: ", e);
+            }
+        }
+    }
+
+    // 4. Actualizar Tabla de Estaciones Dinámicamente
+    if (res.pasos) {
+        var tbodyHtml = '';
+        if (res.pasos.length === 0) {
+            tbodyHtml = '<tr><td colspan="10" class="text-center text-muted py-4">No hay estaciones registradas aún. ¡Haga clic en <strong>Agregar Estación</strong> para comenzar!</td></tr>';
+        } else {
+            res.pasos.forEach(function(paso) {
+                var rowClass = paso.es_cuello_botella ? 'table-danger' : '';
+                var descHtml = paso.descripcion ? '<small class="text-muted d-block">' + escapeHtml(paso.descripcion) + '</small>' : '';
+                var cuelloBadge = paso.es_cuello_botella 
+                    ? '<span class="badge badge-danger badge-pill"><i class="fas fa-exclamation-triangle mr-1"></i>CUELLO BOTELLA</span>'
+                    : '<span class="badge badge-success badge-pill"><i class="fas fa-check mr-1"></i>Normal</span>';
+                
+                var pasoJsonStr = escapeAttribute(JSON.stringify(paso));
+
+                tbodyHtml += '<tr class="' + rowClass + '">' +
+                    '<td class="font-weight-bold text-center align-middle">' + paso.orden + '</td>' +
+                    '<td class="align-middle"><strong class="text-dark d-block">' + escapeHtml(paso.nombre) + '</strong>' + descHtml + '</td>' +
+                    '<td class="align-middle">' + escapeHtml(paso.area_nombre) + '</td>' +
+                    '<td class="align-middle"><span class="badge badge-secondary">' + escapeHtml(paso.rol_responsable) + '</span></td>' +
+                    '<td class="text-success font-weight-bold align-middle">' + paso.tiempo_atencion_min + ' min</td>' +
+                    '<td class="text-danger font-weight-bold align-middle">' + paso.tiempo_espera_min + ' min</td>' +
+                    '<td class="align-middle"><small class="text-dark font-weight-bold">' + escapeHtml(paso.herramienta_sistema) + '</small></td>' +
+                    '<td class="align-middle">' + cuelloBadge + '</td>' +
+                    '<td class="align-middle"><small class="text-dark font-italic">' + escapeHtml(paso.propuesta_mejora) + '</small></td>' +
+                    '<td class="text-center align-middle" style="white-space: nowrap;">' +
+                        '<div class="d-inline-flex align-items-center justify-content-center">' +
+                            '<button type="button" class="btn btn-info btn-circle btn-sm mr-1 shadow-sm" title="Editar Estación" onclick=\'editarPaso(' + pasoJsonStr + ')\'><i class="fas fa-pencil-alt"></i></button>' +
+                            '<button type="button" class="btn btn-danger btn-circle btn-sm shadow-sm" title="Eliminar Estación" onclick="eliminarPaso(\'' + paso.id + '\')"><i class="fas fa-trash-alt"></i></button>' +
+                        '</div>' +
+                    '</td>' +
+                '</tr>';
+            });
+        }
+        $('#tablaPasos tbody').html(tbodyHtml);
+    }
+
+    if (res.next_orden !== undefined) {
+        $('#paso_orden').val(res.next_orden);
+    }
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function escapeAttribute(str) {
+    if (!str) return "{}";
+    return String(str).replace(/'/g, "&#39;");
+}
+
 function abrirModalPaso() {
     $('#formPaso')[0].reset();
     $('#paso_id').val('');
+    $('#paso_criticidad').val('baja').trigger('change');
+    $('#paso_causa_raiz').val('').trigger('change');
     $('#modalPasoTitle').html('<i class="fas fa-step-forward mr-2"></i> Registrar Estación del Circuito');
     $('#modalPaso').modal('show');
 }
 
 function editarPaso(paso) {
+    if (typeof paso === 'string') {
+        try { paso = JSON.parse(paso); } catch(e) {}
+    }
     $('#paso_id').val(paso.id);
     $('#paso_orden').val(paso.orden);
     $('#paso_nombre').val(paso.nombre);
-    $('#paso_area_dependencia_custom').val(paso.area_dependencia_custom || (paso.organigrama ? paso.organigrama.dependency : ''));
-    $('#paso_rol_responsable').val(paso.rol_responsable);
+    $('#paso_area_dependencia_custom').val(paso.area_dependencia_custom || paso.area_nombre || '');
+    $('#paso_rol_responsable').val(paso.rol_responsable !== 'N/A' ? paso.rol_responsable : '');
     $('#paso_tiempo_atencion_min').val(paso.tiempo_atencion_min);
     $('#paso_tiempo_espera_min').val(paso.tiempo_espera_min);
     $('#paso_tiempo_traslado_min').val(paso.tiempo_traslado_min);
-    $('#paso_herramienta_sistema').val(paso.herramienta_sistema);
+    $('#paso_herramienta_sistema').val(paso.herramienta_sistema !== 'Manual' ? paso.herramienta_sistema : '');
     $('#paso_es_cuello_botella').prop('checked', paso.es_cuello_botella);
-    $('#paso_criticidad').val(paso.criticidad);
-    $('#paso_causa_raiz').val(paso.causa_raiz);
-    $('#paso_observacion_campo').val(paso.observacion_campo);
-    $('#paso_propuesta_mejora').val(paso.propuesta_mejora);
+    $('#paso_criticidad').val(paso.criticidad || 'baja').trigger('change');
+    $('#paso_causa_raiz').val(paso.causa_raiz || '').trigger('change');
+    $('#paso_observacion_campo').val(paso.observacion_campo || '');
+    $('#paso_propuesta_mejora').val(paso.propuesta_mejora !== 'Sin observaciones' ? paso.propuesta_mejora : '');
     $('#modalPasoTitle').html('<i class="fas fa-edit mr-2"></i> Editar Estación #' + paso.orden);
     $('#modalPaso').modal('show');
 }
@@ -509,7 +612,10 @@ function eliminarPaso(pasoId) {
             data: { _token: '{{ csrf_token() }}' },
             success: function(res) {
                 toastr.success(res.message);
-                location.reload();
+                updateProcesoView(res);
+            },
+            error: function() {
+                toastr.error('Error al eliminar la estación.');
             }
         });
     }
