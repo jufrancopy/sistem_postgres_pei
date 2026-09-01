@@ -84,6 +84,33 @@
         padding: 4px 8px;
         background-color: #ffffff !important;
     }
+    /* ── Estilos de Formulario y Labels para Modal Relevamiento ── */
+    #modalNuevoRelevamiento label {
+        display: block !important;
+        position: static !important;
+        float: none !important;
+        margin-bottom: 8px !important;
+        transform: none !important;
+        color: #1e293b !important;
+        font-weight: 700 !important;
+        pointer-events: auto !important;
+        z-index: 10 !important;
+    }
+    #modalNuevoRelevamiento input.form-control, 
+    #modalNuevoRelevamiento textarea.form-control {
+        position: static !important;
+        display: block !important;
+        width: 100% !important;
+        margin-top: 0 !important;
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+    #modalNuevoRelevamiento input.form-control::placeholder, 
+    #modalNuevoRelevamiento textarea.form-control::placeholder {
+        color: #94a3b8 !important;
+        opacity: 1 !important;
+    }
     .select2-container--open {
         z-index: 999999 !important;
     }
@@ -1868,12 +1895,12 @@
                 </div>
                 
                 <div class="modal-body p-4" style="background-color: #f8fafc;">
-                    <div class="card border-0 shadow-sm p-3 mb-4 rounded-lg bg-white">
+                    <div class="p-3 mb-4 rounded-lg bg-white border" style="border-radius: 10px; border-color: #cbd5e1 !important;">
                         <div class="form-group mb-0">
-                            <label class="font-weight-bold text-dark mb-1" style="font-size:0.88rem;">
-                                <i class="fas fa-heading text-info mr-1"></i> Nombre del Circuito / Estudio de Campo <span class="text-danger">*</span>
+                            <label for="proc_input_nombre" class="font-weight-bold text-dark d-block mb-2" style="font-size: 0.9rem; position: static !important; transform: none !important;">
+                                <i class="fas fa-file-signature text-info mr-1"></i> Nombre del Circuito / Estudio de Campo <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="nombre" class="form-control form-control-lg border-slate-200 font-weight-bold text-dark" placeholder="Ej: Circuito de Recepción, Agendamiento e Internación - HZ Luque" style="border-radius: 8px; font-size: 0.95rem;" required>
+                            <input type="text" id="proc_input_nombre" name="nombre" class="form-control font-weight-bold text-dark" placeholder="Ej: Circuito de Recepción, Agendamiento e Internación - HZ Luque" style="border-radius: 8px; font-size: 0.95rem; height: 46px; position: static !important; background: #ffffff !important; border: 1px solid #cbd5e1 !important;" required>
                         </div>
                     </div>
 
