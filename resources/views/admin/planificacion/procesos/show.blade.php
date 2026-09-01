@@ -371,12 +371,16 @@
                             <input type="text" name="herramienta_sistema" id="paso_herramienta_sistema" class="form-control" placeholder="Ej: SIH / Ficha Papel / Agendamiento Web">
                         </div>
                         <div class="col-md-6 form-group">
-                            <label class="font-weight-bold text-dark">Diagnóstico de Fricción</label>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" name="es_cuello_botella" value="1" id="paso_es_cuello_botella">
-                                <label class="form-check-input-label text-danger font-weight-bold" for="paso_es_cuello_botella">
-                                    🚨 Marcar como Cuello de Botella Crítico
-                                </label>
+                            <label for="paso_es_cuello_botella" class="font-weight-bold text-dark mb-1 d-block">
+                                <i class="fas fa-exclamation-triangle text-danger mr-1"></i> Diagnóstico de Fricción
+                            </label>
+                            <div class="p-2 border rounded bg-white d-flex align-items-center" style="border-radius: 8px; border-color: #cbd5e1 !important; height: 42px;">
+                                <div class="custom-control custom-switch pl-4 w-100">
+                                    <input type="checkbox" class="custom-control-input" name="es_cuello_botella" value="1" id="paso_es_cuello_botella">
+                                    <label class="custom-control-label font-weight-bold text-danger cursor-pointer mb-0" for="paso_es_cuello_botella" style="cursor: pointer; font-size: 0.88rem; user-select: none;">
+                                        🚨 Marcar como Cuello de Botella Crítico
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
