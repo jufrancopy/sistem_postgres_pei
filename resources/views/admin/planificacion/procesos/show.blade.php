@@ -157,23 +157,15 @@
 @section('content')
 <div class="container-fluid">
     <!-- Encabezado del Relevamiento -->
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb bg-transparent p-0 mb-3" style="font-size: 0.85rem;">
-        <li class="breadcrumb-item"><a href="{{ route('globales.dashboard') }}" class="text-primary font-weight-bold">Planificación</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('globales.dashboard', ['tab' => 'procesos']) }}" class="text-primary font-weight-bold">Relevamiento de Procesos</a></li>
-        <li class="breadcrumb-item active text-muted" aria-current="page">{{ Str::limit($proceso->nombre, 45) }}</li>
-    </ol>
-</nav>
-
 <div class="card shadow-sm mb-4">
-    <div class="card-header card-header-info d-flex justify-content-between align-items-center flex-wrap">
+    <!-- Header Flotante Oficial Material Dashboard -->
+    <div class="card-header card-header-info d-flex justify-content-between align-items-center flex-wrap py-3">
         <div>
-            <h4 class="card-title font-weight-bold text-white mb-1">
-                <i class="fas fa-project-diagram mr-2"></i> {{ $proceso->nombre }}
+            <h4 class="card-title text-white font-weight-bold mb-0" style="font-size: 1.25rem;">
+                <i class="fas fa-project-diagram mr-2"></i> Relevamiento Técnico & Diagnóstico de Circuito
             </h4>
-            <p class="card-category text-white-50 mb-0 d-flex flex-wrap align-items-center">
-                <span class="mr-3"><i class="fas fa-hospital mr-1"></i> Servicio / Establecimiento: {{ $proceso->organigrama ? $proceso->organigrama->dependency : 'Servicio General' }}</span>
-                <span><i class="fas fa-calendar-alt mr-1"></i> Fecha de Visita: {{ $proceso->fecha_relevamiento ? $proceso->fecha_relevamiento->format('d/m/Y') : date('d/m/Y') }}</span>
+            <p class="card-category text-white-50 mb-0 mt-1" style="font-size: 0.85rem;">
+                Estudio de campo para diagnóstico de tiempos, circuitos y cuellos de botella (DOC)
             </p>
         </div>
         <div class="mt-2 mt-md-0">
@@ -185,7 +177,28 @@
             </a>
         </div>
     </div>
-        <div class="card-body bg-light">
+
+    <!-- Barra de Breadcrumb debajo de la cabecera (idéntica a la imagen de referencia) -->
+    <div class="px-4 py-2 bg-light border-bottom" style="background-color: #f1f5f9 !important;">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 m-0" style="font-size: 0.85rem;">
+                <li class="breadcrumb-item"><a href="{{ route('globales.dashboard') }}" class="text-primary font-weight-bold">Planificación</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('globales.dashboard', ['tab' => 'procesos']) }}" class="text-primary font-weight-bold">Relevamiento de Procesos</a></li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">{{ Str::limit($proceso->nombre, 65) }}</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="card-body bg-light">
+        <div class="p-3 mb-3 bg-white rounded border" style="border-radius: 10px; border-color: #cbd5e1 !important;">
+            <h4 class="font-weight-bold text-dark mb-1" style="font-size: 1.15rem;">
+                <i class="fas fa-file-signature text-info mr-2"></i> {{ $proceso->nombre }}
+            </h4>
+            <div class="d-flex flex-wrap align-items-center text-muted small mt-2">
+                <span class="mr-4"><i class="fas fa-hospital text-primary mr-1"></i> Servicio / Establecimiento: <strong class="text-dark">{{ $proceso->organigrama ? $proceso->organigrama->dependency : 'Servicio General' }}</strong></span>
+                <span><i class="fas fa-calendar-alt text-secondary mr-1"></i> Fecha de Visita: <strong class="text-dark">{{ $proceso->fecha_relevamiento ? $proceso->fecha_relevamiento->format('d/m/Y') : date('d/m/Y') }}</strong></span>
+            </div>
+        </div>
             <div class="row">
                 <div class="col-md-6">
                     <h6 class="font-weight-bold text-primary"><i class="fas fa-file-contract mr-1"></i> Contexto / Móvil de la Visita:</h6>

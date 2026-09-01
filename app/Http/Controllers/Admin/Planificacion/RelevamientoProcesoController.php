@@ -55,7 +55,8 @@ class RelevamientoProcesoController extends Controller
                     return '<span class="badge badge-success badge-pill"><i class="fas fa-check-circle mr-1"></i>0 cuellos</span>';
                 })
                 ->addColumn('actions', function ($row) {
-                    $btn = '<a href="' . route('pei.procesos.show', $row->id) . '" class="btn btn-sm btn-primary shadow-sm mr-1" title="Ver Flujograma & Diagnóstico"><i class="fas fa-project-diagram mr-1"></i>Ver Flujograma</a>';
+                    $btn = '<a href="' . route('pei.procesos.show', $row->id) . '" class="btn btn-sm btn-primary shadow-sm mr-1" title="Ver Flujograma & Diagnóstico"><i class="fas fa-project-diagram mr-1"></i>Flujograma</a>';
+                    $btn .= '<button type="button" onclick="editarRelevamiento(\'' . $row->id . '\')" class="btn btn-sm btn-warning font-weight-bold shadow-sm mr-1" title="Editar Relevamiento"><i class="fas fa-edit"></i></button>';
                     $btn .= '<a href="' . route('pei.procesos.exportPdf', $row->id) . '" target="_blank" class="btn btn-sm btn-danger shadow-sm mr-1" title="Imprimir Reporte PDF"><i class="fas fa-file-pdf"></i></a>';
                     $btn .= '<button type="button" onclick="eliminarRelevamiento(\'' . $row->id . '\', \'' . addslashes($row->nombre) . '\')" class="btn btn-sm btn-outline-danger shadow-sm" title="Eliminar Relevamiento"><i class="fas fa-trash-alt"></i></button>';
                     return $btn;
@@ -149,6 +150,100 @@ class RelevamientoProcesoController extends Controller
         $mermaidGraph = $this->generarMermaidGraph($proceso);
 
         return view('admin.planificacion.procesos.show', compact('proceso', 'organigramas', 'users', 'mermaidGraph'));
+    }
+
+    public function edit($id)
+    {
+        $proceso = RelevamientoProceso::with(['responsables', 'organigrama', 'peiProfile'])->findOrFail($id);
+
+        return response()->json([
+            'status' => 'success',
+            'proceso' => [
+                'id' => $proceso->id,
+                'nombre' => $proceso->nombre,
+                'organigrama_id' => $proceso->organigrama_id,
+                'pei_profile_id' => $proceso->pei_profile_id,
+                'contexto_motivo' => $proceso->contexto_motivo,
+                'fecha_relevamiento' => $proceso->fecha_relevamiento ? $proceso->fecha_relevamiento->format('Y-m-d') : null,
+                'responsables' => $proceso->responsables->pluck('id')->toArray(),
+                'participantes_externos' => $proceso->participantes_externos ?: [],
+            ]
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $proceso = RelevamientoProceso::findOrFail($id);
+
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'contexto_motivo' => 'nullable|string',
+            'pei_profile_id' => ['nullable', \Illuminate\Validation\Rule::exists(PeiProfile::class, 'id')],
+            'organigrama_id' => 'nullable|exists:organigramas,id',
+            'fecha_relevamiento' => 'nullable|date',
+            'responsables' => 'nullable|array',
+            'responsables.*' => 'exists:users,id',
+        ]);
+
+        $organigramaId = $request->organigrama_id;
+        if (empty($organigramaId) && !empty($request->pei_profile_id)) {
+            $pei = PeiProfile::find($request->pei_profile_id);
+            if ($pei) {
+                $organigramaId = $pei->effective_dependency_id;
+            }
+        }
+
+        $existingExtMap = [];
+        if (is_array($proceso->participantes_externos)) {
+            foreach ($proceso->participantes_externos as $ext) {
+                if (isset($ext['id'])) {
+                    $existingExtMap[$ext['id']] = $ext;
+                }
+            }
+        }
+
+        $extParticipantes = [];
+        if ($request->has('participantes_externos_nombres') && is_array($request->participantes_externos_nombres)) {
+            foreach ($request->participantes_externos_nombres as $idx => $nombre) {
+                if (!empty(trim($nombre))) {
+                    $extId = $request->participantes_externos_ids[$idx] ?? ('ext_' . time() . '_' . $idx);
+                    $existingData = $existingExtMap[$extId] ?? [];
+                    
+                    $extParticipantes[] = [
+                        'id' => $extId,
+                        'nombre' => trim($nombre),
+                        'cargo' => $request->participantes_externos_cargos[$idx] ?? 'Funcionario / Interventor',
+                        'dependencia' => $request->participantes_externos_dependencias[$idx] ?? '',
+                        'firma_digital' => $existingData['firma_digital'] ?? null,
+                        'firmado_at' => $existingData['firmado_at'] ?? null,
+                        'observaciones_firma' => $existingData['observaciones_firma'] ?? null,
+                    ];
+                }
+            }
+        }
+
+        $proceso->update([
+            'nombre' => $request->nombre,
+            'contexto_motivo' => $request->contexto_motivo,
+            'pei_profile_id' => $request->pei_profile_id,
+            'organigrama_id' => $organigramaId,
+            'fecha_relevamiento' => $request->fecha_relevamiento ?: $proceso->fecha_relevamiento,
+            'participantes_externos' => $extParticipantes,
+        ]);
+
+        if ($request->has('responsables')) {
+            $proceso->responsables()->sync($request->responsables);
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Estudio de relevamiento actualizado exitosamente.',
+                'proceso' => $proceso
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Estudio de relevamiento actualizado exitosamente.');
     }
 
     public function portalDoc(Request $request)

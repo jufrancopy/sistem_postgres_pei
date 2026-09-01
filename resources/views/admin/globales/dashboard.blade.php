@@ -1909,13 +1909,15 @@
         <div class="modal-content border-0 shadow-lg rounded-xl overflow-hidden" style="border-radius: 14px;">
             <form id="formNuevoRelevamientoDashboard" action="{{ route('pei.procesos.store') }}" method="POST">
                 @csrf
+                <input type="hidden" name="_method" id="proc_form_method" value="POST">
+                <input type="hidden" name="proceso_id" id="proc_form_id" value="">
                 <div class="modal-header py-3 px-4 text-white" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%);">
                     <div class="d-flex align-items-center">
                         <div class="p-2 rounded-circle mr-3 text-white" style="background: rgba(255,255,255,0.2);">
                             <i class="fas fa-clipboard-list fa-lg"></i>
                         </div>
                         <div>
-                            <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 1.15rem;">Alta de Relevamiento Técnico del Servicio</h5>
+                            <h5 class="modal-title font-weight-bold text-white mb-0" id="proc_modal_title" style="font-size: 1.15rem;">Alta de Relevamiento Técnico del Servicio</h5>
                             <small class="text-white-50" style="font-size: 0.78rem;">Estudio de campo para diagnóstico de tiempos, circuitos y cuellos de botella (DOC)</small>
                         </div>
                     </div>
@@ -1978,7 +1980,7 @@
                         <label class="font-weight-bold text-dark mb-1" style="font-size:0.88rem;">
                             <i class="fas fa-gavel text-warning mr-1"></i> Contexto / Móvil de la Visita de Relevamiento
                         </label>
-                        <textarea name="contexto_motivo" class="form-control border-slate-200" rows="2" placeholder="Especificar la Instrucción del Consejo de Administración, Ordenanza, Resolución o Solicitud que motiva el relevamiento..." style="border-radius: 8px; font-size: 0.88rem;"></textarea>
+                        <textarea name="contexto_motivo" id="modal_proc_contexto_motivo" class="form-control border-slate-200" rows="2" placeholder="Especificar la Instrucción del Consejo de Administración, Ordenanza, Resolución o Solicitud que motiva el relevamiento..." style="border-radius: 8px; font-size: 0.88rem;"></textarea>
                     </div>
 
                     <div class="row">
@@ -2000,7 +2002,7 @@
                             <label class="font-weight-bold text-dark mb-1" style="font-size:0.88rem;">
                                 <i class="fas fa-calendar-day text-secondary mr-1"></i> Fecha de Visita / Relevamiento
                             </label>
-                            <input type="date" name="fecha_relevamiento" class="form-control border-slate-200" value="{{ date('Y-m-d') }}" style="border-radius: 8px; height: 42px;">
+                            <input type="date" name="fecha_relevamiento" id="modal_proc_fecha_relevamiento" class="form-control border-slate-200" value="{{ date('Y-m-d') }}" style="border-radius: 8px; height: 42px;">
                         </div>
                     </div>
 
@@ -6228,6 +6230,55 @@ $(document).ready(function() {
             }
         });
     };
+
+    window.editarRelevamiento = function(id) {
+        $.ajax({
+            url: `/pei/procesos/${id}/edit`,
+            type: 'GET',
+            success: function(res) {
+                if (res.status === 'success') {
+                    const proc = res.proceso;
+                    $('#proc_form_method').val('PUT');
+                    $('#proc_form_id').val(proc.id);
+                    $('#formNuevoRelevamientoDashboard').attr('action', `/pei/procesos/${proc.id}`);
+                    $('#proc_modal_title').text('Editar Relevamiento Técnico del Servicio');
+                    $('#btnGuardarRelevamientoDashboard').html('<i class="fas fa-save mr-1"></i> Guardar Cambios del Relevamiento');
+
+                    $('#proc_input_nombre').val(proc.nombre);
+                    $('#modal_proc_organigrama_id').val(proc.organigrama_id).trigger('change');
+                    $('#modal_proc_pei_profile_id').val(proc.pei_profile_id).trigger('change');
+                    $('#modal_proc_contexto_motivo').val(proc.contexto_motivo);
+                    $('#modal_proc_fecha_relevamiento').val(proc.fecha_relevamiento);
+                    $('#modal_proc_responsables').val(proc.responsables).trigger('change');
+
+                    $('#extParticipantsContainerDashboard').empty();
+                    if (proc.participantes_externos && proc.participantes_externos.length > 0) {
+                        proc.participantes_externos.forEach(function(ext) {
+                            addExtParticipantRowDashboard(ext.nombre, ext.cargo, ext.dependencia, ext.id);
+                        });
+                    }
+
+                    $('#modalNuevoRelevamiento').modal('show');
+                }
+            },
+            error: function() {
+                Swal.fire('Error', 'No se pudieron cargar los datos del relevamiento.', 'error');
+            }
+        });
+    };
+
+    $('#modalNuevoRelevamiento').on('hidden.bs.modal', function () {
+        $('#proc_form_method').val('POST');
+        $('#proc_form_id').val('');
+        $('#formNuevoRelevamientoDashboard').attr('action', '{{ route("pei.procesos.store") }}');
+        $('#proc_modal_title').text('Alta de Relevamiento Técnico del Servicio');
+        $('#btnGuardarRelevamientoDashboard').html('<i class="fas fa-rocket mr-1"></i> Iniciar Relevamiento & Flujograma');
+        $('#formNuevoRelevamientoDashboard')[0].reset();
+        $('#modal_proc_organigrama_id').val('').trigger('change');
+        $('#modal_proc_pei_profile_id').val('').trigger('change');
+        $('#modal_proc_responsables').val(null).trigger('change');
+        $('#extParticipantsContainerDashboard').empty();
+    });
 
     $('#modalNuevoRelevamiento').on('shown.bs.modal', function () {
         initSelect2Relevamiento();
