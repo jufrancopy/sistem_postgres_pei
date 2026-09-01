@@ -16,7 +16,10 @@ class Organigrama extends Model
     protected $fillable = ['dependency', 'user_id', 'establecimiento_id', 'email', 'manager', 'phone',
         'tipo_establecimiento', 'nivel_complejidad', 'tenencia', 'tiene_aop', 'region', 'locality_id'];
 
-    protected $casts = ['tiene_aop' => 'boolean'];
+    public function getNombreAttribute(): string
+    {
+        return $this->dependency ?? '';
+    }
 
     public function esEstablecimiento(): bool
     {

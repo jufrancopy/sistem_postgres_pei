@@ -64,7 +64,7 @@ class RelevamientoProcesoController extends Controller
         }
 
         $peiProfiles = PeiProfile::whereIn('level', ['action', 'goal', 'axi'])->orderBy('name')->get();
-        $organigramas = Organigrama::orderBy('nombre')->get();
+        $organigramas = Organigrama::orderBy('dependency')->get();
         $users = User::orderBy('name')->get();
 
         return view('admin.planificacion.procesos.index', compact('peiProfiles', 'organigramas', 'users'));
@@ -111,7 +111,7 @@ class RelevamientoProcesoController extends Controller
     public function show($id)
     {
         $proceso = RelevamientoProceso::with(['peiProfile', 'organigrama', 'responsables', 'pasos.organigrama'])->findOrFail($id);
-        $organigramas = Organigrama::orderBy('nombre')->get();
+        $organigramas = Organigrama::orderBy('dependency')->get();
         $users = User::orderBy('name')->get();
 
         $mermaidGraph = $this->generarMermaidGraph($proceso);
