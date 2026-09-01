@@ -235,6 +235,28 @@ class RelevamientoProcesoController extends Controller
         return response()->json($this->buildProcesoPayload($proceso, 'Análisis de Inteligencia Artificial actualizado.'));
     }
 
+    public function firmar(Request $request, $id)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'firma' => 'required|string',
+            'observaciones' => 'nullable|string|max:255',
+        ]);
+
+        $proceso = RelevamientoProceso::findOrFail($id);
+
+        $proceso->responsables()->updateExistingPivot($request->user_id, [
+            'firma_digital' => $request->firma,
+            'firmado_at' => now(),
+            'observaciones_firma' => $request->observaciones,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Firma digital sellada y registrada correctamente.',
+        ]);
+    }
+
     private function buildProcesoPayload(RelevamientoProceso $proceso, string $message): array
     {
         $proceso->refresh();

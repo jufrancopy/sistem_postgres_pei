@@ -4,6 +4,8 @@
 @push('styles')
 <!-- Mermaid JS CDN -->
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<!-- Signature Pad CDN -->
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 <style>
     .mermaid-container {
         background: #f8f9fa;
@@ -160,9 +162,17 @@
             </div>
 
             <div class="d-flex flex-wrap align-items-center mt-2">
-                <span class="font-weight-bold text-dark mr-2"><i class="fas fa-users mr-1"></i> Equipo Relevador (Responsables de Visita):</span>
+                <span class="font-weight-bold text-dark mr-2"><i class="fas fa-users mr-1"></i> Equipo Relevador (Responsables / Interventores):</span>
                 @forelse($proceso->responsables as $resp)
-                    <span class="badge badge-primary px-2 py-1 mr-1 shadow-sm"><i class="fas fa-user-check mr-1"></i> {{ $resp->name }}</span>
+                    @if($resp->pivot->firma_digital)
+                        <span class="badge badge-success px-3 py-2 mr-2 mb-1 shadow-sm d-inline-flex align-items-center" style="font-size: 0.85rem;" title="Firma Digital Sellada: {{ $resp->pivot->firmado_at }}">
+                            <i class="fas fa-check-circle text-white mr-1"></i> {{ $resp->name }} (Firmado)
+                        </span>
+                    @else
+                        <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold px-3 py-1 mr-2 mb-1 shadow-sm d-inline-flex align-items-center" onclick="abrirModalFirma('{{ $resp->id }}', '{{ addslashes($resp->name) }}')">
+                            <i class="fas fa-file-signature text-primary mr-1"></i> Firmar Visita: {{ $resp->name }}
+                        </button>
+                    @endif
                 @empty
                     <span class="badge badge-secondary">Sin responsables asignados</span>
                 @endforelse
@@ -426,6 +436,64 @@
         </div>
 </div>
 
+<!-- Modal Firma Digital de Responsable / Interventor -->
+<div class="modal fade" id="modalFirmaResponsable" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-dark text-white p-3">
+                <h5 class="modal-title font-weight-bold" id="modalFirmaTitle">
+                    <i class="fas fa-signature text-info mr-2"></i> Firma Digital de Relevamiento / Visita
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formFirmaModal">
+                @csrf
+                <input type="hidden" name="user_id" id="firma_user_id">
+                <input type="hidden" name="firma" id="firma_base64">
+
+                <div class="modal-body p-4 bg-light">
+                    <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" style="font-size: 0.88rem;">
+                        <i class="fas fa-user-circle fa-2x mr-3 text-info"></i>
+                        <div>
+                            <small class="text-muted d-block text-uppercase font-weight-bold">Funcionario / Interventor:</small>
+                            <strong id="firma_user_name_display" class="text-dark" style="font-size: 1rem;"></strong>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <label class="font-weight-bold text-dark small mb-1">Firma Digital (Dibuje con Dedo / Lápiz / Mouse)</label>
+                        <div class="border rounded p-2 bg-white text-center" style="border-color: #cbd5e1 !important; touch-action: none;">
+                            <canvas id="canvas-firma-proceso" class="w-100 bg-white rounded" style="border: 1px dashed #94a3b8; height: 160px; cursor: crosshair;"></canvas>
+                            <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+                                <span class="small text-muted"><i class="fas fa-info-circle mr-1"></i> Dibuje su firma en el recuadro</span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" id="btnClearFirmaCanvas" style="font-size: 0.75rem;">Limpiar Canvas</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold text-dark small mb-1">Observaciones / Nota de Firma (Opcional)</label>
+                        <input type="text" name="observaciones" id="firma_observaciones" class="form-control form-control-sm" placeholder="Ej: Visita de campo validada en sitio">
+                    </div>
+
+                    <div class="mt-3 text-muted" style="font-size: 0.76rem; line-height: 1.3;">
+                        <i class="fas fa-shield-alt text-success mr-1"></i>
+                        La firma digital será estampada criptográficamente en el Reporte Técnico PDF institucional.
+                    </div>
+                </div>
+                <div class="modal-footer bg-white p-3">
+                    <button type="button" class="btn btn-secondary shadow-sm" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="btnGuardarFirmaModal" class="btn btn-primary font-weight-bold shadow-sm">
+                        <i class="fas fa-check-circle mr-1"></i> Registrar Firma Digital
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Botón Flotante Táctil (FAB) Optimizado para Tablet / Lenovo 10 -->
 <button type="button" class="btn btn-success btn-circle shadow-lg d-lg-none" style="position: fixed; bottom: 25px; right: 25px; width: 56px !important; height: 56px !important; z-index: 1040; font-size: 1.25rem !important;" onclick="abrirModalPaso()" title="Agregar Nueva Estación">
     <i class="fas fa-plus"></i>
@@ -435,6 +503,36 @@
 @push('scripts')
 <script>
 mermaid.initialize({ startOnLoad: true, theme: 'default' });
+
+var signaturePadProceso = null;
+
+function initSignaturePadProceso() {
+    var canvas = document.getElementById('canvas-firma-proceso');
+    if (!canvas) return;
+    
+    if (!signaturePadProceso) {
+        signaturePadProceso = new SignaturePad(canvas, {
+            backgroundColor: 'rgb(255, 255, 255)',
+            penColor: 'rgb(15, 23, 42)'
+        });
+    }
+
+    var ratio = Math.max(window.devicePixelRatio || 1, 1);
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext("2d").scale(ratio, ratio);
+    signaturePadProceso.clear();
+}
+
+function abrirModalFirma(userId, userName) {
+    $('#firma_user_id').val(userId);
+    $('#firma_user_name_display').text(userName);
+    $('#firma_observaciones').val('');
+    $('#modalFirmaResponsable').modal('show');
+    setTimeout(function() {
+        initSignaturePadProceso();
+    }, 250);
+}
 
 function initSelect2ModalPaso() {
     if ($.fn.select2) {
@@ -447,6 +545,42 @@ function initSelect2ModalPaso() {
 
 $(document).ready(function() {
     initSelect2ModalPaso();
+
+    $('#btnClearFirmaCanvas').on('click', function() {
+        if (signaturePadProceso) signaturePadProceso.clear();
+    });
+
+    $('#formFirmaModal').on('submit', function(e) {
+        e.preventDefault();
+        if (!signaturePadProceso || signaturePadProceso.isEmpty()) {
+            toastr.warning('Por favor, dibuje su firma digital en el recuadro antes de registrar.');
+            return;
+        }
+
+        var dataUrl = signaturePadProceso.toDataURL('image/png');
+        $('#firma_base64').val(dataUrl);
+
+        var btn = $('#btnGuardarFirmaModal');
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Registrando...');
+
+        $.ajax({
+            url: "{{ route('pei.procesos.firmar', $proceso->id) }}",
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(res) {
+                btn.prop('disabled', false).html('<i class="fas fa-check-circle mr-1"></i> Registrar Firma Digital');
+                $('#modalFirmaResponsable').modal('hide');
+                toastr.success(res.message);
+                setTimeout(function() {
+                    location.reload();
+                }, 500);
+            },
+            error: function() {
+                btn.prop('disabled', false).html('<i class="fas fa-check-circle mr-1"></i> Registrar Firma Digital');
+                toastr.error('Error al registrar la firma digital.');
+            }
+        });
+    });
 
     $('#modalPaso').on('shown.bs.modal', function() {
         initSelect2ModalPaso();

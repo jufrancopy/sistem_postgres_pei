@@ -50,7 +50,7 @@ class RelevamientoProceso extends Model
     public function responsables()
     {
         return $this->belongsToMany(User::class, 'planificacion.relevamiento_proceso_responsables', 'relevamiento_proceso_id', 'user_id')
-                    ->withPivot('rol_visita');
+                    ->withPivot('rol_visita', 'firma_digital', 'firmado_at', 'observaciones_firma');
     }
 
     public function pasos()

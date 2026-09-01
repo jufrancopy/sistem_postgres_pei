@@ -110,6 +110,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('pei/procesos/{procesoId}/pasos', 'Admin\Planificacion\RelevamientoProcesoController@storePaso')->name('pei.procesos.pasos.store');
     Route::delete('pei/procesos/{procesoId}/pasos/{pasoId}', 'Admin\Planificacion\RelevamientoProcesoController@destroyPaso')->name('pei.procesos.pasos.destroy');
     Route::post('pei/procesos/{id}/generar-ia', 'Admin\Planificacion\RelevamientoProcesoController@generarIa')->name('pei.procesos.generarIa');
+    Route::post('pei/procesos/{id}/firmar', 'Admin\Planificacion\RelevamientoProcesoController@firmar')->name('pei.procesos.firmar');
     Route::get('pei/procesos/{id}/export-pdf', 'Admin\Planificacion\RelevamientoProcesoController@exportPdf')->name('pei.procesos.exportPdf');
 
 

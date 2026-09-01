@@ -198,7 +198,7 @@
         </tbody>
     </table>
 
-    <!-- Firma de Responsables de la Visita (Dinámicas por Grupo de Trabajo) -->
+    <!-- Firma de Responsables de la Visita (Dinámicas por Grupo de Trabajo & Firma Digital) -->
     <div class="row mt-5" style="page-break-inside: avoid;">
         @forelse($proceso->responsables as $resp)
             @php
@@ -209,8 +209,20 @@
                 $cargoLabel = $depNombre ?: 'Equipo Relevador de Campo';
             @endphp
             <div class="col-6 mb-4" style="page-break-inside: avoid;">
-                <div class="signature-box">
-                    <strong style="font-size: 1rem; color: #0f172a;">{{ $resp->name }}</strong><br>
+                <div class="signature-box position-relative">
+                    @if($resp->pivot->firma_digital)
+                        <div class="mb-2">
+                            <img src="{{ $resp->pivot->firma_digital }}" style="max-height: 65px; width: auto;" alt="Firma Digital {{ $resp->name }}">
+                        </div>
+                        <div class="small text-success font-weight-bold mb-1" style="font-size: 0.72rem;">
+                            <i class="fas fa-shield-alt mr-1"></i> Firma Digital Sellada ({{ \Carbon\Carbon::parse($resp->pivot->firmado_at)->format('d/m/Y H:i') }})
+                        </div>
+                    @else
+                        <div class="my-2 text-muted font-italic" style="font-size: 0.78rem;">
+                            (Pendiente de Firma Digital en SIPLAN)
+                        </div>
+                    @endif
+                    <strong style="font-size: 0.95rem; color: #0f172a;">{{ $resp->name }}</strong><br>
                     <small class="text-muted d-block">{{ $resp->email }}</small>
                     <small class="font-weight-bold text-primary d-block mt-1">{{ $cargoLabel }}</small>
                 </div>
