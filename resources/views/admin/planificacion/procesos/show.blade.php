@@ -200,7 +200,7 @@
             </div>
 
             <div class="d-flex flex-wrap align-items-center mt-2">
-                <span class="font-weight-bold text-dark mr-2"><i class="fas fa-users mr-1"></i> Equipo Relevador (Responsables / Interventores):</span>
+                <span class="font-weight-bold text-dark mr-2"><i class="fas fa-users mr-1"></i> Equipo Relevador & Interventores:</span>
                 @forelse($proceso->responsables as $resp)
                     @if($resp->pivot->firma_digital)
                         <span class="badge badge-success px-3 py-2 mr-2 mb-1 shadow-sm d-inline-flex align-items-center" style="font-size: 0.85rem;" title="Firma Digital Sellada: {{ $resp->pivot->firmado_at }}">
@@ -212,8 +212,24 @@
                         </button>
                     @endif
                 @empty
-                    <span class="badge badge-secondary">Sin responsables asignados</span>
+                    @if(empty($proceso->participantes_externos))
+                        <span class="badge badge-secondary">Sin responsables asignados</span>
+                    @endif
                 @endforelse
+
+                @if(!empty($proceso->participantes_externos))
+                    @foreach($proceso->participantes_externos as $ext)
+                        @if(!empty($ext['firma_digital']))
+                            <span class="badge badge-success px-3 py-2 mr-2 mb-1 shadow-sm d-inline-flex align-items-center" style="font-size: 0.85rem;" title="Firma Digital Sellada: {{ $ext['firmado_at'] ?? '' }}">
+                                <i class="fas fa-check-circle text-white mr-1"></i> {{ $ext['nombre'] }} ({{ $ext['cargo'] ?? 'Acompañante' }}) (Firmado)
+                            </span>
+                        @else
+                            <button type="button" class="btn btn-sm btn-outline-info font-weight-bold px-3 py-1 mr-2 mb-1 shadow-sm d-inline-flex align-items-center" onclick="abrirModalFirma('{{ $ext['id'] }}', '{{ addslashes($ext['nombre']) }} — {{ addslashes($ext['cargo'] ?? 'Acompañante') }}')">
+                                <i class="fas fa-pen-alt text-info mr-1"></i> Firmar: {{ $ext['nombre'] }} ({{ $ext['cargo'] ?? 'Acompañante' }})
+                            </button>
+                        @endif
+                    @endforeach
+                @endif
             </div>
         </div>
     </div>

@@ -226,9 +226,9 @@
         </tbody>
     </table>
 
-    <!-- Firma de Responsables de la Visita (Dinámicas por Grupo de Trabajo & Firma Digital) -->
+    <!-- Firma de Responsables e Interventores de la Visita (Dinámicas por Grupo de Trabajo & Firma Digital) -->
     <div class="row mt-5" style="page-break-inside: avoid;">
-        @forelse($proceso->responsables as $resp)
+        @foreach($proceso->responsables as $resp)
             @php
                 $depNombre = $resp->grupo_padre ? $resp->grupo_padre->name : ($resp->organigrama ? $resp->organigrama->dependency : null);
                 if (!$depNombre && method_exists($resp, 'groups') && $resp->groups->isNotEmpty()) {
@@ -255,14 +255,42 @@
                     <small class="font-weight-bold text-primary d-block mt-1">{{ $cargoLabel }}</small>
                 </div>
             </div>
-        @empty
+        @endforeach
+
+        @if(!empty($proceso->participantes_externos))
+            @foreach($proceso->participantes_externos as $ext)
+                <div class="col-6 mb-4" style="page-break-inside: avoid;">
+                    <div class="signature-box position-relative">
+                        @if(!empty($ext['firma_digital']))
+                            <div class="mb-2">
+                                <img src="{{ $ext['firma_digital'] }}" style="max-height: 65px; width: auto;" alt="Firma Digital {{ $ext['nombre'] }}">
+                            </div>
+                            <div class="small text-success font-weight-bold mb-1" style="font-size: 0.72rem;">
+                                <i class="fas fa-shield-alt mr-1"></i> Firma Digital Sellada ({{ isset($ext['firmado_at']) ? \Carbon\Carbon::parse($ext['firmado_at'])->format('d/m/Y H:i') : date('d/m/Y') }})
+                            </div>
+                        @else
+                            <div class="my-2 text-muted font-italic" style="font-size: 0.78rem;">
+                                (Pendiente de Firma Digital de Validación)
+                            </div>
+                        @endif
+                        <strong style="font-size: 0.95rem; color: #0f172a;">{{ $ext['nombre'] }}</strong><br>
+                        <small class="font-weight-bold text-info d-block">{{ $ext['cargo'] ?? 'Interventor / Funcionario Acompañante' }}</small>
+                        @if(!empty($ext['dependencia']))
+                            <small class="text-muted d-block">{{ $ext['dependencia'] }}</small>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        @endif
+
+        @if($proceso->responsables->isEmpty() && empty($proceso->participantes_externos))
             <div class="col-6 offset-3" style="page-break-inside: avoid;">
                 <div class="signature-box">
                     <strong style="font-size: 1rem;">Equipo de Relevamiento Técnico de Campo</strong><br>
                     <small class="text-muted">{{ $proceso->organigrama ? $proceso->organigrama->dependency : 'Instituto de Previsión Social (IPS)' }}</small>
                 </div>
             </div>
-        @endforelse
+        @endif
     </div>
 
 </body>

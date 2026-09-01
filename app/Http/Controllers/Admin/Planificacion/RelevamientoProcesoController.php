@@ -85,6 +85,20 @@ class RelevamientoProcesoController extends Controller
                 $organigramaId = $pei->effective_dependency_id;
             }
         }
+        
+        $extParticipantes = [];
+        if ($request->has('participantes_externos_nombres') && is_array($request->participantes_externos_nombres)) {
+            foreach ($request->participantes_externos_nombres as $idx => $nombre) {
+                if (!empty(trim($nombre))) {
+                    $extParticipantes[] = [
+                        'id' => 'ext_' . time() . '_' . $idx,
+                        'nombre' => trim($nombre),
+                        'cargo' => $request->participantes_externos_cargos[$idx] ?? 'Funcionario / Interventor',
+                        'dependencia' => $request->participantes_externos_dependencias[$idx] ?? '',
+                    ];
+                }
+            }
+        }
 
         $proceso = RelevamientoProceso::create([
             'nombre' => $request->nombre,
@@ -95,6 +109,7 @@ class RelevamientoProcesoController extends Controller
             'estado' => 'en_relevamiento',
             'fecha_relevamiento' => $request->fecha_relevamiento ?: now(),
             'objetivo' => $request->objetivo,
+            'participantes_externos' => $extParticipantes,
             'created_by' => auth()->id(),
         ]);
 
@@ -139,82 +154,88 @@ class RelevamientoProcesoController extends Controller
     {
         $procesos = RelevamientoProceso::with(['peiProfile', 'organigrama', 'responsables', 'pasos'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(15);
 
         return view('admin.planificacion.procesos.portal_doc', compact('procesos'));
     }
 
     public function storePaso(Request $request, $procesoId, RelevamientoAiAnalysisService $aiService)
     {
-        $proceso = RelevamientoProceso::findOrFail($procesoId);
-
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'orden' => 'required|integer|min:1',
-            'organigrama_id' => 'nullable|exists:organigramas,id',
-            'area_dependencia_custom' => 'nullable|string|max:255',
-            'rol_responsable' => 'nullable|string',
+            'orden' => 'required|integer',
+            'area_dependencia_custom' => 'required|string|max:255',
             'tiempo_atencion_min' => 'required|integer|min:0',
             'tiempo_espera_min' => 'required|integer|min:0',
             'tiempo_traslado_min' => 'required|integer|min:0',
-            'herramienta_sistema' => 'nullable|string',
-            'es_cuello_botella' => 'nullable|boolean',
-            'criticidad' => 'required|string|in:baja,media,alta,critica',
-            'causa_raiz' => 'nullable|string',
-            'observacion_campo' => 'nullable|string',
-            'propuesta_mejora' => 'nullable|string',
+            'criticidad' => 'required|string',
         ]);
 
-        $areaCustom = $request->area_dependencia_custom ?: $request->area_dependencia;
+        $proceso = RelevamientoProceso::findOrFail($procesoId);
 
-        if ($request->paso_id) {
-            $paso = RelevamientoPaso::where('relevamiento_proceso_id', $procesoId)->findOrFail($request->paso_id);
-            $paso->update([
-                'orden' => $request->orden,
-                'nombre' => $request->nombre,
-                'descripcion' => $request->descripcion,
-                'organigrama_id' => $request->organigrama_id,
-                'area_dependencia_custom' => $areaCustom,
-                'rol_responsable' => $request->rol_responsable,
-                'tiempo_atencion_min' => $request->tiempo_atencion_min,
-                'tiempo_espera_min' => $request->tiempo_espera_min,
-                'tiempo_traslado_min' => $request->tiempo_traslado_min,
-                'herramienta_sistema' => $request->herramienta_sistema,
-                'es_cuello_botella' => $request->has('es_cuello_botella') ? (bool)$request->es_cuello_botella : false,
-                'criticidad' => $request->criticidad,
-                'causa_raiz' => $request->causa_raiz,
-                'observacion_campo' => $request->observacion_campo,
-                'propuesta_mejora' => $request->propuesta_mejora,
-            ]);
-        } else {
-            RelevamientoPaso::create([
-                'relevamiento_proceso_id' => $procesoId,
-                'orden' => $request->orden,
-                'nombre' => $request->nombre,
-                'descripcion' => $request->descripcion,
-                'organigrama_id' => $request->organigrama_id,
-                'area_dependencia_custom' => $areaCustom,
-                'rol_responsable' => $request->rol_responsable,
-                'tiempo_atencion_min' => $request->tiempo_atencion_min,
-                'tiempo_espera_min' => $request->tiempo_espera_min,
-                'tiempo_traslado_min' => $request->tiempo_traslado_min,
-                'herramienta_sistema' => $request->herramienta_sistema,
-                'es_cuello_botella' => $request->has('es_cuello_botella') ? (bool)$request->es_cuello_botella : false,
-                'criticidad' => $request->criticidad,
-                'causa_raiz' => $request->causa_raiz,
-                'observacion_campo' => $request->observacion_campo,
-                'propuesta_mejora' => $request->propuesta_mejora,
-            ]);
-        }
+        RelevamientoPaso::create([
+            'relevamiento_proceso_id' => $proceso->id,
+            'nombre' => $request->nombre,
+            'orden' => $request->orden,
+            'area_dependencia_custom' => $request->area_dependencia_custom,
+            'organigrama_id' => $request->organigrama_id,
+            'rol_responsable' => $request->rol_responsable,
+            'tiempo_atencion_min' => $request->tiempo_atencion_min,
+            'tiempo_espera_min' => $request->tiempo_espera_min,
+            'tiempo_traslado_min' => $request->tiempo_traslado_min,
+            'herramienta_sistema' => $request->herramienta_sistema,
+            'es_cuello_botella' => $request->has('es_cuello_botella') ? true : false,
+            'criticidad' => $request->criticidad,
+            'causa_raiz' => $request->causa_raiz,
+            'observacion_campo' => $request->observacion_campo,
+            'propuesta_mejora' => $request->propuesta_mejora,
+        ]);
 
-        $proceso->refresh();
         $proceso->analisis_ia = $aiService->generarDiagnostico($proceso);
         $proceso->save();
 
-        return response()->json($this->buildProcesoPayload($proceso, 'Estación de atención guardada correctamente.'));
+        return response()->json($this->buildProcesoPayload($proceso, 'Estación del circuito registrada con éxito.'));
     }
 
-    public function destroyPaso($procesoId, $pasoId, RelevamientoAiAnalysisService $aiService)
+    public function updatePaso(Request $request, $procesoId, $pasoId, RelevamientoAiAnalysisService $aiService)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'orden' => 'required|integer',
+            'area_dependencia_custom' => 'required|string|max:255',
+            'tiempo_atencion_min' => 'required|integer|min:0',
+            'tiempo_espera_min' => 'required|integer|min:0',
+            'tiempo_traslado_min' => 'required|integer|min:0',
+            'criticidad' => 'required|string',
+        ]);
+
+        $paso = RelevamientoPaso::where('relevamiento_proceso_id', $procesoId)->findOrFail($pasoId);
+
+        $paso->update([
+            'nombre' => $request->nombre,
+            'orden' => $request->orden,
+            'area_dependencia_custom' => $request->area_dependencia_custom,
+            'organigrama_id' => $request->organigrama_id,
+            'rol_responsable' => $request->rol_responsable,
+            'tiempo_atencion_min' => $request->tiempo_atencion_min,
+            'tiempo_espera_min' => $request->tiempo_espera_min,
+            'tiempo_traslado_min' => $request->tiempo_traslado_min,
+            'herramienta_sistema' => $request->herramienta_sistema,
+            'es_cuello_botella' => $request->has('es_cuello_botella') ? true : false,
+            'criticidad' => $request->criticidad,
+            'causa_raiz' => $request->causa_raiz,
+            'observacion_campo' => $request->observacion_campo,
+            'propuesta_mejora' => $request->propuesta_mejora,
+        ]);
+
+        $proceso = RelevamientoProceso::findOrFail($procesoId);
+        $proceso->analisis_ia = $aiService->generarDiagnostico($proceso);
+        $proceso->save();
+
+        return response()->json($this->buildProcesoPayload($proceso, 'Estación actualizada con éxito.'));
+    }
+
+    public function deletePaso($procesoId, $pasoId, RelevamientoAiAnalysisService $aiService)
     {
         $paso = RelevamientoPaso::where('relevamiento_proceso_id', $procesoId)->findOrFail($pasoId);
         $paso->delete();
@@ -238,18 +259,32 @@ class RelevamientoProcesoController extends Controller
     public function firmar(Request $request, $id)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'required',
             'firma' => 'required|string',
             'observaciones' => 'nullable|string|max:255',
         ]);
 
         $proceso = RelevamientoProceso::findOrFail($id);
 
-        $proceso->responsables()->updateExistingPivot($request->user_id, [
-            'firma_digital' => $request->firma,
-            'firmado_at' => now(),
-            'observaciones_firma' => $request->observaciones,
-        ]);
+        if (str_starts_with((string)$request->user_id, 'ext_')) {
+            $extList = is_array($proceso->participantes_externos) ? $proceso->participantes_externos : [];
+            foreach ($extList as &$ext) {
+                if (isset($ext['id']) && $ext['id'] === $request->user_id) {
+                    $ext['firma_digital'] = $request->firma;
+                    $ext['firmado_at'] = now()->format('Y-m-d H:i:s');
+                    $ext['observaciones_firma'] = $request->observaciones;
+                    break;
+                }
+            }
+            $proceso->participantes_externos = $extList;
+            $proceso->save();
+        } else {
+            $proceso->responsables()->updateExistingPivot($request->user_id, [
+                'firma_digital' => $request->firma,
+                'firmado_at' => now(),
+                'observaciones_firma' => $request->observaciones,
+            ]);
+        }
 
         return response()->json([
             'status' => 'success',

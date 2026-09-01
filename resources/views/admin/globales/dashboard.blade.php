@@ -1973,6 +1973,24 @@
                             <input type="date" name="fecha_relevamiento" class="form-control border-slate-200" value="{{ date('Y-m-d') }}" style="border-radius: 8px; height: 42px;">
                         </div>
                     </div>
+
+                    <!-- Sección Dinámica: Funcionales / Interventores Acompañantes (No registrados en el sistema) -->
+                    <div class="mt-3 p-3 rounded-lg bg-white border" style="border-radius: 10px; border-color: #cbd5e1 !important;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="font-weight-bold text-dark mb-0" style="font-size: 0.88rem;">
+                                <i class="fas fa-user-plus text-primary mr-1"></i> Funcional / Interventores Acompañantes (Locales / Sin Usuario en Sistema)
+                            </label>
+                            <button type="button" class="btn btn-xs btn-outline-primary font-weight-bold px-2 py-1" id="btnAddExtParticipantDashboard" style="border-radius: 6px;">
+                                <i class="fas fa-plus mr-1"></i> Agregar Funcionario
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mb-2" style="font-size: 0.78rem;">
+                            Agregá funcionarios locales, jefes de sala o visitantes que acompañan el relevamiento para requerir su firma de validación al finalizar el circuito.
+                        </small>
+                        <div id="extParticipantsContainerDashboard">
+                            <!-- Filas dinámicas -->
+                        </div>
+                    </div>
                 </div>
 
                 <div class="modal-footer bg-light px-4 py-3 border-top">
@@ -6093,6 +6111,33 @@ $(document).ready(function() {
     }
 
     initSelect2Relevamiento();
+
+    function addExtParticipantRowDashboard(nombre = '', cargo = '', dependencia = '') {
+        const rowId = 'ext_row_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+        const html = `
+            <div class="row align-items-center mb-2" id="${rowId}">
+                <div class="col-md-4">
+                    <input type="text" name="participantes_externos_nombres[]" class="form-control form-control-sm bg-white" placeholder="Nombre y Apellido *" value="${nombre}" required style="border-radius: 6px; font-size: 0.82rem; border: 1px solid #cbd5e1 !important;">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="participantes_externos_cargos[]" class="form-control form-control-sm bg-white" placeholder="Cargo / Función (Ej: Jefa Admisión)" value="${cargo}" style="border-radius: 6px; font-size: 0.82rem; border: 1px solid #cbd5e1 !important;">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="participantes_externos_dependencias[]" class="form-control form-control-sm bg-white" placeholder="Área / Ventanilla" value="${dependencia}" style="border-radius: 6px; font-size: 0.82rem; border: 1px solid #cbd5e1 !important;">
+                </div>
+                <div class="col-md-1 text-center">
+                    <button type="button" class="btn btn-xs btn-outline-danger" onclick="$('#${rowId}').remove()" title="Quitar">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        $('#extParticipantsContainerDashboard').append(html);
+    }
+
+    $('#btnAddExtParticipantDashboard').on('click', function() {
+        addExtParticipantRowDashboard();
+    });
 
     $('#modalNuevoRelevamiento').on('shown.bs.modal', function () {
         initSelect2Relevamiento();

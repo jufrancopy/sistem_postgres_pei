@@ -24,12 +24,14 @@ class RelevamientoProceso extends Model
         'fecha_relevamiento',
         'objetivo',
         'analisis_ia',
+        'participantes_externos',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'fecha_relevamiento' => 'date',
+        'participantes_externos' => 'array',
     ];
 
     public function peiProfile()
