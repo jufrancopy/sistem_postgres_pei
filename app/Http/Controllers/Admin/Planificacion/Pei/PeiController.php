@@ -1427,27 +1427,18 @@ class PeiController extends Controller
         
         $params = is_array($profile->parameters) ? $profile->parameters : (json_decode($profile->parameters, true) ?? []);
         
-        $destinationPath = public_path('uploads/logos');
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
-        }
-
         // 1. Logo Institucional (Reportes y Plan)
         if ($request->hasFile('logo_institucional_file')) {
-            $file = $request->file('logo_institucional_file');
-            $filename = 'logo_inst_' . $profile->id . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move($destinationPath, $filename);
-            $params['logo_institucional'] = asset('uploads/logos/' . $filename);
+            $path = $request->file('logo_institucional_file')->store('logos', 'public');
+            $params['logo_institucional'] = asset('storage/' . $path);
         } elseif ($request->filled('logo_institucional_url')) {
             $params['logo_institucional'] = $request->input('logo_institucional_url');
         }
 
         // 2. Logo para Encabezado de Actas MECIP
         if ($request->hasFile('acta_logo_file')) {
-            $file = $request->file('acta_logo_file');
-            $filename = 'logo_acta_' . $profile->id . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move($destinationPath, $filename);
-            $params['acta_logo_url'] = asset('uploads/logos/' . $filename);
+            $path = $request->file('acta_logo_file')->store('logos', 'public');
+            $params['acta_logo_url'] = asset('storage/' . $path);
         } elseif ($request->has('acta_logo_url')) {
             $params['acta_logo_url'] = $request->input('acta_logo_url');
         }
