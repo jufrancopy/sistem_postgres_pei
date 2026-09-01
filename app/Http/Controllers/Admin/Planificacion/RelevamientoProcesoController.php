@@ -82,11 +82,19 @@ class RelevamientoProcesoController extends Controller
             'responsables.*' => 'exists:users,id',
         ]);
 
+        $organigramaId = $request->organigrama_id;
+        if (empty($organigramaId) && !empty($request->pei_profile_id)) {
+            $pei = PeiProfile::find($request->pei_profile_id);
+            if ($pei) {
+                $organigramaId = $pei->effective_dependency_id;
+            }
+        }
+
         $proceso = RelevamientoProceso::create([
             'nombre' => $request->nombre,
             'contexto_motivo' => $request->contexto_motivo,
             'pei_profile_id' => $request->pei_profile_id,
-            'organigrama_id' => $request->organigrama_id,
+            'organigrama_id' => $organigramaId,
             'tipo_relevamiento' => 'circuito_paciente',
             'estado' => 'en_relevamiento',
             'fecha_relevamiento' => $request->fecha_relevamiento ?: now(),
@@ -111,9 +119,21 @@ class RelevamientoProcesoController extends Controller
     public function show($id)
     {
         $proceso = RelevamientoProceso::with(['peiProfile', 'organigrama', 'responsables', 'pasos.organigrama'])->findOrFail($id);
+        
+        // Delimitar las dependencias al organigrama de la Corporación / Dependencia del PEI o servicio
         $organigramas = Organigrama::orderBy('dependency')->get();
-        $users = User::orderBy('name')->get();
+        $targetOrgId = $proceso->organigrama_id ?: ($proceso->peiProfile ? $proceso->peiProfile->effective_dependency_id : null);
+        if ($targetOrgId) {
+            $mainOrg = Organigrama::find($targetOrgId);
+            if ($mainOrg && method_exists($mainOrg, 'descendantsAndSelf')) {
+                $scopedOrg = $mainOrg->descendantsAndSelf()->orderBy('dependency')->get();
+                if ($scopedOrg->isNotEmpty()) {
+                    $organigramas = $scopedOrg;
+                }
+            }
+        }
 
+        $users = User::orderBy('name')->get();
         $mermaidGraph = $this->generarMermaidGraph($proceso);
 
         return view('admin.planificacion.procesos.show', compact('proceso', 'organigramas', 'users', 'mermaidGraph'));

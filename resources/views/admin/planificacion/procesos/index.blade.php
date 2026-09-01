@@ -78,10 +78,13 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label class="font-weight-bold text-dark">Acción del PEI Vinculada</label>
-                            <select name="pei_profile_id" class="form-control select2-modal" style="width: 100%;">
-                                <option value="">-- Seleccionar Meta/Acción PEI --</option>
+                            <select name="pei_profile_id" id="select_pei_profile_id" class="form-control select2-modal" style="width: 100%;">
+                                <option value="" data-dependency-id="">-- Seleccionar Meta/Acción PEI --</option>
                                 @foreach($peiProfiles as $pei)
-                                    <option value="{{ $pei->id }}">[{{ strtoupper($pei->level) }}] {{ Str::limit($pei->name, 60) }}</option>
+                                    <option value="{{ $pei->id }}" data-dependency-id="{{ $pei->effective_dependency_id }}">
+                                        [{{ strtoupper($pei->level) }}] {{ Str::limit($pei->name, 60) }}
+                                        @if($pei->effective_dependency) — ({{ $pei->effective_dependency->dependency }})@endif
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -123,6 +126,14 @@
 $(document).ready(function() {
     $('.select2-modal').select2({
         dropdownParent: $('#modalNuevoRelevamiento')
+    });
+
+    $('#select_pei_profile_id').on('change', function() {
+        var selectedOpt = $(this).find('option:selected');
+        var depId = selectedOpt.data('dependency-id');
+        if (depId) {
+            $('select[name="organigrama_id"]').val(depId).trigger('change');
+        }
     });
 
     var table = $('#tablaProcesos').DataTable({

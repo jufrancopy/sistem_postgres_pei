@@ -106,6 +106,34 @@ class PeiProfile extends Model
     }
 
     /**
+     * Obtener el dependency_id efectivo (si este nodo no lo tiene, busca en sus ancestros)
+     */
+    public function getEffectiveDependencyIdAttribute()
+    {
+        if ($this->dependency_id) {
+            return $this->dependency_id;
+        }
+
+        if ($this->_lft && $this->_rgt) {
+            $root = static::where('_lft', '<=', $this->_lft)
+                ->where('_rgt', '>=', $this->_rgt)
+                ->whereNotNull('dependency_id')
+                ->orderBy('_lft', 'desc')
+                ->first();
+
+            return $root ? $root->dependency_id : null;
+        }
+
+        return null;
+    }
+
+    public function getEffectiveDependencyAttribute()
+    {
+        $depId = $this->effective_dependency_id;
+        return $depId ? Organigrama::find($depId) : null;
+    }
+
+    /**
      * Relación con las Solicitudes de Ajuste de Estructura Organizacional (Dirección de Organización y Calidad)
      */
     public function solicitudesEstructura(): HasMany
