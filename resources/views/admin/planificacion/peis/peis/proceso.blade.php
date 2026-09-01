@@ -361,17 +361,26 @@ $pctGlobal   = round(($completados / 6) * 100);
                                 </label>
                                 <div class="row align-items-center">
                                     <div class="col-md-7 mb-2 mb-md-0">
-                                        <div class="p-2 border rounded bg-white shadow-sm">
-                                            <small class="font-weight-bold text-muted d-block mb-1">Subir Archivo de Imagen:</small>
-                                            <input type="file" name="logo_institucional_file" id="file_logo_inst" class="form-control-file" accept="image/*">
-                                            <small class="font-weight-bold text-muted d-block mt-2 mb-1">O pegar URL directa:</small>
+                                        <div class="p-3 border rounded bg-white shadow-sm" style="border-radius: 8px;">
+                                            <small class="font-weight-bold text-dark d-block mb-2">Subir Archivo de Imagen:</small>
+                                            <div class="mb-2">
+                                                <button type="button" class="btn btn-sm btn-info font-weight-bold shadow-sm" onclick="document.getElementById('file_logo_inst').click()">
+                                                    <i class="fas fa-folder-open mr-1"></i> Seleccionar Imagen de Institución
+                                                </button>
+                                                <input type="file" name="logo_institucional_file" id="file_logo_inst" accept="image/*" style="display: none !important;">
+                                            </div>
+                                            <div class="mb-2">
+                                                <small id="filename_logo_inst" class="text-muted font-italic d-block" style="font-size: 0.78rem;">Ningún archivo seleccionado</small>
+                                            </div>
+                                            <hr class="my-2">
+                                            <small class="font-weight-bold text-muted d-block mb-1">O pegar URL directa:</small>
                                             <input type="url" name="logo_institucional_url" id="url_logo_inst" class="form-control form-control-sm" placeholder="https://dominio.com/escudo.png" value="{{ $logoInstitucional }}">
                                         </div>
                                     </div>
                                     <div class="col-md-5 text-center">
-                                        <div class="p-2 border rounded bg-white shadow-sm d-flex flex-column align-items-center justify-content-center" style="min-height: 105px;">
+                                        <div class="p-2 border rounded bg-white shadow-sm d-flex flex-column align-items-center justify-content-center" style="min-height: 125px;">
                                             <small class="text-muted font-weight-bold text-uppercase d-block mb-1" style="font-size: 0.72rem;">Vista Previa Logo Institución</small>
-                                            <img id="preview_logo_inst" src="{{ !empty($logoInstitucional) ? $logoInstitucional : asset('material/img/new_logo.png') }}" style="max-height: 65px; max-width: 100%; object-fit: contain;">
+                                            <img id="preview_logo_inst" src="{{ !empty($logoInstitucional) ? $logoInstitucional : asset('material/img/new_logo.png') }}" style="max-height: 75px; max-width: 100%; object-fit: contain;">
                                         </div>
                                     </div>
                                 </div>
@@ -391,17 +400,26 @@ $pctGlobal   = round(($completados / 6) * 100);
                                 </label>
                                 <div class="row align-items-center">
                                     <div class="col-md-7 mb-2 mb-md-0">
-                                        <div class="p-2 border rounded bg-white shadow-sm">
-                                            <small class="font-weight-bold text-muted d-block mb-1">Subir Archivo de Imagen:</small>
-                                            <input type="file" name="acta_logo_file" id="file_logo_acta" class="form-control-file" accept="image/*">
-                                            <small class="font-weight-bold text-muted d-block mt-2 mb-1">O pegar URL directa:</small>
+                                        <div class="p-3 border rounded bg-white shadow-sm" style="border-radius: 8px;">
+                                            <small class="font-weight-bold text-dark d-block mb-2">Subir Archivo de Imagen:</small>
+                                            <div class="mb-2">
+                                                <button type="button" class="btn btn-sm btn-info font-weight-bold shadow-sm" onclick="document.getElementById('file_logo_acta').click()">
+                                                    <i class="fas fa-folder-open mr-1"></i> Seleccionar Imagen de Acta MECIP
+                                                </button>
+                                                <input type="file" name="acta_logo_file" id="file_logo_acta" accept="image/*" style="display: none !important;">
+                                            </div>
+                                            <div class="mb-2">
+                                                <small id="filename_logo_acta" class="text-muted font-italic d-block" style="font-size: 0.78rem;">Ningún archivo seleccionado</small>
+                                            </div>
+                                            <hr class="my-2">
+                                            <small class="font-weight-bold text-muted d-block mb-1">O pegar URL directa:</small>
                                             <input type="url" name="acta_logo_url" id="url_logo_acta" class="form-control form-control-sm" placeholder="https://dominio.com/logo_mecip.png" value="{{ $actaLogoUrl }}">
                                         </div>
                                     </div>
                                     <div class="col-md-5 text-center">
-                                        <div class="p-2 border rounded bg-white shadow-sm d-flex flex-column align-items-center justify-content-center" style="min-height: 105px;">
+                                        <div class="p-2 border rounded bg-white shadow-sm d-flex flex-column align-items-center justify-content-center" style="min-height: 125px;">
                                             <small class="text-muted font-weight-bold text-uppercase d-block mb-1" style="font-size: 0.72rem;">Vista Previa Logo Acta MECIP</small>
-                                            <img id="preview_logo_acta" src="{{ !empty($actaLogoUrl) ? $actaLogoUrl : 'https://www.aneaes.gov.py/wp-content/uploads/2023/11/logo_mecip.png' }}" style="max-height: 65px; max-width: 100%; object-fit: contain;">
+                                            <img id="preview_logo_acta" src="{{ !empty($actaLogoUrl) ? $actaLogoUrl : 'https://www.aneaes.gov.py/wp-content/uploads/2023/11/logo_mecip.png' }}" style="max-height: 75px; max-width: 100%; object-fit: contain;">
                                         </div>
                                     </div>
                                 </div>
@@ -428,19 +446,22 @@ $pctGlobal   = round(($completados / 6) * 100);
         var fileInst = document.getElementById('file_logo_inst');
         var urlInst = document.getElementById('url_logo_inst');
         var prevInst = document.getElementById('preview_logo_inst');
+        var nameInst = document.getElementById('filename_logo_inst');
 
         if (fileInst) {
             fileInst.addEventListener('change', function(e) {
                 if (e.target.files && e.target.files[0]) {
+                    var file = e.target.files[0];
+                    if (nameInst) nameInst.textContent = '📄 Archivo listo: ' + file.name;
                     var reader = new FileReader();
-                    reader.onload = function(evt) { prevInst.src = evt.target.result; };
-                    reader.readAsDataURL(e.target.files[0]);
+                    reader.onload = function(evt) { if (prevInst) prevInst.src = evt.target.result; };
+                    reader.readAsDataURL(file);
                 }
             });
         }
         if (urlInst) {
             urlInst.addEventListener('input', function() {
-                if (this.value.trim()) prevInst.src = this.value.trim();
+                if (this.value.trim() && prevInst) prevInst.src = this.value.trim();
             });
         }
 
@@ -448,19 +469,22 @@ $pctGlobal   = round(($completados / 6) * 100);
         var fileActa = document.getElementById('file_logo_acta');
         var urlActa = document.getElementById('url_logo_acta');
         var prevActa = document.getElementById('preview_logo_acta');
+        var nameActa = document.getElementById('filename_logo_acta');
 
         if (fileActa) {
             fileActa.addEventListener('change', function(e) {
                 if (e.target.files && e.target.files[0]) {
+                    var file = e.target.files[0];
+                    if (nameActa) nameActa.textContent = '📄 Archivo listo: ' + file.name;
                     var reader = new FileReader();
-                    reader.onload = function(evt) { prevActa.src = evt.target.result; };
-                    reader.readAsDataURL(e.target.files[0]);
+                    reader.onload = function(evt) { if (prevActa) prevActa.src = evt.target.result; };
+                    reader.readAsDataURL(file);
                 }
             });
         }
         if (urlActa) {
             urlActa.addEventListener('input', function() {
-                if (this.value.trim()) prevActa.src = this.value.trim();
+                if (this.value.trim() && prevActa) prevActa.src = this.value.trim();
             });
         }
     });
