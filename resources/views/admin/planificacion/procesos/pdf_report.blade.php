@@ -4,19 +4,24 @@
     <meta charset="UTF-8">
     <title>Reporte Técnico — {{ $proceso->nombre }}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        body { font-size: 13px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #222; }
-        .header-logo { height: 60px; }
-        .report-header { border-bottom: 3px solid #0056b3; padding-bottom: 12px; margin-bottom: 20px; }
-        .box-section { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 14px; margin-bottom: 18px; }
-        .badge-danger-custom { background-color: #dc3545; color: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-        .badge-success-custom { background-color: #28a745; color: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-        .table-steps th { background-color: #343a40; color: #fff; font-size: 11px; text-transform: uppercase; }
-        .table-steps td { font-size: 11px; vertical-align: middle; }
-        .signature-box { border-top: 1px dashed #666; margin-top: 50px; padding-top: 10px; text-align: center; }
+        body { font-size: 12.5px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; background-color: #ffffff; }
+        .report-header { border-bottom: 3px solid #0284c7; padding-bottom: 14px; margin-bottom: 22px; }
+        .box-section { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+        .badge-danger-custom { background-color: #ef4444; color: #fff; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.78rem; }
+        .badge-success-custom { background-color: #10b981; color: #fff; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.78rem; }
+        .table-steps th { background-color: #0f172a; color: #fff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .table-steps td { font-size: 11.5px; vertical-align: middle; }
+        .signature-box { border-top: 1px dashed #94a3b8; margin-top: 45px; padding-top: 12px; text-align: center; }
         @media print {
             .no-print { display: none !important; }
-            body { padding: 0; margin: 0; }
+            body { padding: 0 !important; margin: 0 !important; }
+            .box-section, .card { border: 1px solid #cbd5e1 !important; box-shadow: none !important; }
+            .table-steps th { background-color: #0f172a !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .badge-danger-custom { background-color: #ef4444 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .badge-success-custom { background-color: #10b981 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .signature-box { page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -24,7 +29,7 @@
 
     <!-- Botones de Acción (no imprimibles) -->
     <div class="no-print mb-4 d-flex justify-content-between align-items-center bg-light p-3 rounded border">
-        <span class="text-dark font-weight-bold"><i class="fas fa-file-pdf text-danger mr-1"></i> Vista Previa del Reporte Técnico de Relevamiento</span>
+        <span class="text-dark font-weight-bold"><i class="fas fa-file-pdf text-danger mr-2"></i> Vista Previa del Reporte Técnico de Relevamiento</span>
         <div>
             <button onclick="window.print()" class="btn btn-primary font-weight-bold shadow-sm mr-2">
                 <i class="fas fa-print mr-1"></i> Imprimir Reporte / Guardar PDF
@@ -33,16 +38,32 @@
         </div>
     </div>
 
-    <!-- Encabezado Institucional -->
+    <!-- Encabezado Institucional con Branding SIPLAN GO -->
     <div class="report-header d-flex justify-content-between align-items-center">
-        <div>
-            <h4 class="font-weight-bold text-primary mb-1">INSTITUTO DE PREVISIÓN SOCIAL (IPS)</h4>
-            <h6 class="font-weight-bold text-dark mb-0">Dirección de Planificación / Dirección de Organización y Calidad (DOC)</h6>
-            <small class="text-muted">SIPLAN — Sistema de Planificación Estratégica Institucional</small>
+        <div class="d-flex align-items-center">
+            <div class="mr-3">
+                @php
+                    $sysLogoUrl = \App\Models\HomeConfiguration::getSetting('logo', null);
+                @endphp
+                @if($sysLogoUrl)
+                    <img src="{{ $sysLogoUrl }}" alt="SIPLAN GO" style="max-height: 52px; width: auto; object-fit: contain;">
+                @else
+                    <div class="px-3 py-2 bg-primary text-white font-weight-bold rounded shadow-sm d-inline-block" style="font-size: 1.35rem; letter-spacing: -0.5px;">
+                        SIPLAN <span style="color:#38bdf8; font-weight:900;">GO</span>
+                    </div>
+                @endif
+            </div>
+            <div>
+                <h5 class="font-weight-bold text-dark mb-0" style="letter-spacing: -0.3px;">INSTITUTO DE PREVISIÓN SOCIAL (IPS)</h5>
+                <h6 class="font-weight-bold text-primary mb-0" style="font-size: 0.95rem;">
+                    {{ $proceso->organigrama ? $proceso->organigrama->dependency : 'Área / Dependencia Relevada' }}
+                </h6>
+                <small class="text-muted">SIPLAN — Sistema de Planificación Estratégica Institucional</small>
+            </div>
         </div>
         <div class="text-right">
-            <span class="badge badge-info px-3 py-2 font-weight-bold" style="font-size:1rem;">REPORTE TÉCNICO</span>
-            <div class="small text-muted mt-1">Fecha: {{ date('d/m/Y') }}</div>
+            <span class="badge badge-primary px-3 py-2 font-weight-bold" style="font-size: 0.85rem;">REPORTE TÉCNICO</span>
+            <div class="small text-muted mt-1"><strong>Emisión:</strong> {{ date('d/m/Y') }}</div>
         </div>
     </div>
 
@@ -50,7 +71,7 @@
     <div class="text-center my-3">
         <h4 class="font-weight-bold text-dark uppercase mb-1">{{ $proceso->nombre }}</h4>
         <div class="font-weight-bold text-secondary">
-            Servicio / Establecimiento: {{ $proceso->organigrama ? $proceso->organigrama->nombre : 'Servicio General' }}
+            Servicio / Establecimiento: {{ $proceso->organigrama ? $proceso->organigrama->dependency : 'Servicio General' }}
         </div>
     </div>
 
@@ -128,7 +149,7 @@
     <!-- Diagnóstico de Inteligencia Artificial (IA) -->
     <div class="card mb-4 border-info">
         <div class="card-header bg-info text-white font-weight-bold p-2">
-            🤖 Informe de Diagnóstico Asistido por Inteligencia Artificial (IA Planificación & DOC)
+            🤖 Informe de Diagnóstico Asistido por Inteligencia Artificial (IA)
         </div>
         <div class="card-body p-3 bg-light">
             {!! \Illuminate\Support\Str::markdown($proceso->analisis_ia ?: 'Sin informe de IA.') !!}
@@ -148,18 +169,18 @@
                 <th class="text-center">Espera</th>
                 <th>Sistema</th>
                 <th>Estado</th>
-                <th>Propuesta de Mejora Sugerida</th>
+                <th>Propuesta de Mejora</th>
             </tr>
         </thead>
         <tbody>
             @foreach($proceso->pasos as $paso)
                 <tr class="{{ $paso->es_cuello_botella ? 'table-danger' : '' }}">
-                    <td class="text-center font-weight-bold">{{ $paso->orden }}</td>
+                    <td class="font-weight-bold text-center">{{ $paso->orden }}</td>
                     <td>
                         <strong>{{ $paso->nombre }}</strong>
                         @if($paso->descripcion)<br><small class="text-muted">{{ $paso->descripcion }}</small>@endif
                     </td>
-                    <td>{{ $paso->organigrama ? $paso->organigrama->nombre : 'General' }}</td>
+                    <td>{{ $paso->area_nombre }}</td>
                     <td>{{ $paso->rol_responsable ?: 'N/A' }}</td>
                     <td class="text-center font-weight-bold text-success">{{ $paso->tiempo_atencion_min }}m</td>
                     <td class="text-center font-weight-bold text-danger">{{ $paso->tiempo_espera_min }}m</td>
@@ -177,21 +198,28 @@
         </tbody>
     </table>
 
-    <!-- Firma de Responsables -->
-    <div class="row mt-5">
+    <!-- Firma de Responsables de la Visita (Dinámicas por Grupo de Trabajo) -->
+    <div class="row mt-5" style="page-break-inside: avoid;">
         @forelse($proceso->responsables as $resp)
-            <div class="col-6 mb-4">
+            @php
+                $depNombre = $resp->grupo_padre ? $resp->grupo_padre->name : ($resp->organigrama ? $resp->organigrama->dependency : null);
+                if (!$depNombre && method_exists($resp, 'groups') && $resp->groups->isNotEmpty()) {
+                    $depNombre = $resp->groups->pluck('name')->implode(' / ');
+                }
+                $cargoLabel = $depNombre ?: 'Equipo Relevador de Campo';
+            @endphp
+            <div class="col-6 mb-4" style="page-break-inside: avoid;">
                 <div class="signature-box">
-                    <strong>{{ $resp->name }}</strong><br>
-                    <small class="text-muted">{{ $resp->email }}</small><br>
-                    <small class="font-weight-bold">Equipo Relevador de Visita (Planificación / DOC)</small>
+                    <strong style="font-size: 1rem; color: #0f172a;">{{ $resp->name }}</strong><br>
+                    <small class="text-muted d-block">{{ $resp->email }}</small>
+                    <small class="font-weight-bold text-primary d-block mt-1">{{ $cargoLabel }}</small>
                 </div>
             </div>
         @empty
-            <div class="col-6 offset-3">
+            <div class="col-6 offset-3" style="page-break-inside: avoid;">
                 <div class="signature-box">
-                    <strong>Dirección de Planificación & Dirección de Organización y Calidad</strong><br>
-                    <small class="text-muted">Instituto de Previsión Social (IPS)</small>
+                    <strong style="font-size: 1rem;">Equipo de Relevamiento Técnico de Campo</strong><br>
+                    <small class="text-muted">{{ $proceso->organigrama ? $proceso->organigrama->dependency : 'Instituto de Previsión Social (IPS)' }}</small>
                 </div>
             </div>
         @endforelse
