@@ -70,6 +70,47 @@
     #modalPaso .form-group {
         margin-bottom: 1.15rem !important;
     }
+    /* ── Botones Circulares btn-circle ── */
+    .btn-circle {
+        width: 38px !important;
+        height: 38px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.95rem !important;
+        line-height: 1 !important;
+        transition: all 0.2s ease-in-out;
+    }
+    .btn-circle:hover {
+        transform: scale(1.12);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    }
+    .btn-circle.btn-sm {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* ── Optimización para Tablet 10" (Lenovo 10 / Dispositivos Táctiles) ── */
+    @media (max-width: 1024px) {
+        .metric-card {
+            margin-bottom: 1rem;
+        }
+        .metric-card h3 {
+            font-size: 1.4rem !important;
+        }
+        .mermaid-container {
+            padding: 10px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        #tablaPasos th, #tablaPasos td {
+            padding: 12px 8px !important;
+            font-size: 0.85rem;
+        }
+    }
 </style>
 @endpush
 
@@ -129,35 +170,39 @@
         </div>
     </div>
 
-    <!-- Barra de Tarjetas Métricas KPIs -->
+    <!-- Barra de Tarjetas Métricas KPIs (Optimizada Tablet / Lenovo 10) -->
     <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card metric-card shadow-sm p-3 bg-white">
-                <small class="text-muted font-weight-bold text-uppercase">Lead Time Total Paciente</small>
+        <div class="col-12 col-sm-6 col-lg-3 mb-3 mb-lg-0">
+            <div class="card metric-card shadow-sm p-3 bg-white h-100">
+                <small class="text-muted font-weight-bold text-uppercase d-block mb-1">Lead Time Total Paciente</small>
                 <h3 class="font-weight-bold text-dark mb-0">{{ $proceso->lead_time_total }} min</h3>
                 <small class="text-info font-weight-bold"><i class="fas fa-clock mr-1"></i> {{ round($proceso->lead_time_total / 60, 1) }} horas de recorrido</small>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card metric-card success shadow-sm p-3 bg-white">
-                <small class="text-muted font-weight-bold text-uppercase">Tiempo Atención Efectiva</small>
+        <div class="col-12 col-sm-6 col-lg-3 mb-3 mb-lg-0">
+            <div class="card metric-card success shadow-sm p-3 bg-white h-100">
+                <small class="text-muted font-weight-bold text-uppercase d-block mb-1">Tiempo Atención Efectiva</small>
                 <h3 class="font-weight-bold text-success mb-0">{{ $proceso->tiempo_atencion_total }} min</h3>
                 <small class="text-muted">Valor agregado al paciente</small>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card metric-card danger shadow-sm p-3 bg-white">
-                <small class="text-muted font-weight-bold text-uppercase">Tiempo Espera / Latencia</small>
+        <div class="col-12 col-sm-6 col-lg-3 mb-3 mb-lg-0">
+            <div class="card metric-card danger shadow-sm p-3 bg-white h-100">
+                <small class="text-muted font-weight-bold text-uppercase d-block mb-1">Tiempo Espera / Latencia</small>
                 <h3 class="font-weight-bold text-danger mb-0">{{ $proceso->tiempo_espera_total }} min</h3>
                 <small class="text-danger font-weight-bold"><i class="fas fa-hourglass-half mr-1"></i> Tiempo muerto en cola</small>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card metric-card shadow-sm p-3 bg-white">
-                <small class="text-muted font-weight-bold text-uppercase">Eficiencia & Cuellos</small>
-                <div class="d-flex align-items-center justify-content-between mt-1">
-                    <span class="badge badge-pill badge-info px-3 py-2" style="font-size:1.1rem;">{{ $proceso->eficiencia }}% Eficiencia</span>
-                    <span class="badge badge-pill badge-danger px-2 py-1"><i class="fas fa-exclamation-triangle mr-1"></i>{{ $proceso->conteo_cuellos_botella }} Cuello(s)</span>
+        <div class="col-12 col-sm-6 col-lg-3 mb-3 mb-lg-0">
+            <div class="card metric-card shadow-sm p-3 bg-white h-100">
+                <small class="text-muted font-weight-bold text-uppercase d-block mb-1">Eficiencia & Cuellos</small>
+                <div class="d-flex flex-wrap align-items-center justify-content-between mt-1 gap-1">
+                    <span class="badge badge-pill badge-info px-2 py-2 mb-1" style="font-size: 0.92rem; max-width: 100%; white-space: normal;">
+                        <i class="fas fa-chart-pie mr-1"></i>{{ $proceso->eficiencia }}% Eficiencia
+                    </span>
+                    <span class="badge badge-pill badge-danger px-2 py-1 mb-1" style="font-size: 0.82rem;">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>{{ $proceso->conteo_cuellos_botella }} Cuello(s)
+                    </span>
                 </div>
             </div>
         </div>
@@ -203,16 +248,16 @@
             <h5 class="card-title font-weight-bold mb-0">
                 <i class="fas fa-list-ol mr-2"></i> Estaciones del Circuito (Relevamiento Paso a Paso)
             </h5>
-            <button class="btn btn-success btn-sm font-weight-bold" onclick="abrirModalPaso()">
+            <button class="btn btn-success btn-sm font-weight-bold shadow-sm" onclick="abrirModalPaso()">
                 <i class="fas fa-plus-circle mr-1"></i> Agregar Estación
             </button>
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover table-bordered" id="tablaPasos">
+                <table class="table table-hover table-bordered align-middle mb-0" id="tablaPasos">
                     <thead class="bg-light">
                         <tr>
-                            <th style="width: 50px;">#</th>
+                            <th style="width: 50px;" class="text-center">#</th>
                             <th>Estación / Paso</th>
                             <th>Área / Dependencia</th>
                             <th>Rol Responsable</th>
@@ -221,33 +266,39 @@
                             <th>Sistema</th>
                             <th>Estado</th>
                             <th>Propuesta de Mejora</th>
-                            <th class="text-right">Acciones</th>
+                            <th class="text-center" style="width: 100px;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($proceso->pasos as $paso)
                             <tr class="{{ $paso->es_cuello_botella ? 'table-danger' : '' }}">
-                                <td class="font-weight-bold text-center">{{ $paso->orden }}</td>
-                                <td>
-                                    <strong class="text-dark">{{ $paso->nombre }}</strong>
-                                    @if($paso->descripcion)<br><small class="text-muted">{{ $paso->descripcion }}</small>@endif
+                                <td class="font-weight-bold text-center align-middle">{{ $paso->orden }}</td>
+                                <td class="align-middle">
+                                    <strong class="text-dark d-block">{{ $paso->nombre }}</strong>
+                                    @if($paso->descripcion)<small class="text-muted d-block">{{ $paso->descripcion }}</small>@endif
                                 </td>
-                                <td>{{ $paso->area_nombre }}</td>
-                                <td><span class="badge badge-secondary">{{ $paso->rol_responsable ?: 'N/A' }}</span></td>
-                                <td class="text-success font-weight-bold">{{ $paso->tiempo_atencion_min }} min</td>
-                                <td class="text-danger font-weight-bold">{{ $paso->tiempo_espera_min }} min</td>
-                                <td><small class="text-dark font-weight-bold">{{ $paso->herramienta_sistema ?: 'Manual' }}</small></td>
-                                <td>
+                                <td class="align-middle">{{ $paso->area_nombre }}</td>
+                                <td class="align-middle"><span class="badge badge-secondary">{{ $paso->rol_responsable ?: 'N/A' }}</span></td>
+                                <td class="text-success font-weight-bold align-middle">{{ $paso->tiempo_atencion_min }} min</td>
+                                <td class="text-danger font-weight-bold align-middle">{{ $paso->tiempo_espera_min }} min</td>
+                                <td class="align-middle"><small class="text-dark font-weight-bold">{{ $paso->herramienta_sistema ?: 'Manual' }}</small></td>
+                                <td class="align-middle">
                                     @if($paso->es_cuello_botella)
                                         <span class="badge badge-danger badge-pill"><i class="fas fa-exclamation-triangle mr-1"></i>CUELLO BOTELLA</span>
                                     @else
                                         <span class="badge badge-success badge-pill"><i class="fas fa-check mr-1"></i>Normal</span>
                                     @endif
                                 </td>
-                                <td><small class="text-dark font-italic">{{ $paso->propuesta_mejora ?: 'Sin observaciones' }}</small></td>
-                                <td class="text-right">
-                                    <button class="btn btn-sm btn-info" onclick='editarPaso(@json($paso))'><i class="fas fa-edit"></i></button>
-                                    <button class="btn btn-sm btn-danger" onclick="eliminarPaso('{{ $paso->id }}')"><i class="fas fa-trash"></i></button>
+                                <td class="align-middle"><small class="text-dark font-italic">{{ $paso->propuesta_mejora ?: 'Sin observaciones' }}</small></td>
+                                <td class="text-center align-middle" style="white-space: nowrap;">
+                                    <div class="d-inline-flex align-items-center justify-content-center">
+                                        <button type="button" class="btn btn-info btn-circle btn-sm mr-1 shadow-sm" title="Editar Estación" onclick='editarPaso(@json($paso))'>
+                                            <i class="fas fa-pencil-alt"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-circle btn-sm shadow-sm" title="Eliminar Estación" onclick="eliminarPaso('{{ $paso->id }}')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -369,8 +420,12 @@
                 </div>
             </form>
         </div>
-    </div>
 </div>
+
+<!-- Botón Flotante Táctil (FAB) Optimizado para Tablet / Lenovo 10 -->
+<button type="button" class="btn btn-success btn-circle shadow-lg d-lg-none" style="position: fixed; bottom: 25px; right: 25px; width: 56px !important; height: 56px !important; z-index: 1040; font-size: 1.25rem !important;" onclick="abrirModalPaso()" title="Agregar Nueva Estación">
+    <i class="fas fa-plus"></i>
+</button>
 @endsection
 
 @push('scripts')
