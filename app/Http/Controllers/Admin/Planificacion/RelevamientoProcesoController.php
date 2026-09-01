@@ -71,7 +71,7 @@ class RelevamientoProcesoController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:255',
             'contexto_motivo' => 'nullable|string',
-            'pei_profile_id' => 'nullable|exists:planificacion.pei_profiles,id',
+            'pei_profile_id' => ['nullable', \Illuminate\Validation\Rule::exists(PeiProfile::class, 'id')],
             'organigrama_id' => 'nullable|exists:organigramas,id',
             'fecha_relevamiento' => 'nullable|date',
             'responsables' => 'nullable|array',
