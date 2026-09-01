@@ -1427,9 +1427,22 @@ class PeiController extends Controller
         
         $params = is_array($profile->parameters) ? $profile->parameters : (json_decode($profile->parameters, true) ?? []);
         
-        if ($request->has('acta_logo_url')) {
+        // ── Procesar Subida de Archivo de Logo Institucional ──
+        if ($request->hasFile('logo_institucional_file')) {
+            $file = $request->file('logo_institucional_file');
+            $filename = 'logo_inst_' . $profile->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('uploads/logos');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $filename);
+            $params['logo_institucional'] = asset('uploads/logos/' . $filename);
+            $params['acta_logo_url'] = $params['logo_institucional'];
+        } elseif ($request->has('acta_logo_url') && !empty($request->input('acta_logo_url'))) {
             $params['acta_logo_url'] = $request->input('acta_logo_url');
+            $params['logo_institucional'] = $request->input('acta_logo_url');
         }
+
         if ($request->has('acta_institucion')) {
             $params['acta_institucion'] = $request->input('acta_institucion');
         }

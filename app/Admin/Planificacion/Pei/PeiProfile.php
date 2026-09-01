@@ -134,6 +134,16 @@ class PeiProfile extends Model
     }
 
     /**
+     * Devuelve el logo de la Institución desde los parámetros globales del PEI.
+     */
+    public function getLogoInstitucionalAttribute()
+    {
+        $root = $this->level === 'master' ? $this : ($this->ancestors()->where('level', 'master')->first() ?? $this);
+        $params = is_array($root->parameters) ? $root->parameters : (json_decode($root->parameters, true) ?? []);
+        return $params['logo_institucional'] ?? $params['acta_logo_url'] ?? null;
+    }
+
+    /**
      * Relación con las Solicitudes de Ajuste de Estructura Organizacional (Dirección de Organización y Calidad)
      */
     public function solicitudesEstructura(): HasMany

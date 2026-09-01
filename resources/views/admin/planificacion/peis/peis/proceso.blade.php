@@ -305,7 +305,7 @@ $pctGlobal   = round(($completados / 6) * 100);
 {{-- Modal Variables del Plan --}}
 <div class="modal fade" id="modalConfigVariables" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <form action="{{ route('pei-profiles.update-parameters', $profile->id) }}" method="POST">
+        <form action="{{ route('pei-profiles.update-parameters', $profile->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-info text-white">
@@ -317,30 +317,35 @@ $pctGlobal   = round(($completados / 6) * 100);
                 <div class="modal-body p-4">
                     @php
                         $params = is_array($profile->parameters) ? $profile->parameters : (json_decode($profile->parameters, true) ?? []);
-                        $actaLogoUrl = $params['acta_logo_url'] ?? '';
+                        $actaLogoUrl = $params['logo_institucional'] ?? ($params['acta_logo_url'] ?? '');
                         $actaInstitucion = $params['acta_institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL';
                         $actaDependencia = $params['acta_dependencia'] ?? 'DIRECCIÓN DE PLANIFICACIÓN';
                     @endphp
                     
                     <div class="form-group mb-4">
-                        <label class="font-weight-bold text-dark"><i class="fa fa-building text-info mr-1"></i> Institución (Acta MECIP)</label>
+                        <label class="font-weight-bold text-dark"><i class="fa fa-building text-info mr-1"></i> Institución que Planifica</label>
                         <input type="text" name="acta_institucion" class="form-control p-2 border rounded shadow-sm" value="{{ $actaInstitucion }}" style="background-color: #f8f9fa;">
                     </div>
 
                     <div class="form-group mb-4">
-                        <label class="font-weight-bold text-dark"><i class="fa fa-sitemap text-info mr-1"></i> Dependencia (Acta MECIP)</label>
+                        <label class="font-weight-bold text-dark"><i class="fa fa-sitemap text-info mr-1"></i> Dependencia Principal</label>
                         <textarea name="acta_dependencia" class="form-control p-2 border rounded shadow-sm" rows="2" style="background-color: #f8f9fa;">{{ $actaDependencia }}</textarea>
                     </div>
 
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark"><i class="fa fa-upload text-info mr-1"></i> Subir Logo de la Institución (Archivo Imagen)</label>
+                        <input type="file" name="logo_institucional_file" id="config_logo_file" class="form-control-file p-1 border rounded bg-white shadow-sm" accept="image/*">
+                        <small class="text-muted d-block mt-1"><i class="fa fa-info-circle text-info"></i> Subí una imagen PNG/JPG del Escudo o Logo de la Institución que estás planificando.</small>
+                    </div>
+
                     <div class="form-group mb-4">
-                        <label class="font-weight-bold text-dark"><i class="fa fa-image text-info mr-1"></i> URL del Logo (Acta MECIP)</label>
+                        <label class="font-weight-bold text-dark"><i class="fa fa-link text-info mr-1"></i> URL del Logo Institucional (Opcional)</label>
                         <input type="text" name="acta_logo_url" id="config_acta_logo_url" class="form-control p-2 border rounded shadow-sm" placeholder="Ej: https://midominio.com/logo.png" value="{{ $actaLogoUrl }}" style="background-color: #f8f9fa;">
-                        <small class="text-muted d-block mt-2"><i class="fa fa-info-circle text-info"></i> Si se deja en blanco, usarán el logo predeterminado del sistema.</small>
                     </div>
                     
                     <div class="text-center bg-light p-3 border rounded shadow-sm" style="min-height: 110px;">
-                        <small class="d-block text-muted mb-3 font-weight-bold text-uppercase">Vista Previa del Logo</small>
-                        <img id="config_logo_preview" src="{{ !empty($actaLogoUrl) ? $actaLogoUrl : asset('material/img/new_logo.png') }}" style="max-height: 70px; max-width: 100%;">
+                        <small class="d-block text-muted mb-3 font-weight-bold text-uppercase">Vista Previa del Logo Institucional</small>
+                        <img id="config_logo_preview" src="{{ !empty($actaLogoUrl) ? $actaLogoUrl : asset('material/img/new_logo.png') }}" style="max-height: 80px; max-width: 100%; object-fit: contain;">
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-top-0">
@@ -354,12 +359,26 @@ $pctGlobal   = round(($completados / 6) * 100);
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var inputLogo = document.getElementById('config_acta_logo_url');
-        if (inputLogo) {
-            inputLogo.addEventListener('input', function() {
+        var inputLogoUrl = document.getElementById('config_acta_logo_url');
+        var inputLogoFile = document.getElementById('config_logo_file');
+        var preview = document.getElementById('config_logo_preview');
+
+        if (inputLogoUrl) {
+            inputLogoUrl.addEventListener('input', function() {
                 var url = this.value.trim();
-                var preview = document.getElementById('config_logo_preview');
-                preview.src = url ? url : '{{ asset('material/img/new_logo.png') }}';
+                if (url) preview.src = url;
+            });
+        }
+
+        if (inputLogoFile) {
+            inputLogoFile.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(evt) {
+                        preview.src = evt.target.result;
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
             });
         }
     });
