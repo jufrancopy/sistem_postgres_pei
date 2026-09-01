@@ -50,7 +50,13 @@ class PeiActorController extends Controller
         $data = ['pei_profile_id' => $peiId, 'tipo' => $request->tipo, 'aportes' => $request->aportes, 'orden' => $request->orden ?? 0];
 
         if ($request->tipo === 'interno') {
-            $data += ['organigrama_id' => $request->organigrama_id, 'user_id' => $request->user_id];
+            $data += [
+                'organigrama_id'      => $request->organigrama_id ?: null,
+                'user_id'             => $request->user_id ?: null,
+                'dependencia_externa' => $request->dependencia_externa,
+                'persona_referente'   => $request->persona_referente,
+                'email_externo'       => $request->email_externo,
+            ];
         } else {
             $data += [
                 'institucion_id'      => $request->institucion_id ?: null,

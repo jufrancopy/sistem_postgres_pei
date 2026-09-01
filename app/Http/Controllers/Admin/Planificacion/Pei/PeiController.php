@@ -532,9 +532,8 @@ class PeiController extends Controller
 
     public function show(Request $request, $id)
     {
-        if (!auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador de Planificación', 'Coordinación de Planificación', 'Analista de Planificación', 'Analista PEI', 'Coordinador de Proyectos', 'Coordinación de Proyectos'])) {
-            return redirect()->route('pei-profiles.proceso', $id);
-        }
+        // Todos los usuarios autenticados pueden visualizar y editar el perfil asignado
+
 
         // Cargar comentarios de asesoría técnica externa agrupados por nodo/iniciativa
         $comentariosAsesoria = \App\Models\Planificacion\PeiAsesoriaComentario::whereHas('asesoria', function($q) use ($id) {

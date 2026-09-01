@@ -35,16 +35,20 @@ class PeiActor extends Model
 
     public function getDependenciaLabelAttribute(): string
     {
+        if (!empty($this->dependencia_externa)) {
+            return $this->dependencia_externa;
+        }
         if ($this->tipo === 'interno') {
             return $this->organigrama?->dependency ?? '—';
         }
-        return $this->institucion?->nombre ?? $this->dependencia_externa ?? '—';
+        return $this->institucion?->nombre ?? '—';
     }
 
     public function getPersonaLabelAttribute(): string
     {
-        return $this->tipo === 'interno'
-            ? ($this->user?->name ?? '—')
-            : ($this->persona_referente ?? '—');
+        if (!empty($this->persona_referente)) {
+            return $this->persona_referente;
+        }
+        return $this->user?->name ?? '—';
     }
 }

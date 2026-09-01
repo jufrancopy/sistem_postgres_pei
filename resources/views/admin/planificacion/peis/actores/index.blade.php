@@ -118,22 +118,26 @@
 
                 <div id="camposInternos">
                     <div class="form-group">
-                        <label>Dependencia Institucional <span class="text-danger">*</span></label>
+                        <label>Dependencia Institucional</label>
                         <select class="form-control" id="organigrama_id">
-                            <option value="">— Seleccione —</option>
+                            <option value="">— Seleccione Dependencia —</option>
                             @foreach($organigramas as $org)
                                 <option value="{{ $org->id }}">{{ $org->dependency }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Persona Referente <span class="text-danger">*</span></label>
+                        <label>Usuario en Sistema</label>
                         <select class="form-control" id="user_id">
-                            <option value="">— Seleccione —</option>
+                            <option value="">— Seleccione Usuario —</option>
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}">{{ $user->name }} — {{ $user->email }}</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Persona Referente / Director / Coordinador <small class="text-muted">(Nombre completo y cargo actual)</small></label>
+                        <input type="text" class="form-control" id="persona_referente_interno" placeholder="Ej: Dr. Juan Pérez — Director de Servicio">
                     </div>
                 </div>
 
@@ -245,7 +249,7 @@ $(function () {
         $('#organigrama_id').val('').trigger('change');
         $('#user_id').val('').trigger('change');
         $('#institucion_id').val(null).trigger('change');
-        $('#dependencia_externa, #persona_referente, #email_externo, #aportes').val('');
+        $('#dependencia_externa, #persona_referente, #persona_referente_interno, #email_externo, #aportes').val('');
         $('#orden').val(0);
         setTipo('interno');
     }
@@ -265,6 +269,7 @@ $(function () {
         if (d.tipo === 'interno') {
             $('#organigrama_id').val(d.organigrama).trigger('change');
             $('#user_id').val(d.user).trigger('change');
+            $('#persona_referente_interno').val(d.persona);
         } else {
             $('#dependencia_externa').val(d.dependencia);
             $('#persona_referente').val(d.persona);
@@ -288,15 +293,16 @@ $(function () {
         if (tipo === 'interno') {
             data.organigrama_id = $('#organigrama_id').val();
             data.user_id = $('#user_id').val();
-            if (!data.organigrama_id || !data.user_id)
-                return Swal.fire('Atención', 'Seleccione la dependencia y la persona referente.', 'warning');
+            data.persona_referente = $('#persona_referente_interno').val();
+            if (!data.organigrama_id && !data.user_id && !data.persona_referente)
+                return Swal.fire('Atención', 'Seleccione la dependencia o ingrese la persona referente.', 'warning');
         } else {
             data.dependencia_externa = $('#dependencia_externa').val();
             data.institucion_id    = $('#institucion_id').val();
             data.persona_referente = $('#persona_referente').val();
             data.email_externo = $('#email_externo').val();
             if (!data.institucion_id && !data.dependencia_externa)
-                return Swal.fire('Atención', 'Seleccioné o escriba la institución.', 'warning');
+                return Swal.fire('Atención', 'Seleccione o escriba la institución.', 'warning');
         }
 
         $('#btnGuardar').prop('disabled', true);
