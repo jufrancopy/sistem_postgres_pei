@@ -117,6 +117,13 @@
                                 <span class="sidebar-normal">PEI</span>
                             </a>
                         </li>
+                        <li class="nav-item {{ $isActive('pei.procesos.*') }}">
+                            <a class="nav-link" href="{{ route('pei.procesos.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-project-diagram" style="font-size:.8rem; color: #4f46e5;"></i></span>
+                                <span class="sidebar-normal">Circuitos & Flujogramas</span>
+                            </a>
+                        </li>
+
                         <li class="nav-item">
                             <a class="nav-link {{ $enFoda ? 'active' : '' }}" data-toggle="collapse" href="#fodaMenu" aria-expanded="{{ $enFoda ? 'true' : 'false' }}">
                                 <span class="sidebar-mini"><i class="fa fa-random" style="font-size:.8rem; color: #4f46e5;"></i></span>

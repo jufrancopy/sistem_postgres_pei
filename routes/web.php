@@ -104,6 +104,15 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/matriz',        'Admin\Planificacion\Pei\PeiController@matriz')->name('pei-profiles.matriz');
     Route::get('pei-profiles/{idProfile}/matriz/pdf',    'Admin\Planificacion\Pei\PeiController@matrizPdf')->name('pei-profiles.matriz.pdf');
 
+    // ── Mapeo de Procesos, Circuitos de Pacientes & Flujogramas DOC ──────────────
+    Route::get('pei/procesos/portal-doc', 'Admin\Planificacion\RelevamientoProcesoController@portalDoc')->name('pei.procesos.portalDoc');
+    Route::resource('pei/procesos', 'Admin\Planificacion\RelevamientoProcesoController', ['names' => 'pei.procesos']);
+    Route::post('pei/procesos/{procesoId}/pasos', 'Admin\Planificacion\RelevamientoProcesoController@storePaso')->name('pei.procesos.pasos.store');
+    Route::delete('pei/procesos/{procesoId}/pasos/{pasoId}', 'Admin\Planificacion\RelevamientoProcesoController@destroyPaso')->name('pei.procesos.pasos.destroy');
+    Route::post('pei/procesos/{id}/generar-ia', 'Admin\Planificacion\RelevamientoProcesoController@generarIa')->name('pei.procesos.generarIa');
+    Route::get('pei/procesos/{id}/export-pdf', 'Admin\Planificacion\RelevamientoProcesoController@exportPdf')->name('pei.procesos.exportPdf');
+
+
 
     Route::get('pei-profiles/{idProfile}/vista-asesor', 'Admin\Planificacion\Pei\PeiController@vistaAsesor')->name('pei-profiles.vista-asesor');
     Route::post('pei-profiles/{idProfile}/guardar-comentario-asesor', 'Admin\Planificacion\Pei\PeiController@guardarComentarioAsesor')->name('pei-profiles.guardar-comentario-asesor');
