@@ -302,13 +302,13 @@ $pctGlobal   = round(($completados / 6) * 100);
     </div>
 </div>
 
-{{-- Modal Variables del Plan (Globales) - Rediseño Ejecutivo Premium --}}
+{{-- Modal Variables del Plan (Globales) --}}
 <div class="modal fade" id="modalConfigVariables" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <form action="{{ route('pei-profiles.update-parameters', $profile->id) }}" method="POST" enctype="multipart/form-data" class="w-100">
             @csrf
             <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
-                <!-- Modal Header -->
+                <!-- Header -->
                 <div class="modal-header text-white p-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;">
                     <div class="d-flex align-items-center">
                         <div class="rounded-circle bg-info p-2 mr-3 text-white d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
@@ -316,7 +316,7 @@ $pctGlobal   = round(($completados / 6) * 100);
                         </div>
                         <div>
                             <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 1.15rem;">Variables del Plan (Globales)</h5>
-                            <small class="text-white-50">Identidad institucional y parámetros para actas y reportes</small>
+                            <small class="text-white-50">Configuración de logos e identidad para Reportes y Actas MECIP</small>
                         </div>
                     </div>
                     <button type="button" class="close text-white opacity-80" data-dismiss="modal" aria-label="Cerrar" style="font-size: 1.5rem; text-shadow: none;">
@@ -327,72 +327,88 @@ $pctGlobal   = round(($completados / 6) * 100);
                 <div class="modal-body p-4 bg-light">
                     @php
                         $params = is_array($profile->parameters) ? $profile->parameters : (json_decode($profile->parameters, true) ?? []);
-                        $actaLogoUrl = $params['logo_institucional'] ?? ($params['acta_logo_url'] ?? '');
+                        $logoInstitucional = $params['logo_institucional'] ?? '';
+                        $actaLogoUrl = $params['acta_logo_url'] ?? '';
                         $actaInstitucion = $params['acta_institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL';
                         $actaDependencia = $params['acta_dependencia'] ?? 'DIRECCIÓN DE PLANIFICACIÓN';
                     @endphp
 
-                    <div class="row mb-3">
-                        <div class="col-md-6 form-group">
-                            <label class="font-weight-bold text-dark d-block mb-1" style="position: static; font-size: 0.9rem;">
-                                <i class="fas fa-building text-info mr-1"></i> Institución que Planifica <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="acta_institucion" class="form-control bg-white shadow-sm" value="{{ $actaInstitucion }}" required style="position: static; border-radius: 8px; border: 1px solid #cbd5e1; height: 42px; font-weight: 600;">
+                    <!-- 🏛️ SECCIÓN 1: DATOS E IDENTIDAD DE LA INSTITUCIÓN QUE PLANIFICA -->
+                    <div class="card mb-4 border-0 shadow-sm" style="border-radius: 10px;">
+                        <div class="card-header bg-white font-weight-bold text-dark border-bottom p-3">
+                            <i class="fas fa-university text-primary mr-2"></i> 1. Identidad de la Institución que Planifica (Reportes PDF / SIPLAN)
                         </div>
-                        <div class="col-md-6 form-group">
-                            <label class="font-weight-bold text-dark d-block mb-1" style="position: static; font-size: 0.9rem;">
-                                <i class="fas fa-sitemap text-info mr-1"></i> Dependencia Principal <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="acta_dependencia" class="form-control bg-white shadow-sm" value="{{ $actaDependencia }}" required style="position: static; border-radius: 8px; border: 1px solid #cbd5e1; height: 42px; font-weight: 600;">
-                        </div>
-                    </div>
-
-                    <!-- Dropzone Interactivo para Subir Logo Institucional -->
-                    <div class="form-group mb-4">
-                        <label class="font-weight-bold text-dark d-block mb-2" style="position: static; font-size: 0.9rem;">
-                            <i class="fas fa-id-card text-info mr-1"></i> Logo de la Institución que se Planifica
-                        </label>
-
-                        <div id="dropzone_logo_box" class="p-4 border-2 rounded text-center bg-white shadow-sm cursor-pointer position-relative" style="border: 2px dashed #0284c7; border-radius: 12px; transition: all 0.3s ease; background-color: #f8fafc !important; min-height: 140px;">
-                            <input type="file" name="logo_institucional_file" id="config_logo_file" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10;">
-                            
-                            <div id="dropzone_prompt" class="{{ !empty($actaLogoUrl) ? 'd-none' : '' }}">
-                                <div class="mb-2">
-                                    <span class="rounded-circle bg-info-soft p-3 d-inline-flex align-items-center justify-content-center text-info" style="background-color: #e0f2fe; width: 56px; height: 56px;">
-                                        <i class="fas fa-cloud-upload-alt fa-2x"></i>
-                                    </span>
+                        <div class="card-body p-3">
+                            <div class="row mb-3">
+                                <div class="col-md-6 form-group mb-0">
+                                    <label class="font-weight-bold text-dark d-block mb-1" style="position: static; font-size: 0.88rem;">
+                                        Institución que Planifica <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" name="acta_institucion" class="form-control bg-white shadow-sm" value="{{ $actaInstitucion }}" required style="position: static; border-radius: 8px; border: 1px solid #cbd5e1; height: 40px; font-weight: 600;">
                                 </div>
-                                <h6 class="font-weight-bold text-dark mb-1" style="font-size: 0.95rem;">Hacé clic o arrastrá el logo institucional aquí</h6>
-                                <p class="small text-muted mb-2">Admite formatos PNG, JPG, SVG o WEBP (Recomendado fondo transparente)</p>
-                                <button type="button" class="btn btn-sm btn-outline-info font-weight-bold px-3 shadow-sm" style="border-radius: 6px; pointer-events: none;">
-                                    <i class="fas fa-folder-open mr-1"></i> Seleccionar Imagen desde tu Equipo
-                                </button>
+                                <div class="col-md-6 form-group mb-0">
+                                    <label class="font-weight-bold text-dark d-block mb-1" style="position: static; font-size: 0.88rem;">
+                                        Dependencia Principal <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" name="acta_dependencia" class="form-control bg-white shadow-sm" value="{{ $actaDependencia }}" required style="position: static; border-radius: 8px; border: 1px solid #cbd5e1; height: 40px; font-weight: 600;">
+                                </div>
                             </div>
 
-                            <div id="dropzone_preview_wrapper" class="{{ !empty($actaLogoUrl) ? '' : 'd-none' }}">
-                                <div class="d-flex align-items-center justify-content-center p-2 bg-light border rounded mb-2" style="border-radius: 8px; min-height: 90px;">
-                                    <img id="config_logo_preview" src="{{ !empty($actaLogoUrl) ? $actaLogoUrl : asset('material/img/new_logo.png') }}" style="max-height: 90px; max-width: 100%; object-fit: contain;">
-                                </div>
-                                <span class="badge badge-success px-2 py-1 small font-weight-bold mb-2 d-inline-block">
-                                    <i class="fas fa-check-circle mr-1"></i> Imagen Lista para Guardar
-                                </span>
-                                <div class="mt-1">
-                                    <button type="button" class="btn btn-xs btn-outline-secondary font-weight-bold" id="btnChangeLogo" style="z-index: 15; position: relative;">
-                                        <i class="fas fa-sync-alt mr-1"></i> Cambiar Imagen
-                                    </button>
+                            <!-- Dropzone & Preview Logo Institucional -->
+                            <div class="form-group mb-2">
+                                <label class="font-weight-bold text-dark d-block mb-1" style="position: static; font-size: 0.88rem;">
+                                    Logo Institucional (Escudo / Logotipo de la Entidad)
+                                </label>
+                                <div class="row align-items-center">
+                                    <div class="col-md-7 mb-2 mb-md-0">
+                                        <div class="p-2 border rounded bg-white shadow-sm">
+                                            <small class="font-weight-bold text-muted d-block mb-1">Subir Archivo de Imagen:</small>
+                                            <input type="file" name="logo_institucional_file" id="file_logo_inst" class="form-control-file" accept="image/*">
+                                            <small class="font-weight-bold text-muted d-block mt-2 mb-1">O pegar URL directa:</small>
+                                            <input type="url" name="logo_institucional_url" id="url_logo_inst" class="form-control form-control-sm" placeholder="https://dominio.com/escudo.png" value="{{ $logoInstitucional }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 text-center">
+                                        <div class="p-2 border rounded bg-white shadow-sm d-flex flex-column align-items-center justify-content-center" style="min-height: 105px;">
+                                            <small class="text-muted font-weight-bold text-uppercase d-block mb-1" style="font-size: 0.72rem;">Vista Previa Logo Institución</small>
+                                            <img id="preview_logo_inst" src="{{ !empty($logoInstitucional) ? $logoInstitucional : asset('material/img/new_logo.png') }}" style="max-height: 65px; max-width: 100%; object-fit: contain;">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- URL Alternativa del Logo -->
-                    <div class="form-group mb-2">
-                        <label class="font-weight-bold text-dark d-block mb-1" style="position: static; font-size: 0.88rem;">
-                            <i class="fas fa-link text-info mr-1"></i> O ingresá la URL directa del Logo (Opcional)
-                        </label>
-                        <input type="url" name="acta_logo_url" id="config_acta_logo_url" class="form-control bg-white shadow-sm" placeholder="Ej: https://midominio.com/logo_institucional.png" value="{{ $actaLogoUrl }}" style="position: static; border-radius: 8px; border: 1px solid #cbd5e1; height: 40px; font-size: 0.88rem;">
-                        <small class="text-muted d-block mt-1"><i class="fas fa-info-circle text-info mr-1"></i> Si subís una imagen arriba, esta URL se actualizará automáticamente con el enlace al archivo almacenado.</small>
+                    <!-- 📋 SECCIÓN 2: LOGO Y ENCABEZADOS DE ACTAS MECIP -->
+                    <div class="card mb-2 border-0 shadow-sm" style="border-radius: 10px;">
+                        <div class="card-header bg-white font-weight-bold text-dark border-bottom p-3">
+                            <i class="fas fa-file-signature text-info mr-2"></i> 2. Logo para Encabezados de Actas de Reunión MECIP
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="form-group mb-0">
+                                <label class="font-weight-bold text-dark d-block mb-1" style="position: static; font-size: 0.88rem;">
+                                    Logo del Formato de Acta MECIP (Ej: Logo MECIP 2015)
+                                </label>
+                                <div class="row align-items-center">
+                                    <div class="col-md-7 mb-2 mb-md-0">
+                                        <div class="p-2 border rounded bg-white shadow-sm">
+                                            <small class="font-weight-bold text-muted d-block mb-1">Subir Archivo de Imagen:</small>
+                                            <input type="file" name="acta_logo_file" id="file_logo_acta" class="form-control-file" accept="image/*">
+                                            <small class="font-weight-bold text-muted d-block mt-2 mb-1">O pegar URL directa:</small>
+                                            <input type="url" name="acta_logo_url" id="url_logo_acta" class="form-control form-control-sm" placeholder="https://dominio.com/logo_mecip.png" value="{{ $actaLogoUrl }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 text-center">
+                                        <div class="p-2 border rounded bg-white shadow-sm d-flex flex-column align-items-center justify-content-center" style="min-height: 105px;">
+                                            <small class="text-muted font-weight-bold text-uppercase d-block mb-1" style="font-size: 0.72rem;">Vista Previa Logo Acta MECIP</small>
+                                            <img id="preview_logo_acta" src="{{ !empty($actaLogoUrl) ? $actaLogoUrl : 'https://www.aneaes.gov.py/wp-content/uploads/2023/11/logo_mecip.png' }}" style="max-height: 65px; max-width: 100%; object-fit: contain;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
 
                 <div class="modal-footer bg-white p-3 border-top">
@@ -408,43 +424,43 @@ $pctGlobal   = round(($completados / 6) * 100);
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var fileInput = document.getElementById('config_logo_file');
-        var urlInput = document.getElementById('config_acta_logo_url');
-        var preview = document.getElementById('config_logo_preview');
-        var promptBox = document.getElementById('dropzone_prompt');
-        var previewWrapper = document.getElementById('dropzone_preview_wrapper');
+        // Preview 1: Logo Institucional
+        var fileInst = document.getElementById('file_logo_inst');
+        var urlInst = document.getElementById('url_logo_inst');
+        var prevInst = document.getElementById('preview_logo_inst');
 
-        if (fileInput) {
-            fileInput.addEventListener('change', function(e) {
+        if (fileInst) {
+            fileInst.addEventListener('change', function(e) {
                 if (e.target.files && e.target.files[0]) {
                     var reader = new FileReader();
-                    reader.onload = function(evt) {
-                        preview.src = evt.target.result;
-                        promptBox.classList.add('d-none');
-                        previewWrapper.classList.remove('d-none');
-                    };
+                    reader.onload = function(evt) { prevInst.src = evt.target.result; };
                     reader.readAsDataURL(e.target.files[0]);
                 }
             });
         }
-
-        if (urlInput) {
-            urlInput.addEventListener('input', function() {
-                var url = this.value.trim();
-                if (url) {
-                    preview.src = url;
-                    promptBox.classList.add('d-none');
-                    previewWrapper.classList.remove('d-none');
-                }
+        if (urlInst) {
+            urlInst.addEventListener('input', function() {
+                if (this.value.trim()) prevInst.src = this.value.trim();
             });
         }
 
-        var btnChange = document.getElementById('btnChangeLogo');
-        if (btnChange && fileInput) {
-            btnChange.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                fileInput.click();
+        // Preview 2: Logo Acta MECIP
+        var fileActa = document.getElementById('file_logo_acta');
+        var urlActa = document.getElementById('url_logo_acta');
+        var prevActa = document.getElementById('preview_logo_acta');
+
+        if (fileActa) {
+            fileActa.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(evt) { prevActa.src = evt.target.result; };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+        }
+        if (urlActa) {
+            urlActa.addEventListener('input', function() {
+                if (this.value.trim()) prevActa.src = this.value.trim();
             });
         }
     });

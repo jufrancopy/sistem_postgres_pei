@@ -1427,20 +1427,29 @@ class PeiController extends Controller
         
         $params = is_array($profile->parameters) ? $profile->parameters : (json_decode($profile->parameters, true) ?? []);
         
-        // ── Procesar Subida de Archivo de Logo Institucional ──
+        $destinationPath = public_path('uploads/logos');
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0755, true);
+        }
+
+        // 1. Logo Institucional (Reportes y Plan)
         if ($request->hasFile('logo_institucional_file')) {
             $file = $request->file('logo_institucional_file');
             $filename = 'logo_inst_' . $profile->id . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $destinationPath = public_path('uploads/logos');
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
             $file->move($destinationPath, $filename);
             $params['logo_institucional'] = asset('uploads/logos/' . $filename);
-            $params['acta_logo_url'] = $params['logo_institucional'];
-        } elseif ($request->has('acta_logo_url') && !empty($request->input('acta_logo_url'))) {
+        } elseif ($request->filled('logo_institucional_url')) {
+            $params['logo_institucional'] = $request->input('logo_institucional_url');
+        }
+
+        // 2. Logo para Encabezado de Actas MECIP
+        if ($request->hasFile('acta_logo_file')) {
+            $file = $request->file('acta_logo_file');
+            $filename = 'logo_acta_' . $profile->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move($destinationPath, $filename);
+            $params['acta_logo_url'] = asset('uploads/logos/' . $filename);
+        } elseif ($request->has('acta_logo_url')) {
             $params['acta_logo_url'] = $request->input('acta_logo_url');
-            $params['logo_institucional'] = $request->input('acta_logo_url');
         }
 
         if ($request->has('acta_institucion')) {
