@@ -57,7 +57,36 @@
         min-height: 32px !important;
         font-weight: 600 !important;
     }
-    .orgchart .lines .downLine { background-color: #94a3b8 !important; width: 2px !important; }
+    /* ── Estilos Select2 Premium para Modal Nuevo Relevamiento ── */
+    #modalNuevoRelevamiento .select2-container {
+        width: 100% !important;
+        display: block;
+    }
+    #modalNuevoRelevamiento .select2-selection--single {
+        height: 42px !important;
+        padding: 6px 12px;
+        border-radius: 8px !important;
+        border: 1px solid #cbd5e1 !important;
+        background-color: #ffffff !important;
+    }
+    #modalNuevoRelevamiento .select2-selection--single .select2-selection__rendered {
+        line-height: 28px !important;
+        color: #1e293b !important;
+        font-size: 0.88rem !important;
+    }
+    #modalNuevoRelevamiento .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+    }
+    #modalNuevoRelevamiento .select2-selection--multiple {
+        min-height: 42px !important;
+        border-radius: 8px !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 4px 8px;
+        background-color: #ffffff !important;
+    }
+    .select2-container--open {
+        z-index: 999999 !important;
+    }
     .orgchart .lines .topLine  { border-top: 2px solid #94a3b8 !important; }
     .orgchart .lines .rightLine{ border-right: 1px solid #94a3b8 !important; }
     .orgchart .lines .leftLine { border-left: 1px solid #94a3b8 !important; }
@@ -1818,26 +1847,41 @@
 </div>
 
 <!-- Modal Nuevo Relevamiento Técnico (Delimitado a la Estructura PEI Activa) -->
-<div class="modal fade" id="modalNuevoRelevamiento" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content border-0 shadow-lg rounded-lg">
+<div class="modal fade" id="modalNuevoRelevamiento" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg rounded-xl overflow-hidden" style="border-radius: 14px;">
             <form id="formNuevoRelevamientoDashboard" action="{{ route('pei.procesos.store') }}" method="POST">
                 @csrf
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title font-weight-bold"><i class="fas fa-clipboard-list mr-2"></i> Alta de Relevamiento Técnico del Servicio</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <div class="modal-header py-3 px-4 text-white" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%);">
+                    <div class="d-flex align-items-center">
+                        <div class="p-2 rounded-circle mr-3 text-white" style="background: rgba(255,255,255,0.2);">
+                            <i class="fas fa-clipboard-list fa-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 1.15rem;">Alta de Relevamiento Técnico del Servicio</h5>
+                            <small class="text-white-50" style="font-size: 0.78rem;">Estudio de campo para diagnóstico de tiempos, circuitos y cuellos de botella (DOC)</small>
+                        </div>
+                    </div>
+                    <button type="button" class="close text-white opacity-8" data-dismiss="modal" aria-label="Close" style="outline: none;">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body p-4">
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark">Nombre del Circuito / Estudio <span class="text-danger">*</span></label>
-                        <input type="text" name="nombre" class="form-control" placeholder="Ej: Circuito de Recepción, Agendamiento e Internación - HZ Luque" required>
+                
+                <div class="modal-body p-4" style="background-color: #f8fafc;">
+                    <div class="card border-0 shadow-sm p-3 mb-4 rounded-lg bg-white">
+                        <div class="form-group mb-0">
+                            <label class="font-weight-bold text-dark mb-1" style="font-size:0.88rem;">
+                                <i class="fas fa-heading text-info mr-1"></i> Nombre del Circuito / Estudio de Campo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="nombre" class="form-control form-control-lg border-slate-200 font-weight-bold text-dark" placeholder="Ej: Circuito de Recepción, Agendamiento e Internación - HZ Luque" style="border-radius: 8px; font-size: 0.95rem;" required>
+                        </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 form-group">
-                            <label class="font-weight-bold text-dark">Servicio / Establecimiento (Organigrama Delimitado)</label>
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1" style="font-size:0.88rem;">
+                                <i class="fas fa-sitemap text-primary mr-1"></i> Servicio / Establecimiento (Organigrama Delimitado)
+                            </label>
                             <select name="organigrama_id" id="modal_proc_organigrama_id" class="form-control select2-modal-proc" style="width: 100%;">
                                 <option value="">-- Seleccionar Servicio / Área --</option>
                                 @php
@@ -1847,33 +1891,45 @@
                                     <option value="{{ $org->id }}">{{ $org->dependency }}</option>
                                 @endforeach
                             </select>
+                            <small class="form-text text-muted">Establecimiento u organigrama jerárquico asignado.</small>
                         </div>
-                        <div class="col-md-6 form-group">
-                            <label class="font-weight-bold text-dark">Acción del PEI Vinculada</label>
+
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1" style="font-size:0.88rem;">
+                                <i class="fas fa-bullseye text-success mr-1"></i> Acción / Meta PEI Vinculada
+                            </label>
                             <select name="pei_profile_id" id="modal_proc_pei_profile_id" class="form-control select2-modal-proc" style="width: 100%;">
                                 <option value="" data-dependency-id="">-- Seleccionar Meta/Acción PEI --</option>
                                 @php
                                     $peisProcList = isset($peiProfilesProceso) ? $peiProfilesProceso : (isset($selectedPei) ? $selectedPei->descendants()->whereIn('level', ['action', 'goal', 'axi'])->get() : \App\Admin\Planificacion\Pei\PeiProfile::whereIn('level', ['action', 'goal', 'axi'])->get());
                                 @endphp
                                 @foreach($peisProcList as $pei)
+                                    @php
+                                        $cleanPeiName = trim(preg_replace('/\s+/', ' ', strip_tags(html_entity_decode($pei->name, ENT_QUOTES, 'UTF-8'))));
+                                    @endphp
                                     <option value="{{ $pei->id }}" data-dependency-id="{{ $pei->effective_dependency_id }}">
-                                        [{{ strtoupper($pei->level) }}] {{ Str::limit($pei->name, 60) }}
+                                        [{{ strtoupper($pei->level) }}] {{ Str::limit($cleanPeiName, 70) }}
                                         @if($pei->effective_dependency) — ({{ $pei->effective_dependency->dependency }})@endif
                                     </option>
                                 @endforeach
                             </select>
+                            <small class="form-text text-muted">Vincular al Plan Estratégico Institucional.</small>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark">Contexto / Móvil de la Visita de Relevamiento</label>
-                        <textarea name="contexto_motivo" class="form-control" rows="2" placeholder="Especificar la Instrucción del Consejo de Administración, Ordenanza o Resolución que motiva el relevamiento..."></textarea>
+                    <div class="form-group my-3">
+                        <label class="font-weight-bold text-dark mb-1" style="font-size:0.88rem;">
+                            <i class="fas fa-gavel text-warning mr-1"></i> Contexto / Móvil de la Visita de Relevamiento
+                        </label>
+                        <textarea name="contexto_motivo" class="form-control border-slate-200" rows="2" placeholder="Especificar la Instrucción del Consejo de Administración, Ordenanza, Resolución o Solicitud que motiva el relevamiento..." style="border-radius: 8px; font-size: 0.88rem;"></textarea>
                     </div>
 
                     <div class="row">
-                        <div class="col-md-7 form-group">
-                            <label class="font-weight-bold text-dark">Responsables / Equipo Relevador de la Visita</label>
-                            <select name="responsables[]" class="form-control select2-modal-proc" multiple="multiple" style="width: 100%;">
+                        <div class="col-md-7 form-group mb-0">
+                            <label class="font-weight-bold text-dark mb-1" style="font-size:0.88rem;">
+                                <i class="fas fa-user-friends text-info mr-1"></i> Responsables / Equipo Relevador de la Visita
+                            </label>
+                            <select name="responsables[]" id="modal_proc_responsables" class="form-control select2-modal-proc" multiple="multiple" style="width: 100%;">
                                 @php
                                     $uProcList = isset($usersListProceso) ? $usersListProceso : \App\Models\User::orderBy('name')->get();
                                 @endphp
@@ -1881,17 +1937,22 @@
                                     <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                                 @endforeach
                             </select>
-                            <small class="form-text text-muted">Seleccionar analistas de Planificación y miembros de Organización y Calidad participantes.</small>
+                            <small class="form-text text-muted">Analistas de Planificación y miembros de Organización y Calidad.</small>
                         </div>
-                        <div class="col-md-5 form-group">
-                            <label class="font-weight-bold text-dark">Fecha de Visita / Relevamiento</label>
-                            <input type="date" name="fecha_relevamiento" class="form-control" value="{{ date('Y-m-d') }}">
+                        <div class="col-md-5 form-group mb-0">
+                            <label class="font-weight-bold text-dark mb-1" style="font-size:0.88rem;">
+                                <i class="fas fa-calendar-day text-secondary mr-1"></i> Fecha de Visita / Relevamiento
+                            </label>
+                            <input type="date" name="fecha_relevamiento" class="form-control border-slate-200" value="{{ date('Y-m-d') }}" style="border-radius: 8px; height: 42px;">
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" id="btnGuardarRelevamientoDashboard" class="btn btn-info font-weight-bold"><i class="fas fa-save mr-1"></i> Iniciar Relevamiento</button>
+
+                <div class="modal-footer bg-light px-4 py-3 border-top">
+                    <button type="button" class="btn btn-secondary font-weight-bold px-4" data-dismiss="modal" style="border-radius: 8px;">Cancelar</button>
+                    <button type="submit" id="btnGuardarRelevamientoDashboard" class="btn btn-info font-weight-bold px-4 shadow-sm" style="border-radius: 8px; background: linear-gradient(135deg, #0284c7, #0369a1);">
+                        <i class="fas fa-rocket mr-1"></i> Iniciar Relevamiento &amp; Flujograma
+                    </button>
                 </div>
             </form>
         </div>
@@ -5970,15 +6031,29 @@ $('#btnCompartirWhatsAppDirecto').on('click', function() {
                   "⭐ *Puntuación Acumulada*: " + Number(currentFichaData.points || 0).toLocaleString() + " Pts\n\n" +
                   "👏 ¡Felicitaciones por tu esfuerzo, constancia y valioso aporte en el Cierre de Semana Exitoso del Sistema de Planificación PEI!";
 
+    var url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensaje);
+    window.open(url, '_blank');
+});
+
+$(document).ready(function() {
     var urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('tab') === 'procesos' || window.location.hash === '#tab-procesos') {
         $('#tab-procesos-link').tab('show');
     }
 
+    function initSelect2Relevamiento() {
+        if ($.fn.select2) {
+            $('#modalNuevoRelevamiento .select2-modal-proc').select2({
+                dropdownParent: $('#modalNuevoRelevamiento'),
+                width: '100%'
+            });
+        }
+    }
+
+    initSelect2Relevamiento();
+
     $('#modalNuevoRelevamiento').on('shown.bs.modal', function () {
-        $('.select2-modal-proc').select2({
-            dropdownParent: $('#modalNuevoRelevamiento')
-        });
+        initSelect2Relevamiento();
     });
 
     $('#modal_proc_pei_profile_id').on('change', function() {
@@ -6005,7 +6080,7 @@ $('#btnCompartirWhatsAppDirecto').on('click', function() {
                 }
             },
             error: function(xhr) {
-                $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Iniciar Relevamiento');
+                $btn.prop('disabled', false).html('<i class="fas fa-rocket mr-1"></i> Iniciar Relevamiento &amp; Flujograma');
                 var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Ocurrió un error al guardar el relevamiento.';
                 if (typeof toastr !== 'undefined') toastr.error(msg); else alert(msg);
             }
