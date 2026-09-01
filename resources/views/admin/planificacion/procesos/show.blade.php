@@ -64,7 +64,11 @@
                     <h6 class="font-weight-bold text-info"><i class="fas fa-bullseye mr-1"></i> Acción / Meta del PEI Vinculada:</h6>
                     <p class="text-dark bg-white p-2 rounded border">
                         @if($proceso->peiProfile)
-                            <span class="badge badge-info mr-1">{{ strtoupper($proceso->peiProfile->level) }}</span> {{ $proceso->peiProfile->name }}
+                            @php
+                                $cleanPeiName = trim(preg_replace('/\s+/', ' ', strip_tags(html_entity_decode($proceso->peiProfile->name, ENT_QUOTES, 'UTF-8'))));
+                            @endphp
+                            <span class="badge badge-info mr-1" style="font-size:0.8rem;">{{ mb_strtoupper($proceso->peiProfile->getLabelNivel()) }}</span>
+                            <span class="font-weight-bold">{{ $cleanPeiName }}</span>
                         @else
                             <span class="text-muted">Sin vinculación específica al PEI.</span>
                         @endif

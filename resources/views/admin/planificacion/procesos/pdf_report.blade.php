@@ -65,7 +65,10 @@
                 <strong>🎯 Acción del PEI Vinculada:</strong>
                 <p class="mb-0 text-muted">
                     @if($proceso->peiProfile)
-                        [{{ strtoupper($proceso->peiProfile->level) }}] {{ $proceso->peiProfile->name }}
+                        @php
+                            $cleanPeiName = trim(preg_replace('/\s+/', ' ', strip_tags(html_entity_decode($proceso->peiProfile->name, ENT_QUOTES, 'UTF-8'))));
+                        @endphp
+                        [{{ mb_strtoupper($proceso->peiProfile->getLabelNivel()) }}] {{ $cleanPeiName }}
                     @else
                         Sin vinculación PEI registrada
                     @endif
