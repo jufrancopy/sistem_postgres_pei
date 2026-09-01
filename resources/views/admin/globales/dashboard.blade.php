@@ -13,6 +13,36 @@
         padding: 35px 20px;
         position: relative;
     }
+    /* Reset Select2 & Modal Alignment */
+    .modal .select2-container--default .select2-selection--single,
+    .modal .select2-container--default .select2-selection--multiple {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        min-height: 42px !important;
+        background-color: #ffffff !important;
+        display: flex !important;
+        align-items: center !important;
+        box-shadow: none !important;
+    }
+    .modal .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+        padding-left: 10px !important;
+        line-height: normal !important;
+    }
+    .modal .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+    }
+    .modal .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #e0f2fe !important;
+        border: 1px solid #0284c7 !important;
+        color: #0369a1 !important;
+        font-weight: 700 !important;
+        border-radius: 6px !important;
+        padding: 2px 8px !important;
+        margin-top: 4px !important;
+    }
     .orgchart { background: transparent !important; }
     .orgchart .node {
         width: 175px !important;
@@ -1874,7 +1904,7 @@
 </div>
 
 <!-- Modal Nuevo Relevamiento Técnico (Delimitado a la Estructura PEI Activa) -->
-<div class="modal fade" id="modalNuevoRelevamiento" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1055;">
+<div class="modal fade" id="modalNuevoRelevamiento" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false" style="z-index: 1055;">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow-lg rounded-xl overflow-hidden" style="border-radius: 14px;">
             <form id="formNuevoRelevamientoDashboard" action="{{ route('pei.procesos.store') }}" method="POST">
@@ -6115,18 +6145,18 @@ $(document).ready(function() {
     function addExtParticipantRowDashboard(nombre = '', cargo = '', dependencia = '') {
         const rowId = 'ext_row_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
         const html = `
-            <div class="row align-items-center mb-2" id="${rowId}">
-                <div class="col-md-4">
-                    <input type="text" name="participantes_externos_nombres[]" class="form-control form-control-sm bg-white" placeholder="Nombre y Apellido *" value="${nombre}" required style="border-radius: 6px; font-size: 0.82rem; border: 1px solid #cbd5e1 !important;">
+            <div class="d-flex align-items-center mb-2" id="${rowId}" style="gap: 8px;">
+                <div style="flex: 4;">
+                    <input type="text" name="participantes_externos_nombres[]" class="form-control form-control-sm bg-white mb-0" placeholder="Nombre y Apellido *" value="${nombre}" required style="border-radius: 6px; font-size: 0.82rem; border: 1px solid #cbd5e1 !important; height: 38px;">
                 </div>
-                <div class="col-md-4">
-                    <input type="text" name="participantes_externos_cargos[]" class="form-control form-control-sm bg-white" placeholder="Cargo / Función (Ej: Jefa Admisión)" value="${cargo}" style="border-radius: 6px; font-size: 0.82rem; border: 1px solid #cbd5e1 !important;">
+                <div style="flex: 4;">
+                    <input type="text" name="participantes_externos_cargos[]" class="form-control form-control-sm bg-white mb-0" placeholder="Cargo / Función (Ej: Jefa Admisión)" value="${cargo}" style="border-radius: 6px; font-size: 0.82rem; border: 1px solid #cbd5e1 !important; height: 38px;">
                 </div>
-                <div class="col-md-3">
-                    <input type="text" name="participantes_externos_dependencias[]" class="form-control form-control-sm bg-white" placeholder="Área / Ventanilla" value="${dependencia}" style="border-radius: 6px; font-size: 0.82rem; border: 1px solid #cbd5e1 !important;">
+                <div style="flex: 3;">
+                    <input type="text" name="participantes_externos_dependencias[]" class="form-control form-control-sm bg-white mb-0" placeholder="Área / Ventanilla" value="${dependencia}" style="border-radius: 6px; font-size: 0.82rem; border: 1px solid #cbd5e1 !important; height: 38px;">
                 </div>
-                <div class="col-md-1 text-center">
-                    <button type="button" class="btn btn-xs btn-outline-danger" onclick="$('#${rowId}').remove()" title="Quitar">
+                <div style="width: 36px; min-width: 36px; text-align: center;">
+                    <button type="button" class="btn btn-sm btn-outline-danger p-0 d-flex align-items-center justify-content-center" onclick="$('#${rowId}').remove()" title="Quitar" style="width: 36px; height: 36px; border-radius: 6px;">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
