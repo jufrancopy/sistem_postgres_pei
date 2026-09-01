@@ -1763,8 +1763,8 @@
                         </div>
                     </div>
 
-                    <div class="table-responsive rounded border bg-white">
-                        <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+                    <div class="table-responsive rounded border bg-white p-3">
+                        <table id="tablaProcesosDashboard" class="table table-hover align-middle mb-0 dataTableInit" style="font-size: 0.88rem; width:100%;">
                             <thead class="bg-light">
                                 <tr>
                                     <th width="40">#</th>
@@ -6040,6 +6040,21 @@ $(document).ready(function() {
     if (urlParams.get('tab') === 'procesos' || window.location.hash === '#tab-procesos') {
         $('#tab-procesos-link').tab('show');
     }
+
+    if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#tablaProcesosDashboard')) {
+        $('#tablaProcesosDashboard').DataTable({
+            language: typeof datatablesSpanish !== 'undefined' ? datatablesSpanish : {},
+            pageLength: 10,
+            autoWidth: false,
+            responsive: { details: false }
+        });
+    }
+
+    $('a[data-toggle="pill"], a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tablaProcesosDashboard')) {
+            $('#tablaProcesosDashboard').DataTable().columns.adjust();
+        }
+    });
 
     function initSelect2Relevamiento() {
         if ($.fn.select2) {
