@@ -28,6 +28,48 @@
         border-radius: 8px;
         padding: 20px;
     }
+    /* ── Estilos y Espaciado de Inputs para Modal Registrar Estación ── */
+    #modalPaso .modal-body {
+        padding: 1.5rem !important;
+        background-color: #f8fafc;
+    }
+    #modalPaso label {
+        display: block !important;
+        position: static !important;
+        float: none !important;
+        margin-bottom: 6px !important;
+        transform: none !important;
+        color: #1e293b !important;
+        font-weight: 700 !important;
+        font-size: 0.88rem !important;
+    }
+    #modalPaso input.form-control,
+    #modalPaso select.form-control,
+    #modalPaso textarea.form-control {
+        position: static !important;
+        display: block !important;
+        width: 100% !important;
+        margin-top: 0 !important;
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        color: #0f172a !important;
+        padding: 8px 12px !important;
+        font-size: 0.9rem !important;
+    }
+    #modalPaso input.form-control {
+        height: 42px !important;
+    }
+    #modalPaso textarea.form-control {
+        height: auto !important;
+    }
+    #modalPaso ::placeholder {
+        color: #94a3b8 !important;
+        opacity: 1 !important;
+    }
+    #modalPaso .form-group {
+        margin-bottom: 1.15rem !important;
+    }
 </style>
 @endpush
 
@@ -190,7 +232,7 @@
                                     <strong class="text-dark">{{ $paso->nombre }}</strong>
                                     @if($paso->descripcion)<br><small class="text-muted">{{ $paso->descripcion }}</small>@endif
                                 </td>
-                                <td>{{ $paso->organigrama ? $paso->organigrama->nombre : 'General' }}</td>
+                                <td>{{ $paso->area_nombre }}</td>
                                 <td><span class="badge badge-secondary">{{ $paso->rol_responsable ?: 'N/A' }}</span></td>
                                 <td class="text-success font-weight-bold">{{ $paso->tiempo_atencion_min }} min</td>
                                 <td class="text-danger font-weight-bold">{{ $paso->tiempo_espera_min }} min</td>
@@ -221,37 +263,35 @@
 </div>
 
 <!-- Modal Estación / Paso -->
-<div class="modal fade" id="modalPaso" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
+<div class="modal fade" id="modalPaso" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg rounded-xl overflow-hidden" style="border-radius: 14px;">
             <form id="formPaso" action="{{ route('pei.procesos.pasos.store', $proceso->id) }}" method="POST">
                 @csrf
                 <input type="hidden" name="paso_id" id="paso_id">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title font-weight-bold" id="modalPasoTitle"><i class="fas fa-step-forward mr-2"></i> Registrar Estación del Circuito</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                <div class="modal-header py-3 px-4 text-white" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%);">
+                    <h5 class="modal-title font-weight-bold text-white mb-0" id="modalPasoTitle"><i class="fas fa-step-forward mr-2"></i> Registrar Estación del Circuito</h5>
+                    <button type="button" class="close text-white opacity-8" data-dismiss="modal" style="outline:none;">&times;</button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4" style="background-color: #f8fafc;">
                     <div class="row">
                         <div class="col-md-3 form-group">
-                            <label class="font-weight-bold text-dark">N° Orden</label>
+                            <label for="paso_orden" class="font-weight-bold text-dark mb-1">N° Orden</label>
                             <input type="number" name="orden" id="paso_orden" class="form-control" value="{{ $proceso->pasos->count() + 1 }}" required>
                         </div>
                         <div class="col-md-9 form-group">
-                            <label class="font-weight-bold text-dark">Nombre de la Estación <span class="text-danger">*</span></label>
+                            <label for="paso_nombre" class="font-weight-bold text-dark mb-1">Nombre de la Estación <span class="text-danger">*</span></label>
                             <input type="text" name="nombre" id="paso_nombre" class="form-control" placeholder="Ej: Verificación de Seguro y Aportes en Ventanilla" required>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 form-group">
-                            <label class="font-weight-bold text-dark">Área / Dependencia</label>
-                            <select name="organigrama_id" id="paso_organigrama_id" class="form-control select2-modal-paso" style="width:100%;">
-                                <option value="">-- Seleccionar Área --</option>
-                                @foreach($organigramas as $org)
-                                    <option value="{{ $org->id }}">{{ $org->nombre }}</option>
-                                @endforeach
-                            </select>
+                            <label for="paso_area_dependencia_custom" class="font-weight-bold text-dark mb-1">
+                                <i class="fas fa-building text-primary mr-1"></i> Área / Dependencia Local <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="area_dependencia_custom" id="paso_area_dependencia_custom" class="form-control" placeholder="Ej: Ventanilla de Admisión, Ventanilla de Agendamiento, Triage..." required>
+                            <small class="form-text text-muted">Especificar área, ventanilla o sector físico.</small>
                         </div>
                         <div class="col-md-6 form-group">
                             <label class="font-weight-bold text-dark">Rol Responsable de Atención</label>
@@ -387,7 +427,7 @@ function editarPaso(paso) {
     $('#paso_id').val(paso.id);
     $('#paso_orden').val(paso.orden);
     $('#paso_nombre').val(paso.nombre);
-    $('#paso_organigrama_id').val(paso.organigrama_id).trigger('change');
+    $('#paso_area_dependencia_custom').val(paso.area_dependencia_custom || (paso.organigrama ? paso.organigrama.dependency : ''));
     $('#paso_rol_responsable').val(paso.rol_responsable);
     $('#paso_tiempo_atencion_min').val(paso.tiempo_atencion_min);
     $('#paso_tiempo_espera_min').val(paso.tiempo_espera_min);

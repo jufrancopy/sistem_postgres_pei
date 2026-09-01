@@ -18,6 +18,7 @@ class RelevamientoPaso extends Model
         'nombre',
         'descripcion',
         'organigrama_id',
+        'area_dependencia_custom',
         'rol_responsable',
         'tiempo_atencion_min',
         'tiempo_espera_min',
@@ -51,5 +52,13 @@ class RelevamientoPaso extends Model
     public function getTiempoTotalAttribute()
     {
         return $this->tiempo_atencion_min + $this->tiempo_espera_min + $this->tiempo_traslado_min;
+    }
+
+    public function getAreaNombreAttribute(): string
+    {
+        if (!empty($this->area_dependencia_custom)) {
+            return $this->area_dependencia_custom;
+        }
+        return $this->organigrama?->dependency ?? 'Área Local';
     }
 }

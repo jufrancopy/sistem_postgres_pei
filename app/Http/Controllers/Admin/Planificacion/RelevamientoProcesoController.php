@@ -152,6 +152,7 @@ class RelevamientoProcesoController extends Controller
             'nombre' => 'required|string|max:255',
             'orden' => 'required|integer|min:1',
             'organigrama_id' => 'nullable|exists:organigramas,id',
+            'area_dependencia_custom' => 'nullable|string|max:255',
             'rol_responsable' => 'nullable|string',
             'tiempo_atencion_min' => 'required|integer|min:0',
             'tiempo_espera_min' => 'required|integer|min:0',
@@ -164,6 +165,8 @@ class RelevamientoProcesoController extends Controller
             'propuesta_mejora' => 'nullable|string',
         ]);
 
+        $areaCustom = $request->area_dependencia_custom ?: $request->area_dependencia;
+
         if ($request->paso_id) {
             $paso = RelevamientoPaso::where('relevamiento_proceso_id', $procesoId)->findOrFail($request->paso_id);
             $paso->update([
@@ -171,6 +174,7 @@ class RelevamientoProcesoController extends Controller
                 'nombre' => $request->nombre,
                 'descripcion' => $request->descripcion,
                 'organigrama_id' => $request->organigrama_id,
+                'area_dependencia_custom' => $areaCustom,
                 'rol_responsable' => $request->rol_responsable,
                 'tiempo_atencion_min' => $request->tiempo_atencion_min,
                 'tiempo_espera_min' => $request->tiempo_espera_min,
@@ -189,6 +193,7 @@ class RelevamientoProcesoController extends Controller
                 'nombre' => $request->nombre,
                 'descripcion' => $request->descripcion,
                 'organigrama_id' => $request->organigrama_id,
+                'area_dependencia_custom' => $areaCustom,
                 'rol_responsable' => $request->rol_responsable,
                 'tiempo_atencion_min' => $request->tiempo_atencion_min,
                 'tiempo_espera_min' => $request->tiempo_espera_min,
