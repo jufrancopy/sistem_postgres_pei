@@ -39,8 +39,10 @@
     </div>
 
     @php
-        // Logo oficial de SIPLAN GO desde admin/globales/configuracion-sistema (HomeConfiguration)
-        $sysLogoUrl = \App\Models\HomeConfiguration::getSetting('logo', null);
+        // Logo oficial del Sistema SIPLAN GO desde admin/globales/configuracion-sistema (HomeConfiguration)
+        $sysLogoUrl = \App\Models\HomeConfiguration::getSetting('logo_url') 
+            ?? \App\Models\HomeConfiguration::getSetting('logo') 
+            ?? asset('material/img/new_logo.png');
 
         // Logo de la Institución que se planifica (desde Variables del Plan / PEI)
         $logoInstitucional = null;
@@ -53,45 +55,43 @@
         }
     @endphp
 
-    <!-- Encabezado Institucional con Doble Branding (Logo Institución + Logo SIPLAN GO) -->
-    <div class="report-header d-flex justify-content-between align-items-center">
-        <!-- Izquierda: Logo Institucional de la Entidad que se Planifica -->
+    <!-- Encabezado Institucional Simétrico (Doble Branding con Alturas Coincidentes 55px) -->
+    <div class="report-header d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 3px solid #0284c7;">
+        <!-- Izquierda: Logo Institucional + Membrete de la Entidad -->
         <div class="d-flex align-items-center">
-            <div class="mr-3">
+            <div class="mr-3 d-flex align-items-center justify-content-center" style="height: 55px; width: 140px; min-width: 140px;">
                 @if($logoInstitucional)
-                    <img src="{{ $logoInstitucional }}" alt="Logo Institución" style="max-height: 54px; max-width: 150px; object-fit: contain;">
+                    <img src="{{ $logoInstitucional }}" alt="Logo Institución" style="max-height: 55px; max-width: 140px; width: auto; height: auto; object-fit: contain;">
                 @else
-                    <div class="px-3 py-2 bg-dark text-white font-weight-bold rounded shadow-sm d-inline-block" style="font-size: 1.15rem; letter-spacing: -0.5px;">
+                    <div class="px-3 py-2 bg-dark text-white font-weight-bold rounded shadow-sm text-center" style="font-size: 1.1rem; letter-spacing: -0.5px;">
                         {{ $proceso->organigrama ? mb_strtoupper(substr($proceso->organigrama->dependency, 0, 8)) : 'IPS' }}
                     </div>
                 @endif
             </div>
-            <div>
-                <h5 class="font-weight-bold text-dark mb-0" style="letter-spacing: -0.3px;">{{ $nombreInstitucion }}</h5>
-                <h6 class="font-weight-bold text-primary mb-0" style="font-size: 0.95rem;">
+            <div class="border-left pl-3" style="border-color: #cbd5e1 !important; height: 50px; display: flex; flex-direction: column; justify-content: center;">
+                <h5 class="font-weight-bold text-dark mb-0" style="letter-spacing: -0.3px; font-size: 1.1rem; line-height: 1.2;">{{ $nombreInstitucion }}</h5>
+                <h6 class="font-weight-bold text-primary mb-0" style="font-size: 0.92rem; line-height: 1.2;">
                     {{ $proceso->organigrama ? $proceso->organigrama->dependency : 'Área / Dependencia Relevada' }}
                 </h6>
-                <small class="text-muted">Relevamiento Técnico de Campo & Diagnóstico Operativo</small>
+                <small class="text-muted" style="font-size: 0.72rem;">Relevamiento Técnico de Campo & Diagnóstico Operativo</small>
             </div>
         </div>
 
-        <!-- Derecha / Ubicación Estratégica: Branding Oficial SIPLAN GO -->
-        <div class="text-right d-flex flex-column align-items-end">
-            <div class="d-flex align-items-center mb-1">
+        <!-- Derecha: Logo Oficial de SIPLAN GO + Badge del Reporte (Coincidente en Altura 55px) -->
+        <div class="d-flex align-items-center justify-content-end text-right">
+            <div class="border-right pr-3 mr-3 text-right" style="border-color: #cbd5e1 !important; height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;">
+                <span class="badge badge-primary px-3 py-1 font-weight-bold mb-1" style="font-size: 0.82rem; letter-spacing: 0.3px;">REPORTE TÉCNICO</span>
+                <div class="small text-muted" style="font-size: 0.75rem;"><strong>Emisión:</strong> {{ date('d/m/Y') }}</div>
+            </div>
+            <div class="d-flex align-items-center justify-content-center" style="height: 55px; width: 140px; min-width: 140px;">
                 @if($sysLogoUrl)
-                    <img src="{{ $sysLogoUrl }}" alt="SIPLAN GO" style="max-height: 38px; width: auto; object-fit: contain;" class="mr-2">
+                    <img src="{{ $sysLogoUrl }}" alt="SIPLAN GO" style="max-height: 55px; max-width: 140px; width: auto; height: auto; object-fit: contain;">
                 @else
-                    <div class="px-2 py-1 bg-primary text-white font-weight-bold rounded mr-2" style="font-size: 0.9rem;">
+                    <div class="px-3 py-2 bg-primary text-white font-weight-bold rounded shadow-sm text-center" style="font-size: 1.1rem; letter-spacing: -0.5px;">
                         SIPLAN <span style="color:#38bdf8; font-weight:900;">GO</span>
                     </div>
                 @endif
-                <div class="text-left">
-                    <div class="font-weight-bold text-dark" style="font-size: 0.88rem; line-height: 1.1;">SIPLAN <span style="color:#0284c7; font-weight:900;">GO</span></div>
-                    <small class="text-muted" style="font-size: 0.68rem; display: block;">Sistema de Planificación</small>
-                </div>
             </div>
-            <span class="badge badge-primary px-3 py-1 font-weight-bold mt-1" style="font-size: 0.8rem;">REPORTE TÉCNICO</span>
-            <div class="small text-muted mt-1" style="font-size: 0.72rem;"><strong>Emisión:</strong> {{ date('d/m/Y') }}</div>
         </div>
     </div>
 
