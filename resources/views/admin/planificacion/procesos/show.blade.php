@@ -231,8 +231,8 @@
             <h5 class="card-title font-weight-bold mb-0">
                 <i class="fas fa-robot mr-2"></i> Informe de Diagnóstico Asistido por Inteligencia Artificial (IA)
             </h5>
-            <button id="btnRegenerarIa" class="btn btn-light btn-sm font-weight-bold text-info">
-                <i class="fas fa-sync-alt mr-1"></i> Regenerar Análisis IA
+            <button id="btnRegenerarIa" class="btn btn-sm font-weight-bold shadow-sm px-3" style="background-color: #ffffff !important; color: #0369a1 !important; border: 1px solid #cbd5e1 !important; border-radius: 8px; font-size: 0.88rem;">
+                <i class="fas fa-magic text-primary mr-1"></i> Regenerar Análisis IA
             </button>
         </div>
         <div class="card-body">
@@ -463,9 +463,13 @@ $(document).ready(function() {
             method: 'POST',
             data: { _token: '{{ csrf_token() }}' },
             success: function(res) {
-                btn.prop('disabled', false).html('<i class="fas fa-sync-alt mr-1"></i> Regenerar Análisis IA');
-                toastr.success('Análisis de IA actualizado.');
+                btn.prop('disabled', false).html('<i class="fas fa-magic text-primary mr-1"></i> Regenerar Análisis IA');
+                toastr.success('Análisis de IA actualizado correctamente.');
                 location.reload();
+            },
+            error: function() {
+                btn.prop('disabled', false).html('<i class="fas fa-magic text-primary mr-1"></i> Regenerar Análisis IA');
+                toastr.error('Error al solicitar el análisis de IA.');
             }
         });
     });
