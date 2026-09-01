@@ -43,6 +43,26 @@
         padding: 2px 8px !important;
         margin-top: 4px !important;
     }
+    /* Botones Circulares Perfectos 1:1 para Tablas */
+    .btn-action-circle {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.85rem !important;
+        line-height: 1 !important;
+        margin-right: 4px !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+    .btn-action-circle:hover {
+        transform: scale(1.15) !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.18) !important;
+    }
     .orgchart { background: transparent !important; }
     .orgchart .node {
         width: 175px !important;
@@ -1881,16 +1901,16 @@
                                             @endif
                                         </td>
                                         <td class="text-right" style="white-space: nowrap;">
-                                            <a href="{{ route('pei.procesos.show', $proc->id) }}" class="btn btn-sm btn-primary btn-round mr-1" title="Ver Flujograma & Diagnóstico">
+                                            <a href="{{ route('pei.procesos.show', $proc->id) }}" class="btn btn-action-circle btn-primary" title="Ver Flujograma & Diagnóstico">
                                                 <i class="fa fa-project-diagram"></i>
                                             </a>
-                                            <button type="button" onclick="editarRelevamiento('{{ $proc->id }}')" class="btn btn-sm btn-warning btn-round mr-1" title="Editar Relevamiento">
+                                            <button type="button" onclick="editarRelevamiento('{{ $proc->id }}')" class="btn btn-action-circle btn-warning text-white" title="Editar Relevamiento">
                                                 <i class="fa fa-edit"></i>
                                             </button>
-                                            <a href="{{ route('pei.procesos.exportPdf', $proc->id) }}" target="_blank" class="btn btn-sm btn-danger btn-round mr-1" title="Reporte PDF">
+                                            <a href="{{ route('pei.procesos.exportPdf', $proc->id) }}" target="_blank" class="btn btn-action-circle btn-danger" title="Reporte PDF">
                                                 <i class="fa fa-file-pdf"></i>
                                             </a>
-                                            <button type="button" onclick="eliminarRelevamiento('{{ $proc->id }}', '{{ addslashes($proc->nombre) }}')" class="btn btn-sm btn-outline-danger btn-round" title="Eliminar Relevamiento">
+                                            <button type="button" onclick="eliminarRelevamiento('{{ $proc->id }}', '{{ addslashes($proc->nombre) }}')" class="btn btn-action-circle btn-outline-danger" title="Eliminar Relevamiento">
                                                 <i class="fa fa-trash-alt"></i>
                                             </button>
                                         </td>
@@ -6296,7 +6316,7 @@ $(document).ready(function() {
     $('#modal_proc_pei_profile_id').on('change', function() {
         var selectedOpt = $(this).find('option:selected');
         var depId = selectedOpt.data('dependency-id');
-        if (depId) {
+        if (depId && !$('#modal_proc_organigrama_id').val()) {
             $('#modal_proc_organigrama_id').val(depId).trigger('change');
         }
     });
@@ -6313,7 +6333,8 @@ $(document).ready(function() {
             success: function(res) {
                 if (res.status === 'success') {
                     if (typeof toastr !== 'undefined') toastr.success(res.message);
-                    window.location.href = res.redirect;
+                    const targetUrl = res.redirect || '/admin/globales/dashboard?tab=procesos';
+                    window.location.href = targetUrl;
                 }
             },
             error: function(xhr) {

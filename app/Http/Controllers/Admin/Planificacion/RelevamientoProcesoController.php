@@ -243,7 +243,8 @@ class RelevamientoProcesoController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Estudio de relevamiento actualizado exitosamente.',
-                'proceso' => $proceso
+                'proceso' => $proceso,
+                'redirect' => route('pei.procesos.show', $proceso->id)
             ]);
         }
 
