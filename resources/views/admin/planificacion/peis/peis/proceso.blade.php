@@ -1,6 +1,50 @@
 @extends('layouts.master')
 @section('title', 'Proceso de Planificación')
 
+@push('styles')
+<style>
+    /* Reset definitivo para eliminar la superposición de labels y placeholders por Material Dashboard */
+    .modal .form-group,
+    .modal .bmd-form-group {
+        position: static !important;
+        padding-top: 0 !important;
+        margin-bottom: 1.1rem !important;
+    }
+    .modal label,
+    .modal .bmd-label-floating,
+    .modal .bmd-label-static {
+        position: static !important;
+        transform: none !important;
+        transition: none !important;
+        top: auto !important;
+        left: auto !important;
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        margin-bottom: 5px !important;
+        display: block !important;
+        float: none !important;
+        pointer-events: auto !important;
+    }
+    .modal .form-control {
+        position: static !important;
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        padding: 8px 12px !important;
+        height: auto !important;
+        min-height: 40px !important;
+        color: #0f172a !important;
+        font-size: 0.9rem !important;
+        box-shadow: none !important;
+    }
+    .modal .form-control:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+    }
+</style>
+@endpush
+
 @section('content')
 
 @php
