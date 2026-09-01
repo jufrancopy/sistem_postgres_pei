@@ -257,6 +257,15 @@ class GlobalesController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         $totalRelevamientosProcesos = $relevamientosProcesosList->count();
+        $organigramasProceso = isset($organigramasPermitidos) && $organigramasPermitidos->isNotEmpty()
+            ? $organigramasPermitidos
+            : Organigrama::orderBy('dependency')->get();
+        $peiProfilesProceso = isset($selectedPei) && $selectedPei
+            ? \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $selectedPei->descendants()->pluck('id')->push($selectedPei->id))->whereIn('level', ['action', 'goal', 'axi'])->orderBy('name')->get()
+            : \App\Admin\Planificacion\Pei\PeiProfile::whereIn('level', ['action', 'goal', 'axi'])->orderBy('name')->get();
+        $usersListProceso = User::orderBy('name')->get();
+        $peiProfilesSelect = \App\Admin\Planificacion\Pei\PeiProfile::whereIn('level', ['action', 'goal', 'axi'])->whereNull('deleted_at')->orderBy('name')->get();
+        $allUsersSelect = User::orderBy('name')->get(['id', 'name', 'email']);
 
         // ── Top 10 Funcionarios Destacados (Filtrados por PEI Seleccionado y Sin Admins) ──
         $adminUserIds = User::role('Administrador')->pluck('id')->toArray();

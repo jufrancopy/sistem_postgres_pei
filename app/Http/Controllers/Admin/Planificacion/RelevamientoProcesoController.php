@@ -63,11 +63,7 @@ class RelevamientoProcesoController extends Controller
                 ->make(true);
         }
 
-        $peiProfiles = PeiProfile::whereIn('level', ['action', 'goal', 'axi'])->orderBy('name')->get();
-        $organigramas = Organigrama::orderBy('dependency')->get();
-        $users = User::orderBy('name')->get();
-
-        return view('admin.planificacion.procesos.index', compact('peiProfiles', 'organigramas', 'users'));
+        return redirect()->route('globales.dashboard', ['tab' => 'procesos']);
     }
 
     public function store(Request $request, RelevamientoAiAnalysisService $aiService)

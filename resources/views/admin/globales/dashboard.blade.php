@@ -1663,9 +1663,9 @@
                             <a href="{{ route('pei.procesos.portalDoc') }}" class="btn btn-outline-info btn-round px-3 shadow-sm font-weight-bold">
                                 <i class="fa fa-microscope mr-1"></i> Portal Investigadores DOC
                             </a>
-                            <a href="{{ route('pei.procesos.index') }}" class="btn btn-info btn-round px-3 shadow-sm font-weight-bold">
-                                <i class="fa fa-plus-circle mr-1"></i> Gestionar / Nuevo Relevamiento
-                            </a>
+                            <button type="button" class="btn btn-info btn-round px-3 shadow-sm font-weight-bold" data-toggle="modal" data-target="#modalNuevoRelevamiento">
+                                <i class="fa fa-plus-circle mr-1"></i> + Nuevo Relevamiento Técnico
+                            </button>
                         </div>
                     </div>
 
@@ -1815,6 +1815,87 @@
         </div>
     </div>
 
+</div>
+
+<!-- Modal Nuevo Relevamiento Técnico (Delimitado a la Estructura PEI Activa) -->
+<div class="modal fade" id="modalNuevoRelevamiento" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg rounded-lg">
+            <form id="formNuevoRelevamientoDashboard" action="{{ route('pei.procesos.store') }}" method="POST">
+                @csrf
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fas fa-clipboard-list mr-2"></i> Alta de Relevamiento Técnico del Servicio</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="form-group">
+                        <label class="font-weight-bold text-dark">Nombre del Circuito / Estudio <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre" class="form-control" placeholder="Ej: Circuito de Recepción, Agendamiento e Internación - HZ Luque" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-bold text-dark">Servicio / Establecimiento (Organigrama Delimitado)</label>
+                            <select name="organigrama_id" id="modal_proc_organigrama_id" class="form-control select2-modal-proc" style="width: 100%;">
+                                <option value="">-- Seleccionar Servicio / Área --</option>
+                                @php
+                                    $orgsProcList = isset($organigramasProceso) ? $organigramasProceso : (isset($organigramasPermitidos) && $organigramasPermitidos->isNotEmpty() ? $organigramasPermitidos : \App\Admin\Globales\Organigrama::orderBy('dependency')->get());
+                                @endphp
+                                @foreach($orgsProcList as $org)
+                                    <option value="{{ $org->id }}">{{ $org->dependency }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-bold text-dark">Acción del PEI Vinculada</label>
+                            <select name="pei_profile_id" id="modal_proc_pei_profile_id" class="form-control select2-modal-proc" style="width: 100%;">
+                                <option value="" data-dependency-id="">-- Seleccionar Meta/Acción PEI --</option>
+                                @php
+                                    $peisProcList = isset($peiProfilesProceso) ? $peiProfilesProceso : (isset($selectedPei) ? $selectedPei->descendants()->whereIn('level', ['action', 'goal', 'axi'])->get() : \App\Admin\Planificacion\Pei\PeiProfile::whereIn('level', ['action', 'goal', 'axi'])->get());
+                                @endphp
+                                @foreach($peisProcList as $pei)
+                                    <option value="{{ $pei->id }}" data-dependency-id="{{ $pei->effective_dependency_id }}">
+                                        [{{ strtoupper($pei->level) }}] {{ Str::limit($pei->name, 60) }}
+                                        @if($pei->effective_dependency) — ({{ $pei->effective_dependency->dependency }})@endif
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-dark">Contexto / Móvil de la Visita de Relevamiento</label>
+                        <textarea name="contexto_motivo" class="form-control" rows="2" placeholder="Especificar la Instrucción del Consejo de Administración, Ordenanza o Resolución que motiva el relevamiento..."></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-7 form-group">
+                            <label class="font-weight-bold text-dark">Responsables / Equipo Relevador de la Visita</label>
+                            <select name="responsables[]" class="form-control select2-modal-proc" multiple="multiple" style="width: 100%;">
+                                @php
+                                    $uProcList = isset($usersListProceso) ? $usersListProceso : \App\Models\User::orderBy('name')->get();
+                                @endphp
+                                @foreach($uProcList as $user)
+                                    <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                                @endforeach
+                            </select>
+                            <small class="form-text text-muted">Seleccionar analistas de Planificación y miembros de Organización y Calidad participantes.</small>
+                        </div>
+                        <div class="col-md-5 form-group">
+                            <label class="font-weight-bold text-dark">Fecha de Visita / Relevamiento</label>
+                            <input type="date" name="fecha_relevamiento" class="form-control" value="{{ date('Y-m-d') }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="btnGuardarRelevamientoDashboard" class="btn btn-info font-weight-bold"><i class="fas fa-save mr-1"></i> Iniciar Relevamiento</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 {{-- ════════════════════════════════════════════════════════════════════════════
@@ -5889,8 +5970,47 @@ $('#btnCompartirWhatsAppDirecto').on('click', function() {
                   "⭐ *Puntuación Acumulada*: " + Number(currentFichaData.points || 0).toLocaleString() + " Pts\n\n" +
                   "👏 ¡Felicitaciones por tu esfuerzo, constancia y valioso aporte en el Cierre de Semana Exitoso del Sistema de Planificación PEI!";
 
-    var url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensaje);
-    window.open(url, '_blank');
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab') === 'procesos' || window.location.hash === '#tab-procesos') {
+        $('#tab-procesos-link').tab('show');
+    }
+
+    $('#modalNuevoRelevamiento').on('shown.bs.modal', function () {
+        $('.select2-modal-proc').select2({
+            dropdownParent: $('#modalNuevoRelevamiento')
+        });
+    });
+
+    $('#modal_proc_pei_profile_id').on('change', function() {
+        var selectedOpt = $(this).find('option:selected');
+        var depId = selectedOpt.data('dependency-id');
+        if (depId) {
+            $('#modal_proc_organigrama_id').val(depId).trigger('change');
+        }
+    });
+
+    $('#formNuevoRelevamientoDashboard').on('submit', function(e) {
+        e.preventDefault();
+        var $btn = $('#btnGuardarRelevamientoDashboard');
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
+
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(res) {
+                if (res.status === 'success') {
+                    if (typeof toastr !== 'undefined') toastr.success(res.message);
+                    window.location.href = res.redirect;
+                }
+            },
+            error: function(xhr) {
+                $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Iniciar Relevamiento');
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Ocurrió un error al guardar el relevamiento.';
+                if (typeof toastr !== 'undefined') toastr.error(msg); else alert(msg);
+            }
+        });
+    });
 });
 </script>
 @endsection
