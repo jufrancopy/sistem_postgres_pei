@@ -30,7 +30,11 @@ class RelevamientoProcesoController extends Controller
                     return $row->organigrama ? $row->organigrama->nombre : '<span class="text-muted">No asignado</span>';
                 })
                 ->addColumn('pei_label', function ($row) {
-                    return $row->peiProfile ? Str::limit($row->peiProfile->name, 40) : '<span class="text-muted">Sin Acción PEI</span>';
+                    if (!$row->peiProfile) {
+                        return '<span class="text-muted small">Sin Acción PEI</span>';
+                    }
+                    $cleanName = trim(preg_replace('/\s+/', ' ', strip_tags(html_entity_decode($row->peiProfile->name, ENT_QUOTES, 'UTF-8'))));
+                    return '<span class="badge badge-info text-wrap text-left font-weight-bold p-1" style="white-space: normal !important; line-height: 1.3; max-width: 260px; display: inline-block;"><i class="fas fa-bullseye mr-1"></i>' . e(Str::limit($cleanName, 90)) . '</span>';
                 })
                 ->addColumn('responsables_badges', function ($row) {
                     $html = '';

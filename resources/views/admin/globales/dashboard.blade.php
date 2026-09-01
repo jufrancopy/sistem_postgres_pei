@@ -1850,8 +1850,11 @@
                                         </td>
                                         <td>
                                             @if($proc->peiProfile)
-                                                <span class="badge badge-info font-weight-bold p-1">
-                                                    <i class="fa fa-bullseye mr-1"></i>{{ \Illuminate\Support\Str::limit($proc->peiProfile->name, 40) }}
+                                                @php
+                                                    $cleanPeiName = trim(preg_replace('/\s+/', ' ', strip_tags(html_entity_decode($proc->peiProfile->name, ENT_QUOTES, 'UTF-8'))));
+                                                @endphp
+                                                <span class="badge badge-info font-weight-bold p-1 text-wrap text-left" style="white-space: normal !important; line-height: 1.3; max-width: 260px; display: inline-block;">
+                                                    <i class="fa fa-bullseye mr-1"></i>{{ \Illuminate\Support\Str::limit($cleanPeiName, 90) }}
                                                 </span>
                                             @else
                                                 <span class="text-muted small">Sin vinculación PEI</span>
@@ -1859,7 +1862,7 @@
                                         </td>
                                         <td>
                                             @forelse($proc->responsables as $resp)
-                                                <span class="badge badge-light border text-muted mr-1"><i class="fa fa-user-check text-success mr-1"></i>{{ $resp->name }}</span>
+                                                <span class="badge badge-light border text-muted mr-1 mb-1"><i class="fa fa-user-check text-success mr-1"></i>{{ $resp->name }}</span>
                                             @empty
                                                 <span class="text-muted small">No asignado</span>
                                             @endforelse
@@ -1877,13 +1880,19 @@
                                                 <span class="badge badge-success badge-pill"><i class="fa fa-check-circle mr-1"></i>0 cuellos</span>
                                             @endif
                                         </td>
-                                        <td class="text-right">
+                                        <td class="text-right" style="white-space: nowrap;">
                                             <a href="{{ route('pei.procesos.show', $proc->id) }}" class="btn btn-sm btn-primary btn-round mr-1" title="Ver Flujograma & Diagnóstico">
                                                 <i class="fa fa-project-diagram"></i>
                                             </a>
-                                            <a href="{{ route('pei.procesos.exportPdf', $proc->id) }}" target="_blank" class="btn btn-sm btn-danger btn-round" title="Reporte PDF">
+                                            <button type="button" onclick="editarRelevamiento('{{ $proc->id }}')" class="btn btn-sm btn-warning btn-round mr-1" title="Editar Relevamiento">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+                                            <a href="{{ route('pei.procesos.exportPdf', $proc->id) }}" target="_blank" class="btn btn-sm btn-danger btn-round mr-1" title="Reporte PDF">
                                                 <i class="fa fa-file-pdf"></i>
                                             </a>
+                                            <button type="button" onclick="eliminarRelevamiento('{{ $proc->id }}', '{{ addslashes($proc->nombre) }}')" class="btn btn-sm btn-outline-danger btn-round" title="Eliminar Relevamiento">
+                                                <i class="fa fa-trash-alt"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 @empty
