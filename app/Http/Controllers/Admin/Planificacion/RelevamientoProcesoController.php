@@ -57,6 +57,7 @@ class RelevamientoProcesoController extends Controller
                 ->addColumn('actions', function ($row) {
                     $btn = '<a href="' . route('pei.procesos.show', $row->id) . '" class="btn btn-sm btn-primary shadow-sm mr-1" title="Ver Flujograma & Diagnóstico"><i class="fas fa-project-diagram mr-1"></i>Ver Flujograma</a>';
                     $btn .= '<a href="' . route('pei.procesos.exportPdf', $row->id) . '" target="_blank" class="btn btn-sm btn-danger shadow-sm mr-1" title="Imprimir Reporte PDF"><i class="fas fa-file-pdf"></i></a>';
+                    $btn .= '<button type="button" onclick="eliminarRelevamiento(\'' . $row->id . '\', \'' . addslashes($row->nombre) . '\')" class="btn btn-sm btn-outline-danger shadow-sm" title="Eliminar Relevamiento"><i class="fas fa-trash-alt"></i></button>';
                     return $btn;
                 })
                 ->rawColumns(['servicio_label', 'pei_label', 'responsables_badges', 'lead_time_formatted', 'eficiencia_badge', 'cuellos_count', 'actions'])
@@ -344,6 +345,21 @@ class RelevamientoProcesoController extends Controller
         $proceso = RelevamientoProceso::with(['peiProfile', 'organigrama', 'responsables', 'pasos.organigrama'])->findOrFail($id);
 
         return view('admin.planificacion.procesos.pdf_report', compact('proceso'));
+    }
+
+    public function destroy($id)
+    {
+        $proceso = RelevamientoProceso::findOrFail($id);
+        $proceso->delete();
+
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Estudio de relevamiento eliminado exitosamente.'
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Estudio de relevamiento eliminado exitosamente.');
     }
 
     private function generarMermaidGraph(RelevamientoProceso $proceso): string

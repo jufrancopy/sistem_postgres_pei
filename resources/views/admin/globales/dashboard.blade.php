@@ -6139,6 +6139,66 @@ $(document).ready(function() {
         addExtParticipantRowDashboard();
     });
 
+    window.eliminarRelevamiento = function(id, nombre) {
+        if (typeof Swal === 'undefined') {
+            if (confirm('¿Estás seguro de que deseas eliminar este relevamiento?')) {
+                $.ajax({
+                    url: `/pei/procesos/${id}`,
+                    type: 'DELETE',
+                    data: { _token: '{{ csrf_token() }}' },
+                    success: function() {
+                        if ($.fn.DataTable.isDataTable('#tablaProcesosRelevamiento')) {
+                            $('#tablaProcesosRelevamiento').DataTable().ajax.reload(null, false);
+                        } else { location.reload(); }
+                    }
+                });
+            }
+            return;
+        }
+
+        Swal.fire({
+            title: '¿Eliminar Relevamiento?',
+            html: `¿Estás seguro de que deseas eliminar permanentemente el estudio de campo:<br><strong class="text-danger">${nombre}</strong>?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fas fa-trash-alt mr-1"></i> Sí, Eliminar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'btn btn-danger font-weight-bold shadow-sm px-3 mr-2',
+                cancelButton: 'btn btn-secondary font-weight-bold shadow-sm px-3'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/pei/procesos/${id}`,
+                    type: 'DELETE',
+                    data: { _token: '{{ csrf_token() }}' },
+                    success: function(res) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Eliminado',
+                            text: 'El estudio de relevamiento fue eliminado correctamente.',
+                            toast: true,
+                            position: 'top-end',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                        if ($.fn.DataTable.isDataTable('#tablaProcesosRelevamiento')) {
+                            $('#tablaProcesosRelevamiento').DataTable().ajax.reload(null, false);
+                        } else {
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire('Error', 'No se pudo eliminar el estudio de relevamiento.', 'error');
+                    }
+                });
+            }
+        });
+    };
+
     $('#modalNuevoRelevamiento').on('shown.bs.modal', function () {
         initSelect2Relevamiento();
     });
