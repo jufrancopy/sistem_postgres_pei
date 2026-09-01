@@ -196,11 +196,34 @@ class PeiProfile extends Model
     public function getLabelNivel(): string
     {
         if ($this->nivel_label) {
-            $labels = json_decode($this->nivel_label, true);
-            return $labels[$this->level] ?? ucfirst($this->level);
+            $labels = is_array($this->nivel_label) ? $this->nivel_label : json_decode($this->nivel_label, true);
+            if (!empty($labels[$this->level])) {
+                return $labels[$this->level];
+            }
         }
-        // Default modelo A
-        return self::modelosDeNiveles()['A'][$this->level] ?? ucfirst($this->level);
+
+        if ($this->_lft && $this->_rgt) {
+            $root = static::where('_lft', '<=', $this->_lft)
+                ->where('_rgt', '>=', $this->_rgt)
+                ->where('level', 'master')
+                ->first();
+
+            if ($root && $root->nivel_label) {
+                $labels = is_array($root->nivel_label) ? $root->nivel_label : json_decode($root->nivel_label, true);
+                if (!empty($labels[$this->level])) {
+                    return $labels[$this->level];
+                }
+            }
+        }
+
+        $defaultMap = [
+            'axi'    => 'Objetivo Estratégico',
+            'goal'   => 'Objetivo Específico',
+            'action' => 'Acción Estratégica',
+            'master' => 'Plan Estratégico',
+        ];
+
+        return $defaultMap[$this->level] ?? (self::modelosDeNiveles()['IPS'][$this->level] ?? ucfirst($this->level));
     }
 
     public function alertaPresupuestaria(): ?string

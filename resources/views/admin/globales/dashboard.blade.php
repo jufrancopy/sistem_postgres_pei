@@ -1908,7 +1908,7 @@
                                         $cleanPeiName = trim(preg_replace('/\s+/', ' ', strip_tags(html_entity_decode($pei->name, ENT_QUOTES, 'UTF-8'))));
                                     @endphp
                                     <option value="{{ $pei->id }}" data-dependency-id="{{ $pei->effective_dependency_id }}">
-                                        [{{ strtoupper($pei->level) }}] {{ Str::limit($cleanPeiName, 70) }}
+                                        [{{ mb_strtoupper($pei->getLabelNivel()) }}] {{ Str::limit($cleanPeiName, 70) }}
                                         @if($pei->effective_dependency) — ({{ $pei->effective_dependency->dependency }})@endif
                                     </option>
                                 @endforeach
