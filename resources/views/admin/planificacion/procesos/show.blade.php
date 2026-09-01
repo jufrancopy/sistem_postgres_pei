@@ -157,26 +157,34 @@
 @section('content')
 <div class="container-fluid">
     <!-- Encabezado del Relevamiento -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <div>
-                <h3 class="card-title font-weight-bold mb-1">
-                    <i class="fas fa-project-diagram text-info mr-2"></i> {{ $proceso->nombre }}
-                </h3>
-                <div class="d-flex flex-wrap align-items-center text-white-50">
-                    <span class="mr-3"><i class="fas fa-hospital mr-1"></i> {{ $proceso->organigrama ? $proceso->organigrama->nombre : 'Servicio General' }}</span>
-                    <span class="mr-3"><i class="fas fa-calendar-alt mr-1"></i> Visita: {{ $proceso->fecha_relevamiento ? $proceso->fecha_relevamiento->format('d/m/Y') : 'Hoy' }}</span>
-                </div>
-            </div>
-            <div>
-                <a href="{{ route('pei.procesos.exportPdf', $proceso->id) }}" target="_blank" class="btn btn-danger font-weight-bold shadow-sm mr-2">
-                    <i class="fas fa-file-pdf mr-1"></i> Exportar Reporte PDF
-                </a>
-                <a href="{{ route('pei.procesos.index') }}" class="btn btn-secondary shadow-sm">
-                    <i class="fas fa-arrow-left mr-1"></i> Volver
-                </a>
-            </div>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb bg-transparent p-0 mb-3" style="font-size: 0.85rem;">
+        <li class="breadcrumb-item"><a href="{{ route('globales.dashboard') }}" class="text-primary font-weight-bold">Planificación</a></li>
+        <li class="breadcrumb-item"><a href="{{ route('globales.dashboard', ['tab' => 'procesos']) }}" class="text-primary font-weight-bold">Relevamiento de Procesos</a></li>
+        <li class="breadcrumb-item active text-muted" aria-current="page">{{ Str::limit($proceso->nombre, 45) }}</li>
+    </ol>
+</nav>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header card-header-info d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+            <h4 class="card-title font-weight-bold text-white mb-1">
+                <i class="fas fa-project-diagram mr-2"></i> {{ $proceso->nombre }}
+            </h4>
+            <p class="card-category text-white-50 mb-0 d-flex flex-wrap align-items-center">
+                <span class="mr-3"><i class="fas fa-hospital mr-1"></i> Servicio / Establecimiento: {{ $proceso->organigrama ? $proceso->organigrama->dependency : 'Servicio General' }}</span>
+                <span><i class="fas fa-calendar-alt mr-1"></i> Fecha de Visita: {{ $proceso->fecha_relevamiento ? $proceso->fecha_relevamiento->format('d/m/Y') : date('d/m/Y') }}</span>
+            </p>
         </div>
+        <div class="mt-2 mt-md-0">
+            <a href="{{ route('pei.procesos.exportPdf', $proceso->id) }}" target="_blank" class="btn btn-danger font-weight-bold shadow-sm mr-2">
+                <i class="fas fa-file-pdf mr-1"></i> Exportar Reporte PDF
+            </a>
+            <a href="{{ route('globales.dashboard', ['tab' => 'procesos']) }}" class="btn btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left mr-1"></i> Volver
+            </a>
+        </div>
+    </div>
         <div class="card-body bg-light">
             <div class="row">
                 <div class="col-md-6">
