@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Planificacion\RelevamientoProceso;
 use App\Models\Planificacion\RelevamientoPaso;
-use App\Models\Planificacion\PeiProfile;
+use App\Admin\Planificacion\Pei\PeiProfile;
 use App\Admin\Globales\Organigrama;
 use App\Models\User;
 use App\Services\RelevamientoAiAnalysisService;
