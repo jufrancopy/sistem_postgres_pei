@@ -391,6 +391,12 @@
                         <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalJuntas }}</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-procesos-link" data-toggle="pill" href="#tab-procesos" role="tab" aria-selected="false">
+                        <i class="fa fa-project-diagram text-info mr-2"></i> Mapeo de Procesos & Flujogramas
+                        <span class="badge badge-pill badge-info ml-1" style="font-size:0.7rem;">{{ $totalRelevamientosProcesos ?? 0 }}</span>
+                    </a>
+                </li>
             </ul>
         </div>
 
@@ -1635,6 +1641,173 @@
                                     </td>
                                 </tr>
                                 @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {{-- ════════════════════════════════════════════════════════════════════════════
+                     PESTAÑA: MAPEO DE PROCESOS, CIRCUITOS & FLUJOGRAMAS (DOC)
+                     ════════════════════════════════════════════════════════════════════════════ --}}
+                <div class="tab-pane fade" id="tab-procesos" role="tabpanel">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                        <div>
+                            <h4 class="font-weight-bold text-dark mb-1">
+                                <i class="fa fa-project-diagram text-info mr-2"></i> Mapeo de Procesos, Circuitos de Atención & Flujogramas
+                            </h4>
+                            <p class="text-muted mb-0 small">
+                                Herramienta de Diagnóstico Operativo de Tiempos de Espera, Cuellos de Botella e Insumo para Organización y Calidad (DOC)
+                            </p>
+                        </div>
+                        <div class="mt-3 mt-md-0 d-flex flex-wrap align-items-center" style="gap:8px;">
+                            <a href="{{ route('pei.procesos.portalDoc') }}" class="btn btn-outline-info btn-round px-3 shadow-sm font-weight-bold">
+                                <i class="fa fa-microscope mr-1"></i> Portal Investigadores DOC
+                            </a>
+                            <a href="{{ route('pei.procesos.index') }}" class="btn btn-info btn-round px-3 shadow-sm font-weight-bold">
+                                <i class="fa fa-plus-circle mr-1"></i> Gestionar / Nuevo Relevamiento
+                            </a>
+                        </div>
+                    </div>
+
+                    @php
+                        $relList = isset($relevamientosProcesosList) ? $relevamientosProcesosList : \App\Models\Planificacion\RelevamientoProceso::with(['peiProfile', 'organigrama', 'responsables', 'pasos'])->orderBy('created_at', 'desc')->get();
+                        $totRel = $relList->count();
+                        $totCuellos = $relList->filter(fn($p) => $p->conteo_cuellos_botella > 0)->count();
+                    @endphp
+
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <div class="card kpi-card p-3 border-left border-info" style="border-left-width:4px !important;">
+                                <div class="d-flex align-items-center">
+                                    <div class="kpi-icon-box mr-3" style="background:#e0f2fe; color:#0284c7;">
+                                        <i class="fa fa-clipboard-list"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Circuitos Relevados</div>
+                                        <div class="h3 font-weight-bold text-dark mb-0">{{ $totRel }}</div>
+                                        <small class="text-muted">Estudios de campo</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <div class="card kpi-card p-3 border-left border-danger" style="border-left-width:4px !important;">
+                                <div class="d-flex align-items-center">
+                                    <div class="kpi-icon-box mr-3" style="background:#fee2e2; color:#dc2626;">
+                                        <i class="fa fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Con Cuellos Críticos</div>
+                                        <div class="h3 font-weight-bold text-danger mb-0">{{ $totCuellos }}</div>
+                                        <small class="text-muted">Requieren intervención PEI</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <div class="card kpi-card p-3 border-left border-success" style="border-left-width:4px !important;">
+                                <div class="d-flex align-items-center">
+                                    <div class="kpi-icon-box mr-3" style="background:#dcfce7; color:#16a34a;">
+                                        <i class="fa fa-clock"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Lead Time Promedio</div>
+                                        <div class="h3 font-weight-bold text-dark mb-0">{{ $totRel > 0 ? round($relList->avg(fn($p) => $p->lead_time_total)) : 0 }}m</div>
+                                        <small class="text-muted">Recorrido del paciente</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card kpi-card p-3 border-left border-primary" style="border-left-width:4px !important;">
+                                <div class="d-flex align-items-center">
+                                    <div class="kpi-icon-box mr-3" style="background:#e0e7ff; color:#4338ca;">
+                                        <i class="fa fa-chart-line"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small font-weight-bold text-uppercase">Eficiencia Promedio</div>
+                                        <div class="h3 font-weight-bold text-primary mb-0">{{ $totRel > 0 ? round($relList->avg(fn($p) => $p->eficiencia), 1) : 100 }}%</div>
+                                        <small class="text-muted">Valor agregado / Espera</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive rounded border bg-white">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th width="40">#</th>
+                                    <th>Nombre del Circuito</th>
+                                    <th>Servicio / Establecimiento</th>
+                                    <th>Acción PEI Vinculada</th>
+                                    <th>Equipo Relevador</th>
+                                    <th class="text-center">Lead Time</th>
+                                    <th class="text-center">Eficiencia</th>
+                                    <th class="text-center">Cuellos</th>
+                                    <th class="text-right" width="160">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($relList as $pIdx => $proc)
+                                    <tr>
+                                        <td class="font-weight-bold text-center">{{ $pIdx + 1 }}</td>
+                                        <td>
+                                            <div class="font-weight-bold text-dark">{{ $proc->nombre }}</div>
+                                            <small class="text-muted"><i class="fa fa-calendar-alt mr-1"></i>{{ $proc->fecha_relevamiento ? $proc->fecha_relevamiento->format('d/m/Y') : 'Hoy' }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-light border text-dark">
+                                                <i class="fa fa-hospital text-info mr-1"></i>{{ $proc->organigrama ? $proc->organigrama->dependency : 'Servicio General' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if($proc->peiProfile)
+                                                <span class="badge badge-info font-weight-bold p-1">
+                                                    <i class="fa fa-bullseye mr-1"></i>{{ \Illuminate\Support\Str::limit($proc->peiProfile->name, 40) }}
+                                                </span>
+                                            @else
+                                                <span class="text-muted small">Sin vinculación PEI</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @forelse($proc->responsables as $resp)
+                                                <span class="badge badge-light border text-muted mr-1"><i class="fa fa-user-check text-success mr-1"></i>{{ $resp->name }}</span>
+                                            @empty
+                                                <span class="text-muted small">No asignado</span>
+                                            @endforelse
+                                        </td>
+                                        <td class="text-center font-weight-bold text-dark">{{ $proc->lead_time_total }} min</td>
+                                        <td class="text-center">
+                                            <span class="badge {{ $proc->eficiencia >= 70 ? 'badge-success' : ($proc->eficiencia >= 50 ? 'badge-warning' : 'badge-danger') }} badge-pill px-2 py-1">
+                                                {{ $proc->eficiencia }}%
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if($proc->conteo_cuellos_botella > 0)
+                                                <span class="badge badge-danger badge-pill"><i class="fa fa-exclamation-triangle mr-1"></i>{{ $proc->conteo_cuellos_botella }} crítico(s)</span>
+                                            @else
+                                                <span class="badge badge-success badge-pill"><i class="fa fa-check-circle mr-1"></i>0 cuellos</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-right">
+                                            <a href="{{ route('pei.procesos.show', $proc->id) }}" class="btn btn-sm btn-primary btn-round mr-1" title="Ver Flujograma & Diagnóstico">
+                                                <i class="fa fa-project-diagram"></i>
+                                            </a>
+                                            <a href="{{ route('pei.procesos.exportPdf', $proc->id) }}" target="_blank" class="btn btn-sm btn-danger btn-round" title="Reporte PDF">
+                                                <i class="fa fa-file-pdf"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted py-4">
+                                            <i class="fa fa-project-diagram fa-2x mb-2 d-block text-secondary"></i>
+                                            No hay relevamientos de procesos registrados aún.
+                                        </td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

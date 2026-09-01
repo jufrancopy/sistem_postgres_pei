@@ -252,6 +252,12 @@ class GlobalesController extends Controller
         $totalJuntasActivas = $juntasList->where('activo', true)->count();
         $totalIntervencionesJuntas = \App\Models\Planificacion\JuntaIntervencion::count();
 
+        // ── Relevamientos de Procesos & Flujogramas ────────────────────────────
+        $relevamientosProcesosList = \App\Models\Planificacion\RelevamientoProceso::with(['peiProfile', 'organigrama', 'responsables', 'pasos'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $totalRelevamientosProcesos = $relevamientosProcesosList->count();
+
         // ── Top 10 Funcionarios Destacados (Filtrados por PEI Seleccionado y Sin Admins) ──
         $adminUserIds = User::role('Administrador')->pluck('id')->toArray();
         $descendantPeiIds = $selectedPei ? $selectedPei->descendants()->pluck('id')->push($selectedPei->id)->toArray() : [];
