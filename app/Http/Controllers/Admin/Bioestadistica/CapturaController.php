@@ -86,6 +86,11 @@ class CapturaController extends Controller
             'groups' => $groups,
             'periodo_anio' => $periodoAnio,
             'periodo_mes' => $periodoMes,
+            'openNuevaCargaModal' => $request->boolean('nueva'),
+            'selectedEstablecimientoId' => $request->integer('establecimiento_id') ?: old('establecimiento_id'),
+            'selectedFormularioId' => $request->integer('formulario_id') ?: old('formulario_id'),
+            'selectedAnio' => $request->integer('periodo_anio') ?: old('periodo_anio', $periodoAnio),
+            'selectedMes' => $request->integer('periodo_mes') ?: old('periodo_mes', $periodoMes),
         ]);
     }
 
@@ -156,22 +161,20 @@ class CapturaController extends Controller
         );
     }
 
-    public function create(Request $request): View
+    public function create(Request $request): RedirectResponse
     {
         $this->ensureCanCapture();
 
-        return view('admin.bioestadistica.captura.create', [
-            'formularios' => $this->allowedFormularios(),
-            'establecimientos' => $this->allowedEstablishments(),
-            'months' => $this->months(),
-            'selectedEstablecimientoId' => $request->integer('establecimiento_id') ?: old('establecimiento_id'),
-            'selectedFormularioId' => $request->integer('formulario_id') ?: old('formulario_id'),
-            'selectedAnio' => $request->integer('periodo_anio') ?: old('periodo_anio', now()->year),
-            'selectedMes' => $request->integer('periodo_mes') ?: old('periodo_mes', now()->subMonth()->month),
-        ]);
+        return redirect()->route('bioestadistica.captura.index', array_filter([
+            'nueva' => 1,
+            'establecimiento_id' => $request->integer('establecimiento_id') ?: null,
+            'formulario_id' => $request->integer('formulario_id') ?: null,
+            'periodo_anio' => $request->integer('periodo_anio') ?: null,
+            'periodo_mes' => $request->integer('periodo_mes') ?: null,
+        ], fn ($value) => $value !== null && $value !== ''));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $this->ensureCanCapture();
         $data = $this->validateContext($request);
@@ -531,15 +534,33 @@ class CapturaController extends Controller
         return back()->with('success', 'Asignaciones actualizadas.');
     }
 
-    private function redirectToCapture(Record $record, string $level, string $message): RedirectResponse
+    private function redirectToCapture(Record $record, string $level, string $message): RedirectResponse|JsonResponse
+    {
+        if ($this->requestExpectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'level' => $level,
+                'message' => $message,
+                'redirect' => $this->captureRedirectUrl($record),
+            ], $level === 'success' ? 201 : 200);
+        }
+
+        return redirect()->to($this->captureRedirectUrl($record))->with($level, $message);
+    }
+
+    private function captureRedirectUrl(Record $record): string
     {
         $record->loadMissing('formulario');
         if ($record->formulario->codigo === 'SP10' || $record->formulario->layout_type === 'nominativo') {
-            return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', $record->spreadsheetParams())
-                ->with($level, $message);
+            return route('bioestadistica.hospitalizacion.spreadsheet', $record->spreadsheetParams());
         }
 
-        return redirect()->route('bioestadistica.captura.edit', $record)->with($level, $message);
+        return route('bioestadistica.captura.edit', $record);
+    }
+
+    private function requestExpectsJson(): bool
+    {
+        return request()->expectsJson() || request()->ajax();
     }
 
     private function validateContext(Request $request): array

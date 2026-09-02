@@ -443,7 +443,7 @@ class HospitalizacionServiceTest extends TestCase
 
         $this->actingAs($user)
             ->get(route('bioestadistica.hospitalizacion.spreadsheet'))
-            ->assertRedirect(route('bioestadistica.captura.create'));
+            ->assertRedirect(route('bioestadistica.captura.index', ['nueva' => 1]));
     }
 
     public function test_captura_store_for_sp10_opens_spreadsheet_of_selected_period(): void
