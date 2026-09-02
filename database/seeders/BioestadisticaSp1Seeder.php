@@ -48,7 +48,7 @@ class BioestadisticaSp1Seeder extends Seeder
                 'detalle_id' => $detalle->id,
                 'help_text' => 'Cargue el total de consultas de cada especialidad. Las especialidades sin actividad pueden quedar vacías.',
                 'config' => [
-                    'row_source' => 'diccionario',
+                    'row_source' => 'detalle_catalogo',
                     'row_detalle_id' => $detalle->id,
                     'row_label' => 'Especialidad',
                     'totals' => true,
@@ -85,6 +85,6 @@ class BioestadisticaSp1Seeder extends Seeder
 
         $formulario->update(['estado' => 'activo']);
 
-        $this->command?->info('SP1 configurado y publicado con '.$detalle->prestaciones()->count().' especialidades.');
+        $this->command?->info('SP1 configurado y publicado con '.$detalle->catalogoItems()->where('activo', true)->count().' especialidades.');
     }
 }

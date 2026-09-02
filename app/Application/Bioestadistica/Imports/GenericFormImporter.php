@@ -70,7 +70,7 @@ class GenericFormImporter
                 $config = $column['config'] ?? null;
                 if ($detalleId) {
                     $config = array_merge($config ?? [], [
-                        'row_source' => 'diccionario',
+                        'row_source' => 'detalle_catalogo',
                         'row_detalle_id' => $detalleId,
                     ]);
                 }

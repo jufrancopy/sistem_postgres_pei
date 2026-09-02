@@ -4,15 +4,16 @@ namespace App\Models\Bioestadistica;
 
 use App\Models\Bioestadistica\Concerns\HasMasterCatalogFields;
 
-class Prestacion extends BioestadisticaModel
+class Procedimiento extends BioestadisticaModel
 {
     use HasMasterCatalogFields;
 
-    protected $table = 'bioestadistica.prestaciones';
+    protected $table = 'bioestadistica.procedimientos';
 
     protected $casts = [
         'activo' => 'boolean',
-        'es_indicador' => 'boolean',
+        'requiere_pacientes' => 'boolean',
+        'requiere_prestaciones' => 'boolean',
         'meta' => 'array',
     ];
 }

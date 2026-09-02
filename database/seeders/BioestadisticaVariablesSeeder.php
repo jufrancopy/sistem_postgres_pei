@@ -5,22 +5,28 @@ namespace Database\Seeders;
 use App\Application\Bioestadistica\Dictionary\HealthVariableDictionary;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class BioestadisticaVariablesSeeder extends Seeder
 {
     public function run(): void
     {
-        $path = base_path('.docs-bio/variables salud.xls');
+        $path = base_path('.docs-bio/variables salud.xlsx');
         if (! is_file($path)) {
-            $this->command?->warn("No se encontró {$path}; se omite el diccionario de variables.");
+            $path = base_path('.docs-bio/variables salud.xls');
+        }
+        if (! is_file($path)) {
+            $this->command?->warn('No se encontró variables salud.xlsx ni .xls; se omite el diccionario.');
+
             return;
         }
 
-        $spreadsheet = IOFactory::createReaderForFile($path)
-            ->setReadDataOnly(true)
-            ->load($path);
+        $spreadsheet = IOFactory::createReaderForFile($path)->load($path);
         $count = 0;
+        $skippedColumns = 0;
         $duplicates = 0;
         $seen = [];
         $preferredSheet = $spreadsheet->getSheetByName('VARIABLES SALUD')
@@ -56,23 +62,28 @@ class BioestadisticaVariablesSeeder extends Seeder
                 $naturalKey = Str::upper("{$current['codigo']}|{$current['tipo']}|{$prestacion}");
                 if (isset($seen[$naturalKey])) {
                     $duplicates++;
-                    $this->command?->warn("Prestación duplicada omitida: {$current['tipo']} / {$prestacion}");
                     continue;
                 }
                 $seen[$naturalKey] = true;
 
-                (new HealthVariableDictionary())->remember(
+                $result = (new HealthVariableDictionary)->remember(
                     $current['codigo'],
                     $current['dominio'],
                     $current['tipo'],
-                    $prestacion
+                    $prestacion,
+                    $row
                 );
-                $count++;
+
+                if ($result['skipped_column']) {
+                    $skippedColumns++;
+                } else {
+                    $count++;
+                }
             }
         }
 
         $spreadsheet->disconnectWorksheets();
-        $this->command?->info("Diccionario Bioestadística: {$count} prestaciones procesadas" . ($duplicates ? " ({$duplicates} duplicadas omitidas)." : '.'));
+        $this->command?->info("Diccionario: {$count} ítems de catálogo, {$skippedColumns} columnas de formulario omitidas".($duplicates ? ", {$duplicates} duplicadas." : '.'));
     }
 
     private function clean(mixed $value): ?string
@@ -87,6 +98,7 @@ class BioestadisticaVariablesSeeder extends Seeder
         $row = Str::upper(implode(' ', array_filter($values)));
 
         return str_contains($row, 'CODIGO VARIABLE')
+            || str_contains($row, 'CODIGO DE VARIABLE')
             || str_contains($row, 'TIPO DE REGISTRO')
             || str_contains($row, 'PRESTACIONES');
     }

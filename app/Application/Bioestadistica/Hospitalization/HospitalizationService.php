@@ -266,7 +266,7 @@ class HospitalizationService
                 $metrics = $this->metrics($establecimientoId, $year, $month, (int) $record->id, $record->estructura_servicio_id);
                 $values = $this->toRecordValues($formulario, $metrics);
                 $this->capture->save(
-                    $record->load('formulario.secciones.fields.detalle.prestaciones'),
+                    $record->load('formulario.secciones.fields.detalle.catalogoItems'),
                     $values,
                     true,
                     true,
@@ -516,7 +516,7 @@ class HospitalizationService
      */
     private function toRecordValues(Formulario $formulario, array $metrics): array
     {
-        $fields = $formulario->secciones()->with('fields.detalle.prestaciones')->get()->flatMap->fields->keyBy('code');
+        $fields = $formulario->secciones()->with('fields.detalle.catalogoItems')->get()->flatMap->fields->keyBy('code');
         $values = [];
         foreach ([
             'ingresos_total', 'egresos_total', 'dias_estancia', 'fallecidos',

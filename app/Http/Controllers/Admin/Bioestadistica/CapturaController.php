@@ -294,7 +294,7 @@ class CapturaController extends Controller
     {
         $this->ensureCanView($record);
         $record->load([
-            'formulario.secciones.fields.detalle.prestaciones',
+            'formulario.secciones.fields.detalle.catalogoItems',
             'establecimiento.distrito.departamento',
             'establecimiento.unidades.departamento',
             'establecimiento.unidades.servicio',

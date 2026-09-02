@@ -326,9 +326,13 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.catalog.delete')->name('diccionario.detalles.destroy');
         Route::post('/diccionario/detalles/{detalle}/prestaciones', 'Admin\Bioestadistica\DiccionarioController@storePrestacion')
             ->middleware('permission:bio.catalog.update')->name('diccionario.prestaciones.store');
-        Route::put('/diccionario/prestaciones/{prestacion}', 'Admin\Bioestadistica\DiccionarioController@updatePrestacion')
+        Route::post('/diccionario/detalles/{detalle}/vincular', 'Admin\Bioestadistica\DiccionarioController@linkPrestacion')
+            ->middleware('permission:bio.catalog.update')->name('diccionario.prestaciones.link');
+        Route::get('/diccionario/detalles/{detalle}/catalogo-buscar', 'Admin\Bioestadistica\DiccionarioController@searchLinkable')
+            ->middleware('permission:bio.catalog.view')->name('diccionario.catalogo.buscar');
+        Route::put('/diccionario/puente/{bridge}', 'Admin\Bioestadistica\DiccionarioController@updatePrestacion')
             ->middleware('permission:bio.catalog.update')->name('diccionario.prestaciones.update');
-        Route::delete('/diccionario/prestaciones/{prestacion}', 'Admin\Bioestadistica\DiccionarioController@destroyPrestacion')
+        Route::delete('/diccionario/puente/{bridge}', 'Admin\Bioestadistica\DiccionarioController@destroyPrestacion')
             ->middleware('permission:bio.catalog.delete')->name('diccionario.prestaciones.destroy');
 
         Route::get('/formularios', 'Admin\Bioestadistica\FormularioController@index')

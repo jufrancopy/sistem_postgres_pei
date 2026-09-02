@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Bioestadistica\Establecimiento;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\Indicador;
-use App\Models\Bioestadistica\Prestacion;
+use App\Application\Bioestadistica\Dictionary\CatalogType;
 use App\Models\Bioestadistica\Variable;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -43,7 +43,7 @@ class BioestadisticaDashboardController extends Controller
                 'formularios' => Formulario::count(),
                 'formularios_activos' => Formulario::where('estado', 'activo')->count(),
                 'variables' => Variable::count(),
-                'prestaciones' => Prestacion::count(),
+                'prestaciones' => CatalogType::totalItemsCount(),
                 'establecimientos' => Establecimiento::count(),
                 'distrito_pendiente' => Establecimiento::whereNull('distrito_id')->count(),
                 'indicadores' => Indicador::count(),

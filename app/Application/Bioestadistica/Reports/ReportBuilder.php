@@ -77,9 +77,9 @@ class ReportBuilder
             'label' => 'Mes',
         ],
         'catalogo_item' => [
-            'select' => 'COALESCE(pr.nombre, v.catalog_item_id::text) AS catalogo_item',
-            'group' => 'v.catalog_item_id, pr.nombre',
-            'order' => 'pr.nombre',
+            'select' => 'COALESCE(ci.nombre, v.catalog_item_id::text) AS catalogo_item',
+            'group' => 'v.catalog_item_id, ci.nombre, vd_cat.catalogo_tipo',
+            'order' => 'ci.nombre',
             'label' => 'Prestaciones',
         ],
         'estructura_departamento' => [
@@ -278,11 +278,17 @@ class ReportBuilder
             $query->leftJoin('bioestadistica.estructura_departamentos as ed', 'ed.id', '=', 'rec.estructura_departamento_id')
                 ->leftJoin('bioestadistica.estructura_servicios as es', 'es.id', '=', 'rec.estructura_servicio_id');
         }
-        if (array_intersect($dimensions, ['catalogo_item', 'variable', 'tipo_prestacion'])) {
-            $query->leftJoin('bioestadistica.prestaciones as pr', 'pr.id', '=', 'v.catalog_item_id');
+        $needsCatalogLabel = (bool) array_intersect($dimensions, ['catalogo_item', 'variable', 'tipo_prestacion']);
+        if ($needsCatalogLabel || $consolidado) {
+            $query->leftJoin('bioestadistica.fields as fld_cat', 'fld_cat.id', '=', 'v.field_id')
+                ->leftJoin('bioestadistica.variable_detalles as vd_cat', 'vd_cat.id', '=', 'fld_cat.detalle_id')
+                ->leftJoin('bioestadistica.v_catalog_item_labels as ci', function ($join) {
+                    $join->on('ci.catalogo_tipo', '=', 'vd_cat.catalogo_tipo')
+                        ->on('ci.catalogo_item_id', '=', 'v.catalog_item_id');
+                });
         }
         if (array_intersect($dimensions, ['variable', 'tipo_prestacion'])) {
-            $query->leftJoin('bioestadistica.variable_detalles as vd', 'vd.id', '=', 'pr.detalle_id')
+            $query->leftJoin('bioestadistica.variable_detalles as vd', 'vd.id', '=', 'vd_cat.id')
                 ->leftJoin('bioestadistica.variables as var', 'var.id', '=', 'vd.variable_id');
         }
         if (in_array('campo', $dimensions, true)) {

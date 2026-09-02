@@ -36,7 +36,7 @@ class RecordCaptureService
         }
 
         $fields = $record->formulario->secciones()
-            ->with('fields.detalle.prestaciones')
+            ->with('fields.detalle.catalogoItems')
             ->get()
             ->flatMap(fn ($section) => $section->fields)
             ->keyBy('code');
