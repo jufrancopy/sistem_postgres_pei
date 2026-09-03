@@ -86,7 +86,7 @@ class SpPlanillaParser
                 $contexto = $this->mergeContexto($contexto, $header);
 
                 $entry = [
-                    'titulo' => $sheet->getTitle(),
+                    'titulo' => trim(str_replace("\u{00A0}", ' ', $sheet->getTitle())),
                     'sp_codigo' => $spCode,
                     'departamento' => $header['departamento'],
                     'establecimiento_nombre' => $header['establecimiento'],
@@ -176,22 +176,23 @@ class SpPlanillaParser
     }
 
     /**
+     * @param  array<string, mixed>  $overrides  fila_encabezado, columnas[label|total|total_consultas|cod|pacientes|estudios|…]
      * @return array<string, mixed>
      */
-    public function parseSheet(Worksheet $sheet, string $spCode): array
+    public function parseSheet(Worksheet $sheet, string $spCode, array $overrides = []): array
     {
         return match ($spCode) {
-            'SP1' => $this->parseSp1Sheet($sheet),
+            'SP1' => $this->parseSp1Sheet($sheet, $overrides),
             default => match (true) {
-                in_array($spCode, self::URGENCIAS_SPS, true) => $this->parseSp9Sheet($sheet),
-                in_array($spCode, self::SINGLE_TOTAL_SPS, true) => $this->parseSingleTotalSheet($sheet, $spCode),
-                in_array($spCode, self::MULTI_METRIC_SPS, true) => $this->parseMultiMetricSheet($sheet, $spCode),
+                in_array($spCode, self::URGENCIAS_SPS, true) => $this->parseSp9Sheet($sheet, $overrides),
+                in_array($spCode, self::SINGLE_TOTAL_SPS, true) => $this->parseSingleTotalSheet($sheet, $spCode, $overrides),
+                in_array($spCode, self::MULTI_METRIC_SPS, true) => $this->parseMultiMetricSheet($sheet, $spCode, $overrides),
                 in_array($spCode, self::STACKED_TABLE_SPS, true) => match ($spCode) {
-                    'SP5' => $this->parseSp5Sheet($sheet),
-                    'SP6' => $this->parseSp6Sheet($sheet),
+                    'SP5' => $this->parseSp5Sheet($sheet, $overrides),
+                    'SP6' => $this->parseSp6Sheet($sheet, $overrides),
                     default => throw new RuntimeException('Parser apilado no implementado para '.$spCode.'.'),
                 },
-                in_array($spCode, self::CROSSTAB_SPS, true) => $this->parseSp8Sheet($sheet),
+                in_array($spCode, self::CROSSTAB_SPS, true) => $this->parseSp8Sheet($sheet, $overrides),
                 in_array($spCode, self::MATRIX_SPS, true) => $this->parseSp11Sheet($sheet),
                 in_array($spCode, self::NOMINATIVE_SPS, true) => $this->parseSp10Sheet($sheet),
                 default => throw new RuntimeException('Parser no implementado para '.$spCode.'.'),
@@ -200,31 +201,146 @@ class SpPlanillaParser
     }
 
     /**
+     * Reparsea una hoja de un archivo ya guardado (asistente de mapeo).
+     *
+     * @param  array<string, mixed>  $overrides
      * @return array<string, mixed>
      */
-    private function parseSp1Sheet(Worksheet $sheet): array
+    public function parseSheetFromFile(string $absolutePath, string $sheetTitle, string $spCode, array $overrides = []): array
+    {
+        $spreadsheet = $this->load($absolutePath);
+        try {
+            $sheet = $this->findWorksheet($spreadsheet, $sheetTitle);
+            if (! $sheet) {
+                throw new RuntimeException('No se encontró la hoja «'.$sheetTitle.'» en el archivo.');
+            }
+
+            return $this->parseSheet($sheet, $spCode, $overrides);
+        } finally {
+            $spreadsheet->disconnectWorksheets();
+        }
+    }
+
+    /**
+     * Grilla cruda para el asistente de mapeo (filas × columnas como texto).
+     *
+     * @return array{columns: array<int, string>, rows: array<int, array{row: int, cells: array<int, string>}>}
+     */
+    public function sheetGridFromFile(string $absolutePath, string $sheetTitle, int $maxRows = 18, int $maxCols = 12): array
+    {
+        $spreadsheet = $this->load($absolutePath);
+        try {
+            $sheet = $this->findWorksheet($spreadsheet, $sheetTitle);
+            if (! $sheet) {
+                throw new RuntimeException('No se encontró la hoja «'.$sheetTitle.'» en el archivo.');
+            }
+
+            $lastCol = min($maxCols, max(1, Coordinate::columnIndexFromString($sheet->getHighestDataColumn())));
+            $lastRow = min($maxRows, max(1, $sheet->getHighestDataRow()));
+            $columns = [];
+            for ($col = 1; $col <= $lastCol; $col++) {
+                $columns[$col] = Coordinate::stringFromColumnIndex($col);
+            }
+            $rows = [];
+            for ($row = 1; $row <= $lastRow; $row++) {
+                $cells = [];
+                for ($col = 1; $col <= $lastCol; $col++) {
+                    $cells[$col] = $this->cellText($sheet, $col, $row);
+                }
+                $rows[] = ['row' => $row, 'cells' => $cells];
+            }
+
+            return [
+                'columns' => $columns,
+                'rows' => $rows,
+                'highest_row' => $sheet->getHighestDataRow(),
+                'highest_column' => $lastCol,
+            ];
+        } finally {
+            $spreadsheet->disconnectWorksheets();
+        }
+    }
+
+    private function findWorksheet(Spreadsheet $spreadsheet, string $sheetTitle): ?Worksheet
+    {
+        $sheet = $spreadsheet->getSheetByName($sheetTitle);
+        if ($sheet) {
+            return $sheet;
+        }
+
+        $needle = $this->normalizeSheetName($sheetTitle);
+        foreach ($spreadsheet->getAllSheets() as $candidate) {
+            if ($this->normalizeSheetName($candidate->getTitle()) === $needle) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function normalizeSheetName(string $title): string
+    {
+        $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $title = str_replace("\u{00A0}", ' ', $title);
+        $title = preg_replace('/\s+/u', ' ', trim($title)) ?? trim($title);
+
+        return Str::upper(Str::ascii($title));
+    }
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
+    private function parseSp1Sheet(Worksheet $sheet, array $overrides = []): array
     {
         $header = $this->parseHeader($sheet);
         [$headerRow, $totalColumn] = $this->findSp1DataHeader($sheet);
-        if (! $headerRow || ! $totalColumn) {
-            throw new RuntimeException('No se detectó la fila COD / ESPECIALIDADES / TOTAL CONSULTAS.');
+        $columns = $overrides['columnas'] ?? [];
+
+        if (! empty($overrides['fila_encabezado'])) {
+            $headerRow = (int) $overrides['fila_encabezado'];
         }
+        if (! empty($columns['total_consultas'])) {
+            $totalColumn = $this->columnIndex($columns['total_consultas']);
+        } elseif ($headerRow && ! $totalColumn) {
+            $totalColumn = $this->guessTotalColumnOnRow($sheet, $headerRow) ?? 7;
+        }
+
+        if (! $headerRow || ! $totalColumn) {
+            throw new RuntimeException('No se detectó la fila COD / ESPECIALIDADES / TOTAL CONSULTAS. Use el asistente de mapeo.');
+        }
+
+        $headerLabels = $this->rowHeaders($sheet, $headerRow);
+        $labelColumn = ! empty($columns['label'])
+            ? $this->columnIndex($columns['label'])
+            : $this->resolveLabelColumn($headerLabels, $totalColumn);
+        $codColumn = ! empty($columns['cod'])
+            ? $this->columnIndex($columns['cod'])
+            : ($this->resolveCodColumn($headerLabels) ?? 2);
 
         $warnings = [];
         if (! $this->detectSp1($sheet)) {
-            $warnings[] = 'La hoja no declara explícitamente «TABLA SP 1»; se procesó por nombre de hoja.';
+            $warnings[] = 'La hoja no declara explícitamente «TABLA SP 1»; se procesó por mapeo o nombre de hoja.';
+        }
+        if ($overrides !== []) {
+            $warnings[] = 'Parseo con mapeo manual (fila encabezado '.$headerRow.').';
         }
 
         $rows = [];
+        $labeledNumeric = 0;
         $lastRow = $sheet->getHighestDataRow();
         for ($row = $headerRow + 1; $row <= $lastRow; $row++) {
-            $cod = $this->cellText($sheet, 2, $row);
-            $label = $this->cellText($sheet, 3, $row);
+            $cod = $this->cellText($sheet, $codColumn, $row);
+            $label = $this->cellText($sheet, $labelColumn, $row);
             if ($label === '' || $this->isTotal($label)) {
                 continue;
             }
             $total = $this->readNumeric($sheet, $totalColumn, $row);
-            if ($total === null || $total <= 0) {
+            if ($total === null) {
+                continue;
+            }
+            $labeledNumeric++;
+            if ($total <= 0) {
                 continue;
             }
 
@@ -232,6 +348,11 @@ class SpPlanillaParser
         }
 
         if ($rows === []) {
+            if ($labeledNumeric > 0) {
+                $warnings[] = 'La tabla SP1 tiene filas con etiqueta, pero todos los totales son 0 o vacíos; no hay valores para importar.';
+
+                return $this->buildResult('SP1', $sheet, $header, $headerRow, [], $warnings);
+            }
             throw new RuntimeException('No se encontraron filas con consultas numéricas en la planilla SP1.');
         }
 
@@ -239,30 +360,56 @@ class SpPlanillaParser
     }
 
     /**
+     * @param  array<string, mixed>  $overrides
      * @return array<string, mixed>
      */
-    private function parseSingleTotalSheet(Worksheet $sheet, string $spCode): array
+    private function parseSingleTotalSheet(Worksheet $sheet, string $spCode, array $overrides = []): array
     {
         $header = $this->parseHeader($sheet);
         [$headerRow, $headers, $totalColumn] = $this->findGenericTableHeader($sheet);
-        if (! $headerRow || ! $totalColumn) {
-            throw new RuntimeException('No se detectó fila de encabezado con columna TOTAL.');
+        $columns = $overrides['columnas'] ?? [];
+
+        if (! empty($overrides['fila_encabezado'])) {
+            $headerRow = (int) $overrides['fila_encabezado'];
+            $headers = $this->rowHeaders($sheet, $headerRow);
+        }
+        if (! empty($columns['total'])) {
+            $totalColumn = $this->columnIndex($columns['total']);
+        } elseif ($headerRow && ! $totalColumn) {
+            $totalColumn = $this->guessTotalColumnOnRow($sheet, $headerRow);
         }
 
-        $labelColumn = $this->resolveLabelColumn($headers, $totalColumn);
+        if (! $headerRow || ! $totalColumn) {
+            throw new RuntimeException('No se detectó fila de encabezado con columna TOTAL. Use el asistente de mapeo.');
+        }
+
+        $labelColumn = ! empty($columns['label'])
+            ? $this->columnIndex($columns['label'])
+            : $this->resolveLabelColumn($headers ?: $this->rowHeaders($sheet, $headerRow), $totalColumn);
+
         $rows = [];
+        $labeledNumeric = 0;
         $lastRow = $sheet->getHighestDataRow();
+        $warnings = $overrides !== [] ? ['Parseo con mapeo manual (fila encabezado '.$headerRow.').'] : [];
+        $codColumn = ! empty($columns['cod'])
+            ? $this->columnIndex($columns['cod'])
+            : ($this->resolveCodColumn($headers ?: $this->rowHeaders($sheet, $headerRow)) ?? ($labelColumn > 1 ? $labelColumn - 1 : null));
+
         for ($row = $headerRow + 1; $row <= $lastRow; $row++) {
             $label = $this->cellText($sheet, $labelColumn, $row);
             if ($label === '' || $this->isContext($label) || $this->isTotal($label)) {
                 continue;
             }
             $total = $this->readNumeric($sheet, $totalColumn, $row);
-            if ($total === null || $total <= 0) {
+            if ($total === null) {
+                continue;
+            }
+            $labeledNumeric++;
+            if ($total <= 0) {
                 continue;
             }
 
-            $cod = $labelColumn > 1 ? $this->cellText($sheet, $labelColumn - 1, $row) : '';
+            $cod = $codColumn ? $this->cellText($sheet, $codColumn, $row) : '';
             if ($this->looksLikeCodigo($label) && ! $this->looksLikeCodigo($cod)) {
                 [$cod, $label] = [$label, $cod];
             }
@@ -271,26 +418,54 @@ class SpPlanillaParser
         }
 
         if ($rows === []) {
+            if ($labeledNumeric > 0) {
+                $warnings[] = 'La tabla '.$spCode.' tiene filas con etiqueta, pero todos los totales son 0 o vacíos; no hay valores para importar.';
+
+                return $this->buildResult($spCode, $sheet, $header, $headerRow, [], $warnings);
+            }
             throw new RuntimeException('No se encontraron filas con totales numéricos en la planilla '.$spCode.'.');
         }
 
-        return $this->buildResult($spCode, $sheet, $header, $headerRow, $rows);
+        return $this->buildResult($spCode, $sheet, $header, $headerRow, $rows, $warnings);
     }
 
     /**
+     * @param  array<string, mixed>  $overrides
      * @return array<string, mixed>
      */
-    private function parseSp9Sheet(Worksheet $sheet): array
+    private function parseSp9Sheet(Worksheet $sheet, array $overrides = []): array
     {
         $header = $this->parseHeader($sheet);
         [$headerRow, $labelColumn, $metricColumns] = $this->findSp9TableHeader($sheet);
-        if (! $headerRow || $metricColumns === []) {
-            throw new RuntimeException('No se detectó el encabezado SP9 (consultas / observación / procedimiento / total).');
+        $columns = $overrides['columnas'] ?? [];
+
+        if (! empty($overrides['fila_encabezado'])) {
+            $headerRow = (int) $overrides['fila_encabezado'];
         }
+        if ($columns !== []) {
+            if (! empty($columns['label'])) {
+                $labelColumn = $this->columnIndex($columns['label']);
+            }
+            $metricColumns = [];
+            foreach (['consultas', 'observacion', 'procedimiento', 'total'] as $metric) {
+                if (! empty($columns[$metric])) {
+                    $metricColumns[$metric] = $this->columnIndex($columns[$metric]);
+                }
+            }
+        } elseif ($headerRow && $metricColumns === []) {
+            $metricColumns = $this->guessSp9MetricsOnRow($sheet, $headerRow);
+            $labelColumn ??= 3;
+        }
+
+        if (! $headerRow || $metricColumns === []) {
+            throw new RuntimeException('No se detectó el encabezado SP9 (consultas / observación / procedimiento / total). Use el asistente de mapeo.');
+        }
+        $labelColumn ??= 3;
 
         $rows = [];
         $section = 'adultos';
         $lastRow = $sheet->getHighestDataRow();
+        $warnings = $overrides !== [] ? ['Parseo con mapeo manual (fila encabezado '.$headerRow.').'] : [];
         for ($row = $headerRow + 1; $row <= $lastRow; $row++) {
             $label = $this->cellText($sheet, $labelColumn, $row);
             if ($label === '' || $this->isContext($label)) {
@@ -339,7 +514,7 @@ class SpPlanillaParser
             throw new RuntimeException('No se encontraron filas con métricas de urgencias en la planilla SP9.');
         }
 
-        $result = $this->buildResult('SP9', $sheet, $header, $headerRow, $rows);
+        $result = $this->buildResult('SP9', $sheet, $header, $headerRow, $rows, $warnings);
         $result['layout'] = 'tabular';
 
         return $result;
@@ -364,13 +539,15 @@ class SpPlanillaParser
                     if ($key === '' || str_contains($key, 'paciente')) {
                         continue;
                     }
-                    if (str_contains($key, 'consulta')) {
+                    if ($this->headerMatchesRole($key, 'consultas') || str_contains($key, 'consulta')) {
                         $metricColumns['consultas'] = $col;
-                    } elseif (str_contains($key, 'observacion')) {
+                    } elseif ($this->headerMatchesRole($key, 'observacion') || str_contains($key, 'observacion')) {
                         $metricColumns['observacion'] = $col;
-                    } elseif (str_contains($key, 'procedimiento')) {
+                    } elseif ($this->headerMatchesRole($key, 'procedimiento') || str_contains($key, 'procedimiento')) {
                         $metricColumns['procedimiento'] = $col;
-                    } elseif ($key === 'total' || (str_starts_with($key, 'total ') && ! str_contains($key, 'general'))) {
+                    } elseif ($this->headerMatchesRole($key, 'total')
+                        || $key === 'total'
+                        || (str_starts_with($key, 'total ') && ! str_contains($key, 'general'))) {
                         $metricColumns['total'] = $col;
                     }
                 }
@@ -445,18 +622,46 @@ class SpPlanillaParser
     }
 
     /**
+     * @param  array<string, mixed>  $overrides
      * @return array<string, mixed>
      */
-    private function parseMultiMetricSheet(Worksheet $sheet, string $spCode): array
+    private function parseMultiMetricSheet(Worksheet $sheet, string $spCode, array $overrides = []): array
     {
         $header = $this->parseHeader($sheet);
         [$headerRow, $headers, $metricColumns, $labelColumn] = $this->findMultiMetricTableHeader($sheet, $spCode);
+        $columns = $overrides['columnas'] ?? [];
+
+        if (! empty($overrides['fila_encabezado'])) {
+            $headerRow = (int) $overrides['fila_encabezado'];
+            $headers = $this->rowHeaders($sheet, $headerRow);
+            if ($columns === []) {
+                $metricColumns = $this->mapMetricColumns($headers, $spCode);
+                $labelColumn = $this->resolveMultiMetricLabelColumn($headers, $metricColumns);
+            }
+        }
+
+        if ($columns !== []) {
+            if (! empty($columns['label'])) {
+                $labelColumn = $this->columnIndex($columns['label']);
+            }
+            $metricColumns = [];
+            foreach (['pacientes', 'estudios', 'prestaciones', 'determinaciones', 'total'] as $metric) {
+                if (! empty($columns[$metric])) {
+                    $metricColumns[$metric] = $this->columnIndex($columns[$metric]);
+                }
+            }
+            if ($metricColumns === [] && ! empty($columns['total'])) {
+                $metricColumns['total'] = $this->columnIndex($columns['total']);
+            }
+        }
+
         if (! $headerRow || $metricColumns === [] || ! $labelColumn) {
-            throw new RuntimeException('No se detectó fila de encabezado con columnas métricas (pacientes, estudios, prestaciones…).');
+            throw new RuntimeException('No se detectó fila de encabezado con columnas métricas (pacientes, estudios, prestaciones…). Use el asistente de mapeo.');
         }
 
         $rows = [];
         $lastRow = $sheet->getHighestDataRow();
+        $warnings = $overrides !== [] ? ['Parseo con mapeo manual (fila encabezado '.$headerRow.').'] : [];
         for ($row = $headerRow + 1; $row <= $lastRow; $row++) {
             $label = $this->cellText($sheet, $labelColumn, $row);
             $cod = $labelColumn > 1 ? $this->cellText($sheet, $labelColumn - 1, $row) : '';
@@ -489,57 +694,155 @@ class SpPlanillaParser
             throw new RuntimeException('No se encontraron filas con valores numéricos en la planilla '.$spCode.'.');
         }
 
-        return $this->buildResult($spCode, $sheet, $header, $headerRow, $rows);
+        return $this->buildResult($spCode, $sheet, $header, $headerRow, $rows, $warnings);
     }
 
     /**
      * SP5: bloque resumen de pacientes + tabla de determinaciones con columna TOTAL.
      *
+     * @param  array<string, mixed>  $overrides
      * @return array<string, mixed>
      */
-    private function parseSp5Sheet(Worksheet $sheet): array
+    private function parseSp5Sheet(Worksheet $sheet, array $overrides = []): array
     {
         $header = $this->parseHeader($sheet);
         $rows = [];
+        $warnings = [];
+        $block = null;
+        $pacientesBlock = null;
+        $determinacionesBlock = null;
 
-        $pacientesBlock = $this->findStackedMetricBlock($sheet, 'pacientes', 'total');
-        if ($pacientesBlock) {
-            $rows = array_merge($rows, $this->parseStackedMetricRows($sheet, $pacientesBlock));
-        }
+        if ($overrides !== []) {
+            $block = $this->stackedBlockFromOverrides($sheet, 'total', $overrides);
+            if ($block) {
+                $rows = array_merge($rows, $this->parseStackedMetricRows($sheet, $block));
+                $warnings[] = 'Parseo con mapeo manual (fila encabezado '.$block['header_row'].').';
+            }
+            $pacientesBlock = $this->findStackedMetricBlock($sheet, 'pacientes', 'total');
+            if ($pacientesBlock && (! $block || $pacientesBlock['header_row'] !== $block['header_row'])) {
+                $rows = array_merge($rows, $this->parseStackedMetricRows($sheet, $pacientesBlock));
+            }
+        } else {
+            $pacientesBlock = $this->findStackedMetricBlock($sheet, 'pacientes', 'total');
+            if ($pacientesBlock) {
+                $rows = array_merge($rows, $this->parseStackedMetricRows($sheet, $pacientesBlock));
+            }
 
-        $determinacionesBlock = $this->findStackedMetricBlock($sheet, 'determinaciones', 'total');
-        if ($determinacionesBlock) {
-            $rows = array_merge($rows, $this->parseStackedMetricRows($sheet, $determinacionesBlock));
+            $determinacionesBlock = $this->findStackedMetricBlock($sheet, 'determinaciones', 'total');
+            if ($determinacionesBlock) {
+                $rows = array_merge($rows, $this->parseStackedMetricRows($sheet, $determinacionesBlock));
+            }
         }
 
         if ($rows === []) {
-            throw new RuntimeException('No se encontraron filas con valores numéricos en la planilla SP5.');
+            throw new RuntimeException('No se encontraron filas con valores numéricos en la planilla SP5. Use el asistente de mapeo.');
         }
 
-        $headerRow = $determinacionesBlock['header_row'] ?? $pacientesBlock['header_row'] ?? 1;
+        $headerRow = $block['header_row']
+            ?? $determinacionesBlock['header_row']
+            ?? $pacientesBlock['header_row']
+            ?? 1;
 
-        return $this->buildResult('SP5', $sheet, $header, $headerRow, $rows);
+        return $this->buildResult('SP5', $sheet, $header, $headerRow, $rows, $warnings);
     }
 
     /**
      * SP6: resúmenes de pacientes + tabla de prestaciones odontológicas con TOTAL.
      *
+     * @param  array<string, mixed>  $overrides
      * @return array<string, mixed>
      */
-    private function parseSp6Sheet(Worksheet $sheet): array
+    private function parseSp6Sheet(Worksheet $sheet, array $overrides = []): array
     {
         $header = $this->parseHeader($sheet);
-        $block = $this->findStackedMetricBlock($sheet, 'prestaciones', 'total');
+        $warnings = [];
+        $block = null;
+        if ($overrides !== []) {
+            $block = $this->stackedBlockFromOverrides($sheet, 'total', $overrides);
+            if (! $block) {
+                $block = $this->findStackedMetricBlock($sheet, 'prestaciones', 'total');
+            }
+        } else {
+            $block = $this->findStackedMetricBlock($sheet, 'prestaciones', 'total');
+        }
+
         if (! $block) {
-            throw new RuntimeException('No se detectó la tabla de prestaciones odontológicas (COD / TOTAL).');
+            throw new RuntimeException(
+                'No se detectó la tabla de prestaciones odontológicas (COD / TOTAL). '
+                .'En el asistente elija SP6, la fila de encabezado y las columnas «Prestación / etiqueta» y «Total».'
+            );
+        }
+        if ($overrides !== []) {
+            $warnings[] = 'Parseo con mapeo manual (fila encabezado '.$block['header_row'].').';
         }
 
         $rows = $this->parseStackedMetricRows($sheet, $block);
         if ($rows === []) {
+            $labeled = $this->countStackedLabeledRows($sheet, $block);
+            if ($labeled > 0) {
+                $warnings[] = "Se detectaron {$labeled} prestaciones en la tabla, pero todos los totales son 0. No hay cantidades que importar para este período.";
+
+                return $this->buildResult('SP6', $sheet, $header, $block['header_row'], [], $warnings);
+            }
             throw new RuntimeException('No se encontraron filas con valores numéricos en la planilla SP6.');
         }
 
-        return $this->buildResult('SP6', $sheet, $header, $block['header_row'], $rows);
+        return $this->buildResult('SP6', $sheet, $header, $block['header_row'], $rows, $warnings);
+    }
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array{header_row: int, cod_col: ?int, label_col: int, total_col: int, metric: string}|null
+     */
+    private function stackedBlockFromOverrides(Worksheet $sheet, string $metricCode, array $overrides): ?array
+    {
+        $columns = $overrides['columnas'] ?? [];
+        $headerRow = (int) ($overrides['fila_encabezado'] ?? 0);
+        if ($headerRow < 1) {
+            return null;
+        }
+
+        $headers = $this->rowHeaders($sheet, $headerRow);
+        $labelCol = ! empty($columns['label'])
+            ? $this->columnIndex($columns['label'])
+            : $this->resolveLabelColumn($headers, $this->guessTotalColumnOnRow($sheet, $headerRow) ?? 3);
+
+        $totalLetter = $columns['total']
+            ?? $columns['total_consultas']
+            ?? $columns['prestaciones']
+            ?? $columns['determinaciones']
+            ?? null;
+        $totalCol = $totalLetter
+            ? $this->columnIndex($totalLetter)
+            : ($this->guessTotalColumnOnRow($sheet, $headerRow) ?? null);
+
+        // Si el usuario mapeó etiqueta + otra columna numérica (B/C) y no hay TOTAL detectable,
+        // usar la primera columna mapeada distinta de label/cod como total.
+        if (! $totalCol) {
+            foreach ($columns as $role => $letter) {
+                if (in_array($role, ['label', 'cod'], true) || $letter === null || $letter === '') {
+                    continue;
+                }
+                $totalCol = $this->columnIndex($letter);
+                break;
+            }
+        }
+
+        $codCol = ! empty($columns['cod'])
+            ? $this->columnIndex($columns['cod'])
+            : null;
+
+        if (! $totalCol) {
+            return null;
+        }
+
+        return [
+            'header_row' => $headerRow,
+            'cod_col' => $codCol,
+            'label_col' => $labelCol,
+            'total_col' => $totalCol,
+            'metric' => $metricCode,
+        ];
     }
 
     /**
@@ -659,7 +962,9 @@ class SpPlanillaParser
 
     private function isCodHeader(string $key): bool
     {
-        return preg_match('/^cod(?:\b|_|\s|\()/', $key) === 1;
+        return $key === 'id'
+            || $key === 'codigo'
+            || preg_match('/^cod(?:\b|_|\s|\()/', $key) === 1;
     }
 
     private function isTotalHeader(string $key): bool
@@ -679,9 +984,42 @@ class SpPlanillaParser
         return match ($needle) {
             'pacientes' => str_contains($key, 'paciente'),
             'determinaciones' => str_contains($key, 'determinacion'),
-            'prestaciones' => str_contains($key, 'prestacion'),
+            'prestaciones' => str_contains($key, 'prestacion')
+                || $key === 'items'
+                || $key === 'item'
+                || str_contains($key, 'descripcion')
+                || $key === 'detalle'
+                || $key === 'servicio'
+                || $key === 'servicios',
             default => str_contains($key, $needle),
         };
+    }
+
+    /**
+     * Cuenta filas con etiqueta (incluye totales en 0) para mensajes de calidad.
+     *
+     * @param  array{header_row: int, cod_col: ?int, label_col: int, total_col: int, metric: string}  $block
+     */
+    private function countStackedLabeledRows(Worksheet $sheet, array $block): int
+    {
+        $count = 0;
+        $lastRow = $sheet->getHighestDataRow();
+        for ($row = $block['header_row'] + 1; $row <= $lastRow; $row++) {
+            if ($this->isStackedTableHeaderRow($sheet, $row, $block)) {
+                break;
+            }
+            $label = $this->cellText($sheet, $block['label_col'], $row);
+            if ($label === '' || $this->isTotal($label) || $this->isContext($label)) {
+                continue;
+            }
+            $num = $this->readNumeric($sheet, $block['total_col'], $row);
+            if ($num === null) {
+                continue;
+            }
+            $count++;
+        }
+
+        return $count;
     }
 
     /**
@@ -747,15 +1085,15 @@ class SpPlanillaParser
             if ($key === '') {
                 continue;
             }
-            if (str_contains($key, 'paciente')) {
+            if ($this->headerMatchesRole($key, 'pacientes') || str_contains($key, 'paciente')) {
                 $metrics['pacientes'] = $col;
-            } elseif (str_contains($key, 'estudio')) {
+            } elseif ($this->headerMatchesRole($key, 'estudios') || str_contains($key, 'estudio')) {
                 $metrics['estudios'] = $col;
-            } elseif (str_contains($key, 'determinacion')) {
+            } elseif ($this->headerMatchesRole($key, 'determinaciones') || str_contains($key, 'determinacion')) {
                 $metrics['determinaciones'] = $col;
-            } elseif (str_contains($key, 'prestacion')) {
+            } elseif ($this->headerMatchesRole($key, 'prestaciones') || str_contains($key, 'prestacion')) {
                 $metrics['prestaciones'] = $col;
-            } elseif ($key === 'total' && ! isset($metrics['prestaciones'])) {
+            } elseif (($this->headerMatchesRole($key, 'total') || $key === 'total') && ! isset($metrics['prestaciones'])) {
                 if (in_array($spCode, ['SP5'], true) && isset($metrics['pacientes'])) {
                     $metrics['determinaciones'] = $col;
                 } elseif (in_array($spCode, ['SP6', 'SP7'], true)) {
@@ -914,24 +1252,38 @@ class SpPlanillaParser
     {
         foreach ($headers as $col => $label) {
             $key = $this->normalizeKey($label);
-            if ($key === '' || str_contains($key, 'cod')) {
+            if ($key === '' || $this->isCodHeader($key) || $col === $totalColumn) {
                 continue;
             }
-            if ($col === $totalColumn) {
-                continue;
-            }
-            if (preg_match('/(prestacion|servicio|metodo|urgencia|enfermeria|vacuna|programa|medicamento|insumo|procedimiento|odontolog)/', $key)) {
+            if ($this->headerMatchesRole($key, 'label')
+                || preg_match('/(prestacion|servicio|metodo|urgencia|enfermeria|vacuna|programa|medicamento|insumo|procedimiento|odontolog|items?)/', $key)) {
                 return $col;
             }
         }
 
         foreach ($headers as $col => $label) {
-            if ($col !== $totalColumn && $this->normalizeKey($label) !== '' && ! str_contains($this->normalizeKey($label), 'cod')) {
+            $key = $this->normalizeKey($label);
+            if ($col !== $totalColumn && $key !== '' && ! $this->isCodHeader($key)) {
                 return $col;
             }
         }
 
         return max(1, $totalColumn - 1);
+    }
+
+    /**
+     * @param  array<int, string>  $headers
+     */
+    private function resolveCodColumn(array $headers): ?int
+    {
+        foreach ($headers as $col => $label) {
+            $key = $this->normalizeKey($label);
+            if ($key !== '' && $this->isCodHeader($key)) {
+                return $col;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -1021,36 +1373,83 @@ class SpPlanillaParser
         ];
         $scanRows = min(12, $sheet->getHighestDataRow());
         for ($row = 1; $row <= $scanRows; $row++) {
-            for ($col = 2; $col <= 5; $col++) {
-                $label = $this->normalizeKey($this->cellText($sheet, $col, $row));
-                if ($label === '') {
+            for ($col = 1; $col <= 6; $col++) {
+                $raw = $this->cellText($sheet, $col, $row);
+                if ($raw === '') {
                     continue;
                 }
+
+                // Layout simplificado: «DEPARTAMENTO: GUAIRA» / «CODIGO: 203» en una sola celda.
+                if (str_contains($raw, ':')) {
+                    $this->absorbHeaderInline($header, $raw);
+                }
+
+                if ($col > 5) {
+                    continue;
+                }
+
+                $label = $this->normalizeKey($raw);
                 $value = $this->cellText($sheet, $col + 1, $row);
                 if ($value === '') {
                     $value = $this->cellText($sheet, $col + 2, $row);
                 }
                 if (str_contains($label, 'departamento')) {
-                    $header['departamento'] = $value ?: $header['departamento'];
+                    $header['departamento'] = $this->valueAfterColon($value) ?: ($value ?: $header['departamento']);
                 } elseif (str_contains($label, 'establecimiento')) {
-                    $header['establecimiento'] = $value ?: $header['establecimiento'];
+                    $header['establecimiento'] = $this->valueAfterColon($value) ?: ($value ?: $header['establecimiento']);
                     $extra = $this->cellText($sheet, $col + 2, $row);
                     if ($header['codigo'] === null) {
                         $header['codigo'] = $this->extractCodigo($extra);
                     }
                 } elseif (str_contains($label, 'codigo')) {
-                    $header['codigo'] = $this->extractCodigo($value) ?? $header['codigo'];
-                } elseif (str_contains($label, 'planilla') || str_contains($label, 'mes')) {
-                    $header['mes'] = $this->parseMonth($value) ?? $header['mes'];
+                    $header['codigo'] = $this->extractCodigo($value) ?? $this->extractCodigo($raw) ?? $header['codigo'];
+                } elseif (str_contains($label, 'planilla') || (str_contains($label, 'mes') && ! str_contains($label, 'establecimiento'))) {
+                    $mesSource = $value !== '' ? $value : $raw;
+                    $header['mes'] = $this->parseMonth($mesSource) ?? $header['mes'];
                     $yearCell = $this->cellText($sheet, $col + 2, $row);
-                    $header['anio'] = $this->parseYear($yearCell) ?? $header['anio'];
+                    $header['anio'] = $this->parseYear($yearCell)
+                        ?? $this->parseYear($mesSource)
+                        ?? $header['anio'];
                 } elseif (str_contains($label, 'ano') || str_contains($label, 'anio')) {
-                    $header['anio'] = $this->parseYear($value) ?? $header['anio'];
+                    $header['anio'] = $this->parseYear($value) ?? $this->parseYear($raw) ?? $header['anio'];
                 }
             }
         }
 
         return $header;
+    }
+
+    /**
+     * @param  array{departamento: ?string, establecimiento: ?string, codigo: ?string, mes: ?int, anio: ?int}  $header
+     */
+    private function absorbHeaderInline(array &$header, string $raw): void
+    {
+        $key = $this->normalizeKey($raw);
+        $value = $this->valueAfterColon($raw);
+
+        if (str_contains($key, 'departamento') && $value !== '') {
+            $header['departamento'] = $header['departamento'] ?: $value;
+        }
+        if (str_contains($key, 'establecimiento') && $value !== '') {
+            $header['establecimiento'] = $header['establecimiento'] ?: $value;
+        }
+        if (str_contains($key, 'codigo')) {
+            $header['codigo'] = $header['codigo'] ?: ($this->extractCodigo($raw) ?? $this->extractCodigo($value));
+        }
+        if (str_contains($key, 'planilla') || (str_contains($key, 'mes') && str_contains($key, 'estad'))) {
+            $header['mes'] = $header['mes'] ?: $this->parseMonth($raw);
+            $header['anio'] = $header['anio'] ?: $this->parseYear($raw);
+        }
+    }
+
+    private function valueAfterColon(string $raw): string
+    {
+        if (! str_contains($raw, ':')) {
+            return trim($raw);
+        }
+        $parts = explode(':', $raw, 2);
+
+        return trim($parts[1] ?? '');
     }
 
     /**
@@ -1068,17 +1467,26 @@ class SpPlanillaParser
             $hasEsp = false;
             $totalCol = null;
             foreach ($labels as $col => $label) {
-                if (str_contains($label, 'cod')) {
+                if ($this->headerMatchesRole($label, 'cod') || $this->isCodHeader($label) || str_contains($label, 'cod')) {
                     $hasCod = true;
                 }
-                if (str_contains($label, 'especialidad')) {
+                if ($this->headerMatchesRole($label, 'label') || str_contains($label, 'especialidad')) {
                     $hasEsp = true;
                 }
-                if (str_contains($label, 'total') && str_contains($label, 'consult')) {
+                if ($this->headerMatchesRole($label, 'total_consultas')
+                    || (str_contains($label, 'total') && str_contains($label, 'consult'))
+                    || ($label === 'consultas' || str_starts_with($label, 'consultas '))) {
+                    $totalCol = $col;
+                } elseif ($totalCol === null && $this->headerMatchesRole($label, 'total')) {
+                    // Layout simplificado: ID | ITEMS | TOTAL (sin «consultas» en el encabezado).
                     $totalCol = $col;
                 }
             }
             if ($hasCod && $hasEsp && $totalCol) {
+                return [$row, $totalCol];
+            }
+            // Layout relajado: especialidad + columna de consultas/total, sin exigir COD.
+            if ($hasEsp && $totalCol) {
                 return [$row, $totalCol];
             }
         }
@@ -1091,6 +1499,120 @@ class SpPlanillaParser
         $value = (string) $sheet->getCell([$col, $row])->getFormattedValue();
 
         return trim(preg_replace('/\s+/u', ' ', $value) ?? $value);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function rowHeaders(Worksheet $sheet, int $row): array
+    {
+        $lastColumn = min(16, Coordinate::columnIndexFromString($sheet->getHighestDataColumn()));
+        $headers = [];
+        for ($col = 1; $col <= $lastColumn; $col++) {
+            $headers[$col] = $this->cellText($sheet, $col, $row);
+        }
+
+        return $headers;
+    }
+
+    private function columnIndex(int|string $column): int
+    {
+        if (is_int($column) || ctype_digit((string) $column)) {
+            $index = (int) $column;
+            if ($index < 1) {
+                throw new RuntimeException('Columna inválida: '.$column);
+            }
+
+            return $index;
+        }
+
+        return Coordinate::columnIndexFromString(Str::upper(trim((string) $column)));
+    }
+
+    private function guessTotalColumnOnRow(Worksheet $sheet, int $row): ?int
+    {
+        foreach ($this->rowHeaders($sheet, $row) as $col => $label) {
+            $key = $this->normalizeKey($label);
+            if ($this->headerMatchesRole($key, 'total_consultas')
+                || $this->headerMatchesRole($key, 'total')
+                || $key === 'total'
+                || ($key !== '' && str_starts_with($key, 'total ') && ! str_contains($key, 'subtotal'))) {
+                return (int) $col;
+            }
+            if (str_contains($key, 'total') && str_contains($key, 'consult')) {
+                return (int) $col;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function guessSp9MetricsOnRow(Worksheet $sheet, int $row): array
+    {
+        $metricColumns = [];
+        for ($scanRow = $row; $scanRow <= min($row + 2, $sheet->getHighestDataRow()); $scanRow++) {
+            for ($col = 1; $col <= 10; $col++) {
+                $key = $this->normalizeKey($this->cellText($sheet, $col, $scanRow));
+                if ($key === '' || str_contains($key, 'paciente')) {
+                    continue;
+                }
+                if ($this->headerMatchesRole($key, 'consultas') || str_contains($key, 'consulta')) {
+                    $metricColumns['consultas'] = $col;
+                } elseif ($this->headerMatchesRole($key, 'observacion') || str_contains($key, 'observacion')) {
+                    $metricColumns['observacion'] = $col;
+                } elseif ($this->headerMatchesRole($key, 'procedimiento') || str_contains($key, 'procedimiento')) {
+                    $metricColumns['procedimiento'] = $col;
+                } elseif ($this->headerMatchesRole($key, 'total')
+                    || $key === 'total'
+                    || (str_starts_with($key, 'total ') && ! str_contains($key, 'general'))) {
+                    $metricColumns['total'] = $col;
+                }
+            }
+        }
+
+        return $metricColumns;
+    }
+
+    /**
+     * Sinónimos tolerantes de encabezados de columna (planillas no estándar).
+     */
+    private function headerMatchesRole(string $normalizedKey, string $role): bool
+    {
+        if ($normalizedKey === '') {
+            return false;
+        }
+
+        $synonyms = match ($role) {
+            'total_consultas' => ['total consultas', 'consultas', 'tot consultas', 'n consultas', 'nro consultas', 'cant consultas', 'total consult'],
+            'total' => ['total', 'totales', 'tot'],
+            'pacientes' => ['pacientes', 'paciente', 'nro pacientes', 'cant pacientes', 'n pacientes'],
+            'estudios' => ['estudios', 'estudio', 'analisis', 'examenes'],
+            'determinaciones' => ['determinaciones', 'determinacion', 'dets'],
+            'prestaciones' => ['prestaciones', 'prestacion', 'servicios realizados'],
+            'consultas' => ['consultas', 'consulta', 'atenciones', 'atencion'],
+            'observacion' => ['observacion', 'observaciones', 'obs'],
+            'procedimiento' => ['procedimiento', 'procedimientos', 'proc'],
+            'label' => ['especialidad', 'especialidades', 'prestacion', 'prestaciones', 'servicio', 'servicios', 'descripcion', 'detalle', 'urgencia', 'vacuna', 'vacunas', 'items', 'item', 'concepto', 'actividad', 'indicador'],
+            'cod' => ['cod', 'codigo', 'cod.', 'id'],
+            'vacuna' => ['vacuna', 'vacunas', 'vacunacion', 'inmunizacion'],
+            default => [],
+        };
+
+        foreach ($synonyms as $synonym) {
+            if ($normalizedKey === $synonym || str_starts_with($normalizedKey, $synonym.' ') || str_contains($normalizedKey, $synonym)) {
+                // Evitar falsos positivos demasiado amplios en "total" vs "subtotal"
+                if ($role === 'total' && str_contains($normalizedKey, 'subtotal')) {
+                    continue;
+                }
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function normalizeKey(string $value): string
@@ -1185,21 +1707,35 @@ class SpPlanillaParser
     }
 
     /**
+     * @param  array<string, mixed>  $overrides
      * @return array<string, mixed>
      */
-    private function parseSp8Sheet(Worksheet $sheet): array
+    private function parseSp8Sheet(Worksheet $sheet, array $overrides = []): array
     {
         $header = $this->parseHeader($sheet);
         [$headerRow, $columnMap] = $this->findSp8Header($sheet);
+        $columns = $overrides['columnas'] ?? [];
+
+        if (! empty($overrides['fila_encabezado'])) {
+            $headerRow = (int) $overrides['fila_encabezado'];
+        }
+        if ($headerRow && $columnMap === []) {
+            $columnMap = $this->defaultSp8ColumnMap();
+        }
+
+        $labelCol = ! empty($columns['label']) ? $this->columnIndex($columns['label']) : 2;
+        $codCol = ! empty($columns['cod']) ? $this->columnIndex($columns['cod']) : 1;
+
         if (! $headerRow || $columnMap === []) {
-            throw new RuntimeException('No se detectó el encabezado de vacunación (COD / grupos etarios M-F).');
+            throw new RuntimeException('No se detectó el encabezado de vacunación (COD / grupos etarios M-F). Use el asistente de mapeo.');
         }
 
         $rows = [];
         $lastRow = $sheet->getHighestDataRow();
+        $warnings = $overrides !== [] ? ['Parseo con mapeo manual (fila encabezado '.$headerRow.').'] : [];
         for ($row = $headerRow + 1; $row <= $lastRow; $row++) {
-            $cod = $this->cellText($sheet, 1, $row);
-            $label = $this->cellText($sheet, 2, $row);
+            $cod = $this->cellText($sheet, $codCol, $row);
+            $label = $this->cellText($sheet, $labelCol, $row);
             if ($label === '' || $this->isTotal($label)) {
                 continue;
             }
@@ -1224,7 +1760,7 @@ class SpPlanillaParser
             throw new RuntimeException('No se encontraron filas con dosis en la planilla SP8.');
         }
 
-        $result = $this->buildResult('SP8', $sheet, $header, $headerRow, $rows);
+        $result = $this->buildResult('SP8', $sheet, $header, $headerRow, $rows, $warnings);
         $result['layout'] = 'tabular';
 
         return $result;
@@ -1325,19 +1861,28 @@ class SpPlanillaParser
         $lastRow = min(20, $sheet->getHighestDataRow());
         for ($row = 1; $row <= $lastRow; $row++) {
             $key = $this->normalizeKey($this->cellText($sheet, 2, $row));
-            if (! str_contains($key, 'vacun')) {
+            if (! $this->headerMatchesRole($key, 'vacuna') && ! str_contains($key, 'vacun')) {
                 continue;
             }
-            $map = [];
-            foreach (self::SP8_AGE_GROUPS as $index => $group) {
-                $map['m_'.$group] = 4 + $index;
-                $map['f_'.$group] = 9 + $index;
-            }
 
-            return [$row, $map];
+            return [$row, $this->defaultSp8ColumnMap()];
         }
 
         return [null, []];
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function defaultSp8ColumnMap(): array
+    {
+        $map = [];
+        foreach (self::SP8_AGE_GROUPS as $index => $group) {
+            $map['m_'.$group] = 4 + $index;
+            $map['f_'.$group] = 9 + $index;
+        }
+
+        return $map;
     }
 
     /**

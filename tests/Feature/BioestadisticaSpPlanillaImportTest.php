@@ -542,4 +542,102 @@ class BioestadisticaSpPlanillaImportTest extends TestCase
         $value = $record->values()->whereHas('field', fn ($q) => $q->where('code', 'paciente_dia'))->first();
         $this->assertNotNull($value);
     }
+
+    public function test_workbook_summary_includes_calidad_score(): void
+    {
+        if (! is_file($this->samplePath())) {
+            $this->markTestSkipped('Falta planilla de muestra en .docs-bio');
+        }
+
+        $user = User::role('Administrador')->first() ?? User::first();
+        if (! $user) {
+            $this->markTestSkipped('Falta usuario.');
+        }
+
+        $file = new UploadedFile($this->samplePath(), 'ESTADISTICA JULIO 2026.xls', null, null, true);
+        $service = app(SpPlanillaImportService::class);
+        $preview = $service->analyze($file, $user);
+        $preview = $service->enrichWorkbookForSummary($preview);
+
+        $sp1 = collect($preview['workbook']['hojas'])->first(
+            fn (array $h) => ($h['sp_codigo'] ?? '') === 'SP1'
+        );
+        $this->assertNotNull($sp1);
+        $this->assertArrayHasKey('calidad', $sp1);
+        $this->assertArrayHasKey('score', $sp1['calidad']);
+        $this->assertArrayHasKey('nivel', $sp1['calidad']);
+        $this->assertContains($sp1['calidad']['nivel'], ['alto', 'medio', 'bajo', 'fallido']);
+        $this->assertNotEmpty($preview['temp_path'] ?? null);
+        $this->assertFileExists($preview['temp_path']);
+
+        $service->forgetPreview();
+        // analyze no guarda en session; borrar temp manualmente como haría forgetPreview con sesión
+        if (is_file($preview['temp_path'])) {
+            @unlink($preview['temp_path']);
+        }
+    }
+
+    public function test_apply_sheet_mapping_reparses_sp1_with_manual_header_row(): void
+    {
+        if (! is_file($this->samplePath())) {
+            $this->markTestSkipped('Falta planilla de muestra en .docs-bio');
+        }
+
+        $user = User::role('Administrador')->first() ?? User::first();
+        $formulario = Formulario::where('codigo', 'SP1')->where('estado', 'activo')->first();
+        if (! $user || ! $formulario) {
+            $this->markTestSkipped('Faltan usuario o SP1.');
+        }
+
+        $service = app(SpPlanillaImportService::class);
+        $file = new UploadedFile($this->samplePath(), 'ESTADISTICA JULIO 2026.xls', null, null, true);
+        $preview = $service->analyze($file, $user);
+        $hoja = collect($preview['workbook']['hojas'])->first(
+            fn (array $h) => ($h['sp_codigo'] ?? '') === 'SP1' && ($h['parseado'] ?? false)
+        );
+        $this->assertNotNull($hoja);
+
+        $headerRow = (int) ($hoja['detectado']['fila_encabezado'] ?? 0);
+        $this->assertGreaterThan(0, $headerRow);
+
+        $preview = $service->applySheetMapping($preview, (string) $hoja['titulo'], [
+            'formulario_codigo' => 'SP1',
+            'fila_encabezado' => $headerRow,
+            'columnas' => [],
+        ]);
+
+        $this->assertSame('SP1', $preview['formulario_codigo'] ?? $preview['detectado']['formulario_codigo']);
+        $this->assertGreaterThan(5, $preview['detectado']['filas_detectadas'] ?? 0);
+        $this->assertArrayHasKey($hoja['titulo'], $preview['mapeos'] ?? []);
+
+        if (! empty($preview['temp_path']) && is_file($preview['temp_path'])) {
+            @unlink($preview['temp_path']);
+        }
+    }
+
+    public function test_map_route_renders_for_analyzed_sheet(): void
+    {
+        if (! is_file($this->samplePath())) {
+            $this->markTestSkipped('Falta planilla de muestra en .docs-bio');
+        }
+
+        $user = User::role('Administrador')->first() ?? User::first();
+        if (! $user) {
+            $this->markTestSkipped('Falta usuario.');
+        }
+
+        $service = app(SpPlanillaImportService::class);
+        $file = new UploadedFile($this->samplePath(), 'ESTADISTICA JULIO 2026.xls', null, null, true);
+        $preview = $service->analyze($file, $user);
+        $service->storePreview($preview);
+
+        $hoja = $preview['hoja_activa'];
+        $this->actingAs($user)
+            ->get(route('bioestadistica.captura.import.map', ['hoja' => $hoja]))
+            ->assertOk()
+            ->assertSee('Ajustar mapeo')
+            ->assertSee('Fila de encabezado');
+
+        $service->forgetPreview();
+    }
 }

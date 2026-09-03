@@ -6,7 +6,23 @@
     $mes = (int) old('periodo_mes', $preview['periodo_mes'] ?? $contexto['periodo_mes'] ?? 0);
     $anio = (int) old('periodo_anio', $preview['periodo_anio'] ?? $contexto['periodo_anio'] ?? 0);
     $establecimientoId = (int) old('establecimiento_id', $preview['establecimiento_id'] ?? 0);
-    $codigoPlanilla = $contexto['codigo_planilla'] ?? $preview['detectado']['codigo_planilla'] ?? '—';
+    $estConfirmado = $preview['establecimiento'] ?? null;
+    $nombreEst = $estConfirmado['nombre']
+        ?? $contexto['establecimiento_nombre']
+        ?? $preview['detectado']['establecimiento_nombre']
+        ?? null;
+    $codigoEst = $estConfirmado['codigo']
+        ?? $contexto['codigo_planilla']
+        ?? $preview['detectado']['codigo_planilla']
+        ?? null;
+    $codigoSih = $estConfirmado['codigo_sih'] ?? null;
+    $departamentoEst = $estConfirmado['departamento']
+        ?? $contexto['departamento']
+        ?? null;
+    $distritoEst = $estConfirmado['distrito'] ?? null;
+    $origenEst = $estConfirmado
+        ? 'Confirmado para la carga'
+        : 'Detectado en la planilla';
 @endphp
 
 @section('content')
@@ -19,7 +35,7 @@
 <div class="card bio-siplan">
     <div class="card-header card-header-info">
         <h4 class="card-title">Resumen — {{ $preview['archivo'] ?? 'planilla' }}</h4>
-        <p class="card-category">Se detectaron {{ count($workbook['hojas'] ?? []) }} hojas. Confirme el contexto y seleccione los SP a importar en lote (solo filas con match automático) o revise el detalle de cada uno.</p>
+        <p class="card-category">Se detectaron {{ count($workbook['hojas'] ?? []) }} hojas. Confirme el contexto y seleccione los SP a importar en lote (solo filas con match automático) o revise el detalle / ajuste el mapeo de cada uno.</p>
     </div>
     <div class="card-body">
         @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
@@ -30,31 +46,58 @@
         <div class="row mb-3">
             <div class="col-md-4">
                 <div class="border rounded p-2 h-100">
-                    <small class="text-muted d-block">Establecimiento (planilla)</small>
-                    <div>{{ $contexto['establecimiento_nombre'] ?? $preview['detectado']['establecimiento_nombre'] ?? '—' }}</div>
-                    <div class="small">Código: {{ $codigoPlanilla }}</div>
+                    <small class="text-muted d-block">Establecimiento</small>
+                    <div>{{ $nombreEst ?: '—' }}</div>
+                    <div class="small">
+                        Código: {{ $codigoEst ?: '—' }}
+                        @if($codigoSih) · SIH {{ $codigoSih }} @endif
+                    </div>
+                    <div class="small text-muted">{{ $origenEst }}</div>
+                    @if($estConfirmado && !($estConfirmado['distrito_ok'] ?? true))
+                        <div class="small text-danger">Sin distrito asignado</div>
+                    @endif
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="border rounded p-2 h-100">
-                    <small class="text-muted d-block">Período detectado</small>
+                    <small class="text-muted d-block">Período confirmado</small>
                     <strong>{{ $months[$mes] ?? $mes }}/{{ $anio ?: '—' }}</strong>
+                    @php
+                        $periodoExcelMes = (int) ($contexto['periodo_mes'] ?? 0);
+                        $periodoExcelAnio = (int) ($contexto['periodo_anio'] ?? 0);
+                        $periodoResumenDesfasado = $periodoExcelMes > 0 && $periodoExcelAnio > 0
+                            && $mes > 0 && $anio > 0
+                            && ($periodoExcelMes !== $mes || $periodoExcelAnio !== $anio);
+                    @endphp
+                    @if($periodoExcelMes && $periodoExcelAnio)
+                        <div class="small text-muted">Detectado en Excel: {{ $months[$periodoExcelMes] ?? $periodoExcelMes }}/{{ $periodoExcelAnio }}</div>
+                    @endif
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="border rounded p-2 h-100">
-                    <small class="text-muted d-block">Departamento</small>
-                    <div>{{ $contexto['departamento'] ?? '—' }}</div>
+                    <small class="text-muted d-block">Departamento / distrito</small>
+                    <div>{{ $departamentoEst ?: '—' }}</div>
+                    @if($distritoEst)
+                        <div class="small text-muted">{{ $distritoEst }}</div>
+                    @endif
                 </div>
             </div>
         </div>
+
+        @if(!empty($periodoResumenDesfasado))
+            <div class="alert alert-warning">
+                El período del Excel no coincide con el confirmado. Ajuste año/mes en el contexto si corresponde;
+                el período estadístico no se toma de la fecha de subida.
+            </div>
+        @endif
 
         <form method="GET" action="{{ route('bioestadistica.captura.import.summary') }}" id="bio-import-summary-context" class="border rounded p-3 mb-3 bg-light">
             <h5 class="mb-3">Contexto compartido de la carga</h5>
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label>Establecimiento *</label>
-                    <select class="form-control" name="establecimiento_id" id="bio-summary-establecimiento" required>
+                    <select class="form-control bio-select2" name="establecimiento_id" id="bio-summary-establecimiento" data-placeholder="Buscar establecimiento…" required>
                         <option value="">Seleccione</option>
                         @foreach($establecimientos as $item)
                             <option value="{{ $item->id }}" @selected($establecimientoId === (int) $item->id)>
@@ -69,7 +112,7 @@
                 </div>
                 <div class="form-group col-md-3">
                     <label>Mes *</label>
-                    <select class="form-control" name="periodo_mes" required>
+                    <select class="form-control bio-select2" name="periodo_mes" data-placeholder="Mes" required>
                         @foreach($months as $num => $label)
                             <option value="{{ $num }}" @selected($mes === (int) $num)>{{ $label }}</option>
                         @endforeach
@@ -119,12 +162,13 @@
                         <th>SP</th>
                         <th>Filas</th>
                         <th>Match auto</th>
+                        <th>Calidad</th>
                         <th>Estado</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                @forelse($workbook['hojas'] ?? [] as $hoja)
+                @forelse($workbook['hojas'] ?? [] as $hojaIdx => $hoja)
                     <tr @if(($preview['hoja_activa'] ?? '') === ($hoja['titulo'] ?? '')) class="table-info" @endif>
                         @if($hojasLote->isNotEmpty())
                             <td>
@@ -152,6 +196,27 @@
                             @endif
                         </td>
                         <td>
+                            @php $calidad = $hoja['calidad'] ?? null; @endphp
+                            @if($calidad)
+                                @php
+                                    $badge = match($calidad['nivel'] ?? '') {
+                                        'alto' => 'badge-success',
+                                        'medio' => 'badge-info',
+                                        'bajo' => 'badge-warning',
+                                        default => 'badge-secondary',
+                                    };
+                                @endphp
+                                <span class="badge {{ $badge }}" title="{{ implode(' · ', $calidad['motivos'] ?? []) }}">
+                                    {{ ucfirst($calidad['nivel'] ?? '—') }} ({{ $calidad['score'] ?? 0 }})
+                                </span>
+                                @if(!empty($calidad['motivos']))
+                                    <div class="small text-muted">{{ \Illuminate\Support\Str::limit(implode(' · ', $calidad['motivos']), 60) }}</div>
+                                @endif
+                            @else
+                                —
+                            @endif
+                        </td>
+                        <td>
                             @if($hoja['importable'] ?? false)
                                 @if($hoja['listo_lote'] ?? false)
                                     <span class="badge badge-success">Listo en lote</span>
@@ -170,6 +235,7 @@
                                 <span class="badge badge-warning">Parser pendiente</span>
                             @else
                                 <span class="text-muted small">{{ $hoja['error'] ?? 'Sin SP detectado' }}</span>
+                                <div class="small"><a href="{{ route('bioestadistica.captura.import.map', ['hoja_idx' => $hojaIdx, 'hoja' => $hoja['titulo']]) }}">Ajustar mapeo</a></div>
                             @endif
                         </td>
                         <td class="text-nowrap">
@@ -178,10 +244,13 @@
                                     Detalle
                                 </a>
                             @endif
+                            <a href="{{ route('bioestadistica.captura.import.map', ['hoja_idx' => $hojaIdx, 'hoja' => $hoja['titulo']]) }}" class="btn btn-sm btn-outline-secondary" title="Asignar SP, fila y columnas">
+                                Ajustar mapeo
+                            </a>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="text-muted">No se detectaron hojas.</td></tr>
+                    <tr><td colspan="8" class="text-muted">No se detectaron hojas.</td></tr>
                 @endforelse
                 </tbody>
             </table>

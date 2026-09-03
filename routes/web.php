@@ -376,6 +376,10 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.record.create')->name('captura.import.analyze');
         Route::get('/captura/importar/resumen', 'Admin\Bioestadistica\SpPlanillaImportController@summary')
             ->middleware('permission:bio.record.create')->name('captura.import.summary');
+        Route::get('/captura/importar/mapear', 'Admin\Bioestadistica\SpPlanillaImportController@map')
+            ->middleware('permission:bio.record.create')->name('captura.import.map');
+        Route::post('/captura/importar/mapear', 'Admin\Bioestadistica\SpPlanillaImportController@mapApply')
+            ->middleware('permission:bio.record.create')->name('captura.import.map.apply');
         Route::get('/captura/importar/vista-previa', 'Admin\Bioestadistica\SpPlanillaImportController@preview')
             ->middleware('permission:bio.record.create')->name('captura.import.preview');
         Route::post('/captura/importar/confirmar', 'Admin\Bioestadistica\SpPlanillaImportController@confirm')

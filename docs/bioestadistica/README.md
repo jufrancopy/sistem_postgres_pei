@@ -28,6 +28,7 @@ Las planillas **SP1 a SP14 no son tablas**: son configuración almacenada en bas
 | [14-legado-access.md](14-legado-access.md) | Estructura de la base Access 2019 heredada |
 | [15-asignaciones-captura.md](15-asignaciones-captura.md) | Asignación formulario × establecimiento × digitador |
 | [16-catalogos-maestros-y-diccionario.md](16-catalogos-maestros-y-diccionario.md) | Diseño de 5 catálogos maestros, puente con tipos de registro, SP8/SP9 |
+| [17-importacion-asistida-planillas.md](17-importacion-asistida-planillas.md) | Asistente de mapeo, score de calidad y alias para planillas no estándar |
 
 ## Decisiones fijas
 
