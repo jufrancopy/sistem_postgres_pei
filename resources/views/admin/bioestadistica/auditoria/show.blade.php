@@ -18,6 +18,8 @@
 @endphp
 
 @section('content')
+@include('admin.bioestadistica._siplan-styles')
+@include('admin.bioestadistica._configuraciones_tabs')
 <div class="card">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">compare</i> Asiento #{{ $log->id }}</h4>

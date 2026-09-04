@@ -3,11 +3,11 @@
 
 @section('content')
 @include('admin.bioestadistica._siplan-styles')
-@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Variables']]])
+@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Variables']], 'showConfigTabs' => true])
 <div class="card bio-siplan">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">account_tree</i> Variables</h4>
-        <p class="card-category">Variable → detalle → prestación. Los SP tabulares usan el detalle como tabla y las prestaciones como filas.</p>
+        <p class="card-category">Variable → tipo de registro → prestación. Los formularios SP usan el catálogo maestro vinculado por tipo de registro.</p>
     </div>
     <div class="card-body">
         @if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
@@ -49,7 +49,7 @@
                         <td>{{ $variable->codigo }}</td>
                         <td>{{ $variable->nombre }}</td>
                         <td>{{ $variable->detalles_count }}</td>
-                        <td>{{ $variable->prestaciones_count }}</td>
+                        <td>{{ $variable->catalogo_items_count ?? 0 }}</td>
                         <td>
                             <div class="bio-actions">
                                 <a class="btn btn-outline-primary btn-sm" href="{{ route('bioestadistica.diccionario.show', $variable) }}">Abrir</a>

@@ -16,6 +16,9 @@ class Record extends BioestadisticaModel
     public const ESTADO_APROBADO = 'aprobado';
     public const ESTADO_OBJETADO = 'objetado';
 
+    public const ORIGEN_MANUAL = 'manual';
+    public const ORIGEN_IMPORTACION_SP = 'importacion_sp';
+
     protected $table = 'bioestadistica.records';
 
     protected $casts = [
@@ -119,19 +122,49 @@ class Record extends BioestadisticaModel
         };
     }
 
-    public function scopeForUser(Builder $query, User $user): Builder
+    public function isImported(): bool
     {
-        if (self::userHasGlobalAccess($user)) {
-            return $query;
+        return $this->origen_carga === self::ORIGEN_IMPORTACION_SP;
+    }
+
+    public static function origenCargaLabel(?string $origen): string
+    {
+        return match ($origen) {
+            self::ORIGEN_IMPORTACION_SP => 'Importación',
+            default => 'Manual',
+        };
+    }
+
+    public function origenCargaBadgeClass(): string
+    {
+        return $this->isImported() ? 'badge-info' : 'badge-light text-dark border';
+    }
+
+    public function importProcedenciaLabel(): ?string
+    {
+        if (! $this->isImported()) {
+            return null;
         }
 
-        return $query->whereIn('establecimiento_id', self::assignedEstablishmentIds($user));
+        $parts = array_filter([
+            $this->import_archivo,
+            $this->import_hoja ? 'Hoja '.$this->import_hoja : null,
+        ]);
+
+        return $parts !== [] ? implode(' · ', $parts) : null;
+    }
+
+    public function scopeForUser(Builder $query, User $user): Builder
+    {
+        return app(\App\Application\Bioestadistica\Capture\CaptureScopeService::class)
+            ->applyRecordScope($query, $user);
     }
 
     public function isAccessibleBy(User $user): bool
     {
-        return self::userHasGlobalAccess($user)
-            || in_array($this->establecimiento_id, self::assignedEstablishmentIds($user), true);
+        $scope = app(\App\Application\Bioestadistica\Capture\CaptureScopeService::class);
+
+        return $scope->canCapture($user, (int) $this->formulario_id, (int) $this->establecimiento_id);
     }
 
     public function submit(int $userId): void
@@ -188,19 +221,13 @@ class Record extends BioestadisticaModel
 
     public static function userHasGlobalAccess(User $user): bool
     {
-        return $user->hasAnyRole([
-            'Administrador',
-            'Analista de Bioestadística',
-            'Consultor Bioestadística',
-            'Auditor Bioestadística',
-        ]);
+        return app(\App\Application\Bioestadistica\Capture\CaptureScopeService::class)
+            ->userHasGlobalAccess($user);
     }
 
     public static function assignedEstablishmentIds(User $user): array
     {
-        return UsuarioEstablecimiento::where('user_id', $user->id)
-            ->pluck('establecimiento_id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
+        return app(\App\Application\Bioestadistica\Capture\CaptureScopeService::class)
+            ->assignedEstablishmentIds($user);
     }
 }

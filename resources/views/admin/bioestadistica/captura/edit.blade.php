@@ -34,8 +34,16 @@
             {{ $record->establecimiento->nombre }}
             @if($record->corteLabel()) · {{ $record->corteLabel() }} @endif
             ·
-            {{ \Carbon\Carbon::create($record->periodo_anio, $record->periodo_mes, 1)->translatedFormat('F Y') }} ·
+            {{ \Carbon\Carbon::create($record->periodo_anio, $record->periodo_mes, 1)->translatedFormat('F Y') }}             ·
             <span class="badge {{ \App\Models\Bioestadistica\Record::estadoBadge($record->estado) }}">{{ \App\Models\Bioestadistica\Record::estadoLabel($record->estado) }}</span>
+            @if($record->isImported())
+                · <span class="badge badge-info" title="{{ $record->importProcedenciaLabel() }}">Importación</span>
+                @if($record->importProcedenciaLabel())
+                    <small class="text-white-50">({{ $record->importProcedenciaLabel() }})</small>
+                @endif
+            @else
+                · <span class="badge badge-light text-dark">Manual</span>
+            @endif
         </p>
     </div>
     <div class="card-body">

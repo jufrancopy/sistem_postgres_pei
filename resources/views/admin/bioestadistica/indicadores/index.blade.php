@@ -3,7 +3,7 @@
 
 @section('content')
 @include('admin.bioestadistica._siplan-styles')
-@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Indicadores']]])
+@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Indicadores']], 'showConfigTabs' => true])
 <div class="card bio-siplan">
     <div class="card-header card-header-info">
         <h4 class="card-title"><i class="material-icons">functions</i> Motor de indicadores</h4>

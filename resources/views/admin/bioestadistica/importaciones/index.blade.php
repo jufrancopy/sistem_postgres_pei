@@ -3,7 +3,7 @@
 
 @section('content')
 @include('admin.bioestadistica._siplan-styles')
-@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Importaciones']]])
+@include('admin.bioestadistica._breadcrumbs', ['items' => [['label' => 'Importaciones']], 'showConfigTabs' => true])
 <style>
     /* Material Dashboard oculta input[type=file] dentro de .form-group */
     .bio-file-picker {

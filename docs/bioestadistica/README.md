@@ -26,6 +26,9 @@ Las planillas **SP1 a SP14 no son tablas**: son configuración almacenada en bas
 | [12-analisis-planillas-sp.md](12-analisis-planillas-sp.md) | Análisis de `Formularios SP.xls` y `variables salud.xls` |
 | [13-maestro-establecimientos.md](13-maestro-establecimientos.md) | Análisis de `ESTABLECIMIENTO_CON_ID.xlsx` y jerarquía geográfica |
 | [14-legado-access.md](14-legado-access.md) | Estructura de la base Access 2019 heredada |
+| [15-asignaciones-captura.md](15-asignaciones-captura.md) | Asignación formulario × establecimiento × digitador |
+| [16-catalogos-maestros-y-diccionario.md](16-catalogos-maestros-y-diccionario.md) | Diseño de 5 catálogos maestros, puente con tipos de registro, SP8/SP9 |
+| [17-importacion-asistida-planillas.md](17-importacion-asistida-planillas.md) | Asistente de mapeo, score de calidad y alias para planillas no estándar |
 
 ## Decisiones fijas
 
@@ -45,7 +48,8 @@ Las planillas **SP1 a SP14 no son tablas**: son configuración almacenada en bas
 Los archivos fuente viven en `.docs-bio/` (carpeta **gitignored**, no versionada):
 
 - `Formularios SP.xls` — layout de las 14 planillas
-- `variables salud.xls` — diccionario de dominios, tipos de registro y prestaciones
+- `variables salud.xlsx` — diccionario canónico (dominios, tipos de registro, prestaciones; sep. 2026)
+- `variables salud.xls` — versión anterior (referencia histórica)
 - `ESTABLECIMIENTO_CON_ID.xlsx` — dimensión de establecimientos
 - Base Access 2019 de producción (referencia del sistema legado)
 

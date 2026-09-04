@@ -114,7 +114,7 @@ class HospitalizacionController extends Controller
         $year = $request->integer('periodo_anio');
         $month = $request->integer('periodo_mes');
         if ($establishmentId < 1 || $year < 1990 || $year > 2100 || $month < 1 || $month > 12) {
-            return redirect()->route('bioestadistica.captura.create')
+            return redirect()->route('bioestadistica.captura.index', ['nueva' => 1])
                 ->with('warning', 'Para cargar SP10 seleccione establecimiento y período estadístico, igual que en los demás formularios.');
         }
 

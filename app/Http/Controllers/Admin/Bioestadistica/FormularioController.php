@@ -195,7 +195,7 @@ class FormularioController extends Controller
 
         if (! empty($data['detalle_id'])) {
             $config = array_merge($config, [
-                'row_source' => 'diccionario',
+                'row_source' => 'detalle_catalogo',
                 'row_detalle_id' => (int) $data['detalle_id'],
             ]);
         }

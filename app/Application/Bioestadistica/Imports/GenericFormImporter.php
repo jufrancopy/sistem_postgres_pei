@@ -2,6 +2,7 @@
 
 namespace App\Application\Bioestadistica\Imports;
 
+use App\Application\Bioestadistica\Capture\CaptureScopeService;
 use App\Application\Bioestadistica\Dictionary\HealthVariableDictionary;
 use App\Application\Bioestadistica\RecordCaptureService;
 use App\Models\Bioestadistica\Establecimiento;
@@ -69,7 +70,7 @@ class GenericFormImporter
                 $config = $column['config'] ?? null;
                 if ($detalleId) {
                     $config = array_merge($config ?? [], [
-                        'row_source' => 'diccionario',
+                        'row_source' => 'detalle_catalogo',
                         'row_detalle_id' => $detalleId,
                     ]);
                 }
@@ -143,10 +144,15 @@ class GenericFormImporter
                     $skipped[] = "Fila {$rowNumber}: establecimiento «{$establishmentKey}» no encontrado.";
                     continue;
                 }
-                if (! Record::userHasGlobalAccess($user)
-                    && ! in_array($establishment->id, Record::assignedEstablishmentIds($user), true)) {
-                    $skipped[] = "Fila {$rowNumber}: sin alcance para el establecimiento «{$establishmentKey}».";
-                    continue;
+                if (! Record::userHasGlobalAccess($user)) {
+                    $scope = app(CaptureScopeService::class);
+                    try {
+                        $scope->assertCanUseEstablecimiento($user, $establishment->id);
+                        $scope->validateCanCapture($user, (int) $formulario->id, (int) $establishment->id, 'establecimiento_id');
+                    } catch (ValidationException) {
+                        $skipped[] = "Fila {$rowNumber}: sin alcance para el establecimiento «{$establishmentKey}».";
+                        continue;
+                    }
                 }
 
                 $record = Record::withTrashed()->where([

@@ -5,7 +5,7 @@ namespace App\Application\Bioestadistica\Imports;
 use App\Application\Bioestadistica\Dictionary\DictionaryCodes;
 use App\Application\Bioestadistica\Dictionary\HealthVariableDictionary;
 use App\Models\Bioestadistica\Formulario;
-use App\Models\Bioestadistica\Prestacion;
+use App\Models\Bioestadistica\DetalleCatalogoItem;
 use App\Models\Bioestadistica\Variable;
 use App\Models\Bioestadistica\VariableDetalle;
 use Illuminate\Support\Facades\DB;
@@ -177,12 +177,13 @@ class FormulariosSpImporter
                 continue;
             }
             if (is_numeric($decision)) {
-                $item = Prestacion::find((int) $decision);
+                $bridge = $this->matcher->resolveManual((int) $decision, $domain);
+                $item = $bridge?->resolveCatalogItem();
                 $rows[] = [
                     'label' => $label,
                     'nivel' => 4,
-                    'catalog_item_id' => $item?->id,
-                    'catalogo_id' => $item?->detalle_id,
+                    'catalog_item_id' => $bridge?->catalogo_item_id,
+                    'catalogo_id' => $bridge?->variable_detalle_id,
                     'sugerencia' => $item?->nombre,
                     'score' => 1,
                     'accion' => 'manual',
@@ -402,7 +403,7 @@ class FormulariosSpImporter
                 'required' => $index === 0,
                 'detalle_id' => $detalleId,
                 'config' => [
-                    'row_source' => 'diccionario',
+                    'row_source' => 'detalle_catalogo',
                     'row_detalle_id' => $detalleId,
                     'row_label' => 'Prestación',
                     'totals' => true,
@@ -501,7 +502,11 @@ class FormulariosSpImporter
             $label
         );
 
-        return [(int) $remembered['detalle']->id, (int) $remembered['prestacion']->id];
+        if ($remembered['catalog_item'] === null) {
+            throw new \RuntimeException('No se pudo crear el ítem de catálogo para: '.$label);
+        }
+
+        return [(int) $remembered['detalle']->id, (int) $remembered['catalog_item']->id];
     }
 
     private function cleanLabel(string $value): string

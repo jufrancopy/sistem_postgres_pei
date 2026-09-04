@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Application\Bioestadistica\Dictionary\DictionaryCodes;
 use App\Application\Bioestadistica\Dictionary\HealthVariableDictionary;
 use App\Models\Bioestadistica\Formulario;
-use App\Models\Bioestadistica\Prestacion;
 use App\Models\Bioestadistica\Variable;
 use App\Models\Bioestadistica\VariableDetalle;
 use Illuminate\Database\Seeder;
@@ -233,7 +232,7 @@ class BioestadisticaFormulariosSpSeeder extends Seeder
             'detalle_id' => $detalle->id,
             'help_text' => 'Las prestaciones sin actividad pueden quedar vacías.',
             'config' => array_merge([
-                'row_source' => 'diccionario',
+                'row_source' => 'detalle_catalogo',
                 'row_detalle_id' => $detalle->id,
                 'row_label' => $rowLabel,
                 'totals' => true,
@@ -254,9 +253,9 @@ class BioestadisticaFormulariosSpSeeder extends Seeder
             ->where('activo', true)
             ->whereHas('variable', fn ($query) => $query->where('codigo', $variableCodigo)->where('activo', true))
             ->with('variable')
-            ->withCount(['prestaciones as prestaciones_count' => fn ($query) => $query->where('activo', true)])
+            ->withCount(['catalogoItems as catalogo_items_count' => fn ($query) => $query->where('activo', true)])
             ->get()
-            ->filter(fn (VariableDetalle $detalle) => $detalle->prestaciones_count > 0)
+            ->filter(fn (VariableDetalle $detalle) => $detalle->catalogo_items_count > 0)
             ->sortBy(fn (VariableDetalle $detalle) => DictionaryCodes::slug($detalle))
             ->values();
 
@@ -378,14 +377,6 @@ class BioestadisticaFormulariosSpSeeder extends Seeder
 
     private function syncSp9DictionaryRows(): void
     {
-        Prestacion::query()
-            ->whereIn('nombre', [
-                'CONSULTA DE URGENCIAS ADULTOS',
-                'OBSERVACION ADULTOS',
-                'PROCEDIMIENTOS URGENCIAS ADULTOS',
-            ])
-            ->update(['activo' => false]);
-
         $variable = Variable::query()->where('codigo', '4')->first();
         if (! $variable) {
             $this->command?->warn('SP9: variable 4 no encontrada; omitiendo ajuste de filas del diccionario.');

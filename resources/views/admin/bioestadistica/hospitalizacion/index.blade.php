@@ -37,7 +37,7 @@
         <div class="mb-3">
             @can('bio.hosp.manage')
                 <a class="btn btn-success" href="{{ route('bioestadistica.hospitalizacion.spreadsheet', request()->only(['establecimiento_id','periodo_anio','periodo_mes'])) }}">
-                    <i class="material-icons">grid_on</i> Cargar planilla
+                    <i class="material-icons">grid_on</i> Iniciar carga
                 </a>
                 <a class="btn btn-success" href="{{ route('bioestadistica.hospitalizacion.create') }}">Nuevo episodio</a>
                 <a class="btn btn-outline-info" href="{{ route('bioestadistica.hospitalizacion.import') }}">Importar Excel</a>

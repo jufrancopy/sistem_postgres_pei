@@ -2,6 +2,8 @@
 @section('title', "Diseñar {$formulario->codigo}")
 
 @section('content')
+@include('admin.bioestadistica._siplan-styles')
+@include('admin.bioestadistica._configuraciones_tabs')
 <div class="card">
     <div class="card-header card-header-info d-flex justify-content-between align-items-center">
         <div>

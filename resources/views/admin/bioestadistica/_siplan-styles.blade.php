@@ -69,4 +69,47 @@
     }
     .bio-breadcrumb .breadcrumb-item a { color: #0288d1; }
     .bio-breadcrumb .breadcrumb-item.active { color: #64748b; }
+    .bio-config-tabs {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px 8px 0 0;
+        background: #fff;
+        padding: 0.25rem 0.35rem 0;
+    }
+    .bio-config-tabs .bio-config-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+        border-bottom: 1px solid #e2e8f0;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .bio-config-tabs .bio-config-nav .nav-item {
+        margin-bottom: -1px;
+    }
+    .bio-config-tabs .bio-config-nav-link {
+        display: block;
+        font-size: 0.82rem;
+        padding: 0.5rem 0.85rem;
+        color: #475569 !important;
+        text-decoration: none;
+        text-transform: none;
+        font-weight: 500;
+        border: none;
+        border-bottom: 2px solid transparent;
+        border-radius: 6px 6px 0 0;
+        background: transparent;
+        white-space: nowrap;
+    }
+    .bio-config-tabs .bio-config-nav-link:hover,
+    .bio-config-tabs .bio-config-nav-link:focus {
+        color: #b45309 !important;
+        background: #fff7ed;
+        text-decoration: none;
+    }
+    .bio-config-tabs .bio-config-nav-link.active {
+        color: #d97706 !important;
+        border-bottom-color: #d97706;
+        background: #fffbeb;
+    }
 </style>

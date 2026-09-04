@@ -28,6 +28,7 @@ Los roles y permisos `bio.*` se crean en `BioestadisticaRolesSeeder`. El permiso
 | Importación | `bio.import.view`, `bio.import.execute` |
 | Hospitalización | `bio.hosp.view`, `bio.hosp.manage`, `bio.hosp.view_pii`, `bio.hosp.export` |
 | Auditoría | `bio.audit.view` |
+| Asignaciones de captura | `bio.assignment.manage` |
 
 ### Matriz rol / permiso
 
@@ -63,6 +64,13 @@ Un Digitador solo opera sobre los establecimientos que le fueron asignados.
 La asignación se resuelve con una tabla puente propia del módulo y un scope global en los modelos
 `Record` y `HospEpisodio`, que filtra por los establecimientos habilitados del usuario autenticado.
 Administrador, Analista, Consultor y Auditor no tienen esa restricción.
+
+## Alcance granular formulario × establecimiento
+
+Opcionalmente, la tabla `usuario_captura_asignaciones` restringe además qué formularios SP puede
+cargar cada digitador en cada establecimiento. Si el digitador tiene filas activas en esa tabla,
+prevalece el modo granular; si no, sigue vigente `usuario_establecimientos` (todos los SP activos).
+Detalle funcional en [15-asignaciones-captura.md](15-asignaciones-captura.md).
 
 ## Protección de rutas
 

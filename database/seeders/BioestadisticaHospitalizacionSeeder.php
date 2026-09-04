@@ -73,7 +73,7 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
                 'required' => false,
                 'detalle_id' => $detalle->id,
                 'config' => [
-                    'row_source' => 'diccionario',
+                    'row_source' => 'detalle_catalogo',
                     'row_detalle_id' => $detalle->id,
                     'row_label' => $label,
                     'totals' => true,

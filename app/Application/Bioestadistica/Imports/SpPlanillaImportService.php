@@ -2,6 +2,7 @@
 
 namespace App\Application\Bioestadistica\Imports;
 
+use App\Application\Bioestadistica\Capture\CaptureScopeService;
 use App\Application\Bioestadistica\RecordCaptureService;
 use App\Application\Bioestadistica\Sp11Matrix;
 use App\Models\Bioestadistica\Establecimiento;
@@ -63,35 +64,48 @@ class SpPlanillaImportService
         $workbook = $this->enrichWorkbookSummary($workbook);
 
         $defaultSheet = $this->defaultSheet($workbook);
-        if (! $defaultSheet || ! is_array($defaultSheet['detectado'] ?? null)) {
+        if (! $defaultSheet) {
             throw ValidationException::withMessages([
-                'archivo' => 'No se encontró ninguna hoja importable con datos en el archivo.',
+                'archivo' => 'No se encontró ninguna hoja en el archivo.',
             ]);
         }
 
-        $parsed = $defaultSheet['detectado'];
-        $detectedCodigo = $parsed['formulario_codigo'] ?? $defaultSheet['sp_codigo'] ?? 'SP1';
+        $token = Str::random(40);
+        $tempPath = $this->persistUpload($file, $token);
+
+        $parsed = is_array($defaultSheet['detectado'] ?? null) ? $defaultSheet['detectado'] : null;
+        $detectedCodigo = $parsed['formulario_codigo']
+            ?? $defaultSheet['sp_codigo']
+            ?? 'SP1';
         $contexto = $workbook['contexto'] ?? [];
-        $codigoPlanilla = $parsed['codigo_planilla'] ?? $contexto['codigo_planilla'] ?? null;
+        $codigoPlanilla = $parsed['codigo_planilla'] ?? $contexto['codigo_planilla'] ?? $defaultSheet['codigo_planilla'] ?? null;
 
         $formulario = Formulario::where('codigo', $detectedCodigo)->where('estado', 'activo')->first()
             ?? Formulario::where('codigo', 'SP1')->where('estado', 'activo')->first();
 
         $establecimiento = $this->resolveEstablecimiento($codigoPlanilla);
-        $this->assertUserCanUseEstablecimiento($user, $establecimiento?->id);
+        $this->assertUserCanCapture($user, $establecimiento?->id, $formulario);
 
         $preview = [
-            'token' => Str::random(40),
+            'token' => $token,
             'archivo' => $file->getClientOriginalName(),
+            'temp_path' => $tempPath,
             'workbook' => $workbook,
             'hoja_activa' => $defaultSheet['titulo'],
-            'detectado' => $parsed,
+            'detectado' => $parsed ?? [
+                'formulario_codigo' => $detectedCodigo,
+                'hoja' => $defaultSheet['titulo'],
+                'filas' => [],
+                'filas_detectadas' => 0,
+                'advertencias' => [$defaultSheet['error'] ?? 'Hoja sin datos parseados. Use Ajustar mapeo.'],
+            ],
             'formulario_codigo_detectado' => $detectedCodigo,
             'formulario_id' => $formulario?->id,
             'establecimiento_id' => $establecimiento?->id,
-            'periodo_anio' => $parsed['periodo_anio'] ?? $contexto['periodo_anio'] ?? null,
-            'periodo_mes' => $parsed['periodo_mes'] ?? $contexto['periodo_mes'] ?? null,
+            'periodo_anio' => $parsed['periodo_anio'] ?? $contexto['periodo_anio'] ?? $defaultSheet['periodo_anio'] ?? null,
+            'periodo_mes' => $parsed['periodo_mes'] ?? $contexto['periodo_mes'] ?? $defaultSheet['periodo_mes'] ?? null,
             'estructura_servicio_id' => null,
+            'mapeos' => [],
         ];
 
         return $this->applyPreviewContext($preview);
@@ -181,12 +195,17 @@ class SpPlanillaImportService
         $preview['layout'] = $layout;
         $preview['field_code'] = $field?->code;
         $preview['establecimiento_id'] = $establecimiento?->id;
+        if ($establecimiento) {
+            $establecimiento->loadMissing('distrito.departamento');
+        }
         $preview['establecimiento'] = $establecimiento ? [
             'id' => $establecimiento->id,
             'codigo' => $establecimiento->codigo,
             'codigo_sih' => $establecimiento->codigo_sih,
             'nombre' => $establecimiento->nombre,
             'distrito_ok' => $establecimiento->distrito_id !== null,
+            'distrito' => $establecimiento->distrito?->nombre,
+            'departamento' => $establecimiento->distrito?->departamento?->nombre,
         ] : null;
         $preview['periodo_anio'] = $periodoAnio ?: null;
         $preview['periodo_mes'] = $periodoMes ?: null;
@@ -242,7 +261,227 @@ class SpPlanillaImportService
 
     public function forgetPreview(): void
     {
+        $preview = session(self::SESSION_KEY);
+        if (is_array($preview)) {
+            $this->forgetTempFile($preview['temp_path'] ?? null);
+        }
         session()->forget(self::SESSION_KEY);
+    }
+
+    /**
+     * Datos para la pantalla propia del asistente de mapeo.
+     *
+     * @param  array<string, mixed>  $preview
+     * @return array<string, mixed>
+     */
+    public function mappingFormData(array $preview, string $sheetTitle, ?int $sheetIndex = null): array
+    {
+        $resolved = $this->resolveSheet($preview, $sheetTitle, $sheetIndex);
+        if (! $resolved) {
+            throw ValidationException::withMessages([
+                'hoja' => 'No se encontró la hoja solicitada en el análisis.',
+            ]);
+        }
+        [$hoja, $sheetTitle] = $resolved;
+
+        $tempPath = $preview['temp_path'] ?? null;
+        if (! is_string($tempPath) || ! is_file($tempPath)) {
+            throw ValidationException::withMessages([
+                'archivo' => 'El archivo temporal expiró. Vuelva a analizar la planilla.',
+            ]);
+        }
+
+        $mapeoGuardado = $preview['mapeos'][$sheetTitle] ?? [];
+        $spCodigo = $mapeoGuardado['formulario_codigo']
+            ?? $hoja['sp_codigo']
+            ?? $hoja['detectado']['formulario_codigo']
+            ?? null;
+
+        try {
+            $grid = $this->parser->sheetGridFromFile($tempPath, $sheetTitle);
+        } catch (\Throwable $exception) {
+            throw ValidationException::withMessages([
+                'hoja' => 'No se pudo leer la hoja «'.$sheetTitle.'»: '.$exception->getMessage(),
+            ]);
+        }
+        $roles = $spCodigo ? $this->mappingRolesForSp($spCodigo) : $this->mappingRolesForSp('SP1');
+
+        $defaults = [
+            'formulario_codigo' => $spCodigo,
+            'fila_encabezado' => $mapeoGuardado['fila_encabezado']
+                ?? $hoja['detectado']['fila_encabezado']
+                ?? null,
+            'columnas' => $mapeoGuardado['columnas'] ?? [],
+        ];
+
+        return [
+            'hoja' => $hoja,
+            'sheet_title' => $sheetTitle,
+            'sheet_index' => $sheetIndex ?? $this->sheetIndexOf($preview, $sheetTitle),
+            'grid' => $grid,
+            'roles' => $roles,
+            'defaults' => $defaults,
+            'mapeables' => $this->mappableSpCodes(),
+            'calidad' => $hoja['calidad'] ?? null,
+        ];
+    }
+
+    /**
+     * Aplica mapeo manual, reparsea la hoja y actualiza el preview en sesión.
+     *
+     * @param  array<string, mixed>  $preview
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
+    public function applySheetMapping(array $preview, string $sheetTitle, array $input): array
+    {
+        $sheetIndex = isset($input['hoja_idx']) ? (int) $input['hoja_idx'] : null;
+        $resolved = $this->resolveSheet($preview, $sheetTitle, $sheetIndex);
+        if (! $resolved) {
+            throw ValidationException::withMessages([
+                'hoja' => 'No se encontró la hoja solicitada.',
+            ]);
+        }
+        [$hoja, $sheetTitle] = $resolved;
+
+        $tempPath = $preview['temp_path'] ?? null;
+        if (! is_string($tempPath) || ! is_file($tempPath)) {
+            throw ValidationException::withMessages([
+                'archivo' => 'El archivo temporal expiró. Vuelva a analizar la planilla.',
+            ]);
+        }
+
+        $spCodigo = strtoupper(trim((string) ($input['formulario_codigo'] ?? '')));
+        if (! in_array($spCodigo, $this->mappableSpCodes(), true)) {
+            throw ValidationException::withMessages([
+                'formulario_codigo' => 'En esta versión el asistente admite SP1 a SP9 (excepto SP10 nominativo).',
+            ]);
+        }
+
+        $overrides = [
+            'fila_encabezado' => (int) ($input['fila_encabezado'] ?? 0) ?: null,
+            'columnas' => array_filter(
+                is_array($input['columnas'] ?? null) ? $input['columnas'] : [],
+                fn ($v) => $v !== null && $v !== ''
+            ),
+        ];
+        if (! $overrides['fila_encabezado']) {
+            unset($overrides['fila_encabezado']);
+        }
+
+        try {
+            $detectado = $this->parser->parseSheetFromFile($tempPath, $sheetTitle, $spCodigo, $overrides);
+        } catch (\Throwable $exception) {
+            throw ValidationException::withMessages([
+                'mapeo' => $exception->getMessage(),
+            ]);
+        }
+
+        $formulario = Formulario::where('codigo', $spCodigo)->where('estado', 'activo')->first();
+        if (! $formulario) {
+            throw ValidationException::withMessages([
+                'formulario_codigo' => 'No existe un formulario activo '.$spCodigo.'.',
+            ]);
+        }
+
+        $preview['mapeos'][$sheetTitle] = [
+            'formulario_codigo' => $spCodigo,
+            'fila_encabezado' => $detectado['fila_encabezado'] ?? ($overrides['fila_encabezado'] ?? null),
+            'columnas' => $overrides['columnas'] ?? [],
+        ];
+
+        $hojas = [];
+        foreach ($preview['workbook']['hojas'] ?? [] as $entry) {
+            if ($this->normalizeSheetTitle((string) ($entry['titulo'] ?? '')) !== $this->normalizeSheetTitle($sheetTitle)) {
+                $hojas[] = $entry;
+
+                continue;
+            }
+            $entry['sp_codigo'] = $spCodigo;
+            $entry['detectado'] = $detectado;
+            $entry['filas_detectadas'] = (int) ($detectado['filas_detectadas'] ?? 0);
+            $entry['parseado'] = true;
+            $entry['error'] = null;
+            $entry['parser_disponible'] = true;
+            $entry['importable'] = $this->isImportable($spCodigo);
+            $entry['advertencia_hoja'] = 'SP asignado manualmente vía asistente de mapeo.';
+            $entry['calidad'] = $this->computeCalidad($entry, $preview);
+            $hojas[] = $entry;
+        }
+        $preview['workbook']['hojas'] = $hojas;
+
+        $context = array_filter([
+            'formulario_id' => $formulario->id,
+            'establecimiento_id' => $input['establecimiento_id'] ?? $preview['establecimiento_id'] ?? null,
+            'periodo_anio' => $input['periodo_anio'] ?? $preview['periodo_anio'] ?? null,
+            'periodo_mes' => $input['periodo_mes'] ?? $preview['periodo_mes'] ?? null,
+            'estructura_servicio_id' => $input['estructura_servicio_id'] ?? $preview['estructura_servicio_id'] ?? null,
+        ], fn ($v) => $v !== null && $v !== '');
+
+        $preview = $this->activateSheet($preview, $sheetTitle);
+        $preview = $this->applyPreviewContext($preview, $context);
+
+        return $preview;
+    }
+
+    private function sheetIndexOf(array $preview, string $sheetTitle): ?int
+    {
+        foreach (array_values($preview['workbook']['hojas'] ?? []) as $index => $hoja) {
+            if ($this->normalizeSheetTitle((string) ($hoja['titulo'] ?? '')) === $this->normalizeSheetTitle($sheetTitle)) {
+                return $index;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function mappableSpCodes(): array
+    {
+        return ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'SP6', 'SP7', 'SP8', 'SP9'];
+    }
+
+    /**
+     * @return array<int, array{key: string, label: string, required: bool}>
+     */
+    public function mappingRolesForSp(string $codigo): array
+    {
+        return match ($codigo) {
+            'SP1' => [
+                ['key' => 'label', 'label' => 'Prestación / especialidad', 'required' => true],
+                ['key' => 'total_consultas', 'label' => 'Total consultas', 'required' => true],
+                ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
+            ],
+            'SP2', 'SP5', 'SP6' => [
+                ['key' => 'label', 'label' => 'Prestación / etiqueta', 'required' => true],
+                ['key' => 'total', 'label' => 'Total', 'required' => true],
+                ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
+            ],
+            'SP3', 'SP4', 'SP7' => [
+                ['key' => 'label', 'label' => 'Prestación / etiqueta', 'required' => true],
+                ['key' => 'pacientes', 'label' => 'Pacientes', 'required' => false],
+                ['key' => 'estudios', 'label' => 'Estudios', 'required' => false],
+                ['key' => 'prestaciones', 'label' => 'Prestaciones', 'required' => false],
+                ['key' => 'determinaciones', 'label' => 'Determinaciones', 'required' => false],
+            ],
+            'SP8' => [
+                ['key' => 'label', 'label' => 'Vacuna / etiqueta', 'required' => true],
+                ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
+            ],
+            'SP9' => [
+                ['key' => 'label', 'label' => 'Especialidad / urgencia', 'required' => true],
+                ['key' => 'consultas', 'label' => 'Consultas', 'required' => false],
+                ['key' => 'observacion', 'label' => 'Observación', 'required' => false],
+                ['key' => 'procedimiento', 'label' => 'Procedimiento', 'required' => false],
+                ['key' => 'total', 'label' => 'Total', 'required' => false],
+            ],
+            default => [
+                ['key' => 'label', 'label' => 'Prestación / etiqueta', 'required' => true],
+                ['key' => 'total', 'label' => 'Total', 'required' => true],
+            ],
+        };
     }
 
     /**
@@ -283,7 +522,7 @@ class SpPlanillaImportService
         Formulario $formulario
     ): Record {
         $establecimientoId = (int) $context['establecimiento_id'];
-        $this->assertUserCanUseEstablecimiento($user, $establecimientoId);
+        $this->assertUserCanCapture($user, $establecimientoId, $formulario);
         $this->assertEstablecimientoConDistrito($establecimientoId);
 
         $lookup = $this->buildRecordLookup($formulario, $context, $establecimientoId);
@@ -319,6 +558,7 @@ class SpPlanillaImportService
         }
 
         $this->capture->save($record, $values, false, true, $user->id);
+        $this->stampImportOrigin($record, $preview);
 
         return $record->fresh(['formulario', 'establecimiento']);
     }
@@ -372,6 +612,7 @@ class SpPlanillaImportService
         }
 
         $this->capture->save($record, $values, false, true, $user->id);
+        $this->stampImportOrigin($record, $preview);
 
         return $record->fresh(['formulario', 'establecimiento']);
     }
@@ -388,7 +629,7 @@ class SpPlanillaImportService
         Formulario $formulario
     ): Record {
         $establecimientoId = (int) $context['establecimiento_id'];
-        $this->assertUserCanUseEstablecimiento($user, $establecimientoId);
+        $this->assertUserCanCapture($user, $establecimientoId, $formulario);
         $this->assertEstablecimientoConDistrito($establecimientoId);
 
         $lookup = $this->buildRecordLookup($formulario, $context, $establecimientoId);
@@ -426,6 +667,7 @@ class SpPlanillaImportService
         }
 
         $this->capture->save($record, $values, false, true, $user->id);
+        $this->stampImportOrigin($record, $preview);
 
         return $record->fresh(['formulario', 'establecimiento']);
     }
@@ -442,7 +684,7 @@ class SpPlanillaImportService
         Formulario $formulario
     ): Record {
         $establecimientoId = (int) $context['establecimiento_id'];
-        $this->assertUserCanUseEstablecimiento($user, $establecimientoId);
+        $this->assertUserCanCapture($user, $establecimientoId, $formulario);
         $this->assertEstablecimientoConDistrito($establecimientoId);
 
         $episodios = $preview['detectado']['episodios'] ?? [];
@@ -479,6 +721,8 @@ class SpPlanillaImportService
                 'importacion' => 'No se pudo consolidar el registro SP10 desde los episodios importados.',
             ]);
         }
+
+        $this->stampImportOrigin($result['record'], $preview);
 
         return $result['record']->fresh(['formulario', 'establecimiento']);
     }
@@ -713,6 +957,7 @@ class SpPlanillaImportService
         $hojas = [];
         foreach ($preview['workbook']['hojas'] ?? [] as $hoja) {
             if (! ($hoja['importable'] ?? false) || ! ($hoja['parseado'] ?? false) || ($hoja['filas_detectadas'] ?? 0) <= 0) {
+                $hoja['calidad'] = $this->computeCalidad($hoja, $preview);
                 $hojas[] = $hoja;
 
                 continue;
@@ -759,6 +1004,7 @@ class SpPlanillaImportService
                 $hoja['listo_lote'] = false;
             }
 
+            $hoja['calidad'] = $this->computeCalidad($hoja, $preview);
             $hojas[] = $hoja;
         }
 
@@ -941,11 +1187,140 @@ class SpPlanillaImportService
         foreach ($workbook['hojas'] ?? [] as $hoja) {
             $spCode = $hoja['sp_codigo'] ?? null;
             $hoja['importable'] = $spCode && $this->isImportable($spCode) && ($hoja['parseado'] ?? false);
+            $hoja['calidad'] = $this->computeCalidad($hoja, ['workbook' => $workbook]);
             $hojas[] = $hoja;
         }
         $workbook['hojas'] = $hojas;
 
         return $workbook;
+    }
+
+    /**
+     * @param  array<string, mixed>  $hoja
+     * @param  array<string, mixed>  $preview
+     * @return array{score: int, nivel: string, motivos: array<int, string>, requiere_asistente: bool}
+     */
+    public function computeCalidad(array $hoja, array $preview = []): array
+    {
+        $motivos = [];
+        $score = 0;
+        $sp = $hoja['sp_codigo'] ?? null;
+        $parseado = (bool) ($hoja['parseado'] ?? false);
+        $filas = (int) ($hoja['filas_detectadas'] ?? 0);
+        $importable = $sp && $this->isImportable((string) $sp) && $parseado;
+
+        if ($importable) {
+            $score += 30;
+        } elseif (! $sp) {
+            $motivos[] = 'Sin SP detectado → use Ajustar mapeo';
+        } elseif (! $parseado) {
+            $error = (string) ($hoja['error'] ?? 'SP detectado pero sin datos parseables');
+            $motivos[] = str_contains(mb_strtolower($error), 'mapeo')
+                ? $error
+                : $error.' → use Ajustar mapeo';
+        } else {
+            $motivos[] = 'SP no habilitado para importación de datos';
+        }
+
+        $contexto = $preview['workbook']['contexto'] ?? [];
+        $codigo = $hoja['codigo_planilla'] ?? $contexto['codigo_planilla'] ?? null;
+        $estId = $preview['establecimiento_id'] ?? null;
+        if ($estId || ($codigo && $this->resolveEstablecimiento((string) $codigo))) {
+            $score += 20;
+        } else {
+            $motivos[] = 'Establecimiento no resuelto';
+        }
+
+        $mes = $hoja['periodo_mes'] ?? $contexto['periodo_mes'] ?? $preview['periodo_mes'] ?? null;
+        $anio = $hoja['periodo_anio'] ?? $contexto['periodo_anio'] ?? $preview['periodo_anio'] ?? null;
+        if ($mes && $anio) {
+            $score += 15;
+        } else {
+            $motivos[] = 'Período incompleto';
+        }
+
+        if ($filas > 0) {
+            $score += 15;
+        } elseif ($parseado) {
+            $motivos[] = '0 filas con datos';
+        }
+
+        $enlazadas = (int) ($hoja['prestaciones_enlazadas'] ?? 0);
+        $sinMatch = (int) ($hoja['prestaciones_sin_match'] ?? 0);
+        $totalMatch = $enlazadas + $sinMatch;
+        if ($totalMatch > 0) {
+            $pct = ($enlazadas / $totalMatch) * 100;
+            if ($pct >= 90) {
+                $score += 20;
+            } elseif ($pct >= 70) {
+                $score += 10;
+                $motivos[] = 'Matching parcial ('.round($pct).'%)';
+            } else {
+                $motivos[] = 'Muchas filas sin match ('.round($pct).'% enlazadas)';
+            }
+        } elseif ($filas > 0 && $importable) {
+            // matriz/nominativo sin matching de prestaciones
+            $score += 20;
+        }
+
+        if ($sinMatch > 0 && $enlazadas === 0 && $filas > 0) {
+            $motivos[] = 'Ninguna fila enlazada → revise matching en Detalle';
+        }
+
+        if (! $parseado || $filas === 0) {
+            $nivel = 'fallido';
+            $score = min($score, 40);
+        } elseif ($score >= 80) {
+            $nivel = 'alto';
+        } elseif ($score >= 55) {
+            $nivel = 'medio';
+        } else {
+            $nivel = 'bajo';
+        }
+
+        $requiere = in_array($nivel, ['bajo', 'fallido'], true)
+            || ! $sp
+            || ! $parseado
+            || $filas === 0;
+
+        return [
+            'score' => $score,
+            'nivel' => $nivel,
+            'motivos' => array_values(array_unique($motivos)),
+            'requiere_asistente' => $requiere,
+        ];
+    }
+
+    private function persistUpload(UploadedFile $file, string $token): string
+    {
+        $dir = storage_path('app/bioestadistica/sp-import-tmp');
+        if (! is_dir($dir)) {
+            mkdir($dir, 0775, true);
+        }
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'xlsx');
+        if (! in_array($ext, ['xls', 'xlsx'], true)) {
+            $ext = 'xlsx';
+        }
+        $path = $dir.DIRECTORY_SEPARATOR.$token.'.'.$ext;
+        if (! copy($file->getRealPath(), $path)) {
+            throw ValidationException::withMessages([
+                'archivo' => 'No se pudo guardar una copia temporal del archivo para el asistente de mapeo.',
+            ]);
+        }
+
+        return $path;
+    }
+
+    private function forgetTempFile(?string $path): void
+    {
+        if (! is_string($path) || $path === '') {
+            return;
+        }
+        $root = realpath(storage_path('app/bioestadistica/sp-import-tmp'));
+        $real = realpath($path);
+        if ($root && $real && str_starts_with($real, $root) && is_file($real)) {
+            @unlink($real);
+        }
     }
 
     /**
@@ -975,13 +1350,63 @@ class SpPlanillaImportService
      */
     private function findSheet(array $preview, string $sheetTitle): ?array
     {
+        $needle = $this->normalizeSheetTitle($sheetTitle);
+        if ($needle === '') {
+            return null;
+        }
+
         foreach ($preview['workbook']['hojas'] ?? [] as $hoja) {
-            if (($hoja['titulo'] ?? '') === $sheetTitle) {
+            if ($this->normalizeSheetTitle((string) ($hoja['titulo'] ?? '')) === $needle) {
                 return $hoja;
             }
         }
 
         return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $preview
+     * @return array<string, mixed>|null
+     */
+    public function findSheetByIndex(array $preview, int $index): ?array
+    {
+        $hojas = array_values($preview['workbook']['hojas'] ?? []);
+
+        return $hojas[$index] ?? null;
+    }
+
+    /**
+     * Resuelve hoja por índice (preferido) o por título tolerante.
+     *
+     * @param  array<string, mixed>  $preview
+     * @return array{0: array<string, mixed>, 1: string}|null  [hoja, titulo_real]
+     */
+    public function resolveSheet(array $preview, ?string $sheetTitle, ?int $sheetIndex = null): ?array
+    {
+        if ($sheetIndex !== null && $sheetIndex >= 0) {
+            $hoja = $this->findSheetByIndex($preview, $sheetIndex);
+            if ($hoja) {
+                return [$hoja, (string) ($hoja['titulo'] ?? '')];
+            }
+        }
+
+        if (is_string($sheetTitle) && $sheetTitle !== '') {
+            $hoja = $this->findSheet($preview, $sheetTitle);
+            if ($hoja) {
+                return [$hoja, (string) ($hoja['titulo'] ?? $sheetTitle)];
+            }
+        }
+
+        return null;
+    }
+
+    private function normalizeSheetTitle(string $title): string
+    {
+        $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $title = str_replace("\u{00A0}", ' ', $title);
+        $title = preg_replace('/\s+/u', ' ', trim($title)) ?? trim($title);
+
+        return Str::upper(Str::ascii($title));
     }
 
     private function resolveEstablecimiento(?string $codigo): ?Establecimiento
@@ -1041,15 +1466,37 @@ class SpPlanillaImportService
         return $lookup;
     }
 
-    private function assertUserCanUseEstablecimiento(User $user, ?int $establecimientoId): void
+    private function assertUserCanCapture(User $user, ?int $establecimientoId, ?Formulario $formulario = null): void
     {
-        if ($establecimientoId === null || Record::userHasGlobalAccess($user)) {
-            return;
+        $scope = app(CaptureScopeService::class);
+        $scope->assertCanUseEstablecimiento($user, $establecimientoId);
+
+        if ($establecimientoId !== null && $formulario !== null) {
+            $scope->validateCanCapture($user, (int) $formulario->id, $establecimientoId);
         }
-        if (! in_array($establecimientoId, Record::assignedEstablishmentIds($user), true)) {
-            throw ValidationException::withMessages([
-                'establecimiento_id' => 'No tiene asignado el establecimiento detectado en la planilla.',
-            ]);
-        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $preview
+     * @return array<string, string|null>
+     */
+    private function importOriginPayload(array $preview): array
+    {
+        $archivo = trim((string) ($preview['archivo'] ?? ''));
+        $hoja = trim((string) ($preview['hoja_activa'] ?? ''));
+
+        return [
+            'origen_carga' => Record::ORIGEN_IMPORTACION_SP,
+            'import_archivo' => $archivo !== '' ? Str::limit($archivo, 255, '') : null,
+            'import_hoja' => $hoja !== '' ? Str::limit($hoja, 255, '') : null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $preview
+     */
+    private function stampImportOrigin(Record $record, array $preview): void
+    {
+        $record->update($this->importOriginPayload($preview));
     }
 }

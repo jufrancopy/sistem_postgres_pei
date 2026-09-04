@@ -33,8 +33,6 @@
     };
 
     $bioDashboard = $isActive('bioestadistica.dashboard', 'bioestadistica', 'bioestadistica/dashboard');
-    $bioFormularios = $isActive('bioestadistica.formularios.*', 'bioestadistica.secciones.*', 'bioestadistica.fields.*', 'bioestadistica/formularios*', 'bioestadistica/secciones*', 'bioestadistica/campos*');
-    $bioVariables = $isActive('bioestadistica.diccionario.*', 'bioestadistica/diccionario*');
     $bioPendientes = $isActive('bioestadistica.captura.pending', 'bioestadistica/captura/pendientes*');
     $bioSeguimiento = $isActive('bioestadistica.seguimiento.*', 'bioestadistica/seguimiento*');
     $bioCarga = $bioPendientes ? '' : $isActive(
@@ -44,14 +42,35 @@
         'bioestadistica/captura-asignaciones*',
         'bioestadistica/hospitalizacion*'
     );
-    $bioIndicadores = $isActive('bioestadistica.indicadores.*', 'bioestadistica/indicadores*');
     $bioReportes = $isActive('bioestadistica.reportes.*', 'bioestadistica/reportes*');
-    $bioTableros = $isActive('bioestadistica.dashboards.*', 'bioestadistica/dashboards*');
-    $bioImportaciones = $isActive('bioestadistica.importaciones.*', 'bioestadistica/importaciones*');
-    $bioAuditoria = $isActive('bioestadistica.auditoria.*', 'bioestadistica/auditoria*');
-    $bioGeografia = $isActive('bioestadistica.geografia.*', 'bioestadistica/geografia*');
-    $bioEstructura = $isActive('bioestadistica.estructura.*', 'bioestadistica/estructura*');
-    $bioClasificaciones = $isActive('bioestadistica.clasificaciones.*', 'bioestadistica/clasificaciones*');
+    $bioConfiguraciones = $isActive(
+        'bioestadistica.configuraciones.*',
+        'bioestadistica.formularios.*',
+        'bioestadistica.secciones.*',
+        'bioestadistica.fields.*',
+        'bioestadistica.diccionario.*',
+        'bioestadistica.indicadores.*',
+        'bioestadistica.dashboards.*',
+        'bioestadistica.importaciones.*',
+        'bioestadistica.auditoria.*',
+        'bioestadistica.geografia.*',
+        'bioestadistica.estructura.*',
+        'bioestadistica.clasificaciones.*',
+        'bioestadistica/formularios*',
+        'bioestadistica/secciones*',
+        'bioestadistica/campos*',
+        'bioestadistica/diccionario*',
+        'bioestadistica/indicadores*',
+        'bioestadistica/dashboards*',
+        'bioestadistica/importaciones*',
+        'bioestadistica/auditoria*',
+        'bioestadistica/geografia*',
+        'bioestadistica/estructura*',
+        'bioestadistica/clasificaciones*',
+        'bioestadistica/configuraciones*'
+    );
+    $bioConfigVisible = auth()->check()
+        && \App\Application\Bioestadistica\BioestadisticaConfigNavigation::hasVisibleTabs(auth()->user());
 @endphp
 @php
     $sysLogoUrl  = \App\Models\HomeConfiguration::getSetting('logo_url');
@@ -386,57 +405,13 @@
                                         </a>
                                     </li>
                                     @endcan
-                                    @can('bio.dashboard.view')
-                                    <li class="nav-item {{ $bioTableros }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.dashboards.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">TB</span><span class="sidebar-normal">Dashboards</span>
+                                    @if($bioConfigVisible)
+                                    <li class="nav-item {{ $bioConfiguraciones }}">
+                                        <a class="nav-link" href="{{ route('bioestadistica.configuraciones.index') }}">
+                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">CF</span><span class="sidebar-normal">Configuraciones</span>
                                         </a>
                                     </li>
-                                    @endcan
-                                    <li class="nav-item {{ $bioFormularios }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.formularios.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">FR</span><span class="sidebar-normal">Formularios</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ $bioVariables }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.diccionario.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">VA</span><span class="sidebar-normal">Variables</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ $bioIndicadores }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.indicadores.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">IN</span><span class="sidebar-normal">Indicadores</span>
-                                        </a>
-                                    </li>
-                                    @can('bio.import.view')
-                                    <li class="nav-item {{ $bioImportaciones }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.importaciones.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">IM</span><span class="sidebar-normal">Importaciones</span>
-                                        </a>
-                                    </li>
-                                    @endcan
-                                    @can('bio.audit.view')
-                                    <li class="nav-item {{ $bioAuditoria }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.auditoria.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">AU</span><span class="sidebar-normal">Auditoría</span>
-                                        </a>
-                                    </li>
-                                    @endcan
-                                    <li class="nav-item {{ $bioGeografia }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.geografia.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">ES</span><span class="sidebar-normal">Establecimientos</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ $bioEstructura }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.estructura.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">DS</span><span class="sidebar-normal">Deptos. y servicios</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item {{ $bioClasificaciones }}">
-                                        <a class="nav-link" href="{{ route('bioestadistica.clasificaciones.index') }}">
-                                            <span class="sidebar-mini" style="color: #d97706; font-weight: bold;">CL</span><span class="sidebar-normal">Clasificaciones</span>
-                                        </a>
-                                    </li>
+                                    @endif
                                 </ul>
                             </div>
                         </li>

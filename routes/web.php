@@ -267,6 +267,9 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/dashboard', 'Admin\Bioestadistica\BioestadisticaDashboardController@index')
             ->middleware('permission:bio.dashboard.view');
 
+        Route::get('/configuraciones', 'Admin\Bioestadistica\ConfiguracionesController@index')
+            ->name('configuraciones.index');
+
         Route::get('/auditoria', 'Admin\Bioestadistica\AuditoriaController@index')
             ->middleware('permission:bio.audit.view')->name('auditoria.index');
         Route::get('/auditoria/datatable', 'Admin\Bioestadistica\AuditoriaController@datatable')
@@ -333,9 +336,13 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.catalog.delete')->name('diccionario.detalles.destroy');
         Route::post('/diccionario/detalles/{detalle}/prestaciones', 'Admin\Bioestadistica\DiccionarioController@storePrestacion')
             ->middleware('permission:bio.catalog.update')->name('diccionario.prestaciones.store');
-        Route::put('/diccionario/prestaciones/{prestacion}', 'Admin\Bioestadistica\DiccionarioController@updatePrestacion')
+        Route::post('/diccionario/detalles/{detalle}/vincular', 'Admin\Bioestadistica\DiccionarioController@linkPrestacion')
+            ->middleware('permission:bio.catalog.update')->name('diccionario.prestaciones.link');
+        Route::get('/diccionario/detalles/{detalle}/catalogo-buscar', 'Admin\Bioestadistica\DiccionarioController@searchLinkable')
+            ->middleware('permission:bio.catalog.view')->name('diccionario.catalogo.buscar');
+        Route::put('/diccionario/puente/{bridge}', 'Admin\Bioestadistica\DiccionarioController@updatePrestacion')
             ->middleware('permission:bio.catalog.update')->name('diccionario.prestaciones.update');
-        Route::delete('/diccionario/prestaciones/{prestacion}', 'Admin\Bioestadistica\DiccionarioController@destroyPrestacion')
+        Route::delete('/diccionario/puente/{bridge}', 'Admin\Bioestadistica\DiccionarioController@destroyPrestacion')
             ->middleware('permission:bio.catalog.delete')->name('diccionario.prestaciones.destroy');
 
         Route::get('/formularios', 'Admin\Bioestadistica\FormularioController@index')
@@ -379,6 +386,10 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.record.create')->name('captura.import.analyze');
         Route::get('/captura/importar/resumen', 'Admin\Bioestadistica\SpPlanillaImportController@summary')
             ->middleware('permission:bio.record.create')->name('captura.import.summary');
+        Route::get('/captura/importar/mapear', 'Admin\Bioestadistica\SpPlanillaImportController@map')
+            ->middleware('permission:bio.record.create')->name('captura.import.map');
+        Route::post('/captura/importar/mapear', 'Admin\Bioestadistica\SpPlanillaImportController@mapApply')
+            ->middleware('permission:bio.record.create')->name('captura.import.map.apply');
         Route::get('/captura/importar/vista-previa', 'Admin\Bioestadistica\SpPlanillaImportController@preview')
             ->middleware('permission:bio.record.create')->name('captura.import.preview');
         Route::post('/captura/importar/confirmar', 'Admin\Bioestadistica\SpPlanillaImportController@confirm')
@@ -401,10 +412,19 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.record.approve')->name('captura.approve');
         Route::post('/captura/{record}/objetar', 'Admin\Bioestadistica\CapturaController@reject')
             ->middleware('permission:bio.record.approve')->name('captura.reject');
-        Route::get('/captura-asignaciones', 'Admin\Bioestadistica\CapturaController@assignments')
-            ->middleware('permission:bio.record.approve')->name('captura.assignments');
+        Route::get('/captura-asignaciones', fn () => redirect()->route('bioestadistica.asignaciones.index'))
+            ->middleware('permission:bio.assignment.manage')->name('captura.assignments');
         Route::put('/captura-asignaciones/{user}', 'Admin\Bioestadistica\CapturaController@updateAssignments')
-            ->middleware('permission:bio.record.approve')->name('captura.assignments.update');
+            ->middleware('permission:bio.assignment.manage')->name('captura.assignments.update');
+
+        Route::get('/asignaciones', 'Admin\Bioestadistica\AsignacionesCapturaController@index')
+            ->middleware('permission:bio.assignment.manage')->name('asignaciones.index');
+        Route::post('/asignaciones', 'Admin\Bioestadistica\AsignacionesCapturaController@store')
+            ->middleware('permission:bio.assignment.manage')->name('asignaciones.store');
+        Route::put('/asignaciones/{asignacion}', 'Admin\Bioestadistica\AsignacionesCapturaController@update')
+            ->middleware('permission:bio.assignment.manage')->name('asignaciones.update');
+        Route::delete('/asignaciones/{asignacion}', 'Admin\Bioestadistica\AsignacionesCapturaController@destroy')
+            ->middleware('permission:bio.assignment.manage')->name('asignaciones.destroy');
 
         Route::get('/seguimiento', 'Admin\Bioestadistica\SeguimientoController@index')
             ->middleware('permission:bio.record.view')->name('seguimiento.index');

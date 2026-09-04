@@ -26,6 +26,7 @@ class BioestadisticaRolesSeeder extends Seeder
             'bio.import.view', 'bio.import.execute',
             'bio.hosp.view', 'bio.hosp.manage', 'bio.hosp.view_pii', 'bio.hosp.export',
             'bio.audit.view',
+            'bio.assignment.manage',
         ];
 
         foreach ($permissions as $name) {

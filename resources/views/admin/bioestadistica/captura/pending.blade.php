@@ -116,7 +116,7 @@
                                                                     <input type="hidden" name="estructura_servicio_id" value="{{ $slice['unidad']->servicio_id }}">
                                                                 @endif
                                                                 <button class="btn btn-outline-info btn-sm" type="submit">
-                                                                    {{ ($formulario->codigo === 'SP10' || $formulario->layout_type === 'nominativo') ? 'Cargar planilla' : 'Iniciar carga' }}
+                                                                    Iniciar carga
                                                                 </button>
                                                             </form>
                                                         @endcan

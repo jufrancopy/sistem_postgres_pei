@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Bioestadistica;
 
 use App\Application\Bioestadistica\Audit\AuditService;
+use App\Application\Bioestadistica\Capture\CaptureScopeService;
 use App\Application\Bioestadistica\Hospitalization\HospitalizationService;
 use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
 use App\Application\Bioestadistica\RecordCaptureService;
@@ -30,6 +31,8 @@ class CapturaController extends Controller
 {
     use BuildsCaptureNavigator;
     use RespondsWithDataTables;
+
+    public function __construct(private CaptureScopeService $captureScope) {}
 
     public function index(Request $request): View
     {
@@ -77,12 +80,17 @@ class CapturaController extends Controller
             ->values();
 
         return view('admin.bioestadistica.captura.index', [
-            'formularios' => Formulario::where('estado', 'activo')->ordenSp()->get(),
+            'formularios' => $this->allowedFormularios(),
             'establecimientos' => $this->allowedEstablishments(),
             'months' => $this->months(),
             'groups' => $groups,
             'periodo_anio' => $periodoAnio,
             'periodo_mes' => $periodoMes,
+            'openNuevaCargaModal' => $request->boolean('nueva'),
+            'selectedEstablecimientoId' => $request->integer('establecimiento_id') ?: old('establecimiento_id'),
+            'selectedFormularioId' => $request->integer('formulario_id') ?: old('formulario_id'),
+            'selectedAnio' => $request->integer('periodo_anio') ?: old('periodo_anio', $periodoAnio),
+            'selectedMes' => $request->integer('periodo_mes') ?: old('periodo_mes', $periodoMes),
         ]);
     }
 
@@ -140,6 +148,9 @@ class CapturaController extends Controller
                     'departamento' => e($record->estructuraDepartamento?->nombre ?? '—'),
                     'servicio' => e($record->estructuraServicio?->nombre ?? '—'),
                     'periodo' => e($periodo),
+                    'origen' => $record->isImported()
+                        ? '<span class="badge badge-info" title="'.e($record->importProcedenciaLabel() ?? '').'">Importación</span>'
+                        : '<span class="badge badge-light text-dark border">Manual</span>',
                     'estado' => '<span class="badge '.$badgeClass.'">'.$badge.'</span>',
                     'actualizado' => e(optional($record->updated_at)->format('d/m/Y H:i') ?? '—'),
                     'acciones' => $action,
@@ -150,26 +161,25 @@ class CapturaController extends Controller
         );
     }
 
-    public function create(Request $request): View
+    public function create(Request $request): RedirectResponse
     {
         $this->ensureCanCapture();
 
-        return view('admin.bioestadistica.captura.create', [
-            'formularios' => Formulario::where('estado', 'activo')->ordenSp()->get(),
-            'establecimientos' => $this->allowedEstablishments(),
-            'months' => $this->months(),
-            'selectedEstablecimientoId' => $request->integer('establecimiento_id') ?: old('establecimiento_id'),
-            'selectedFormularioId' => $request->integer('formulario_id') ?: old('formulario_id'),
-            'selectedAnio' => $request->integer('periodo_anio') ?: old('periodo_anio', now()->year),
-            'selectedMes' => $request->integer('periodo_mes') ?: old('periodo_mes', now()->subMonth()->month),
-        ]);
+        return redirect()->route('bioestadistica.captura.index', array_filter([
+            'nueva' => 1,
+            'establecimiento_id' => $request->integer('establecimiento_id') ?: null,
+            'formulario_id' => $request->integer('formulario_id') ?: null,
+            'periodo_anio' => $request->integer('periodo_anio') ?: null,
+            'periodo_mes' => $request->integer('periodo_mes') ?: null,
+        ], fn ($value) => $value !== null && $value !== ''));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $this->ensureCanCapture();
         $data = $this->validateContext($request);
         $this->ensureAllowedEstablishment((int) $data['establecimiento_id']);
+        $this->captureScope->assertCanCapture($request->user(), (int) $data['formulario_id'], (int) $data['establecimiento_id']);
         $formulario = Formulario::findOrFail($data['formulario_id']);
         abort_unless(
             Establecimiento::whereKey($data['establecimiento_id'])->whereNotNull('distrito_id')->exists(),
@@ -190,6 +200,7 @@ class CapturaController extends Controller
         try {
             $record = Record::create($lookup + [
                 'estado' => Record::ESTADO_BORRADOR,
+                'origen_carga' => Record::ORIGEN_MANUAL,
                 'created_by' => $request->user()->id,
                 'updated_by' => $request->user()->id,
             ]);
@@ -216,7 +227,6 @@ class CapturaController extends Controller
     {
         $year = $request->integer('periodo_anio', now()->subMonth()->year);
         $month = $request->integer('periodo_mes', now()->subMonth()->month);
-        $forms = Formulario::where('estado', 'activo')->ordenSp()->get();
         $establishments = $this->allowedEstablishments()->filter(fn ($item) => $item->distrito_id);
         $establishments->load(['unidades.departamento', 'unidades.servicio']);
         $existing = Record::query()
@@ -227,6 +237,11 @@ class CapturaController extends Controller
 
         $rows = collect();
         foreach ($establishments as $establecimiento) {
+            $forms = $this->captureScope->allowedFormularios($request->user(), (int) $establecimiento->id);
+            if ($forms->isEmpty()) {
+                continue;
+            }
+
             $unidades = $establecimiento->unidades;
             $slices = $unidades->isEmpty() ? collect([null]) : $unidades;
 
@@ -282,7 +297,7 @@ class CapturaController extends Controller
     {
         $this->ensureCanView($record);
         $record->load([
-            'formulario.secciones.fields.detalle.prestaciones',
+            'formulario.secciones.fields.detalle.catalogoItems',
             'establecimiento.distrito.departamento',
             'establecimiento.unidades.departamento',
             'establecimiento.unidades.servicio',
@@ -486,18 +501,11 @@ class CapturaController extends Controller
         return back()->with('success', 'Registro objetado y devuelto a edición.');
     }
 
-    public function assignments(): View
+    public function assignments(): RedirectResponse
     {
         abort_unless($this->managesAssignments(), 403);
 
-        return view('admin.bioestadistica.captura.assignments', [
-            'users' => User::role('Digitador Bioestadística')->orderBy('name')->get(),
-            'establecimientos' => Establecimiento::with('distrito.departamento')->orderBy('nombre')->get(),
-            'assignments' => UsuarioEstablecimiento::query()
-                ->get()
-                ->groupBy('user_id')
-                ->map(fn ($rows) => $rows->pluck('establecimiento_id')->all()),
-        ]);
+        return redirect()->route('bioestadistica.asignaciones.index');
     }
 
     public function updateAssignments(Request $request, User $user, AuditService $audit): RedirectResponse
@@ -526,15 +534,33 @@ class CapturaController extends Controller
         return back()->with('success', 'Asignaciones actualizadas.');
     }
 
-    private function redirectToCapture(Record $record, string $level, string $message): RedirectResponse
+    private function redirectToCapture(Record $record, string $level, string $message): RedirectResponse|JsonResponse
+    {
+        if ($this->requestExpectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'level' => $level,
+                'message' => $message,
+                'redirect' => $this->captureRedirectUrl($record),
+            ], $level === 'success' ? 201 : 200);
+        }
+
+        return redirect()->to($this->captureRedirectUrl($record))->with($level, $message);
+    }
+
+    private function captureRedirectUrl(Record $record): string
     {
         $record->loadMissing('formulario');
         if ($record->formulario->codigo === 'SP10' || $record->formulario->layout_type === 'nominativo') {
-            return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', $record->spreadsheetParams())
-                ->with($level, $message);
+            return route('bioestadistica.hospitalizacion.spreadsheet', $record->spreadsheetParams());
         }
 
-        return redirect()->route('bioestadistica.captura.edit', $record)->with($level, $message);
+        return route('bioestadistica.captura.edit', $record);
+    }
+
+    private function requestExpectsJson(): bool
+    {
+        return request()->expectsJson() || request()->ajax();
     }
 
     private function validateContext(Request $request): array
@@ -610,7 +636,7 @@ class CapturaController extends Controller
 
     private function managesAssignments(): bool
     {
-        return request()->user()->hasAnyRole(['Administrador', 'Analista de Bioestadística']);
+        return request()->user()->can('bio.assignment.manage');
     }
 
     private function allowedEstablishments()
@@ -618,19 +644,24 @@ class CapturaController extends Controller
         return Establecimiento::query()
             ->with('distrito.departamento')
             ->when(
-                ! Record::userHasGlobalAccess(request()->user()),
-                fn ($query) => $query->whereIn('id', Record::assignedEstablishmentIds(request()->user()))
+                ! $this->captureScope->userHasGlobalAccess(request()->user()),
+                fn ($query) => $query->whereIn('id', $this->captureScope->assignedEstablishmentIds(request()->user()))
             )
             ->orderBy('nombre')
             ->get();
     }
 
+    private function allowedFormularios(?int $establecimientoId = null)
+    {
+        return $this->captureScope->allowedFormularios(request()->user(), $establecimientoId);
+    }
+
     private function ensureAllowedEstablishment(int $id): void
     {
-        if (Record::userHasGlobalAccess(request()->user())) {
+        if ($this->captureScope->userHasGlobalAccess(request()->user())) {
             return;
         }
-        if (! in_array($id, Record::assignedEstablishmentIds(request()->user()), true)) {
+        if (! in_array($id, $this->captureScope->assignedEstablishmentIds(request()->user()), true)) {
             abort(403, 'No tiene asignado este establecimiento.');
         }
     }
@@ -645,6 +676,7 @@ class CapturaController extends Controller
     {
         $this->authorize('create', Record::class);
         abort_unless(request()->user()->can('bio.record.create'), 403);
+        abort_unless($this->captureScope->hasAnyCaptureScope(request()->user()), 403, 'No tiene establecimientos ni formularios asignados para capturar.');
     }
 
     private function ensureCanEdit(Record $record): void

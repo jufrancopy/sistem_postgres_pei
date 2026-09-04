@@ -32,18 +32,24 @@
         <div class="d-flex justify-content-between align-items-center bio-toolbar mb-3">
             <div class="d-flex bio-toolbar">
                 @can('bio.record.create')
-                    <a href="{{ route('bioestadistica.captura.create') }}" class="btn btn-info btn-sm">
-                        <i class="material-icons">add</i> Nueva carga
-                    </a>
+                    @if($establecimientos->isEmpty())
+                        <button type="button" class="btn btn-info btn-sm" disabled title="No tiene establecimientos asignados">
+                            <i class="material-icons">add</i> Nueva carga
+                        </button>
+                    @else
+                        <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modal-nueva-carga">
+                            <i class="material-icons">add</i> Nueva carga
+                        </button>
+                    @endif
                     <a href="{{ route('bioestadistica.captura.import.index') }}" class="btn btn-outline-info btn-sm">
                         <i class="material-icons">upload_file</i> Importar
                     </a>
                 @endcan
                 <a href="{{ route('bioestadistica.captura.pending') }}" class="btn btn-outline-warning btn-sm">Períodos pendientes</a>
             </div>
-            @if(auth()->user()->hasAnyRole(['Administrador', 'Analista de Bioestadística']))
-                <a href="{{ route('bioestadistica.captura.assignments') }}" class="btn btn-outline-info btn-sm">Asignar digitadores</a>
-            @endif
+            @can('bio.assignment.manage')
+                <a href="{{ route('bioestadistica.asignaciones.index') }}" class="btn btn-outline-info btn-sm">Asignar digitadores</a>
+            @endcan
         </div>
 
         <form method="GET" class="bio-filters">
@@ -127,6 +133,7 @@
                                         <th>Departamento</th>
                                         <th>Servicio</th>
                                         <th>Período del dato</th>
+                                        <th>Origen</th>
                                         <th>Estado</th>
                                         <th style="width:100px" class="text-right">Acciones</th>
                                     </tr>
@@ -138,6 +145,7 @@
                                         <td>{{ $record->estructuraDepartamento?->nombre ?? '—' }}</td>
                                         <td>{{ $record->estructuraServicio?->nombre ?? '—' }}</td>
                                         <td>{{ ($months[$record->periodo_mes] ?? $record->periodo_mes) }}/{{ $record->periodo_anio }}</td>
+                                        <td>@include('admin.bioestadistica.captura._origen_carga', ['record' => $record])</td>
                                         <td>
                                             <span class="badge {{ \App\Models\Bioestadistica\Record::estadoBadge($record->estado) }}">
                                                 {{ \App\Models\Bioestadistica\Record::estadoLabel($record->estado) }}
@@ -165,8 +173,183 @@
         @endforelse
     </div>
 </div>
+
+@can('bio.record.create')
+    @if($establecimientos->isNotEmpty())
+        @include('admin.bioestadistica.captura._modal-nueva-carga')
+    @endif
+@endcan
 @endsection
 
 @section('scripts')
 @include('admin.bioestadistica._siplan-scripts')
+@can('bio.record.create')
+@if($establecimientos->isNotEmpty())
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var modal = document.getElementById('modal-nueva-carga');
+    var form = document.getElementById('form-nueva-carga');
+    var establishmentSelect = document.getElementById('captura-establecimiento');
+    var corteGroup = document.getElementById('captura-corte-group');
+    var corteSelect = document.getElementById('captura-corte');
+    var errorsBox = document.getElementById('nueva-carga-errors');
+    var errorsList = document.getElementById('nueva-carga-errors-list');
+    var submitBtn = document.getElementById('btn-crear-carga');
+    var cancelBtn = modal ? modal.querySelector('[data-dismiss="modal"]') : null;
+    var selectedCorte = '{{ old('estructura_servicio_id') }}';
+    var cortesUrl = '{{ route('bioestadistica.estructura.cortes') }}';
+    var shouldOpen = @json($openNuevaCargaModal ?? false);
+
+    function clearErrors() {
+        errorsBox.classList.add('d-none');
+        errorsList.innerHTML = '';
+    }
+
+    function showErrors(errors) {
+        errorsList.innerHTML = '';
+        Object.keys(errors).forEach(function (key) {
+            (errors[key] || []).forEach(function (message) {
+                var li = document.createElement('li');
+                li.textContent = message;
+                errorsList.appendChild(li);
+            });
+        });
+        errorsBox.classList.remove('d-none');
+    }
+
+    function setButtonState(state) {
+        if (!submitBtn) {
+            return;
+        }
+        submitBtn.disabled = state !== 'idle';
+        if (cancelBtn) {
+            cancelBtn.disabled = state !== 'idle';
+        }
+        submitBtn.querySelector('.btn-label').classList.toggle('d-none', state !== 'idle');
+        submitBtn.querySelector('.btn-spinner').classList.toggle('d-none', state !== 'creating');
+        submitBtn.querySelector('.btn-redirect').classList.toggle('d-none', state !== 'redirecting');
+    }
+
+    function initModalSelect2() {
+        if (!window.jQuery || !window.jQuery.fn.select2 || !modal) {
+            return;
+        }
+        window.jQuery(modal).find('.bio-select2-modal').each(function () {
+            var $el = window.jQuery(this);
+            if ($el.hasClass('select2-hidden-accessible')) {
+                $el.select2('destroy');
+            }
+            $el.select2({
+                width: '100%',
+                dropdownParent: window.jQuery(modal),
+                placeholder: $el.data('placeholder') || 'Seleccione',
+                allowClear: !!$el.data('allow-clear')
+            });
+        });
+    }
+
+    function loadCortes() {
+        if (!establishmentSelect || !corteSelect) {
+            return;
+        }
+        var establishmentId = establishmentSelect.value;
+        corteSelect.innerHTML = '<option value="">Cargando...</option>';
+        corteSelect.required = false;
+        if (!establishmentId) {
+            corteGroup.style.display = 'none';
+            corteSelect.innerHTML = '<option value="">Seleccione establecimiento</option>';
+            return;
+        }
+        fetch(cortesUrl + '?establecimiento_id=' + encodeURIComponent(establishmentId), {
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(function (response) { return response.json(); })
+            .then(function (payload) {
+                var cortes = payload.data || [];
+                if (cortes.length === 0) {
+                    corteGroup.style.display = 'none';
+                    corteSelect.innerHTML = '<option value="">Sin corte</option>';
+                    corteSelect.required = false;
+                    return;
+                }
+                corteGroup.style.display = '';
+                corteSelect.innerHTML = cortes.length > 1 ? '<option value="">Seleccione</option>' : '';
+                cortes.forEach(function (corte) {
+                    var option = document.createElement('option');
+                    option.value = corte.servicio_id;
+                    option.textContent = corte.etiqueta;
+                    option.selected = String(corte.servicio_id) === String(selectedCorte) || cortes.length === 1;
+                    corteSelect.appendChild(option);
+                });
+                corteSelect.required = true;
+            });
+    }
+
+    if (establishmentSelect) {
+        if (window.jQuery) {
+            window.jQuery(establishmentSelect).on('change', loadCortes);
+        } else {
+            establishmentSelect.addEventListener('change', loadCortes);
+        }
+    }
+
+    if (window.jQuery && modal) {
+        window.jQuery(modal).on('shown.bs.modal', function () {
+            setButtonState('idle');
+            initModalSelect2();
+            loadCortes();
+        });
+        if (shouldOpen) {
+            window.jQuery(modal).modal('show');
+        }
+    }
+
+    if (form) {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            clearErrors();
+            setButtonState('creating');
+            var redirecting = false;
+
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        return { ok: response.ok, status: response.status, data: data };
+                    });
+                })
+                .then(function (result) {
+                    if (result.ok && result.data.redirect) {
+                        redirecting = true;
+                        setButtonState('redirecting');
+                        window.location.href = result.data.redirect;
+                        return;
+                    }
+                    if (result.status === 422 && result.data.errors) {
+                        showErrors(result.data.errors);
+                        return;
+                    }
+                    var message = (result.data && result.data.message) || 'No se pudo crear la carga.';
+                    showErrors({ general: [message] });
+                })
+                .catch(function () {
+                    showErrors({ general: ['Error de conexión. Intente nuevamente.'] });
+                })
+                .finally(function () {
+                    if (!redirecting) {
+                        setButtonState('idle');
+                    }
+                });
+        });
+    }
+});
+</script>
+@endif
+@endcan
 @endsection
