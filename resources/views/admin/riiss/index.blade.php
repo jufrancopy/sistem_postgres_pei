@@ -2479,8 +2479,10 @@ function abrirModalMonitoreoAuditores() {
     }, 10000);
 }
 
+var _dtMonitoreoAuditores = null;
+
 function cargarListaTokensAuditores(isSilent) {
-    if (!isSilent) {
+    if (!isSilent && !_dtMonitoreoAuditores) {
         $('#tbodyMonitoreoAuditores').html('<tr><td colspan="6" class="text-center py-4 text-muted"><i class="fa fa-spinner fa-spin fa-2x mr-2"></i>Cargando accesos en tiempo real...</td></tr>');
     }
 
@@ -2504,6 +2506,10 @@ function cargarListaTokensAuditores(isSilent) {
 
             _cacheTokensAuditores = resp.data;
 
+            if ($.fn.DataTable.isDataTable('#tblMonitoreoAuditores')) {
+                $('#tblMonitoreoAuditores').DataTable().clear().destroy();
+            }
+
             if (resp.data.length === 0) {
                 $('#tbodyMonitoreoAuditores').html('<tr><td colspan="6" class="text-center py-5 text-muted"><i class="fa fa-info-circle fa-2x mb-2 d-block"></i>Aún no se han generado enlaces temporales para auditores.</td></tr>');
                 return;
@@ -2513,69 +2519,84 @@ function cargarListaTokensAuditores(isSilent) {
             resp.data.forEach(function(t) {
                 var badgeEstado = '';
                 if (t.estado_auditor === 'online') {
-                    badgeEstado = '<span class="badge badge-online-live px-2 py-1"><i class="fa fa-circle mr-1" style="font-size: 0.6rem;"></i> EN LÍNEA AHORA</span>';
+                    badgeEstado = '<span class="badge badge-online-live px-2 py-1"><i class="fa fa-circle mr-1" style="font-size: 0.55rem;"></i> EN LÍNEA</span>';
                 } else if (t.estado_auditor === 'desconectado') {
-                    badgeEstado = '<span class="badge badge-secondary px-2 py-1"><i class="fa fa-circle text-muted mr-1" style="font-size: 0.6rem;"></i> Desconectado</span>';
+                    badgeEstado = '<span class="badge badge-light border text-secondary px-2 py-1"><i class="fa fa-circle text-muted mr-1" style="font-size: 0.55rem;"></i> Desconectado</span>';
                 } else if (t.estado_auditor === 'pendiente') {
-                    badgeEstado = '<span class="badge badge-warning px-2 py-1 text-dark"><i class="fa fa-hourglass-start mr-1"></i> Pendiente Ingreso</span>';
+                    badgeEstado = '<span class="badge badge-warning text-dark px-2 py-1"><i class="fa fa-hourglass-start mr-1" style="font-size: 0.55rem;"></i> Pendiente</span>';
                 } else if (t.estado_auditor === 'revocado') {
-                    badgeEstado = '<span class="badge badge-danger px-2 py-1"><i class="fa fa-ban mr-1"></i> Revocado</span>';
+                    badgeEstado = '<span class="badge badge-danger px-2 py-1"><i class="fa fa-ban mr-1" style="font-size: 0.55rem;"></i> Revocado</span>';
                 } else {
-                    badgeEstado = '<span class="badge badge-light border text-muted px-2 py-1"><i class="fa fa-clock mr-1"></i> Expirado</span>';
+                    badgeEstado = '<span class="badge badge-secondary px-2 py-1"><i class="fa fa-clock mr-1" style="font-size: 0.55rem;"></i> Expirado</span>';
                 }
 
                 var ambitoBadge = t.es_global 
                     ? '<span class="badge badge-primary px-2 py-1 font-weight-bold" style="font-size:0.75rem;"><i class="fa fa-globe mr-1"></i> Red Nacional (Global)</span>' 
                     : '<span class="badge badge-info px-2 py-1 font-weight-bold" style="font-size:0.75rem;"><i class="fa fa-hospital mr-1"></i> ' + (t.establecimiento_id || '') + '</span> <div class="small text-dark font-weight-600 mt-1">' + (t.establecimiento_nombre || '') + '</div>';
 
+                var accionesHtml = '<div class="d-inline-flex align-items-center justify-content-center flex-wrap" style="gap: 5px;">' +
+                    '<a href="' + t.url_whatsapp + '" target="_blank" class="circle-btn shadow-sm" style="background:#22c55e; color:#ffffff;" title="Reenviar WhatsApp">' +
+                        '<i class="fab fa-whatsapp"></i>' +
+                    '</a>' +
+                    '<button type="button" class="circle-btn shadow-sm" style="background:#e0f2fe; color:#0284c7;" title="Copiar Enlace Directo" onclick="navigator.clipboard.writeText(\'' + t.url_portal + '\'); mostrarToast(\'Enlace copiado al portapapeles\', \'info\');">' +
+                        '<i class="fa fa-link"></i>' +
+                    '</button>' +
+                    '<a href="' + t.url_portal + '" target="_blank" class="circle-btn shadow-sm" style="background:#f1f5f9; color:#475569;" title="Abrir Portal Auditor">' +
+                        '<i class="fa fa-external-link-alt"></i>' +
+                    '</a>' +
+                    (!t.is_expirado && t.estado_auditor !== 'revocado' ? 
+                        '<button type="button" class="circle-btn shadow-sm" style="background:#fef3c7; color:#d97706;" title="Extender +24 Horas" onclick="extenderAccesoAuditor(' + t.id + ', 24)">' +
+                            '<i class="fa fa-clock"></i>' +
+                        '</button>' +
+                        '<button type="button" class="circle-btn shadow-sm" style="background:#fee2e2; color:#dc2626;" title="Revocar Acceso Inmediatamente" onclick="revocarAccesoAuditor(' + t.id + ')">' +
+                            '<i class="fa fa-ban"></i>' +
+                        '</button>'
+                    :
+                        '<button type="button" class="circle-btn shadow-sm" style="background:#dcfce7; color:#16a34a;" title="Reactivar +24 Horas" onclick="extenderAccesoAuditor(' + t.id + ', 24)">' +
+                            '<i class="fa fa-redo"></i>' +
+                        '</button>'
+                    ) +
+                '</div>';
+
                 html += '<tr>' +
                     '<td>' +
                         '<div class="font-weight-bold text-dark font-size-1">' + (t.destinatario || 'Auditor Externo') + '</div>' +
-                        '<div class="small text-muted mt-1"><i class="fa fa-user-edit mr-1"></i>Generado por: ' + (t.creado_por_nombre || 'Sistema') + ' (' + t.created_at_texto + ')</div>' +
+                        '<div class="small text-muted mt-1"><i class="fa fa-user-edit mr-1"></i>Por: ' + (t.creado_por_nombre || 'Sistema') + ' <span class="d-none d-md-inline">(' + t.created_at_texto + ')</span></div>' +
                     '</td>' +
                     '<td>' + ambitoBadge + '</td>' +
-                    '<td class="text-center">' + badgeEstado + '</td>' +
-                    '<td>' +
+                    '<td class="text-center align-middle">' + badgeEstado + '</td>' +
+                    '<td class="align-middle">' +
                         '<div class="font-weight-600 text-dark small"><i class="fa fa-eye text-primary mr-1"></i> ' + t.visitas_count + ' visitas</div>' +
-                        '<div class="small text-muted mt-1" title="' + (t.ultimo_acceso_fecha || '') + '"><i class="fa fa-clock mr-1"></i> ' + t.ultimo_acceso_humano + '</div>' +
+                        '<div class="small text-muted" title="' + (t.ultimo_acceso_fecha || '') + '"><i class="fa fa-history mr-1"></i> ' + t.ultimo_acceso_humano + '</div>' +
                         '<div class="small text-muted" style="font-family: monospace; font-size: 0.72rem;">IP: ' + t.ip_ultimo_acceso + '</div>' +
                     '</td>' +
-                    '<td class="text-center">' +
+                    '<td class="text-center align-middle">' +
                         '<div class="font-weight-bold ' + (t.is_expirado ? 'text-danger' : 'text-success') + '">' + t.tiempo_restante_texto + '</div>' +
-                        '<div class="d-inline-flex align-items-center mt-1 p-1 bg-light rounded border" style="font-family: monospace; font-size: 0.8rem;">' +
+                        '<div class="d-inline-flex align-items-center mt-1 px-2 py-0 bg-light rounded border" style="font-family: monospace; font-size: 0.8rem;">' +
                             '<span class="mr-2 font-weight-bold text-dark">' + t.pin + '</span>' +
                             '<button type="button" class="btn btn-xs btn-link p-0 text-muted" title="Copiar PIN" onclick="navigator.clipboard.writeText(\'' + t.pin + '\'); mostrarToast(\'PIN copiado: ' + t.pin + '\', \'info\');"><i class="fa fa-copy"></i></button>' +
                         '</div>' +
                     '</td>' +
-                    '<td class="text-center">' +
-                        '<div class="d-flex align-items-center justify-content-center flex-wrap" style="gap: 4px;">' +
-                            '<a href="' + t.url_whatsapp + '" target="_blank" class="btn btn-xs btn-success" title="Reenviar por WhatsApp">' +
-                                '<i class="fab fa-whatsapp"></i>' +
-                            '</a>' +
-                            '<button type="button" class="btn btn-xs btn-outline-primary" title="Copiar Enlace Directo" onclick="navigator.clipboard.writeText(\'' + t.url_portal + '\'); mostrarToast(\'Enlace copiado al portapapeles\', \'success\');">' +
-                                '<i class="fa fa-link"></i>' +
-                            '</button>' +
-                            '<a href="' + t.url_portal + '" target="_blank" class="btn btn-xs btn-outline-info" title="Abrir Portal Auditor">' +
-                                '<i class="fa fa-external-link-alt"></i>' +
-                            '</a>' +
-                            (!t.is_expirado && t.estado_auditor !== 'revocado' ? 
-                                '<button type="button" class="btn btn-xs btn-outline-warning" title="Extender +24 Horas" onclick="extenderAccesoAuditor(' + t.id + ', 24)">' +
-                                    '<i class="fa fa-plus-circle"></i> +24h' +
-                                '</button>' +
-                                '<button type="button" class="btn btn-xs btn-outline-danger" title="Revocar Acceso Inmediatamente" onclick="revocarAccesoAuditor(' + t.id + ')">' +
-                                    '<i class="fa fa-ban"></i>' +
-                                '</button>'
-                            :
-                                '<button type="button" class="btn btn-xs btn-outline-success" title="Reactivar +24 Horas" onclick="extenderAccesoAuditor(' + t.id + ', 24)">' +
-                                    '<i class="fa fa-redo"></i> Reactivar' +
-                                '</button>'
-                            ) +
-                        '</div>' +
-                    '</td>' +
+                    '<td class="text-center align-middle">' + accionesHtml + '</td>' +
                 '</tr>';
             });
 
             $('#tbodyMonitoreoAuditores').html(html);
+
+            _dtMonitoreoAuditores = $('#tblMonitoreoAuditores').DataTable({
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+                language: {
+                    search: "🔍 Buscar:",
+                    lengthMenu: "Mostrar _MENU_ registros",
+                    zeroRecords: "No se encontraron auditores",
+                    info: "Mostrando _START_ a _END_ de _TOTAL_ auditores",
+                    infoEmpty: "0 auditores",
+                    infoFiltered: "(de _MAX_ totales)",
+                    paginate: { first: "«", last: "»", next: "›", previous: "‹" }
+                },
+                responsive: true
+            });
         }
     });
 }
