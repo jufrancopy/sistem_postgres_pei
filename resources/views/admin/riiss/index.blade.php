@@ -386,7 +386,7 @@
 
 {{-- Modal Editar Datos del Establecimiento --}}
 <div class="modal fade" id="modalEditarEstablecimiento" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header card-header-info" style="background:linear-gradient(135deg,#0f172a,#1e293b)">
                 <h5 class="modal-title text-white">
@@ -556,16 +556,53 @@
                         </div>
                     </div>
 
-                    <!-- Cartera de Servicios / Medicamentos -->
-                    <div class="col-md-12 mt-3 mb-2">
-                        <h6 class="font-weight-bold border-bottom pb-2 text-primary" style="color: #6366f1 !important;">
-                            <i class="fa fa-pills mr-1"></i> Cartera de Servicios y Medicamentos
-                        </h6>
-                        <small class="text-muted mb-2 d-block">Especialidades disponibles y medicamentos asignados para este establecimiento.</small>
+                    <!-- Cartera de Servicios / Medicamentos con DataTables -->
+                    <div class="col-md-12 mt-4 mb-2">
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                            <div>
+                                <h6 class="font-weight-bold mb-0" style="color: #4f46e5; font-size: 1.05rem;">
+                                    <i class="fa fa-pills mr-1"></i> Cartera de Servicios y Medicamentos
+                                </h6>
+                                <small class="text-muted">Catálogo de medicamentos y especialidades asignados a este establecimiento</small>
+                            </div>
+                            <div class="d-flex align-items-center" id="statsCarteraBadges">
+                                <span class="badge badge-primary px-3 py-2 mr-2" id="badgeTotalEsp" style="font-size: 0.82rem; border-radius: 20px;">0 Especialidades</span>
+                                <span class="badge badge-info px-3 py-2" id="badgeTotalMed" style="font-size: 0.82rem; border-radius: 20px;">0 Medicamentos</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-12 mb-3">
-                        <div id="accordionCarteraServicios" class="accordion">
-                            <!-- Se llena por JS -->
+                        <div class="card border shadow-none" style="background-color: #f8fafc; border-radius: 8px;">
+                            <div class="card-body p-3">
+                                <div class="row align-items-center mb-3">
+                                    <div class="col-md-6 col-lg-5">
+                                        <label class="small font-weight-bold text-muted mb-1 text-uppercase">
+                                            <i class="fa fa-filter mr-1 text-primary"></i> Filtrar por Especialidad:
+                                        </label>
+                                        <select id="filtroCarteraEspecialidad" class="form-control form-control-sm">
+                                            <option value="">Todas las Especialidades</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div id="contenedorTablaCartera">
+                                    <div class="table-responsive bg-white rounded border p-2">
+                                        <table class="table table-sm table-hover table-striped w-100" id="tablaCarteraMedicamentos">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th style="width: 25%;">Especialidad</th>
+                                                    <th style="width: 20%;">Código</th>
+                                                    <th style="width: 55%;">Medicamento / Descripción</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div id="sinCarteraAlert" style="display: none;" class="alert alert-light border py-3 small text-center text-muted">
+                                    <i class="fa fa-info-circle fa-2x mb-2 d-block text-secondary"></i> Este establecimiento aún no cuenta con una cartera de servicios de RIISS cargada.
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1342,47 +1379,94 @@ function abrirEditarEstablecimiento(id) {
             });
         }
 
-        // Cargar Cartera de Servicios
-        var acc = $('#accordionCarteraServicios');
-        acc.empty();
-        if (r.cartera_servicios && r.cartera_servicios.length > 0) {
-            r.cartera_servicios.forEach(function(esp, index) {
-                var isCronico = esp.nombre.includes('Crónicos') || esp.nombre.includes('Otra');
-                var headerId = 'headingEsp' + index;
-                var collapseId = 'collapseEsp' + index;
-                var badgeColor = isCronico ? 'badge-warning' : 'badge-primary';
-                
-                var medicamentosHtml = '';
-                if (esp.medicamentos && esp.medicamentos.length > 0) {
-                    medicamentosHtml += '<ul class="list-group list-group-sm mt-2" style="max-height: 250px; overflow-y: auto;">';
-                    esp.medicamentos.forEach(function(med) {
-                        medicamentosHtml += '<li class="list-group-item py-1 px-2 border-0 border-bottom" style="font-size: 0.85rem;"><span class="badge badge-secondary mr-2">' + med.codigo + '</span> ' + med.nombre + '</li>';
-                    });
-                    medicamentosHtml += '</ul>';
-                } else {
-                    medicamentosHtml = '<div class="text-muted small p-2"><i>No hay medicamentos registrados para esta especialidad.</i></div>';
-                }
+        // Cargar Cartera de Servicios en DataTables
+        var $tabla = $('#tablaCarteraMedicamentos');
+        if ($.fn.DataTable.isDataTable($tabla)) {
+            $tabla.DataTable().clear().destroy();
+        }
+        $tabla.find('tbody').empty();
 
-                var card = `
-                <div class="card mb-2" style="border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                    <div class="card-header p-0" id="${headerId}" style="background-color: #f8fafc; border-bottom: none;">
-                        <h2 class="mb-0">
-                            <button class="btn btn-link btn-block text-left text-dark font-weight-bold p-3 d-flex justify-content-between align-items-center" type="button" data-toggle="collapse" data-target="#${collapseId}" style="text-decoration: none; font-size: 0.95rem;">
-                                <span><i class="fa ${isCronico ? 'fa-exclamation-triangle text-warning' : 'fa-stethoscope text-indigo'} mr-2" style="${isCronico ? '' : 'color: #6366f1;'}"></i> ${esp.nombre}</span>
-                                <span class="badge ${badgeColor} badge-pill py-1 px-2">${esp.medicamentos.length} Meds</span>
-                            </button>
-                        </h2>
-                    </div>
-                    <div id="${collapseId}" class="collapse" aria-labelledby="${headerId}" data-parent="#accordionCarteraServicios">
-                        <div class="card-body p-2 bg-white" style="border-top: 1px solid #e2e8f0;">
-                            ${medicamentosHtml}
-                        </div>
-                    </div>
-                </div>`;
-                acc.append(card);
+        var $filtroEsp = $('#filtroCarteraEspecialidad');
+        $filtroEsp.empty().append('<option value="">Todas las Especialidades</option>');
+
+        var totalEspecialidades = 0;
+        var totalMedicamentos = 0;
+        var rowsData = [];
+
+        if (r.cartera_servicios && r.cartera_servicios.length > 0) {
+            $('#contenedorTablaCartera').show();
+            $('#sinCarteraAlert').hide();
+            totalEspecialidades = r.cartera_servicios.length;
+
+            r.cartera_servicios.forEach(function(esp) {
+                var isCronico = esp.nombre.includes('Crónicos') || esp.nombre.includes('Otra');
+                var numMeds = esp.medicamentos ? esp.medicamentos.length : 0;
+                totalMedicamentos += numMeds;
+
+                $filtroEsp.append(
+                    $('<option>').val(esp.nombre).text(esp.nombre + ' (' + numMeds + ')')
+                );
+
+                var badgeIcon = isCronico ? '<i class="fa fa-exclamation-triangle text-warning mr-1"></i>' : '<i class="fa fa-stethoscope mr-1" style="color: #4f46e5;"></i>';
+                var espLabel = '<span class="font-weight-bold text-dark">' + badgeIcon + esp.nombre + '</span>';
+
+                if (esp.medicamentos && esp.medicamentos.length > 0) {
+                    esp.medicamentos.forEach(function(med) {
+                        rowsData.push([
+                            espLabel,
+                            '<span class="badge badge-light border text-dark font-weight-normal px-2 py-1" style="font-family: monospace; font-size: 0.85rem;">' + (med.codigo || 'S/C') + '</span>',
+                            '<span class="text-dark font-weight-500">' + med.nombre + '</span>'
+                        ]);
+                    });
+                } else {
+                    rowsData.push([
+                        espLabel,
+                        '<span class="text-muted font-italic">-</span>',
+                        '<span class="text-muted font-italic">Sin medicamentos registrados</span>'
+                    ]);
+                }
             });
+
+            $('#badgeTotalEsp').text(totalEspecialidades + ' Especialidades').show();
+            $('#badgeTotalMed').text(totalMedicamentos + ' Medicamentos').show();
+
+            var dtCartera = $tabla.DataTable({
+                data: rowsData,
+                responsive: true,
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+                language: {
+                    search: "Buscar medicamento:",
+                    lengthMenu: "Mostrar _MENU_ registros",
+                    info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                    infoEmpty: "0 registros",
+                    infoFiltered: "(filtrado de _MAX_ totales)",
+                    paginate: { first: "«", last: "»", next: "›", previous: "‹" },
+                    zeroRecords: "No se encontraron medicamentos para esta búsqueda"
+                },
+                order: [[0, 'asc'], [2, 'asc']]
+            });
+
+            // Filtro por especialidad
+            $filtroEsp.off('change').on('change', function() {
+                var val = $(this).val();
+                if (val) {
+                    // Búsqueda en columna 0 (Especialidad)
+                    dtCartera.column(0).search(val).draw();
+                } else {
+                    dtCartera.column(0).search('').draw();
+                }
+            });
+
+            setTimeout(function() {
+                dtCartera.columns.adjust().draw(false);
+            }, 250);
+
         } else {
-            acc.html('<div class="alert alert-light border py-3 small text-center text-muted"><i class="fa fa-info-circle fa-2x mb-2 d-block"></i> Este establecimiento aún no cuenta con una cartera de servicios de RIISS cargada.</div>');
+            $('#contenedorTablaCartera').hide();
+            $('#sinCarteraAlert').show();
+            $('#badgeTotalEsp').text('0 Especialidades');
+            $('#badgeTotalMed').text('0 Medicamentos');
         }
     });
 }
