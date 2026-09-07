@@ -946,7 +946,6 @@ Route::group(['middleware' => 'auth'], function () {
         // Aliases / Redirecciones de rutas anteriores
         Route::get('dashboard', function() { return redirect()->route('riiss.index'); })->name('dashboard');
         Route::get('asignaciones', function() { return redirect()->route('riiss.index'); })->name('asignaciones.index');
-        Route::get('establecimientos', function() { return redirect()->route('riiss.index'); })->name('establecimientos.index');
         Route::get('evaluaciones', function() { return redirect()->route('riiss.index'); })->name('evaluaciones.index');
 
         // Endpoints de datos del Dashboard y Asignaciones
