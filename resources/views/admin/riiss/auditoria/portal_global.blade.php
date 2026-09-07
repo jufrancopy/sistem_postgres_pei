@@ -9,10 +9,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     
-    <!-- Bootstrap 4.5.2 & DataTables CSS -->
+    <!-- Bootstrap 4.5.2, DataTables & Select2 CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.7/css/responsive.bootstrap4.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css">
 
     <style>
         :root {
@@ -162,6 +164,50 @@
                 margin-left: 0 !important;
             }
         }
+
+        /* Select2 Bootstrap 4 Theme tweaks */
+        .select2-container--bootstrap4 .select2-selection--single {
+            height: calc(2rem + 2px) !important;
+            font-size: 0.85rem !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 0.5rem !important;
+            display: flex;
+            align-items: center;
+            background-color: #ffffff;
+        }
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+            padding-left: 0.65rem !important;
+            color: #1e293b !important;
+            font-weight: 600;
+            line-height: normal !important;
+        }
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+            top: 50% !important;
+            transform: translateY(-50%);
+            right: 8px !important;
+        }
+        .select2-dropdown {
+            border-color: #cbd5e1 !important;
+            border-radius: 0.5rem !important;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15) !important;
+            font-size: 0.85rem !important;
+            z-index: 1060;
+        }
+        .select2-search--dropdown .select2-search__field {
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 0.4rem !important;
+            padding: 0.35rem 0.6rem !important;
+            outline: none !important;
+            font-size: 0.85rem !important;
+        }
+        .select2-container--bootstrap4 .select2-results__option--highlighted[aria-selected] {
+            background-color: #0284c7 !important;
+            color: #ffffff !important;
+        }
+        .select2-container--bootstrap4 .select2-results__option[aria-selected=true] {
+            background-color: #e0f2fe !important;
+            color: #0369a1 !important;
+        }
     </style>
 </head>
 <body>
@@ -279,17 +325,17 @@
                     </h5>
                     <small class="text-muted d-none d-sm-inline">Auditoría de vademécum, cartera médica y georreferencia.</small>
                 </div>
-                <!-- Filtros en vivo -->
-                <div class="col-sm-4 col-lg-3 mb-2 mb-sm-0">
-                    <select id="filtroDeptoGlobal" class="form-control form-control-sm">
+                <!-- Filtros en vivo con Select2 -->
+                <div class="col-sm-4 col-lg-3 mb-2 mb-lg-0">
+                    <select id="filtroDeptoGlobal" class="form-control form-control-sm" style="width: 100%;">
                         <option value="">Todos los Deptos ({{ count($departamentos) }})</option>
                         @foreach($departamentos as $depto)
                             <option value="{{ $depto }}">{{ $depto }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-sm-4 col-lg-3 mb-2 mb-sm-0">
-                    <select id="filtroComplejidadGlobal" class="form-control form-control-sm">
+                <div class="col-sm-4 col-lg-3 mb-2 mb-lg-0">
+                    <select id="filtroComplejidadGlobal" class="form-control form-control-sm" style="width: 100%;">
                         <option value="">Complejidades (Todas)</option>
                         @foreach($complejidades as $comp)
                             <option value="{{ $comp }}">{{ $comp }}</option>
@@ -297,7 +343,7 @@
                     </select>
                 </div>
                 <div class="col-sm-4 col-lg-2">
-                    <select id="filtroMedsGlobal" class="form-control form-control-sm">
+                    <select id="filtroMedsGlobal" class="form-control form-control-sm" style="width: 100%;">
                         <option value="">Medicamentos (Todos)</option>
                         <option value="con">Con Medicamentos</option>
                         <option value="sin">Sin Medicamentos</option>
@@ -400,9 +446,32 @@
 <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.7/js/dataTables.responsive.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.7/js/responsive.bootstrap4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
 $(document).ready(function() {
+    // Inicializar Select2
+    $('#filtroDeptoGlobal').select2({
+        theme: 'bootstrap4',
+        placeholder: "Todos los Deptos",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('#filtroComplejidadGlobal').select2({
+        theme: 'bootstrap4',
+        placeholder: "Todas las Complejidades",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('#filtroMedsGlobal').select2({
+        theme: 'bootstrap4',
+        placeholder: "Todos los Medicamentos",
+        allowClear: true,
+        width: '100%'
+    });
+
     var table = $('#tblGlobalEstablecimientos').DataTable({
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
@@ -421,9 +490,9 @@ $(document).ready(function() {
     // Filtros custom
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var row = $(table.row(dataIndex).node());
-        var depto = $('#filtroDeptoGlobal').val().toLowerCase();
-        var comp = $('#filtroComplejidadGlobal').val().toLowerCase();
-        var meds = $('#filtroMedsGlobal').val();
+        var depto = ($('#filtroDeptoGlobal').val() || '').toLowerCase();
+        var comp = ($('#filtroComplejidadGlobal').val() || '').toLowerCase();
+        var meds = $('#filtroMedsGlobal').val() || '';
 
         var rowDepto = row.attr('data-depto') || '';
         var rowComp = row.attr('data-comp') || '';
