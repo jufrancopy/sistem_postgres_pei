@@ -66,23 +66,54 @@
     width: 95vw !important;
     margin: 20px auto !important;
 }
-.modal-nav-tabs .nav-link {
-    color: #64748b !important;
-    border: none !important;
-    border-bottom: 3px solid transparent !important;
-    background: transparent !important;
-    font-size: 0.95rem;
-    padding: 12px 20px !important;
-    transition: all 0.2s ease;
+#modalEditarEstablecimiento .modal-nav-tabs,
+.modal-nav-tabs {
+    border-bottom: 2px solid #e2e8f0 !important;
+    display: flex !important;
+    gap: 8px !important;
 }
-.modal-nav-tabs .nav-link:hover {
+#modalEditarEstablecimiento .modal-nav-tabs .nav-item,
+.modal-nav-tabs .nav-item {
+    margin-bottom: -2px !important;
+}
+#modalEditarEstablecimiento .modal-nav-tabs .nav-link,
+.modal-nav-tabs .nav-link,
+#modalEditarEstablecimiento .nav-tabs .nav-link {
     color: #1e293b !important;
-    background: #f8fafc !important;
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    padding: 10px 20px !important;
+    border-radius: 8px 8px 0 0 !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
 }
-.modal-nav-tabs .nav-link.active {
-    color: #4f46e5 !important;
-    border-bottom: 3px solid #4f46e5 !important;
-    background: transparent !important;
+#modalEditarEstablecimiento .modal-nav-tabs .nav-link i,
+.modal-nav-tabs .nav-link i {
+    font-size: 1.05rem !important;
+}
+#modalEditarEstablecimiento .modal-nav-tabs .nav-link:hover,
+.modal-nav-tabs .nav-link:hover {
+    color: #0f172a !important;
+    background-color: #e2e8f0 !important;
+    border-color: #94a3b8 !important;
+}
+#modalEditarEstablecimiento .modal-nav-tabs .nav-link.active,
+.modal-nav-tabs .nav-link.active,
+#modalEditarEstablecimiento .nav-tabs .nav-link.active {
+    color: #ffffff !important;
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+    border-bottom: 2px solid #4f46e5 !important;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35) !important;
+}
+#modalEditarEstablecimiento .modal-nav-tabs .nav-link.active i,
+.modal-nav-tabs .nav-link.active i {
+    color: #ffffff !important;
 }
 .esp-card {
     border: 1px solid #e2e8f0;
