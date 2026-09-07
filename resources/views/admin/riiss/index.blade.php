@@ -2297,6 +2297,8 @@ function guardarEdicionEstablecimiento() {
     var formData = new FormData();
     formData.append('_method', 'PATCH');
     formData.append('_token', '{{ csrf_token() }}');
+    formData.append('id_establecimiento', id);
+    formData.append('id', id);
     
     formData.append('nombre_oficial', $('#editEstNombre').val());
     formData.append('tipologia_clasificacion', $('#editEstTipologia').val());

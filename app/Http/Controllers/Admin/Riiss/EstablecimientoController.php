@@ -85,17 +85,22 @@ class EstablecimientoController extends Controller
     }
 
     /**
-     * PATCH /riiss/establecimientos/{id}
+     * PATCH|POST /riiss/establecimientos/{id?}
      * Actualizar datos de un establecimiento.
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, ?string $id = null): JsonResponse
     {
         $user = auth()->user();
         if ($user && $user->hasAnyRole(['Analista - RIISS', 'Analista RIISS']) && !$user->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS'])) {
             return response()->json(['ok' => false, 'message' => 'No tienes permisos para modificar datos del establecimiento.'], 403);
         }
 
-        $est = Establecimiento::where('id_establecimiento', $id)->firstOrFail();
+        $estId = $id ?: $request->input('id_establecimiento') ?: $request->input('id') ?: $request->input('codigo');
+        if (!$estId) {
+            return response()->json(['ok' => false, 'message' => 'No se pudo identificar el establecimiento a modificar.'], 400);
+        }
+
+        $est = Establecimiento::where('id_establecimiento', $estId)->firstOrFail();
 
         $validated = $request->validate([
             'nombre_oficial'          => 'sometimes|string|max:300',

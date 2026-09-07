@@ -1021,6 +1021,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('auditoria.tokens.revocar');
         Route::post('auditoria/tokens/{id}/extender', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'extenderToken'])
             ->name('auditoria.tokens.extender');
+        Route::match(['patch', 'post'], 'establecimientos', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'update'])
+            ->name('establecimientos.update-direct');
         Route::match(['patch', 'post'], 'establecimientos/{id}', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'update'])
             ->name('establecimientos.update');
 
