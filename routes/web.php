@@ -33,6 +33,11 @@ Route::get('/public/asesoria/{id}', [\App\Http\Controllers\Admin\Planificacion\P
 Route::post('/public/asesoria/{id}/comentario', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'guardarComentario'])->name('asesoria.public.comentario');
 Route::post('/public/asesoria/{id}/finalizar', [\App\Http\Controllers\Admin\Planificacion\PeiAsesoriaController::class, 'finalizarDictamen'])->name('asesoria.public.finalizar');
 
+// ── Vistas públicas Portal de Auditoría RIISS (sin autenticación directa, protegido por PIN) ──
+Route::get('/riiss/portal-auditor/{token}', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'mostrarPortal'])->name('riiss.portal-auditor.show');
+Route::post('/riiss/portal-auditor/{token}/verificar-pin', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'verificarPin'])->name('riiss.portal-auditor.verificar-pin');
+Route::get('/riiss/portal-auditor/{token}/pdf', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'descargarPdf'])->name('riiss.portal-auditor.pdf');
+
 // ── Vistas públicas Acta de Reunión MECIP (sin autenticación) ─────────────────
 Route::get('/actas-reunion/{token}', 'Admin\Globales\ActaMecipController@publicView')->name('actas.public.show');
 Route::post('/actas-reunion/{token}/registro', 'Admin\Globales\ActaMecipController@publicRegistrar')->name('actas.public.registrar');
@@ -1008,6 +1013,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('establecimientos.buscar');
         Route::get('establecimientos/{id}/medicamentos-pdf', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'exportarPdfMedicamentos'])
             ->name('establecimientos.medicamentos-pdf');
+        Route::post('auditoria/generar-token', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'generarToken'])
+            ->name('auditoria.generar-token');
         Route::patch('establecimientos/{id}', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'update'])
             ->name('establecimientos.update');
 

@@ -168,8 +168,10 @@ class RiissCenterController extends Controller
                 }
 
                 if (($est->medicamentos_count ?? 0) > 0) {
-                    $btn .= '<a href="/riiss/establecimientos/' . e($est->id_establecimiento) . '/medicamentos-pdf" target="_blank" class="circle-btn btn-sm" style="background:#fee2e2; color:#b91c1c; border-color:#fca5a5;" title="Descargar PDF de Medicamentos por Especialidad"><i class="fa fa-file-pdf"></i></a>';
+                    $btn .= '<a href="/riiss/establecimientos/' . e($est->id_establecimiento) . '/medicamentos-pdf" target="_blank" class="circle-btn btn-sm" style="background:#fee2e2; color:#b91c1c; border-color:#fca5a5;" title="Descargar PDF Planilla de Auditoría"><i class="fa fa-file-pdf"></i></a>';
                 }
+
+                $btn .= '<button type="button" class="circle-btn btn-sm" style="background:#dcfce7; color:#15803d; border-color:#86efac;" onclick="abrirModalGenerarAccesoAuditor(\'' . e($est->id_establecimiento) . '\', \'' . e($nomEsc) . '\')" title="Compartir acceso seguro a Auditor / WhatsApp"><i class="fab fa-whatsapp"></i></button>';
 
                 $btn .= '</div>';
 

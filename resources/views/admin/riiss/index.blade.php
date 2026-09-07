@@ -502,6 +502,10 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
+                    {{-- Botón Compartir a Auditor / WhatsApp --}}
+                    <button type="button" class="btn btn-success font-weight-bold px-3 py-2 shadow-sm mr-2" style="border-radius: 8px; font-size: 0.88rem;" onclick="abrirModalGenerarAccesoAuditor($('#editEstId').val(), $('#modalEstNombreTitulo').text())">
+                        <i class="fab fa-whatsapp mr-1"></i> Compartir a Auditor
+                    </button>
                     {{-- Botón Descargar PDF Destacado para el Técnico --}}
                     <a href="#" id="btnDescargarPdfModal" target="_blank" class="btn btn-danger font-weight-bold px-3 py-2 shadow-sm mr-2" style="border-radius: 8px; font-size: 0.88rem;">
                         <i class="fa fa-file-pdf mr-1"></i> Descargar Listado en PDF
@@ -566,6 +570,9 @@
                                             <i class="fa fa-list-alt mr-1"></i> PDF por Especialidad
                                         </a>
                                     </div>
+                                    <button type="button" class="btn btn-success btn-sm font-weight-bold px-3 py-2 shadow-sm ml-2" onclick="abrirModalGenerarAccesoAuditor($('#editEstId').val(), $('#modalEstNombreTitulo').text())" title="Compartir acceso seguro a Auditor por WhatsApp">
+                                        <i class="fab fa-whatsapp mr-1"></i> Enlace Auditor
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -911,6 +918,109 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Generar Enlace Seguro para Auditor Externo / WhatsApp --}}
+<div class="modal fade" id="modalGenerarAccesoAuditor" tabindex="-1" role="dialog" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                        <i class="fab fa-whatsapp fa-lg"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold mb-0 text-white">Compartir Acceso a Auditor / Asesor</h5>
+                        <small class="text-white-50">Enlace temporal de solo lectura protegido con PIN</small>
+                    </div>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" style="outline: none;">
+                    <span style="font-size: 1.5rem;">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body p-4 bg-light">
+                <div id="seccionConfigurarAuditor">
+                    <input type="hidden" id="auditorEstId">
+                    <div class="p-3 mb-3 bg-white rounded border">
+                        <div class="small font-weight-bold text-muted text-uppercase">Establecimiento</div>
+                        <div id="auditorEstNombre" class="font-weight-bold text-dark font-size-1">--</div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-dark"><i class="fa fa-clock text-success mr-1"></i> Duración de Validez del Enlace</label>
+                        <select id="auditorDuracionHoras" class="form-control">
+                            <option value="24" selected>24 Horas (Recomendado)</option>
+                            <option value="48">48 Horas (2 Días)</option>
+                            <option value="72">72 Horas (3 Días)</option>
+                            <option value="168">7 Días (1 Semana)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="small font-weight-bold text-dark"><i class="fa fa-user text-muted mr-1"></i> Destinatario / Asesor (Opcional)</label>
+                        <input type="text" id="auditorDestinatario" class="form-control" placeholder="Ej: Dr. Fernando Galeano / Auditor Externo">
+                    </div>
+
+                    <button type="button" id="btnEjecutarGenerarToken" class="btn btn-success btn-block py-2 font-weight-bold shadow-sm" onclick="ejecutarGeneracionTokenAuditor()">
+                        <i class="fa fa-key mr-1"></i> Generar Enlace Seguro & PIN
+                    </button>
+                </div>
+
+                {{-- Resultado Generado --}}
+                <div id="seccionResultadoAuditor" style="display: none;">
+                    <div class="alert alert-success d-flex align-items-center mb-3 py-2 px-3">
+                        <i class="fa fa-check-circle fa-lg mr-2 text-success"></i>
+                        <span class="small font-weight-bold">¡Enlace y PIN generados con éxito!</span>
+                    </div>
+
+                    <div class="p-3 mb-3 bg-white rounded border">
+                        <label class="small font-weight-bold text-muted text-uppercase mb-1"><i class="fa fa-link text-primary mr-1"></i> Enlace de Acceso Directo</label>
+                        <div class="input-group mb-2">
+                            <input type="text" id="resUrlPortal" class="form-control form-control-sm bg-light" readonly style="font-size: 0.82rem;">
+                            <div class="input-group-append">
+                                <button class="btn btn-sm btn-outline-primary" type="button" onclick="copiarTextoAlPortapapeles('resUrlPortal', '¡Enlace copiado!')">
+                                    <i class="fa fa-copy mr-1"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between p-2 rounded mb-2" style="background: #f0fdf4; border: 1px dashed #86efac;">
+                            <div>
+                                <small class="text-muted font-weight-bold d-block">PIN DE SEGURIDAD</small>
+                                <span id="resPinSeguridad" class="font-weight-bold text-success" style="font-size: 1.4rem; letter-spacing: 0.15em; font-family: monospace;">------</span>
+                            </div>
+                            <button class="btn btn-sm btn-success px-3" type="button" onclick="copiarPinSeguridad()">
+                                <i class="fa fa-copy mr-1"></i> Copiar PIN
+                            </button>
+                        </div>
+
+                        <div class="small text-muted text-center mt-2">
+                            <i class="fa fa-hourglass-half text-warning mr-1"></i> Validez: <span id="resExpiraTexto" class="font-weight-bold text-dark"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column gap-2">
+                        <a href="#" id="btnAbrirWhatsAppDirecto" target="_blank" class="btn btn-success font-weight-bold py-2 shadow-sm mb-2 text-center">
+                            <i class="fab fa-whatsapp fa-lg mr-2"></i> Enviar Mensaje por WhatsApp
+                        </a>
+
+                        <button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold mb-2" onclick="copiarMensajeCompletoWhatsApp()">
+                            <i class="fa fa-clipboard mr-1"></i> Copiar Mensaje Completo para Pegar
+                        </button>
+
+                        <a href="#" id="btnProbarPortal" target="_blank" class="btn btn-link btn-sm text-muted text-center mt-1">
+                            <i class="fa fa-external-link-alt mr-1"></i> Abrir Portal de Auditoría para verificar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-white py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -2093,6 +2203,94 @@ function guardarAsignacion() {
             var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error al guardar';
             $('#msgAsignacion').html('<div class="alert alert-danger py-2">' + msg + '</div>');
         }
+    });
+}
+
+// ── GESTIÓN DE ACCESOS TEMPORALES PARA AUDITORES / WHATSAPP ───────────────────
+var _ultimoMensajeWhatsAppAuditor = '';
+var _ultimoPinAuditor = '';
+
+function abrirModalGenerarAccesoAuditor(estId, estNombre) {
+    if (!estId) {
+        estId = $('#editEstId').val();
+    }
+    if (!estNombre) {
+        estNombre = $('#modalEstNombreTitulo').text() || 'Establecimiento RIISS';
+    }
+
+    $('#auditorEstId').val(estId);
+    $('#auditorEstNombre').text(estNombre);
+    $('#auditorDestinatario').val('');
+    $('#auditorDuracionHoras').val('24');
+
+    $('#seccionConfigurarAuditor').show();
+    $('#seccionResultadoAuditor').hide();
+    $('#btnEjecutarGenerarToken').prop('disabled', false).html('<i class="fa fa-key mr-1"></i> Generar Enlace Seguro & PIN');
+
+    $('#modalGenerarAccesoAuditor').modal('show');
+}
+
+function ejecutarGeneracionTokenAuditor() {
+    var estId = $('#auditorEstId').val();
+    var duracion = $('#auditorDuracionHoras').val();
+    var destinatario = $('#auditorDestinatario').val();
+
+    var $btn = $('#btnEjecutarGenerarToken');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Generando Enlace Criptográfico...');
+
+    $.ajax({
+        url: '{{ route("riiss.auditoria.generar-token") }}',
+        method: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            establecimiento_id: estId,
+            duracion_horas: duracion,
+            destinatario: destinatario
+        },
+        success: function(resp) {
+            $btn.prop('disabled', false).html('<i class="fa fa-key mr-1"></i> Generar Enlace Seguro & PIN');
+            if (resp.ok) {
+                _ultimoMensajeWhatsAppAuditor = resp.mensaje_whatsapp;
+                _ultimoPinAuditor = resp.pin;
+
+                $('#resUrlPortal').val(resp.url_portal);
+                $('#resPinSeguridad').text(resp.pin);
+                $('#resExpiraTexto').text(resp.expira_en + ' hs (' + resp.duracion_horas + ' horas)');
+                $('#btnAbrirWhatsAppDirecto').attr('href', resp.url_whatsapp);
+                $('#btnProbarPortal').attr('href', resp.url_portal);
+
+                $('#seccionConfigurarAuditor').slideUp(200);
+                $('#seccionResultadoAuditor').slideDown(200);
+                mostrarToast('¡Enlace temporal de auditoría generado! 🔒', 'success');
+            }
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false).html('<i class="fa fa-key mr-1"></i> Generar Enlace Seguro & PIN');
+            var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error al generar enlace';
+            mostrarToast(msg, 'danger');
+        }
+    });
+}
+
+function copiarTextoAlPortapapeles(elementId, toastMsg) {
+    var copyText = document.getElementById(elementId);
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    mostrarToast(toastMsg || 'Copiado al portapapeles', 'info');
+}
+
+function copiarPinSeguridad() {
+    if (!_ultimoPinAuditor) return;
+    navigator.clipboard.writeText(_ultimoPinAuditor).then(function() {
+        mostrarToast('¡PIN (' + _ultimoPinAuditor + ') copiado! 📋', 'info');
+    });
+}
+
+function copiarMensajeCompletoWhatsApp() {
+    if (!_ultimoMensajeWhatsAppAuditor) return;
+    navigator.clipboard.writeText(_ultimoMensajeWhatsAppAuditor).then(function() {
+        mostrarToast('¡Mensaje completo copiado! Listo para pegar en WhatsApp 💬', 'success');
     });
 }
 </script>
