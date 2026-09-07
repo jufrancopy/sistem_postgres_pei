@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.7/css/responsive.bootstrap4.min.css">
+    <!-- Leaflet Maps CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
         :root {
@@ -458,10 +460,11 @@
         <!-- PESTAÑA 3: FICHA TÉCNICA E INMUEBLE -->
         <div class="tab-pane fade" id="tab-ficha" role="tabpanel">
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    <div class="card border-0 shadow-sm rounded-lg p-3 h-100">
+                <div class="col-lg-6 mb-3">
+                    <!-- Ubicación y Clasificación -->
+                    <div class="card border-0 shadow-sm rounded-lg p-3 mb-3">
                         <h6 class="font-weight-bold text-dark border-bottom pb-2 mb-3">
-                            <i class="fas fa-map-marked-alt text-primary mr-2"></i> Ubicación y Clasificación
+                            <i class="fas fa-hospital text-primary mr-2"></i> Identificación y Clasificación
                         </h6>
                         <table class="table table-sm table-borderless text-dark" style="font-size: 0.9rem;">
                             <tr>
@@ -484,12 +487,15 @@
                                 <th style="color: #64748b;">Nivel de Atención:</th>
                                 <td>{{ $est->nivel_atencion ? 'Nivel ' . $est->nivel_atencion : 'No asignado' }}</td>
                             </tr>
+                            <tr>
+                                <th style="color: #64748b;">Tipología:</th>
+                                <td>{{ $est->tipologia_clasificacion ?? 'No clasificado' }}</td>
+                            </tr>
                         </table>
                     </div>
-                </div>
 
-                <div class="col-md-6 mb-3">
-                    <div class="card border-0 shadow-sm rounded-lg p-3 h-100">
+                    <!-- Situación del Inmueble -->
+                    <div class="card border-0 shadow-sm rounded-lg p-3">
                         <h6 class="font-weight-bold text-dark border-bottom pb-2 mb-3">
                             <i class="fas fa-building text-primary mr-2"></i> Situación del Inmueble
                         </h6>
@@ -528,6 +534,49 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Mapa Georreferenciado -->
+                <div class="col-lg-6 mb-3">
+                    <div class="card border-0 shadow-sm rounded-lg p-3 h-100">
+                        <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+                            <h6 class="font-weight-bold text-dark mb-0">
+                                <i class="fas fa-map-marked-alt text-primary mr-2"></i> Ubicación en el Mapa
+                            </h6>
+                            @if($est->latitude && $est->longitude)
+                                <span class="badge badge-success px-2 py-1 font-weight-bold">
+                                    <i class="fas fa-check-circle mr-1"></i> Georreferenciado
+                                </span>
+                            @else
+                                <span class="badge badge-secondary px-2 py-1">
+                                    Sin coordenadas
+                                </span>
+                            @endif
+                        </div>
+
+                        @if($est->latitude && $est->longitude)
+                            <div id="mapAuditorEstablecimiento" style="height: 380px; width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; z-index: 1;"></div>
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                <span class="text-muted small">
+                                    <i class="fas fa-map-pin text-danger mr-1"></i> Lat: {{ number_format($est->latitude, 6) }}, Lng: {{ number_format($est->longitude, 6) }}
+                                </span>
+                                <div class="btn-group">
+                                    <a href="https://www.google.com/maps?q={{ $est->latitude }},{{ $est->longitude }}" target="_blank" class="btn btn-sm btn-outline-primary font-weight-bold">
+                                        <i class="fas fa-external-link-alt mr-1"></i> Google Maps
+                                    </a>
+                                    <a href="https://waze.com/ul?ll={{ $est->latitude }},{{ $est->longitude }}&navigate=yes" target="_blank" class="btn btn-sm btn-outline-info font-weight-bold">
+                                        <i class="fab fa-waze mr-1"></i> Waze
+                                    </a>
+                                </div>
+                            </div>
+                        @else
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100 p-5 text-center text-muted bg-light rounded">
+                                <i class="fas fa-map-marked fa-3x mb-3 text-secondary" style="opacity: 0.5;"></i>
+                                <h6 class="font-weight-bold">Coordenadas no registradas</h6>
+                                <p class="small mb-0">Este establecimiento aún no cuenta con latitud y longitud cargadas en el sistema.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -547,6 +596,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 $(document).ready(function() {
@@ -580,9 +630,56 @@ $(document).ready(function() {
         $('#contenedorEspecialidadesAuditor .collapse').collapse('hide');
     });
 
-    // Ajustar columnas al cambiar de tab
+    // MAPA LEAFLET
+    var estLat = {{ ($est->latitude && $est->longitude) ? (float) $est->latitude : 'null' }};
+    var estLng = {{ ($est->latitude && $est->longitude) ? (float) $est->longitude : 'null' }};
+    var mapAuditor = null;
+
+    function renderMapaAuditor() {
+        if (mapAuditor !== null) return;
+        if (!estLat || !estLng) return;
+        var mapEl = document.getElementById('mapAuditorEstablecimiento');
+        if (!mapEl) return;
+
+        mapAuditor = L.map('mapAuditorEstablecimiento').setView([estLat, estLng], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 19
+        }).addTo(mapAuditor);
+
+        var customIcon = L.divIcon({
+            className: 'custom-map-pin',
+            html: '<div style="background:#0284c7;color:white;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(2,132,199,0.7);border:3px solid white;"><i class="fas fa-hospital fa-lg"></i></div>',
+            iconSize: [38, 38],
+            iconAnchor: [19, 19],
+            popupAnchor: [0, -19]
+        });
+
+        var popupHtml = '<div style="font-family:\'Plus Jakarta Sans\',sans-serif;min-width:180px;">' +
+            '<div style="font-weight:800;color:#0f172a;font-size:0.95rem;margin-bottom:2px;">{{ addslashes($est->nombre_oficial) }}</div>' +
+            '<div style="font-size:0.8rem;color:#64748b;margin-bottom:6px;">{{ $est->departamento ?? "Paraguay" }} &bull; {{ $est->complejidad ?? "RIISS" }}</div>' +
+            '<a href="https://www.google.com/maps?q=' + estLat + ',' + estLng + '" target="_blank" class="btn btn-sm btn-primary text-white font-weight-bold" style="font-size:0.75rem;padding:3px 8px;border-radius:4px;"><i class="fas fa-directions mr-1"></i> Cómo llegar</a>' +
+            '</div>';
+
+        L.marker([estLat, estLng], { icon: customIcon })
+            .addTo(mapAuditor)
+            .bindPopup(popupHtml)
+            .openPopup();
+    }
+
+    // Ajustar columnas y mapa al cambiar de tab
     $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
-        table.columns.adjust().responsive.recalc();
+        if (e.target.id === 'tab-vademecum-link') {
+            table.columns.adjust().responsive.recalc();
+        } else if (e.target.id === 'tab-ficha-link') {
+            setTimeout(function() {
+                renderMapaAuditor();
+                if (mapAuditor) {
+                    mapAuditor.invalidateSize();
+                }
+            }, 200);
+        }
     });
 });
 </script>
