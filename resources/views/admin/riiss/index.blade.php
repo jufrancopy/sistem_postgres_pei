@@ -58,7 +58,64 @@
     padding: 0 !important;
     border-radius: 50% !important;
     border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+/* ── Modal RIISS Ultra-Spacious & Executive Tabs ── */
+.modal-riiss-xl .modal-dialog {
+    max-width: 95vw !important;
+    width: 95vw !important;
+    margin: 20px auto !important;
+}
+.modal-nav-tabs .nav-link {
+    color: #64748b !important;
+    border: none !important;
+    border-bottom: 3px solid transparent !important;
+    background: transparent !important;
+    font-size: 0.95rem;
+    padding: 12px 20px !important;
+    transition: all 0.2s ease;
+}
+.modal-nav-tabs .nav-link:hover {
+    color: #1e293b !important;
+    background: #f8fafc !important;
+}
+.modal-nav-tabs .nav-link.active {
+    color: #4f46e5 !important;
+    border-bottom: 3px solid #4f46e5 !important;
+    background: transparent !important;
+}
+.esp-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.esp-card:hover {
+    box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+}
+.esp-header-btn {
+    background: #f8fafc;
+    border: none;
+    width: 100%;
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     cursor: pointer;
+    text-align: left;
+    text-decoration: none !important;
+    outline: none !important;
+}
+.esp-header-btn:hover {
+    background: #f1f5f9;
+}
+.esp-header-btn.cronico {
+    background: #fffdf5;
+    border-left: 5px solid #f59e0b;
+}    cursor: pointer;
     font-size: .8rem;
     transition: opacity .15s, transform .1s;
     margin-right: 0.5rem;
@@ -392,236 +449,326 @@
 </div>
 
 {{-- Modal Editar Datos del Establecimiento --}}
-<div class="modal fade" id="modalEditarEstablecimiento" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header card-header-info" style="background:linear-gradient(135deg,#0f172a,#1e293b)">
-                <h5 class="modal-title text-white">
-                    <i class="fa fa-hospital mr-2"></i>Editar Datos del Establecimiento
-                </h5>
-                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+{{-- Modal Detalle y Gestión del Establecimiento (Ultra Spacious) --}}
+<div class="modal fade modal-riiss-xl" id="modalEditarEstablecimiento" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 14px; box-shadow: 0 25px 60px rgba(0,0,0,0.3); border: none; overflow: hidden;">
+            
+            {{-- Header Impactante con degradado oscuro --}}
+            <div class="modal-header py-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-bottom: 2px solid #334155;">
+                <div class="d-flex align-items-center flex-wrap">
+                    <div class="mr-3 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                        <i class="fa fa-hospital fa-lg text-info"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center flex-wrap">
+                            <h5 class="modal-title text-white font-weight-bold mb-0 mr-2" id="modalEstNombreTitulo">Establecimiento</h5>
+                            <span id="modalEstIdBadge" class="badge badge-light text-dark font-weight-bold mr-1" style="font-family: monospace; font-size: 0.85rem;"></span>
+                            <span id="modalEstDeptoBadge" class="badge badge-info text-white font-weight-bold mr-1"></span>
+                        </div>
+                        <small class="text-white-50">Redes Integradas e Integrales de Servicios de Salud (RIISS) — IPS</small>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    {{-- Botón Descargar PDF Destacado para el Técnico --}}
+                    <a href="#" id="btnDescargarPdfModal" target="_blank" class="btn btn-danger font-weight-bold px-3 py-2 shadow-sm mr-2" style="border-radius: 8px; font-size: 0.88rem;">
+                        <i class="fa fa-file-pdf mr-1"></i> Descargar Listado en PDF
+                    </a>
+                    <button type="button" class="close text-white p-2" data-dismiss="modal" style="opacity: 0.85; outline: none;">
+                        <span style="font-size: 1.6rem;">&times;</span>
+                    </button>
+                </div>
             </div>
-            <div class="modal-body">
+
+            {{-- Navegación por Tabs --}}
+            <div class="bg-white border-bottom px-4 pt-2 pb-0">
+                <ul class="nav nav-tabs border-0 modal-nav-tabs" role="tablist">
+                    <li class="nav-item mr-2">
+                        <a class="nav-link active font-weight-bold" id="tabLinkCartera" data-toggle="tab" href="#tabContenidoCartera" role="tab">
+                            <i class="fa fa-pills mr-2 text-primary"></i> Cartera de Medicamentos por Especialidad
+                        </a>
+                    </li>
+                    <li class="nav-item mr-2">
+                        <a class="nav-link font-weight-bold" data-toggle="tab" href="#tabContenidoInmueble" role="tab">
+                            <i class="fa fa-building mr-2 text-secondary"></i> Información General & Inmueble
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link font-weight-bold" data-toggle="tab" href="#tabContenidoContratos" role="tab">
+                            <i class="fa fa-file-contract mr-2 text-warning"></i> Contratos (Ampliación / Mantenimiento)
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            {{-- Contenido del Modal --}}
+            <div class="modal-body p-4" style="background-color: #f8fafc; max-height: calc(88vh - 140px); overflow-y: auto;">
                 <input type="hidden" id="editEstId">
-                <div class="row">
-                    <div class="col-md-8 mb-3">
-                        <label class="small font-weight-bold">Nombre Oficial del Establecimiento</label>
-                        <input type="text" id="editEstNombre" class="form-control">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="small font-weight-bold">Código ID</label>
-                        <input type="text" id="editEstCodigo" class="form-control" readonly style="background:#f8fafc">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="small font-weight-bold">Tipología / Clasificación</label>
-                        <input type="text" id="editEstTipologia" class="form-control">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="small font-weight-bold">Departamento</label>
-                        <input type="text" id="editEstDepto" class="form-control">
-                    </div>
-                    <div class="col-md-12 mb-3">
-                        <label class="small font-weight-bold">Observación / Notas</label>
-                        <textarea id="editEstObservacion" class="form-control" rows="3"></textarea>
-                    </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="small font-weight-bold">Latitud</label>
-                        <input type="number" step="any" id="editEstLat" class="form-control">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="small font-weight-bold">Longitud</label>
-                        <input type="number" step="any" id="editEstLng" class="form-control">
-                    </div>
+                <div class="tab-content">
                     
-                    <div class="col-md-12 mt-3 mb-2">
-                        <h6 class="font-weight-bold border-bottom pb-2 text-primary">Información del Inmueble</h6>
-                    </div>
-                    <div class="col-md-12 mb-3">
-                        <label class="small font-weight-bold">Condición del Inmueble</label>
-                        <select id="editEstCondicion" class="form-control" onchange="toggleCondicionInmueble()">
-                            <option value="">Seleccione...</option>
-                            <option value="CONVENIO">CONVENIO</option>
-                            <option value="ALQUILADO">ALQUILADO</option>
-                            <option value="PROPIO">PROPIO</option>
-                        </select>
-                    </div>
-
-                    <!-- Campos PROPIO -->
-                    <div id="seccionPropio" class="col-12" style="display:none;">
-                        <div class="row bg-light p-3 rounded mb-3 mx-1 border">
-                            <div class="col-md-4 mb-3">
-                                <label class="small font-weight-bold">Superficie Terreno (m²)</label>
-                                <input type="number" step="0.01" id="editEstSupTerreno" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="small font-weight-bold">Sup. Construida (m²)</label>
-                                <input type="number" step="0.01" id="editEstSupConstruida" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="small font-weight-bold">Plano (PDF)</label>
-                                <input type="file" id="editEstPlanoFile" class="form-control-file" accept=".pdf">
-                                <small id="planoLink" class="d-block mt-1"></small>
+                    {{-- ── TAB 1: CARTERA DE MEDICAMENTOS SEGÚN ESPECIALIDAD (PROTAGONISTA) ── --}}
+                    <div class="tab-pane fade show active" id="tabContenidoCartera" role="tabpanel">
+                        
+                        {{-- Banner Ejecutivo y Botonera para el Técnico --}}
+                        <div class="card border-0 shadow-sm mb-4" style="border-radius: 10px; background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-left: 5px solid #4f46e5 !important;">
+                            <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between">
+                                <div>
+                                    <h6 class="font-weight-bold mb-1 text-dark" style="font-size: 1.1rem;">
+                                        <i class="fa fa-stethoscope mr-1 text-primary"></i> Especialidades y Medicamentos Asignados
+                                    </h6>
+                                    <p class="small text-muted mb-0">
+                                        Catálogo oficial de medicamentos asignados por la Dirección de Logística de Suministros para este establecimiento.
+                                    </p>
+                                </div>
+                                <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-md-0">
+                                    <div class="d-flex mr-3">
+                                        <span class="badge badge-primary px-3 py-2 mr-2 shadow-sm" id="badgeTotalEsp" style="font-size: 0.9rem; border-radius: 20px;">0 Especialidades</span>
+                                        <span class="badge badge-success px-3 py-2 shadow-sm" id="badgeTotalMed" style="font-size: 0.9rem; border-radius: 20px;">0 Medicamentos</span>
+                                    </div>
+                                    <a href="#" id="btnDescargarPdfCartera" target="_blank" class="btn btn-danger btn-sm font-weight-bold px-3 py-2 shadow-sm mr-1">
+                                        <i class="fa fa-file-pdf mr-1"></i> Descargar PDF Oficial
+                                    </a>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold px-3 py-2" onclick="window.print()">
+                                        <i class="fa fa-print mr-1"></i> Imprimir
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Campos CONVENIO -->
-                    <div id="seccionConvenio" class="col-12" style="display:none;">
-                        <div class="row bg-light p-3 rounded mb-3 mx-1 border">
-                            <div class="col-md-12 mb-3">
-                                <label class="small font-weight-bold">Nro. de Resolución de Convenio</label>
-                                <input type="text" id="editEstNroResolucionConv" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="small font-weight-bold">Vigencia Desde</label>
-                                <input type="date" id="editEstVigConvDesde" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="small font-weight-bold">Vigencia Hasta</label>
-                                <input type="date" id="editEstVigConvHasta" class="form-control">
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="small font-weight-bold">Descripción del Convenio</label>
-                                <textarea id="editEstDescConv" class="form-control" rows="2"></textarea>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="small font-weight-bold">Áreas/Locales cubiertas (Contexto)</label>
-                                <textarea id="editEstLocalesConv" class="form-control" rows="2"></textarea>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="small font-weight-bold">Documento del Convenio (PDF)</label>
-                                <input type="file" id="editEstConvenioFile" class="form-control-file" accept=".pdf">
-                                <small id="convenioLink" class="d-block mt-1"></small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Campos ALQUILADO -->
-                    <div id="seccionAlquilado" class="col-12" style="display:none;">
-                        <div class="row bg-light p-3 rounded mb-3 mx-1 border">
-                            <div class="col-md-6 mb-3">
-                                <label class="small font-weight-bold">Superficie Terreno (m²)</label>
-                                <input type="number" step="0.01" id="editEstSupTerrenoAlq" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="small font-weight-bold">Sup. Construida (m²)</label>
-                                <input type="number" step="0.01" id="editEstSupConstruidaAlq" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="small font-weight-bold">Nro. de Llamado</label>
-                                <input type="text" id="editEstNroLlamado" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="small font-weight-bold">Nro. de Contrato</label>
-                                <input type="text" id="editEstNroContrato" class="form-control">
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="small font-weight-bold">Propietario</label>
-                                <input type="text" id="editEstPropietario" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="small font-weight-bold">Vigencia Desde</label>
-                                <input type="date" id="editEstVigDesde" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="small font-weight-bold">Vigencia Hasta</label>
-                                <input type="date" id="editEstVigHasta" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="small font-weight-bold">Canon Mensual</label>
-                                <input type="number" step="0.01" id="editEstCanon" class="form-control">
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="small font-weight-bold">Días de Pago de Alquiler</label>
-                                <input type="text" id="editEstFechaPago" class="form-control" placeholder="Ej: 1 al 10 de cada mes">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contratos de Ampliación y Mantenimiento -->
-                    <div class="col-md-12 mt-3 mb-2">
-                        <h6 class="font-weight-bold border-bottom pb-2 text-primary">Contratos (Ampliación / Mantenimiento)</h6>
-                    </div>
-                    <div class="col-md-12 mb-3">
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="agregarFilaContrato()">
-                            <i class="fa fa-plus"></i> Agregar Contrato
-                        </button>
-                        <div class="table-responsive mt-2">
-                            <table class="table table-sm table-bordered" id="tablaContratos">
-                                <thead class="bg-light">
-                                    <tr>
-                                        <th style="width:20%">Tipo</th>
-                                        <th style="width:20%">Nro. Contrato</th>
-                                        <th style="width:25%">Descripción</th>
-                                        <th style="width:25%">Costo / % Avance</th>
-                                        <th style="width:10%">Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Cartera de Servicios / Medicamentos con DataTables -->
-                    <div class="col-md-12 mt-4 mb-2">
-                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
-                            <div>
-                                <h6 class="font-weight-bold mb-0" style="color: #4f46e5; font-size: 1.05rem;">
-                                    <i class="fa fa-pills mr-1"></i> Cartera de Servicios y Medicamentos
-                                </h6>
-                                <small class="text-muted">Catálogo de medicamentos y especialidades asignados a este establecimiento</small>
-                            </div>
-                            <div class="d-flex align-items-center" id="statsCarteraBadges">
-                                <span class="badge badge-primary px-3 py-2 mr-2" id="badgeTotalEsp" style="font-size: 0.82rem; border-radius: 20px;">0 Especialidades</span>
-                                <span class="badge badge-info px-3 py-2" id="badgeTotalMed" style="font-size: 0.82rem; border-radius: 20px;">0 Medicamentos</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-12 mb-3">
-                        <div class="card border shadow-none" style="background-color: #f8fafc; border-radius: 8px;">
+                        {{-- Barra de Filtros y Búsqueda en Vivo --}}
+                        <div class="card border shadow-sm mb-4" style="border-radius: 8px; background: #ffffff;">
                             <div class="card-body p-3">
-                                <div class="row align-items-center mb-3">
-                                    <div class="col-md-6 col-lg-5">
-                                        <label class="small font-weight-bold text-muted mb-1 text-uppercase">
-                                            <i class="fa fa-filter mr-1 text-primary"></i> Filtrar por Especialidad:
-                                        </label>
-                                        <select id="filtroCarteraEspecialidad" class="form-control form-control-sm">
+                                <div class="row align-items-center">
+                                    <div class="col-md-5 mb-2 mb-md-0">
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
+                                            </div>
+                                            <input type="text" id="buscadorCarteraLive" class="form-control border-left-0" placeholder="Buscar medicamento o código en tiempo real...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2 mb-md-0">
+                                        <select id="filtroCarteraEspecialidad" class="form-control">
                                             <option value="">Todas las Especialidades</option>
                                         </select>
                                     </div>
-                                </div>
-
-                                <div id="contenedorTablaCartera">
-                                    <div class="table-responsive bg-white rounded border p-2">
-                                        <table class="table table-sm table-hover table-striped w-100" id="tablaCarteraMedicamentos">
-                                            <thead class="thead-light">
-                                                <tr>
-                                                    <th style="width: 25%;">Especialidad</th>
-                                                    <th style="width: 20%;">Código</th>
-                                                    <th style="width: 55%;">Medicamento / Descripción</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody></tbody>
-                                        </table>
+                                    <div class="col-md-3 text-md-right">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold mr-1" onclick="expandirTodasEspecialidades(true)" title="Expandir todo">
+                                            <i class="fa fa-expand-alt mr-1"></i> Expandir Todo
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold" onclick="expandirTodasEspecialidades(false)" title="Colapsar todo">
+                                            <i class="fa fa-compress-alt mr-1"></i> Colapsar
+                                        </button>
                                     </div>
                                 </div>
-                                <div id="sinCarteraAlert" style="display: none;" class="alert alert-light border py-3 small text-center text-muted">
-                                    <i class="fa fa-info-circle fa-2x mb-2 d-block text-secondary"></i> Este establecimiento aún no cuenta con una cartera de servicios de RIISS cargada.
+                            </div>
+                        </div>
+
+                        {{-- Contenedor de Especialidades con Tablas Agrupadas --}}
+                        <div id="contenedorEspecialidadesBloques">
+                            <!-- Se renderiza por JS organizado por especialidad con tablas elegantes -->
+                        </div>
+
+                        <div id="sinCarteraAlert" style="display: none;" class="alert alert-light border py-5 text-center text-muted" style="border-radius: 10px;">
+                            <i class="fa fa-info-circle fa-3x mb-3 d-block text-secondary"></i>
+                            <h5 class="font-weight-bold">Sin Cartera de Medicamentos Registrada</h5>
+                            <p class="small text-muted mb-0">Este establecimiento aún no cuenta con medicamentos ni especialidades vinculadas en el sistema RIISS.</p>
+                        </div>
+                    </div>
+
+                    {{-- ── TAB 2: INFORMACIÓN GENERAL & INMUEBLE ── --}}
+                    <div class="tab-pane fade" id="tabContenidoInmueble" role="tabpanel">
+                        <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 10px;">
+                            <h6 class="font-weight-bold border-bottom pb-2 mb-3 text-primary">
+                                <i class="fa fa-info-circle mr-1"></i> Datos Básicos del Establecimiento
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label class="small font-weight-bold">Nombre Oficial del Establecimiento</label>
+                                    <input type="text" id="editEstNombre" class="form-control">
                                 </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="small font-weight-bold">Código ID</label>
+                                    <input type="text" id="editEstCodigo" class="form-control" readonly style="background:#f8fafc">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="small font-weight-bold">Tipología / Clasificación</label>
+                                    <input type="text" id="editEstTipologia" class="form-control">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="small font-weight-bold">Departamento</label>
+                                    <input type="text" id="editEstDepto" class="form-control">
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label class="small font-weight-bold">Observación / Notas</label>
+                                    <textarea id="editEstObservacion" class="form-control" rows="2"></textarea>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="small font-weight-bold">Latitud</label>
+                                    <input type="number" step="any" id="editEstLat" class="form-control">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="small font-weight-bold">Longitud</label>
+                                    <input type="number" step="any" id="editEstLng" class="form-control">
+                                </div>
+                                
+                                <div class="col-md-12 mt-3 mb-2">
+                                    <h6 class="font-weight-bold border-bottom pb-2 text-primary">
+                                        <i class="fa fa-building mr-1"></i> Información del Inmueble
+                                    </h6>
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label class="small font-weight-bold">Condición del Inmueble</label>
+                                    <select id="editEstCondicion" class="form-control" onchange="toggleCondicionInmueble()">
+                                        <option value="">Seleccione...</option>
+                                        <option value="CONVENIO">CONVENIO</option>
+                                        <option value="ALQUILADO">ALQUILADO</option>
+                                        <option value="PROPIO">PROPIO</option>
+                                    </select>
+                                </div>
+
+                                <!-- Campos PROPIO -->
+                                <div id="seccionPropio" class="col-12" style="display:none;">
+                                    <div class="row bg-light p-3 rounded mb-3 mx-1 border">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="small font-weight-bold">Superficie Terreno (m²)</label>
+                                            <input type="number" step="0.01" id="editEstSupTerreno" class="form-control">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="small font-weight-bold">Sup. Construida (m²)</label>
+                                            <input type="number" step="0.01" id="editEstSupConstruida" class="form-control">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="small font-weight-bold">Plano (PDF)</label>
+                                            <input type="file" id="editEstPlanoFile" class="form-control-file" accept=".pdf">
+                                            <small id="planoLink" class="d-block mt-1"></small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Campos CONVENIO -->
+                                <div id="seccionConvenio" class="col-12" style="display:none;">
+                                    <div class="row bg-light p-3 rounded mb-3 mx-1 border">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="small font-weight-bold">Nro. de Resolución de Convenio</label>
+                                            <input type="text" id="editEstNroResolucionConv" class="form-control">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="small font-weight-bold">Vigencia Desde</label>
+                                            <input type="date" id="editEstVigConvDesde" class="form-control">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="small font-weight-bold">Vigencia Hasta</label>
+                                            <input type="date" id="editEstVigConvHasta" class="form-control">
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label class="small font-weight-bold">Descripción del Convenio</label>
+                                            <textarea id="editEstDescConv" class="form-control" rows="2"></textarea>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label class="small font-weight-bold">Áreas/Locales cubiertas</label>
+                                            <textarea id="editEstLocalesConv" class="form-control" rows="2"></textarea>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label class="small font-weight-bold">Documento del Convenio (PDF)</label>
+                                            <input type="file" id="editEstConvenioFile" class="form-control-file" accept=".pdf">
+                                            <small id="convenioLink" class="d-block mt-1"></small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Campos ALQUILADO -->
+                                <div id="seccionAlquilado" class="col-12" style="display:none;">
+                                    <div class="row bg-light p-3 rounded mb-3 mx-1 border">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="small font-weight-bold">Superficie Terreno (m²)</label>
+                                            <input type="number" step="0.01" id="editEstSupTerrenoAlq" class="form-control">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="small font-weight-bold">Sup. Construida (m²)</label>
+                                            <input type="number" step="0.01" id="editEstSupConstruidaAlq" class="form-control">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="small font-weight-bold">Nro. de Llamado</label>
+                                            <input type="text" id="editEstNroLlamado" class="form-control">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="small font-weight-bold">Nro. de Contrato</label>
+                                            <input type="text" id="editEstNroContrato" class="form-control">
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label class="small font-weight-bold">Propietario</label>
+                                            <input type="text" id="editEstPropietario" class="form-control">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="small font-weight-bold">Vigencia Desde</label>
+                                            <input type="date" id="editEstVigDesde" class="form-control">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="small font-weight-bold">Vigencia Hasta</label>
+                                            <input type="date" id="editEstVigHasta" class="form-control">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="small font-weight-bold">Canon Mensual</label>
+                                            <input type="number" step="0.01" id="editEstCanon" class="form-control">
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label class="small font-weight-bold">Días de Pago de Alquiler</label>
+                                            <input type="text" id="editEstFechaPago" class="form-control" placeholder="Ej: 1 al 10 de cada mes">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- ── TAB 3: CONTRATOS DE AMPLIACIÓN / MANTENIMIENTO ── --}}
+                    <div class="tab-pane fade" id="tabContenidoContratos" role="tabpanel">
+                        <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 10px;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="font-weight-bold mb-0 text-primary">
+                                    <i class="fa fa-file-contract mr-1"></i> Contratos de Ampliación y Mantenimiento
+                                </h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold" onclick="agregarFilaContrato()">
+                                    <i class="fa fa-plus mr-1"></i> Agregar Contrato
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered" id="tablaContratos">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th style="width:20%">Tipo</th>
+                                            <th style="width:20%">Nro. Contrato</th>
+                                            <th style="width:25%">Descripción</th>
+                                            <th style="width:25%">Costo / % Avance</th>
+                                            <th style="width:10%">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
 
                 </div>
-                <div id="msgEditEst"></div>
+
+                <div id="msgEditEst" class="mt-3"></div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button class="btn btn-dark" onclick="guardarEdicionEstablecimiento()">
-                    <i class="fa fa-save mr-1"></i>Guardar Cambios
-                </button>
+
+            {{-- Footer --}}
+            <div class="modal-footer bg-white border-top px-4 py-3 d-flex justify-content-between">
+                <small class="text-muted"><i class="fa fa-info-circle mr-1"></i> Información actualizada según la Red RIISS de IPS.</small>
+                <div>
+                    <button class="btn btn-secondary mr-2" data-dismiss="modal">Cerrar</button>
+                    <button class="btn btn-dark" onclick="guardarEdicionEstablecimiento()">
+                        <i class="fa fa-save mr-1"></i> Guardar Cambios
+                    </button>
+                </div>
             </div>
+
         </div>
     </div>
 </div>
@@ -1392,96 +1539,170 @@ function abrirEditarEstablecimiento(id) {
             });
         }
 
-        // Cargar Cartera de Servicios en DataTables
-        var $tabla = $('#tablaCarteraMedicamentos');
-        if ($.fn.DataTable.isDataTable($tabla)) {
-            $tabla.DataTable().clear().destroy();
-        }
-        $tabla.find('tbody').empty();
+        // Configurar Título, Badges y Enlaces PDF
+        $('#modalEstNombreTitulo').text(d.nombre_oficial || 'Establecimiento');
+        $('#modalEstIdBadge').text('ID: ' + d.id_establecimiento);
+        $('#modalEstDeptoBadge').text(d.departamento || 'Sin Depto');
+        
+        var pdfUrl = '/riiss/establecimientos/' + encodeURIComponent(d.id_establecimiento) + '/medicamentos-pdf';
+        $('#btnDescargarPdfModal').attr('href', pdfUrl);
+        $('#btnDescargarPdfCartera').attr('href', pdfUrl);
+
+        // Activar la pestaña principal de Cartera de Medicamentos por defecto
+        $('#tabLinkCartera').tab('show');
+
+        // Renderizar Cartera Organizada por Especialidad
+        var $contenedor = $('#contenedorEspecialidadesBloques');
+        $contenedor.empty();
 
         var $filtroEsp = $('#filtroCarteraEspecialidad');
         $filtroEsp.empty().append('<option value="">Todas las Especialidades</option>');
+        $('#buscadorCarteraLive').val('');
 
         var totalEspecialidades = 0;
         var totalMedicamentos = 0;
-        var rowsData = [];
 
         if (r.cartera_servicios && r.cartera_servicios.length > 0) {
-            $('#contenedorTablaCartera').show();
             $('#sinCarteraAlert').hide();
+            $contenedor.show();
             totalEspecialidades = r.cartera_servicios.length;
 
-            r.cartera_servicios.forEach(function(esp) {
+            r.cartera_servicios.forEach(function(esp, index) {
                 var isCronico = esp.nombre.includes('Crónicos') || esp.nombre.includes('Otra');
                 var numMeds = esp.medicamentos ? esp.medicamentos.length : 0;
                 totalMedicamentos += numMeds;
 
+                var collapseId = 'collapseEspModal_' + index;
+                var espIdSafe = 'espCard_' + index;
+
                 $filtroEsp.append(
-                    $('<option>').val(esp.nombre).text(esp.nombre + ' (' + numMeds + ')')
+                    $('<option>').val(esp.nombre).text(esp.nombre + ' (' + numMeds + ' meds)')
                 );
 
-                var badgeIcon = isCronico ? '<i class="fa fa-exclamation-triangle text-warning mr-1"></i>' : '<i class="fa fa-stethoscope mr-1" style="color: #4f46e5;"></i>';
-                var espLabel = '<span class="font-weight-bold text-dark">' + badgeIcon + esp.nombre + '</span>';
+                var badgeClass = isCronico ? 'badge-warning' : 'badge-primary';
+                var iconHtml = isCronico 
+                    ? '<i class="fa fa-exclamation-triangle text-warning mr-2"></i>' 
+                    : '<i class="fa fa-stethoscope mr-2" style="color: #4f46e5;"></i>';
+
+                var cardHtml = '<div class="esp-card" id="' + espIdSafe + '" data-esp-nombre="' + esp.nombre.toLowerCase() + '">';
+                cardHtml += '<button type="button" class="esp-header-btn ' + (isCronico ? 'cronico' : '') + '" data-toggle="collapse" data-target="#' + collapseId + '" aria-expanded="true">';
+                cardHtml += '  <div class="d-flex align-items-center">';
+                cardHtml += '    ' + iconHtml;
+                cardHtml += '    <span class="font-weight-bold text-dark" style="font-size: 1rem; text-transform: uppercase;">' + esp.nombre + '</span>';
+                cardHtml += '  </div>';
+                cardHtml += '  <div class="d-flex align-items-center">';
+                cardHtml += '    <span class="badge ' + badgeClass + ' px-3 py-2 mr-2" style="border-radius: 20px; font-size: 0.8rem;">' + numMeds + ' ' + (numMeds === 1 ? 'Med' : 'Medicamentos') + '</span>';
+                cardHtml += '    <i class="fa fa-chevron-down text-muted small"></i>';
+                cardHtml += '  </div>';
+                cardHtml += '</button>';
+
+                cardHtml += '<div id="' + collapseId + '" class="collapse collapse-esp show">';
+                cardHtml += '  <div class="p-0 border-top bg-white">';
 
                 if (esp.medicamentos && esp.medicamentos.length > 0) {
-                    esp.medicamentos.forEach(function(med) {
-                        rowsData.push([
-                            espLabel,
-                            '<span class="badge badge-light border text-dark font-weight-normal px-2 py-1" style="font-family: monospace; font-size: 0.85rem;">' + (med.codigo || 'S/C') + '</span>',
-                            '<span class="text-dark font-weight-500">' + med.nombre + '</span>'
-                        ]);
+                    cardHtml += '<div class="table-responsive mb-0">';
+                    cardHtml += '  <table class="table table-sm table-hover table-striped mb-0">';
+                    cardHtml += '    <thead style="background-color: #f1f5f9;">';
+                    cardHtml += '      <tr>';
+                    cardHtml += '        <th style="width: 7%; text-align: center; color: #475569;">#</th>';
+                    cardHtml += '        <th style="width: 23%; color: #475569;">Código Medicamento</th>';
+                    cardHtml += '        <th style="width: 70%; color: #475569;">Descripción del Medicamento / Presentación</th>';
+                    cardHtml += '      </tr>';
+                    cardHtml += '    </thead>';
+                    cardHtml += '    <tbody>';
+
+                    esp.medicamentos.forEach(function(med, mIdx) {
+                        var codStr = med.codigo || 'S/C';
+                        var nomStr = med.nombre || '';
+                        cardHtml += '<tr class="fila-med-item" data-search-text="' + (codStr + ' ' + nomStr).toLowerCase() + '">';
+                        cardHtml += '  <td style="text-align: center; color: #94a3b8; font-size: 0.82rem;">' + (mIdx + 1) + '</td>';
+                        cardHtml += '  <td><span class="badge badge-light border text-dark font-weight-bold px-2 py-1" style="font-family: monospace; font-size: 0.85rem;">' + codStr + '</span></td>';
+                        cardHtml += '  <td class="font-weight-500 text-dark">' + nomStr + '</td>';
+                        cardHtml += '</tr>';
                     });
+
+                    cardHtml += '    </tbody>';
+                    cardHtml += '  </table>';
+                    cardHtml += '</div>';
                 } else {
-                    rowsData.push([
-                        espLabel,
-                        '<span class="text-muted font-italic">-</span>',
-                        '<span class="text-muted font-italic">Sin medicamentos registrados</span>'
-                    ]);
+                    cardHtml += '<div class="p-3 text-muted small font-italic text-center">No hay medicamentos asignados para esta especialidad.</div>';
                 }
+
+                cardHtml += '  </div>';
+                cardHtml += '</div>';
+                cardHtml += '</div>';
+
+                $contenedor.append(cardHtml);
             });
 
             $('#badgeTotalEsp').text(totalEspecialidades + ' Especialidades').show();
             $('#badgeTotalMed').text(totalMedicamentos + ' Medicamentos').show();
 
-            var dtCartera = $tabla.DataTable({
-                data: rowsData,
-                responsive: true,
-                pageLength: 10,
-                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
-                language: {
-                    search: "Buscar medicamento:",
-                    lengthMenu: "Mostrar _MENU_ registros",
-                    info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-                    infoEmpty: "0 registros",
-                    infoFiltered: "(filtrado de _MAX_ totales)",
-                    paginate: { first: "«", last: "»", next: "›", previous: "‹" },
-                    zeroRecords: "No se encontraron medicamentos para esta búsqueda"
-                },
-                order: [[0, 'asc'], [2, 'asc']]
-            });
-
-            // Filtro por especialidad
+            // Filtro desplegable por especialidad
             $filtroEsp.off('change').on('change', function() {
-                var val = $(this).val();
-                if (val) {
-                    // Búsqueda en columna 0 (Especialidad)
-                    dtCartera.column(0).search(val).draw();
+                var selected = $(this).val().toLowerCase();
+                if (!selected) {
+                    $('.esp-card').show();
                 } else {
-                    dtCartera.column(0).search('').draw();
+                    $('.esp-card').each(function() {
+                        var cardEsp = $(this).attr('data-esp-nombre');
+                        if (cardEsp === selected) {
+                            $(this).show();
+                            $(this).find('.collapse-esp').collapse('show');
+                        } else {
+                            $(this).hide();
+                        }
+                    });
                 }
             });
 
-            setTimeout(function() {
-                dtCartera.columns.adjust().draw(false);
-            }, 250);
+            // Buscador en vivo
+            $('#buscadorCarteraLive').off('input').on('input', function() {
+                var q = $(this).val().toLowerCase().trim();
+                if (!q) {
+                    $('.esp-card').show();
+                    $('.fila-med-item').show();
+                    return;
+                }
+
+                $('.esp-card').each(function() {
+                    var $card = $(this);
+                    var matchedRows = 0;
+
+                    $card.find('.fila-med-item').each(function() {
+                        var text = $(this).attr('data-search-text') || '';
+                        if (text.indexOf(q) !== -1) {
+                            $(this).show();
+                            matchedRows++;
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+
+                    if (matchedRows > 0) {
+                        $card.show();
+                        $card.find('.collapse-esp').collapse('show');
+                    } else {
+                        $card.hide();
+                    }
+                });
+            });
 
         } else {
-            $('#contenedorTablaCartera').hide();
+            $contenedor.hide();
             $('#sinCarteraAlert').show();
             $('#badgeTotalEsp').text('0 Especialidades');
             $('#badgeTotalMed').text('0 Medicamentos');
         }
     });
+}
+
+function expandirTodasEspecialidades(expand) {
+    if (expand) {
+        $('.collapse-esp').collapse('show');
+    } else {
+        $('.collapse-esp').collapse('hide');
+    }
 }
 
 function toggleCondicionInmueble() {

@@ -311,4 +311,57 @@ class EstablecimientoController extends Controller
 
         return response()->json(['ok' => true, 'message' => "Se recalcularon {$count} establecimientos"]);
     }
+
+    /**
+     * GET /riiss/establecimientos/{id}/medicamentos-pdf
+     * Genera PDF oficial de Medicamentos por Especialidad para el técnico.
+     */
+    public function exportarPdfMedicamentos(string $id)
+    {
+        $est = Establecimiento::where('id_establecimiento', $id)
+            ->with(['especialidades', 'medicamentos'])
+            ->firstOrFail();
+
+        // Agrupar medicamentos por especialidad
+        $especialidadesMedicamentos = [];
+        $totalMedicamentos = 0;
+
+        foreach ($est->medicamentos as $med) {
+            $espId = $med->pivot->especialidad_id;
+            $esp = $est->especialidades->firstWhere('id', $espId);
+            $espNombre = $esp ? $esp->nombre : 'Pacientes Crónicos / Otras Áreas';
+
+            if (!isset($especialidadesMedicamentos[$espNombre])) {
+                $especialidadesMedicamentos[$espNombre] = [];
+            }
+            $especialidadesMedicamentos[$espNombre][] = [
+                'codigo' => $med->codigo,
+                'nombre' => $med->nombre,
+            ];
+            $totalMedicamentos++;
+        }
+
+        // Agregar especialidades sin medicamentos si las hay
+        foreach ($est->especialidades as $esp) {
+            if (!isset($especialidadesMedicamentos[$esp->nombre])) {
+                $especialidadesMedicamentos[$esp->nombre] = [];
+            }
+        }
+
+        // Ordenar alfabéticamente
+        ksort($especialidadesMedicamentos);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.riiss.establecimientos.pdf_medicamentos', [
+            'est' => $est,
+            'especialidadesMedicamentos' => $especialidadesMedicamentos,
+            'totalMedicamentos' => $totalMedicamentos,
+            'totalEspecialidades' => count($especialidadesMedicamentos),
+            'fecha' => now()->format('d/m/Y H:i'),
+        ]);
+
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'RIISS_Medicamentos_' . \Illuminate\Support\Str::slug($est->nombre_oficial) . '.pdf';
+        return $pdf->stream($filename);
+    }
 }

@@ -166,6 +166,11 @@ class RiissCenterController extends Controller
                         $btn .= '<a href="/riiss/evaluaciones/nueva/' . e($est->id_establecimiento) . '" class="circle-btn circle-btn-primary btn-sm" title="Nueva evaluación"><i class="fa fa-play"></i></a>';
                     }
                 }
+
+                if (($est->medicamentos_count ?? 0) > 0) {
+                    $btn .= '<a href="/riiss/establecimientos/' . e($est->id_establecimiento) . '/medicamentos-pdf" target="_blank" class="circle-btn btn-sm" style="background:#fee2e2; color:#b91c1c; border-color:#fca5a5;" title="Descargar PDF de Medicamentos por Especialidad"><i class="fa fa-file-pdf"></i></a>';
+                }
+
                 $btn .= '</div>';
 
                 return $btn;

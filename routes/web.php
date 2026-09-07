@@ -1006,6 +1006,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('establecimientos.recalcular');
         Route::get('establecimientos/buscar', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'buscar'])
             ->name('establecimientos.buscar');
+        Route::get('establecimientos/{id}/medicamentos-pdf', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'exportarPdfMedicamentos'])
+            ->name('establecimientos.medicamentos-pdf');
         Route::patch('establecimientos/{id}', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'update'])
             ->name('establecimientos.update');
 
