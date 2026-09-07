@@ -490,30 +490,33 @@
                 {{-- Filtros --}}
                 <div class="row mb-3 align-items-center">
                     <div class="col-md-3 mb-2">
-                        <input id="fBuscarUnificado" type="text" class="form-control" style="width:100%" placeholder="Buscar establecimiento...">
+                        <input id="fBuscarUnificado" type="text" class="form-control" style="width:100%" placeholder="🔍 Buscar establecimiento o depto...">
                     </div>
                     <div class="col-md-2 mb-2">
                         <select id="fTipologiaUnificada" class="form-control" style="width:100%">
-                            <option value=""></option>
+                            <option value="">Todas las Tipologías</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <select id="fProgramaCronico" class="form-control" style="width:100%">
+                            <option value="">Patologías Crónicas (Todas)</option>
+                            <option value="farmacia">💙 Con Farmacia Crónicos</option>
+                            <option value="empadronamiento">🩺 Con Empadronamiento SIH</option>
+                            <option value="ambos">🌟 Farmacia + Empadronamiento</option>
                         </select>
                     </div>
                     <div class="col-md-2 mb-2">
                         <select id="fConMedicamentos" class="form-control" style="width:100%">
-                            <option value=""></option>
+                            <option value="">Medicamentos (Todos)</option>
                             <option value="con">Con Medicamentos</option>
                             <option value="sin">Sin Medicamentos</option>
                         </select>
                     </div>
                     <div class="col-md-2 mb-2">
                         <select id="fConAsignacion" class="form-control" style="width:100%">
-                            <option value=""></option>
+                            <option value="">Asignaciones (Todas)</option>
                             <option value="con">Con Evaluador Asignado</option>
                             <option value="sin">Sin Evaluador Asignado</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <select id="fEvaluadorUnificado" class="form-control" style="width:100%">
-                            <option value=""></option>
                         </select>
                     </div>
                     <div class="col-md-1 mb-2">
@@ -1530,6 +1533,7 @@ $(document).ready(function() {
                 d.evaluador_id = $('#fEvaluadorUnificado').val() || '';
                 d.con_asignacion = $('#fConAsignacion').val() || '';
                 d.con_medicamentos = $('#fConMedicamentos').val() || '';
+                d.programa_cronico = $('#fProgramaCronico').val() || '';
             }
         },
         columns: [
@@ -1548,7 +1552,7 @@ $(document).ready(function() {
     window.tablaUnificada = tablaUnificada;
 
     $('#fBuscarUnificado').on('keyup change', function() { tablaUnificada.draw(); });
-    $('#fTipologiaUnificada, #fConAsignacion, #fConMedicamentos, #fEvaluadorUnificado').on('change', function() { tablaUnificada.draw(); });
+    $('#fTipologiaUnificada, #fConAsignacion, #fConMedicamentos, #fEvaluadorUnificado, #fProgramaCronico').on('change', function() { tablaUnificada.draw(); });
 
     historialTable = $('#tablaHistorial').DataTable({
         processing: true,
@@ -2367,6 +2371,57 @@ function guardarEdicionEstablecimiento() {
             $('#msgEditEst').html('<div class="alert alert-danger py-2">' + msg + '</div>');
         }
     });
+}
+
+// ── Floating Toast Notification System ──
+function mostrarToast(mensaje, tipo) {
+    tipo = tipo || 'success';
+    var bgColors = {
+        success: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        danger: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+        error: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+        warning: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+        info: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)'
+    };
+    var icons = {
+        success: 'fa-check-circle',
+        danger: 'fa-exclamation-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+    };
+
+    var toast = $('<div class="riiss-toast-notification shadow-lg">' +
+        '<i class="fa ' + (icons[tipo] || 'fa-bell') + ' fa-lg mr-2"></i>' +
+        '<span class="font-weight-bold" style="font-size:0.92rem;">' + mensaje + '</span>' +
+        '</div>');
+
+    toast.css({
+        position: 'fixed',
+        bottom: '28px',
+        right: '28px',
+        background: bgColors[tipo] || bgColors.success,
+        color: '#ffffff',
+        padding: '14px 22px',
+        borderRadius: '12px',
+        zIndex: 999999,
+        display: 'flex',
+        alignItems: 'center',
+        boxShadow: '0 12px 28px rgba(0,0,0,0.3)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        opacity: 0,
+        transform: 'translateY(20px)'
+    });
+
+    $('body').append(toast);
+    setTimeout(function() {
+        toast.css({ opacity: 1, transform: 'translateY(0)' });
+    }, 40);
+
+    setTimeout(function() {
+        toast.css({ opacity: 0, transform: 'translateY(20px)' });
+        setTimeout(function() { toast.remove(); }, 350);
+    }, 3800);
 }
 
 // Delegador para abrir el modal desde las tarjetas (global)

@@ -80,6 +80,16 @@ class RiissCenterController extends Controller
             }
         }
 
+        if ($programaCronico = $request->get('programa_cronico')) {
+            if ($programaCronico === 'farmacia') {
+                $query->where('habilita_farmacia_cronicos', true);
+            } elseif ($programaCronico === 'empadronamiento') {
+                $query->where('habilita_empadronamiento_cronicos', true);
+            } elseif ($programaCronico === 'ambos') {
+                $query->where('habilita_farmacia_cronicos', true)->where('habilita_empadronamiento_cronicos', true);
+            }
+        }
+
         return DataTables::of($query)
             // Aplicar filtrado manual para la búsqueda global para evitar que Yajra
             // construya cláusulas usando nombres de columna enviados por el cliente
@@ -106,7 +116,15 @@ class RiissCenterController extends Controller
                     $medsBadge = ' <span class="badge badge-pill badge-light border text-muted ml-1" style="font-size: 0.70rem; vertical-align: middle;" title="Sin medicamentos registrados"><i class="fa fa-pills mr-1"></i>0 meds</span>';
                 }
 
-                return '<strong>' . e($est->nombre_oficial) . '</strong>' . $medsBadge . '<br><small class="text-muted">ID: ' . e($est->id_establecimiento) . '</small>';
+                $cronicosBadge = '';
+                if (!empty($est->habilita_farmacia_cronicos)) {
+                    $cronicosBadge .= ' <span class="badge badge-pill badge-primary ml-1 shadow-sm" style="font-size: 0.68rem; font-weight: 600; background-color: #2563eb;" title="Farmacia para Pacientes Crónicos Habilitada (RCA 007-043/22)"><i class="fas fa-prescription-bottle-alt mr-1"></i>Farmacia Crónicos</span>';
+                }
+                if (!empty($est->habilita_empadronamiento_cronicos)) {
+                    $cronicosBadge .= ' <span class="badge badge-pill badge-warning ml-1 shadow-sm text-dark" style="font-size: 0.68rem; font-weight: 600;" title="Empadronamiento en SIH Habilitado"><i class="fas fa-id-card-alt mr-1"></i>SIH Crónicos</span>';
+                }
+
+                return '<strong>' . e($est->nombre_oficial) . '</strong>' . $medsBadge . $cronicosBadge . '<br><small class="text-muted">ID: ' . e($est->id_establecimiento) . '</small>';
             })
             ->addColumn('tipologia_ubicacion', function ($est) {
                 $dept = $est->departamento ?: '—';
