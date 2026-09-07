@@ -556,6 +556,19 @@
                         </div>
                     </div>
 
+                    <!-- Cartera de Servicios / Medicamentos -->
+                    <div class="col-md-12 mt-3 mb-2">
+                        <h6 class="font-weight-bold border-bottom pb-2 text-primary" style="color: #6366f1 !important;">
+                            <i class="fa fa-pills mr-1"></i> Cartera de Servicios y Medicamentos
+                        </h6>
+                        <small class="text-muted mb-2 d-block">Especialidades disponibles y medicamentos asignados para este establecimiento.</small>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <div id="accordionCarteraServicios" class="accordion">
+                            <!-- Se llena por JS -->
+                        </div>
+                    </div>
+
                 </div>
                 <div id="msgEditEst"></div>
             </div>
@@ -1327,6 +1340,49 @@ function abrirEditarEstablecimiento(id) {
             d.inmueble_contratos.forEach(function(c) {
                 agregarFilaContrato(c);
             });
+        }
+
+        // Cargar Cartera de Servicios
+        var acc = $('#accordionCarteraServicios');
+        acc.empty();
+        if (r.cartera_servicios && r.cartera_servicios.length > 0) {
+            r.cartera_servicios.forEach(function(esp, index) {
+                var isCronico = esp.nombre.includes('Crónicos') || esp.nombre.includes('Otra');
+                var headerId = 'headingEsp' + index;
+                var collapseId = 'collapseEsp' + index;
+                var badgeColor = isCronico ? 'badge-warning' : 'badge-primary';
+                
+                var medicamentosHtml = '';
+                if (esp.medicamentos && esp.medicamentos.length > 0) {
+                    medicamentosHtml += '<ul class="list-group list-group-sm mt-2" style="max-height: 250px; overflow-y: auto;">';
+                    esp.medicamentos.forEach(function(med) {
+                        medicamentosHtml += '<li class="list-group-item py-1 px-2 border-0 border-bottom" style="font-size: 0.85rem;"><span class="badge badge-secondary mr-2">' + med.codigo + '</span> ' + med.nombre + '</li>';
+                    });
+                    medicamentosHtml += '</ul>';
+                } else {
+                    medicamentosHtml = '<div class="text-muted small p-2"><i>No hay medicamentos registrados para esta especialidad.</i></div>';
+                }
+
+                var card = `
+                <div class="card mb-2" style="border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <div class="card-header p-0" id="${headerId}" style="background-color: #f8fafc; border-bottom: none;">
+                        <h2 class="mb-0">
+                            <button class="btn btn-link btn-block text-left text-dark font-weight-bold p-3 d-flex justify-content-between align-items-center" type="button" data-toggle="collapse" data-target="#${collapseId}" style="text-decoration: none; font-size: 0.95rem;">
+                                <span><i class="fa ${isCronico ? 'fa-exclamation-triangle text-warning' : 'fa-stethoscope text-indigo'} mr-2" style="${isCronico ? '' : 'color: #6366f1;'}"></i> ${esp.nombre}</span>
+                                <span class="badge ${badgeColor} badge-pill py-1 px-2">${esp.medicamentos.length} Meds</span>
+                            </button>
+                        </h2>
+                    </div>
+                    <div id="${collapseId}" class="collapse" aria-labelledby="${headerId}" data-parent="#accordionCarteraServicios">
+                        <div class="card-body p-2 bg-white" style="border-top: 1px solid #e2e8f0;">
+                            ${medicamentosHtml}
+                        </div>
+                    </div>
+                </div>`;
+                acc.append(card);
+            });
+        } else {
+            acc.html('<div class="alert alert-light border py-3 small text-center text-muted"><i class="fa fa-info-circle fa-2x mb-2 d-block"></i> Este establecimiento aún no cuenta con una cartera de servicios de RIISS cargada.</div>');
         }
     });
 }

@@ -182,12 +182,47 @@ class EstablecimientoController extends Controller
     public function show(string $id): JsonResponse
     {
         $est = Establecimiento::where('id_establecimiento', $id)
-            ->with(['ultimaEvaluacion', 'homologaciones', 'inmuebleContratos'])
+            ->with(['ultimaEvaluacion', 'homologaciones', 'inmuebleContratos', 'especialidades', 'medicamentos'])
             ->firstOrFail();
+
+        $especialidadesMap = $est->especialidades->keyBy('id');
+        $carteraServicios = [];
+
+        foreach ($est->medicamentos as $med) {
+            $espId = $med->pivot->especialidad_id;
+            if (!isset($carteraServicios[$espId])) {
+                $carteraServicios[$espId] = [
+                    'id' => $espId,
+                    'nombre' => $especialidadesMap->has($espId) ? $especialidadesMap->get($espId)->nombre : 'Otra (Programas / Crónicos)',
+                    'medicamentos' => []
+                ];
+            }
+            $carteraServicios[$espId]['medicamentos'][] = [
+                'id' => $med->id,
+                'codigo' => $med->codigo,
+                'nombre' => $med->nombre,
+            ];
+        }
+
+        foreach ($est->especialidades as $esp) {
+            if (!isset($carteraServicios[$esp->id])) {
+                $carteraServicios[$esp->id] = [
+                    'id' => $esp->id,
+                    'nombre' => $esp->nombre,
+                    'medicamentos' => []
+                ];
+            }
+        }
+
+        // Ordenar alfabéticamente por nombre de especialidad
+        usort($carteraServicios, function($a, $b) {
+            return strcmp($a['nombre'], $b['nombre']);
+        });
 
         return response()->json([
             'ok'                 => true,
             'data'               => $est,
+            'cartera_servicios'  => $carteraServicios,
             'cartera_requisitos' => $this->carteraService->resumenRequisitos($est),
         ]);
     }
