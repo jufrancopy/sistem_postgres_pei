@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1">
     <title>Portal de Auditoría - {{ $est->nombre_oficial }} | RIISS IPS</title>
     
     <!-- Google Fonts & Icons -->
@@ -27,7 +27,9 @@
             --text-muted: #64748b;
         }
 
-        body {
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-page);
             color: var(--text-dark);
@@ -38,52 +40,92 @@
         .top-navbar {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: white;
-            padding: 0.85rem 1.5rem;
+            padding: 0.75rem 1rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .hero-banner {
             background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
             color: white;
-            padding: 2.25rem 1.5rem 2rem;
+            padding: 1.5rem 1rem;
             position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .top-navbar { padding: 0.85rem 1.5rem; }
+            .hero-banner { padding: 2.25rem 1.5rem 2rem; }
         }
 
         .stat-card {
             background: white;
-            border-radius: 1rem;
-            padding: 1.25rem;
+            border-radius: 0.85rem;
+            padding: 0.85rem 1rem;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
             transition: transform 0.2s, box-shadow 0.2s;
             height: 100%;
         }
+        @media (min-width: 768px) {
+            .stat-card {
+                padding: 1.25rem;
+                border-radius: 1rem;
+            }
+        }
         .stat-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08);
         }
 
         .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 0.75rem;
+            width: 38px;
+            height: 38px;
+            border-radius: 0.65rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        @media (min-width: 768px) {
+            .stat-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 1.4rem;
+                border-radius: 0.75rem;
+            }
+        }
+
+        .stat-val {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+        @media (min-width: 768px) {
+            .stat-val { font-size: 1.5rem; }
         }
 
         /* Pestañas */
+        .custom-tabs {
+            border-bottom: none;
+            gap: 0.5rem;
+        }
         .custom-tabs .nav-link {
             font-weight: 700;
             color: #475569;
             border: none;
-            padding: 0.85rem 1.5rem;
+            padding: 0.65rem 1rem;
             border-radius: 0.75rem;
-            margin-right: 0.5rem;
             background: white;
             border: 1px solid #e2e8f0;
             transition: all 0.2s;
+            font-size: 0.88rem;
+        }
+        @media (min-width: 768px) {
+            .custom-tabs .nav-link {
+                padding: 0.85rem 1.5rem;
+                font-size: 0.95rem;
+            }
         }
         .custom-tabs .nav-link.active {
             background: #0284c7 !important;
@@ -109,13 +151,18 @@
             width: 100%;
             background: #f8fafc;
             border: none;
-            padding: 1rem 1.25rem;
+            padding: 0.85rem 1rem;
             text-align: left;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
             outline: none !important;
+        }
+        @media (min-width: 768px) {
+            .esp-header-btn {
+                padding: 1rem 1.25rem;
+            }
         }
         .esp-header-btn.cronico {
             background: #eff6ff;
@@ -126,12 +173,42 @@
         .btn-action-pdf {
             border-radius: 0.65rem;
             font-weight: 700;
-            padding: 0.6rem 1.1rem;
-            font-size: 0.88rem;
+            padding: 0.5rem 0.85rem;
+            font-size: 0.82rem;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
             transition: all 0.2s;
+        }
+        @media (min-width: 768px) {
+            .btn-action-pdf {
+                padding: 0.6rem 1.1rem;
+                font-size: 0.88rem;
+            }
+        }
+
+        /* DataTables responsive adjustments */
+        table.dataTable tbody td {
+            vertical-align: middle;
+        }
+        .dataTables_wrapper .dataTables_filter input {
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            padding: 0.35rem 0.65rem;
+            outline: none;
+            width: 100% !important;
+            max-width: 350px;
+        }
+        @media (max-width: 767px) {
+            .dataTables_wrapper .dataTables_filter {
+                text-align: left !important;
+                margin-top: 0.5rem;
+            }
+            .dataTables_wrapper .dataTables_filter input {
+                max-width: 100%;
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
         }
 
         @media print {
@@ -153,26 +230,26 @@
 
 <!-- Barra Superior -->
 <nav class="top-navbar no-print">
-    <div class="container-fluid d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center">
+    <div class="container-fluid px-2 px-md-3 d-flex align-items-center justify-content-between flex-wrap" style="gap: 8px;">
+        <div class="d-flex align-items-center flex-wrap" style="gap: 6px;">
             @if(!empty($es_global))
-                <a href="{{ $url_volver_red ?? '#' }}" class="btn btn-sm btn-outline-light font-weight-bold mr-3" style="border-radius: 20px;">
-                    <i class="fas fa-arrow-left mr-1"></i> Volver a Toda la Red
+                <a href="{{ $url_volver_red ?? '#' }}" class="btn btn-sm btn-outline-light font-weight-bold mr-1" style="border-radius: 20px; font-size: 0.78rem;">
+                    <i class="fas fa-arrow-left mr-1"></i> <span class="d-none d-sm-inline">Volver a Toda la Red</span><span class="d-inline d-sm-none">Red</span>
                 </a>
             @endif
-            <span class="badge badge-light px-2 py-1 mr-2 text-dark font-weight-bold" style="font-size: 0.82rem;">
-                <i class="fas fa-shield-alt text-primary mr-1"></i> AUDITORÍA EXTERNA
+            <span class="badge badge-light px-2 py-1 text-dark font-weight-bold" style="font-size: 0.78rem;">
+                <i class="fas fa-shield-alt text-primary mr-1"></i> AUDITORÍA
             </span>
-            <span class="font-weight-bold text-white d-none d-sm-inline" style="font-size: 0.95rem;">
+            <span class="font-weight-bold text-white d-none d-md-inline" style="font-size: 0.9rem;">
                 Instituto de Previsión Social (IPS) • RIISS
             </span>
         </div>
-        <div class="d-flex align-items-center">
-            <span class="badge badge-warning px-3 py-2 text-dark font-weight-bold" style="border-radius: 20px; font-size: 0.82rem;">
-                <i class="fas fa-hourglass-half mr-1"></i> Validez: Quedan {{ $tokenRecord->tiempo_restante_texto }}
+        <div class="d-flex align-items-center" style="gap: 6px;">
+            <span class="badge badge-warning px-2 py-1 text-dark font-weight-bold" style="border-radius: 20px; font-size: 0.78rem;">
+                <i class="fas fa-hourglass-half mr-1"></i> Quedan {{ $tokenRecord->tiempo_restante_texto }}
             </span>
-            <button onclick="window.print()" class="btn btn-sm btn-outline-light ml-3 font-weight-bold d-none d-md-inline-block" style="border-radius: 20px;">
-                <i class="fas fa-print mr-1"></i> Imprimir Pantalla
+            <button onclick="window.print()" class="btn btn-sm btn-outline-light font-weight-bold d-none d-md-inline-block" style="border-radius: 20px;">
+                <i class="fas fa-print mr-1"></i> Imprimir
             </button>
         </div>
     </div>
@@ -180,36 +257,36 @@
 
 <!-- Hero Banner con Ficha Principal -->
 <div class="hero-banner">
-    <div class="container-fluid">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <div class="d-flex flex-wrap align-items-center mb-2" style="gap: 0.5rem;">
+    <div class="container-fluid px-2 px-md-3">
+        <div class="row align-items-center m-0">
+            <div class="col-lg-8 p-0">
+                <div class="d-flex flex-wrap align-items-center mb-2" style="gap: 0.4rem;">
                     @if(!empty($es_global))
-                        <a href="{{ $url_volver_red ?? '#' }}" class="badge badge-warning px-3 py-1 font-weight-bold text-dark text-decoration-none mr-1" style="font-size: 0.8rem;">
+                        <a href="{{ $url_volver_red ?? '#' }}" class="badge badge-warning px-2 py-1 font-weight-bold text-dark text-decoration-none" style="font-size: 0.75rem;">
                             <i class="fas fa-th-list mr-1"></i> Directorio Nacional
                         </a>
                     @endif
-                    <span class="badge badge-dark px-3 py-1 text-white" style="font-size: 0.8rem; letter-spacing: 0.05em; background: rgba(0,0,0,0.35);">
+                    <span class="badge badge-dark px-2 py-1 text-white" style="font-size: 0.75rem; letter-spacing: 0.05em; background: rgba(0,0,0,0.35);">
                         ID: {{ $est->id_establecimiento }}
                     </span>
-                    <span class="badge badge-light px-3 py-1 font-weight-bold text-dark" style="font-size: 0.8rem;">
+                    <span class="badge badge-light px-2 py-1 font-weight-bold text-dark" style="font-size: 0.75rem;">
                         <i class="fas fa-map-marker-alt text-danger mr-1"></i> {{ $est->departamento ?? 'Paraguay' }}
                     </span>
                     @if($est->complejidad)
-                        <span class="badge badge-info px-3 py-1 font-weight-bold text-white" style="font-size: 0.8rem;">
+                        <span class="badge badge-info px-2 py-1 font-weight-bold text-white" style="font-size: 0.75rem;">
                             {{ $est->complejidad }}
                         </span>
                     @endif
-                    <span class="badge badge-success px-3 py-1 font-weight-bold" style="font-size: 0.8rem;">
-                        <i class="fas fa-check-circle mr-1"></i> Modo Solo Lectura
+                    <span class="badge badge-success px-2 py-1 font-weight-bold" style="font-size: 0.75rem;">
+                        <i class="fas fa-check-circle mr-1"></i> Solo Lectura
                     </span>
                 </div>
                 
-                <h2 class="font-weight-800 text-white mb-2" style="font-size: 1.85rem; letter-spacing: -0.02em;">
+                <h2 class="font-weight-800 text-white mb-1" style="font-size: 1.45rem; letter-spacing: -0.02em;">
                     {{ $est->nombre_oficial }}
                 </h2>
-                <div class="text-light" style="font-size: 0.95rem; opacity: 0.95;">
-                    <i class="fas fa-hospital-alt mr-1"></i> Tipo: <strong>{{ $est->tipo_est ?? 'Establecimiento de Salud' }}</strong>
+                <div class="text-light small" style="opacity: 0.95; line-height: 1.4;">
+                    <i class="fas fa-hospital-alt mr-1"></i> {{ $est->tipo_est ?? 'Establecimiento de Salud' }}
                     @if($est->microred)
                         • Microred: <strong>{{ $est->microred }}</strong>
                     @endif
@@ -217,20 +294,20 @@
             </div>
 
             <!-- Acciones Rápidas de Descarga -->
-            <div class="col-lg-4 mt-3 mt-lg-0 text-lg-right no-print">
+            <div class="col-lg-4 mt-3 mt-lg-0 text-lg-right p-0 no-print">
                 <div class="d-flex flex-column flex-sm-row flex-lg-column align-items-stretch justify-content-end" style="gap: 8px;">
                     <a href="{{ route('riiss.portal-auditor.pdf', ['token' => $tokenRecord->token, 'est_id' => $est->id_establecimiento, 'tipo' => 'consolidado']) }}" target="_blank" class="btn btn-light btn-action-pdf shadow-sm text-dark">
                         <i class="fas fa-file-pdf text-danger fa-lg"></i>
                         <div class="text-left" style="line-height: 1.2;">
                             <div class="font-weight-bold">Planilla Auditoría Farmacia</div>
-                            <small class="text-muted" style="font-size: 0.72rem;">Consolidado / Checklist con firmas</small>
+                            <small class="text-muted" style="font-size: 0.7rem;">Consolidado / Checklist con firmas</small>
                         </div>
                     </a>
                     <a href="{{ route('riiss.portal-auditor.pdf', ['token' => $tokenRecord->token, 'est_id' => $est->id_establecimiento, 'tipo' => 'especialidad']) }}" target="_blank" class="btn btn-outline-light btn-action-pdf">
                         <i class="fas fa-stethoscope fa-lg"></i>
                         <div class="text-left" style="line-height: 1.2;">
                             <div class="font-weight-bold">Reporte por Especialidad</div>
-                            <small style="opacity: 0.8; font-size: 0.72rem;">Desglose médico detallado</small>
+                            <small style="opacity: 0.8; font-size: 0.7rem;">Desglose médico detallado</small>
                         </div>
                     </a>
                 </div>
@@ -240,58 +317,58 @@
 </div>
 
 <!-- Contenedor Principal -->
-<div class="container-fluid py-4">
+<div class="container-fluid px-2 px-md-3 py-3 py-md-4">
 
-    <!-- KPI Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+    <!-- KPI Cards (Grid 2x2 en móvil / 4 columnas en desktop) -->
+    <div class="row mb-3 mb-md-4">
+        <div class="col-6 col-lg-3 mb-2 mb-lg-0 px-2">
             <div class="stat-card d-flex align-items-center">
-                <div class="stat-icon mr-3" style="background-color: #e0f2fe; color: #0284c7;">
+                <div class="stat-icon mr-2 mr-md-3" style="background-color: #e0f2fe; color: #0284c7;">
                     <i class="fas fa-pills"></i>
                 </div>
-                <div>
-                    <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #64748b;">Vademécum Único</div>
-                    <div class="font-weight-bold" style="font-size: 1.5rem; color: #0f172a;">{{ $totalMedicamentosUnicos }}</div>
-                    <div style="font-size: 0.75rem; color: #0284c7; font-weight: 600;">Medicamentos sin duplicar</div>
+                <div class="overflow-hidden">
+                    <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: #64748b;" class="text-truncate">Vademécum Único</div>
+                    <div class="stat-val text-primary">{{ $totalMedicamentosUnicos }}</div>
+                    <div class="d-none d-md-block" style="font-size: 0.72rem; color: #0284c7; font-weight: 600;">Medicamentos sin duplicar</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+        <div class="col-6 col-lg-3 mb-2 mb-lg-0 px-2">
             <div class="stat-card d-flex align-items-center">
-                <div class="stat-icon mr-3" style="background-color: #dcfce7; color: #16a34a;">
+                <div class="stat-icon mr-2 mr-md-3" style="background-color: #dcfce7; color: #16a34a;">
                     <i class="fas fa-user-md"></i>
                 </div>
-                <div>
-                    <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #64748b;">Especialidades</div>
-                    <div class="font-weight-bold" style="font-size: 1.5rem; color: #0f172a;">{{ $totalEspecialidades }}</div>
-                    <div style="font-size: 0.75rem; color: #16a34a; font-weight: 600;">Servicios en Cartera</div>
+                <div class="overflow-hidden">
+                    <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: #64748b;" class="text-truncate">Especialidades</div>
+                    <div class="stat-val text-success">{{ $totalEspecialidades }}</div>
+                    <div class="d-none d-md-block" style="font-size: 0.72rem; color: #16a34a; font-weight: 600;">Servicios en Cartera</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3 col-sm-6 mb-3 mb-sm-0">
+        <div class="col-6 col-lg-3 px-2">
             <div class="stat-card d-flex align-items-center">
-                <div class="stat-icon mr-3" style="background-color: #fef3c7; color: #d97706;">
+                <div class="stat-icon mr-2 mr-md-3" style="background-color: #fef3c7; color: #d97706;">
                     <i class="fas fa-clipboard-list"></i>
                 </div>
-                <div>
-                    <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #64748b;">Asignaciones Totales</div>
-                    <div class="font-weight-bold" style="font-size: 1.5rem; color: #0f172a;">{{ $totalAsignaciones }}</div>
-                    <div style="font-size: 0.75rem; color: #d97706; font-weight: 600;">Líneas por especialidad</div>
+                <div class="overflow-hidden">
+                    <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: #64748b;" class="text-truncate">Asignaciones</div>
+                    <div class="stat-val text-warning">{{ $totalAsignaciones }}</div>
+                    <div class="d-none d-md-block" style="font-size: 0.72rem; color: #d97706; font-weight: 600;">Líneas por especialidad</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3 col-sm-6">
+        <div class="col-6 col-lg-3 px-2">
             <div class="stat-card d-flex align-items-center">
-                <div class="stat-icon mr-3" style="background-color: #f1f5f9; color: #475569;">
+                <div class="stat-icon mr-2 mr-md-3" style="background-color: #f1f5f9; color: #475569;">
                     <i class="fas fa-building"></i>
                 </div>
-                <div>
-                    <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #64748b;">Inmueble / Régimen</div>
-                    <div class="font-weight-bold" style="font-size: 1.15rem; color: #0f172a;">{{ $est->condicion_inmueble ?? 'No especificado' }}</div>
-                    <div style="font-size: 0.75rem; color: #64748b;">
+                <div class="overflow-hidden">
+                    <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: #64748b;" class="text-truncate">Inmueble</div>
+                    <div class="stat-val text-dark text-truncate" style="font-size: 0.95rem;">{{ $est->condicion_inmueble ?? 'No especificado' }}</div>
+                    <div class="d-none d-md-block" style="font-size: 0.7rem; color: #64748b;">
                         Sup: {{ $est->superficie_construida ? number_format($est->superficie_construida, 0, ',', '.') . ' m²' : 'S/D' }}
                     </div>
                 </div>
@@ -606,6 +683,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.7/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.7/js/responsive.bootstrap4.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
