@@ -93,7 +93,7 @@ class RiissAuditorPortalController extends Controller
 
         // Cargar Establecimiento con sus relaciones
         $est = Establecimiento::where('id_establecimiento', $tokenRecord->establecimiento_id)
-            ->with(['especialidades.medicamentos', 'medicamentos', 'inmuebleContratos', 'complejidadTipo'])
+            ->with(['especialidades', 'medicamentos', 'inmuebleContratos', 'complejidadTipo'])
             ->firstOrFail();
 
         $especialidadesMap = $est->especialidades->keyBy('id');
