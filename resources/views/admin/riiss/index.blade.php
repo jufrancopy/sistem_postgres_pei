@@ -1312,7 +1312,7 @@
                 <button type="button" class="close text-white" data-dismiss="modal"><span>×</span></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="editEstId" value="">
+                <input type="hidden" id="editEstIdSimple" value="">
                 <div class="row">
                     <div class="col-md-12 mb-3">
                         <label class="small font-weight-bold">Nombre oficial</label>
@@ -1941,6 +1941,7 @@ function renderGapModal(data) {
 
 
 function abrirEditarEstablecimiento(id) {
+    window.currentEditingEstId = id;
     $('#editEstId').val(id);
     $('#msgEditEst').html('<div class="text-center py-3"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i></div>');
     $('#modalEditarEstablecimiento').modal('show');
@@ -2286,7 +2287,12 @@ function agregarFilaContrato(c = {}) {
 }
 
 function guardarEdicionEstablecimiento() {
-    var id = $('#editEstId').val();
+    var id = $('#editEstId').val() || window.currentEditingEstId || $('#editEstCodigo').val();
+    
+    if (!id) {
+        $('#msgEditEst').html('<div class="alert alert-danger py-2"><i class="fa fa-exclamation-triangle mr-1"></i> Error: No se pudo identificar el ID del establecimiento a guardar.</div>');
+        return;
+    }
     
     var formData = new FormData();
     formData.append('_method', 'PATCH');
