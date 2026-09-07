@@ -74,6 +74,39 @@ class RiissAuditoriaToken extends Model
         return "{$minutos}m";
     }
 
+    public function isOnline(): bool
+    {
+        if ($this->isExpirado() || !$this->ultimo_acceso_at) {
+            return false;
+        }
+        return $this->ultimo_acceso_at->diffInMinutes(Carbon::now()) <= 3;
+    }
+
+    public function getEstadoAuditorAttribute(): string
+    {
+        if ($this->estado === 'revocado') {
+            return 'revocado';
+        }
+        if (Carbon::now()->greaterThan($this->expira_en)) {
+            return 'expirado';
+        }
+        if ($this->isOnline()) {
+            return 'online';
+        }
+        if ($this->visitas_count > 0 && $this->ultimo_acceso_at) {
+            return 'desconectado';
+        }
+        return 'pendiente';
+    }
+
+    public function getUltimoAccesoHumanoAttribute(): string
+    {
+        if (!$this->ultimo_acceso_at) {
+            return 'Sin accesos aún';
+        }
+        return $this->ultimo_acceso_at->diffForHumans();
+    }
+
     public static function generar(
         ?string $establecimientoId = null,
         int $duracionHoras = 24,

@@ -263,6 +263,17 @@
     color: #92400e !important;
     border-color: #f59e0b !important;
 }
+@keyframes pulseGlowAudit {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+.badge-online-live {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+    animation: pulseGlowAudit 1.6s infinite;
+    font-weight: 700;
+}
 </style>
 @endpush
 
@@ -278,8 +289,11 @@
             </div>
             @hasanyrole('Administrador|Super Admin|Coordinador RIISS|Coordinador - RIISS|Coordinación RIISS')
             <div class="text-right mt-3 mt-md-0 d-flex align-items-center justify-content-end flex-wrap" style="gap: 8px;">
+                <button type="button" class="btn btn-dark btn-sm font-weight-bold shadow-sm" onclick="abrirModalMonitoreoAuditores()" style="border-radius: 8px; background: #0f172a; border-color: #334155;">
+                    <i class="fa fa-user-shield text-warning mr-1"></i> Auditores Externos <span class="badge badge-success ml-1" id="badgeAuditoresOnlineHeader">0 online</span>
+                </button>
                 <button type="button" class="btn btn-success btn-sm font-weight-bold shadow-sm" onclick="abrirModalGenerarAccesoAuditor('', '🌐 Toda la Red Nacional (Todos los Establecimientos)')" style="border-radius: 8px;">
-                    <i class="fab fa-whatsapp mr-1"></i> Compartir Acceso Global a Auditor
+                    <i class="fab fa-whatsapp mr-1"></i> Compartir Acceso Global
                 </button>
                 <button class="btn btn-white btn-sm font-weight-bold" onclick="abrirModalNuevaAsignacion()" style="color: #00acc1; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.95); border-radius: 8px;">
                     <i class="fa fa-plus-circle mr-1 text-info"></i> Nueva Asignación
@@ -1038,6 +1052,126 @@
     </div>
 </div>
 
+{{-- Modal de Monitoreo de Auditores Externos y Estado En Línea --}}
+<div class="modal fade" id="modalMonitoreoAuditores" tabindex="-1" role="dialog" style="z-index: 1055;">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document" style="max-width: 92vw;">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                <div class="d-flex align-items-center justify-content-between w-100 pr-3 flex-wrap" style="gap: 10px;">
+                    <div class="d-flex align-items-center">
+                        <div class="mr-3 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255,255,255,0.12); border-radius: 10px;">
+                            <i class="fa fa-user-shield text-warning fa-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-weight-bold mb-0 text-white">Monitoreo de Auditores & Asesores Externos</h5>
+                            <small class="text-white-50">Visualización en tiempo real de accesos, vigencia y estado de conexión</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                        <button type="button" class="btn btn-sm btn-success font-weight-bold" onclick="abrirModalGenerarAccesoAuditor('', '🌐 Toda la Red Nacional (Todos los Establecimientos)')">
+                            <i class="fa fa-plus mr-1"></i> Generar Nuevo Acceso
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-light font-weight-bold" onclick="cargarListaTokensAuditores()">
+                            <i class="fa fa-sync-alt mr-1"></i> Actualizar Lista
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" style="outline: none;">
+                    <span style="font-size: 1.5rem;">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body p-3 p-md-4 bg-light">
+                <!-- Mini KPIs de Conexión -->
+                <div class="row mb-3">
+                    <div class="col-6 col-md-3 mb-2 mb-md-0">
+                        <div class="card border-0 shadow-sm rounded-lg p-3 h-100 bg-white">
+                            <div class="d-flex align-items-center">
+                                <div class="mr-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 40px; height: 40px; background: #dcfce7; color: #16a34a;">
+                                    <i class="fa fa-signal"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small font-weight-bold text-uppercase" style="font-size: 0.72rem;">En Línea Ahora</div>
+                                    <div class="h4 font-weight-bold text-success mb-0" id="monKpiOnline">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-2 mb-md-0">
+                        <div class="card border-0 shadow-sm rounded-lg p-3 h-100 bg-white">
+                            <div class="d-flex align-items-center">
+                                <div class="mr-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 40px; height: 40px; background: #e0f2fe; color: #0284c7;">
+                                    <i class="fa fa-key"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small font-weight-bold text-uppercase" style="font-size: 0.72rem;">Accesos Activos</div>
+                                    <div class="h4 font-weight-bold text-primary mb-0" id="monKpiActivos">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm rounded-lg p-3 h-100 bg-white">
+                            <div class="d-flex align-items-center">
+                                <div class="mr-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 40px; height: 40px; background: #fef3c7; color: #d97706;">
+                                    <i class="fa fa-hourglass-half"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small font-weight-bold text-uppercase" style="font-size: 0.72rem;">Expirados / Revocados</div>
+                                    <div class="h4 font-weight-bold text-warning mb-0" id="monKpiExpirados">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm rounded-lg p-3 h-100 bg-white">
+                            <div class="d-flex align-items-center">
+                                <div class="mr-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 40px; height: 40px; background: #f1f5f9; color: #475569;">
+                                    <i class="fa fa-users"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small font-weight-bold text-uppercase" style="font-size: 0.72rem;">Total Generados</div>
+                                    <div class="h4 font-weight-bold text-dark mb-0" id="monKpiTotal">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Tokens y Conexión -->
+                <div class="card border-0 shadow-sm rounded-lg overflow-hidden bg-white">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table id="tblMonitoreoAuditores" class="table table-hover table-striped mb-0 w-100" style="font-size: 0.88rem;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="width: 22%;">Auditor / Destinatario</th>
+                                        <th style="width: 24%;">Ámbito de Acceso</th>
+                                        <th style="width: 14%; text-align: center;">Estado Conexión</th>
+                                        <th style="width: 14%;">Último Acceso / IP</th>
+                                        <th style="width: 12%; text-align: center;">Vigencia / PIN</th>
+                                        <th style="width: 14%; text-align: center;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyMonitoreoAuditores">
+                                    <tr><td colspan="6" class="text-center py-4"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-white py-2 justify-content-between">
+                <div class="small text-muted">
+                    <i class="fa fa-circle text-success mr-1" style="font-size: 0.65rem;"></i> Auto-actualización activa cada 10 segundos
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm font-weight-bold" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Modal reutilizable: Editar establecimiento (usado también en /riiss) --}}
 <div class="modal fade" id="modalEditEst" tabindex="-1" style="display: none;" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -1163,6 +1297,9 @@ var editAsignacionId = null;
 var historialTable = null;
 
 $(document).ready(function() {
+    // Carga inicial de estado de auditores en línea
+    cargarListaTokensAuditores(true);
+
     // Select2 en modal asignaciones
     $('#selEstablecimiento').select2({
         placeholder: 'Buscar establecimiento...', allowClear: true, width: '100%',
@@ -2321,6 +2458,162 @@ function copiarMensajeCompletoWhatsApp() {
     if (!_ultimoMensajeWhatsAppAuditor) return;
     navigator.clipboard.writeText(_ultimoMensajeWhatsAppAuditor).then(function() {
         mostrarToast('¡Mensaje completo copiado! Listo para pegar en WhatsApp 💬', 'success');
+    });
+}
+
+// ── MONITOREO DE AUDITORES Y ESTADO EN LÍNEA ─────────────────────────────────
+var _intervalMonitoreoAuditores = null;
+var _cacheTokensAuditores = [];
+
+function abrirModalMonitoreoAuditores() {
+    $('#modalMonitoreoAuditores').modal('show');
+    cargarListaTokensAuditores();
+
+    if (_intervalMonitoreoAuditores) clearInterval(_intervalMonitoreoAuditores);
+    _intervalMonitoreoAuditores = setInterval(function() {
+        if ($('#modalMonitoreoAuditores').is(':visible')) {
+            cargarListaTokensAuditores(true); // Silent refresh
+        } else {
+            clearInterval(_intervalMonitoreoAuditores);
+        }
+    }, 10000);
+}
+
+function cargarListaTokensAuditores(isSilent) {
+    if (!isSilent) {
+        $('#tbodyMonitoreoAuditores').html('<tr><td colspan="6" class="text-center py-4 text-muted"><i class="fa fa-spinner fa-spin fa-2x mr-2"></i>Cargando accesos en tiempo real...</td></tr>');
+    }
+
+    $.ajax({
+        url: '{{ route("riiss.auditoria.tokens.index") }}',
+        method: 'GET',
+        success: function(resp) {
+            if (!resp.ok) return;
+
+            // Actualizar contadores
+            $('#monKpiOnline').text(resp.online_count);
+            $('#monKpiActivos').text(resp.activos_count);
+            $('#monKpiExpirados').text(resp.expirados_count);
+            $('#monKpiTotal').text(resp.total_tokens);
+            $('#badgeAuditoresOnlineHeader').text(resp.online_count + ' online');
+            if (resp.online_count > 0) {
+                $('#badgeAuditoresOnlineHeader').addClass('badge-online-live').removeClass('badge-success');
+            } else {
+                $('#badgeAuditoresOnlineHeader').removeClass('badge-online-live').addClass('badge-success');
+            }
+
+            _cacheTokensAuditores = resp.data;
+
+            if (resp.data.length === 0) {
+                $('#tbodyMonitoreoAuditores').html('<tr><td colspan="6" class="text-center py-5 text-muted"><i class="fa fa-info-circle fa-2x mb-2 d-block"></i>Aún no se han generado enlaces temporales para auditores.</td></tr>');
+                return;
+            }
+
+            var html = '';
+            resp.data.forEach(function(t) {
+                var badgeEstado = '';
+                if (t.estado_auditor === 'online') {
+                    badgeEstado = '<span class="badge badge-online-live px-2 py-1"><i class="fa fa-circle mr-1" style="font-size: 0.6rem;"></i> EN LÍNEA AHORA</span>';
+                } else if (t.estado_auditor === 'desconectado') {
+                    badgeEstado = '<span class="badge badge-secondary px-2 py-1"><i class="fa fa-circle text-muted mr-1" style="font-size: 0.6rem;"></i> Desconectado</span>';
+                } else if (t.estado_auditor === 'pendiente') {
+                    badgeEstado = '<span class="badge badge-warning px-2 py-1 text-dark"><i class="fa fa-hourglass-start mr-1"></i> Pendiente Ingreso</span>';
+                } else if (t.estado_auditor === 'revocado') {
+                    badgeEstado = '<span class="badge badge-danger px-2 py-1"><i class="fa fa-ban mr-1"></i> Revocado</span>';
+                } else {
+                    badgeEstado = '<span class="badge badge-light border text-muted px-2 py-1"><i class="fa fa-clock mr-1"></i> Expirado</span>';
+                }
+
+                var ambitoBadge = t.es_global 
+                    ? '<span class="badge badge-primary px-2 py-1 font-weight-bold" style="font-size:0.75rem;"><i class="fa fa-globe mr-1"></i> Red Nacional (Global)</span>' 
+                    : '<span class="badge badge-info px-2 py-1 font-weight-bold" style="font-size:0.75rem;"><i class="fa fa-hospital mr-1"></i> ' + (t.establecimiento_id || '') + '</span> <div class="small text-dark font-weight-600 mt-1">' + (t.establecimiento_nombre || '') + '</div>';
+
+                html += '<tr>' +
+                    '<td>' +
+                        '<div class="font-weight-bold text-dark font-size-1">' + (t.destinatario || 'Auditor Externo') + '</div>' +
+                        '<div class="small text-muted mt-1"><i class="fa fa-user-edit mr-1"></i>Generado por: ' + (t.creado_por_nombre || 'Sistema') + ' (' + t.created_at_texto + ')</div>' +
+                    '</td>' +
+                    '<td>' + ambitoBadge + '</td>' +
+                    '<td class="text-center">' + badgeEstado + '</td>' +
+                    '<td>' +
+                        '<div class="font-weight-600 text-dark small"><i class="fa fa-eye text-primary mr-1"></i> ' + t.visitas_count + ' visitas</div>' +
+                        '<div class="small text-muted mt-1" title="' + (t.ultimo_acceso_fecha || '') + '"><i class="fa fa-clock mr-1"></i> ' + t.ultimo_acceso_humano + '</div>' +
+                        '<div class="small text-muted" style="font-family: monospace; font-size: 0.72rem;">IP: ' + t.ip_ultimo_acceso + '</div>' +
+                    '</td>' +
+                    '<td class="text-center">' +
+                        '<div class="font-weight-bold ' + (t.is_expirado ? 'text-danger' : 'text-success') + '">' + t.tiempo_restante_texto + '</div>' +
+                        '<div class="d-inline-flex align-items-center mt-1 p-1 bg-light rounded border" style="font-family: monospace; font-size: 0.8rem;">' +
+                            '<span class="mr-2 font-weight-bold text-dark">' + t.pin + '</span>' +
+                            '<button type="button" class="btn btn-xs btn-link p-0 text-muted" title="Copiar PIN" onclick="navigator.clipboard.writeText(\'' + t.pin + '\'); mostrarToast(\'PIN copiado: ' + t.pin + '\', \'info\');"><i class="fa fa-copy"></i></button>' +
+                        '</div>' +
+                    '</td>' +
+                    '<td class="text-center">' +
+                        '<div class="d-flex align-items-center justify-content-center flex-wrap" style="gap: 4px;">' +
+                            '<a href="' + t.url_whatsapp + '" target="_blank" class="btn btn-xs btn-success" title="Reenviar por WhatsApp">' +
+                                '<i class="fab fa-whatsapp"></i>' +
+                            '</a>' +
+                            '<button type="button" class="btn btn-xs btn-outline-primary" title="Copiar Enlace Directo" onclick="navigator.clipboard.writeText(\'' + t.url_portal + '\'); mostrarToast(\'Enlace copiado al portapapeles\', \'success\');">' +
+                                '<i class="fa fa-link"></i>' +
+                            '</button>' +
+                            '<a href="' + t.url_portal + '" target="_blank" class="btn btn-xs btn-outline-info" title="Abrir Portal Auditor">' +
+                                '<i class="fa fa-external-link-alt"></i>' +
+                            '</a>' +
+                            (!t.is_expirado && t.estado_auditor !== 'revocado' ? 
+                                '<button type="button" class="btn btn-xs btn-outline-warning" title="Extender +24 Horas" onclick="extenderAccesoAuditor(' + t.id + ', 24)">' +
+                                    '<i class="fa fa-plus-circle"></i> +24h' +
+                                '</button>' +
+                                '<button type="button" class="btn btn-xs btn-outline-danger" title="Revocar Acceso Inmediatamente" onclick="revocarAccesoAuditor(' + t.id + ')">' +
+                                    '<i class="fa fa-ban"></i>' +
+                                '</button>'
+                            :
+                                '<button type="button" class="btn btn-xs btn-outline-success" title="Reactivar +24 Horas" onclick="extenderAccesoAuditor(' + t.id + ', 24)">' +
+                                    '<i class="fa fa-redo"></i> Reactivar' +
+                                '</button>'
+                            ) +
+                        '</div>' +
+                    '</td>' +
+                '</tr>';
+            });
+
+            $('#tbodyMonitoreoAuditores').html(html);
+        }
+    });
+}
+
+function revocarAccesoAuditor(id) {
+    if (!confirm('¿Estás seguro de que deseas REVOCAR este acceso inmediatamente? El auditor ya no podrá ingresar.')) {
+        return;
+    }
+    $.ajax({
+        url: '/riiss/auditoria/tokens/' + id + '/revocar',
+        method: 'POST',
+        data: { _token: '{{ csrf_token() }}' },
+        success: function(r) {
+            if (r.ok) {
+                mostrarToast('Acceso revocado correctamente 🚫', 'warning');
+                cargarListaTokensAuditores();
+            }
+        },
+        error: function(xhr) {
+            mostrarToast('Error al revocar acceso', 'danger');
+        }
+    });
+}
+
+function extenderAccesoAuditor(id, horas) {
+    $.ajax({
+        url: '/riiss/auditoria/tokens/' + id + '/extender',
+        method: 'POST',
+        data: { _token: '{{ csrf_token() }}', horas: horas || 24 },
+        success: function(r) {
+            if (r.ok) {
+                mostrarToast('Vigencia extendida +' + (horas || 24) + ' horas ⏳', 'success');
+                cargarListaTokensAuditores();
+            }
+        },
+        error: function(xhr) {
+            mostrarToast('Error al extender vigencia', 'danger');
+        }
     });
 }
 </script>

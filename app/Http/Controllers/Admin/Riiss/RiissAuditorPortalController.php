@@ -331,4 +331,160 @@ class RiissAuditorPortalController extends Controller
 
         return $pdf->stream($filename);
     }
+
+    /**
+     * POST /riiss/portal-auditor/{token}/ping
+     * Heartbeat para detectar auditores en línea en tiempo real.
+     */
+    public function ping(Request $request, string $token): JsonResponse
+    {
+        $tokenRecord = RiissAuditoriaToken::where('token', $token)->first();
+
+        if (!$tokenRecord || $tokenRecord->isExpirado()) {
+            return response()->json(['ok' => false, 'online' => false], 410);
+        }
+
+        $tokenRecord->update([
+            'ultimo_acceso_at' => Carbon::now(),
+            'ip_ultimo_acceso' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'ok'     => true,
+            'online' => true,
+        ]);
+    }
+
+    /**
+     * GET /admin/riiss/auditoria/tokens
+     * Lista de accesos temporales y estado de conexión en vivo.
+     */
+    public function listarTokens(Request $request): JsonResponse
+    {
+        $tokens = RiissAuditoriaToken::with(['establecimiento', 'creador'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $onlineCount = 0;
+        $activosCount = 0;
+        $expiradosCount = 0;
+
+        $items = $tokens->map(function ($t) use (&$onlineCount, &$activosCount, &$expiradosCount) {
+            $isOnline = $t->isOnline();
+            $isExpirado = $t->isExpirado();
+            $estadoAuditor = $t->estado_auditor;
+
+            if ($isOnline) {
+                $onlineCount++;
+            }
+            if (!$isExpirado && $t->estado === 'activo') {
+                $activosCount++;
+            } else {
+                $expiradosCount++;
+            }
+
+            $esGlobal = empty($t->establecimiento_id);
+            $estNombre = $esGlobal
+                ? '🌐 Toda la Red Nacional (RIISS)'
+                : ($t->establecimiento ? $t->establecimiento->nombre_oficial : 'Establecimiento no encontrado');
+
+            $urlPortal = route('riiss.portal-auditor.show', ['token' => $t->token]);
+            $expiraTexto = $t->expira_en->format('d/m/Y H:i');
+
+            // Mensaje para reenvío WhatsApp
+            $msg = "🏥 *IPS - Portal de Auditoría y Verificación RIISS*\n";
+            if ($esGlobal) {
+                $msg .= "🌐 *Ámbito de Acceso:* *Toda la Red Nacional (Todos los Establecimientos)*\n\n";
+            } else {
+                $msg .= "🏛️ *Establecimiento:* " . $estNombre . "\n\n";
+            }
+            if ($t->destinatario) {
+                $msg .= "Estimado/a *" . $t->destinatario . "*,\n";
+            }
+            $msg .= "Le compartimos el acceso exclusivo de solo lectura para la verificación y auditoría de la cartera de servicios, vademécum de medicamentos y datos técnicos de la red.\n\n";
+            $msg .= "🔗 *Enlace de Acceso:*\n" . $urlPortal . "\n\n";
+            $msg .= "🔑 *Código PIN de Seguridad:* *" . $t->pin . "*\n";
+            $msg .= "⏳ *Validez:* " . $t->duracion_horas . " Horas (Vence el " . $expiraTexto . " hs)\n";
+
+            $urlWhatsApp = "https://api.whatsapp.com/send?text=" . urlencode($msg);
+
+            return [
+                'id'                    => $t->id,
+                'token'                 => $t->token,
+                'pin'                   => $t->pin,
+                'destinatario'          => $t->destinatario ?: 'Auditor Externo',
+                'establecimiento_id'    => $t->establecimiento_id,
+                'establecimiento_nombre'=> $estNombre,
+                'es_global'             => $esGlobal,
+                'duracion_horas'        => $t->duracion_horas,
+                'expira_en_texto'       => $expiraTexto,
+                'tiempo_restante_texto' => $t->tiempo_restante_texto,
+                'is_expirado'           => $isExpirado,
+                'is_online'             => $isOnline,
+                'estado_auditor'        => $estadoAuditor,
+                'visitas_count'         => $t->visitas_count,
+                'ultimo_acceso_humano'  => $t->ultimo_acceso_humano,
+                'ultimo_acceso_fecha'   => $t->ultimo_acceso_at ? $t->ultimo_acceso_at->format('d/m/Y H:i:s') : null,
+                'ip_ultimo_acceso'      => $t->ip_ultimo_acceso ?: 'N/A',
+                'creado_por_nombre'     => $t->creador ? $t->creador->name : 'Sistema',
+                'created_at_texto'      => $t->created_at ? $t->created_at->format('d/m/Y H:i') : '',
+                'url_portal'            => $urlPortal,
+                'url_whatsapp'          => $urlWhatsApp,
+                'mensaje_whatsapp'      => $msg,
+            ];
+        });
+
+        return response()->json([
+            'ok'              => true,
+            'data'            => $items,
+            'total_tokens'    => $tokens->count(),
+            'online_count'    => $onlineCount,
+            'activos_count'   => $activosCount,
+            'expirados_count' => $expiradosCount,
+        ]);
+    }
+
+    /**
+     * POST /admin/riiss/auditoria/tokens/{id}/revocar
+     */
+    public function revocarToken(int $id): JsonResponse
+    {
+        $tokenRecord = RiissAuditoriaToken::findOrFail($id);
+        $tokenRecord->update([
+            'estado' => 'revocado',
+        ]);
+
+        return response()->json([
+            'ok'      => true,
+            'message' => 'Acceso revocado de inmediato.',
+        ]);
+    }
+
+    /**
+     * POST /admin/riiss/auditoria/tokens/{id}/extender
+     */
+    public function extenderToken(int $id, Request $request): JsonResponse
+    {
+        $tokenRecord = RiissAuditoriaToken::findOrFail($id);
+        $horas = (int) $request->input('horas', 24);
+
+        if ($tokenRecord->isExpirado() || $tokenRecord->estado === 'revocado') {
+            $nuevaExpira = Carbon::now()->addHours($horas);
+        } else {
+            $nuevaExpira = $tokenRecord->expira_en->addHours($horas);
+        }
+
+        $tokenRecord->update([
+            'expira_en'      => $nuevaExpira,
+            'duracion_horas' => $tokenRecord->duracion_horas + $horas,
+            'estado'         => 'activo',
+        ]);
+
+        return response()->json([
+            'ok'               => true,
+            'message'          => 'Vigencia extendida +' . $horas . ' horas.',
+            'nueva_expiracion' => $nuevaExpira->format('d/m/Y H:i'),
+            'tiempo_restante'  => $tokenRecord->tiempo_restante_texto,
+        ]);
+    }
 }

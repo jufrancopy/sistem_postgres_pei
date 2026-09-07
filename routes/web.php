@@ -36,6 +36,7 @@ Route::post('/public/asesoria/{id}/finalizar', [\App\Http\Controllers\Admin\Plan
 // ── Vistas públicas Portal de Auditoría RIISS (sin autenticación directa, protegido por PIN) ──
 Route::get('/riiss/portal-auditor/{token}', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'mostrarPortal'])->name('riiss.portal-auditor.show');
 Route::post('/riiss/portal-auditor/{token}/verificar-pin', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'verificarPin'])->name('riiss.portal-auditor.verificar-pin');
+Route::post('/riiss/portal-auditor/{token}/ping', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'ping'])->name('riiss.portal-auditor.ping');
 Route::get('/riiss/portal-auditor/{token}/pdf', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'descargarPdf'])->name('riiss.portal-auditor.pdf');
 
 // ── Vistas públicas Acta de Reunión MECIP (sin autenticación) ─────────────────
@@ -1015,6 +1016,12 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('establecimientos.medicamentos-pdf');
         Route::post('auditoria/generar-token', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'generarToken'])
             ->name('auditoria.generar-token');
+        Route::get('auditoria/tokens', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'listarTokens'])
+            ->name('auditoria.tokens.index');
+        Route::post('auditoria/tokens/{id}/revocar', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'revocarToken'])
+            ->name('auditoria.tokens.revocar');
+        Route::post('auditoria/tokens/{id}/extender', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'extenderToken'])
+            ->name('auditoria.tokens.extender');
         Route::patch('establecimientos/{id}', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'update'])
             ->name('establecimientos.update');
 

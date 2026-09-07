@@ -770,6 +770,14 @@ $(document).ready(function() {
             }, 200);
         }
     });
+
+    // Heartbeat ping cada 45 segundos para detectar auditor en línea
+    function sendHeartbeatPing() {
+        $.post('{{ route("riiss.portal-auditor.ping", ["token" => $tokenRecord->token]) }}', {
+            _token: '{{ csrf_token() }}'
+        });
+    }
+    setInterval(sendHeartbeatPing, 45000);
 });
 </script>
 
