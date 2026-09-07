@@ -484,18 +484,6 @@
                                 <th style="color: #64748b;">Nivel de Atención:</th>
                                 <td>{{ $est->nivel_atencion ? 'Nivel ' . $est->nivel_atencion : 'No asignado' }}</td>
                             </tr>
-                            <tr>
-                                <th style="color: #64748b;">Coordenadas:</th>
-                                <td>
-                                    @if($est->latitude && $est->longitude)
-                                        <a href="https://www.google.com/maps?q={{ $est->latitude }},{{ $est->longitude }}" target="_blank" class="text-primary font-weight-bold">
-                                            <i class="fas fa-external-link-alt mr-1"></i> {{ $est->latitude }}, {{ $est->longitude }}
-                                        </a>
-                                    @else
-                                        <span class="text-muted font-italic">Sin georreferencia</span>
-                                    @endif
-                                </td>
-                            </tr>
                         </table>
                     </div>
                 </div>
