@@ -124,6 +124,8 @@ class RiissImportEspecialidades extends Command
             'CLINICA PERIFERICA ISLA POI' => '18-CP-05', // ISLA PO'I PS
             'CLINICA PERIFERICA YRENDAGUE' => '11-CP-02', // YRENDAGUE C.P.
             'CNEL. BOGADO PS' => '07-PS-29', // CORONEL BOGADO PS CONVENIO
+            'CNEL. OVIEDO H.R' => '05-HR-05', // CNEL. OVIEDO HR
+            'CNEL. OVIEDO HR' => '05-HR-05', // CNEL. OVIEDO HR
             'COLONIA INDEPENDENCIA US' => '04-US-06', // INDEPENDENCIA US
             'CONCEPCION HR' => '01-HR-01', // CONCEPCIÓN HR
             'DPTO DE MEDICINA FISICA Y REHABILITACION' => '18-CE-02', // CENTRO DE MEDICINA FISICA Y REHABILITACION
@@ -131,6 +133,7 @@ class RiissImportEspecialidades extends Command
             'FRAM U.S' => '07-US-32', // FRAM US
             'HERNANDARIAS U.S' => '10-US-16', // HERNANDARIAS US
             'HOHENAU U.S' => '07-US-12', // HOHENAU US
+            'HORQUETA US' => '01-US-01', // HORQUETA US
             'HOSPITAL 12 DE JUNIO' => '18-HO-04', // 12 DE JUNIO H.
             'HOSPITAL BUONGERMINI - GERIATRICO' => '18-HE-03', // DR.GERARDO BUONGERMINI HOSPITAL
             'HOSPITAL DE LUQUE' => '11-HO-01', // LUQUE HOSPITAL
