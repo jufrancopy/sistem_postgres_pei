@@ -112,6 +112,14 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 12px;
+            page-break-inside: auto;
+        }
+        .med-table thead {
+            display: table-header-group;
+        }
+        .med-table tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
         }
         .med-table th {
             background-color: #f1f5f9;

@@ -101,6 +101,14 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 15px;
+            page-break-inside: auto;
+        }
+        .audit-table thead {
+            display: table-header-group;
+        }
+        .audit-table tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
         }
         .audit-table th {
             background-color: #1e293b;

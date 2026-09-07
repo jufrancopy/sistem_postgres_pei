@@ -244,6 +244,9 @@ class RiissAuditorPortalController extends Controller
      */
     public function descargarPdf(string $token, Request $request)
     {
+        ini_set('memory_limit', '512M');
+        set_time_limit(300);
+
         $tokenRecord = RiissAuditoriaToken::where('token', $token)->first();
 
         if (!$tokenRecord || $tokenRecord->isExpirado()) {

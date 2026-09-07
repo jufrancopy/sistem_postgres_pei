@@ -344,6 +344,9 @@ class EstablecimientoController extends Controller
      */
     public function exportarPdfMedicamentos(string $id, Request $request)
     {
+        ini_set('memory_limit', '512M');
+        set_time_limit(300);
+
         $est = Establecimiento::where('id_establecimiento', $id)
             ->with(['especialidades', 'medicamentos'])
             ->firstOrFail();
