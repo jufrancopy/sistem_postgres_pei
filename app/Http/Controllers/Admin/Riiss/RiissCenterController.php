@@ -50,7 +50,7 @@ class RiissCenterController extends Controller
         $query = Establecimiento::query()->with([
             'asignaciones' => fn($q) => $q->with(['evaluador', 'peiProfile'])->latest(),
             'evaluaciones' => fn($q) => $q->latest()
-        ]);
+        ])->withCount(['medicamentos', 'especialidades']);
 
         $buscar = trim($request->get('buscar', ''));
 
@@ -72,6 +72,14 @@ class RiissCenterController extends Controller
             }
         }
 
+        if ($conMedicamentos = $request->get('con_medicamentos')) {
+            if ($conMedicamentos === 'con') {
+                $query->whereHas('medicamentos');
+            } elseif ($conMedicamentos === 'sin') {
+                $query->whereDoesntHave('medicamentos');
+            }
+        }
+
         return DataTables::of($query)
             // Aplicar filtrado manual para la búsqueda global para evitar que Yajra
             // construya cláusulas usando nombres de columna enviados por el cliente
@@ -88,7 +96,17 @@ class RiissCenterController extends Controller
             }, true)
             ->addIndexColumn()
             ->addColumn('establecimiento', function ($est) {
-                return '<strong>' . e($est->nombre_oficial) . '</strong><br><small class="text-muted">ID: ' . e($est->id_establecimiento) . '</small>';
+                $medsCount = $est->medicamentos_count ?? 0;
+                $espCount = $est->especialidades_count ?? 0;
+
+                $medsBadge = '';
+                if ($medsCount > 0) {
+                    $medsBadge = ' <span class="badge badge-pill badge-success ml-1 shadow-sm" style="font-size: 0.72rem; font-weight: 600; vertical-align: middle;" title="' . $espCount . ' especialidades • ' . $medsCount . ' medicamentos asignados"><i class="fa fa-pills mr-1"></i>' . $medsCount . ' meds</span>';
+                } else {
+                    $medsBadge = ' <span class="badge badge-pill badge-light border text-muted ml-1" style="font-size: 0.70rem; vertical-align: middle;" title="Sin medicamentos registrados"><i class="fa fa-pills mr-1"></i>0 meds</span>';
+                }
+
+                return '<strong>' . e($est->nombre_oficial) . '</strong>' . $medsBadge . '<br><small class="text-muted">ID: ' . e($est->id_establecimiento) . '</small>';
             })
             ->addColumn('tipologia_ubicacion', function ($est) {
                 $dept = $est->departamento ?: '—';

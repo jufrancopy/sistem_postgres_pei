@@ -304,9 +304,16 @@
                     <div class="col-md-3 mb-2">
                         <input id="fBuscarUnificado" type="text" class="form-control" style="width:100%" placeholder="Buscar establecimiento...">
                     </div>
-                    <div class="col-md-3 mb-2">
+                    <div class="col-md-2 mb-2">
                         <select id="fTipologiaUnificada" class="form-control" style="width:100%">
                             <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <select id="fConMedicamentos" class="form-control" style="width:100%">
+                            <option value=""></option>
+                            <option value="con">Con Medicamentos</option>
+                            <option value="sin">Sin Medicamentos</option>
                         </select>
                     </div>
                     <div class="col-md-2 mb-2">
@@ -316,7 +323,7 @@
                             <option value="sin">Sin Evaluador Asignado</option>
                         </select>
                     </div>
-                    <div class="col-md-3 mb-2">
+                    <div class="col-md-2 mb-2">
                         <select id="fEvaluadorUnificado" class="form-control" style="width:100%">
                             <option value=""></option>
                         </select>
@@ -850,6 +857,11 @@ $(document).ready(function() {
         placeholder: 'Todas las asignaciones', allowClear: true, width: '100%'
     });
 
+    // Select2 Medicamentos en filtro
+    $('#fConMedicamentos').select2({
+        placeholder: 'Medicamentos (Todos)', allowClear: true, width: '100%'
+    });
+
     // Select2 Tipología en filtro
     $('#fTipologiaUnificada').select2({
         placeholder: 'Todas las tipologías', allowClear: true, width: '100%'
@@ -905,6 +917,7 @@ $(document).ready(function() {
                 d.tipologia = $('#fTipologiaUnificada').val() || '';
                 d.evaluador_id = $('#fEvaluadorUnificado').val() || '';
                 d.con_asignacion = $('#fConAsignacion').val() || '';
+                d.con_medicamentos = $('#fConMedicamentos').val() || '';
             }
         },
         columns: [
@@ -923,7 +936,7 @@ $(document).ready(function() {
     window.tablaUnificada = tablaUnificada;
 
     $('#fBuscarUnificado').on('keyup change', function() { tablaUnificada.draw(); });
-    $('#fTipologiaUnificada, #fConAsignacion, #fEvaluadorUnificado').on('change', function() { tablaUnificada.draw(); });
+    $('#fTipologiaUnificada, #fConAsignacion, #fConMedicamentos, #fEvaluadorUnificado').on('change', function() { tablaUnificada.draw(); });
 
     historialTable = $('#tablaHistorial').DataTable({
         processing: true,
