@@ -208,4 +208,15 @@ class Establecimiento extends Model
             'tiene_ultima_evaluacion' => $this->ultimaEvaluacion()->exists(),
         ];
     }
+
+    public function especialidades()
+    {
+        return $this->belongsToMany(\App\Models\RiissEspecialidad::class, 'riiss_establecimiento_especialidades', 'establecimiento_id', 'especialidad_id');
+    }
+
+    public function medicamentos()
+    {
+        return $this->belongsToMany(\App\Models\RiissMedicamento::class, 'riiss_est_esp_medicamentos', 'establecimiento_id', 'medicamento_id')
+                    ->withPivot('especialidad_id');
+    }
 }
