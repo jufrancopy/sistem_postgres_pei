@@ -155,6 +155,11 @@
 <nav class="top-navbar no-print">
     <div class="container-fluid d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center">
+            @if(!empty($es_global))
+                <a href="{{ $url_volver_red ?? '#' }}" class="btn btn-sm btn-outline-light font-weight-bold mr-3" style="border-radius: 20px;">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver a Toda la Red
+                </a>
+            @endif
             <span class="badge badge-light px-2 py-1 mr-2 text-dark font-weight-bold" style="font-size: 0.82rem;">
                 <i class="fas fa-shield-alt text-primary mr-1"></i> AUDITORÍA EXTERNA
             </span>
@@ -179,6 +184,11 @@
         <div class="row align-items-center">
             <div class="col-lg-8">
                 <div class="d-flex flex-wrap align-items-center mb-2" style="gap: 0.5rem;">
+                    @if(!empty($es_global))
+                        <a href="{{ $url_volver_red ?? '#' }}" class="badge badge-warning px-3 py-1 font-weight-bold text-dark text-decoration-none mr-1" style="font-size: 0.8rem;">
+                            <i class="fas fa-th-list mr-1"></i> Directorio Nacional
+                        </a>
+                    @endif
                     <span class="badge badge-dark px-3 py-1 text-white" style="font-size: 0.8rem; letter-spacing: 0.05em; background: rgba(0,0,0,0.35);">
                         ID: {{ $est->id_establecimiento }}
                     </span>
@@ -209,14 +219,14 @@
             <!-- Acciones Rápidas de Descarga -->
             <div class="col-lg-4 mt-3 mt-lg-0 text-lg-right no-print">
                 <div class="d-flex flex-column flex-sm-row flex-lg-column align-items-stretch justify-content-end" style="gap: 8px;">
-                    <a href="{{ route('riiss.portal-auditor.pdf', ['token' => $tokenRecord->token, 'tipo' => 'consolidado']) }}" target="_blank" class="btn btn-light btn-action-pdf shadow-sm text-dark">
+                    <a href="{{ route('riiss.portal-auditor.pdf', ['token' => $tokenRecord->token, 'est_id' => $est->id_establecimiento, 'tipo' => 'consolidado']) }}" target="_blank" class="btn btn-light btn-action-pdf shadow-sm text-dark">
                         <i class="fas fa-file-pdf text-danger fa-lg"></i>
                         <div class="text-left" style="line-height: 1.2;">
                             <div class="font-weight-bold">Planilla Auditoría Farmacia</div>
                             <small class="text-muted" style="font-size: 0.72rem;">Consolidado / Checklist con firmas</small>
                         </div>
                     </a>
-                    <a href="{{ route('riiss.portal-auditor.pdf', ['token' => $tokenRecord->token, 'tipo' => 'especialidad']) }}" target="_blank" class="btn btn-outline-light btn-action-pdf">
+                    <a href="{{ route('riiss.portal-auditor.pdf', ['token' => $tokenRecord->token, 'est_id' => $est->id_establecimiento, 'tipo' => 'especialidad']) }}" target="_blank" class="btn btn-outline-light btn-action-pdf">
                         <i class="fas fa-stethoscope fa-lg"></i>
                         <div class="text-left" style="line-height: 1.2;">
                             <div class="font-weight-bold">Reporte por Especialidad</div>

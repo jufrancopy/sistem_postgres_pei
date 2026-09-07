@@ -20,20 +20,21 @@ class RiissAuditorPortalController extends Controller
     public function generarToken(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'establecimiento_id' => 'nullable|string|exists:establecimientos,id_establecimiento',
+            'establecimiento_id' => 'nullable|string',
             'duracion_horas'     => 'nullable|integer|min:1|max:720',
             'destinatario'       => 'nullable|string|max:150',
         ]);
 
         $duracion = (int) ($validated['duracion_horas'] ?? 24);
-        $estId = $validated['establecimiento_id'] ?? null;
+        $estId = !empty($validated['establecimiento_id']) ? $validated['establecimiento_id'] : null;
         $destinatario = $validated['destinatario'] ?? null;
         $userId = auth()->id();
 
         $tokenRecord = RiissAuditoriaToken::generar($estId, $duracion, $destinatario, $userId);
 
-        $estNombre = 'Redes Integradas de Servicios de Salud (RIISS)';
-        if ($estId) {
+        $esGlobal = empty($estId);
+        $estNombre = '🌐 Red Nacional Completa (Todos los Establecimientos RIISS)';
+        if (!$esGlobal) {
             $est = Establecimiento::find($estId);
             if ($est) {
                 $estNombre = $est->nombre_oficial;
@@ -45,15 +46,20 @@ class RiissAuditorPortalController extends Controller
 
         // Mensaje formateado para WhatsApp
         $msg = "🏥 *IPS - Portal de Auditoría y Verificación RIISS*\n";
-        $msg .= "🏛️ *Establecimiento:* " . $estNombre . "\n\n";
+        if ($esGlobal) {
+            $msg .= "🌐 *Ámbito de Acceso:* *Toda la Red Nacional (Todos los Establecimientos)*\n\n";
+        } else {
+            $msg .= "🏛️ *Establecimiento:* " . $estNombre . "\n\n";
+        }
+
         if ($destinatario) {
             $msg .= "Estimado/a *" . $destinatario . "*,\n";
         }
-        $msg .= "Le compartimos el acceso exclusivo de solo lectura para la verificación y auditoría de la cartera de servicios y vademécum de medicamentos.\n\n";
+        $msg .= "Le compartimos el acceso exclusivo de solo lectura para la verificación y auditoría de la cartera de servicios, vademécum de medicamentos y datos técnicos de la red.\n\n";
         $msg .= "🔗 *Enlace de Acceso:*\n" . $urlPortal . "\n\n";
         $msg .= "🔑 *Código PIN de Seguridad:* *" . $tokenRecord->pin . "*\n";
         $msg .= "⏳ *Validez:* " . $duracion . " Horas (Vence el " . $expiraTexto . " hs)\n\n";
-        $msg .= "ℹ️ _Desde este portal podrá revisar los servicios, consultar medicamentos en vivo y descargar las planillas de verificación en PDF._";
+        $msg .= "ℹ️ _Desde este portal podrá navegar por todos los centros de la red, consultar medicamentos en vivo y descargar las planillas de verificación en PDF._";
 
         $urlWhatsApp = "https://api.whatsapp.com/send?text=" . urlencode($msg);
 
@@ -67,6 +73,7 @@ class RiissAuditorPortalController extends Controller
             'url_whatsapp'     => $urlWhatsApp,
             'mensaje_whatsapp' => $msg,
             'establecimiento'  => $estNombre,
+            'es_global'        => $esGlobal,
         ]);
     }
 
@@ -74,7 +81,7 @@ class RiissAuditorPortalController extends Controller
      * GET /riiss/portal-auditor/{token}
      * Vista pública del Portal de Auditoría (o pantalla de ingreso de PIN si no está validado).
      */
-    public function mostrarPortal(string $token)
+    public function mostrarPortal(string $token, Request $request)
     {
         $tokenRecord = RiissAuditoriaToken::where('token', $token)->first();
 
@@ -91,8 +98,34 @@ class RiissAuditorPortalController extends Controller
             return view('admin.riiss.auditoria.desafio_pin', compact('tokenRecord', 'token', 'est'));
         }
 
-        // Cargar Establecimiento con sus relaciones
-        $est = Establecimiento::where('id_establecimiento', $tokenRecord->establecimiento_id)
+        // Caso 1: TOKEN GLOBAL (Sin establecimiento fijo) y sin parámetro ?est=
+        if (empty($tokenRecord->establecimiento_id) && !$request->filled('est')) {
+            $establecimientos = Establecimiento::activos()->asistenciales()
+                ->with(['complejidadTipo'])
+                ->withCount(['medicamentos', 'especialidades'])
+                ->orderBy('nombre_oficial')
+                ->get();
+
+            $totalEstablecimientos = $establecimientos->count();
+            $conMedicamentosCount  = $establecimientos->where('medicamentos_count', '>', 0)->count();
+            $departamentos         = $establecimientos->pluck('departamento')->filter()->unique()->sort()->values();
+            $complejidades         = $establecimientos->pluck('complejidad')->filter()->unique()->sort()->values();
+
+            return view('admin.riiss.auditoria.portal_global', [
+                'tokenRecord'           => $tokenRecord,
+                'establecimientos'      => $establecimientos,
+                'totalEstablecimientos' => $totalEstablecimientos,
+                'conMedicamentosCount'  => $conMedicamentosCount,
+                'departamentos'         => $departamentos,
+                'complejidades'         => $complejidades,
+            ]);
+        }
+
+        // Caso 2: Establecimiento Específico (o seleccionado desde el Portal Global)
+        $targetEstId = $tokenRecord->establecimiento_id ?: $request->get('est');
+        $esGlobal = empty($tokenRecord->establecimiento_id);
+
+        $est = Establecimiento::where('id_establecimiento', $targetEstId)
             ->with(['especialidades', 'medicamentos', 'inmuebleContratos', 'complejidadTipo'])
             ->firstOrFail();
 
@@ -159,6 +192,8 @@ class RiissAuditorPortalController extends Controller
             'totalMedicamentosUnicos'  => count($medicamentosConsolidados),
             'totalEspecialidades'      => count($especialidadesMedicamentos),
             'totalAsignaciones'        => $totalAsignaciones,
+            'es_global'                => $esGlobal,
+            'url_volver_red'           => route('riiss.portal-auditor.show', ['token' => $token]),
         ]);
     }
 
@@ -220,7 +255,12 @@ class RiissAuditorPortalController extends Controller
             abort(403, 'Acceso no autorizado. Debe ingresar el código PIN de seguridad.');
         }
 
-        $est = Establecimiento::where('id_establecimiento', $tokenRecord->establecimiento_id)
+        $targetEstId = $tokenRecord->establecimiento_id ?: $request->get('est_id');
+        if (!$targetEstId) {
+            abort(400, 'Establecimiento no especificado para la generación del reporte.');
+        }
+
+        $est = Establecimiento::where('id_establecimiento', $targetEstId)
             ->with(['especialidades', 'medicamentos'])
             ->firstOrFail();
 

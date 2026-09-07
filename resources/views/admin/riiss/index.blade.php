@@ -277,8 +277,11 @@
                 <p class="card-category mb-0 text-white-75">Red Integrada e Integral de Servicios de Salud — Gestión & Monitoreo</p>
             </div>
             @hasanyrole('Administrador|Super Admin|Coordinador RIISS|Coordinador - RIISS|Coordinación RIISS')
-            <div class="text-right mt-3 mt-md-0">
-                <button class="btn btn-white btn-sm font-weight-bold" onclick="abrirModalNuevaAsignacion()" style="color: #00acc1; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.95);">
+            <div class="text-right mt-3 mt-md-0 d-flex align-items-center justify-content-end flex-wrap" style="gap: 8px;">
+                <button type="button" class="btn btn-success btn-sm font-weight-bold shadow-sm" onclick="abrirModalGenerarAccesoAuditor('', '🌐 Toda la Red Nacional (Todos los Establecimientos)')" style="border-radius: 8px;">
+                    <i class="fab fa-whatsapp mr-1"></i> Compartir Acceso Global a Auditor
+                </button>
+                <button class="btn btn-white btn-sm font-weight-bold" onclick="abrirModalNuevaAsignacion()" style="color: #00acc1; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.95); border-radius: 8px;">
                     <i class="fa fa-plus-circle mr-1 text-info"></i> Nueva Asignación
                 </button>
             </div>
@@ -945,8 +948,17 @@
             <div class="modal-body p-4 bg-light">
                 <div id="seccionConfigurarAuditor">
                     <input type="hidden" id="auditorEstId">
-                    <div class="p-3 mb-3 bg-white rounded border">
-                        <div class="small font-weight-bold text-muted text-uppercase">Establecimiento</div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-dark"><i class="fa fa-sitemap text-primary mr-1"></i> Ámbito de Acceso para el Auditor</label>
+                        <select id="auditorAmbitoSelect" class="form-control" onchange="cambiarAmbitoAuditorModal()">
+                            <option value="global" selected>🌐 Toda la Red Nacional (Todos los Establecimientos)</option>
+                            <option value="especifico">🏛️ Establecimiento Específico</option>
+                        </select>
+                    </div>
+
+                    <div id="divAuditorEstIndividual" class="p-3 mb-3 bg-white rounded border" style="display: none;">
+                        <div class="small font-weight-bold text-muted text-uppercase">Establecimiento Seleccionado</div>
                         <div id="auditorEstNombre" class="font-weight-bold text-dark font-size-1">--</div>
                     </div>
 
@@ -2210,16 +2222,33 @@ function guardarAsignacion() {
 var _ultimoMensajeWhatsAppAuditor = '';
 var _ultimoPinAuditor = '';
 
-function abrirModalGenerarAccesoAuditor(estId, estNombre) {
-    if (!estId) {
-        estId = $('#editEstId').val();
+function cambiarAmbitoAuditorModal() {
+    var ambito = $('#auditorAmbitoSelect').val();
+    if (ambito === 'global') {
+        $('#divAuditorEstIndividual').slideUp(150);
+        $('#auditorEstId').val('');
+    } else {
+        $('#divAuditorEstIndividual').slideDown(150);
+        var currentEst = $('#editEstId').val();
+        if (currentEst) {
+            $('#auditorEstId').val(currentEst);
+        }
     }
-    if (!estNombre) {
-        estNombre = $('#modalEstNombreTitulo').text() || 'Establecimiento RIISS';
+}
+
+function abrirModalGenerarAccesoAuditor(estId, estNombre) {
+    if (estId && estId !== '') {
+        $('#auditorAmbitoSelect').val('especifico');
+        $('#auditorEstId').val(estId);
+        $('#auditorEstNombre').text(estNombre || $('#modalEstNombreTitulo').text() || 'Establecimiento RIISS');
+        $('#divAuditorEstIndividual').show();
+    } else {
+        $('#auditorAmbitoSelect').val('global');
+        $('#auditorEstId').val('');
+        $('#auditorEstNombre').text('🌐 Toda la Red Nacional (Todos los Establecimientos)');
+        $('#divAuditorEstIndividual').hide();
     }
 
-    $('#auditorEstId').val(estId);
-    $('#auditorEstNombre').text(estNombre);
     $('#auditorDestinatario').val('');
     $('#auditorDuracionHoras').val('24');
 
@@ -2231,7 +2260,8 @@ function abrirModalGenerarAccesoAuditor(estId, estNombre) {
 }
 
 function ejecutarGeneracionTokenAuditor() {
-    var estId = $('#auditorEstId').val();
+    var ambito = $('#auditorAmbitoSelect').val();
+    var estId = (ambito === 'especifico') ? $('#auditorEstId').val() : '';
     var duracion = $('#auditorDuracionHoras').val();
     var destinatario = $('#auditorDestinatario').val();
 
