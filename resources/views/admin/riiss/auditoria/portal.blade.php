@@ -277,6 +277,16 @@
                             {{ $est->complejidad }}
                         </span>
                     @endif
+                    @if($est->habilita_farmacia_cronicos)
+                        <span class="badge badge-primary px-2 py-1 font-weight-bold text-white" style="font-size: 0.75rem; background-color: #2563eb;" title="Habilitado para provisión según RCA 007-043/22">
+                            <i class="fas fa-prescription-bottle-alt mr-1"></i> Farmacia Crónicos
+                        </span>
+                    @endif
+                    @if($est->habilita_empadronamiento_cronicos)
+                        <span class="badge badge-warning px-2 py-1 font-weight-bold text-dark" style="font-size: 0.75rem;" title="Habilitado para empadronar en SIH">
+                            <i class="fas fa-id-card-alt mr-1"></i> Empadronamiento SIH
+                        </span>
+                    @endif
                     <span class="badge badge-success px-2 py-1 font-weight-bold" style="font-size: 0.75rem;">
                         <i class="fas fa-check-circle mr-1"></i> Solo Lectura
                     </span>
@@ -319,9 +329,9 @@
 <!-- Contenedor Principal -->
 <div class="container-fluid px-2 px-md-3 py-3 py-md-4">
 
-    <!-- KPI Cards (Grid 2x2 en móvil / 4 columnas en desktop) -->
+    <!-- KPI Cards (Grid responsivo) -->
     <div class="row mb-3 mb-md-4">
-        <div class="col-6 col-lg-3 mb-2 mb-lg-0 px-2">
+        <div class="col-6 col-md-4 col-xl-2dot4 col-lg-3 mb-2 px-2">
             <div class="stat-card d-flex align-items-center">
                 <div class="stat-icon mr-2 mr-md-3" style="background-color: #e0f2fe; color: #0284c7;">
                     <i class="fas fa-pills"></i>
@@ -329,12 +339,38 @@
                 <div class="overflow-hidden">
                     <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: #64748b;" class="text-truncate">Vademécum Único</div>
                     <div class="stat-val text-primary">{{ $totalMedicamentosUnicos }}</div>
-                    <div class="d-none d-md-block" style="font-size: 0.72rem; color: #0284c7; font-weight: 600;">Medicamentos sin duplicar</div>
+                    <div class="d-none d-md-block" style="font-size: 0.72rem; color: #0284c7; font-weight: 600;">Total medicamentos</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-6 col-lg-3 mb-2 mb-lg-0 px-2">
+        <div class="col-6 col-md-4 col-lg-3 mb-2 px-2">
+            <div class="stat-card d-flex align-items-center" style="border-left: 4px solid #2563eb;">
+                <div class="stat-icon mr-2 mr-md-3" style="background-color: #dbeafe; color: #2563eb;">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: #2563eb;" class="text-truncate">Meds. Crónicos</div>
+                    <div class="stat-val" style="color: #2563eb;">{{ $totalCronicos }}</div>
+                    <div class="d-none d-md-block" style="font-size: 0.72rem; color: #3b82f6; font-weight: 600;">RCA 007-043/22</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3 mb-2 px-2">
+            <div class="stat-card d-flex align-items-center" style="border-left: 4px solid #7c3aed;">
+                <div class="stat-icon mr-2 mr-md-3" style="background-color: #ede9fe; color: #7c3aed;">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: #7c3aed;" class="text-truncate">Psicotrópicos</div>
+                    <div class="stat-val" style="color: #7c3aed;">{{ $totalPsicotropicos }}</div>
+                    <div class="d-none d-md-block" style="font-size: 0.72rem; color: #7c3aed; font-weight: 600;">Ley 1340 (Retiro 8d)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3 mb-2 px-2">
             <div class="stat-card d-flex align-items-center">
                 <div class="stat-icon mr-2 mr-md-3" style="background-color: #dcfce7; color: #16a34a;">
                     <i class="fas fa-user-md"></i>
@@ -347,7 +383,7 @@
             </div>
         </div>
 
-        <div class="col-6 col-lg-3 px-2">
+        <div class="col-6 col-md-4 col-lg-3 mb-2 px-2">
             <div class="stat-card d-flex align-items-center">
                 <div class="stat-icon mr-2 mr-md-3" style="background-color: #fef3c7; color: #d97706;">
                     <i class="fas fa-clipboard-list"></i>
@@ -355,12 +391,12 @@
                 <div class="overflow-hidden">
                     <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: #64748b;" class="text-truncate">Asignaciones</div>
                     <div class="stat-val text-warning">{{ $totalAsignaciones }}</div>
-                    <div class="d-none d-md-block" style="font-size: 0.72rem; color: #d97706; font-weight: 600;">Líneas por especialidad</div>
+                    <div class="d-none d-md-block" style="font-size: 0.72rem; color: #d97706; font-weight: 600;">Líneas en plantilla</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-6 col-lg-3 px-2">
+        <div class="col-6 col-md-4 col-lg-3 mb-2 px-2">
             <div class="stat-card d-flex align-items-center">
                 <div class="stat-icon mr-2 mr-md-3" style="background-color: #f1f5f9; color: #475569;">
                     <i class="fas fa-building"></i>
@@ -370,6 +406,32 @@
                     <div class="stat-val text-dark text-truncate" style="font-size: 0.95rem;">{{ $est->condicion_inmueble ?? 'No especificado' }}</div>
                     <div class="d-none d-md-block" style="font-size: 0.7rem; color: #64748b;">
                         Sup: {{ $est->superficie_construida ? number_format($est->superficie_construida, 0, ',', '.') . ' m²' : 'S/D' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner Informativo Normativo de Patologías Crónicas -->
+    <div class="card border-0 mb-4 shadow-sm" style="background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-left: 4px solid #2563eb !important; border-radius: 0.85rem;">
+        <div class="card-body p-3">
+            <div class="d-flex align-items-start">
+                <div class="mr-3 text-primary d-none d-sm-block" style="font-size: 1.5rem;">
+                    <i class="fas fa-file-contract"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between mb-1" style="gap: 6px;">
+                        <h6 class="font-weight-bold text-dark mb-0">
+                            <i class="fas fa-shield-alt text-primary mr-1"></i> Marco Normativo: Provisión de Medicamentos para Patologías Crónicas (RCA N° 007-043/2022 &amp; RCA N° 035-001/2023)
+                        </h6>
+                        <span class="badge badge-primary px-2 py-1" style="font-size: 0.72rem;">Vademécum Oficial 238 Ítems</span>
+                    </div>
+                    <div class="text-muted small" style="line-height: 1.5;">
+                        <ul class="mb-0 pl-3">
+                            <li><strong>Ventana de Retiro Estándar:</strong> Los medicamentos de patología crónica se retiran cada <strong>28 días</strong> (períodos de 60, 90, 120 o 180 días).</li>
+                            <li><strong>Psicotrópicos y Estupefacientes (Ley N° 1340/88):</strong> Sujetos a prescripción por triplicado y retiro estricto cada <strong>8 días</strong>.</li>
+                            <li><strong>Límites en SIH:</strong> Máximo 4 especialidades por paciente y hasta 4 medicamentos crónicos por especialidad.</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -401,14 +463,37 @@
         <!-- PESTAÑA 1: VADEMÉCUM CONSOLIDADO (DATATABLES) -->
         <div class="tab-pane fade show active" id="tab-vademecum" role="tabpanel">
             <div class="card border-0 shadow-sm rounded-lg overflow-hidden">
-                <div class="card-header bg-white border-bottom p-3 d-flex flex-wrap align-items-center justify-content-between">
-                    <div>
-                        <h5 class="font-weight-bold text-dark mb-1">
-                            <i class="fas fa-pills text-primary mr-2"></i> Vademécum Consolidado de Medicamentos
-                        </h5>
-                        <p class="text-muted small mb-0">
-                            Listado unificado sin duplicados. Use el buscador para filtrar en tiempo real por código, descripción o especialidad.
-                        </p>
+                <div class="card-header bg-white border-bottom p-3">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between mb-2" style="gap: 10px;">
+                        <div>
+                            <h5 class="font-weight-bold text-dark mb-1">
+                                <i class="fas fa-pills text-primary mr-2"></i> Vademécum Consolidado de Medicamentos
+                            </h5>
+                            <p class="text-muted small mb-0">
+                                Listado clasificado según resolución. Utilice los botones de filtro rápido o el buscador general.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Filtros Rápidos de Crónicos y Psicotrópicos -->
+                    <div class="d-flex flex-wrap align-items-center mt-2" style="gap: 6px;">
+                        <button type="button" class="btn btn-sm btn-primary filter-btn active" data-filter="todos" id="btnFilterTodos">
+                            <i class="fas fa-th mr-1"></i> Todos ({{ $totalMedicamentosUnicos }})
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary filter-btn" data-filter="cronicos" id="btnFilterCronicos">
+                            <i class="fas fa-heartbeat mr-1"></i> Solo Crónicos RCA 007/22 ({{ $totalCronicos }})
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-purple filter-btn" data-filter="psicotropicos" id="btnFilterPsico" style="border-color: #7c3aed; color: #7c3aed;">
+                            <i class="fas fa-brain mr-1"></i> Solo Psicotrópicos Ley 1340 ({{ $totalPsicotropicos }})
+                        </button>
+                        @if(!empty($categoriasCronicos) && count($categoriasCronicos) > 0)
+                            <select id="selectCategoriaFiltro" class="form-control form-control-sm d-inline-block ml-auto" style="max-width: 250px; border-radius: 6px; font-weight: 600;">
+                                <option value="">📂 Todas las categorías terapéuticas</option>
+                                @foreach($categoriasCronicos as $catName)
+                                    <option value="{{ $catName }}">{{ $catName }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                     </div>
                 </div>
 
@@ -418,26 +503,40 @@
                             <thead class="thead-light">
                                 <tr>
                                     <th style="width: 5%; text-align: center;">#</th>
-                                    <th style="width: 15%;">Código</th>
-                                    <th style="width: 45%;">Descripción del Medicamento / Presentación</th>
-                                    <th style="width: 35%;">Especialidades que lo Utilizan</th>
+                                    <th style="width: 12%;">Código</th>
+                                    <th style="width: 45%;">Descripción del Medicamento / Clasificación</th>
+                                    <th style="width: 38%;">Especialidades que lo Utilizan</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($medicamentosConsolidados as $idx => $med)
-                                    <tr>
+                                    <tr data-es-cronico="{{ $med['es_cronico'] ? '1' : '0' }}" data-es-psico="{{ $med['es_psicotropico'] ? '1' : '0' }}" data-categoria="{{ $med['categoria_terapeutica'] ?? '' }}">
                                         <td class="text-center font-weight-bold text-muted">{{ $idx + 1 }}</td>
                                         <td>
                                             <span class="badge badge-light border text-dark font-weight-bold px-2 py-1" style="font-family: monospace; font-size: 0.85rem;">
                                                 {{ $med['codigo'] }}
                                             </span>
                                         </td>
-                                        <td class="font-weight-600 text-dark">
-                                            {{ $med['nombre'] }}
+                                        <td>
+                                            <div class="font-weight-600 text-dark mb-1">
+                                                {{ $med['nombre'] }}
+                                            </div>
+                                            <div class="d-flex flex-wrap align-items-center" style="gap: 4px;">
+                                                @if($med['es_cronico'])
+                                                    <span class="badge badge-primary px-2 py-1" style="font-size: 0.72rem; background-color: #2563eb;">
+                                                        <i class="fas fa-heartbeat mr-1"></i> Crónico: {{ $med['categoria_terapeutica'] ?? 'General' }}
+                                                    </span>
+                                                @endif
+                                                @if($med['es_psicotropico'])
+                                                    <span class="badge px-2 py-1 text-white" style="font-size: 0.72rem; background-color: #7c3aed;" title="Retiro cada 8 días bajo Ley 1340/88">
+                                                        <i class="fas fa-brain mr-1"></i> Psicotrópico (8 días)
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td>
                                             @foreach($med['especialidades'] as $espNombre)
-                                                <span class="badge badge-primary px-2 py-1 mr-1 mb-1 font-weight-500" style="border-radius: 4px; font-size: 0.78rem; background-color: #0284c7;">
+                                                <span class="badge badge-light border text-dark px-2 py-1 mr-1 mb-1 font-weight-500" style="border-radius: 4px; font-size: 0.78rem; background-color: #f8fafc;">
                                                     {{ $espNombre }}
                                                 </span>
                                             @endforeach
@@ -510,9 +609,10 @@
                                         <table class="table table-sm table-hover table-striped mb-0" style="font-size: 0.85rem;">
                                             <thead style="background-color: #f1f5f9;">
                                                 <tr>
-                                                    <th style="width: 7%; text-align: center; color: #475569;">#</th>
-                                                    <th style="width: 23%; color: #475569;">Código</th>
-                                                    <th style="width: 70%; color: #475569;">Descripción del Medicamento / Presentación</th>
+                                                    <th style="width: 5%; text-align: center; color: #475569;">#</th>
+                                                    <th style="width: 15%; color: #475569;">Código</th>
+                                                    <th style="width: 55%; color: #475569;">Descripción del Medicamento / Presentación</th>
+                                                    <th style="width: 25%; color: #475569;">Clasificación Normativa</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -525,6 +625,21 @@
                                                             </span>
                                                         </td>
                                                         <td class="font-weight-500 text-dark">{{ $mItem['nombre'] }}</td>
+                                                        <td>
+                                                            @if(!empty($mItem['es_cronico']))
+                                                                <span class="badge badge-primary px-2 py-1" style="font-size: 0.72rem; background-color: #2563eb;">
+                                                                    <i class="fas fa-heartbeat mr-1"></i> {{ $mItem['categoria_terapeutica'] ?? 'Crónico' }}
+                                                                </span>
+                                                            @endif
+                                                            @if(!empty($mItem['es_psicotropico']))
+                                                                <span class="badge px-2 py-1 text-white" style="font-size: 0.72rem; background-color: #7c3aed;">
+                                                                    <i class="fas fa-brain mr-1"></i> Psicotrópico (8d)
+                                                                </span>
+                                                            @endif
+                                                            @if(empty($mItem['es_cronico']) && empty($mItem['es_psicotropico']))
+                                                                <span class="text-muted small">Agudo / General</span>
+                                                            @endif
+                                                        </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
@@ -708,6 +823,52 @@ $(document).ready(function() {
             }
         },
         responsive: true
+    });
+
+    // Filtros personalizados para Crónicos y Psicotrópicos
+    var currentFilterType = 'todos';
+    var currentCategoria = '';
+
+    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        if (settings.nTable.id !== 'tblAuditorMedicamentos') return true;
+        var row = table.row(dataIndex).node();
+        if (!row) return true;
+
+        var esCronico = $(row).attr('data-es-cronico') === '1';
+        var esPsico = $(row).attr('data-es-psico') === '1';
+        var categoria = $(row).attr('data-categoria') || '';
+
+        if (currentFilterType === 'cronicos' && !esCronico) {
+            return false;
+        }
+        if (currentFilterType === 'psicotropicos' && !esPsico) {
+            return false;
+        }
+        if (currentCategoria !== '' && categoria !== currentCategoria) {
+            return false;
+        }
+        return true;
+    });
+
+    $('.filter-btn').on('click', function() {
+        $('.filter-btn').removeClass('active btn-primary text-white').addClass('btn-outline-primary');
+        $('#btnFilterPsico').removeClass('text-white').addClass('btn-outline-purple').css('background-color', 'transparent');
+        
+        $(this).addClass('active');
+        currentFilterType = $(this).data('filter');
+
+        if (currentFilterType === 'todos' || currentFilterType === 'cronicos') {
+            $(this).removeClass('btn-outline-primary').addClass('btn-primary text-white');
+        } else if (currentFilterType === 'psicotropicos') {
+            $(this).removeClass('btn-outline-purple').addClass('text-white').css('background-color', '#7c3aed');
+        }
+
+        table.draw();
+    });
+
+    $('#selectCategoriaFiltro').on('change', function() {
+        currentCategoria = $(this).val();
+        table.draw();
     });
 
     // Expandir / Colapsar todos

@@ -34,17 +34,20 @@ class Establecimiento extends Model
         'vigencia_hasta', 'canon_mensual', 'fecha_pago_alquiler',
         'nro_resolucion_convenio', 'vigencia_convenio_desde', 'vigencia_convenio_hasta',
         'descripcion_convenio', 'locales_convenio', 'archivo_convenio_url',
+        'habilita_farmacia_cronicos', 'habilita_empadronamiento_cronicos',
     ];
 
     protected $casts = [
-        'latitude'           => 'decimal:8',
-        'longitude'          => 'decimal:8',
-        'activo'             => 'boolean',
-        'es_hospitalario'    => 'boolean',
-        'tiene_internacion'  => 'boolean',
-        'tiene_quirofano_req'=> 'boolean',
-        'tiene_uti_req'      => 'boolean',
-        'tiene_urgencias_req'=> 'boolean',
+        'latitude'                       => 'decimal:8',
+        'longitude'                      => 'decimal:8',
+        'activo'                         => 'boolean',
+        'es_hospitalario'                => 'boolean',
+        'tiene_internacion'              => 'boolean',
+        'tiene_quirofano_req'            => 'boolean',
+        'tiene_uti_req'                  => 'boolean',
+        'tiene_urgencias_req'            => 'boolean',
+        'habilita_farmacia_cronicos'     => 'boolean',
+        'habilita_empadronamiento_cronicos' => 'boolean',
     ];
 
     protected $appends = [

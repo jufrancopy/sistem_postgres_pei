@@ -144,18 +144,26 @@ class RiissAuditorPortalController extends Controller
                 $especialidadesMedicamentos[$espNombre] = [];
             }
             $especialidadesMedicamentos[$espNombre][] = [
-                'codigo' => $med->codigo,
-                'nombre' => $med->nombre,
+                'codigo'                => $med->codigo,
+                'nombre'                => $med->nombre,
+                'es_cronico'            => (bool) $med->es_cronico,
+                'categoria_terapeutica' => $med->categoria_terapeutica,
+                'es_psicotropico'       => (bool) $med->es_psicotropico,
+                'resolucion_respaldo'   => $med->resolucion_respaldo,
             ];
             $totalAsignaciones++;
 
             $medKey = $med->codigo ? $med->codigo : ('ID_' . $med->id);
             if (!isset($medicamentosConsolidados[$medKey])) {
                 $medicamentosConsolidados[$medKey] = [
-                    'id'             => $med->id,
-                    'codigo'         => $med->codigo ?: 'S/C',
-                    'nombre'         => $med->nombre,
-                    'especialidades' => []
+                    'id'                    => $med->id,
+                    'codigo'                => $med->codigo ?: 'S/C',
+                    'nombre'                => $med->nombre,
+                    'es_cronico'            => (bool) $med->es_cronico,
+                    'categoria_terapeutica' => $med->categoria_terapeutica,
+                    'es_psicotropico'       => (bool) $med->es_psicotropico,
+                    'resolucion_respaldo'   => $med->resolucion_respaldo,
+                    'especialidades'        => []
                 ];
             }
             if (!in_array($espNombre, $medicamentosConsolidados[$medKey]['especialidades'])) {
@@ -171,6 +179,10 @@ class RiissAuditorPortalController extends Controller
 
         ksort($especialidadesMedicamentos);
         uasort($medicamentosConsolidados, fn($a, $b) => strcmp($a['nombre'], $b['nombre']));
+
+        $totalCronicos = collect($medicamentosConsolidados)->where('es_cronico', true)->count();
+        $totalPsicotropicos = collect($medicamentosConsolidados)->where('es_psicotropico', true)->count();
+        $categoriasCronicos = collect($medicamentosConsolidados)->where('es_cronico', true)->pluck('categoria_terapeutica')->filter()->unique()->sort()->values();
 
         // Cartera para bloques
         $carteraServicios = [];
@@ -190,6 +202,9 @@ class RiissAuditorPortalController extends Controller
             'medicamentosConsolidados' => array_values($medicamentosConsolidados),
             'carteraServicios'         => $carteraServicios,
             'totalMedicamentosUnicos'  => count($medicamentosConsolidados),
+            'totalCronicos'            => $totalCronicos,
+            'totalPsicotropicos'       => $totalPsicotropicos,
+            'categoriasCronicos'       => $categoriasCronicos,
             'totalEspecialidades'      => count($especialidadesMedicamentos),
             'totalAsignaciones'        => $totalAsignaciones,
             'es_global'                => $esGlobal,
@@ -281,18 +296,26 @@ class RiissAuditorPortalController extends Controller
                 $especialidadesMedicamentos[$espNombre] = [];
             }
             $especialidadesMedicamentos[$espNombre][] = [
-                'codigo' => $med->codigo,
-                'nombre' => $med->nombre,
+                'codigo'                => $med->codigo,
+                'nombre'                => $med->nombre,
+                'es_cronico'            => (bool) $med->es_cronico,
+                'categoria_terapeutica' => $med->categoria_terapeutica,
+                'es_psicotropico'       => (bool) $med->es_psicotropico,
+                'resolucion_respaldo'   => $med->resolucion_respaldo,
             ];
             $totalAsignaciones++;
 
             $medKey = $med->codigo ? $med->codigo : ('ID_' . $med->id);
             if (!isset($medicamentosConsolidados[$medKey])) {
                 $medicamentosConsolidados[$medKey] = [
-                    'id'             => $med->id,
-                    'codigo'         => $med->codigo ?: 'S/C',
-                    'nombre'         => $med->nombre,
-                    'especialidades' => []
+                    'id'                    => $med->id,
+                    'codigo'                => $med->codigo ?: 'S/C',
+                    'nombre'                => $med->nombre,
+                    'es_cronico'            => (bool) $med->es_cronico,
+                    'categoria_terapeutica' => $med->categoria_terapeutica,
+                    'es_psicotropico'       => (bool) $med->es_psicotropico,
+                    'resolucion_respaldo'   => $med->resolucion_respaldo,
+                    'especialidades'        => []
                 ];
             }
             if (!in_array($espNombre, $medicamentosConsolidados[$medKey]['especialidades'])) {

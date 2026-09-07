@@ -326,27 +326,34 @@
                     <small class="text-muted d-none d-sm-inline">Auditoría de vademécum, cartera médica y georreferencia.</small>
                 </div>
                 <!-- Filtros en vivo con Select2 -->
-                <div class="col-sm-4 col-lg-3 mb-2 mb-lg-0">
+                <div class="col-sm-6 col-lg-2 mb-2 mb-lg-0">
                     <select id="filtroDeptoGlobal" class="form-control form-control-sm" style="width: 100%;">
-                        <option value="">Todos los Deptos ({{ count($departamentos) }})</option>
+                        <option value="">Deptos ({{ count($departamentos) }})</option>
                         @foreach($departamentos as $depto)
                             <option value="{{ $depto }}">{{ $depto }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-sm-4 col-lg-3 mb-2 mb-lg-0">
+                <div class="col-sm-6 col-lg-2 mb-2 mb-lg-0">
                     <select id="filtroComplejidadGlobal" class="form-control form-control-sm" style="width: 100%;">
-                        <option value="">Complejidades (Todas)</option>
+                        <option value="">Complejidades</option>
                         @foreach($complejidades as $comp)
                             <option value="{{ $comp }}">{{ $comp }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-sm-4 col-lg-2">
+                <div class="col-sm-6 col-lg-2 mb-2 mb-lg-0">
                     <select id="filtroMedsGlobal" class="form-control form-control-sm" style="width: 100%;">
-                        <option value="">Medicamentos (Todos)</option>
-                        <option value="con">Con Medicamentos</option>
-                        <option value="sin">Sin Medicamentos</option>
+                        <option value="">Medicamentos</option>
+                        <option value="con">Con Vademécum</option>
+                        <option value="sin">Sin Vademécum</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <select id="filtroCronicosGlobal" class="form-control form-control-sm" style="width: 100%;">
+                        <option value="">Patologías Crónicas</option>
+                        <option value="farmacia">💙 Farmacia Crónicos</option>
+                        <option value="empadronamiento">🩺 Empadronamiento SIH</option>
                     </select>
                 </div>
             </div>
@@ -371,7 +378,7 @@
                                 $medCount = $e->medicamentos_count ?? 0;
                                 $espCount = $e->especialidades_count ?? 0;
                             @endphp
-                            <tr data-depto="{{ strtolower($e->departamento ?? '') }}" data-comp="{{ strtolower($e->complejidad ?? '') }}" data-has-meds="{{ $medCount > 0 ? 'con' : 'sin' }}">
+                            <tr data-depto="{{ strtolower($e->departamento ?? '') }}" data-comp="{{ strtolower($e->complejidad ?? '') }}" data-has-meds="{{ $medCount > 0 ? 'con' : 'sin' }}" data-farmacia-cronicos="{{ $e->habilita_farmacia_cronicos ? '1' : '0' }}" data-empadronamiento-cronicos="{{ $e->habilita_empadronamiento_cronicos ? '1' : '0' }}">
                                 <td class="text-center font-weight-bold text-muted" style="font-size: 0.8rem;">{{ $idx + 1 }}</td>
                                 <td>
                                     <div class="font-weight-bold text-dark" style="font-size: 0.92rem; line-height: 1.3;">{{ $e->nombre_oficial }}</div>
@@ -379,6 +386,16 @@
                                         <span class="badge badge-light border text-muted" style="font-family: monospace; font-size: 0.72rem;">ID: {{ $e->id_establecimiento }}</span>
                                         @if($e->tipo_est)
                                             <span class="badge badge-secondary" style="font-size: 0.7rem;">{{ $e->tipo_est }}</span>
+                                        @endif
+                                        @if($e->habilita_farmacia_cronicos)
+                                            <span class="badge badge-primary px-1 py-0" style="font-size: 0.68rem; background-color: #2563eb;" title="Farmacia Crónicos Habilitada">
+                                                <i class="fas fa-prescription-bottle-alt"></i> Crónicos
+                                            </span>
+                                        @endif
+                                        @if($e->habilita_empadronamiento_cronicos)
+                                            <span class="badge badge-warning px-1 py-0 text-dark" style="font-size: 0.68rem;" title="Empadronamiento SIH Habilitado">
+                                                <i class="fas fa-id-card-alt"></i> SIH
+                                            </span>
                                         @endif
                                     </div>
                                 </td>
@@ -472,6 +489,13 @@ $(document).ready(function() {
         width: '100%'
     });
 
+    $('#filtroCronicosGlobal').select2({
+        theme: 'bootstrap4',
+        placeholder: "Patologías Crónicas",
+        allowClear: true,
+        width: '100%'
+    });
+
     var table = $('#tblGlobalEstablecimientos').DataTable({
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
@@ -493,19 +517,24 @@ $(document).ready(function() {
         var depto = ($('#filtroDeptoGlobal').val() || '').toLowerCase();
         var comp = ($('#filtroComplejidadGlobal').val() || '').toLowerCase();
         var meds = $('#filtroMedsGlobal').val() || '';
+        var cron = $('#filtroCronicosGlobal').val() || '';
 
         var rowDepto = row.attr('data-depto') || '';
         var rowComp = row.attr('data-comp') || '';
         var rowMeds = row.attr('data-has-meds') || '';
+        var rowFarmacia = row.attr('data-farmacia-cronicos') || '0';
+        var rowEmpadronamiento = row.attr('data-empadronamiento-cronicos') || '0';
 
         if (depto && rowDepto.indexOf(depto) === -1) return false;
         if (comp && rowComp.indexOf(comp) === -1) return false;
         if (meds && rowMeds !== meds) return false;
+        if (cron === 'farmacia' && rowFarmacia !== '1') return false;
+        if (cron === 'empadronamiento' && rowEmpadronamiento !== '1') return false;
 
         return true;
     });
 
-    $('#filtroDeptoGlobal, #filtroComplejidadGlobal, #filtroMedsGlobal').on('change', function() {
+    $('#filtroDeptoGlobal, #filtroComplejidadGlobal, #filtroMedsGlobal, #filtroCronicosGlobal').on('change', function() {
         table.draw();
     });
 

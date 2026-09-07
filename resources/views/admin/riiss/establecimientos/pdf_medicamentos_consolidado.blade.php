@@ -264,7 +264,21 @@
                 <tr>
                     <td style="text-align: center; color: #64748b; font-weight: bold;">{{ $loop->iteration }}</td>
                     <td><span class="code-badge">{{ $m['codigo'] ?: 'S/C' }}</span></td>
-                    <td><strong style="color: #0f172a;">{{ $m['nombre'] }}</strong></td>
+                    <td>
+                        <strong style="color: #0f172a;">{{ $m['nombre'] }}</strong>
+                        @if(!empty($m['es_cronico']))
+                            <div style="margin-top: 1px;">
+                                <span style="display: inline-block; background-color: #dbeafe; color: #1e40af; font-size: 6.5px; font-weight: bold; padding: 1px 3px; border-radius: 2px;">
+                                    CRÓNICO: {{ $m['categoria_terapeutica'] ?? 'RCA 007/22' }}
+                                </span>
+                                @if(!empty($m['es_psicotropico']))
+                                    <span style="display: inline-block; background-color: #ede9fe; color: #6b21a8; font-size: 6.5px; font-weight: bold; padding: 1px 3px; border-radius: 2px;">
+                                        PSICOTRÓPICO (Retiro c/ 8d)
+                                    </span>
+                                @endif
+                            </div>
+                        @endif
+                    </td>
                     <td>
                         @foreach($m['especialidades'] as $esp)
                             <span class="esp-pill">{{ $esp }}</span>

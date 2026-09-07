@@ -134,6 +134,10 @@ class EstablecimientoController extends Controller
             'locales_convenio'        => 'nullable|string',
             'archivo_convenio_file'   => 'nullable|file|mimes:pdf|max:10240',
             
+            // Programas de Patologías Crónicas (RCA 007-043/2022)
+            'habilita_farmacia_cronicos'        => 'nullable|boolean',
+            'habilita_empadronamiento_cronicos' => 'nullable|boolean',
+
             'contratos'               => 'nullable|array',
             'contratos.*.tipo_contrato' => 'required_with:contratos|string|in:AMPLIACION,MANTENIMIENTO',
             'contratos.*.nro_contrato'  => 'nullable|string|max:100',
@@ -141,6 +145,13 @@ class EstablecimientoController extends Controller
             'contratos.*.costo_total'   => 'nullable|numeric',
             'contratos.*.porcentaje_avance' => 'nullable|integer',
         ]);
+
+        if ($request->has('habilita_farmacia_cronicos')) {
+            $validated['habilita_farmacia_cronicos'] = $request->boolean('habilita_farmacia_cronicos');
+        }
+        if ($request->has('habilita_empadronamiento_cronicos')) {
+            $validated['habilita_empadronamiento_cronicos'] = $request->boolean('habilita_empadronamiento_cronicos');
+        }
 
         if ($request->hasFile('plano_file')) {
             $path = $request->file('plano_file')->store('planos', 'public');
