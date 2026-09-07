@@ -127,6 +127,89 @@
 .esp-card:hover {
     box-shadow: 0 6px 16px rgba(0,0,0,0.06);
 }
+
+/* ── Modern Chronic Switch Cards ── */
+.chronic-switch-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 0;
+    height: 100%;
+}
+.chronic-switch-card:hover {
+    border-color: #94a3b8;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+.chronic-switch-card.active-blue {
+    background: #eff6ff !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15) !important;
+}
+.chronic-switch-card.active-amber {
+    background: #fffbeb !important;
+    border-color: #f59e0b !important;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15) !important;
+}
+.switch-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+/* Modern iOS Switch Toggle */
+.ios-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    margin-bottom: 0;
+    flex-shrink: 0;
+}
+.ios-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.ios-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #cbd5e1;
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 24px;
+}
+.ios-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.ios-switch input:checked + .ios-slider {
+    background-color: #2563eb;
+}
+.ios-switch.switch-warning input:checked + .ios-slider {
+    background-color: #f59e0b;
+}
+.ios-switch input:checked + .ios-slider:before {
+    transform: translateX(20px);
+}
 .esp-header-btn {
     background: #f8fafc;
     border: none;
@@ -714,28 +797,52 @@
                                     <input type="number" step="any" id="editEstLng" class="form-control">
                                 </div>
 
-                                <div class="col-md-12 mt-2 mb-2">
-                                    <h6 class="font-weight-bold border-bottom pb-2 text-primary">
+                                <div class="col-md-12 mt-3 mb-2">
+                                    <h6 class="font-weight-bold border-bottom pb-2 text-primary" style="font-size: 0.95rem;">
                                         <i class="fa fa-heartbeat mr-1"></i> Programas de Patologías Crónicas (RCA N° 007-043/2022)
                                     </h6>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <div class="custom-control custom-switch p-2 bg-light border rounded">
-                                        <input type="checkbox" class="custom-control-input" id="editEstHabilitaFarmaciaCronicos">
-                                        <label class="custom-control-label font-weight-bold text-dark" for="editEstHabilitaFarmaciaCronicos">
-                                            <i class="fas fa-prescription-bottle-alt text-primary mr-1"></i> Farmacia para Crónicos Habilitada
-                                        </label>
-                                        <small class="form-text text-muted">Autorizado para provisión continua según vademécum de 238 ítems.</small>
-                                    </div>
+                                    <label class="chronic-switch-card" id="cardHabilitaFarmaciaCronicos" for="editEstHabilitaFarmaciaCronicos">
+                                        <div class="d-flex align-items-center mr-3">
+                                            <div class="switch-icon-box mr-3" style="background: #dbeafe; color: #2563eb;">
+                                                <i class="fas fa-prescription-bottle-alt"></i>
+                                            </div>
+                                            <div>
+                                                <div class="font-weight-bold text-dark" style="font-size: 0.92rem; line-height: 1.2;">
+                                                    Farmacia para Crónicos
+                                                </div>
+                                                <div class="text-muted" style="font-size: 0.75rem; line-height: 1.3; margin-top: 2px;">
+                                                    Provisión según vademécum de 238 medicamentos.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="ios-switch">
+                                            <input type="checkbox" id="editEstHabilitaFarmaciaCronicos">
+                                            <span class="ios-slider"></span>
+                                        </div>
+                                    </label>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <div class="custom-control custom-switch p-2 bg-light border rounded">
-                                        <input type="checkbox" class="custom-control-input" id="editEstHabilitaEmpadronamientoCronicos">
-                                        <label class="custom-control-label font-weight-bold text-dark" for="editEstHabilitaEmpadronamientoCronicos">
-                                            <i class="fas fa-id-card-alt text-warning mr-1"></i> Empadronamiento en SIH Habilitado
-                                        </label>
-                                        <small class="form-text text-muted">Autorizado para registro y seguimiento médico en el sistema hospitalario.</small>
-                                    </div>
+                                    <label class="chronic-switch-card" id="cardHabilitaEmpadronamientoCronicos" for="editEstHabilitaEmpadronamientoCronicos">
+                                        <div class="d-flex align-items-center mr-3">
+                                            <div class="switch-icon-box mr-3" style="background: #fef3c7; color: #d97706;">
+                                                <i class="fas fa-id-card-alt"></i>
+                                            </div>
+                                            <div>
+                                                <div class="font-weight-bold text-dark" style="font-size: 0.92rem; line-height: 1.2;">
+                                                    Empadronamiento SIH
+                                                </div>
+                                                <div class="text-muted" style="font-size: 0.75rem; line-height: 1.3; margin-top: 2px;">
+                                                    Registro y certificación médica en el sistema.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="ios-switch switch-warning">
+                                            <input type="checkbox" id="editEstHabilitaEmpadronamientoCronicos">
+                                            <span class="ios-slider"></span>
+                                        </div>
+                                    </label>
                                 </div>
                                 
                                 <div class="col-md-12 mt-3 mb-2">
@@ -1857,6 +1964,7 @@ function abrirEditarEstablecimiento(id) {
         $('#editEstCondicion').val(d.condicion_inmueble || '');
         $('#editEstHabilitaFarmaciaCronicos').prop('checked', !!d.habilita_farmacia_cronicos);
         $('#editEstHabilitaEmpadronamientoCronicos').prop('checked', !!d.habilita_empadronamiento_cronicos);
+        actualizarEstiloSwitchCronicos();
         toggleCondicionInmueble();
         
         $('#editEstSupTerreno').val(d.superficie_terreno || '');
@@ -2119,6 +2227,24 @@ function expandirTodasEspecialidades(expand) {
         $('.collapse-esp').collapse('hide');
     }
 }
+
+function actualizarEstiloSwitchCronicos() {
+    if ($('#editEstHabilitaFarmaciaCronicos').is(':checked')) {
+        $('#cardHabilitaFarmaciaCronicos').addClass('active-blue');
+    } else {
+        $('#cardHabilitaFarmaciaCronicos').removeClass('active-blue');
+    }
+
+    if ($('#editEstHabilitaEmpadronamientoCronicos').is(':checked')) {
+        $('#cardHabilitaEmpadronamientoCronicos').addClass('active-amber');
+    } else {
+        $('#cardHabilitaEmpadronamientoCronicos').removeClass('active-amber');
+    }
+}
+
+$(document).on('change', '#editEstHabilitaFarmaciaCronicos, #editEstHabilitaEmpadronamientoCronicos', function() {
+    actualizarEstiloSwitchCronicos();
+});
 
 function toggleCondicionInmueble() {
     var val = $('#editEstCondicion').val();
