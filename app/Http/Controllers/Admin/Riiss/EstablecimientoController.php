@@ -214,16 +214,42 @@ class EstablecimientoController extends Controller
             }
         }
 
+        // Consolidar medicamentos únicos con sus especialidades vinculadas (sin duplicados)
+        $medicamentosConsolidados = [];
+        foreach ($est->medicamentos as $med) {
+            $espId = $med->pivot->especialidad_id;
+            $espNombre = $especialidadesMap->has($espId) ? $especialidadesMap->get($espId)->nombre : 'Pacientes Crónicos / Otras Áreas';
+
+            $medKey = $med->codigo ? $med->codigo : ('ID_' . $med->id);
+            if (!isset($medicamentosConsolidados[$medKey])) {
+                $medicamentosConsolidados[$medKey] = [
+                    'id'             => $med->id,
+                    'codigo'         => $med->codigo ?: 'S/C',
+                    'nombre'         => $med->nombre,
+                    'especialidades' => []
+                ];
+            }
+            if (!in_array($espNombre, $medicamentosConsolidados[$medKey]['especialidades'])) {
+                $medicamentosConsolidados[$medKey]['especialidades'][] = $espNombre;
+            }
+        }
+
+        $medicamentosConsolidados = array_values($medicamentosConsolidados);
+        usort($medicamentosConsolidados, function($a, $b) {
+            return strcmp($a['nombre'], $b['nombre']);
+        });
+
         // Ordenar alfabéticamente por nombre de especialidad
         usort($carteraServicios, function($a, $b) {
             return strcmp($a['nombre'], $b['nombre']);
         });
 
         return response()->json([
-            'ok'                 => true,
-            'data'               => $est,
-            'cartera_servicios'  => $carteraServicios,
-            'cartera_requisitos' => $this->carteraService->resumenRequisitos($est),
+            'ok'                       => true,
+            'data'                     => $est,
+            'cartera_servicios'        => $carteraServicios,
+            'medicamentos_consolidados'=> $medicamentosConsolidados,
+            'cartera_requisitos'       => $this->carteraService->resumenRequisitos($est),
         ]);
     }
 
@@ -314,23 +340,26 @@ class EstablecimientoController extends Controller
 
     /**
      * GET /riiss/establecimientos/{id}/medicamentos-pdf
-     * Genera PDF oficial de Medicamentos por Especialidad para el técnico.
+     * Genera PDF oficial de Medicamentos (Consolidado para Auditoría o por Especialidad).
      */
-    public function exportarPdfMedicamentos(string $id)
+    public function exportarPdfMedicamentos(string $id, Request $request)
     {
         $est = Establecimiento::where('id_establecimiento', $id)
             ->with(['especialidades', 'medicamentos'])
             ->firstOrFail();
 
-        // Agrupar medicamentos por especialidad
+        $especialidadesMap = $est->especialidades->keyBy('id');
+
+        // 1. Medicamentos Consolidados Únicos (sin duplicados)
+        $medicamentosConsolidados = [];
         $especialidadesMedicamentos = [];
-        $totalMedicamentos = 0;
+        $totalAsignaciones = 0;
 
         foreach ($est->medicamentos as $med) {
             $espId = $med->pivot->especialidad_id;
-            $esp = $est->especialidades->firstWhere('id', $espId);
-            $espNombre = $esp ? $esp->nombre : 'Pacientes Crónicos / Otras Áreas';
+            $espNombre = $especialidadesMap->has($espId) ? $especialidadesMap->get($espId)->nombre : 'Pacientes Crónicos / Otras Áreas';
 
+            // Agrupado por especialidad
             if (!isset($especialidadesMedicamentos[$espNombre])) {
                 $especialidadesMedicamentos[$espNombre] = [];
             }
@@ -338,30 +367,53 @@ class EstablecimientoController extends Controller
                 'codigo' => $med->codigo,
                 'nombre' => $med->nombre,
             ];
-            $totalMedicamentos++;
+            $totalAsignaciones++;
+
+            // Consolidado único
+            $medKey = $med->codigo ? $med->codigo : ('ID_' . $med->id);
+            if (!isset($medicamentosConsolidados[$medKey])) {
+                $medicamentosConsolidados[$medKey] = [
+                    'id'             => $med->id,
+                    'codigo'         => $med->codigo ?: 'S/C',
+                    'nombre'         => $med->nombre,
+                    'especialidades' => []
+                ];
+            }
+            if (!in_array($espNombre, $medicamentosConsolidados[$medKey]['especialidades'])) {
+                $medicamentosConsolidados[$medKey]['especialidades'][] = $espNombre;
+            }
         }
 
-        // Agregar especialidades sin medicamentos si las hay
+        // Agregar especialidades vacías si las hay
         foreach ($est->especialidades as $esp) {
             if (!isset($especialidadesMedicamentos[$esp->nombre])) {
                 $especialidadesMedicamentos[$esp->nombre] = [];
             }
         }
 
-        // Ordenar alfabéticamente
         ksort($especialidadesMedicamentos);
+        uasort($medicamentosConsolidados, fn($a, $b) => strcmp($a['nombre'], $b['nombre']));
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.riiss.establecimientos.pdf_medicamentos', [
-            'est' => $est,
+        $tipo = $request->get('tipo', 'consolidado'); // 'consolidado' (por defecto) o 'especialidad'
+
+        $viewName = ($tipo === 'especialidad')
+            ? 'admin.riiss.establecimientos.pdf_medicamentos_especialidad'
+            : 'admin.riiss.establecimientos.pdf_medicamentos_consolidado';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($viewName, [
+            'est'                        => $est,
+            'medicamentosConsolidados'   => $medicamentosConsolidados,
             'especialidadesMedicamentos' => $especialidadesMedicamentos,
-            'totalMedicamentos' => $totalMedicamentos,
-            'totalEspecialidades' => count($especialidadesMedicamentos),
-            'fecha' => now()->format('d/m/Y H:i'),
+            'totalMedicamentosUnicos'    => count($medicamentosConsolidados),
+            'totalAsignaciones'          => $totalAsignaciones,
+            'totalEspecialidades'        => count($especialidadesMedicamentos),
+            'fecha'                      => now()->format('d/m/Y H:i'),
         ]);
 
         $pdf->setPaper('a4', 'portrait');
 
-        $filename = 'RIISS_Medicamentos_' . \Illuminate\Support\Str::slug($est->nombre_oficial) . '.pdf';
+        $suffix = ($tipo === 'especialidad') ? '_Por_Especialidad' : '_Auditoria_Farmacia';
+        $filename = 'RIISS_' . \Illuminate\Support\Str::slug($est->nombre_oficial) . $suffix . '.pdf';
         return $pdf->stream($filename);
     }
 }

@@ -539,67 +539,111 @@
 
                 <div class="tab-content">
                     
-                    {{-- ── TAB 1: CARTERA DE MEDICAMENTOS SEGÚN ESPECIALIDAD (PROTAGONISTA) ── --}}
+                    {{-- ── TAB 1: CARTERA DE MEDICAMENTOS (PROTAGONISTA) ── --}}
                     <div class="tab-pane fade show active" id="tabContenidoCartera" role="tabpanel">
                         
-                        {{-- Banner Ejecutivo y Botonera para el Técnico --}}
+                        {{-- Banner Ejecutivo y Botonera Dual de PDF para el Técnico --}}
                         <div class="card border-0 shadow-sm mb-4" style="border-radius: 10px; background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-left: 5px solid #4f46e5 !important;">
                             <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between">
                                 <div>
-                                    <h6 class="font-weight-bold mb-1 text-dark" style="font-size: 1.1rem;">
-                                        <i class="fa fa-stethoscope mr-1 text-primary"></i> Especialidades y Medicamentos Asignados
+                                    <h6 class="font-weight-bold mb-1 text-dark" style="font-size: 1.15rem;">
+                                        <i class="fa fa-pills mr-1 text-primary"></i> Catálogo Oficial de Medicamentos y Especialidades
                                     </h6>
                                     <p class="small text-muted mb-0">
-                                        Catálogo oficial de medicamentos asignados por la Dirección de Logística de Suministros para este establecimiento.
+                                        Catálogo de la Dirección de Logística de Suministros para este establecimiento según modelo RIISS.
                                     </p>
                                 </div>
                                 <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-md-0">
                                     <div class="d-flex mr-3">
-                                        <span class="badge badge-primary px-3 py-2 mr-2 shadow-sm" id="badgeTotalEsp" style="font-size: 0.9rem; border-radius: 20px;">0 Especialidades</span>
-                                        <span class="badge badge-success px-3 py-2 shadow-sm" id="badgeTotalMed" style="font-size: 0.9rem; border-radius: 20px;">0 Medicamentos</span>
+                                        <span class="badge badge-success px-3 py-2 mr-2 shadow-sm font-weight-bold" id="badgeTotalUnicos" style="font-size: 0.9rem; border-radius: 20px;">0 Medicamentos Únicos</span>
+                                        <span class="badge badge-primary px-3 py-2 shadow-sm font-weight-bold" id="badgeTotalEsp" style="font-size: 0.9rem; border-radius: 20px;">0 Especialidades</span>
                                     </div>
-                                    <a href="#" id="btnDescargarPdfCartera" target="_blank" class="btn btn-danger btn-sm font-weight-bold px-3 py-2 shadow-sm mr-1">
-                                        <i class="fa fa-file-pdf mr-1"></i> Descargar PDF Oficial
-                                    </a>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold px-3 py-2" onclick="window.print()">
-                                        <i class="fa fa-print mr-1"></i> Imprimir
-                                    </button>
+                                    <div class="btn-group">
+                                        <a href="#" id="btnDescargarPdfAuditoria" target="_blank" class="btn btn-danger btn-sm font-weight-bold px-3 py-2 shadow-sm">
+                                            <i class="fa fa-file-pdf mr-1"></i> PDF Planilla de Auditoría (Sin duplicados)
+                                        </a>
+                                        <a href="#" id="btnDescargarPdfEspecialidad" target="_blank" class="btn btn-outline-danger btn-sm font-weight-bold px-3 py-2 bg-white shadow-sm" title="Descargar agrupado por servicio médico">
+                                            <i class="fa fa-list-alt mr-1"></i> PDF por Especialidad
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Barra de Filtros y Búsqueda en Vivo --}}
-                        <div class="card border shadow-sm mb-4" style="border-radius: 8px; background: #ffffff;">
-                            <div class="card-body p-3">
-                                <div class="row align-items-center">
-                                    <div class="col-md-5 mb-2 mb-md-0">
-                                        <div class="input-group">
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
-                                            </div>
-                                            <input type="text" id="buscadorCarteraLive" class="form-control border-left-0" placeholder="Buscar medicamento o código en tiempo real...">
+                        {{-- Selector de Modo de Visualización (Sub-Pestañas) --}}
+                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                            <ul class="nav nav-pills" id="carteraSubtabs" role="tablist" style="gap: 8px;">
+                                <li class="nav-item">
+                                    <a class="nav-link active font-weight-bold btn-sm py-2 px-3 shadow-sm" id="subtabLinkConsolidado" data-toggle="pill" href="#subtabContentConsolidado" role="tab" style="border-radius: 6px;">
+                                        <i class="fa fa-boxes mr-1"></i> Vademécum Único / Farmacia (Consolidado)
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link font-weight-bold btn-sm py-2 px-3 shadow-sm" id="subtabLinkEspecialidades" data-toggle="pill" href="#subtabContentEspecialidades" role="tab" style="border-radius: 6px;">
+                                        <i class="fa fa-stethoscope mr-1"></i> Desglose por Especialidad Médica
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="tab-content" id="carteraSubtabsContent">
+                            
+                            {{-- SUB-TAB A: VADEMÉCUM CONSOLIDADO ÚNICO (TABLA SIN DUPLICADOS) --}}
+                            <div class="tab-pane fade show active" id="subtabContentConsolidado" role="tabpanel">
+                                <div class="card border shadow-sm" style="border-radius: 8px; background: #ffffff;">
+                                    <div class="card-body p-3">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover table-striped w-100" id="tablaMedicamentosConsolidados">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th style="width: 5%; text-align: center;">#</th>
+                                                        <th style="width: 18%;">Código Medicamento</th>
+                                                        <th style="width: 45%;">Medicamento / Presentación</th>
+                                                        <th style="width: 32%;">Especialidades que lo Utilizan</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
                                         </div>
                                     </div>
-                                    <div class="col-md-4 mb-2 mb-md-0">
-                                        <select id="filtroCarteraEspecialidad" class="form-control">
-                                            <option value="">Todas las Especialidades</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3 text-md-right">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold mr-1" onclick="expandirTodasEspecialidades(true)" title="Expandir todo">
-                                            <i class="fa fa-expand-alt mr-1"></i> Expandir Todo
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold" onclick="expandirTodasEspecialidades(false)" title="Colapsar todo">
-                                            <i class="fa fa-compress-alt mr-1"></i> Colapsar
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {{-- Contenedor de Especialidades con Tablas Agrupadas --}}
-                        <div id="contenedorEspecialidadesBloques">
-                            <!-- Se renderiza por JS organizado por especialidad con tablas elegantes -->
+                            {{-- SUB-TAB B: DESGLOSE POR ESPECIALIDAD (BLOQUES) --}}
+                            <div class="tab-pane fade" id="subtabContentEspecialidades" role="tabpanel">
+                                <div class="card border shadow-sm mb-3" style="border-radius: 8px; background: #ffffff;">
+                                    <div class="card-body p-3">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-5 mb-2 mb-md-0">
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
+                                                    </div>
+                                                    <input type="text" id="buscadorCarteraLive" class="form-control border-left-0" placeholder="Buscar en especialidades...">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-2 mb-md-0">
+                                                <select id="filtroCarteraEspecialidad" class="form-control">
+                                                    <option value="">Todas las Especialidades</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 text-md-right">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold mr-1" onclick="expandirTodasEspecialidades(true)">
+                                                    <i class="fa fa-expand-alt mr-1"></i> Expandir
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold" onclick="expandirTodasEspecialidades(false)">
+                                                    <i class="fa fa-compress-alt mr-1"></i> Colapsar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="contenedorEspecialidadesBloques">
+                                    <!-- Se renderiza por JS -->
+                                </div>
+                            </div>
+
                         </div>
 
                         <div id="sinCarteraAlert" style="display: none;" class="alert alert-light border py-5 text-center text-muted" style="border-radius: 10px;">
@@ -1558,9 +1602,6 @@ function abrirEditarEstablecimiento(id) {
         $('#editEstNroLlamado').val(d.nro_llamado || '');
         $('#editEstNroContrato').val(d.nro_contrato_alquiler || '');
         $('#editEstPropietario').val(d.propietario || '');
-        $('#editEstVigDesde').val(d.vigencia_desde || '');
-        $('#editEstVigHasta').val(d.vigencia_hasta || '');
-        $('#editEstCanon').val(d.canon_mensual || '');
         $('#editEstFechaPago').val(d.fecha_pago_alquiler || '');
         
         $('#tablaContratos tbody').empty();
@@ -1575,155 +1616,213 @@ function abrirEditarEstablecimiento(id) {
         $('#modalEstIdBadge').text('ID: ' + d.id_establecimiento);
         $('#modalEstDeptoBadge').text(d.departamento || 'Sin Depto');
         
-        var pdfUrl = '/riiss/establecimientos/' + encodeURIComponent(d.id_establecimiento) + '/medicamentos-pdf';
-        $('#btnDescargarPdfModal').attr('href', pdfUrl);
-        $('#btnDescargarPdfCartera').attr('href', pdfUrl);
+        var basePdfUrl = '/riiss/establecimientos/' + encodeURIComponent(d.id_establecimiento) + '/medicamentos-pdf';
+        $('#btnDescargarPdfModal').attr('href', basePdfUrl + '?tipo=consolidado');
+        $('#btnDescargarPdfAuditoria').attr('href', basePdfUrl + '?tipo=consolidado');
+        $('#btnDescargarPdfEspecialidad').attr('href', basePdfUrl + '?tipo=especialidad');
 
-        // Activar la pestaña principal de Cartera de Medicamentos por defecto
+        // Activar pestañas principales y sub-pestaña por defecto
         $('#tabLinkCartera').tab('show');
+        $('#subtabLinkConsolidado').tab('show');
 
-        // Renderizar Cartera Organizada por Especialidad
-        var $contenedor = $('#contenedorEspecialidadesBloques');
-        $contenedor.empty();
+        // 1. Renderizar Vademécum Consolidado Único (DataTables)
+        var $tblConsolidado = $('#tablaMedicamentosConsolidados');
+        if ($.fn.DataTable.isDataTable($tblConsolidado)) {
+            $tblConsolidado.DataTable().clear().destroy();
+        }
+        $tblConsolidado.find('tbody').empty();
 
-        var $filtroEsp = $('#filtroCarteraEspecialidad');
-        $filtroEsp.empty().append('<option value="">Todas las Especialidades</option>');
-        $('#buscadorCarteraLive').val('');
+        var totalUnicos = (r.medicamentos_consolidados && r.medicamentos_consolidados.length) ? r.medicamentos_consolidados.length : 0;
+        var totalEspecialidades = (r.cartera_servicios && r.cartera_servicios.length) ? r.cartera_servicios.length : 0;
 
-        var totalEspecialidades = 0;
-        var totalMedicamentos = 0;
+        $('#badgeTotalUnicos').text(totalUnicos + ' Medicamentos Únicos');
+        $('#badgeTotalEsp').text(totalEspecialidades + ' Especialidades');
 
-        if (r.cartera_servicios && r.cartera_servicios.length > 0) {
+        if (totalUnicos > 0 || totalEspecialidades > 0) {
             $('#sinCarteraAlert').hide();
-            $contenedor.show();
-            totalEspecialidades = r.cartera_servicios.length;
+            $('#carteraSubtabs, #carteraSubtabsContent').show();
 
-            r.cartera_servicios.forEach(function(esp, index) {
-                var isCronico = esp.nombre.includes('Crónicos') || esp.nombre.includes('Otra');
-                var numMeds = esp.medicamentos ? esp.medicamentos.length : 0;
-                totalMedicamentos += numMeds;
-
-                var collapseId = 'collapseEspModal_' + index;
-                var espIdSafe = 'espCard_' + index;
-
-                $filtroEsp.append(
-                    $('<option>').val(esp.nombre).text(esp.nombre + ' (' + numMeds + ' meds)')
-                );
-
-                var badgeClass = isCronico ? 'badge-warning' : 'badge-primary';
-                var iconHtml = isCronico 
-                    ? '<i class="fa fa-exclamation-triangle text-warning mr-2"></i>' 
-                    : '<i class="fa fa-stethoscope mr-2" style="color: #4f46e5;"></i>';
-
-                var cardHtml = '<div class="esp-card" id="' + espIdSafe + '" data-esp-nombre="' + esp.nombre.toLowerCase() + '">';
-                cardHtml += '<button type="button" class="esp-header-btn ' + (isCronico ? 'cronico' : '') + '" data-toggle="collapse" data-target="#' + collapseId + '" aria-expanded="true">';
-                cardHtml += '  <div class="d-flex align-items-center">';
-                cardHtml += '    ' + iconHtml;
-                cardHtml += '    <span class="font-weight-bold text-dark" style="font-size: 1rem; text-transform: uppercase;">' + esp.nombre + '</span>';
-                cardHtml += '  </div>';
-                cardHtml += '  <div class="d-flex align-items-center">';
-                cardHtml += '    <span class="badge ' + badgeClass + ' px-3 py-2 mr-2" style="border-radius: 20px; font-size: 0.8rem;">' + numMeds + ' ' + (numMeds === 1 ? 'Med' : 'Medicamentos') + '</span>';
-                cardHtml += '    <i class="fa fa-chevron-down text-muted small"></i>';
-                cardHtml += '  </div>';
-                cardHtml += '</button>';
-
-                cardHtml += '<div id="' + collapseId + '" class="collapse collapse-esp show">';
-                cardHtml += '  <div class="p-0 border-top bg-white">';
-
-                if (esp.medicamentos && esp.medicamentos.length > 0) {
-                    cardHtml += '<div class="table-responsive mb-0">';
-                    cardHtml += '  <table class="table table-sm table-hover table-striped mb-0">';
-                    cardHtml += '    <thead style="background-color: #f1f5f9;">';
-                    cardHtml += '      <tr>';
-                    cardHtml += '        <th style="width: 7%; text-align: center; color: #475569;">#</th>';
-                    cardHtml += '        <th style="width: 23%; color: #475569;">Código Medicamento</th>';
-                    cardHtml += '        <th style="width: 70%; color: #475569;">Descripción del Medicamento / Presentación</th>';
-                    cardHtml += '      </tr>';
-                    cardHtml += '    </thead>';
-                    cardHtml += '    <tbody>';
-
-                    esp.medicamentos.forEach(function(med, mIdx) {
-                        var codStr = med.codigo || 'S/C';
-                        var nomStr = med.nombre || '';
-                        cardHtml += '<tr class="fila-med-item" data-search-text="' + (codStr + ' ' + nomStr).toLowerCase() + '">';
-                        cardHtml += '  <td style="text-align: center; color: #94a3b8; font-size: 0.82rem;">' + (mIdx + 1) + '</td>';
-                        cardHtml += '  <td><span class="badge badge-light border text-dark font-weight-bold px-2 py-1" style="font-family: monospace; font-size: 0.85rem;">' + codStr + '</span></td>';
-                        cardHtml += '  <td class="font-weight-500 text-dark">' + nomStr + '</td>';
-                        cardHtml += '</tr>';
-                    });
-
-                    cardHtml += '    </tbody>';
-                    cardHtml += '  </table>';
-                    cardHtml += '</div>';
-                } else {
-                    cardHtml += '<div class="p-3 text-muted small font-italic text-center">No hay medicamentos asignados para esta especialidad.</div>';
-                }
-
-                cardHtml += '  </div>';
-                cardHtml += '</div>';
-                cardHtml += '</div>';
-
-                $contenedor.append(cardHtml);
-            });
-
-            $('#badgeTotalEsp').text(totalEspecialidades + ' Especialidades').show();
-            $('#badgeTotalMed').text(totalMedicamentos + ' Medicamentos').show();
-
-            // Filtro desplegable por especialidad
-            $filtroEsp.off('change').on('change', function() {
-                var selected = $(this).val().toLowerCase();
-                if (!selected) {
-                    $('.esp-card').show();
-                } else {
-                    $('.esp-card').each(function() {
-                        var cardEsp = $(this).attr('data-esp-nombre');
-                        if (cardEsp === selected) {
-                            $(this).show();
-                            $(this).find('.collapse-esp').collapse('show');
-                        } else {
-                            $(this).hide();
-                        }
-                    });
-                }
-            });
-
-            // Buscador en vivo
-            $('#buscadorCarteraLive').off('input').on('input', function() {
-                var q = $(this).val().toLowerCase().trim();
-                if (!q) {
-                    $('.esp-card').show();
-                    $('.fila-med-item').show();
-                    return;
-                }
-
-                $('.esp-card').each(function() {
-                    var $card = $(this);
-                    var matchedRows = 0;
-
-                    $card.find('.fila-med-item').each(function() {
-                        var text = $(this).attr('data-search-text') || '';
-                        if (text.indexOf(q) !== -1) {
-                            $(this).show();
-                            matchedRows++;
-                        } else {
-                            $(this).hide();
-                        }
-                    });
-
-                    if (matchedRows > 0) {
-                        $card.show();
-                        $card.find('.collapse-esp').collapse('show');
+            var rowsConsolidados = [];
+            if (r.medicamentos_consolidados) {
+                r.medicamentos_consolidados.forEach(function(m, idx) {
+                    var espBadges = '';
+                    if (m.especialidades && m.especialidades.length > 0) {
+                        m.especialidades.forEach(function(esp) {
+                            var isCronico = esp.includes('Crónicos') || esp.includes('Otra');
+                            var badgeStyle = isCronico 
+                                ? 'background:#fef3c7; color:#92400e; border:1px solid #fde68a;' 
+                                : 'background:#e0e7ff; color:#3730a3; border:1px solid #c7d2fe;';
+                            espBadges += '<span class="badge mr-1 mb-1 font-weight-normal py-1 px-2" style="' + badgeStyle + '; font-size:0.75rem; border-radius:4px;">' + esp + '</span>';
+                        });
                     } else {
-                        $card.hide();
+                        espBadges = '<span class="text-muted font-italic">General</span>';
+                    }
+
+                    rowsConsolidados.push([
+                        '<span class="text-muted font-weight-bold">' + (idx + 1) + '</span>',
+                        '<span class="badge badge-light border text-dark font-weight-bold px-2 py-1" style="font-family: monospace; font-size: 0.85rem;">' + (m.codigo || 'S/C') + '</span>',
+                        '<span class="font-weight-bold text-dark">' + m.nombre + '</span>',
+                        espBadges
+                    ]);
+                });
+            }
+
+            var dtConsolidado = $tblConsolidado.DataTable({
+                data: rowsConsolidados,
+                responsive: true,
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+                language: {
+                    search: "Buscar en medicamentos únicos:",
+                    lengthMenu: "Mostrar _MENU_ por página",
+                    info: "Mostrando _START_ a _END_ de _TOTAL_ medicamentos únicos",
+                    infoEmpty: "0 medicamentos",
+                    infoFiltered: "(filtrado de _MAX_ totales)",
+                    paginate: { first: "«", last: "»", next: "›", previous: "‹" },
+                    zeroRecords: "No se encontraron medicamentos para esta búsqueda"
+                },
+                order: [[2, 'asc']]
+            });
+
+            // 2. Renderizar Cartera Organizada por Especialidad (Bloques)
+            var $contenedor = $('#contenedorEspecialidadesBloques');
+            $contenedor.empty();
+
+            var $filtroEsp = $('#filtroCarteraEspecialidad');
+            $filtroEsp.empty().append('<option value="">Todas las Especialidades</option>');
+            $('#buscadorCarteraLive').val('');
+
+            if (r.cartera_servicios && r.cartera_servicios.length > 0) {
+                r.cartera_servicios.forEach(function(esp, index) {
+                    var isCronico = esp.nombre.includes('Crónicos') || esp.nombre.includes('Otra');
+                    var numMeds = esp.medicamentos ? esp.medicamentos.length : 0;
+
+                    var collapseId = 'collapseEspModal_' + index;
+                    var espIdSafe = 'espCard_' + index;
+
+                    $filtroEsp.append(
+                        $('<option>').val(esp.nombre).text(esp.nombre + ' (' + numMeds + ' meds)')
+                    );
+
+                    var badgeClass = isCronico ? 'badge-warning' : 'badge-primary';
+                    var iconHtml = isCronico 
+                        ? '<i class="fa fa-exclamation-triangle text-warning mr-2"></i>' 
+                        : '<i class="fa fa-stethoscope mr-2" style="color: #4f46e5;"></i>';
+
+                    var cardHtml = '<div class="esp-card" id="' + espIdSafe + '" data-esp-nombre="' + esp.nombre.toLowerCase() + '">';
+                    cardHtml += '<button type="button" class="esp-header-btn ' + (isCronico ? 'cronico' : '') + '" data-toggle="collapse" data-target="#' + collapseId + '" aria-expanded="true">';
+                    cardHtml += '  <div class="d-flex align-items-center">';
+                    cardHtml += '    ' + iconHtml;
+                    cardHtml += '    <span class="font-weight-bold text-dark" style="font-size: 1rem; text-transform: uppercase;">' + esp.nombre + '</span>';
+                    cardHtml += '  </div>';
+                    cardHtml += '  <div class="d-flex align-items-center">';
+                    cardHtml += '    <span class="badge ' + badgeClass + ' px-3 py-2 mr-2" style="border-radius: 20px; font-size: 0.8rem;">' + numMeds + ' ' + (numMeds === 1 ? 'Med' : 'Medicamentos') + '</span>';
+                    cardHtml += '    <i class="fa fa-chevron-down text-muted small"></i>';
+                    cardHtml += '  </div>';
+                    cardHtml += '</button>';
+
+                    cardHtml += '<div id="' + collapseId + '" class="collapse collapse-esp show">';
+                    cardHtml += '  <div class="p-0 border-top bg-white">';
+
+                    if (esp.medicamentos && esp.medicamentos.length > 0) {
+                        cardHtml += '<div class="table-responsive mb-0">';
+                        cardHtml += '  <table class="table table-sm table-hover table-striped mb-0">';
+                        cardHtml += '    <thead style="background-color: #f1f5f9;">';
+                        cardHtml += '      <tr>';
+                        cardHtml += '        <th style="width: 7%; text-align: center; color: #475569;">#</th>';
+                        cardHtml += '        <th style="width: 23%; color: #475569;">Código Medicamento</th>';
+                        cardHtml += '        <th style="width: 70%; color: #475569;">Descripción del Medicamento / Presentación</th>';
+                        cardHtml += '      </tr>';
+                        cardHtml += '    </thead>';
+                        cardHtml += '    <tbody>';
+
+                        esp.medicamentos.forEach(function(med, mIdx) {
+                            var codStr = med.codigo || 'S/C';
+                            var nomStr = med.nombre || '';
+                            cardHtml += '<tr class="fila-med-item" data-search-text="' + (codStr + ' ' + nomStr).toLowerCase() + '">';
+                            cardHtml += '  <td style="text-align: center; color: #94a3b8; font-size: 0.82rem;">' + (mIdx + 1) + '</td>';
+                            cardHtml += '  <td><span class="badge badge-light border text-dark font-weight-bold px-2 py-1" style="font-family: monospace; font-size: 0.85rem;">' + codStr + '</span></td>';
+                            cardHtml += '  <td class="font-weight-500 text-dark">' + nomStr + '</td>';
+                            cardHtml += '</tr>';
+                        });
+
+                        cardHtml += '    </tbody>';
+                        cardHtml += '  </table>';
+                        cardHtml += '</div>';
+                    } else {
+                        cardHtml += '<div class="p-3 text-muted small font-italic text-center">No hay medicamentos asignados para esta especialidad.</div>';
+                    }
+
+                    cardHtml += '  </div>';
+                    cardHtml += '</div>';
+                    cardHtml += '</div>';
+
+                    $contenedor.append(cardHtml);
+                });
+
+                // Filtro desplegable por especialidad
+                $filtroEsp.off('change').on('change', function() {
+                    var selected = $(this).val().toLowerCase();
+                    if (!selected) {
+                        $('.esp-card').show();
+                    } else {
+                        $('.esp-card').each(function() {
+                            var cardEsp = $(this).attr('data-esp-nombre');
+                            if (cardEsp === selected) {
+                                $(this).show();
+                                $(this).find('.collapse-esp').collapse('show');
+                            } else {
+                                $(this).hide();
+                            }
+                        });
                     }
                 });
+
+                // Buscador en vivo en bloques
+                $('#buscadorCarteraLive').off('input').on('input', function() {
+                    var q = $(this).val().toLowerCase().trim();
+                    if (!q) {
+                        $('.esp-card').show();
+                        $('.fila-med-item').show();
+                        return;
+                    }
+
+                    $('.esp-card').each(function() {
+                        var $card = $(this);
+                        var matchedRows = 0;
+
+                        $card.find('.fila-med-item').each(function() {
+                            var text = $(this).attr('data-search-text') || '';
+                            if (text.indexOf(q) !== -1) {
+                                $(this).show();
+                                matchedRows++;
+                            } else {
+                                $(this).hide();
+                            }
+                        });
+
+                        if (matchedRows > 0) {
+                            $card.show();
+                            $card.find('.collapse-esp').collapse('show');
+                        } else {
+                            $card.hide();
+                        }
+                    });
+                });
+            }
+
+            // Ajustar columnas de la tabla al cambiar de subtab
+            $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+                if ($.fn.DataTable.isDataTable($tblConsolidado)) {
+                    $tblConsolidado.DataTable().columns.adjust().responsive.recalc();
+                }
             });
 
         } else {
-            $contenedor.hide();
+            $('#carteraSubtabs, #carteraSubtabsContent').hide();
             $('#sinCarteraAlert').show();
+            $('#badgeTotalUnicos').text('0 Medicamentos');
             $('#badgeTotalEsp').text('0 Especialidades');
-            $('#badgeTotalMed').text('0 Medicamentos');
         }
     });
 }
