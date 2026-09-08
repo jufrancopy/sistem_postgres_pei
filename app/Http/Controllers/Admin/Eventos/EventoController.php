@@ -289,32 +289,11 @@ class EventoController extends Controller
     }
 
     /**
-     * Formulario de Creación de Nuevo Evento
+     * Creación de Nuevo Evento (Redirige al Tablero para apertura de Modal In-Situ)
      */
     public function create(Request $request)
     {
-        $usuarios = User::orderBy('name')->get(['id', 'name', 'email']);
-        $peiPerfiles = PeiProfile::whereNull('parent_id')
-            ->where('level', 'master')
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
-        $organigramas = Organigrama::orderBy('dependency')->select('id', 'dependency as name')->get();
-        $actividades = Activity::latest()->take(50)->get(['id', 'name']);
-        $selectedPeiId = $request->get('pei_profile_id') ?? session('selected_pei_id');
-        $currentPei = null;
-        if ($selectedPeiId) {
-            $currentPei = PeiProfile::find($selectedPeiId);
-        }
-
-        return view('admin.eventos.create', compact(
-            'usuarios',
-            'peiPerfiles',
-            'organigramas',
-            'actividades',
-            'selectedPeiId',
-            'currentPei'
-        ));
+        return redirect()->route('eventos.index', array_merge($request->query(), ['action' => 'create']));
     }
 
     /**
@@ -339,7 +318,7 @@ class EventoController extends Controller
             'fecha_inicio'          => $request->fecha_inicio,
             'fecha_fin'             => $request->fecha_fin,
             'estado'                => $request->estado ?: 'planificado',
-            'color'                 => $request->color ?: '#6366f1',
+            'color'                 => $request->color ?: '#00bcd4',
             'pei_profile_id'        => $request->pei_profile_id,
             'activity_id'           => $request->activity_id,
             'organigrama_id'        => $request->organigrama_id,
@@ -353,45 +332,21 @@ class EventoController extends Controller
             $evento->responsables()->sync($request->responsables);
         }
 
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success'  => true,
-                'message'  => 'Evento creado exitosamente.',
-                'evento'   => $evento,
-                'redirect' => route('eventos.show', $evento->id),
-            ]);
-        }
-
-        return redirect()->route('eventos.show', $evento->id)->with('success', 'Evento institucional creado exitosamente.');
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Evento institucional creado exitosamente.',
+            'evento'   => $evento,
+            'redirect' => route('eventos.show', $evento->id),
+        ]);
     }
 
     /**
-     * Obtener datos para editar Evento
+     * Obtener datos para editar Evento vía Modal
      */
-    public function edit($id, Request $request)
+    public function edit($id)
     {
-        $evento = Evento::with(['responsables', 'pasos.tareas'])->findOrFail($id);
-
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json($evento);
-        }
-
-        $usuarios = User::orderBy('name')->get(['id', 'name', 'email']);
-        $peiPerfiles = PeiProfile::whereNull('parent_id')
-            ->where('level', 'master')
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
-        $organigramas = Organigrama::orderBy('dependency')->select('id', 'dependency as name')->get();
-        $actividades = Activity::latest()->take(50)->get(['id', 'name']);
-
-        return view('admin.eventos.edit', compact(
-            'evento',
-            'usuarios',
-            'peiPerfiles',
-            'organigramas',
-            'actividades'
-        ));
+        $evento = Evento::with(['responsables'])->findOrFail($id);
+        return response()->json($evento);
     }
 
     /**

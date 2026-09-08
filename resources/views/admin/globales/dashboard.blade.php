@@ -1952,7 +1952,7 @@
                             <a href="{{ route('eventos.index') }}" class="btn btn-outline-primary btn-round btn-sm">
                                 <i class="fa fa-th-list mr-1"></i> Módulo Completo
                             </a>
-                            <a href="{{ route('eventos.create') }}" class="btn btn-primary btn-round btn-sm shadow-sm">
+                            <a href="{{ route('eventos.index', ['action' => 'create']) }}" class="btn btn-primary btn-round btn-sm shadow-sm">
                                 <i class="fa fa-plus mr-1"></i> + Nuevo Evento
                             </a>
                         </div>
@@ -2032,68 +2032,65 @@
                                 @forelse($eventosDashboard ?? [] as $evt)
                                     <tr>
                                         <td class="px-3">
-                                            <div class="font-weight-bold text-dark mb-1">
-                                                <span class="badge badge-light border mr-1 text-primary">{{ $evt->tipo }}</span>
-                                                <a href="{{ route('eventos.show', $evt->id) }}" class="text-dark hover-primary">{{ $evt->nombre }}</a>
-                                            </div>
-                                            @if($evt->lugar_sede)
-                                                <small class="text-muted d-block"><i class="fa fa-map-marker-alt mr-1 text-danger"></i>{{ $evt->lugar_sede }}</small>
-                                            @endif
+                                             <div class="font-weight-bold text-dark mb-1">
+                                                 <span class="badge badge-light border mr-1 text-primary">{{ $evt->tipo }}</span>
+                                                 <a href="{{ route('eventos.show', $evt->id) }}" class="text-dark hover-primary">{{ $evt->nombre }}</a>
+                                             </div>
+                                             @if($evt->lugar_sede)
+                                                 <small class="text-muted d-block"><i class="fa fa-map-marker-alt mr-1 text-danger"></i>{{ $evt->lugar_sede }}</small>
+                                             @endif
                                         </td>
                                         <td class="px-3">
-                                            @if($evt->pei)
-                                                <span class="badge badge-pill badge-light border text-truncate" style="max-width: 180px;" title="{{ $evt->pei->nombre }}">
-                                                    <i class="fa fa-file-alt text-primary mr-1"></i>{{ $evt->pei->nombre }}
-                                                </span>
-                                            @else
-                                                <span class="text-muted small">— Institucional —</span>
-                                            @endif
+                                             @if($evt->pei)
+                                                 <span class="badge badge-pill badge-light border text-truncate" style="max-width: 180px;" title="{{ $evt->pei->nombre }}">
+                                                     <i class="fa fa-file-alt text-primary mr-1"></i>{{ $evt->pei->nombre }}
+                                                 </span>
+                                             @else
+                                                 <span class="text-muted small">— Institucional —</span>
+                                             @endif
                                         </td>
                                         <td class="px-3 text-nowrap">
-                                            <small class="d-block text-dark font-weight-bold">{{ $evt->fecha_inicio ? $evt->fecha_inicio->format('d/m/Y') : '-' }}</small>
-                                            <small class="text-muted">al {{ $evt->fecha_fin ? $evt->fecha_fin->format('d/m/Y') : '-' }}</small>
+                                             <small class="d-block text-dark font-weight-bold">{{ $evt->fecha_inicio ? $evt->fecha_inicio->format('d/m/Y') : '-' }}</small>
+                                             <small class="text-muted">al {{ $evt->fecha_fin ? $evt->fecha_fin->format('d/m/Y') : '-' }}</small>
                                         </td>
                                         <td class="px-3 text-center">
-                                            <span class="badge badge-secondary badge-pill">{{ $evt->pasos->count() }} pasos</span>
-                                            <small class="d-block text-muted">{{ $evt->tareas->count() }} tareas</small>
+                                             <span class="badge badge-secondary badge-pill">{{ $evt->pasos->count() }} pasos</span>
+                                             <small class="d-block text-muted">{{ $evt->tareas->count() }} tareas</small>
                                         </td>
                                         <td class="px-3 text-center" style="min-width: 130px;">
-                                            <div class="d-flex align-items-center justify-content-center">
-                                                <span class="font-weight-bold mr-2 text-xs">{{ $evt->porcentaje_avance }}%</span>
-                                                <div class="progress flex-grow-1" style="height: 6px; border-radius: 4px;">
-                                                    <div class="progress-bar {{ $evt->porcentaje_avance == 100 ? 'bg-success' : 'bg-primary' }}" role="progressbar" style="width: {{ $evt->porcentaje_avance }}%"></div>
-                                                </div>
-                                            </div>
+                                             <div class="d-flex align-items-center justify-content-center">
+                                                 <span class="font-weight-bold mr-2 text-xs">{{ $evt->porcentaje_avance }}%</span>
+                                                 <div class="progress flex-grow-1" style="height: 6px; border-radius: 4px;">
+                                                     <div class="progress-bar {{ $evt->porcentaje_avance == 100 ? 'bg-success' : 'bg-primary' }}" role="progressbar" style="width: {{ $evt->porcentaje_avance }}%"></div>
+                                                 </div>
+                                             </div>
                                         </td>
                                         <td class="px-3 text-center">
-                                            @if($evt->estado == 'completado')
-                                                <span class="badge badge-success px-2 py-1">Completado</span>
-                                            @elseif($evt->estado == 'en_curso')
-                                                <span class="badge badge-info px-2 py-1">En Curso</span>
-                                            @elseif($evt->estado == 'cancelado')
-                                                <span class="badge badge-danger px-2 py-1">Cancelado</span>
-                                            @else
-                                                <span class="badge badge-secondary px-2 py-1">Planificado</span>
-                                            @endif
+                                             @if($evt->estado == 'completado')
+                                                 <span class="badge badge-success px-2 py-1">Completado</span>
+                                             @elseif($evt->estado == 'en_curso')
+                                                 <span class="badge badge-info px-2 py-1">En Curso</span>
+                                             @elseif($evt->estado == 'cancelado')
+                                                 <span class="badge badge-danger px-2 py-1">Cancelado</span>
+                                             @else
+                                                 <span class="badge badge-secondary px-2 py-1">Planificado</span>
+                                             @endif
                                         </td>
                                         <td class="px-3 text-right text-nowrap">
-                                            <a href="{{ route('eventos.show', $evt->id) }}" class="btn btn-action-circle btn-primary" title="Ver Detalle &amp; Checklist">
-                                                <i class="fa fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('eventos.edit', $evt->id) }}" class="btn btn-action-circle btn-warning text-white" title="Editar Evento">
-                                                <i class="fa fa-edit"></i>
-                                            </a>
+                                             <a href="{{ route('eventos.show', $evt->id) }}" class="btn btn-action-circle btn-primary" title="Ver Detalle &amp; Checklist">
+                                                 <i class="fa fa-eye"></i>
+                                             </a>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
                                         <td colspan="7" class="text-center text-muted py-5">
-                                            <i class="fa fa-calendar-plus fa-3x mb-3 d-block text-secondary opacity-50"></i>
-                                            <h6 class="font-weight-bold text-dark">No hay eventos registrados aún</h6>
-                                            <p class="small text-muted mb-3">Comienza creando un taller, jornada o hito institucional asociado al PEI.</p>
-                                            <a href="{{ route('eventos.create') }}" class="btn btn-primary btn-round btn-sm">
-                                                <i class="fa fa-plus mr-1"></i> Crear Primer Evento
-                                            </a>
+                                             <i class="fa fa-calendar-plus fa-3x mb-3 d-block text-secondary opacity-50"></i>
+                                             <h6 class="font-weight-bold text-dark">No hay eventos registrados aún</h6>
+                                             <p class="small text-muted mb-3">Comienza creando un taller, jornada o hito institucional asociado al PEI.</p>
+                                             <a href="{{ route('eventos.index', ['action' => 'create']) }}" class="btn btn-primary btn-round btn-sm">
+                                                 <i class="fa fa-plus mr-1"></i> Crear Primer Evento
+                                             </a>
                                         </td>
                                     </tr>
                                 @endforelse

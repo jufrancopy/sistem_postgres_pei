@@ -74,8 +74,8 @@
             <a href="{{ route('eventos.index') }}" class="btn btn-warning btn-sm font-weight-bold mr-2">
                 <i class="fa fa-list mr-1"></i> Vista Tabla
             </a>
-            <a href="{{ route('eventos.create') }}" class="btn btn-success btn-sm font-weight-bold">
-                <i class="fa fa-plus mr-1"></i> + Nuevo Evento
+            <a href="{{ route('eventos.index', ['action' => 'create']) }}" class="btn btn-success btn-sm font-weight-bold">
+                <i class="fa fa-plus-circle mr-1"></i> + Nuevo Evento
             </a>
         </div>
     </div>

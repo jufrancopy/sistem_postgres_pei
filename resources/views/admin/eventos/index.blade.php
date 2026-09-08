@@ -13,9 +13,9 @@
             <a href="{{ route('eventos.calendario') }}" class="btn btn-warning btn-sm font-weight-bold mr-2">
                 <i class="fa fa-calendar-alt mr-1"></i> Calendario Integral
             </a>
-            <a href="{{ route('eventos.create') }}" class="btn btn-success btn-sm font-weight-bold">
+            <button type="button" class="btn btn-success btn-sm font-weight-bold" id="btnCrearEventoModal">
                 <i class="fa fa-plus mr-1"></i> + Nuevo Evento
-            </a>
+            </button>
         </div>
     </div>
 
@@ -169,10 +169,10 @@
 <div class="modal fade" id="modalEventoForm" tabindex="-1" aria-hidden="true" style="z-index: 1050;">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
-            <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);">
+            <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
                 <div>
                     <span class="badge badge-light text-dark font-weight-bold mb-1" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 6px;">
-                        <i class="fa fa-calendar-check text-primary mr-1"></i> GESTIÓN INSTITUCIONAL
+                        <i class="fa fa-calendar-check text-info mr-1"></i> GESTIÓN INSTITUCIONAL
                     </span>
                     <h5 class="modal-title font-weight-bold mb-0 text-white" id="modalEventoTitulo" style="font-size: 1.15rem;">
                         Nuevo Evento Institucional
@@ -190,7 +190,7 @@
                         </div>
                         <div class="col-md-4 form-group mb-3">
                             <label class="font-weight-bold text-dark mb-1">Tipo de Evento</label>
-                            <select class="form-control select2" id="eventoTipo" name="tipo" style="width:100%;">
+                            <select class="form-control select2InModal" id="eventoTipo" name="tipo" style="width:100%;">
                                 <option value="Taller">Taller</option>
                                 <option value="Jornada">Jornada</option>
                                 <option value="Reunión">Reunión de Alto Nivel</option>
@@ -205,17 +205,19 @@
 
                     <div class="row">
                         <div class="col-md-6 form-group mb-3">
-                            <label class="font-weight-bold text-dark mb-1">Lugar / Sede</label>
-                            <input type="text" class="form-control" id="eventoLugarSede" name="lugar_sede" placeholder="Ej: Centro de Eventos Ykua Satí / Auditorio Central">
-                        </div>
-                        <div class="col-md-6 form-group mb-3">
                             <label class="font-weight-bold text-dark mb-1">Plan PEI Vinculado</label>
-                            <select class="form-control select2" id="eventoPeiId" name="pei_profile_id" style="width:100%;">
-                                <option value="">-- Seleccionar Plan PEI (Opcional) --</option>
+                            <select class="form-control select2InModal" id="eventoPeiId" name="pei_profile_id" style="width:100%;">
+                                <option value="">-- Ninguno / Institucional General --</option>
                                 @foreach($peiPerfiles as $pei)
-                                    <option value="{{ $pei->id }}">{{ strip_tags($pei->name) }}</option>
+                                    <option value="{{ $pei->id }}" {{ (isset($selectedPeiId) && $selectedPeiId == $pei->id) ? 'selected' : '' }}>
+                                        {{ strip_tags($pei->name) }}
+                                    </option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1">Lugar / Sede</label>
+                            <input type="text" class="form-control" id="eventoLugarSede" name="lugar_sede" placeholder="Ej: Centro de Eventos Ykua Satí / Auditorio Central">
                         </div>
                     </div>
 
@@ -230,7 +232,7 @@
                         </div>
                         <div class="col-md-4 form-group mb-3">
                             <label class="font-weight-bold text-dark mb-1">Estado</label>
-                            <select class="form-control select2" id="eventoEstado" name="estado" style="width:100%;">
+                            <select class="form-control select2InModal" id="eventoEstado" name="estado" style="width:100%;">
                                 <option value="planificado">Planificado</option>
                                 <option value="en_curso">En Curso</option>
                                 <option value="completado">Completado</option>
@@ -242,18 +244,27 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-8 form-group mb-3">
-                            <label class="font-weight-bold text-dark mb-1">Equipo / Responsables del Evento</label>
-                            <select class="form-control select2" id="eventoResponsables" name="responsables[]" multiple="multiple" style="width:100%;">
-                                @foreach($usuarios as $u)
-                                    <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
-                                @endforeach
-                            </select>
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1"><i class="fas fa-coins text-warning mr-1"></i> Presupuesto Estimado (Gs.)</label>
+                            <input type="number" step="0.01" class="form-control" id="eventoPresupuestoEstimado" name="presupuesto_estimado" value="0">
+                        </div>
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1"><i class="fas fa-receipt text-secondary mr-1"></i> Presupuesto Ejecutado (Gs.)</label>
+                            <input type="number" step="0.01" class="form-control" id="eventoPresupuestoEjecutado" name="presupuesto_ejecutado" value="0">
                         </div>
                         <div class="col-md-4 form-group mb-3">
                             <label class="font-weight-bold text-dark mb-1">Color Distintivo</label>
-                            <input type="color" class="form-control" id="eventoColor" name="color" value="#6366f1" style="height:38px; padding:2px;">
+                            <input type="color" class="form-control" id="eventoColor" name="color" value="#00bcd4" style="height:38px; padding:2px;">
                         </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark mb-1"><i class="fas fa-users text-primary mr-1"></i> Equipo / Responsables del Evento</label>
+                        <select class="form-control select2InModal" id="eventoResponsables" name="responsables[]" multiple="multiple" style="width:100%;">
+                            @foreach($usuarios as $u)
+                                <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div class="form-group mb-0">
@@ -263,7 +274,7 @@
                 </div>
                 <div class="modal-footer bg-white border-top py-2 px-4 d-flex justify-content-between">
                     <button type="button" class="btn btn-secondary btn-sm px-4 font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">Cancelar</button>
-                    <button type="submit" class="btn btn-primary btn-sm px-4 font-weight-bold" id="btnGuardarEvento" style="border-radius: 8px;">
+                    <button type="submit" class="btn btn-success btn-sm px-4 font-weight-bold" id="btnGuardarEvento" style="border-radius: 8px;">
                         <i class="fa fa-save mr-1"></i> Guardar Evento
                     </button>
                 </div>
@@ -276,7 +287,8 @@
 @section('scripts')
 <script>
 $(function() {
-    $('.select2').select2();
+    $('.select2').select2({ width: '100%' });
+    $('.select2InModal').select2({ dropdownParent: $('#modalEventoForm'), width: '100%' });
 
     var tablaEventos = $('#tablaEventos').DataTable({
         processing: true,
@@ -326,14 +338,22 @@ $(function() {
     $('#btnCrearEventoModal').on('click', function() {
         $('#formEvento')[0].reset();
         $('#eventoId').val('');
-        $('#eventoPeiId').val($('#filtroPei').val() || '').trigger('change');
+        $('#eventoPeiId').val($('#filtroPei').val() || '{{ $selectedPeiId ?? "" }}').trigger('change');
         $('#eventoTipo').val('Taller').trigger('change');
         $('#eventoEstado').val('planificado').trigger('change');
         $('#eventoResponsables').val([]).trigger('change');
-        $('#eventoColor').val('#6366f1');
+        $('#eventoColor').val('#00bcd4');
+        $('#eventoPresupuestoEstimado').val(0);
+        $('#eventoPresupuestoEjecutado').val(0);
         $('#modalEventoTitulo').html('<i class="fa fa-plus-circle text-white mr-1"></i> Nuevo Evento Institucional');
         $('#modalEventoForm').modal('show');
     });
+
+    // Auto abrir si viene ?action=create
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'create') {
+        $('#btnCrearEventoModal').click();
+    }
 
     // Abrir modal para Editar
     $(document).on('click', '.btnEditarEvento', function() {
@@ -347,7 +367,9 @@ $(function() {
             $('#eventoFechaInicio').val(data.fecha_inicio ? data.fecha_inicio.substring(0, 10) : '');
             $('#eventoFechaFin').val(data.fecha_fin ? data.fecha_fin.substring(0, 10) : '');
             $('#eventoEstado').val(data.estado).trigger('change');
-            $('#eventoColor').val(data.color || '#6366f1');
+            $('#eventoColor').val(data.color || '#00bcd4');
+            $('#eventoPresupuestoEstimado').val(data.presupuesto_estimado || 0);
+            $('#eventoPresupuestoEjecutado').val(data.presupuesto_ejecutado || 0);
             $('#eventoDescripcion').val(data.descripcion);
 
             var respIds = data.responsables ? data.responsables.map(function(r) { return r.id; }) : [];
