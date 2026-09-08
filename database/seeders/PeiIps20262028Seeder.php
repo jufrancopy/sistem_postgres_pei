@@ -86,6 +86,9 @@ class PeiIps20262028Seeder extends Seeder
 
         $this->sembrarPeiMef($masterMef);
 
+        // Vincular Marcos y Riesgos MECIP a los Objetivos Estratégicos
+        $this->call(VincularMarcosMecipSeeder::class);
+
         PeiProfile::fixTree();
         $this->command->info('✅ Ambos PEIs (Versión 6 Objetivos y Versión MEF 3 Objetivos) fueron creados y conviven perfectamente.');
     }

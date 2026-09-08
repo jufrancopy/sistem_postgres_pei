@@ -258,12 +258,6 @@ class PeiController extends Controller
     {
         $denominator = $request->denominator;
         $reportType = $request->report_type;
-        if ($reportType == 'qualitative') {
-            $parameters = $request->input('parameters', []); // Obtener los parámetros del request
-            $parametersJson = json_encode($parameters); // Convertir a JSON
-        } else {
-            $parametersJson = null; // Convertir a JSON
-        }
 
         // Validación si la petición es AJAX
         if ($request->ajax()) {
@@ -285,13 +279,29 @@ class PeiController extends Controller
         $saveBtnVal = $request->input('saveBtnActions') ?: ($request->input('saveBtnGoals') ?: $request->input('saveBtn'));
         $isCreateAction = $saveBtnVal === 'create' || $request->saveBtn === 'create' || $request->saveBtnGoals === 'create' || $request->saveBtnActions === 'create';
         $profileId = ($isCreateAction || empty($rawProfileId)) ? null : $rawProfileId;
+        $existing = $profileId ? PeiProfile::find($profileId) : null;
+
+        // Manejo seguro de parameters para preservar variables globales y riesgos_mecip al editar nodos
+        if ($request->has('parameters')) {
+            $inputParams = $request->input('parameters');
+            if (is_string($inputParams)) {
+                $inputParams = json_decode($inputParams, true) ?: [];
+            }
+            $existingParams = $existing ? ($existing->parameters ?: []) : [];
+            if (is_string($existingParams)) {
+                $existingParams = json_decode($existingParams, true) ?: [];
+            }
+            $parametersValue = array_merge((array)$existingParams, (array)$inputParams);
+        } elseif ($request->report_type === 'qualitative' && $request->has('parameters')) {
+            $parametersValue = $request->input('parameters', []);
+        } else {
+            $parametersValue = $existing ? $existing->parameters : null;
+        }
 
         // Campos exclusivos del nodo master — solo se actualizan si vienen
         // explícitamente en el request (evita que ediciones de nodos hijos los pisen)
         $masterOnlyFields = ['group_id', 'dependency_id', 'nivel_label', 'bsc_perspectiva',
                              'foda_perfil_id', 'mision', 'vision', 'values', 'year_start', 'year_end'];
-
-        $existing = $profileId ? PeiProfile::find($profileId) : null;
 
         $resolve = fn(string $field, $requestValue) =>
             $request->has($field) ? ($requestValue ?: null) : ($existing?->$field ?? null);
@@ -320,7 +330,7 @@ class PeiController extends Controller
                 'user_id'              => $user->id,
                 'order_item'           => $resolve('order_item', $request->order_item),
                 'report_type'          => $resolve('report_type', $request->report_type),
-                'parameters'           => $parametersJson,
+                'parameters'           => $parametersValue,
                 'nivel_label'          => $resolve('nivel_label', $request->nivel_label),
                 'foda_perfil_id'       => $resolve('foda_perfil_id', $request->foda_perfil_id),
                 'bsc_perspectiva'      => $resolve('bsc_perspectiva', $request->bsc_perspectiva),
@@ -1878,6 +1888,34 @@ class PeiController extends Controller
         return response()->json([
             'ok'      => true,
             'message' => 'Edición revertida con éxito al estado anterior.',
+        ]);
+    }
+
+    /**
+     * Guardar o actualizar los Riesgos MECIP 2015 asociados a un Objetivo Estratégico (u otro nodo).
+     */
+    public function guardarRiesgosMecip(Request $request, $idNode)
+    {
+        $node = PeiProfile::findOrFail($idNode);
+        $riesgos = $request->input('riesgos', []);
+
+        if (is_string($riesgos)) {
+            $riesgos = json_decode($riesgos, true) ?: [];
+        }
+
+        $params = is_array($node->parameters) ? $node->parameters : (json_decode($node->parameters ?? '', true) ?: []);
+        $params['riesgos_mecip'] = array_values((array)$riesgos);
+
+        $node->parameters = $params;
+        $node->updated_by = Auth::id();
+        $node->save();
+
+        return response()->json([
+            'success' => true,
+            'ok'      => true,
+            'message' => 'Riesgos MECIP 2015 actualizados exitosamente.',
+            'riesgos' => $node->riesgos_mecip,
+            'count'   => count($node->riesgos_mecip),
         ]);
     }
 }

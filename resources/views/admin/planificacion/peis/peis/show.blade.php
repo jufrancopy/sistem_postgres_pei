@@ -1911,7 +1911,7 @@
 <div class="modal fade" id="modalRiesgosMecip" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
-            <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
+            <div class="modal-header text-white py-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
                 <div>
                     <span class="badge badge-light text-dark font-weight-bold mb-1" style="font-size: 0.72rem; letter-spacing: 0.05em; padding: 4px 8px; border-radius: 6px;">
                         <i class="fa fa-shield-alt text-warning mr-1"></i> MECIP 2015 — GESTIÓN DE RIESGOS
@@ -1920,9 +1920,79 @@
                         Riesgos por Objetivo Estratégico
                     </h5>
                 </div>
-                <button type="button" class="close text-white" data-dismiss="modal" style="opacity: 0.9;"><span>&times;</span></button>
+                <div class="d-flex align-items-center" style="gap: 10px;">
+                    <button type="button" class="btn btn-sm btn-light text-dark font-weight-bold shadow-sm" id="btnNuevoRiesgoMecip" style="border-radius: 8px;">
+                        <i class="fa fa-plus mr-1 text-warning"></i> Agregar Riesgo
+                    </button>
+                    <button type="button" class="close text-white ml-2" data-dismiss="modal" style="opacity: 0.9;"><span>&times;</span></button>
+                </div>
             </div>
             <div class="modal-body p-4" style="background: #f8fafc; max-height: 75vh; overflow-y: auto;">
+                {{-- Formulario para Agregar / Editar Riesgo (Colapsable) --}}
+                <div id="formRiesgoMecipCard" class="card border-0 shadow-sm mb-4" style="display:none; border-radius: 12px; border-left: 5px solid #2563eb !important;">
+                    <div class="card-header bg-white py-2 px-3 border-bottom d-flex align-items-center justify-content-between">
+                        <span class="font-weight-bold text-dark" id="formRiesgoMecipTitulo" style="font-size: 0.9rem;">
+                            <i class="fa fa-edit text-primary mr-1"></i> Nuevo Riesgo MECIP
+                        </span>
+                        <button type="button" class="btn btn-xs btn-outline-secondary" id="btnCancelarRiesgoMecip">
+                            <i class="fa fa-times"></i> Cancelar
+                        </button>
+                    </div>
+                    <div class="card-body p-3 bg-white" style="font-size: 0.85rem;">
+                        <input type="hidden" id="riesgoIndexEdit" value="-1">
+                        <div class="form-group mb-2">
+                            <label class="font-weight-bold mb-1">Nombre del Riesgo / Aspecto Institucional <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="riesgoAspecto" placeholder="Ej: Desabastecimiento de insumos médicos críticos...">
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 form-group mb-2">
+                                <label class="font-weight-bold mb-1">Causa Raíz MECIP</label>
+                                <select class="form-control form-control-sm" id="riesgoCausaRaiz">
+                                    <option value="operativa">Operativa (Procesos / Manual)</option>
+                                    <option value="estructural">Estructural (Perfiles / RRHH)</option>
+                                    <option value="tecnologica">Tecnológica (Sistemas / TI)</option>
+                                    <option value="normativa">Normativa (Regulatorio / Legal)</option>
+                                    <option value="otra">Otra causa raíz</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 form-group mb-2">
+                                <label class="font-weight-bold mb-1">Ocurrencia (1 a 5)</label>
+                                <select class="form-control form-control-sm" id="riesgoOcurrencia">
+                                    <option value="1">1 - Muy Rara</option>
+                                    <option value="2">2 - Improbable</option>
+                                    <option value="3" selected>3 - Posible</option>
+                                    <option value="4">4 - Probable</option>
+                                    <option value="5">5 - Casi Segura</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 form-group mb-2">
+                                <label class="font-weight-bold mb-1">Impacto (1 a 5)</label>
+                                <select class="form-control form-control-sm" id="riesgoImpacto">
+                                    <option value="1">1 - Insignificante</option>
+                                    <option value="2">2 - Menor</option>
+                                    <option value="3" selected>3 - Moderado</option>
+                                    <option value="4">4 - Mayor</option>
+                                    <option value="5">5 - Catastrófico</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="font-weight-bold mb-1">Acción de Mejora (Respuesta al Riesgo)</label>
+                            <textarea class="form-control form-control-sm" id="riesgoAccionMejora" rows="2" placeholder="Medida o plan para mitigar el riesgo..."></textarea>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold mb-1">Control Preventivo (Evaluación de Control — MECIP)</label>
+                            <textarea class="form-control form-control-sm" id="riesgoControlPreventivo" rows="2" placeholder="Mecanismo de control interno para prevenir la materialización..."></textarea>
+                        </div>
+                        <div class="text-right">
+                            <button type="button" class="btn btn-sm btn-secondary mr-1" id="btnCancelarRiesgoMecip2">Cancelar</button>
+                            <button type="button" class="btn btn-sm btn-primary font-weight-bold" id="btnGuardarRiesgoMecip">
+                                <i class="fa fa-save mr-1"></i> Guardar Riesgo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="contenedorRiesgosMecip"></div>
             </div>
             <div class="modal-footer bg-white border-top-0 py-2 px-4">
@@ -1969,56 +2039,48 @@
                 }
             });
 
-            // ── Abrir Modal Riesgos MECIP 2015 ─────────────────────────────
-            $(document).on('click', '.btn-ver-riesgos-mecip', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var btn = $(this);
-                var title = btn.attr('data-axi-title') || btn.data('axi-title') || 'Objetivo Estratégico';
-                var rawData = btn.attr('data-riesgos');
-                var riesgos = [];
-                try {
-                    riesgos = typeof rawData === 'string' ? JSON.parse(rawData) : (btn.data('riesgos') || []);
-                } catch(err) {
-                    riesgos = btn.data('riesgos') || [];
-                }
+            // ── Gestión de Riesgos MECIP 2015 ─────────────────────────────
+            var currentAxiRiesgosNodeId = null;
+            var currentAxiRiesgosList = [];
+            var currentAxiBtnRef = null;
 
-                $('#modalRiesgosTituloOE').html('<i class="fa fa-shield-alt text-warning mr-2"></i>' + title);
+            var causasMecipMap = {
+                'operativa':    { label: 'Operativa — Carga admin. / procesos manuales', color: 'badge-info' },
+                'estructural':  { label: 'Estructural — Falta de perfiles / RRHH', color: 'badge-primary' },
+                'tecnologica':  { label: 'Tecnológica — Ausencia de sistemas / TI', color: 'badge-purple' },
+                'normativa':    { label: 'Normativa — Vacío / incumplimiento regulatorio', color: 'badge-danger' },
+                'otra':         { label: 'Otra causa raíz', color: 'badge-secondary' }
+            };
 
+            function renderListaRiesgosMecip() {
                 var html = '';
-                if (riesgos && riesgos.length > 0) {
-                    var causasMap = {
-                        'operativa':    { label: 'Operativa — Carga admin. / procesos manuales', color: 'badge-info' },
-                        'estructural':  { label: 'Estructural — Falta de perfiles / RRHH', color: 'badge-primary' },
-                        'tecnologica':  { label: 'Tecnológica — Ausencia de sistemas / TI', color: 'badge-purple' },
-                        'normativa':    { label: 'Normativa — Vacío / incumplimiento regulatorio', color: 'badge-danger' },
-                        'otra':         { label: 'Otra causa raíz', color: 'badge-secondary' }
-                    };
-
-                    riesgos.forEach(function(r, idx) {
-                        var causaInfo = causasMap[r.causa_raiz] || { label: r.causa_raiz || 'No definida', color: 'badge-secondary' };
-                        var ocurrencia = r.ocurrencia || 3;
-                        var impacto = r.impacto || 3;
+                if (currentAxiRiesgosList && currentAxiRiesgosList.length > 0) {
+                    currentAxiRiesgosList.forEach(function(r, idx) {
+                        var causaInfo = causasMecipMap[r.causa_raiz] || { label: r.causa_raiz || 'No definida', color: 'badge-secondary' };
+                        var ocurrencia = parseInt(r.ocurrencia, 10) || 3;
+                        var impacto = parseInt(r.impacto, 10) || 3;
                         var matriz = ocurrencia * impacto;
                         var nivelBadge = matriz >= 20 ? 'badge-danger' : (matriz >= 12 ? 'badge-warning text-dark' : 'badge-success');
                         var nivelTexto = matriz >= 20 ? 'Crítico ('+matriz+'/25)' : (matriz >= 12 ? 'Alto ('+matriz+'/25)' : 'Medio ('+matriz+'/25)');
 
                         html += '<div class="card border-0 shadow-sm mb-3" style="border-radius: 12px; overflow: hidden; border-left: 5px solid #f59e0b !important;">' +
-                            '<div class="card-header bg-white py-3 px-3 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap: 8px;">' +
+                            '<div class="card-header bg-white py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap: 8px;">' +
                                 '<div>' +
                                     '<span class="badge badge-dark mr-2" style="font-size: 0.72rem; padding: 4px 8px;">Riesgo #' + (idx + 1) + '</span>' +
                                     '<span class="font-weight-bold text-dark" style="font-size: 0.95rem;">' + (r.aspecto || 'Riesgo Institucional MECIP') + '</span>' +
                                 '</div>' +
-                                '<div>' +
-                                    '<span class="badge ' + nivelBadge + ' mr-1" style="font-size: 0.72rem; padding: 4px 8px;" title="Nivel de Riesgo = Ocurrencia × Impacto"><i class="fa fa-exclamation-triangle mr-1"></i> ' + nivelTexto + '</span>' +
+                                '<div class="d-flex align-items-center" style="gap: 6px;">' +
+                                    '<span class="badge ' + nivelBadge + '" style="font-size: 0.72rem; padding: 4px 8px;" title="Nivel de Riesgo = Ocurrencia × Impacto"><i class="fa fa-exclamation-triangle mr-1"></i> ' + nivelTexto + '</span>' +
+                                    '<button type="button" class="btn btn-xs btn-outline-primary btnEditarRiesgoMecip ml-1" data-idx="' + idx + '" title="Editar este riesgo"><i class="fa fa-pencil-alt"></i></button>' +
+                                    '<button type="button" class="btn btn-xs btn-outline-danger btnEliminarRiesgoMecip" data-idx="' + idx + '" title="Eliminar este riesgo"><i class="fa fa-trash"></i></button>' +
                                 '</div>' +
                             '</div>' +
                             '<div class="card-body p-3 bg-white" style="font-size: 0.88rem; color: #334155;">' +
-                                '<div class="mb-3 p-2 border-left border-info bg-light" style="border-radius: 6px;">' +
+                                '<div class="mb-2 p-2 border-left border-info bg-light" style="border-radius: 6px;">' +
                                     '<div class="font-weight-bold text-uppercase text-muted mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;"><i class="fa fa-microscope mr-1 text-info"></i> 1. Causa Raíz</div>' +
                                     '<span class="badge ' + causaInfo.color + '" style="font-size: 0.75rem; padding: 4px 8px;">' + causaInfo.label + '</span>' +
                                 '</div>' +
-                                '<div class="mb-3 p-2 border-left border-warning bg-light" style="border-radius: 6px;">' +
+                                '<div class="mb-2 p-2 border-left border-warning bg-light" style="border-radius: 6px;">' +
                                     '<div class="font-weight-bold text-uppercase text-warning mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;"><i class="fa fa-lightbulb mr-1"></i> 2. Acción de Mejora (Respuesta al Riesgo)</div>' +
                                     '<div class="text-dark font-weight-bold">' + (r.accion_mejora || '—') + '</div>' +
                                 '</div>' +
@@ -2030,11 +2092,143 @@
                         '</div>';
                     });
                 } else {
-                    html = '<div class="text-center py-5 text-muted"><i class="fa fa-shield-alt fa-3x mb-3 text-warning opacity-50"></i><p class="mb-0">No se encontraron riesgos MECIP 2015 asociados a este objetivo.</p></div>';
+                    html = '<div class="text-center py-5 text-muted"><i class="fa fa-shield-alt fa-3x mb-3 text-warning opacity-50"></i><p class="mb-0">No se encontraron riesgos MECIP 2015 asociados a este objetivo.</p><p class="small text-muted">Haz clic en <strong>Agregar Riesgo</strong> para registrar uno nuevo.</p></div>';
                 }
 
                 $('#contenedorRiesgosMecip').html(html);
+            }
+
+            function persistirRiesgosMecipEnServidor(cb) {
+                if (!currentAxiRiesgosNodeId) return;
+                var url = '/pei-profiles/' + currentAxiRiesgosNodeId + '/riesgos-mecip';
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: { riesgos: currentAxiRiesgosList },
+                    success: function(resp) {
+                        var count = resp.count || currentAxiRiesgosList.length;
+                        if (currentAxiBtnRef && currentAxiBtnRef.length) {
+                            currentAxiBtnRef.attr('data-riesgos', JSON.stringify(currentAxiRiesgosList));
+                            currentAxiBtnRef.html('<i class="fa fa-shield-alt mr-1"></i> Riesgos MECIP (' + count + ')');
+                            if (count > 0) {
+                                currentAxiBtnRef.removeClass('btn-outline-light text-warning').addClass('btn-warning text-dark font-weight-bold');
+                            } else {
+                                currentAxiBtnRef.removeClass('btn-warning text-dark font-weight-bold').addClass('btn-outline-light text-warning');
+                            }
+                        }
+                        renderListaRiesgosMecip();
+                        if (typeof cb === 'function') cb();
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: resp.message || 'Riesgos MECIP guardados',
+                            showConfirmButton: false,
+                            timer: 2500
+                        });
+                    },
+                    error: function(err) {
+                        Swal.fire('Error', 'No se pudieron guardar los riesgos MECIP.', 'error');
+                    }
+                });
+            }
+
+            $(document).on('click', '.btn-ver-riesgos-mecip', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var btn = $(this);
+                currentAxiBtnRef = btn;
+                currentAxiRiesgosNodeId = btn.attr('data-axi-id') || btn.data('axi-id');
+                var title = btn.attr('data-axi-title') || btn.data('axi-title') || 'Objetivo Estratégico';
+                var rawData = btn.attr('data-riesgos');
+                try {
+                    currentAxiRiesgosList = typeof rawData === 'string' ? JSON.parse(rawData) : (btn.data('riesgos') || []);
+                } catch(err) {
+                    currentAxiRiesgosList = btn.data('riesgos') || [];
+                }
+                if (!Array.isArray(currentAxiRiesgosList)) currentAxiRiesgosList = [];
+
+                $('#modalRiesgosTituloOE').html('<i class="fa fa-shield-alt text-warning mr-2"></i>' + title);
+                $('#formRiesgoMecipCard').hide();
+                renderListaRiesgosMecip();
                 $('#modalRiesgosMecip').modal('show');
+            });
+
+            $('#btnNuevoRiesgoMecip').on('click', function() {
+                $('#riesgoIndexEdit').val('-1');
+                $('#riesgoAspecto').val('');
+                $('#riesgoCausaRaiz').val('operativa');
+                $('#riesgoOcurrencia').val('3');
+                $('#riesgoImpacto').val('3');
+                $('#riesgoAccionMejora').val('');
+                $('#riesgoControlPreventivo').val('');
+                $('#formRiesgoMecipTitulo').html('<i class="fa fa-plus-circle text-primary mr-1"></i> Nuevo Riesgo MECIP');
+                $('#formRiesgoMecipCard').slideDown(200);
+            });
+
+            $('#btnCancelarRiesgoMecip, #btnCancelarRiesgoMecip2').on('click', function() {
+                $('#formRiesgoMecipCard').slideUp(200);
+            });
+
+            $(document).on('click', '.btnEditarRiesgoMecip', function() {
+                var idx = parseInt($(this).data('idx'), 10);
+                var r = currentAxiRiesgosList[idx];
+                if (!r) return;
+                $('#riesgoIndexEdit').val(idx);
+                $('#riesgoAspecto').val(r.aspecto || '');
+                $('#riesgoCausaRaiz').val(r.causa_raiz || 'operativa');
+                $('#riesgoOcurrencia').val(r.ocurrencia || 3);
+                $('#riesgoImpacto').val(r.impacto || 3);
+                $('#riesgoAccionMejora').val(r.accion_mejora || '');
+                $('#riesgoControlPreventivo').val(r.control_preventivo || '');
+                $('#formRiesgoMecipTitulo').html('<i class="fa fa-edit text-primary mr-1"></i> Editar Riesgo #' + (idx + 1));
+                $('#formRiesgoMecipCard').slideDown(200);
+            });
+
+            $(document).on('click', '.btnEliminarRiesgoMecip', function() {
+                var idx = parseInt($(this).data('idx'), 10);
+                Swal.fire({
+                    title: '¿Eliminar riesgo MECIP?',
+                    text: 'Esta acción removerá el riesgo seleccionado de este Objetivo Estratégico.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fa fa-trash mr-1"></i> Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        currentAxiRiesgosList.splice(idx, 1);
+                        persistirRiesgosMecipEnServidor();
+                    }
+                });
+            });
+
+            $('#btnGuardarRiesgoMecip').on('click', function() {
+                var aspecto = $.trim($('#riesgoAspecto').val());
+                if (!aspecto) {
+                    Swal.fire('Campo requerido', 'Por favor ingresa el nombre o descripción del riesgo.', 'warning');
+                    return;
+                }
+                var editIdx = parseInt($('#riesgoIndexEdit').val(), 10);
+                var nuevoRiesgo = {
+                    aspecto: aspecto,
+                    causa_raiz: $('#riesgoCausaRaiz').val(),
+                    ocurrencia: parseInt($('#riesgoOcurrencia').val(), 10) || 3,
+                    impacto: parseInt($('#riesgoImpacto').val(), 10) || 3,
+                    accion_mejora: $.trim($('#riesgoAccionMejora').val()),
+                    control_preventivo: $.trim($('#riesgoControlPreventivo').val())
+                };
+
+                if (editIdx >= 0 && editIdx < currentAxiRiesgosList.length) {
+                    currentAxiRiesgosList[editIdx] = nuevoRiesgo;
+                } else {
+                    currentAxiRiesgosList.push(nuevoRiesgo);
+                }
+
+                persistirRiesgosMecipEnServidor(function() {
+                    $('#formRiesgoMecipCard').slideUp(200);
+                });
             });
 
             // Ranking Talento Humano

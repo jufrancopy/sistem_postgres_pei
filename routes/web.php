@@ -107,6 +107,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('pei-profiles/{idProfile}/tree-draggable', 'Admin\Planificacion\Pei\PeiController@getTreeDraggable')->name('pei-profiles.tree-draggable');
     Route::post('pei-profiles/{idProfile}/reordenar-tree', 'Admin\Planificacion\Pei\PeiController@reordenarTree')->name('pei-profiles.reordenar-tree');
     Route::post('pei-profiles/{idProfile}/parameters',   'Admin\Planificacion\Pei\PeiController@updateParameters')->name('pei-profiles.update-parameters');
+    Route::post('pei-profiles/{idNode}/riesgos-mecip',   'Admin\Planificacion\Pei\PeiController@guardarRiesgosMecip')->name('pei-profiles.riesgos-mecip.store');
     Route::get('pei-profiles/{idProfile}/matriz',        'Admin\Planificacion\Pei\PeiController@matriz')->name('pei-profiles.matriz');
     Route::get('pei-profiles/{idProfile}/matriz/pdf',    'Admin\Planificacion\Pei\PeiController@matrizPdf')->name('pei-profiles.matriz.pdf');
 
