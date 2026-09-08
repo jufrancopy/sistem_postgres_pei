@@ -321,6 +321,16 @@ class GlobalesController extends Controller
             ->orderBy('nombre')
             ->get();
 
+        // ── Eventos Institucionales & Hitos Estratégicos ─────────────────────
+        $totalEventos = \App\Models\Eventos\Evento::count();
+        $totalEventosActivos = \App\Models\Eventos\Evento::whereIn('estado', ['planificado', 'en_curso'])->count();
+        $eventosDashboard = \App\Models\Eventos\Evento::with(['pei', 'responsables', 'pasos.tareas'])
+            ->orderBy('fecha_inicio', 'desc')
+            ->take(15)
+            ->get();
+        $totalTareasEventosPendientes = \App\Models\Eventos\EventoTarea::where('completada', false)->count();
+        $totalTareasEventosVencidas   = \App\Models\Eventos\EventoTarea::where('completada', false)->where('fecha_limite', '<', now()->toDateString())->count();
+
         return view('admin.globales.dashboard', get_defined_vars());
     }
 

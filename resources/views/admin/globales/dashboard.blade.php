@@ -503,6 +503,12 @@
                         <span class="badge badge-pill badge-info ml-1" style="font-size:0.7rem;">{{ $totalRelevamientosProcesos ?? 0 }}</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-eventos-link" data-toggle="pill" href="#tab-eventos" role="tab" aria-selected="false">
+                        <i class="fa fa-calendar-alt text-primary mr-2"></i> Eventos & Jornadas
+                        <span class="badge badge-pill badge-primary ml-1" style="font-size:0.7rem;">{{ $totalEventos ?? 0 }}</span>
+                    </a>
+                </li>
             </ul>
         </div>
 
@@ -1920,6 +1926,174 @@
                                         <td colspan="9" class="text-center text-muted py-4">
                                             <i class="fa fa-project-diagram fa-2x mb-2 d-block text-secondary"></i>
                                             No hay relevamientos de procesos registrados aún.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {{-- ════════════════════════════════════════════════════════════════════════════
+                     PESTAÑA 10: EVENTOS INSTITUCIONALES & HITOS ESTRATÉGICOS
+                     ════════════════════════════════════════════════════════════════════════════ --}}
+                <div class="tab-pane fade" id="tab-eventos" role="tabpanel">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                        <div>
+                            <h4 class="font-weight-bold text-dark mb-1">
+                                <i class="fa fa-calendar-alt text-primary mr-2"></i> Eventos Institucionales & Hitos Estratégicos
+                            </h4>
+                            <p class="text-muted small mb-0">Organización y seguimiento de talleres, jornadas de socialización, hitos y cronograma de tareas del PEI.</p>
+                        </div>
+                        <div class="d-flex align-items-center mt-3 mt-md-0" style="gap: 8px;">
+                            <a href="{{ route('eventos.calendario') }}" class="btn btn-outline-info btn-round btn-sm">
+                                <i class="fa fa-calendar mr-1"></i> Calendario Integral
+                            </a>
+                            <a href="{{ route('eventos.index') }}" class="btn btn-outline-primary btn-round btn-sm">
+                                <i class="fa fa-th-list mr-1"></i> Módulo Completo
+                            </a>
+                            <a href="{{ route('eventos.create') }}" class="btn btn-primary btn-round btn-sm shadow-sm">
+                                <i class="fa fa-plus mr-1"></i> + Nuevo Evento
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Tarjetas KPI de Eventos --}}
+                    <div class="row mb-4">
+                        <div class="col-xl-3 col-sm-6 mb-3">
+                            <div class="card border-0 shadow-sm bg-white" style="border-radius: 12px; border-left: 4px solid #4f46e5 !important;">
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <small class="text-muted font-weight-bold text-uppercase" style="font-size: 0.72rem;">Eventos Totales</small>
+                                        <h4 class="font-weight-bold text-dark mb-0 mt-1">{{ $totalEventos ?? 0 }}</h4>
+                                    </div>
+                                    <div class="rounded-circle p-2 bg-light text-primary">
+                                        <i class="fa fa-calendar-check fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6 mb-3">
+                            <div class="card border-0 shadow-sm bg-white" style="border-radius: 12px; border-left: 4px solid #10b981 !important;">
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <small class="text-muted font-weight-bold text-uppercase" style="font-size: 0.72rem;">Eventos en Curso</small>
+                                        <h4 class="font-weight-bold text-dark mb-0 mt-1">{{ $totalEventosActivos ?? 0 }}</h4>
+                                    </div>
+                                    <div class="rounded-circle p-2 bg-light text-success">
+                                        <i class="fa fa-spinner fa-spin fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6 mb-3">
+                            <div class="card border-0 shadow-sm bg-white" style="border-radius: 12px; border-left: 4px solid #f59e0b !important;">
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <small class="text-muted font-weight-bold text-uppercase" style="font-size: 0.72rem;">Tareas Pendientes</small>
+                                        <h4 class="font-weight-bold text-dark mb-0 mt-1">{{ $totalTareasEventosPendientes ?? 0 }}</h4>
+                                    </div>
+                                    <div class="rounded-circle p-2 bg-light text-warning">
+                                        <i class="fa fa-tasks fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6 mb-3">
+                            <div class="card border-0 shadow-sm bg-white" style="border-radius: 12px; border-left: 4px solid #ef4444 !important;">
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <small class="text-muted font-weight-bold text-uppercase" style="font-size: 0.72rem;">Tareas Vencidas</small>
+                                        <h4 class="font-weight-bold text-danger mb-0 mt-1">{{ $totalTareasEventosVencidas ?? 0 }}</h4>
+                                    </div>
+                                    <div class="rounded-circle p-2 bg-light text-danger">
+                                        <i class="fa fa-exclamation-triangle fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Tabla de Eventos --}}
+                    <div class="table-responsive bg-white rounded shadow-sm border">
+                        <table class="table table-hover align-middle mb-0" id="tablaEventosDashboard" style="font-size: 0.88rem;">
+                            <thead class="bg-light text-uppercase text-secondary font-weight-bold" style="font-size: 0.75rem;">
+                                <tr>
+                                    <th class="py-3 px-3">Evento &amp; Sede</th>
+                                    <th class="py-3 px-3">Plan PEI</th>
+                                    <th class="py-3 px-3">Fechas</th>
+                                    <th class="py-3 px-3 text-center">Pasos / Fases</th>
+                                    <th class="py-3 px-3 text-center">Avance</th>
+                                    <th class="py-3 px-3 text-center">Estado</th>
+                                    <th class="py-3 px-3 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($eventosDashboard ?? [] as $evt)
+                                    <tr>
+                                        <td class="px-3">
+                                            <div class="font-weight-bold text-dark mb-1">
+                                                <span class="badge badge-light border mr-1 text-primary">{{ $evt->tipo }}</span>
+                                                <a href="{{ route('eventos.show', $evt->id) }}" class="text-dark hover-primary">{{ $evt->nombre }}</a>
+                                            </div>
+                                            @if($evt->lugar_sede)
+                                                <small class="text-muted d-block"><i class="fa fa-map-marker-alt mr-1 text-danger"></i>{{ $evt->lugar_sede }}</small>
+                                            @endif
+                                        </td>
+                                        <td class="px-3">
+                                            @if($evt->pei)
+                                                <span class="badge badge-pill badge-light border text-truncate" style="max-width: 180px;" title="{{ $evt->pei->nombre }}">
+                                                    <i class="fa fa-file-alt text-primary mr-1"></i>{{ $evt->pei->nombre }}
+                                                </span>
+                                            @else
+                                                <span class="text-muted small">— Institucional —</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-3 text-nowrap">
+                                            <small class="d-block text-dark font-weight-bold">{{ $evt->fecha_inicio ? $evt->fecha_inicio->format('d/m/Y') : '-' }}</small>
+                                            <small class="text-muted">al {{ $evt->fecha_fin ? $evt->fecha_fin->format('d/m/Y') : '-' }}</small>
+                                        </td>
+                                        <td class="px-3 text-center">
+                                            <span class="badge badge-secondary badge-pill">{{ $evt->pasos->count() }} pasos</span>
+                                            <small class="d-block text-muted">{{ $evt->tareas->count() }} tareas</small>
+                                        </td>
+                                        <td class="px-3 text-center" style="min-width: 130px;">
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <span class="font-weight-bold mr-2 text-xs">{{ $evt->porcentaje_avance }}%</span>
+                                                <div class="progress flex-grow-1" style="height: 6px; border-radius: 4px;">
+                                                    <div class="progress-bar {{ $evt->porcentaje_avance == 100 ? 'bg-success' : 'bg-primary' }}" role="progressbar" style="width: {{ $evt->porcentaje_avance }}%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-3 text-center">
+                                            @if($evt->estado == 'completado')
+                                                <span class="badge badge-success px-2 py-1">Completado</span>
+                                            @elseif($evt->estado == 'en_curso')
+                                                <span class="badge badge-info px-2 py-1">En Curso</span>
+                                            @elseif($evt->estado == 'cancelado')
+                                                <span class="badge badge-danger px-2 py-1">Cancelado</span>
+                                            @else
+                                                <span class="badge badge-secondary px-2 py-1">Planificado</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-3 text-right text-nowrap">
+                                            <a href="{{ route('eventos.show', $evt->id) }}" class="btn btn-action-circle btn-primary" title="Ver Detalle &amp; Checklist">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            <a href="{{ route('eventos.edit', $evt->id) }}" class="btn btn-action-circle btn-warning text-white" title="Editar Evento">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-5">
+                                            <i class="fa fa-calendar-plus fa-3x mb-3 d-block text-secondary opacity-50"></i>
+                                            <h6 class="font-weight-bold text-dark">No hay eventos registrados aún</h6>
+                                            <p class="small text-muted mb-3">Comienza creando un taller, jornada o hito institucional asociado al PEI.</p>
+                                            <a href="{{ route('eventos.create') }}" class="btn btn-primary btn-round btn-sm">
+                                                <i class="fa fa-plus mr-1"></i> Crear Primer Evento
+                                            </a>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -6145,6 +6319,8 @@ $(document).ready(function() {
     var urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('tab') === 'procesos' || window.location.hash === '#tab-procesos') {
         $('#tab-procesos-link').tab('show');
+    } else if (urlParams.get('tab') === 'eventos' || window.location.hash === '#tab-eventos') {
+        $('#tab-eventos-link').tab('show');
     }
 
     if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#tablaProcesosDashboard')) {
@@ -6156,9 +6332,22 @@ $(document).ready(function() {
         });
     }
 
+    if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#tablaEventosDashboard')) {
+        $('#tablaEventosDashboard').DataTable({
+            language: typeof datatablesSpanish !== 'undefined' ? datatablesSpanish : {},
+            pageLength: 10,
+            autoWidth: false,
+            order: [[2, 'desc']],
+            responsive: { details: false }
+        });
+    }
+
     $('a[data-toggle="pill"], a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
         if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tablaProcesosDashboard')) {
             $('#tablaProcesosDashboard').DataTable().columns.adjust();
+        }
+        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tablaEventosDashboard')) {
+            $('#tablaEventosDashboard').DataTable().columns.adjust();
         }
     });
 
