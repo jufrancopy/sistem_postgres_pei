@@ -2,9 +2,10 @@
 
 @section('title', 'Crear Nuevo Evento Institucional')
 
-@section('head')
+@section('css')
+<link href="{{ asset('css/select2.min.css') }}" rel="stylesheet">
 <style>
-    .form-group label.control-label,
+    /* ── Estilos de Formulario Estándar y Select2 ── */
     .form-group label.font-weight-bold {
         font-size: 0.88rem !important;
         font-weight: 700 !important;
@@ -26,15 +27,36 @@
         box-shadow: 0 0 0 0.2rem rgba(0, 188, 212, 0.25) !important;
         background-color: #fff !important;
     }
-    .select2-container .select2-selection--single,
-    .select2-container .select2-selection--multiple {
-        min-height: 40px !important;
+    .select2-container--default .select2-selection--single {
+        min-height: 42px !important;
+        border: 1px solid #ced4da !important;
+        border-radius: 6px !important;
+        padding: 6px 12px !important;
+        background: #ffffff !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 28px !important;
+        color: #2c3e50 !important;
+        font-size: 0.92rem !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+    }
+    .select2-container--default .select2-selection--multiple {
+        min-height: 42px !important;
         border: 1px solid #ced4da !important;
         border-radius: 6px !important;
         padding: 4px 8px !important;
+        background: #ffffff !important;
     }
-    .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
-        line-height: 30px !important;
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #e0f2fe !important;
+        border: 1px solid #0284c7 !important;
+        color: #0369a1 !important;
+        font-weight: 600 !important;
+        border-radius: 4px !important;
+        padding: 2px 8px !important;
+        font-size: 0.82rem !important;
     }
     .card-form-section {
         background: #fdfdfd;
@@ -118,17 +140,33 @@
 
                 <div class="row mt-2">
                     <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="font-weight-bold"><i class="fa fa-bullseye text-info mr-1"></i> Vincular a Plan PEI (Opcional)</label>
-                            <select name="pei_profile_id" class="form-control select2" style="width: 100%;">
-                                <option value="">— Ninguno / Evento Institucional General —</option>
-                                @foreach($peiPerfiles as $pei)
-                                    <option value="{{ $pei->id }}" {{ (old('pei_profile_id', $selectedPeiId) == $pei->id) ? 'selected' : '' }}>
-                                        {{ $pei->name ?? $pei->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        @if($currentPei)
+                            {{-- Cuando ya estamos dentro del contexto de un PEI, no redundamos con selector --}}
+                            <input type="hidden" name="pei_profile_id" value="{{ $currentPei->id }}">
+                            <div class="form-group mb-0">
+                                <label class="font-weight-bold text-dark"><i class="fa fa-bullseye text-info mr-1"></i> Plan Estratégico Vinculado</label>
+                                <div class="p-2 px-3 border rounded bg-light d-flex align-items-center justify-content-between" style="border-left: 4px solid #00bcd4 !important;">
+                                    <div class="text-truncate mr-2">
+                                        <strong class="text-dark d-block" style="font-size: 0.9rem;">{{ $currentPei->name ?? $currentPei->nombre }}</strong>
+                                        <small class="text-muted"><i class="fa fa-calendar-alt mr-1"></i>Período: {{ $currentPei->periodo_texto ?? ($currentPei->year_start . ' - ' . $currentPei->year_end) }}</small>
+                                    </div>
+                                    <span class="badge badge-info px-2 py-1">En Contexto</span>
+                                </div>
+                            </div>
+                        @else
+                            {{-- Creación general fuera del contexto de un PEI --}}
+                            <div class="form-group">
+                                <label class="font-weight-bold"><i class="fa fa-bullseye text-info mr-1"></i> Vincular a Plan PEI (Opcional)</label>
+                                <select name="pei_profile_id" class="form-control select2" style="width: 100%;">
+                                    <option value="">— Ninguno / Evento Institucional General —</option>
+                                    @foreach($peiPerfiles as $pei)
+                                        <option value="{{ $pei->id }}" {{ (old('pei_profile_id', $selectedPeiId) == $pei->id) ? 'selected' : '' }}>
+                                            {{ $pei->name ?? $pei->nombre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                     </div>
 
                     <div class="col-md-6">
@@ -259,8 +297,8 @@
 <script>
 $(document).ready(function() {
     $('.select2').select2({
-        theme: 'bootstrap4',
-        language: 'es'
+        width: '100%',
+        placeholder: 'Seleccionar...'
     });
 });
 </script>

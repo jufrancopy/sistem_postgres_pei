@@ -301,14 +301,19 @@ class EventoController extends Controller
             ->get();
         $organigramas = Organigrama::orderBy('dependency')->select('id', 'dependency as name')->get();
         $actividades = Activity::latest()->take(50)->get(['id', 'name']);
-        $selectedPeiId = $request->get('pei_profile_id');
+        $selectedPeiId = $request->get('pei_profile_id') ?? session('selected_pei_id');
+        $currentPei = null;
+        if ($selectedPeiId) {
+            $currentPei = PeiProfile::find($selectedPeiId);
+        }
 
         return view('admin.eventos.create', compact(
             'usuarios',
             'peiPerfiles',
             'organigramas',
             'actividades',
-            'selectedPeiId'
+            'selectedPeiId',
+            'currentPei'
         ));
     }
 
