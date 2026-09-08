@@ -8,7 +8,7 @@
     $path = request()->path();
 
     // Detectar en qué sección estamos
-    $enPlanificacion = str_contains($path, 'pei-') || str_contains($path, 'foda') || str_contains($path, 'planificacion') || str_contains($path, 'tasks') || str_contains($path, 'pgn') || str_contains($path, 'pei/marcos');
+    $enPlanificacion = str_contains($path, 'pei-') || str_contains($path, 'foda') || str_contains($path, 'planificacion') || str_contains($path, 'tasks') || str_contains($path, 'pgn') || str_contains($path, 'pei/marcos') || str_contains($path, 'eventos');
     $enProyectos     = str_contains($path, 'proyectos') || str_contains($path, 'epc');
     $enSiess         = str_contains($path, 'siess') || str_contains($path, 'eph') || str_contains($path, 'dgeec') || str_contains($path, 'contexto');
     $enBioestadistica = str_contains($path, 'bioestadistica');
@@ -134,6 +134,12 @@
                             <a class="nav-link" href="{{ route('pei-profiles.index') }}">
                                 <span class="sidebar-mini"><i class="fa fa-file-alt" style="font-size:.8rem; color: #4f46e5;"></i></span>
                                 <span class="sidebar-normal">PEI</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ $isActive('eventos*') }}">
+                            <a class="nav-link" href="{{ route('eventos.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-calendar-alt" style="font-size:.8rem; color: #4f46e5;"></i></span>
+                                <span class="sidebar-normal">Eventos & Jornadas</span>
                             </a>
                         </li>
                         <li class="nav-item {{ $isActive('pei.procesos.*') }}">

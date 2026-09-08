@@ -120,7 +120,18 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('pei/procesos/{id}/firmar', 'Admin\Planificacion\RelevamientoProcesoController@firmar')->name('pei.procesos.firmar');
     Route::get('pei/procesos/{id}/export-pdf', 'Admin\Planificacion\RelevamientoProcesoController@exportPdf')->name('pei.procesos.exportPdf');
 
-
+    // ── Módulo de Eventos Institucionales, Fases y Checklist Operativo ───────────
+    Route::get('eventos/calendario', 'Admin\Eventos\EventoController@calendario')->name('eventos.calendario');
+    Route::get('eventos/feed', 'Admin\Eventos\EventoController@eventsFeed')->name('eventos.feed');
+    Route::get('eventos/alertas', 'Admin\Eventos\EventoController@alertasWidget')->name('eventos.alertas');
+    Route::resource('eventos', 'Admin\Eventos\EventoController', ['names' => 'eventos']);
+    Route::post('eventos/{id}/pasos', 'Admin\Eventos\EventoController@storePaso')->name('eventos.pasos.store');
+    Route::put('eventos/{id}/pasos/{pasoId}', 'Admin\Eventos\EventoController@updatePaso')->name('eventos.pasos.update');
+    Route::delete('eventos/{id}/pasos/{pasoId}', 'Admin\Eventos\EventoController@destroyPaso')->name('eventos.pasos.destroy');
+    Route::post('eventos/pasos/{pasoId}/tareas', 'Admin\Eventos\EventoController@storeTarea')->name('eventos.tareas.store');
+    Route::put('eventos/tareas/{tareaId}', 'Admin\Eventos\EventoController@updateTarea')->name('eventos.tareas.update');
+    Route::patch('eventos/tareas/{tareaId}/toggle', 'Admin\Eventos\EventoController@toggleTareaCompletada')->name('eventos.tareas.toggle');
+    Route::delete('eventos/tareas/{tareaId}', 'Admin\Eventos\EventoController@destroyTarea')->name('eventos.tareas.destroy');
 
     Route::get('pei-profiles/{idProfile}/vista-asesor', 'Admin\Planificacion\Pei\PeiController@vistaAsesor')->name('pei-profiles.vista-asesor');
     Route::post('pei-profiles/{idProfile}/guardar-comentario-asesor', 'Admin\Planificacion\Pei\PeiController@guardarComentarioAsesor')->name('pei-profiles.guardar-comentario-asesor');

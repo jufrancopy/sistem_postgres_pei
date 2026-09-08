@@ -167,6 +167,13 @@
                 <i class="fa fa-list-alt"></i> Actividades MECIP
             </a>
 
+            <a href="{{ route('eventos.index', ['pei_profile_id' => $profile->id]) }}"
+               class="btn btn-sm text-white font-weight-bold d-inline-flex align-items-center px-3"
+               style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); border-radius: 8px; border: none; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
+               title="Gestión de Eventos, Talleres e Hitos Estratégicos">
+                <i class="fa fa-calendar-alt text-warning"></i> Eventos &amp; Jornadas
+            </a>
+
             <button type="button"
                class="btn btn-sm btn-outline-primary font-weight-bold d-inline-flex align-items-center px-3"
                style="border-radius: 8px; gap: 6px; padding-top: 6px; padding-bottom: 6px;"
