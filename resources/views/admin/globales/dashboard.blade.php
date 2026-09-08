@@ -1946,7 +1946,7 @@
                             <p class="text-muted small mb-0">Organización y seguimiento de talleres, jornadas de socialización, hitos y cronograma de tareas del PEI.</p>
                         </div>
                         <div class="d-flex align-items-center mt-3 mt-md-0" style="gap: 8px;">
-                            <a href="{{ route('eventos.calendario') }}" class="btn btn-outline-info btn-round btn-sm">
+                            <a href="{{ route('eventos.index', ['action' => 'calendario']) }}" class="btn btn-outline-info btn-round btn-sm">
                                 <i class="fa fa-calendar mr-1"></i> Calendario Integral
                             </a>
                             <a href="{{ route('eventos.index') }}" class="btn btn-outline-primary btn-round btn-sm">

@@ -1,6 +1,76 @@
 @extends('layouts.master')
 @section('title', 'Gestión de Eventos Institucionales & Hitos')
 
+@section('css')
+<link rel="stylesheet" href="{{ asset('material/css/plugins/fullcalendar.min.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.css">
+<style>
+/* FullCalendar Custom Theme & Material Styles */
+.fc-toolbar {
+    margin-bottom: 1.25rem !important;
+}
+.fc-toolbar h2 {
+    font-size: 1.35rem !important;
+    font-weight: 700 !important;
+    color: #1a202c !important;
+    text-transform: capitalize !important;
+}
+.fc-button {
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    font-weight: 600 !important;
+    padding: 0.4rem 0.85rem !important;
+    background: #ffffff !important;
+    color: #4a5568 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+.fc-button.fc-state-active, .fc-button.fc-state-down {
+    background: #00bcd4 !important;
+    color: #ffffff !important;
+    border-color: #00bcd4 !important;
+    box-shadow: 0 2px 4px rgba(0,188,212,0.3) !important;
+}
+.fc-event {
+    border-radius: 6px !important;
+    padding: 3px 7px !important;
+    font-size: 0.82rem !important;
+    border: none !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.fc-event:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+}
+.fc-evento-principal {
+    font-weight: 700 !important;
+    border-left: 4px solid #1e1b4b !important;
+}
+.fc-evento-paso {
+    font-weight: 600 !important;
+    border-left: 4px solid #78350f !important;
+}
+.fc-evento-tarea {
+    font-size: 0.76rem !important;
+    border-left: 4px solid #0369a1 !important;
+}
+.fc-tarea-completada {
+    text-decoration: line-through !important;
+    opacity: 0.65 !important;
+}
+.fc-day-header {
+    background: #f8fafc;
+    padding: 8px 0 !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase;
+}
+</style>
+@endsection
+
 @section('content')
 <div class="card">
     {{-- Header Estándar de la Plataforma --}}
@@ -10,9 +80,9 @@
             <p class="card-category">Planificación por Fases, Asignación de Responsables, Checklist Operativo y Calendario</p>
         </div>
         <div>
-            <a href="{{ route('eventos.calendario') }}" class="btn btn-warning btn-sm font-weight-bold mr-2">
-                <i class="fa fa-calendar-alt mr-1"></i> Calendario Integral
-            </a>
+            <button type="button" class="btn btn-info btn-sm font-weight-bold mr-2" id="btnAbrirCalendarioModal">
+                <i class="fa fa-calendar-alt mr-1"></i> Calendario
+            </button>
             <button type="button" class="btn btn-success btn-sm font-weight-bold" id="btnCrearEventoModal">
                 <i class="fa fa-plus mr-1"></i> + Nuevo Evento
             </button>
@@ -165,6 +235,72 @@
     </div>
 </div>
 
+{{-- Modal Calendario Integral de Eventos e Hitos --}}
+<div class="modal fade" id="modalCalendarioGeneral" tabindex="-1" aria-hidden="true" style="z-index: 1050;">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 94%;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white py-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+                <div>
+                    <span class="badge badge-light text-dark font-weight-bold mb-1" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 6px;">
+                        <i class="fa fa-calendar-alt text-info mr-1"></i> CRONOGRAMA EJECUTIVO
+                    </span>
+                    <h5 class="modal-title font-weight-bold mb-0 text-white" style="font-size: 1.2rem;">
+                        Calendario Integral de Eventos & Hitos PEI
+                    </h5>
+                </div>
+                <div class="d-flex align-items-center" style="gap: 10px;">
+                    <button type="button" class="btn btn-sm btn-success font-weight-bold" id="btnCrearDesdeCalendario" style="border-radius: 8px;">
+                        <i class="fa fa-plus mr-1"></i> + Nuevo Evento
+                    </button>
+                    <button type="button" class="close text-white" data-dismiss="modal" style="opacity: 0.9; font-size: 1.5rem;"><span>&times;</span></button>
+                </div>
+            </div>
+
+            {{-- Barra de Filtros del Calendario y Leyenda --}}
+            <div class="p-3 border-bottom" style="background: #f1f5f9;">
+                <div class="row align-items-center">
+                    <div class="col-md-4 mb-2 mb-md-0">
+                        <label class="font-weight-bold text-dark small text-uppercase mb-1">Filtrar por Plan PEI</label>
+                        <select id="calFilterPei" class="form-control select2Cal" style="width:100%;">
+                            <option value="">-- Todos los Planes PEI --</option>
+                            @foreach($peiPerfiles as $pei)
+                                <option value="{{ $pei->id }}" {{ $selectedPeiId == $pei->id ? 'selected' : '' }}>
+                                    {{ strip_tags($pei->name) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-2 mb-md-0">
+                        <label class="font-weight-bold text-dark small text-uppercase mb-1">Filtrar por Responsable</label>
+                        <select id="calFilterResp" class="form-control select2Cal" style="width:100%;">
+                            <option value="">-- Todos los Responsables --</option>
+                            @foreach($usuarios as $u)
+                                <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4 text-md-right mt-2 mt-md-0">
+                        <label class="font-weight-bold text-dark small text-uppercase mb-1 d-block">Convención de Colores</label>
+                        <span class="badge badge-pill shadow-sm" style="background:#6366f1; color:#fff; font-size:0.75rem; padding: 4px 8px;"><i class="fa fa-star mr-1"></i> Eventos</span>
+                        <span class="badge badge-pill shadow-sm" style="background:#f59e0b; color:#fff; font-size:0.75rem; padding: 4px 8px;"><i class="fa fa-play mr-1"></i> Fases/Hitos</span>
+                        <span class="badge badge-pill shadow-sm" style="background:#0ea5e9; color:#fff; font-size:0.75rem; padding: 4px 8px;"><i class="fa fa-tasks mr-1"></i> Tareas</span>
+                        <span class="badge badge-pill shadow-sm" style="background:#10b981; color:#fff; font-size:0.75rem; padding: 4px 8px;"><i class="fa fa-check mr-1"></i> Hechas</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-body p-4 bg-white" style="min-height: 580px; max-height: 78vh; overflow-y: auto;">
+                <div id="fullcalendarGeneral" style="min-height: 520px;"></div>
+            </div>
+            
+            <div class="modal-footer bg-light border-top py-2 px-4 d-flex justify-content-between">
+                <small class="text-muted"><i class="fa fa-info-circle mr-1"></i> Haz clic sobre cualquier evento o tarea en el calendario para acceder directamente a su centro de mando.</small>
+                <button type="button" class="btn btn-secondary btn-sm px-4 font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Modal Crear / Editar Evento --}}
 <div class="modal fade" id="modalEventoForm" tabindex="-1" aria-hidden="true" style="z-index: 1050;">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -285,6 +421,12 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('material/js/plugins/moment.min.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="{{ asset('material/js/plugins/fullcalendar.min.js') }}"></script>
+<script src="{{ asset('material/js/plugins/locale/es.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/locale/es.js"></script>
+
 <script>
 $(function() {
     $('.select2').select2({ width: '100%' });
@@ -334,7 +476,90 @@ $(function() {
         tablaEventos.ajax.reload();
     });
 
-    // Abrir modal para Crear
+    // ── GESTIÓN DE CALENDARIO EN MODAL ─────────────────────────
+    var calInitialized = false;
+
+    function initGeneralCalendar() {
+        if (!calInitialized) {
+            calInitialized = true;
+            $('#fullcalendarGeneral').fullCalendar({
+                locale: 'es',
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,listMonth'
+                },
+                buttonText: {
+                    today: 'Hoy',
+                    month: 'Mes',
+                    week: 'Semana',
+                    list: 'Agenda'
+                },
+                defaultDate: '{{ date("Y-m-d") }}',
+                events: function(start, end, timezone, callback) {
+                    $.ajax({
+                        url: '{{ route("eventos.feed") }}',
+                        data: {
+                            pei_profile_id: $('#calFilterPei').val(),
+                            responsable_id: $('#calFilterResp').val()
+                        },
+                        success: function(doc) {
+                            callback(doc);
+                        }
+                    });
+                },
+                eventRender: function(event, element) {
+                    if (event.extendedProps) {
+                        var tooltipHtml = '<strong>' + event.title + '</strong>';
+                        if (event.extendedProps.lugar) tooltipHtml += '<br><small><i class="fa fa-map-marker-alt text-danger mr-1"></i>' + event.extendedProps.lugar + '</small>';
+                        if (event.extendedProps.responsable) tooltipHtml += '<br><small><i class="fa fa-user text-primary mr-1"></i>' + event.extendedProps.responsable + '</small>';
+                        if (event.extendedProps.avance) tooltipHtml += '<br><small>Avance: <strong>' + event.extendedProps.avance + '</strong></small>';
+
+                        $(element).tooltip({
+                            title: tooltipHtml,
+                            html: true,
+                            container: 'body',
+                            placement: 'top'
+                        });
+                    }
+                },
+                eventClick: function(calEvent, jsEvent, view) {
+                    if (calEvent.url) {
+                        window.location.href = calEvent.url;
+                        return false;
+                    }
+                }
+            });
+        } else {
+            $('#fullcalendarGeneral').fullCalendar('refetchEvents');
+        }
+    }
+
+    // Abrir modal de calendario
+    $('#btnAbrirCalendarioModal').on('click', function() {
+        $('#modalCalendarioGeneral').modal('show');
+    });
+
+    $('#modalCalendarioGeneral').on('shown.bs.modal', function() {
+        initGeneralCalendar();
+        $('#fullcalendarGeneral').fullCalendar('render');
+        $('.select2Cal').select2({ dropdownParent: $('#modalCalendarioGeneral'), width: '100%' });
+    });
+
+    $('#calFilterPei, #calFilterResp').on('change', function() {
+        if (calInitialized) {
+            $('#fullcalendarGeneral').fullCalendar('refetchEvents');
+        }
+    });
+
+    $('#btnCrearDesdeCalendario').on('click', function() {
+        $('#modalCalendarioGeneral').modal('hide');
+        setTimeout(function() {
+            $('#btnCrearEventoModal').click();
+        }, 350);
+    });
+
+    // ── GESTIÓN DE EVENTOS (CREAR / EDITAR) ────────────────────
     $('#btnCrearEventoModal').on('click', function() {
         $('#formEvento')[0].reset();
         $('#eventoId').val('');
@@ -349,10 +574,12 @@ $(function() {
         $('#modalEventoForm').modal('show');
     });
 
-    // Auto abrir si viene ?action=create
+    // Auto abrir si viene ?action=create o ?action=calendario
     var urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('action') === 'create') {
         $('#btnCrearEventoModal').click();
+    } else if (urlParams.get('action') === 'calendario') {
+        $('#btnAbrirCalendarioModal').click();
     }
 
     // Abrir modal para Editar
@@ -397,6 +624,7 @@ $(function() {
             success: function(resp) {
                 $('#modalEventoForm').modal('hide');
                 tablaEventos.ajax.reload();
+                if (calInitialized) $('#fullcalendarGeneral').fullCalendar('refetchEvents');
                 Swal.fire({
                     toast: true,
                     position: 'top-end',
@@ -444,6 +672,7 @@ $(function() {
                     type: 'DELETE',
                     success: function(resp) {
                         tablaEventos.ajax.reload();
+                        if (calInitialized) $('#fullcalendarGeneral').fullCalendar('refetchEvents');
                         Swal.fire({
                             toast: true,
                             position: 'top-end',

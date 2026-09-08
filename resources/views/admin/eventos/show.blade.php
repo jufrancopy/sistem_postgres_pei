@@ -1,6 +1,36 @@
 @extends('layouts.master')
 @section('title', $evento->nombre)
 
+@section('css')
+<link rel="stylesheet" href="{{ asset('material/css/plugins/fullcalendar.min.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.css">
+<style>
+.fc-toolbar {
+    margin-bottom: 1.25rem !important;
+}
+.fc-toolbar h2 {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    color: #1a202c !important;
+    text-transform: capitalize !important;
+}
+.fc-button {
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+    padding: 0.4rem 0.8rem !important;
+    background: #fff !important;
+    color: #4a5568 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+.fc-button.fc-state-active {
+    background: #00bcd4 !important;
+    color: #fff !important;
+    border-color: #00bcd4 !important;
+}
+</style>
+@endsection
+
 @section('content')
 <div class="card">
     {{-- Header Estándar de la Plataforma --}}
@@ -13,9 +43,9 @@
             <a href="{{ route('eventos.index') }}" class="btn btn-warning btn-sm font-weight-bold mr-2">
                 <i class="fa fa-arrow-left mr-1"></i> Volver a Eventos
             </a>
-            <a href="{{ route('eventos.edit', $evento->id) }}" class="btn btn-primary btn-sm font-weight-bold">
+            <button type="button" class="btn btn-primary btn-sm font-weight-bold" id="btnEditarEventoPrincipal">
                 <i class="fa fa-edit mr-1"></i> Editar Evento
-            </a>
+            </button>
         </div>
     </div>
 
@@ -525,6 +555,11 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('material/js/plugins/moment.min.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="{{ asset('material/js/plugins/fullcalendar.min.js') }}"></script>
+<script src="{{ asset('material/js/plugins/locale/es.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/locale/es.js"></script>
 <script>
 $(function() {
     $('.select2').select2();

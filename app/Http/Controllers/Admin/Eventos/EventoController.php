@@ -169,15 +169,11 @@ class EventoController extends Controller
     }
 
     /**
-     * Calendario Ejecutivo Global
+     * Calendario Ejecutivo Global (Redirige a Modal In-Situ en Index)
      */
     public function calendario(Request $request)
     {
-        $peiPerfiles = PeiProfile::whereNull('parent_id')->where('level', 'master')->where('is_active', true)->get();
-        $usuarios = User::orderBy('name')->get(['id', 'name']);
-        $selectedPeiId = $request->get('pei_profile_id');
-
-        return view('admin.eventos.calendario', compact('peiPerfiles', 'usuarios', 'selectedPeiId'));
+        return redirect()->route('eventos.index', array_merge($request->query(), ['action' => 'calendario']));
     }
 
     /**
