@@ -96,8 +96,20 @@
     {{-- Header Estándar de la Plataforma --}}
     <div class="card-header card-header-info d-flex flex-wrap align-items-center justify-content-between">
         <div>
-            <h4 class="card-title font-weight-bold">Módulo de Gestión de Eventos Institucionales & Hitos</h4>
-            <p class="card-category">Planificación por Fases, Asignación de Responsables, Checklist Operativo y Calendario</p>
+            <h4 class="card-title font-weight-bold">
+                @if(isset($selectedPei) && $selectedPei)
+                    Eventos & Hitos: {{ strip_tags($selectedPei->name) }}
+                @else
+                    Módulo de Gestión de Eventos Institucionales & Hitos
+                @endif
+            </h4>
+            <p class="card-category">
+                @if(isset($selectedPei) && $selectedPei)
+                    Talleres, Jornadas de Socialización y Cronograma Operativo del Plan Estratégico
+                @else
+                    Planificación por Fases, Asignación de Responsables, Checklist Operativo y Calendario
+                @endif
+            </p>
         </div>
         <div>
             <button type="button" class="btn btn-info btn-sm font-weight-bold mr-2" id="btnAbrirCalendarioModal">
@@ -113,7 +125,12 @@
     <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4 mx-3 mt-3">
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Eventos Institucionales</li>
+            @if(isset($selectedPei) && $selectedPei)
+                <li class="breadcrumb-item"><a href="{{ route('pei-profiles.show', $selectedPei->id) }}">PEI: {{ strip_tags($selectedPei->name) }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Eventos & Jornadas</li>
+            @else
+                <li class="breadcrumb-item active" aria-current="page">Eventos Institucionales</li>
+            @endif
         </ol>
     </nav>
 
@@ -186,17 +203,29 @@
                     {{-- Barra de Filtros --}}
                     <div class="card-header bg-white py-3 px-4 border-bottom">
                         <div class="row align-items-center">
-                            <div class="col-md-4 mb-2 mb-md-0">
-                                <label class="font-weight-bold text-muted small text-uppercase mb-1">Filtrar por Plan PEI</label>
-                                <select id="filtroPei" class="form-control select2" style="width:100%;">
-                                    <option value="">-- Todos los Planes PEI --</option>
-                                    @foreach($peiPerfiles as $pei)
-                                        <option value="{{ $pei->id }}" {{ $selectedPeiId == $pei->id ? 'selected' : '' }}>
-                                            {{ strip_tags($pei->name) }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            @if(isset($selectedPei) && $selectedPei)
+                                <div class="col-md-4 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-muted small text-uppercase mb-1">Plan PEI Activo</label>
+                                    <div class="p-2 rounded bg-light border d-flex align-items-center" style="min-height:38px;">
+                                        <i class="fa fa-bullseye text-primary mr-2"></i>
+                                        <span class="text-dark font-weight-bold text-truncate" style="font-size:0.85rem;" title="{{ strip_tags($selectedPei->name) }}">{{ strip_tags($selectedPei->name) }}</span>
+                                        <span class="badge badge-info ml-auto px-2 py-1" style="font-size:0.68rem;"><i class="fa fa-lock mr-1"></i>Fijo</span>
+                                    </div>
+                                    <input type="hidden" id="filtroPei" value="{{ $selectedPei->id }}">
+                                </div>
+                            @else
+                                <div class="col-md-4 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-muted small text-uppercase mb-1">Filtrar por Plan PEI</label>
+                                    <select id="filtroPei" class="form-control select2" style="width:100%;">
+                                        <option value="">-- Todos los Planes PEI --</option>
+                                        @foreach($peiPerfiles as $pei)
+                                            <option value="{{ $pei->id }}" {{ $selectedPeiId == $pei->id ? 'selected' : '' }}>
+                                                {{ strip_tags($pei->name) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
                             <div class="col-md-3 mb-2 mb-md-0">
                                 <label class="font-weight-bold text-muted small text-uppercase mb-1">Filtrar por Estado</label>
                                 <select id="filtroEstado" class="form-control select2" style="width:100%;">
@@ -279,17 +308,28 @@
             {{-- Barra de Filtros del Calendario y Leyenda --}}
             <div class="p-3 border-bottom" style="background: #f1f5f9;">
                 <div class="row align-items-center">
-                    <div class="col-md-4 mb-2 mb-md-0">
-                        <label class="font-weight-bold text-dark small text-uppercase mb-1">Filtrar por Plan PEI</label>
-                        <select id="calFilterPei" class="form-control select2Cal" style="width:100%;">
-                            <option value="">-- Todos los Planes PEI --</option>
-                            @foreach($peiPerfiles as $pei)
-                                <option value="{{ $pei->id }}" {{ $selectedPeiId == $pei->id ? 'selected' : '' }}>
-                                    {{ strip_tags($pei->name) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                    @if(isset($selectedPei) && $selectedPei)
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <label class="font-weight-bold text-dark small text-uppercase mb-1">Plan PEI Activo</label>
+                            <div class="p-2 rounded bg-white border d-flex align-items-center" style="min-height:38px;">
+                                <i class="fa fa-bullseye text-primary mr-2"></i>
+                                <span class="text-dark font-weight-bold text-truncate" style="font-size:0.85rem;" title="{{ strip_tags($selectedPei->name) }}">{{ strip_tags($selectedPei->name) }}</span>
+                            </div>
+                            <input type="hidden" id="calFilterPei" value="{{ $selectedPei->id }}">
+                        </div>
+                    @else
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <label class="font-weight-bold text-dark small text-uppercase mb-1">Filtrar por Plan PEI</label>
+                            <select id="calFilterPei" class="form-control select2Cal" style="width:100%;">
+                                <option value="">-- Todos los Planes PEI --</option>
+                                @foreach($peiPerfiles as $pei)
+                                    <option value="{{ $pei->id }}" {{ $selectedPeiId == $pei->id ? 'selected' : '' }}>
+                                        {{ strip_tags($pei->name) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
                     <div class="col-md-4 mb-2 mb-md-0">
                         <label class="font-weight-bold text-dark small text-uppercase mb-1">Filtrar por Responsable</label>
                         <select id="calFilterResp" class="form-control select2Cal" style="width:100%;">
@@ -360,17 +400,32 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 form-group mb-3">
-                            <label class="font-weight-bold text-dark mb-1">Plan PEI Vinculado</label>
-                            <select class="form-control select2InModal" id="eventoPeiId" name="pei_profile_id" style="width:100%;">
-                                <option value="">-- Ninguno / Institucional General --</option>
-                                @foreach($peiPerfiles as $pei)
-                                    <option value="{{ $pei->id }}" {{ (isset($selectedPeiId) && $selectedPeiId == $pei->id) ? 'selected' : '' }}>
-                                        {{ strip_tags($pei->name) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        @if(isset($selectedPei) && $selectedPei)
+                            <div class="col-md-6 form-group mb-3">
+                                <label class="font-weight-bold text-dark mb-1">Plan Estratégico Asociado</label>
+                                <div class="p-2.5 rounded border d-flex align-items-center" style="background:#f0f9ff; border-color:#bae6fd !important; min-height: 42px;">
+                                    <i class="fa fa-bullseye text-primary mr-2"></i>
+                                    <div class="text-truncate mr-2">
+                                        <strong class="text-dark d-block" style="font-size:0.85rem;" title="{{ strip_tags($selectedPei->name) }}">{{ strip_tags($selectedPei->name) }}</strong>
+                                        <small class="text-info font-weight-bold" style="font-size:0.7rem;"><i class="fa fa-link mr-1"></i>Vinculado automáticamente al Plan</small>
+                                    </div>
+                                    <span class="badge badge-info ml-auto px-2 py-1" style="font-size:0.68rem;"><i class="fa fa-lock mr-1"></i>PEI Activo</span>
+                                </div>
+                                <input type="hidden" id="eventoPeiId" name="pei_profile_id" value="{{ $selectedPei->id }}">
+                            </div>
+                        @else
+                            <div class="col-md-6 form-group mb-3">
+                                <label class="font-weight-bold text-dark mb-1">Plan PEI Vinculado (Opcional)</label>
+                                <select class="form-control select2InModal" id="eventoPeiId" name="pei_profile_id" style="width:100%;">
+                                    <option value="">-- Ninguno / Institucional General --</option>
+                                    @foreach($peiPerfiles as $pei)
+                                        <option value="{{ $pei->id }}" {{ (isset($selectedPeiId) && $selectedPeiId == $pei->id) ? 'selected' : '' }}>
+                                            {{ strip_tags($pei->name) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                         <div class="col-md-6 form-group mb-3">
                             <label class="font-weight-bold text-dark mb-1">Lugar / Sede</label>
                             <input type="text" class="form-control" id="eventoLugarSede" name="lugar_sede" placeholder="Ej: Centro de Eventos Ykua Satí / Auditorio Central">

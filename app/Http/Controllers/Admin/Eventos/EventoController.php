@@ -103,14 +103,23 @@ class EventoController extends Controller
                 ->make(true);
         }
 
-        // Métricas KPI
-        $kpiTotalEventos   = Evento::count();
-        $kpiEventosEnCurso = Evento::where('estado', 'en_curso')->count();
-        $kpiTareasPend     = EventoTarea::where('completada', false)->count();
-        $kpiTareasVencidas = EventoTarea::where('completada', false)->whereNotNull('fecha_limite')->where('fecha_limite', '<', Carbon::today())->count();
+        $selectedPeiId = $request->get('pei_profile_id')
+            ?: (session('selected_pei_id')
+            ?: \App\Models\HomeConfiguration::first()?->pei_profile_id);
+
+        $selectedPei = $selectedPeiId ? PeiProfile::find($selectedPeiId) : null;
+        if ($selectedPei) {
+            $selectedPeiId = $selectedPei->id;
+        }
+
+        // Métricas KPI (adaptadas al contexto del PEI si está seleccionado)
+        $kpiTotalEventos   = Evento::when($selectedPeiId, fn($q) => $q->where('pei_profile_id', $selectedPeiId))->count();
+        $kpiEventosEnCurso = Evento::when($selectedPeiId, fn($q) => $q->where('pei_profile_id', $selectedPeiId))->where('estado', 'en_curso')->count();
+        $kpiTareasPend     = EventoTarea::when($selectedPeiId, fn($q) => $q->whereHas('evento', fn($e) => $e->where('pei_profile_id', $selectedPeiId)))->where('completada', false)->count();
+        $kpiTareasVencidas = EventoTarea::when($selectedPeiId, fn($q) => $q->whereHas('evento', fn($e) => $e->where('pei_profile_id', $selectedPeiId)))->where('completada', false)->whereNotNull('fecha_limite')->where('fecha_limite', '<', Carbon::today())->count();
         
-        $totalTareasAll    = EventoTarea::count();
-        $totalCompletadas  = EventoTarea::where('completada', true)->count();
+        $totalTareasAll    = EventoTarea::when($selectedPeiId, fn($q) => $q->whereHas('evento', fn($e) => $e->where('pei_profile_id', $selectedPeiId)))->count();
+        $totalCompletadas  = EventoTarea::when($selectedPeiId, fn($q) => $q->whereHas('evento', fn($e) => $e->where('pei_profile_id', $selectedPeiId)))->where('completada', true)->count();
         $kpiAvanceGlobal   = $totalTareasAll > 0 ? (int) round(($totalCompletadas / $totalTareasAll) * 100) : 0;
 
         // Catálogos para selectores
@@ -123,8 +132,6 @@ class EventoController extends Controller
         $organigramas = Organigrama::orderBy('dependency')->select('id', 'dependency as name')->get();
         $actividades = Activity::latest()->take(50)->get(['id', 'name']);
 
-        $selectedPeiId = $request->get('pei_profile_id');
-
         return view('admin.eventos.index', compact(
             'kpiTotalEventos',
             'kpiEventosEnCurso',
@@ -135,7 +142,8 @@ class EventoController extends Controller
             'peiPerfiles',
             'organigramas',
             'actividades',
-            'selectedPeiId'
+            'selectedPeiId',
+            'selectedPei'
         ));
     }
 

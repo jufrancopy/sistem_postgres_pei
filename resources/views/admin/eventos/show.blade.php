@@ -120,88 +120,86 @@
 
     <div class="card-body px-3">
         {{-- Hero Header Ejecutivo con Alto Contraste --}}
-        <div class="card border-0 shadow-sm text-white mb-4" style="border-radius:18px; overflow:hidden; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
-            <div class="card-body p-4 p-md-5">
-                <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap:12px;">
-                    <div style="max-width: 75%;">
-                        <div class="d-flex align-items-center mb-2 flex-wrap" style="gap:8px;">
-                            <span class="badge badge-light text-dark font-weight-bold px-2.5 py-1" style="font-size:0.75rem; border-radius:6px;">
-                                <i class="fa fa-tag mr-1 text-primary"></i>{{ $evento->tipo }}
-                            </span>
-                            {!! $evento->estado_badge_html !!}
-                            @if($evento->peiProfile)
-                                <a href="{{ route('pei-profiles.show', $evento->peiProfile->id) }}" class="badge badge-warning text-dark font-weight-bold px-2.5 py-1 text-decoration-none" style="font-size:0.75rem; border-radius:6px;" title="Ver Plan PEI">
-                                    <i class="fa fa-bullseye mr-1"></i>{{ \Illuminate\Support\Str::limit(strip_tags($evento->peiProfile->name), 40) }}
-                                </a>
-                            @endif
-                        </div>
-                        <h2 class="font-weight-bold mb-2 text-white" style="letter-spacing:-0.02em; font-size:1.85rem; line-height: 1.3;">
-                            {{ $evento->nombre }}
-                        </h2>
-                        <div class="d-flex align-items-center flex-wrap mt-2 text-light" style="gap:16px; font-size:0.88rem;">
-                            <span><i class="fa fa-calendar-alt text-warning mr-1"></i>{{ $evento->rango_fechas_formateado }}</span>
-                            @if($evento->lugar_sede)
-                                <span><i class="fa fa-map-marker-alt text-danger mr-1"></i>{{ $evento->lugar_sede }}</span>
-                            @endif
-                            @if($evento->dias_restantes !== null)
-                                @if($evento->dias_restantes > 0)
-                                    <span class="badge badge-light text-dark font-weight-bold"><i class="fa fa-hourglass-start mr-1 text-info"></i>Faltan {{ $evento->dias_restantes }} días</span>
-                                @elseif($evento->dias_restantes === 0)
-                                    <span class="badge badge-warning text-dark font-weight-bold"><i class="fa fa-flag-checkered mr-1"></i>¡Finaliza hoy!</span>
-                                @else
-                                    <span class="badge badge-secondary"><i class="fa fa-clock mr-1"></i>Finalizó hace {{ abs($evento->dias_restantes) }} días</span>
-                                @endif
-                            @endif
-                        </div>
+        <div class="border-0 shadow-lg text-white mb-4 hero-evento-banner" style="border-radius:18px; overflow:hidden; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important; color: #ffffff !important; padding: 2rem 2.5rem;">
+            <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap:12px;">
+                <div style="max-width: 75%;">
+                    <div class="d-flex align-items-center mb-2 flex-wrap" style="gap:8px;">
+                        <span class="badge badge-light text-dark font-weight-bold px-2.5 py-1" style="font-size:0.75rem; border-radius:6px; background:#ffffff !important; color:#0f172a !important;">
+                            <i class="fa fa-tag mr-1 text-primary"></i>{{ $evento->tipo }}
+                        </span>
+                        {!! $evento->estado_badge_html !!}
+                        @if($evento->peiProfile)
+                            <a href="{{ route('pei-profiles.show', $evento->peiProfile->id) }}" class="badge badge-warning font-weight-bold px-2.5 py-1 text-decoration-none" style="font-size:0.75rem; border-radius:6px; background:#f59e0b !important; color:#000000 !important;" title="Ver Plan PEI">
+                                <i class="fa fa-bullseye mr-1"></i>{{ \Illuminate\Support\Str::limit(strip_tags($evento->peiProfile->name), 40) }}
+                            </a>
+                        @endif
                     </div>
-                    <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
-                        <a href="{{ route('eventos.index') }}" class="btn btn-outline-light btn-sm font-weight-bold px-3 shadow-sm" style="border-radius:8px;">
-                            <i class="fa fa-arrow-left mr-1"></i> Volver
-                        </a>
-                        <button type="button" class="btn btn-warning text-dark font-weight-bold btn-sm px-3 shadow-sm" id="btnEditarEventoHub" style="border-radius:8px;">
-                            <i class="fa fa-pencil-alt mr-1"></i> Editar Evento
-                        </button>
-                        <button type="button" class="btn btn-success btn-sm font-weight-bold px-3 shadow-sm" id="btnNuevoPasoModal" style="border-radius:8px;">
-                            <i class="fa fa-plus mr-1"></i> Agregar Paso / Hito
-                        </button>
+                    <h2 class="font-weight-bold mb-2 text-white" style="letter-spacing:-0.02em; font-size:1.85rem; line-height: 1.3; color:#ffffff !important;">
+                        {{ $evento->nombre }}
+                    </h2>
+                    <div class="d-flex align-items-center flex-wrap mt-2" style="gap:16px; font-size:0.88rem; color:#cbd5e1 !important;">
+                        <span style="color:#cbd5e1 !important;"><i class="fa fa-calendar-alt text-warning mr-1"></i>{{ $evento->rango_fechas_formateado }}</span>
+                        @if($evento->lugar_sede)
+                            <span style="color:#cbd5e1 !important;"><i class="fa fa-map-marker-alt text-danger mr-1"></i>{{ $evento->lugar_sede }}</span>
+                        @endif
+                        @if($evento->dias_restantes !== null)
+                            @if($evento->dias_restantes > 0)
+                                <span class="badge badge-light text-dark font-weight-bold" style="background:#ffffff !important; color:#0f172a !important;"><i class="fa fa-hourglass-start mr-1 text-info"></i>Faltan {{ $evento->dias_restantes }} días</span>
+                            @elseif($evento->dias_restantes === 0)
+                                <span class="badge badge-warning text-dark font-weight-bold" style="background:#f59e0b !important; color:#000000 !important;"><i class="fa fa-flag-checkered mr-1"></i>¡Finaliza hoy!</span>
+                            @else
+                                <span class="badge badge-secondary" style="background:#475569 !important; color:#ffffff !important;"><i class="fa fa-clock mr-1"></i>Finalizó hace {{ abs($evento->dias_restantes) }} días</span>
+                            @endif
+                        @endif
                     </div>
                 </div>
+                <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                    <a href="{{ route('eventos.index') }}" class="btn btn-outline-light btn-sm font-weight-bold px-3 shadow-sm" style="border-radius:8px; border-color: rgba(255,255,255,0.4) !important; color:#ffffff !important;">
+                        <i class="fa fa-arrow-left mr-1"></i> Volver
+                    </a>
+                    <button type="button" class="btn btn-warning text-dark font-weight-bold btn-sm px-3 shadow-sm" id="btnEditarEventoHub" style="border-radius:8px; background:#f59e0b !important; border:none !important;">
+                        <i class="fa fa-pencil-alt mr-1"></i> Editar Evento
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm font-weight-bold px-3 shadow-sm" id="btnNuevoPasoModal" style="border-radius:8px; background:#10b981 !important; border:none !important;">
+                        <i class="fa fa-plus mr-1"></i> Agregar Paso / Hito
+                    </button>
+                </div>
+            </div>
 
-                {{-- Barra de Progreso Global del Evento --}}
-                <div class="mt-4 pt-3 border-top" style="border-color: rgba(255,255,255,0.2) !important;">
-                    <div class="d-flex align-items-center justify-content-between mb-1" style="font-size:0.85rem;">
-                        <span class="font-weight-bold text-white"><i class="fa fa-chart-line mr-1 text-warning"></i>Avance Global del Evento: <span id="eventoAvancePctTexto">{{ $evento->porcentaje_avance }}%</span></span>
-                        <span class="text-light" id="eventoTareasConteoTexto">{{ $evento->tareas_completadas }} de {{ $evento->total_tareas }} tareas completadas</span>
-                    </div>
-                    <div class="progress" style="height: 10px; border-radius: 6px; background: rgba(255,255,255,0.2);">
-                        <div class="progress-bar bg-warning" id="eventoAvanceBar" role="progressbar" style="width: {{ $evento->porcentaje_avance }}%; border-radius: 6px; transition: width .4s ease;"></div>
-                    </div>
+            {{-- Barra de Progreso Global del Evento --}}
+            <div class="mt-4 pt-3 border-top" style="border-color: rgba(255,255,255,0.2) !important;">
+                <div class="d-flex align-items-center justify-content-between mb-1" style="font-size:0.85rem;">
+                    <span class="font-weight-bold text-white" style="color:#ffffff !important;"><i class="fa fa-chart-line mr-1 text-warning"></i>Avance Global del Evento: <span id="eventoAvancePctTexto">{{ $evento->porcentaje_avance }}%</span></span>
+                    <span style="color:#cbd5e1 !important;" id="eventoTareasConteoTexto">{{ $evento->tareas_completadas }} de {{ $evento->total_tareas }} tareas completadas</span>
+                </div>
+                <div class="progress" style="height: 10px; border-radius: 6px; background: rgba(255,255,255,0.2);">
+                    <div class="progress-bar bg-warning" id="eventoAvanceBar" role="progressbar" style="width: {{ $evento->porcentaje_avance }}%; border-radius: 6px; transition: width .4s ease;"></div>
                 </div>
             </div>
         </div>
 
         {{-- Alertas Diarias del Evento (Si existen tareas vencidas o próximas) --}}
         @if($tareasVencidas->isNotEmpty() || $tareasProximas->isNotEmpty())
-        <div class="alert border-0 shadow-sm mb-4 d-flex align-items-start" style="border-radius:12px; background:#fef3c7; border-left:5px solid #d97706 !important; color:#78350f;">
-            <div class="mr-3 mt-1"><i class="fa fa-bell fa-2x text-warning"></i></div>
+        <div class="alert border-0 shadow-sm mb-4 d-flex align-items-start alert-evento-aviso" style="border-radius:12px; background:#fef3c7 !important; border-left:5px solid #d97706 !important; color:#78350f !important; padding: 1rem 1.25rem;">
+            <div class="mr-3 mt-1"><i class="fa fa-bell fa-2x text-warning" style="color:#d97706 !important;"></i></div>
             <div class="flex-grow-1">
-                <h6 class="font-weight-bold mb-1" style="color:#92400e;">
+                <h6 class="font-weight-bold mb-1" style="color:#92400e !important; font-size:0.95rem;">
                     <i class="fa fa-exclamation-triangle mr-1"></i>Recordatorios Diarios & Alertas de Vencimiento
                 </h6>
-                <div class="small">
+                <div class="small" style="color:#78350f !important;">
                     @if($tareasVencidas->isNotEmpty())
-                        <div class="text-danger font-weight-bold mb-1">
-                            <i class="fa fa-times-circle mr-1"></i>{{ $tareasVencidas->count() }} tarea(s) vencida(s):
+                        <div class="font-weight-bold mb-1" style="color:#b91c1c !important;">
+                            <i class="fa fa-times-circle mr-1 text-danger"></i>{{ $tareasVencidas->count() }} tarea(s) vencida(s):
                             @foreach($tareasVencidas->take(3) as $tv)
-                                <span class="badge badge-danger mr-1">{{ $tv->nombre }} ({{ $tv->responsable ? $tv->responsable->name : 'Sin asignar' }})</span>
+                                <span class="badge badge-danger mr-1" style="background-color:#ef4444 !important; color:#ffffff !important;">{{ $tv->nombre }} ({{ $tv->responsable ? $tv->responsable->name : 'Sin asignar' }})</span>
                             @endforeach
                         </div>
                     @endif
                     @if($tareasProximas->isNotEmpty())
-                        <div class="text-dark font-weight-bold">
-                            <i class="fa fa-clock text-warning mr-1"></i>{{ $tareasProximas->count() }} tarea(s) próxima(s) a vencer en los próximos 3 días:
+                        <div class="font-weight-bold" style="color:#92400e !important;">
+                            <i class="fa fa-clock text-warning mr-1" style="color:#d97706 !important;"></i>{{ $tareasProximas->count() }} tarea(s) próxima(s) a vencer en los próximos 3 días:
                             @foreach($tareasProximas->take(3) as $tp)
-                                <span class="badge badge-warning text-dark mr-1">{{ $tp->nombre }} (Vence: {{ \Carbon\Carbon::parse($tp->fecha_limite)->format('d/m') }})</span>
+                                <span class="badge badge-warning mr-1" style="background-color:#fbbf24 !important; color:#1e293b !important;">{{ $tp->nombre }} (Vence: {{ \Carbon\Carbon::parse($tp->fecha_limite)->format('d/m') }})</span>
                             @endforeach
                         </div>
                     @endif
@@ -496,17 +494,32 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 form-group mb-3">
-                            <label class="font-weight-bold text-dark mb-1">Plan PEI Vinculado</label>
-                            <select class="form-control select2InModalShow" name="pei_profile_id" style="width:100%;">
-                                <option value="">-- Ninguno / Institucional General --</option>
-                                @foreach($peiPerfiles as $pei)
-                                    <option value="{{ $pei->id }}" {{ $evento->pei_profile_id == $pei->id ? 'selected' : '' }}>
-                                        {{ strip_tags($pei->name) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        @if($evento->peiProfile)
+                            <div class="col-md-6 form-group mb-3">
+                                <label class="font-weight-bold text-dark mb-1">Plan Estratégico Asociado</label>
+                                <div class="p-2 rounded border d-flex align-items-center" style="background:#f0f9ff; border-color:#bae6fd !important; min-height: 42px; border-radius: 8px;">
+                                    <i class="fa fa-bullseye text-primary mr-2 fa-lg"></i>
+                                    <div class="text-truncate mr-2">
+                                        <strong class="text-dark d-block" style="font-size:0.85rem;" title="{{ strip_tags($evento->peiProfile->name) }}">{{ strip_tags($evento->peiProfile->name) }}</strong>
+                                        <small class="text-info font-weight-bold" style="font-size:0.7rem;"><i class="fa fa-lock mr-1"></i>Bloqueado al Plan Estratégico</small>
+                                    </div>
+                                    <span class="badge badge-primary ml-auto px-2 py-1" style="font-size:0.68rem;">PEI Activo</span>
+                                </div>
+                                <input type="hidden" name="pei_profile_id" value="{{ $evento->pei_profile_id }}">
+                            </div>
+                        @else
+                            <div class="col-md-6 form-group mb-3">
+                                <label class="font-weight-bold text-dark mb-1">Plan PEI Vinculado (Opcional)</label>
+                                <select class="form-control select2InModalShow" name="pei_profile_id" style="width:100%;">
+                                    <option value="">-- Ninguno / Institucional General --</option>
+                                    @foreach($peiPerfiles as $pei)
+                                        <option value="{{ $pei->id }}" {{ $evento->pei_profile_id == $pei->id ? 'selected' : '' }}>
+                                            {{ strip_tags($pei->name) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                         <div class="col-md-6 form-group mb-3">
                             <label class="font-weight-bold text-dark mb-1">Lugar / Sede</label>
                             <input type="text" class="form-control" name="lugar_sede" value="{{ $evento->lugar_sede }}" placeholder="Ej: Centro de Eventos Ykua Satí">
