@@ -112,13 +112,13 @@ class EventoController extends Controller
         $kpiAvanceGlobal   = $totalTareasAll > 0 ? (int) round(($totalCompletadas / $totalTareasAll) * 100) : 0;
 
         // Catálogos para selectores
-        $usuarios = User::where('status', true)->orderBy('name')->get(['id', 'name', 'email']);
+        $usuarios = User::orderBy('name')->get(['id', 'name', 'email']);
         $peiPerfiles = PeiProfile::whereNull('parent_id')
             ->where('level', 'master')
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
-        $organigramas = Organigrama::orderBy('name')->get(['id', 'name']);
+        $organigramas = Organigrama::orderBy('dependency')->select('id', 'dependency as name')->get();
         $actividades = Activity::latest()->take(50)->get(['id', 'name']);
 
         $selectedPeiId = $request->get('pei_profile_id');
@@ -158,7 +158,7 @@ class EventoController extends Controller
             },
         ])->findOrFail($id);
 
-        $usuarios = User::where('status', true)->orderBy('name')->get(['id', 'name', 'email']);
+        $usuarios = User::orderBy('name')->get(['id', 'name', 'email']);
         $peiPerfiles = PeiProfile::whereNull('parent_id')->where('level', 'master')->where('is_active', true)->get();
 
         // Alertas específicas de este evento
@@ -174,7 +174,7 @@ class EventoController extends Controller
     public function calendario(Request $request)
     {
         $peiPerfiles = PeiProfile::whereNull('parent_id')->where('level', 'master')->where('is_active', true)->get();
-        $usuarios = User::where('status', true)->orderBy('name')->get(['id', 'name']);
+        $usuarios = User::orderBy('name')->get(['id', 'name']);
         $selectedPeiId = $request->get('pei_profile_id');
 
         return view('admin.eventos.calendario', compact('peiPerfiles', 'usuarios', 'selectedPeiId'));
@@ -289,6 +289,30 @@ class EventoController extends Controller
     }
 
     /**
+     * Formulario de Creación de Nuevo Evento
+     */
+    public function create(Request $request)
+    {
+        $usuarios = User::orderBy('name')->get(['id', 'name', 'email']);
+        $peiPerfiles = PeiProfile::whereNull('parent_id')
+            ->where('level', 'master')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+        $organigramas = Organigrama::orderBy('dependency')->select('id', 'dependency as name')->get();
+        $actividades = Activity::latest()->take(50)->get(['id', 'name']);
+        $selectedPeiId = $request->get('pei_profile_id');
+
+        return view('admin.eventos.create', compact(
+            'usuarios',
+            'peiPerfiles',
+            'organigramas',
+            'actividades',
+            'selectedPeiId'
+        ));
+    }
+
+    /**
      * Guardar nuevo Evento
      */
     public function store(Request $request)
@@ -324,21 +348,45 @@ class EventoController extends Controller
             $evento->responsables()->sync($request->responsables);
         }
 
-        return response()->json([
-            'success'  => true,
-            'message'  => 'Evento creado exitosamente.',
-            'evento'   => $evento,
-            'redirect' => route('eventos.show', $evento->id),
-        ]);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Evento creado exitosamente.',
+                'evento'   => $evento,
+                'redirect' => route('eventos.show', $evento->id),
+            ]);
+        }
+
+        return redirect()->route('eventos.show', $evento->id)->with('success', 'Evento institucional creado exitosamente.');
     }
 
     /**
      * Obtener datos para editar Evento
      */
-    public function edit($id)
+    public function edit($id, Request $request)
     {
-        $evento = Evento::with(['responsables'])->findOrFail($id);
-        return response()->json($evento);
+        $evento = Evento::with(['responsables', 'pasos.tareas'])->findOrFail($id);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json($evento);
+        }
+
+        $usuarios = User::orderBy('name')->get(['id', 'name', 'email']);
+        $peiPerfiles = PeiProfile::whereNull('parent_id')
+            ->where('level', 'master')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+        $organigramas = Organigrama::orderBy('dependency')->select('id', 'dependency as name')->get();
+        $actividades = Activity::latest()->take(50)->get(['id', 'name']);
+
+        return view('admin.eventos.edit', compact(
+            'evento',
+            'usuarios',
+            'peiPerfiles',
+            'organigramas',
+            'actividades'
+        ));
     }
 
     /**
@@ -375,11 +423,15 @@ class EventoController extends Controller
             $evento->responsables()->sync($request->responsables);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Evento actualizado correctamente.',
-            'evento'  => $evento,
-        ]);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Evento actualizado correctamente.',
+                'evento'  => $evento,
+            ]);
+        }
+
+        return redirect()->route('eventos.show', $evento->id)->with('success', 'Evento institucional actualizado correctamente.');
     }
 
     /**
