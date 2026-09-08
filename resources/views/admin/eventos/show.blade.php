@@ -1,8 +1,34 @@
-@extends('layouts.app', ['activePage' => 'eventos', 'titlePage' => $evento->nombre])
+@extends('layouts.master')
+@section('title', $evento->nombre)
 
 @section('content')
-<div class="content">
-    <div class="container-fluid">
+<div class="card">
+    {{-- Header Estándar de la Plataforma --}}
+    <div class="card-header card-header-info d-flex flex-wrap align-items-center justify-content-between">
+        <div>
+            <h4 class="card-title font-weight-bold">{{ $evento->nombre }}</h4>
+            <p class="card-category">Centro de Mando, Fases Cronológicas, Checklist Operativo y Calendario</p>
+        </div>
+        <div>
+            <a href="{{ route('eventos.index') }}" class="btn btn-warning btn-sm font-weight-bold mr-2">
+                <i class="fa fa-arrow-left mr-1"></i> Volver a Eventos
+            </a>
+            <a href="{{ route('eventos.edit', $evento->id) }}" class="btn btn-primary btn-sm font-weight-bold">
+                <i class="fa fa-edit mr-1"></i> Editar Evento
+            </a>
+        </div>
+    </div>
+
+    {{-- Breadcrumbs Estándar --}}
+    <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4 mx-3 mt-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('eventos.index') }}">Eventos Institucionales</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ \Illuminate\Support\Str::limit($evento->nombre, 35) }}</li>
+        </ol>
+    </nav>
+
+    <div class="card-body px-3">
         {{-- Hero Header Ejecutivo --}}
         <div class="card border-0 shadow-sm text-white mb-4" style="border-radius:18px; overflow:hidden; background: linear-gradient(135deg, {{ $evento->color ?: '#4f46e5' }} 0%, #1e1b4b 100%);">
             <div class="card-body p-4 p-md-5">

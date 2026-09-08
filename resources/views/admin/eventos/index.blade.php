@@ -1,27 +1,33 @@
-@extends('layouts.app', ['activePage' => 'eventos', 'titlePage' => __('Gestión de Eventos Institucionales & Hitos')])
+@extends('layouts.master')
+@section('title', 'Gestión de Eventos Institucionales & Hitos')
 
 @section('content')
-<div class="content">
-    <div class="container-fluid">
-        {{-- Header & Breadcrumbs --}}
-        <div class="row mb-3">
-            <div class="col-md-12 d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
-                <div>
-                    <h3 class="font-weight-bold mb-0 text-dark" style="letter-spacing: -0.02em;">
-                        <i class="fa fa-calendar-check text-primary mr-2"></i>Eventos Institucionales & Hitos PEI
-                    </h3>
-                    <p class="text-muted small mb-0">Planificación por Fases, Asignación de Responsables, Checklist Operativo y Calendario de Gestión.</p>
-                </div>
-                <div class="d-flex align-items-center" style="gap:8px;">
-                    <a href="{{ route('eventos.calendario') }}" class="btn btn-outline-primary btn-sm px-3 font-weight-bold shadow-sm" style="border-radius:8px;">
-                        <i class="fa fa-calendar-alt mr-1"></i> Ver Calendario General
-                    </a>
-                    <button type="button" class="btn btn-primary btn-sm px-3 font-weight-bold shadow-sm" id="btnCrearEventoModal" style="border-radius:8px;">
-                        <i class="fa fa-plus-circle mr-1"></i> Nuevo Evento
-                    </button>
-                </div>
-            </div>
+<div class="card">
+    {{-- Header Estándar de la Plataforma --}}
+    <div class="card-header card-header-info d-flex flex-wrap align-items-center justify-content-between">
+        <div>
+            <h4 class="card-title font-weight-bold">Módulo de Gestión de Eventos Institucionales & Hitos</h4>
+            <p class="card-category">Planificación por Fases, Asignación de Responsables, Checklist Operativo y Calendario</p>
         </div>
+        <div>
+            <a href="{{ route('eventos.calendario') }}" class="btn btn-warning btn-sm font-weight-bold mr-2">
+                <i class="fa fa-calendar-alt mr-1"></i> Calendario Integral
+            </a>
+            <a href="{{ route('eventos.create') }}" class="btn btn-success btn-sm font-weight-bold">
+                <i class="fa fa-plus mr-1"></i> + Nuevo Evento
+            </a>
+        </div>
+    </div>
+
+    {{-- Breadcrumbs Estándar --}}
+    <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4 mx-3 mt-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Eventos Institucionales</li>
+        </ol>
+    </nav>
+
+    <div class="card-body px-3">
 
         {{-- Tarjetas KPI --}}
         <div class="row mb-4">

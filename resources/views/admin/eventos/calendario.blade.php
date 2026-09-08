@@ -25,9 +25,9 @@
             border: 1px solid #e2e8f0 !important;
         }
         .fc-button.fc-state-active {
-            background: #4f46e5 !important;
+            background: #00bcd4 !important;
             color: #fff !important;
-            border-color: #4f46e5 !important;
+            border-color: #00bcd4 !important;
         }
         .fc-event {
             border-radius: 6px !important;
@@ -63,69 +63,71 @@
 @endsection
 
 @section('content')
-<div class="content">
-    <div class="container-fluid">
-        <!-- Header -->
-        <div class="row align-items-center mb-4">
-            <div class="col-md-7">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb bg-transparent p-0 mb-1">
-                        <li class="breadcrumb-item"><a href="{{ route('home') }}"><i class="fas fa-home"></i></a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('eventos.index') }}">Eventos Institucionales</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Calendario Integral</li>
-                    </ol>
-                </nav>
-                <h3 class="font-weight-bold mb-0 text-dark">
-                    <i class="fas fa-calendar-alt text-primary mr-2"></i> Calendario Ejecutivo de Eventos & Hitos
-                </h3>
-                <p class="text-muted mb-0">Visualización cronológica interactiva de eventos, fases de ejecución y vencimiento de tareas operativas.</p>
-            </div>
-            <div class="col-md-5 text-md-right mt-3 mt-md-0">
-                <a href="{{ route('eventos.index') }}" class="btn btn-outline-secondary btn-round">
-                    <i class="fas fa-list mr-1"></i> Vista Tabla
-                </a>
-                <a href="{{ route('eventos.create') }}" class="btn btn-primary btn-round shadow-sm">
-                    <i class="fas fa-plus mr-1"></i> Nuevo Evento
-                </a>
-            </div>
+<div class="card">
+    <!-- Header Estándar de la Plataforma -->
+    <div class="card-header card-header-info d-flex flex-wrap align-items-center justify-content-between">
+        <div>
+            <h4 class="card-title font-weight-bold">Calendario Ejecutivo de Eventos & Hitos</h4>
+            <p class="card-category">Visualización cronológica interactiva de eventos, fases de ejecución y vencimientos</p>
         </div>
+        <div>
+            <a href="{{ route('eventos.index') }}" class="btn btn-warning btn-sm font-weight-bold mr-2">
+                <i class="fa fa-list mr-1"></i> Vista Tabla
+            </a>
+            <a href="{{ route('eventos.create') }}" class="btn btn-success btn-sm font-weight-bold">
+                <i class="fa fa-plus mr-1"></i> + Nuevo Evento
+            </a>
+        </div>
+    </div>
 
+    <!-- Breadcrumb Estándar -->
+    <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4 mx-3 mt-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ route('planificacion-dashboard') }}">Planificación-Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('eventos.index') }}">Eventos Institucionales</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Calendario Ejecutivo</li>
+        </ol>
+    </nav>
+
+    <div class="card-body px-4 py-2">
         <!-- Filtros Rápidos y Leyenda -->
-        <div class="card border-0 shadow-sm mb-4">
+        <div class="card border mb-4" style="border-radius: 10px; background: #fafafa;">
             <div class="card-body p-3">
                 <div class="row align-items-center">
-                    <div class="col-lg-3 col-md-4 mb-2 mb-md-0">
-                        <label class="text-xs font-weight-bold text-muted text-uppercase mb-1 d-block">Filtrar por Plan PEI</label>
-                        <select id="filter_pei_id" class="form-control select2 select-picker" style="width: 100%;">
-                            <option value="">Todos los Planes PEI</option>
-                            @foreach($peis as $p)
-                                <option value="{{ $p->id }}" {{ request('pei_profile_id') == $p->id ? 'selected' : '' }}>{{ $p->nombre }} ({{ $p->periodo_texto }})</option>
+                    <div class="col-lg-4 col-md-5 mb-2 mb-md-0">
+                        <label class="font-weight-bold text-dark small text-uppercase mb-1 d-block">Filtrar por Plan PEI</label>
+                        <select id="filter_pei_id" class="form-control select2" style="width: 100%;">
+                            <option value="">-- Todos los Planes PEI --</option>
+                            @foreach($peiPerfiles ?? [] as $p)
+                                <option value="{{ $p->id }}" {{ (isset($selectedPeiId) && $selectedPeiId == $p->id) ? 'selected' : '' }}>
+                                    {{ $p->name ?? $p->nombre }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-3 col-md-4 mb-2 mb-md-0">
-                        <label class="text-xs font-weight-bold text-muted text-uppercase mb-1 d-block">Filtrar por Responsable</label>
+                    <div class="col-lg-4 col-md-4 mb-2 mb-md-0">
+                        <label class="font-weight-bold text-dark small text-uppercase mb-1 d-block">Filtrar por Responsable</label>
                         <select id="filter_user_id" class="form-control select2" style="width: 100%;">
-                            <option value="">Todos los Responsables</option>
-                            @foreach($users as $u)
+                            <option value="">-- Todos los Responsables --</option>
+                            @foreach($usuarios ?? [] as $u)
                                 <option value="{{ $u->id }}">{{ $u->name }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-6 col-md-4 text-md-right mt-3 mt-md-0">
-                        <label class="text-xs font-weight-bold text-muted text-uppercase mb-1 d-block">Convención de Colores</label>
+                    <div class="col-lg-4 col-md-3 text-md-right mt-3 mt-md-0">
+                        <label class="font-weight-bold text-dark small text-uppercase mb-1 d-block">Convención de Colores</label>
                         <div>
-                            <span class="filter-chip bg-light text-dark border">
-                                <span class="legend-indicator" style="background-color: #6366f1;"></span> Eventos
+                            <span class="filter-chip bg-white text-dark border">
+                                <span class="legend-indicator" style="background-color: #00bcd4;"></span> Eventos
                             </span>
-                            <span class="filter-chip bg-light text-dark border">
-                                <span class="legend-indicator" style="background-color: #3b82f6;"></span> Pasos / Fases
+                            <span class="filter-chip bg-white text-dark border">
+                                <span class="legend-indicator" style="background-color: #3b82f6;"></span> Fases
                             </span>
-                            <span class="filter-chip bg-light text-dark border">
-                                <span class="legend-indicator" style="background-color: #ef4444;"></span> Tareas Vencidas
+                            <span class="filter-chip bg-white text-dark border">
+                                <span class="legend-indicator" style="background-color: #ef4444;"></span> Vencidas
                             </span>
-                            <span class="filter-chip bg-light text-dark border">
-                                <span class="legend-indicator" style="background-color: #10b981;"></span> Tareas Completadas
+                            <span class="filter-chip bg-white text-dark border">
+                                <span class="legend-indicator" style="background-color: #10b981;"></span> Completadas
                             </span>
                         </div>
                     </div>
@@ -134,10 +136,8 @@
         </div>
 
         <!-- Calendario Principal -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-4">
-                <div id="fullCalendarExecutive"></div>
-            </div>
+        <div class="bg-white p-3 border rounded shadow-sm">
+            <div id="fullCalendarExecutive"></div>
         </div>
     </div>
 </div>
@@ -147,7 +147,7 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow">
             <div class="modal-header text-white" id="modalHeaderBg">
-                <h5 class="modal-title font-weight-bold" id="modalItemTitle">Detalle del Ítem</h5>
+                <h5 class="modal-title font-weight-bold text-white" id="modalItemTitle">Detalle del Ítem</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -157,33 +157,33 @@
                     <span id="modalItemBadge" class="badge"></span>
                     <span id="modalItemStatus" class="badge"></span>
                 </div>
-                <h6 class="font-weight-bold text-muted text-uppercase text-xs mb-1">Descripción / Detalle:</h6>
-                <p id="modalItemDescription" class="text-dark mb-3 text-sm"></p>
+                <h6 class="font-weight-bold text-muted text-uppercase small mb-1">Descripción / Detalle:</h6>
+                <p id="modalItemDescription" class="text-dark mb-3 small"></p>
 
                 <div class="row bg-light rounded p-2 mb-3">
                     <div class="col-6">
                         <small class="text-muted d-block"><i class="far fa-calendar-alt mr-1"></i> Fecha Inicio:</small>
-                        <strong id="modalItemStart" class="text-xs text-dark">-</strong>
+                        <strong id="modalItemStart" class="small text-dark">-</strong>
                     </div>
                     <div class="col-6">
                         <small class="text-muted d-block"><i class="far fa-calendar-check mr-1"></i> Fecha Límite / Fin:</small>
-                        <strong id="modalItemEnd" class="text-xs text-dark">-</strong>
+                        <strong id="modalItemEnd" class="small text-dark">-</strong>
                     </div>
                 </div>
 
                 <div id="modalResponsibleSection" class="mb-3 d-none">
                     <small class="text-muted d-block"><i class="fas fa-user-tag mr-1"></i> Responsable Asignado:</small>
-                    <span id="modalItemResponsible" class="font-weight-bold text-sm text-dark"></span>
+                    <span id="modalItemResponsible" class="font-weight-bold small text-dark"></span>
                 </div>
 
                 <div id="modalParentSection" class="mb-2 d-none">
                     <small class="text-muted d-block"><i class="fas fa-sitemap mr-1"></i> Evento / Paso Asociado:</small>
-                    <span id="modalItemParent" class="text-sm font-weight-bold text-primary"></span>
+                    <span id="modalItemParent" class="small font-weight-bold text-info"></span>
                 </div>
             </div>
             <div class="modal-footer bg-light p-3">
-                <button type="button" class="btn btn-secondary btn-sm btn-round" data-dismiss="modal">Cerrar</button>
-                <a id="modalItemActionBtn" href="#" class="btn btn-primary btn-sm btn-round">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cerrar</button>
+                <a id="modalItemActionBtn" href="#" class="btn btn-info btn-sm">
                     <i class="fas fa-external-link-alt mr-1"></i> Ir al Evento
                 </a>
             </div>
@@ -218,7 +218,7 @@ $(document).ready(function() {
         locale: 'es',
         defaultView: 'month',
         editable: false,
-        eventLimit: true, // allow "more" link when too many events
+        eventLimit: true,
         events: function(start, end, timezone, callback) {
             $.ajax({
                 url: "{{ route('eventos.feed') }}",
@@ -250,8 +250,7 @@ $(document).ready(function() {
             $('#modalItemStart').text(calEvent.start ? calEvent.start.format('DD/MM/YYYY') : '-');
             $('#modalItemEnd').text(calEvent.end ? calEvent.end.format('DD/MM/YYYY') : (calEvent.start ? calEvent.start.format('DD/MM/YYYY') : '-'));
             
-            // Header background by type
-            var headerBg = '#4f46e5';
+            var headerBg = '#00bcd4';
             if (tipo === 'tarea') {
                 headerBg = props.completada ? '#10b981' : (props.vencida ? '#ef4444' : '#f59e0b');
             } else if (tipo === 'paso') {
@@ -259,7 +258,6 @@ $(document).ready(function() {
             }
             $('#modalHeaderBg').css('background', headerBg);
             
-            // Badges
             $('#modalItemBadge').text(tipo.toUpperCase()).attr('class', 'badge badge-dark');
             if (props.estado) {
                 $('#modalItemStatus').text(props.estado.toUpperCase()).attr('class', 'badge badge-secondary ml-1');
@@ -267,7 +265,6 @@ $(document).ready(function() {
                 $('#modalItemStatus').text('').attr('class', 'd-none');
             }
 
-            // Responsable
             if (props.responsable) {
                 $('#modalItemResponsible').text(props.responsable);
                 $('#modalResponsibleSection').removeClass('d-none');
@@ -275,7 +272,6 @@ $(document).ready(function() {
                 $('#modalResponsibleSection').addClass('d-none');
             }
 
-            // Parent
             if (props.evento_nombre) {
                 $('#modalItemParent').text(props.evento_nombre + (props.paso_nombre ? ' → ' + props.paso_nombre : ''));
                 $('#modalParentSection').removeClass('d-none');
@@ -283,7 +279,6 @@ $(document).ready(function() {
                 $('#modalParentSection').addClass('d-none');
             }
 
-            // Action URL
             if (props.url_evento) {
                 $('#modalItemActionBtn').attr('href', props.url_evento).removeClass('d-none');
             } else {
