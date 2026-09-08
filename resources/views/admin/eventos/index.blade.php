@@ -68,6 +68,26 @@
     font-size: 0.8rem !important;
     text-transform: uppercase;
 }
+.btn-circle {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.8rem !important;
+    line-height: 1 !important;
+    margin: 1px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+.btn-circle i {
+    font-size: 0.82rem !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+}
 </style>
 @endsection
 

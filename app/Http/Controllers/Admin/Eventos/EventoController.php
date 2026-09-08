@@ -92,9 +92,11 @@ class EventoController extends Controller
                 })
                 ->addColumn('estado_html', fn(Evento $e) => $e->estado_badge_html)
                 ->addColumn('action', function (Evento $e) {
-                    $btn  = '<a href="' . route('eventos.show', $e->id) . '" class="btn btn-info btn-circle btn-sm shadow-sm" title="Centro de Mando del Evento"><i class="fas fa-tasks"></i></a>';
-                    $btn .= ' <button type="button" class="btn btn-primary btn-circle btn-sm shadow-sm btnEditarEvento" data-id="' . $e->id . '" title="Editar Evento"><i class="far fa-edit"></i></button>';
-                    $btn .= ' <button type="button" class="btn btn-danger btn-circle btn-sm shadow-sm btnEliminarEvento" data-id="' . $e->id . '" data-nombre="' . e($e->nombre) . '" title="Eliminar Evento"><i class="fa fa-trash"></i></button>';
+                    $btn  = '<div class="d-inline-flex align-items-center justify-content-center" style="gap:4px;">';
+                    $btn .= '<a href="' . route('eventos.show', $e->id) . '" class="btn btn-info btn-circle shadow-sm" title="Centro de Mando del Evento"><i class="fas fa-tasks"></i></a>';
+                    $btn .= '<button type="button" class="btn btn-primary btn-circle shadow-sm btnEditarEvento" data-id="' . $e->id . '" title="Editar Evento"><i class="far fa-edit"></i></button>';
+                    $btn .= '<button type="button" class="btn btn-danger btn-circle shadow-sm btnEliminarEvento" data-id="' . $e->id . '" data-nombre="' . e($e->nombre) . '" title="Eliminar Evento"><i class="fa fa-trash"></i></button>';
+                    $btn .= '</div>';
                     return $btn;
                 })
                 ->rawColumns(['nombre_html', 'pei_profile', 'fechas', 'avance_html', 'responsables_html', 'estado_html', 'action'])

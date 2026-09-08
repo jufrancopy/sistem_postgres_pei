@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="{{ asset('material/css/plugins/fullcalendar.min.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.css">
 <style>
+/* FullCalendar Custom Theme */
 .fc-toolbar {
     margin-bottom: 1.25rem !important;
 }
@@ -27,6 +28,65 @@
     background: #00bcd4 !important;
     color: #fff !important;
     border-color: #00bcd4 !important;
+}
+
+/* Standard Circular Action Buttons */
+.btn-circle {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.8rem !important;
+    line-height: 1 !important;
+    margin: 1px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    border: none !important;
+}
+.btn-circle i {
+    font-size: 0.8rem !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+}
+.btn-circle.btn-xs {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    max-width: 26px !important;
+    font-size: 0.72rem !important;
+}
+.btn-circle.btn-xs i {
+    font-size: 0.72rem !important;
+}
+
+.table-success-soft {
+    background-color: #f0fdf4 !important;
+}
+.text-decoration-line-through {
+    text-decoration: line-through;
+}
+.fc-evento-principal {
+    border-radius: 6px !important;
+    font-weight: bold !important;
+    font-size: 0.85rem !important;
+    padding: 3px 6px !important;
+}
+.fc-evento-paso {
+    border-radius: 4px !important;
+    font-size: 0.8rem !important;
+}
+.fc-evento-tarea {
+    border-radius: 3px !important;
+    font-size: 0.75rem !important;
+    opacity: 0.9;
+}
+.fc-tarea-completada {
+    text-decoration: line-through;
+    opacity: 0.65;
 }
 </style>
 @endsection
@@ -59,11 +119,11 @@
     </nav>
 
     <div class="card-body px-3">
-        {{-- Hero Header Ejecutivo --}}
-        <div class="card border-0 shadow-sm text-white mb-4" style="border-radius:18px; overflow:hidden; background: linear-gradient(135deg, {{ $evento->color ?: '#4f46e5' }} 0%, #1e1b4b 100%);">
+        {{-- Hero Header Ejecutivo con Alto Contraste --}}
+        <div class="card border-0 shadow-sm text-white mb-4" style="border-radius:18px; overflow:hidden; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
             <div class="card-body p-4 p-md-5">
                 <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap:12px;">
-                    <div>
+                    <div style="max-width: 75%;">
                         <div class="d-flex align-items-center mb-2 flex-wrap" style="gap:8px;">
                             <span class="badge badge-light text-dark font-weight-bold px-2.5 py-1" style="font-size:0.75rem; border-radius:6px;">
                                 <i class="fa fa-tag mr-1 text-primary"></i>{{ $evento->tipo }}
@@ -71,30 +131,30 @@
                             {!! $evento->estado_badge_html !!}
                             @if($evento->peiProfile)
                                 <a href="{{ route('pei-profiles.show', $evento->peiProfile->id) }}" class="badge badge-warning text-dark font-weight-bold px-2.5 py-1 text-decoration-none" style="font-size:0.75rem; border-radius:6px;" title="Ver Plan PEI">
-                                    <i class="fa fa-bullseye mr-1"></i>{{ \Illuminate\Support\Str::limit(strip_tags($evento->peiProfile->name), 38) }}
+                                    <i class="fa fa-bullseye mr-1"></i>{{ \Illuminate\Support\Str::limit(strip_tags($evento->peiProfile->name), 40) }}
                                 </a>
                             @endif
                         </div>
-                        <h2 class="font-weight-bold mb-1 text-white" style="letter-spacing:-0.02em; font-size:1.85rem;">
+                        <h2 class="font-weight-bold mb-2 text-white" style="letter-spacing:-0.02em; font-size:1.85rem; line-height: 1.3;">
                             {{ $evento->nombre }}
                         </h2>
-                        <div class="d-flex align-items-center flex-wrap mt-2 text-white-50" style="gap:15px; font-size:0.85rem;">
+                        <div class="d-flex align-items-center flex-wrap mt-2 text-light" style="gap:16px; font-size:0.88rem;">
                             <span><i class="fa fa-calendar-alt text-warning mr-1"></i>{{ $evento->rango_fechas_formateado }}</span>
                             @if($evento->lugar_sede)
                                 <span><i class="fa fa-map-marker-alt text-danger mr-1"></i>{{ $evento->lugar_sede }}</span>
                             @endif
                             @if($evento->dias_restantes !== null)
                                 @if($evento->dias_restantes > 0)
-                                    <span class="badge badge-light text-dark font-weight-bold"><i class="fa fa-hourglass-start mr-1"></i>Faltan {{ $evento->dias_restantes }} días</span>
+                                    <span class="badge badge-light text-dark font-weight-bold"><i class="fa fa-hourglass-start mr-1 text-info"></i>Faltan {{ $evento->dias_restantes }} días</span>
                                 @elseif($evento->dias_restantes === 0)
                                     <span class="badge badge-warning text-dark font-weight-bold"><i class="fa fa-flag-checkered mr-1"></i>¡Finaliza hoy!</span>
                                 @else
-                                    <span class="badge badge-danger"><i class="fa fa-clock mr-1"></i>Finalizó hace {{ abs($evento->dias_restantes) }} días</span>
+                                    <span class="badge badge-secondary"><i class="fa fa-clock mr-1"></i>Finalizó hace {{ abs($evento->dias_restantes) }} días</span>
                                 @endif
                             @endif
                         </div>
                     </div>
-                    <div class="d-flex align-items-center" style="gap:8px;">
+                    <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
                         <a href="{{ route('eventos.index') }}" class="btn btn-outline-light btn-sm font-weight-bold px-3 shadow-sm" style="border-radius:8px;">
                             <i class="fa fa-arrow-left mr-1"></i> Volver
                         </a>
@@ -108,12 +168,12 @@
                 </div>
 
                 {{-- Barra de Progreso Global del Evento --}}
-                <div class="mt-4 pt-3 border-top" style="border-color: rgba(255,255,255,0.15) !important;">
-                    <div class="d-flex align-items-center justify-content-between mb-1" style="font-size:0.82rem;">
+                <div class="mt-4 pt-3 border-top" style="border-color: rgba(255,255,255,0.2) !important;">
+                    <div class="d-flex align-items-center justify-content-between mb-1" style="font-size:0.85rem;">
                         <span class="font-weight-bold text-white"><i class="fa fa-chart-line mr-1 text-warning"></i>Avance Global del Evento: <span id="eventoAvancePctTexto">{{ $evento->porcentaje_avance }}%</span></span>
-                        <span class="text-white-50" id="eventoTareasConteoTexto">{{ $evento->tareas_completadas }} de {{ $evento->total_tareas }} tareas completadas</span>
+                        <span class="text-light" id="eventoTareasConteoTexto">{{ $evento->tareas_completadas }} de {{ $evento->total_tareas }} tareas completadas</span>
                     </div>
-                    <div class="progress" style="height: 10px; border-radius: 6px; background: rgba(255,255,255,0.25);">
+                    <div class="progress" style="height: 10px; border-radius: 6px; background: rgba(255,255,255,0.2);">
                         <div class="progress-bar bg-warning" id="eventoAvanceBar" role="progressbar" style="width: {{ $evento->porcentaje_avance }}%; border-radius: 6px; transition: width .4s ease;"></div>
                     </div>
                 </div>
@@ -122,7 +182,7 @@
 
         {{-- Alertas Diarias del Evento (Si existen tareas vencidas o próximas) --}}
         @if($tareasVencidas->isNotEmpty() || $tareasProximas->isNotEmpty())
-        <div class="alert alert-warning border-0 shadow-sm mb-4 d-flex align-items-start" style="border-radius:12px; background:#fffbeb; border-left:5px solid #f59e0b !important; color:#78350f;">
+        <div class="alert border-0 shadow-sm mb-4 d-flex align-items-start" style="border-radius:12px; background:#fef3c7; border-left:5px solid #d97706 !important; color:#78350f;">
             <div class="mr-3 mt-1"><i class="fa fa-bell fa-2x text-warning"></i></div>
             <div class="flex-grow-1">
                 <h6 class="font-weight-bold mb-1" style="color:#92400e;">
@@ -138,8 +198,8 @@
                         </div>
                     @endif
                     @if($tareasProximas->isNotEmpty())
-                        <div class="text-warning font-weight-bold" style="color:#b45309;">
-                            <i class="fa fa-clock mr-1"></i>{{ $tareasProximas->count() }} tarea(s) próxima(s) a vencer en los próximos 3 días:
+                        <div class="text-dark font-weight-bold">
+                            <i class="fa fa-clock text-warning mr-1"></i>{{ $tareasProximas->count() }} tarea(s) próxima(s) a vencer en los próximos 3 días:
                             @foreach($tareasProximas->take(3) as $tp)
                                 <span class="badge badge-warning text-dark mr-1">{{ $tp->nombre }} (Vence: {{ \Carbon\Carbon::parse($tp->fecha_limite)->format('d/m') }})</span>
                             @endforeach
@@ -188,7 +248,7 @@
                 @else
                     <div class="d-flex flex-column" style="gap:18px;">
                         @foreach($evento->pasos as $index => $paso)
-                        <div class="card border-0 shadow-sm" id="paso-card-{{ $paso->id }}" style="border-radius:16px; overflow:hidden; border-left: 6px solid {{ $paso->color ?: ($evento->color ?: '#4f46e5') }} !important;">
+                        <div class="card border-0 shadow-sm" id="paso-card-{{ $paso->id }}" style="border-radius:16px; overflow:hidden; border-left: 6px solid {{ $paso->color ?: '#0284c7' }} !important;">
                             {{-- Cabecera del Paso --}}
                             <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
                                 <div class="d-flex align-items-center flex-wrap" style="gap:10px;">
@@ -212,10 +272,10 @@
                                     <button type="button" class="btn btn-primary btn-sm font-weight-bold py-1 px-2.5 btnNuevaTareaModal shadow-xs" data-paso-id="{{ $paso->id }}" data-paso-nombre="{{ e($paso->nombre) }}" style="border-radius:6px; font-size:0.75rem;">
                                         <i class="fa fa-plus mr-1"></i> Tarea
                                     </button>
-                                    <button type="button" class="btn btn-light btn-sm py-1 px-2 text-primary btnEditarPasoModal" data-paso="{{ json_encode($paso) }}" title="Editar Paso">
+                                    <button type="button" class="btn btn-primary btn-circle btn-sm shadow-xs btnEditarPasoModal" data-paso="{{ json_encode($paso) }}" title="Editar Paso">
                                         <i class="fa fa-pencil-alt"></i>
                                     </button>
-                                    <button type="button" class="btn btn-light btn-sm py-1 px-2 text-danger btnEliminarPaso" data-paso-id="{{ $paso->id }}" data-paso-nombre="{{ e($paso->nombre) }}" title="Eliminar Paso">
+                                    <button type="button" class="btn btn-danger btn-circle btn-sm shadow-xs btnEliminarPaso" data-paso-id="{{ $paso->id }}" data-paso-nombre="{{ e($paso->nombre) }}" title="Eliminar Paso">
                                         <i class="fa fa-trash"></i>
                                     </button>
                                 </div>
@@ -291,12 +351,14 @@
                                                         {!! $tarea->prioridad_badge_html !!}
                                                     </td>
                                                     <td class="text-center">
-                                                        <button type="button" class="btn btn-xs btn-outline-primary btnEditarTareaModal mr-1" data-tarea="{{ json_encode($tarea) }}" title="Editar Tarea">
-                                                            <i class="fa fa-pencil-alt"></i>
-                                                        </button>
-                                                        <button type="button" class="btn btn-xs btn-outline-danger btnEliminarTarea" data-tarea-id="{{ $tarea->id }}" data-tarea-nombre="{{ e($tarea->nombre) }}" title="Eliminar Tarea">
-                                                            <i class="fa fa-trash"></i>
-                                                        </button>
+                                                        <div class="d-inline-flex align-items-center justify-content-center" style="gap:4px;">
+                                                            <button type="button" class="btn btn-primary btn-circle btn-xs shadow-xs btnEditarTareaModal" data-tarea="{{ json_encode($tarea) }}" title="Editar Tarea">
+                                                                <i class="fa fa-pencil-alt"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-danger btn-circle btn-xs shadow-xs btnEliminarTarea" data-tarea-id="{{ $tarea->id }}" data-tarea-nombre="{{ e($tarea->nombre) }}" title="Eliminar Tarea">
+                                                                <i class="fa fa-trash"></i>
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             @empty
@@ -333,7 +395,7 @@
                 </div>
             </div>
 
-            {{-- TAB 3: Matriz de Equipo y Carga de Trabajo --}}
+            {{-- TAB 3: Matriz de Equipo y Carga de Trabajo (DataTable) --}}
             <div class="tab-pane fade" id="tab-equipo" role="tabpanel">
                 <div class="card border-0 shadow-sm" style="border-radius:16px;">
                     <div class="card-header bg-white py-3 px-4 border-bottom">
@@ -343,7 +405,7 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle">
+                            <table class="table table-hover align-middle w-100" id="tablaEquipoEvento">
                                 <thead style="background:#f8fafc; font-size:0.75rem; text-transform:uppercase;">
                                     <tr>
                                         <th>Miembro del Equipo</th>
@@ -360,7 +422,7 @@
                                             $evento->tareas->map(fn($t) => $t->responsable)->filter()
                                         )->unique('id');
                                     @endphp
-                                    @forelse($todosResponsables as $u)
+                                    @foreach($todosResponsables as $u)
                                         @php
                                             $tUser = $evento->tareas->where('responsable_id', $u->id);
                                             $totU = $tUser->count();
@@ -388,9 +450,7 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                    @empty
-                                        <tr><td colspan="6" class="text-center py-3 text-muted">No hay responsables asignados aún.</td></tr>
-                                    @endforelse
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -398,6 +458,117 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+</div>
+
+{{-- Modal Editar Evento (In-Situ en Show) --}}
+<div class="modal fade" id="modalEditarEventoShow" tabindex="-1" aria-hidden="true" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+                <div>
+                    <span class="badge badge-light text-dark font-weight-bold mb-1" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 6px;">
+                        <i class="fa fa-calendar-check text-info mr-1"></i> GESTIÓN INSTITUCIONAL
+                    </span>
+                    <h5 class="modal-title font-weight-bold mb-0 text-white" style="font-size: 1.15rem;">
+                        Editar Evento Institucional
+                    </h5>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" style="opacity: 0.9;"><span>&times;</span></button>
+            </div>
+            <form id="formEditarEventoShow">
+                <input type="hidden" name="_method" value="PUT">
+                <div class="modal-body p-4" style="background: #f8fafc; max-height: 75vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-8 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1">Nombre del Evento <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="nombre" value="{{ $evento->nombre }}" required>
+                        </div>
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1">Tipo de Evento</label>
+                            <select class="form-control select2InModalShow" name="tipo" style="width:100%;">
+                                @foreach(['Taller', 'Jornada', 'Reunión', 'Congreso', 'Socialización', 'Evaluación', 'Capacitación', 'Otro'] as $t)
+                                    <option value="{{ $t }}" {{ $evento->tipo == $t ? 'selected' : '' }}>{{ $t }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1">Plan PEI Vinculado</label>
+                            <select class="form-control select2InModalShow" name="pei_profile_id" style="width:100%;">
+                                <option value="">-- Ninguno / Institucional General --</option>
+                                @foreach($peiPerfiles as $pei)
+                                    <option value="{{ $pei->id }}" {{ $evento->pei_profile_id == $pei->id ? 'selected' : '' }}>
+                                        {{ strip_tags($pei->name) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1">Lugar / Sede</label>
+                            <input type="text" class="form-control" name="lugar_sede" value="{{ $evento->lugar_sede }}" placeholder="Ej: Centro de Eventos Ykua Satí">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1">Fecha de Inicio</label>
+                            <input type="date" class="form-control" name="fecha_inicio" value="{{ $evento->fecha_inicio ? $evento->fecha_inicio->format('Y-m-d') : '' }}">
+                        </div>
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1">Fecha de Finalización</label>
+                            <input type="date" class="form-control" name="fecha_fin" value="{{ $evento->fecha_fin ? $evento->fecha_fin->format('Y-m-d') : '' }}">
+                        </div>
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1">Estado</label>
+                            <select class="form-control select2InModalShow" name="estado" style="width:100%;">
+                                @foreach(['planificado' => 'Planificado', 'en_curso' => 'En Curso', 'completado' => 'Completado', 'en_alerta' => 'En Alerta', 'pospuesto' => 'Pospuesto', 'cancelado' => 'Cancelado'] as $k => $v)
+                                    <option value="{{ $k }}" {{ $evento->estado == $k ? 'selected' : '' }}>{{ $v }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1"><i class="fas fa-coins text-warning mr-1"></i> Presupuesto Estimado (Gs.)</label>
+                            <input type="number" step="0.01" class="form-control" name="presupuesto_estimado" value="{{ $evento->presupuesto_estimado }}">
+                        </div>
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1"><i class="fas fa-receipt text-secondary mr-1"></i> Presupuesto Ejecutado (Gs.)</label>
+                            <input type="number" step="0.01" class="form-control" name="presupuesto_ejecutado" value="{{ $evento->presupuesto_ejecutado }}">
+                        </div>
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1">Color Distintivo</label>
+                            <input type="color" class="form-control" name="color" value="{{ $evento->color ?: '#00bcd4' }}" style="height:38px; padding:2px;">
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark mb-1"><i class="fas fa-users text-primary mr-1"></i> Equipo / Responsables del Evento</label>
+                        <select class="form-control select2InModalShow" name="responsables[]" multiple="multiple" style="width:100%;">
+                            @php $respSelected = $evento->responsables->pluck('id')->toArray(); @endphp
+                            @foreach($usuarios as $u)
+                                <option value="{{ $u->id }}" {{ in_array($u->id, $respSelected) ? 'selected' : '' }}>{{ $u->name }} ({{ $u->email }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold text-dark mb-1">Descripción / Objetivos del Evento</label>
+                        <textarea class="form-control" name="descripcion" rows="3">{{ $evento->descripcion }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-top py-2 px-4 d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary btn-sm px-4 font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">Cancelar</button>
+                    <button type="submit" class="btn btn-success btn-sm px-4 font-weight-bold" style="border-radius: 8px;">
+                        <i class="fa fa-save mr-1"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -563,8 +734,55 @@
 <script>
 $(function() {
     $('.select2').select2();
+    $('.select2InModalShow').select2({ dropdownParent: $('#modalEditarEventoShow'), width: '100%' });
 
     var currentEventoId = '{{ $evento->id }}';
+
+    // DataTable para Matriz de Equipo
+    $('#tablaEquipoEvento').DataTable({
+        language: window.dtSpanishEs || {
+            search: "Buscar:",
+            lengthMenu: "Mostrar _MENU_ miembros",
+            info: "Mostrando _START_ a _END_ de _TOTAL_ miembros",
+            infoEmpty: "Sin miembros registrados",
+            zeroRecords: "No se encontraron miembros",
+            paginate: { first: "Primero", previous: "Anterior", next: "Siguiente", last: "Último" }
+        },
+        pageLength: 10
+    });
+
+    // ── GESTIÓN DE EVENTO (EDITAR MODAL EN SHOW) ─────────────────────
+    $('#btnEditarEventoPrincipal, #btnEditarEventoHub').on('click', function() {
+        $('#modalEditarEventoShow').modal('show');
+    });
+
+    $('#formEditarEventoShow').on('submit', function(e) {
+        e.preventDefault();
+        var formData = $(this).serialize();
+
+        $.ajax({
+            url: '/eventos/' + currentEventoId,
+            type: 'POST',
+            data: formData,
+            success: function(resp) {
+                $('#modalEditarEventoShow').modal('hide');
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp.message,
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+                setTimeout(function() { window.location.reload(); }, 600);
+            },
+            error: function(xhr) {
+                var msg = 'Error al actualizar el evento';
+                if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                Swal.fire('Atención', msg, 'warning');
+            }
+        });
+    });
 
     // ── GESTIÓN DE PASOS ─────────────────────────────────────────────
 
@@ -598,7 +816,7 @@ $(function() {
     $('#formPaso').on('submit', function(e) {
         e.preventDefault();
         var id = $('#pasoId').val();
-        var url = id ? '/admin/eventos/' + currentEventoId + '/pasos/' + id : '/admin/eventos/' + currentEventoId + '/pasos';
+        var url = id ? '/eventos/' + currentEventoId + '/pasos/' + id : '/eventos/' + currentEventoId + '/pasos';
         var formData = $(this).serialize();
         if (id) formData += '&_method=PUT';
 
@@ -640,7 +858,7 @@ $(function() {
         }).then(function(result) {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: '/admin/eventos/' + currentEventoId + '/pasos/' + pasoId,
+                    url: '/eventos/' + currentEventoId + '/pasos/' + pasoId,
                     type: 'DELETE',
                     success: function(resp) {
                         $('#paso-card-' + pasoId).slideUp(300, function() { $(this).remove(); });
@@ -685,7 +903,7 @@ $(function() {
         e.preventDefault();
         var id = $('#tareaId').val();
         var pasoId = $('#tareaPasoId').val();
-        var url = id ? '/admin/eventos/tareas/' + id : '/admin/eventos/pasos/' + pasoId + '/tareas';
+        var url = id ? '/eventos/tareas/' + id : '/eventos/pasos/' + pasoId + '/tareas';
         var formData = $(this).serialize();
         if (id) formData += '&_method=PUT';
 
@@ -711,7 +929,7 @@ $(function() {
         var isChecked = chk.is(':checked');
 
         $.ajax({
-            url: '/admin/eventos/tareas/' + tareaId + '/toggle',
+            url: '/eventos/tareas/' + tareaId + '/toggle',
             type: 'PATCH',
             success: function(resp) {
                 var row = $('#tarea-row-' + tareaId);
@@ -767,7 +985,7 @@ $(function() {
         }).then(function(result) {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: '/admin/eventos/tareas/' + tareaId,
+                    url: '/eventos/tareas/' + tareaId,
                     type: 'DELETE',
                     success: function(resp) {
                         $('#tarea-row-' + tareaId).fadeOut(300, function() { $(this).remove(); });
@@ -791,7 +1009,7 @@ $(function() {
                     right: 'month,agendaWeek,listMonth'
                 },
                 defaultDate: '{{ $evento->fecha_inicio ? $evento->fecha_inicio->format("Y-m-d") : date("Y-m-d") }}',
-                events: '/admin/eventos/feed?evento_id=' + currentEventoId,
+                events: '/eventos/feed?evento_id=' + currentEventoId,
                 eventClick: function(calEvent, jsEvent, view) {
                     if (calEvent.url && !calEvent.url.includes('#')) {
                         // Navegar o abrir modal
@@ -802,31 +1020,4 @@ $(function() {
     });
 });
 </script>
-<style>
-.table-success-soft {
-    background-color: #f0fdf4 !important;
-}
-.text-decoration-line-through {
-    text-decoration: line-through;
-}
-.fc-evento-principal {
-    border-radius: 6px !important;
-    font-weight: bold !important;
-    font-size: 0.85rem !important;
-    padding: 3px 6px !important;
-}
-.fc-evento-paso {
-    border-radius: 4px !important;
-    font-size: 0.8rem !important;
-}
-.fc-evento-tarea {
-    border-radius: 3px !important;
-    font-size: 0.75rem !important;
-    opacity: 0.9;
-}
-.fc-tarea-completada {
-    text-decoration: line-through;
-    opacity: 0.65;
-}
-</style>
 @endsection

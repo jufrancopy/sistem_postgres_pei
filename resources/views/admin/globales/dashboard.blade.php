@@ -2041,9 +2041,9 @@
                                              @endif
                                         </td>
                                         <td class="px-3">
-                                             @if($evt->pei)
-                                                 <span class="badge badge-pill badge-light border text-truncate" style="max-width: 180px;" title="{{ $evt->pei->nombre }}">
-                                                     <i class="fa fa-file-alt text-primary mr-1"></i>{{ $evt->pei->nombre }}
+                                             @if($evt->peiProfile)
+                                                 <span class="badge badge-pill badge-light border text-truncate" style="max-width: 180px;" title="{{ strip_tags($evt->peiProfile->name) }}">
+                                                     <i class="fa fa-file-alt text-primary mr-1"></i>{{ strip_tags($evt->peiProfile->name) }}
                                                  </span>
                                              @else
                                                  <span class="text-muted small">— Institucional —</span>

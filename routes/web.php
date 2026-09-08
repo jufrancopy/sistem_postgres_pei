@@ -133,6 +133,21 @@ Route::group(['middleware' => ['auth']], function () {
     Route::patch('eventos/tareas/{tareaId}/toggle', 'Admin\Eventos\EventoController@toggleTareaCompletada')->name('eventos.tareas.toggle');
     Route::delete('eventos/tareas/{tareaId}', 'Admin\Eventos\EventoController@destroyTarea')->name('eventos.tareas.destroy');
 
+    // Alias /admin/eventos para compatibilidad
+    Route::prefix('admin')->group(function() {
+        Route::get('eventos/calendario', 'Admin\Eventos\EventoController@calendario');
+        Route::get('eventos/feed', 'Admin\Eventos\EventoController@eventsFeed');
+        Route::get('eventos/alertas', 'Admin\Eventos\EventoController@alertasWidget');
+        Route::resource('eventos', 'Admin\Eventos\EventoController');
+        Route::post('eventos/{id}/pasos', 'Admin\Eventos\EventoController@storePaso');
+        Route::put('eventos/{id}/pasos/{pasoId}', 'Admin\Eventos\EventoController@updatePaso');
+        Route::delete('eventos/{id}/pasos/{pasoId}', 'Admin\Eventos\EventoController@destroyPaso');
+        Route::post('eventos/pasos/{pasoId}/tareas', 'Admin\Eventos\EventoController@storeTarea');
+        Route::put('eventos/tareas/{tareaId}', 'Admin\Eventos\EventoController@updateTarea');
+        Route::patch('eventos/tareas/{tareaId}/toggle', 'Admin\Eventos\EventoController@toggleTareaCompletada');
+        Route::delete('eventos/tareas/{tareaId}', 'Admin\Eventos\EventoController@destroyTarea');
+    });
+
     Route::get('pei-profiles/{idProfile}/vista-asesor', 'Admin\Planificacion\Pei\PeiController@vistaAsesor')->name('pei-profiles.vista-asesor');
     Route::post('pei-profiles/{idProfile}/guardar-comentario-asesor', 'Admin\Planificacion\Pei\PeiController@guardarComentarioAsesor')->name('pei-profiles.guardar-comentario-asesor');
     Route::post('pei-profiles/{idProfile}/asesor-token', 'Admin\Planificacion\Pei\PeiController@generarTokenAsesor')->name('pei.asesor.token.generate');

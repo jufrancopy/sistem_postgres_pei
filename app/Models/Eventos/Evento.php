@@ -65,6 +65,11 @@ class Evento extends Model
         return $this->belongsTo(PeiProfile::class, 'pei_profile_id');
     }
 
+    public function pei(): BelongsTo
+    {
+        return $this->belongsTo(PeiProfile::class, 'pei_profile_id');
+    }
+
     public function activity(): BelongsTo
     {
         return $this->belongsTo(Activity::class, 'activity_id');
