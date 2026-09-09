@@ -1118,6 +1118,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('evaluaciones.show');
         Route::post('evaluaciones/{evaluacion}/cerrar-con-firmas', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'cerrarConFirmas'])
             ->name('evaluaciones.cerrar-con-firmas');
+        Route::post('evaluaciones/{evaluacion}/firmar-evaluador', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'firmarEvaluador'])
+            ->name('evaluaciones.firmar-evaluador');
         Route::delete('evaluaciones/{evaluacion}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'destroy'])
             ->name('evaluaciones.destroy');
     });

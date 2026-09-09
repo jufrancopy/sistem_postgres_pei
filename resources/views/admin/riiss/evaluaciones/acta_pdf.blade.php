@@ -256,6 +256,20 @@
         Las partes intervinientes ratifican la realización efectiva de la visita técnica presencial y la recepción conforme del equipo comisionado, rubricando al pie en señal de constancia y validación de la jornada de relevamiento de campo:
     </p>
 
+    @php
+        $listaFirmasEval = !empty($evaluacion->firmas_evaluadores) ? $evaluacion->firmas_evaluadores : [];
+        if (empty($listaFirmasEval) && ($evaluadorFirma || $evaluadorNombre)) {
+            $listaFirmasEval = [
+                [
+                    'nombre'     => $evaluadorNombre,
+                    'cargo'      => $evaluadorCargo,
+                    'firma'      => $evaluadorFirma,
+                    'firmado_at' => $evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : null
+                ]
+            ];
+        }
+    @endphp
+
     <table class="signatures-table">
         <tr>
             <td class="signature-box" style="padding-right: 8px;">
@@ -284,26 +298,56 @@
                 </div>
             </td>
             <td class="signature-box" style="padding-left: 8px;">
-                <div class="font-weight-bold text-uppercase" style="font-size: 8.5px; color: #1e40af; border-bottom: 1px solid #bfdbfe; padding-bottom: 2px;">
-                    POR LA DIRECCIÓN DE PLANIFICACIÓN — IPS
+                <div class="font-weight-bold text-uppercase" style="font-size: 8.5px; color: #1e40af; border-bottom: 1px solid #bfdbfe; padding-bottom: 2px; margin-bottom: 3px;">
+                    POR LA DIRECCIÓN DE PLANIFICACIÓN — IPS {{ count($listaFirmasEval) > 1 ? '(COMISIÓN TÉCNICA)' : '' }}
                 </div>
-                <div style="height: 75px; text-align: center; padding: 4px 0;">
-                    @if($evaluadorFirma)
-                        <img src="{{ $evaluadorFirma }}" class="signature-img" alt="Firma Evaluador">
-                    @else
-                        <div class="text-muted" style="padding-top: 25px; font-style: italic;">Sin firma estampada</div>
-                    @endif
-                </div>
-                <div style="border-top: 1px solid #cbd5e1; padding-top: 4px; font-size: 9px;">
-                    <div class="font-weight-bold">{{ $evaluadorNombre }}</div>
-                    <div class="text-primary font-weight-bold" style="font-size: 8.5px;">{{ $evaluadorCargo }}</div>
-                    @if($evaluacion->cerradoPor)
-                        <div class="text-muted" style="font-size: 8px;">Usuario: {{ $evaluacion->cerradoPor->name }}</div>
-                    @endif
-                    <div class="text-muted" style="font-size: 7.5px; font-style: italic; margin-top: 2px;">
-                        Cerrado: {{ $evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : date('d/m/Y H:i') }}
+                @if(count($listaFirmasEval) > 1)
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            @foreach($listaFirmasEval as $idx => $fEval)
+                                <td style="width: {{ round(100 / count($listaFirmasEval)) }}%; vertical-align: top; padding: 0 4px; {{ !$loop->last ? 'border-right: 1px dashed #cbd5e1;' : '' }}">
+                                    <div style="height: 65px; text-align: center; padding: 2px 0;">
+                                        @if(!empty($fEval['firma']))
+                                            <img src="{{ $fEval['firma'] }}" class="signature-img" style="max-height: 55px;" alt="Firma Evaluador">
+                                        @else
+                                            <div class="text-muted" style="padding-top: 18px; font-style: italic; font-size: 7.5px;">Pendiente de firma</div>
+                                        @endif
+                                    </div>
+                                    <div style="border-top: 1px solid #cbd5e1; padding-top: 3px; font-size: 8px;">
+                                        <div class="font-weight-bold" style="font-size: 8px;">{{ $fEval['nombre'] ?? 'Evaluador IPS' }}</div>
+                                        <div class="text-primary font-weight-bold" style="font-size: 7.5px;">{{ $fEval['cargo'] ?? 'Evaluador Técnico' }}</div>
+                                        @if(!empty($fEval['firmado_at']))
+                                            <div class="text-muted" style="font-size: 7px; font-style: italic; margin-top: 1px;">
+                                                Firmado: {{ is_string($fEval['firmado_at']) ? substr($fEval['firmado_at'], 0, 16) : $fEval['firmado_at'] }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </td>
+                            @endforeach
+                        </tr>
+                    </table>
+                @else
+                    @php $fEval = $listaFirmasEval[0] ?? null; @endphp
+                    <div style="height: 75px; text-align: center; padding: 4px 0;">
+                        @if(!empty($fEval['firma']))
+                            <img src="{{ $fEval['firma'] }}" class="signature-img" alt="Firma Evaluador">
+                        @elseif($evaluadorFirma)
+                            <img src="{{ $evaluadorFirma }}" class="signature-img" alt="Firma Evaluador">
+                        @else
+                            <div class="text-muted" style="padding-top: 25px; font-style: italic;">Sin firma estampada</div>
+                        @endif
                     </div>
-                </div>
+                    <div style="border-top: 1px solid #cbd5e1; padding-top: 4px; font-size: 9px;">
+                        <div class="font-weight-bold">{{ $fEval['nombre'] ?? $evaluadorNombre }}</div>
+                        <div class="text-primary font-weight-bold" style="font-size: 8.5px;">{{ $fEval['cargo'] ?? $evaluadorCargo }}</div>
+                        @if($evaluacion->cerradoPor)
+                            <div class="text-muted" style="font-size: 8px;">Usuario: {{ $evaluacion->cerradoPor->name }}</div>
+                        @endif
+                        <div class="text-muted" style="font-size: 7.5px; font-style: italic; margin-top: 2px;">
+                            Cerrado: {{ $evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : date('d/m/Y H:i') }}
+                        </div>
+                    </div>
+                @endif
             </td>
         </tr>
     </table>

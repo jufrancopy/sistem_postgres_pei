@@ -310,28 +310,71 @@
                 </div>
             </div>
 
-            {{-- Evaluador IPS --}}
+            @php
+                $listaFirmasEval = !empty($evaluacion->firmas_evaluadores) ? $evaluacion->firmas_evaluadores : [];
+                if (empty($listaFirmasEval) && ($evaluadorFirma || $evaluadorNombre)) {
+                    $listaFirmasEval = [
+                        [
+                            'nombre'     => $evaluadorNombre,
+                            'cargo'      => $evaluadorCargo,
+                            'firma'      => $evaluadorFirma,
+                            'firmado_at' => $evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : null
+                        ]
+                    ];
+                }
+            @endphp
+
+            {{-- Evaluadores IPS --}}
             <div class="sig-card">
-                <div style="font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">
-                    POR LA DIRECCIÓN DE PLANIFICACIÓN — IPS
+                <div style="font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:6px;">
+                    POR LA DIRECCIÓN DE PLANIFICACIÓN — IPS {{ count($listaFirmasEval) > 1 ? '(COMISIÓN TÉCNICA)' : '' }}
                 </div>
-                <div style="height:85px; display:flex; align-items:center; justify-content:center; padding:4px 0;">
-                    @if($evaluadorFirma)
-                        <img src="{{ $evaluadorFirma }}" class="sig-img" alt="Firma del Evaluador">
-                    @else
-                        <span style="color:#94a3b8; font-style:italic; font-size:11px;">Sin firma estampada</span>
-                    @endif
-                </div>
-                <div style="border-top:1px solid #cbd5e1; padding-top:6px; font-size:11px;">
-                    <div style="font-weight:700; color:#0f172a;">{{ $evaluadorNombre }}</div>
-                    <div style="color:#1a237e; font-weight:600; font-size:10.5px;">{{ $evaluadorCargo }}</div>
-                    @if($evaluacion->cerradoPor)
-                        <div style="color:#64748b; font-size:10px;">Usuario: {{ $evaluacion->cerradoPor->name }}</div>
-                    @endif
-                    <div style="color:#94a3b8; font-size:9.5px; font-style:italic; margin-top:2px;">
-                        Cerrado: {{ $evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : date('d/m/Y H:i') }}
+
+                @if(count($listaFirmasEval) > 1)
+                    <div style="display: grid; grid-template-columns: repeat({{ count($listaFirmasEval) }}, 1fr); gap: 10px;">
+                        @foreach($listaFirmasEval as $fEval)
+                            <div style="border: 1px dashed #cbd5e1; border-radius: 6px; padding: 6px; background: #fafafa;">
+                                <div style="height:70px; display:flex; align-items:center; justify-content:center; padding:2px 0;">
+                                    @if(!empty($fEval['firma']))
+                                        <img src="{{ $fEval['firma'] }}" class="sig-img" style="max-height:60px;" alt="Firma Evaluador">
+                                    @else
+                                        <span style="color:#94a3b8; font-style:italic; font-size:10px;">Pendiente de firma</span>
+                                    @endif
+                                </div>
+                                <div style="border-top:1px solid #cbd5e1; padding-top:4px; font-size:10px;">
+                                    <div style="font-weight:700; color:#0f172a;">{{ $fEval['nombre'] ?? 'Evaluador IPS' }}</div>
+                                    <div style="color:#1a237e; font-weight:600; font-size:9.5px;">{{ $fEval['cargo'] ?? 'Evaluador Técnico' }}</div>
+                                    @if(!empty($fEval['firmado_at']))
+                                        <div style="color:#94a3b8; font-size:8.5px; font-style:italic; margin-top:2px;">
+                                            Firmado: {{ is_string($fEval['firmado_at']) ? substr($fEval['firmado_at'], 0, 16) : $fEval['firmado_at'] }}
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                </div>
+                @else
+                    @php $fEval = $listaFirmasEval[0] ?? null; @endphp
+                    <div style="height:85px; display:flex; align-items:center; justify-content:center; padding:4px 0;">
+                        @if(!empty($fEval['firma']))
+                            <img src="{{ $fEval['firma'] }}" class="sig-img" alt="Firma del Evaluador">
+                        @elseif($evaluadorFirma)
+                            <img src="{{ $evaluadorFirma }}" class="sig-img" alt="Firma del Evaluador">
+                        @else
+                            <span style="color:#94a3b8; font-style:italic; font-size:11px;">Sin firma estampada</span>
+                        @endif
+                    </div>
+                    <div style="border-top:1px solid #cbd5e1; padding-top:6px; font-size:11px;">
+                        <div style="font-weight:700; color:#0f172a;">{{ $fEval['nombre'] ?? $evaluadorNombre }}</div>
+                        <div style="color:#1a237e; font-weight:600; font-size:10.5px;">{{ $fEval['cargo'] ?? $evaluadorCargo }}</div>
+                        @if($evaluacion->cerradoPor)
+                            <div style="color:#64748b; font-size:10px;">Usuario: {{ $evaluacion->cerradoPor->name }}</div>
+                        @endif
+                        <div style="color:#94a3b8; font-size:9.5px; font-style:italic; margin-top:2px;">
+                            Cerrado: {{ $evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : date('d/m/Y H:i') }}
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 

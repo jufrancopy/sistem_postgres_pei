@@ -529,7 +529,7 @@
                             </div>
                         </div>
 
-                        {{-- BLOQUE 2: Evaluador / Equipo de Relevamiento IPS --}}
+                        {{-- BLOQUE 2: Evaluadores / Equipo de Relevamiento IPS --}}
                         <div class="col-lg-6 mb-4">
                             <div class="card border-0 shadow-sm h-100" style="border-radius:14px; border: 1px solid #e2e8f0;">
                                 <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
@@ -538,40 +538,21 @@
                                             <i class="fa fa-user-check"></i>
                                         </div>
                                         <div>
-                                            <h6 class="font-weight-bold text-dark mb-0" style="font-size:0.95rem;">2. Evaluador Técnico IPS</h6>
-                                            <small class="text-muted">Talento humano responsable del relevamiento</small>
+                                            <h6 class="font-weight-bold text-dark mb-0" style="font-size:0.95rem;">2. Equipo Técnico Evaluador IPS</h6>
+                                            <small class="text-muted" id="txtResumenEvaluadoresModal">Talento humano comisionado de Planificación</small>
                                         </div>
                                     </div>
                                     <span class="badge badge-info text-white font-weight-bold px-2 py-1" style="font-size:0.68rem;">Equipo IPS</span>
                                 </div>
-                                <div class="card-body p-4 bg-white">
-                                    <div class="form-group mb-3">
-                                        <label class="font-weight-bold text-dark small mb-1">Nombre del Evaluador <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control form-control-sm" id="cierre_evaluador_nombre" name="evaluador_nombre" value="{{ auth()->user() ? auth()->user()->name : '' }}" required>
-                                    </div>
-
-                                    <div class="form-group mb-3">
-                                        <label class="font-weight-bold text-dark small mb-1">Cargo / Dependencia</label>
-                                        <input type="text" class="form-control form-control-sm" id="cierre_evaluador_cargo" name="evaluador_cargo" value="Evaluador / Analista RIISS — Dirección de Planificación" required>
-                                    </div>
-
+                                <div class="card-body p-3 bg-white" style="max-height: 520px; overflow-y: auto;">
                                     <div class="form-group mb-3">
                                         <label class="font-weight-bold text-dark small mb-1">Observaciones Finales de Cierre (Opcional)</label>
                                         <textarea class="form-control form-control-sm" id="cierre_observaciones_cierre" name="cierre_observaciones" rows="2" placeholder="Notas sobre la visita, acuerdos o condiciones observadas..."></textarea>
                                     </div>
 
-                                    {{-- Recuadro Canvas Firma Evaluador --}}
-                                    <div class="form-group mb-0">
-                                        <div class="d-flex align-items-center justify-content-between mb-1">
-                                            <label class="font-weight-bold text-dark small mb-0"><i class="fa fa-pen-alt mr-1 text-info"></i>Firma Digital del Evaluador <span class="text-danger">*</span></label>
-                                            <button type="button" class="btn btn-outline-danger btn-xs py-0 px-2" id="btnClearFirmaEvaluador" style="font-size:0.72rem; border-radius:6px;">
-                                                <i class="fa fa-eraser mr-1"></i>Limpiar
-                                            </button>
-                                        </div>
-                                        <div class="border rounded bg-light d-flex align-items-center justify-content-center p-1" style="border: 2px dashed #94a3b8 !important; border-radius: 10px; background:#fafafa;">
-                                            <canvas id="canvasFirmaEvaluador" width="480" height="150" style="touch-action: none; width: 100%; height: 150px; background: #ffffff; border-radius: 8px; cursor: crosshair;"></canvas>
-                                        </div>
-                                        <small class="text-muted d-block mt-1" style="font-size:0.72rem;"><i class="fa fa-info-circle mr-1"></i>Sello digital de conformidad del evaluador de la Dirección de Planificación.</small>
+                                    {{-- Contenedor dinámico de firmas de los evaluadores comisionados --}}
+                                    <div id="contenedorFirmasEvaluadoresModal">
+                                        {{-- Generado dinámicamente según evaluadores seleccionados --}}
                                     </div>
                                 </div>
                             </div>
@@ -614,7 +595,7 @@ let formulario   = null;
 let respuestas   = {};
 let checklistState = {};
 let padResponsable = null;
-let padEvaluador   = null;
+let padsEvaluadores = [];
 
 // ── Localidad Select2 encadenado ──────────────────────────────────────────────
 function initLocalidadSelect(P) {
@@ -1464,9 +1445,58 @@ $(window).on('scroll', function() {
 });
 
 // ── Gestión de Firmas y Cierre Formal ─────────────────────────────────────────
+function renderModalFirmasEvaluadores() {
+    let evalData = $('#evalEvaluadores').select2('data');
+    if (!evalData || evalData.length === 0) {
+        evalData = [{
+            id: {{ auth()->id() ?? 'null' }},
+            text: '{{ addslashes(auth()->user() ? auth()->user()->name : "Evaluador IPS") }}'
+        }];
+    }
+
+    padsEvaluadores = [];
+    let html = '';
+    evalData.forEach((ev, idx) => {
+        let nombre = ev.text || 'Evaluador ' + (idx + 1);
+        let uid = ev.id || '';
+        html += `
+        <div class="border rounded p-3 mb-3 evaluador-firma-box" data-idx="${idx}" data-userid="${uid}" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-info text-white font-weight-bold mr-2 d-flex align-items-center justify-content-center" style="width:24px; height:24px; font-size:0.75rem;">
+                        ${idx + 1}
+                    </div>
+                    <div>
+                        <strong class="text-dark d-block" style="font-size:0.88rem;">${nombre}</strong>
+                        <small class="text-muted" style="font-size:0.72rem;">Técnico Evaluador IPS</small>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-danger btn-xs py-0 px-2 btnClearFirmaEval" data-idx="${idx}" style="font-size:0.72rem; border-radius:6px;">
+                    <i class="fa fa-eraser mr-1"></i>Limpiar
+                </button>
+            </div>
+            <input type="hidden" class="eval-nombre-input" value="${nombre}">
+            <div class="form-group mb-2">
+                <label class="font-weight-bold text-dark small mb-1" style="font-size:0.74rem;">Cargo / Dependencia</label>
+                <input type="text" class="form-control form-control-sm eval-cargo-input" value="Evaluador / Analista RIISS — Dirección de Planificación" placeholder="Cargo">
+            </div>
+            <div class="form-group mb-0">
+                <label class="font-weight-bold text-dark small mb-1" style="font-size:0.74rem;"><i class="fa fa-pen-alt mr-1 text-info"></i>Firma Digital del Técnico <span class="text-danger">*</span></label>
+                <div class="border rounded bg-white d-flex align-items-center justify-content-center p-1" style="border: 2px dashed #94a3b8 !important; border-radius: 8px;">
+                    <canvas id="canvasFirmaEvaluador_${idx}" width="460" height="130" style="touch-action: none; width: 100%; height: 130px; background: #ffffff; border-radius: 6px; cursor: crosshair;"></canvas>
+                </div>
+                <small class="text-muted d-block mt-1" style="font-size:0.68rem;"><i class="fa fa-info-circle mr-1"></i>Rúbrica de conformidad técnica.</small>
+            </div>
+        </div>
+        `;
+    });
+
+    $('#contenedorFirmasEvaluadoresModal').html(html);
+    $('#txtResumenEvaluadoresModal').text(evalData.length + ' evaluador(es) comisionado(s)');
+}
+
 function initSignaturePadsCierre() {
     var canvasResp = document.getElementById('canvasFirmaResponsable');
-    var canvasEval = document.getElementById('canvasFirmaEvaluador');
 
     if (canvasResp) {
         if (!padResponsable) {
@@ -1482,19 +1512,24 @@ function initSignaturePadsCierre() {
         padResponsable.clear();
     }
 
-    if (canvasEval) {
-        if (!padEvaluador) {
-            padEvaluador = new SignaturePad(canvasEval, {
+    // Inicializar pads para cada evaluador
+    padsEvaluadores = [];
+    $('.evaluador-firma-box').each(function() {
+        var idx = $(this).data('idx');
+        var canvas = document.getElementById('canvasFirmaEvaluador_' + idx);
+        if (canvas) {
+            var pad = new SignaturePad(canvas, {
                 backgroundColor: 'rgb(255, 255, 255)',
                 penColor: 'rgb(15, 23, 42)'
             });
+            var r = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * r;
+            canvas.height = canvas.offsetHeight * r;
+            canvas.getContext("2d").scale(r, r);
+            pad.clear();
+            padsEvaluadores[idx] = pad;
         }
-        var r2 = Math.max(window.devicePixelRatio || 1, 1);
-        canvasEval.width = canvasEval.offsetWidth * r2;
-        canvasEval.height = canvasEval.offsetHeight * r2;
-        canvasEval.getContext("2d").scale(r2, r2);
-        padEvaluador.clear();
-    }
+    });
 }
 
 function abrirModalCierreFirmas() {
@@ -1522,6 +1557,7 @@ function abrirModalCierreFirmas() {
             enviarRespuestas(false);
         }
 
+        renderModalFirmasEvaluadores();
         $('#modalCierreFirmas').modal('show');
         setTimeout(function() {
             initSignaturePadsCierre();
@@ -1571,8 +1607,11 @@ $(document).ready(function() {
         if (padResponsable) padResponsable.clear();
     });
 
-    $('#btnClearFirmaEvaluador').on('click', function() {
-        if (padEvaluador) padEvaluador.clear();
+    $(document).on('click', '.btnClearFirmaEval', function() {
+        var idx = $(this).data('idx');
+        if (padsEvaluadores[idx]) {
+            padsEvaluadores[idx].clear();
+        }
     });
 
     $('#btnConfirmarCierreFirmas').on('click', function(e) {
@@ -1580,7 +1619,6 @@ $(document).ready(function() {
 
         var nombreResp = $('#cierre_responsable_nombre').val().trim();
         var cargoResp  = $('#cierre_responsable_cargo').val().trim();
-        var nombreEval = $('#cierre_evaluador_nombre').val().trim();
 
         if (!nombreResp) {
             mostrarToast('Por favor, ingresá el nombre del responsable del establecimiento.', 'error');
@@ -1599,8 +1637,28 @@ $(document).ready(function() {
             return;
         }
 
-        if (!padEvaluador || padEvaluador.isEmpty()) {
-            mostrarToast('La firma digital del evaluador IPS es obligatoria.', 'error');
+        var evaluadoresFirmas = [];
+        var hayAlgunaFirma = false;
+        $('.evaluador-firma-box').each(function() {
+            var idx = $(this).data('idx');
+            var userId = $(this).data('userid');
+            var nombre = $(this).find('.eval-nombre-input').val().trim();
+            var cargo  = $(this).find('.eval-cargo-input').val().trim();
+            var pad    = padsEvaluadores[idx];
+
+            if (pad && !pad.isEmpty()) {
+                hayAlgunaFirma = true;
+                evaluadoresFirmas.push({
+                    user_id: userId ? parseInt(userId) : null,
+                    nombre:  nombre,
+                    cargo:   cargo,
+                    firma:   pad.toDataURL('image/png')
+                });
+            }
+        });
+
+        if (!hayAlgunaFirma) {
+            mostrarToast('Debe estampar la firma digital de al menos un técnico evaluador IPS.', 'error');
             return;
         }
 
@@ -1613,7 +1671,7 @@ $(document).ready(function() {
         btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Sellando firmas y cerrando...');
 
         var firmaRespBase64 = padResponsable.toDataURL('image/png');
-        var firmaEvalBase64 = padEvaluador.toDataURL('image/png');
+        var primeraFirma = evaluadoresFirmas[0];
 
         var payload = {
             _token: '{{ csrf_token() }}',
@@ -1622,9 +1680,10 @@ $(document).ready(function() {
             responsable_documento: $('#cierre_responsable_documento').val().trim(),
             responsable_telefono:  $('#cierre_responsable_telefono').val().trim(),
             responsable_firma:     firmaRespBase64,
-            evaluador_nombre:      nombreEval,
-            evaluador_cargo:       $('#cierre_evaluador_cargo').val().trim(),
-            evaluador_firma:       firmaEvalBase64,
+            evaluadores_firmas:    evaluadoresFirmas,
+            evaluador_nombre:      primeraFirma ? primeraFirma.nombre : '',
+            evaluador_cargo:       primeraFirma ? primeraFirma.cargo : '',
+            evaluador_firma:       primeraFirma ? primeraFirma.firma : '',
             cierre_observaciones:  $('#cierre_observaciones_cierre').val().trim(),
         };
 
@@ -1643,7 +1702,7 @@ $(document).ready(function() {
                         html: `
                             <div class="text-center p-2">
                                 <p class="mb-2 text-dark font-weight-bold">El relevamiento en terreno ha sido cerrado y rubricado formalmente.</p>
-                                <p class="mb-0 text-muted small">Firmas de conformidad registradas para <strong>${nombreResp}</strong> y <strong>${nombreEval}</strong>.</p>
+                                <p class="mb-0 text-muted small">Firmas de conformidad registradas para <strong>${nombreResp}</strong> y el equipo evaluador IPS.</p>
                             </div>
                         `,
                         icon: 'success',

@@ -107,6 +107,18 @@
 
         {{-- Card de Acta de Cierre y Firmas Digitales --}}
         @if($evaluacion->responsable_firma || $evaluacion->cerrado_at)
+        @php
+            $firmasExistentes = is_array($evaluacion->firmas_evaluadores) ? $evaluacion->firmas_evaluadores : [];
+            if (empty($firmasExistentes) && $evaluacion->evaluador_nombre) {
+                $firmasExistentes[] = [
+                    'nombre' => $evaluacion->evaluador_nombre,
+                    'cargo'  => $evaluacion->cerradoPor ? 'Evaluador Técnico — Dirección de Planificación' : 'Evaluador IPS',
+                    'firma'  => null,
+                    'firmado_at' => $evaluacion->cerrado_at?->format('Y-m-d H:i:s'),
+                ];
+            }
+            $evaluadoresComision = is_array($evaluacion->evaluadores) ? $evaluacion->evaluadores : [];
+        @endphp
         <div class="card border-0 shadow-sm mb-4" style="border-radius:16px; overflow:hidden; border-left: 6px solid #10b981 !important;">
             <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
                 <div class="d-flex align-items-center">
@@ -124,6 +136,9 @@
                     <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size:0.8rem; border-radius:8px;">
                         <i class="fa fa-check-double mr-1"></i> Cerrado el {{ $evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : ($evaluacion->responsable_firmado_at ? $evaluacion->responsable_firmado_at->format('d/m/Y H:i') : date('d/m/Y')) }} hs
                     </span>
+                    <button type="button" class="btn btn-outline-primary btn-sm font-weight-bold shadow-sm" onclick="abrirModalFirmarEvaluador()" style="border-radius:8px;">
+                        <i class="fa fa-pen-alt mr-1"></i> Estampar Firma de Evaluador
+                    </button>
                     <a href="{{ route('riiss.evaluaciones.acta-pdf', $evaluacion->id) }}" target="_blank" class="btn btn-danger btn-sm font-weight-bold shadow-sm" style="border-radius:8px;">
                         <i class="fa fa-file-pdf mr-1"></i> Descargar PDF Oficial
                     </a>
@@ -135,7 +150,7 @@
             <div class="card-body p-4 bg-white">
                 <div class="row">
                     {{-- Firma del Responsable del Establecimiento --}}
-                    <div class="col-md-6 mb-3">
+                    <div class="col-lg-5 col-md-6 mb-3">
                         <div class="p-3 rounded border h-100 d-flex flex-column justify-content-between" style="background:#f8fafc; border-color:#e2e8f0 !important; border-radius:12px;">
                             <div>
                                 <div class="d-flex align-items-center justify-content-between mb-2">
@@ -164,39 +179,43 @@
                         </div>
                     </div>
 
-                    {{-- Firma del Evaluador / Equipo IPS --}}
-                    <div class="col-md-6 mb-3">
-                        <div class="p-3 rounded border h-100 d-flex flex-column justify-content-between" style="background:#f8fafc; border-color:#e2e8f0 !important; border-radius:12px;">
-                            <div>
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <span class="badge badge-info text-white font-weight-bold px-2 py-1" style="font-size:0.7rem;">
-                                        <i class="fa fa-user-check mr-1"></i>EVALUADOR IPS
-                                    </span>
-                                    <small class="text-muted"><i class="fa fa-clock mr-1"></i>{{ $evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : '—' }}</small>
+                    {{-- Firmas de Evaluadores / Equipo IPS --}}
+                    <div class="col-lg-7 col-md-6 mb-3">
+                        <div class="row">
+                            @forelse($firmasExistentes as $idx => $fEval)
+                                <div class="col-{{ count($firmasExistentes) > 1 ? '12 col-xl-6' : '12' }} mb-2">
+                                    <div class="p-3 rounded border h-100 d-flex flex-column justify-content-between" style="background:#f8fafc; border-color:#e2e8f0 !important; border-radius:12px;">
+                                        <div>
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <span class="badge badge-info text-white font-weight-bold px-2 py-1" style="font-size:0.7rem;">
+                                                    <i class="fa fa-user-check mr-1"></i>EVALUADOR IPS {{ count($firmasExistentes) > 1 ? '#' . ($idx + 1) : '' }}
+                                                </span>
+                                                <small class="text-muted"><i class="fa fa-clock mr-1"></i>{{ !empty($fEval['firmado_at']) ? \Carbon\Carbon::parse($fEval['firmado_at'])->format('d/m/Y H:i') : ($evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : '—') }}</small>
+                                            </div>
+                                            <h6 class="font-weight-bold text-dark mb-0">{{ $fEval['nombre'] ?? 'Evaluador IPS' }}</h6>
+                                            <p class="text-info font-weight-bold small mb-1">{{ $fEval['cargo'] ?? 'Evaluador / Analista RIISS' }}</p>
+                                            @if(!empty($fEval['email']))
+                                                <small class="text-muted d-block"><i class="fa fa-envelope mr-1"></i>{{ $fEval['email'] }}</small>
+                                            @endif
+                                        </div>
+                                        <div class="mt-3 text-center pt-2 border-top bg-white p-2 rounded border">
+                                            @if(!empty($fEval['firma']))
+                                                <img src="{{ $fEval['firma'] }}" alt="Firma del Evaluador" style="max-height: 90px; max-width: 100%; object-fit: contain;">
+                                                <div class="text-muted small border-top pt-1 mt-1" style="font-size:0.7rem;">Firma Digital Estampada</div>
+                                            @else
+                                                <span class="text-muted small font-italic py-3 d-block"><i class="fa fa-pen-slash mr-1"></i>Sin firma digital registrada</span>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </div>
-                                @php
-                                    $primeraFirmaEval = !empty($evaluacion->firmas_evaluadores) ? $evaluacion->firmas_evaluadores[0] : null;
-                                    $nombreEval = $primeraFirmaEval['nombre'] ?? ($evaluacion->evaluador_nombre ?: ($evaluacion->cerradoPor ? $evaluacion->cerradoPor->name : 'Evaluador IPS'));
-                                    $cargoEval  = $primeraFirmaEval['cargo'] ?? 'Evaluador Técnico — Dirección de Planificación';
-                                    $imgFirmaEval = $primeraFirmaEval['firma'] ?? null;
-                                @endphp
-                                <h6 class="font-weight-bold text-dark mb-0">{{ $nombreEval }}</h6>
-                                <p class="text-info font-weight-bold small mb-1">{{ $cargoEval }}</p>
-                                @if($evaluacion->evaluador_telefono)
-                                    <small class="text-muted d-block"><i class="fa fa-phone mr-1"></i>Tel: {{ $evaluacion->evaluador_telefono }}</small>
-                                @endif
-                                @if($evaluacion->cerradoPor)
-                                    <small class="text-muted d-block"><i class="fa fa-envelope mr-1"></i>{{ $evaluacion->cerradoPor->email }}</small>
-                                @endif
-                            </div>
-                            <div class="mt-3 text-center pt-2 border-top bg-white p-2 rounded border">
-                                @if($imgFirmaEval)
-                                    <img src="{{ $imgFirmaEval }}" alt="Firma del Evaluador" style="max-height: 90px; max-width: 100%; object-fit: contain;">
-                                    <div class="text-muted small border-top pt-1 mt-1" style="font-size:0.7rem;">Firma Digital Estampada</div>
-                                @else
-                                    <span class="text-muted small font-italic py-3 d-block"><i class="fa fa-pen-slash mr-1"></i>Sin firma digital registrada</span>
-                                @endif
-                            </div>
+                            @empty
+                                <div class="col-12">
+                                    <div class="alert alert-light border text-center py-4">
+                                        <i class="fa fa-user-clock fa-2x text-muted mb-2"></i>
+                                        <p class="small text-muted mb-0">Sin firmas de evaluadores técnicos registradas.</p>
+                                    </div>
+                                </div>
+                            @endforelse
                         </div>
                     </div>
                 </div>
@@ -891,10 +910,12 @@ function mostrarToast(msg, tipo) {
     setTimeout(() => toast.fadeOut(400, () => toast.remove()), 3000);
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 var map = null;
 var marker = null;
+var padModalEval = null;
 
 function abrirModalDetalles() {
     $('#modalDetallesEst').modal('show');
@@ -921,7 +942,150 @@ function abrirModalDetalles() {
         }
     }, 300);
 }
+
+function abrirModalFirmarEvaluador() {
+    $('#modalFirmarEvaluador').modal('show');
+    
+    setTimeout(function() {
+        var canvas = document.getElementById('canvasFirmaModalEval');
+        if (canvas) {
+            if (!padModalEval) {
+                padModalEval = new SignaturePad(canvas, {
+                    backgroundColor: 'rgb(255, 255, 255)',
+                    penColor: 'rgb(15, 23, 42)'
+                });
+            }
+            var r = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * r;
+            canvas.height = canvas.offsetHeight * r;
+            canvas.getContext("2d").scale(r, r);
+            padModalEval.clear();
+        }
+    }, 350);
+}
+
+$(document).on('click', '#btnClearFirmaModalEval', function() {
+    if (padModalEval) padModalEval.clear();
+});
+
+function guardarFirmaEvaluadorModal() {
+    if (!padModalEval || padModalEval.isEmpty()) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'warning', title: 'Firma requerida', text: 'Por favor, estampe su firma en el recuadro digital.' });
+        } else {
+            alert('Por favor, estampe su firma en el recuadro digital.');
+        }
+        return;
+    }
+
+    var nombre = $('#modal_eval_nombre').val().trim();
+    if (!nombre) {
+        mostrarToast('Indique el nombre del evaluador', 'error');
+        return;
+    }
+
+    var cargo = $('#modal_eval_cargo').val().trim() || 'Evaluador / Analista RIISS — Dirección de Planificación';
+    var firmaBase64 = padModalEval.toDataURL('image/png');
+    var selectedOption = $('#modal_eval_nombre_select option:selected');
+    var userId = selectedOption.data('id') || {{ auth()->id() ?? 'null' }};
+
+    var $btn = $('#btnGuardarFirmaModalEval');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
+
+    $.ajax({
+        url: '{{ route("riiss.evaluaciones.firmar-evaluador", $evaluacion->id) }}',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            _token: '{{ csrf_token() }}',
+            evaluador_nombre: nombre,
+            evaluador_cargo: cargo,
+            evaluador_user_id: userId,
+            evaluador_firma: firmaBase64
+        }),
+        success: function(r) {
+            $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Registrar Firma');
+            $('#modalFirmarEvaluador').modal('hide');
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Firma Registrada!',
+                    text: 'La rúbrica del evaluador ha sido agregada exitosamente al Acta.',
+                    confirmButtonColor: '#10b981'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                mostrarToast('Firma registrada exitosamente', 'success');
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Registrar Firma');
+            var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Error al registrar la firma';
+            mostrarToast(msg, 'error');
+        }
+    });
+}
 </script>
+
+<!-- Modal Firmar Evaluador Pendiente -->
+<div class="modal fade" id="modalFirmarEvaluador" tabindex="-1" role="dialog" aria-hidden="true" style="z-index:1060;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px; overflow:hidden;">
+            <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+                <h5 class="modal-title font-weight-bold mb-0 text-white" style="font-size:1.1rem;">
+                    <i class="fa fa-pen-nib mr-2"></i>Estampar Firma Digital de Evaluador Técnico
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:0.9;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <form id="formFirmaEvaluadorPendiente">
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small mb-1">Nombre y Apellido del Evaluador <span class="text-danger">*</span></label>
+                        @if(!empty($evaluadoresComision) && count($evaluadoresComision) > 0)
+                            <select class="form-control form-control-sm" id="modal_eval_nombre_select" onchange="if(this.value){ $('#modal_eval_nombre').val(this.value); }">
+                                <option value="">— Seleccionar de la comisión o escribir abajo —</option>
+                                @foreach($evaluadoresComision as $ec)
+                                    <option value="{{ $ec['text'] ?? $ec['nombre'] ?? '' }}" data-id="{{ $ec['id'] ?? '' }}">{{ $ec['text'] ?? $ec['nombre'] ?? '' }}</option>
+                                @endforeach
+                            </select>
+                        @endif
+                        <input type="text" class="form-control form-control-sm mt-2" id="modal_eval_nombre" placeholder="Nombre completo del evaluador..." value="{{ auth()->user() ? auth()->user()->name : '' }}" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small mb-1">Cargo / Dependencia</label>
+                        <input type="text" class="form-control form-control-sm" id="modal_eval_cargo" value="Evaluador / Analista RIISS — Dirección de Planificación" required>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <label class="font-weight-bold text-dark small mb-0"><i class="fa fa-pen-alt mr-1 text-primary"></i>Rúbrica Digital <span class="text-danger">*</span></label>
+                            <button type="button" class="btn btn-outline-danger btn-xs py-0 px-2" id="btnClearFirmaModalEval" style="font-size:0.72rem; border-radius:6px;">
+                                <i class="fa fa-eraser mr-1"></i>Limpiar
+                            </button>
+                        </div>
+                        <div class="border rounded bg-white d-flex align-items-center justify-content-center p-1" style="border: 2px dashed #94a3b8 !important; border-radius: 10px;">
+                            <canvas id="canvasFirmaModalEval" width="450" height="150" style="touch-action: none; width: 100%; height: 150px; background: #ffffff; border-radius: 8px; cursor: crosshair;"></canvas>
+                        </div>
+                        <small class="text-muted d-block mt-1" style="font-size:0.72rem;"><i class="fa fa-info-circle mr-1"></i>Dibujar la firma con el cursor o directamente en pantalla táctil.</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-white border-top py-3 px-4 d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary font-weight-bold btn-sm" data-dismiss="modal" style="border-radius:8px;">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-success font-weight-bold btn-sm px-4 shadow-sm" id="btnGuardarFirmaModalEval" onclick="guardarFirmaEvaluadorModal()" style="border-radius:8px;">
+                    <i class="fa fa-save mr-1"></i> Registrar Firma
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Modal Detalles Establecimiento -->
 <div class="modal fade" id="modalDetallesEst" tabindex="-1">

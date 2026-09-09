@@ -400,42 +400,77 @@ class EvaluacionController extends Controller
             'responsable_documento'  => 'nullable|string|max:50',
             'responsable_telefono'   => 'nullable|string|max:50',
             'responsable_firma'      => 'required|string',
-            'evaluador_firma'        => 'required|string',
+            'evaluador_firma'        => 'nullable|string',
             'evaluador_nombre'       => 'nullable|string|max:200',
             'evaluador_cargo'        => 'nullable|string|max:150',
+            'evaluadores_firmas'     => 'nullable|array',
             'cierre_observaciones'   => 'nullable|string|max:2000',
         ], [
             'responsable_nombre.required' => 'El nombre del responsable receptor es obligatorio.',
             'responsable_cargo.required'  => 'El cargo del responsable receptor es obligatorio.',
             'responsable_firma.required'  => 'La firma digital del responsable del establecimiento es obligatoria.',
-            'evaluador_firma.required'    => 'La firma digital del evaluador es obligatoria.',
         ]);
 
         $currentUser = Auth::user();
         $firmasEvaluadores = is_array($evaluacion->firmas_evaluadores) ? $evaluacion->firmas_evaluadores : [];
 
-        // Agregar o actualizar la firma del evaluador actual
-        $firmaEvaluadorItem = [
-            'user_id'     => $currentUser?->id,
-            'nombre'      => $validated['evaluador_nombre'] ?: ($currentUser?->name ?? 'Evaluador IPS'),
-            'cargo'       => $validated['evaluador_cargo'] ?: 'Evaluador / Analista RIISS',
-            'email'       => $currentUser?->email,
-            'firma'       => $validated['evaluador_firma'],
-            'firmado_at'  => now()->format('Y-m-d H:i:s'),
-        ];
+        // Si se envió un array de firmas de múltiples evaluadores
+        if (!empty($validated['evaluadores_firmas']) && is_array($validated['evaluadores_firmas'])) {
+            foreach ($validated['evaluadores_firmas'] as $ef) {
+                if (empty($ef['firma'])) continue;
+                $uId = $ef['user_id'] ?? null;
+                $nombre = $ef['nombre'] ?? ($currentUser?->name ?? 'Evaluador IPS');
+                $cargo = $ef['cargo'] ?? 'Evaluador / Analista RIISS — Dirección de Planificación';
+                
+                $firmaItem = [
+                    'user_id'    => $uId ? (int)$uId : null,
+                    'nombre'     => $nombre,
+                    'cargo'      => $cargo,
+                    'email'      => $ef['email'] ?? ($currentUser?->email),
+                    'firma'      => $ef['firma'],
+                    'firmado_at' => now()->format('Y-m-d H:i:s'),
+                ];
 
-        $foundIndex = false;
-        if ($currentUser) {
-            foreach ($firmasEvaluadores as $idx => $f) {
-                if (isset($f['user_id']) && $f['user_id'] == $currentUser->id) {
-                    $firmasEvaluadores[$idx] = $firmaEvaluadorItem;
-                    $foundIndex = true;
-                    break;
+                $updated = false;
+                foreach ($firmasEvaluadores as $idx => $existente) {
+                    if (($uId && isset($existente['user_id']) && $existente['user_id'] == $uId) || (isset($existente['nombre']) && strcasecmp(trim($existente['nombre']), trim($nombre)) === 0)) {
+                        $firmasEvaluadores[$idx] = $firmaItem;
+                        $updated = true;
+                        break;
+                    }
+                }
+                if (!$updated) {
+                    $firmasEvaluadores[] = $firmaItem;
                 }
             }
+        } elseif (!empty($validated['evaluador_firma'])) {
+            // Caso firma única tradicional
+            $firmaEvaluadorItem = [
+                'user_id'     => $currentUser?->id,
+                'nombre'      => $validated['evaluador_nombre'] ?: ($currentUser?->name ?? 'Evaluador IPS'),
+                'cargo'       => $validated['evaluador_cargo'] ?: 'Evaluador / Analista RIISS',
+                'email'       => $currentUser?->email,
+                'firma'       => $validated['evaluador_firma'],
+                'firmado_at'  => now()->format('Y-m-d H:i:s'),
+            ];
+
+            $foundIndex = false;
+            if ($currentUser) {
+                foreach ($firmasEvaluadores as $idx => $f) {
+                    if (isset($f['user_id']) && $f['user_id'] == $currentUser->id) {
+                        $firmasEvaluadores[$idx] = $firmaEvaluadorItem;
+                        $foundIndex = true;
+                        break;
+                    }
+                }
+            }
+            if (!$foundIndex) {
+                $firmasEvaluadores[] = $firmaEvaluadorItem;
+            }
         }
-        if (!$foundIndex) {
-            $firmasEvaluadores[] = $firmaEvaluadorItem;
+
+        if (empty($firmasEvaluadores)) {
+            return response()->json(['ok' => false, 'message' => 'Debe registrar al menos una firma de evaluador técnico.'], 422);
         }
 
         // Actualizar la evaluación
@@ -485,6 +520,63 @@ class EvaluacionController extends Controller
                 'responsable_nombre' => $evaluacion->responsable_nombre,
                 'responsable_cargo'  => $evaluacion->responsable_cargo,
             ],
+        ]);
+    }
+
+    /**
+     * POST /riiss/evaluaciones/{evaluacion}/firmar-evaluador
+     * Registra o actualiza la firma de un evaluador técnico en una evaluación ya iniciada o cerrada.
+     */
+    public function firmarEvaluador(Request $request, Evaluacion $evaluacion): JsonResponse
+    {
+        $this->authorizeEvaluacion($evaluacion);
+
+        $validated = $request->validate([
+            'evaluador_firma'   => 'required|string',
+            'evaluador_nombre'  => 'required|string|max:200',
+            'evaluador_cargo'   => 'nullable|string|max:150',
+            'evaluador_user_id' => 'nullable|integer',
+        ], [
+            'evaluador_firma.required'  => 'La firma digital es obligatoria.',
+            'evaluador_nombre.required' => 'El nombre del evaluador es obligatorio.',
+        ]);
+
+        $currentUser = Auth::user();
+        $userId = $validated['evaluador_user_id'] ?? $currentUser?->id;
+        $firmasEvaluadores = is_array($evaluacion->firmas_evaluadores) ? $evaluacion->firmas_evaluadores : [];
+
+        $firmaItem = [
+            'user_id'    => $userId ? (int)$userId : null,
+            'nombre'     => $validated['evaluador_nombre'],
+            'cargo'      => $validated['evaluador_cargo'] ?: 'Evaluador / Analista RIISS — Dirección de Planificación',
+            'email'      => $currentUser?->email,
+            'firma'      => $validated['evaluador_firma'],
+            'firmado_at' => now()->format('Y-m-d H:i:s'),
+        ];
+
+        $found = false;
+        foreach ($firmasEvaluadores as $idx => $f) {
+            if (($userId && isset($f['user_id']) && $f['user_id'] == $userId) || (isset($f['nombre']) && strcasecmp(trim($f['nombre']), trim($validated['evaluador_nombre'])) === 0)) {
+                $firmasEvaluadores[$idx] = $firmaItem;
+                $found = true;
+                break;
+            }
+        }
+        if (!$found) {
+            $firmasEvaluadores[] = $firmaItem;
+        }
+
+        $evaluacion->update([
+            'firmas_evaluadores' => $firmasEvaluadores,
+        ]);
+
+        return response()->json([
+            'ok'      => true,
+            'message' => '¡Firma de evaluador registrada exitosamente!',
+            'data'    => [
+                'evaluacion_id'      => $evaluacion->id,
+                'firmas_evaluadores' => $firmasEvaluadores,
+            ]
         ]);
     }
 
