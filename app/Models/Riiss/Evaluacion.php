@@ -21,6 +21,9 @@ class Evaluacion extends Model
         'estado', 'porcentaje_cumplimiento', 'clasificacion_resultado',
         'pct_habilitacion', 'clasificacion_habilitacion',
         'observaciones_generales', 'aspectos_positivos', 'metadata', 'pei_profile_id',
+        'responsable_nombre', 'responsable_cargo', 'responsable_documento',
+        'responsable_telefono', 'responsable_firma', 'responsable_firmado_at',
+        'firmas_evaluadores', 'cierre_observaciones', 'cerrado_at', 'cerrado_por_id',
     ];
 
     protected $casts = [
@@ -29,7 +32,20 @@ class Evaluacion extends Model
         'pct_habilitacion'        => 'decimal:2',
         'metadata'                => 'array',
         'evaluadores'             => 'array',
+        'firmas_evaluadores'      => 'array',
+        'responsable_firmado_at'  => 'datetime',
+        'cerrado_at'              => 'datetime',
     ];
+
+    public function cerradoPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cerrado_por_id');
+    }
+
+    public function isCerradaConFirmas(): bool
+    {
+        return !empty($this->responsable_firma) && !empty($this->cerrado_at);
+    }
 
     public function peiProfile(): BelongsTo
     {

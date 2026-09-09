@@ -1645,11 +1645,16 @@ function cargarDashboard() {
         var rowsData = evs.map(function(ev, idx) {
             var pct = ev.progreso || ev.porcentaje_cumplimiento || 0;
             var estadoLabel = (ev.estado || '').replace(/_/g,' ');
-            var evalNombre = ev.evaluador && ev.evaluador !== '—' ? ev.evaluador : 'Sin evaluador asignado';
-            var badgeClass = '';
-            if (ev.estado === 'pendiente' || ev.estado === 'borrador') badgeClass = 'badge-warning text-dark';
-            else if (ev.estado === 'en_progreso') badgeClass = 'badge-primary';
-            else badgeClass = 'badge-success';
+            var badgeEstado = '';
+            if (ev.cerrado_con_firmas) {
+                badgeEstado = '<span class="badge badge-success px-2 py-1"><i class="fa fa-file-signature mr-1"></i>Firmado & Cerrado</span>';
+            } else if (ev.estado === 'completada') {
+                badgeEstado = '<span class="badge badge-success px-2 py-1"><i class="fa fa-check-circle mr-1"></i>Completada</span>';
+            } else if (ev.estado === 'en_progreso') {
+                badgeEstado = '<span class="badge badge-primary px-2 py-1"><i class="fa fa-spinner fa-spin mr-1"></i>En Progreso</span>';
+            } else {
+                badgeEstado = '<span class="badge badge-warning text-dark px-2 py-1">' + estadoLabel + '</span>';
+            }
 
             var nombreEsc = addslashes(ev.establecimiento || '');
             
@@ -1665,7 +1670,7 @@ function cargarDashboard() {
 
             var accionesHtml = `
                 <div class="d-flex justify-content-center align-items-center" style="gap:4px">
-                    <a href="/riiss/evaluaciones/nueva/${ev.id_establecimiento}?evaluacion=${ev.id}" class="btn btn-circle btn-primary" title="Continuar Evaluación"><i class="fa fa-arrow-right"></i></a>
+                    <a href="/riiss/evaluaciones/nueva/${ev.id_establecimiento}?evaluacion=${ev.id}" class="btn btn-circle btn-primary" title="Continuar / Firmar Evaluación"><i class="fa fa-arrow-right"></i></a>
                     <button type="button" class="btn btn-circle btn-info" onclick="verDetalle('${ev.id_establecimiento || ''}', '${nombreEsc}', '${ev.id || ''}')" title="Ver Detalle"><i class="fa fa-eye"></i></button>
                 </div>
             `;
@@ -1676,7 +1681,7 @@ function cargarDashboard() {
                 complejidad: `<div><span class="badge" style="background:${ev.complejidad_color || '#64748b'};color:#fff">${ev.complejidad || 'N/A'}</span></div><small class="text-muted">${ev.tipologia || '—'}</small>`,
                 evaluador: `<div class="d-flex align-items-center"><i class="fa fa-user-circle text-info mr-1"></i><span class="small font-weight-bold text-dark">${evalNombre}</span></div>`,
                 progreso: progresoHtml,
-                estado: `<span class="badge ${badgeClass} text-capitalize px-2 py-1">${estadoLabel}</span>`,
+                estado: badgeEstado,
                 updated_at: `<span class="small text-muted">${ev.updated_at || '—'}</span>`,
                 acciones: accionesHtml
             };

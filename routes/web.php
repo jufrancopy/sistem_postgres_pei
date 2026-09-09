@@ -1100,6 +1100,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('evaluaciones.clasificacion');
         Route::get('evaluaciones/{evaluacion}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'show'])
             ->name('evaluaciones.show');
+        Route::post('evaluaciones/{evaluacion}/cerrar-con-firmas', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'cerrarConFirmas'])
+            ->name('evaluaciones.cerrar-con-firmas');
         Route::delete('evaluaciones/{evaluacion}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'destroy'])
             ->name('evaluaciones.destroy');
     });

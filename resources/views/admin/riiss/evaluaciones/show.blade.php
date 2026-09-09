@@ -104,6 +104,125 @@
             </div>
         </div>
 
+        {{-- Card de Acta de Cierre y Firmas Digitales --}}
+        @if($evaluacion->responsable_firma || $evaluacion->cerrado_at)
+        <div class="card border-0 shadow-sm mb-4" style="border-radius:16px; overflow:hidden; border-left: 6px solid #10b981 !important;">
+            <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-light p-2 mr-3 text-success d-flex align-items-center justify-content-center" style="width:42px; height:42px;">
+                        <i class="fa fa-file-signature fa-lg"></i>
+                    </div>
+                    <div>
+                        <h5 class="font-weight-bold text-dark mb-0" style="font-size:1.1rem;">
+                            Acta de Cierre & Firmas Digitales en Terreno
+                        </h5>
+                        <small class="text-muted">Relevamiento técnico auditado y formalmente cerrado en el establecimiento.</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                    <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size:0.8rem; border-radius:8px;">
+                        <i class="fa fa-check-double mr-1"></i> Cerrado el {{ $evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : ($evaluacion->responsable_firmado_at ? $evaluacion->responsable_firmado_at->format('d/m/Y H:i') : date('d/m/Y')) }} hs
+                    </span>
+                    <button type="button" class="btn btn-outline-dark btn-sm font-weight-bold" onclick="window.print()" style="border-radius:8px;">
+                        <i class="fa fa-print mr-1"></i> Imprimir Acta
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-4 bg-white">
+                <div class="row">
+                    {{-- Firma del Responsable del Establecimiento --}}
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 rounded border h-100 d-flex flex-column justify-content-between" style="background:#f8fafc; border-color:#e2e8f0 !important; border-radius:12px;">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge badge-warning text-dark font-weight-bold px-2 py-1" style="font-size:0.7rem;">
+                                        <i class="fa fa-user-tie mr-1"></i>RECEPTOR DEL CENTRO
+                                    </span>
+                                    <small class="text-muted"><i class="fa fa-clock mr-1"></i>{{ $evaluacion->responsable_firmado_at ? $evaluacion->responsable_firmado_at->format('d/m/Y H:i') : '—' }}</small>
+                                </div>
+                                <h6 class="font-weight-bold text-dark mb-0">{{ $evaluacion->responsable_nombre ?: 'Sin especificar' }}</h6>
+                                <p class="text-primary font-weight-bold small mb-1">{{ $evaluacion->responsable_cargo ?: 'Responsable del Establecimiento' }}</p>
+                                @if($evaluacion->responsable_documento)
+                                    <small class="text-muted d-block"><i class="fa fa-id-card mr-1"></i>C.I.: {{ $evaluacion->responsable_documento }}</small>
+                                @endif
+                                @if($evaluacion->responsable_telefono)
+                                    <small class="text-muted d-block"><i class="fa fa-phone mr-1"></i>Tel: {{ $evaluacion->responsable_telefono }}</small>
+                                @endif
+                            </div>
+                            <div class="mt-3 text-center pt-2 border-top bg-white p-2 rounded border">
+                                @if($evaluacion->responsable_firma)
+                                    <img src="{{ $evaluacion->responsable_firma }}" alt="Firma del Responsable" style="max-height: 90px; max-width: 100%; object-fit: contain;">
+                                    <div class="text-muted small border-top pt-1 mt-1" style="font-size:0.7rem;">Firma Digital Estampada</div>
+                                @else
+                                    <span class="text-muted small font-italic py-3 d-block"><i class="fa fa-pen-slash mr-1"></i>Sin firma digital registrada</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Firma del Evaluador / Equipo IPS --}}
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 rounded border h-100 d-flex flex-column justify-content-between" style="background:#f8fafc; border-color:#e2e8f0 !important; border-radius:12px;">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge badge-info text-white font-weight-bold px-2 py-1" style="font-size:0.7rem;">
+                                        <i class="fa fa-user-check mr-1"></i>EVALUADOR IPS
+                                    </span>
+                                    <small class="text-muted"><i class="fa fa-clock mr-1"></i>{{ $evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : '—' }}</small>
+                                </div>
+                                @php
+                                    $primeraFirmaEval = !empty($evaluacion->firmas_evaluadores) ? $evaluacion->firmas_evaluadores[0] : null;
+                                    $nombreEval = $primeraFirmaEval['nombre'] ?? ($evaluacion->evaluador_nombre ?: ($evaluacion->cerradoPor ? $evaluacion->cerradoPor->name : 'Evaluador IPS'));
+                                    $cargoEval  = $primeraFirmaEval['cargo'] ?? 'Evaluador Técnico — Dirección de Planificación';
+                                    $imgFirmaEval = $primeraFirmaEval['firma'] ?? null;
+                                @endphp
+                                <h6 class="font-weight-bold text-dark mb-0">{{ $nombreEval }}</h6>
+                                <p class="text-info font-weight-bold small mb-1">{{ $cargoEval }}</p>
+                                @if($evaluacion->evaluador_telefono)
+                                    <small class="text-muted d-block"><i class="fa fa-phone mr-1"></i>Tel: {{ $evaluacion->evaluador_telefono }}</small>
+                                @endif
+                                @if($evaluacion->cerradoPor)
+                                    <small class="text-muted d-block"><i class="fa fa-envelope mr-1"></i>{{ $evaluacion->cerradoPor->email }}</small>
+                                @endif
+                            </div>
+                            <div class="mt-3 text-center pt-2 border-top bg-white p-2 rounded border">
+                                @if($imgFirmaEval)
+                                    <img src="{{ $imgFirmaEval }}" alt="Firma del Evaluador" style="max-height: 90px; max-width: 100%; object-fit: contain;">
+                                    <div class="text-muted small border-top pt-1 mt-1" style="font-size:0.7rem;">Firma Digital Estampada</div>
+                                @else
+                                    <span class="text-muted small font-italic py-3 d-block"><i class="fa fa-pen-slash mr-1"></i>Sin firma digital registrada</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if($evaluacion->cierre_observaciones)
+                    <div class="p-3 rounded bg-light border mt-2">
+                        <strong class="text-dark small d-block mb-1"><i class="fa fa-sticky-note text-warning mr-1"></i>Observaciones y Acuerdos de Cierre:</strong>
+                        <p class="text-muted small mb-0">{{ $evaluacion->cierre_observaciones }}</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+        @else
+        {{-- Alerta si aún no tiene cierre con firmas --}}
+        <div class="alert bg-white border shadow-sm mb-4 d-flex align-items-center justify-content-between flex-wrap" style="border-radius:14px; border-left: 5px solid #f59e0b !important; gap:12px;">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-light p-2 mr-3 text-warning d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
+                    <i class="fa fa-exclamation-triangle fa-lg"></i>
+                </div>
+                <div>
+                    <h6 class="font-weight-bold text-dark mb-0">Relevamiento Pendiente de Cierre Formal y Firmas</h6>
+                    <small class="text-muted">Esta evaluación no cuenta con el acta de cierre digital firmada por el receptor y el evaluador.</small>
+                </div>
+            </div>
+            <a href="{{ route('riiss.evaluaciones.nueva', $evaluacion->id_establecimiento) }}" class="btn btn-warning btn-sm font-weight-bold shadow-sm" style="border-radius:8px;">
+                <i class="fa fa-file-signature mr-1"></i> Ir a Firmar y Cerrar
+            </a>
+        </div>
+        @endif
+
         @if($evaluacion->aspectos_positivos || $evaluacion->observaciones_generales)
         <div class="row mb-4">
             @if($evaluacion->aspectos_positivos)

@@ -365,14 +365,14 @@
 
         {{-- Botones --}}
         <div id="botonesAccion" class="card shadow-sm mb-4" style="display:none">
-            <div class="card-body d-flex justify-content-between align-items-center">
+            <div class="card-body d-flex justify-content-between align-items-center flex-wrap" style="gap:10px;">
                 <span class="text-muted small" id="txtRespuestas">0 respuestas</span>
-                <div>
-                    <button class="btn btn-outline-secondary mr-2" onclick="guardarParcial()">
+                <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                    <button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold" onclick="guardarParcial()">
                         <i class="fa fa-save mr-1"></i>Guardar parcial
                     </button>
-                    <button class="btn btn-danger" onclick="finalizarEvaluacion()">
-                        <i class="fa fa-check-circle mr-1"></i>Finalizar y analizar
+                    <button type="button" class="btn btn-danger btn-sm font-weight-bold shadow-sm" onclick="abrirModalCierreFirmas()">
+                        <i class="fa fa-file-signature mr-1"></i> Finalizar y Sellar con Firmas
                     </button>
                 </div>
             </div>
@@ -383,15 +383,191 @@
 
     </div>
 </div>
+
+{{-- Modal Acta de Cierre y Firmas Digitales --}}
+<div class="modal fade" id="modalCierreFirmas" tabindex="-1" role="dialog" aria-labelledby="modalCierreFirmasTitle" aria-hidden="true" style="z-index: 1055;">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px; overflow:hidden;">
+            <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+                <div>
+                    <span class="badge badge-light text-dark font-weight-bold mb-1" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 6px;">
+                        <i class="fa fa-file-signature text-info mr-1"></i> ACTA DE CIERRE EN TERRENO
+                    </span>
+                    <h5 class="modal-title font-weight-bold mb-0 text-white" id="modalCierreFirmasTitle" style="font-size: 1.15rem;">
+                        Acta de Cierre y Firmas Digitales del Relevamiento RIISS
+                    </h5>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4" style="background: #f8fafc; max-height: 80vh; overflow-y: auto;">
+                
+                {{-- Resumen del Establecimiento --}}
+                <div class="alert bg-white border shadow-xs d-flex align-items-center justify-content-between mb-4 flex-wrap" style="border-radius:12px; border-left: 5px solid #0284c7 !important; gap:10px;">
+                    <div>
+                        <small class="text-muted text-uppercase font-weight-bold" style="font-size:0.7rem;">Establecimiento Relevado</small>
+                        <h6 class="font-weight-bold text-dark mb-0">{{ $est->nombre_oficial }}</h6>
+                        <small class="text-info">{{ $est->tipologia_clasificacion }} — {{ $est->complejidad }}</small>
+                    </div>
+                    <div class="text-right">
+                        <span class="badge badge-primary px-3 py-2" style="font-size:0.8rem; border-radius:8px;">
+                            <i class="fa fa-calendar-check mr-1"></i> Fecha: {{ date('d/m/Y') }}
+                        </span>
+                    </div>
+                </div>
+
+                <form id="formCierreFirmas">
+                    <div class="row">
+                        {{-- BLOQUE 1: Responsable del Establecimiento (Receptor) --}}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm h-100" style="border-radius:14px; border: 1px solid #e2e8f0;">
+                                <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-light p-2 mr-2 text-primary d-flex align-items-center justify-content-center" style="width:34px; height:34px;">
+                                            <i class="fa fa-user-tie"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="font-weight-bold text-dark mb-0" style="font-size:0.95rem;">1. Responsable del Establecimiento</h6>
+                                            <small class="text-muted">Persona que recibe al equipo en el centro</small>
+                                        </div>
+                                    </div>
+                                    <span class="badge badge-warning text-dark font-weight-bold px-2 py-1" style="font-size:0.68rem;">Receptor</span>
+                                </div>
+                                <div class="card-body p-4 bg-white">
+                                    <div class="form-group mb-3">
+                                        <label class="font-weight-bold text-dark small mb-1">Nombre y Apellido <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control form-control-sm" id="cierre_responsable_nombre" name="responsable_nombre" placeholder="Ej: Dra. Carmen López / Lic. Marcos Benítez" required>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 form-group mb-3">
+                                            <label class="font-weight-bold text-dark small mb-1">Cargo / Función <span class="text-danger">*</span></label>
+                                            <input type="text" list="listaCargosSugeridos" class="form-control form-control-sm" id="cierre_responsable_cargo" name="responsable_cargo" placeholder="Ej: Directora Médica" required>
+                                            <datalist id="listaCargosSugeridos">
+                                                <option value="Director/a Médico/a">
+                                                <option value="Administrador/a del Establecimiento">
+                                                <option value="Lic. en Enfermería / Jefa de Enfermería">
+                                                <option value="Jefe de Guardia / Admisión">
+                                                <option value="Encargado/a de Farmacia">
+                                                <option value="Asistente Administrativo/a">
+                                                <option value="Coordinador/a de Área">
+                                            </datalist>
+                                        </div>
+                                        <div class="col-md-6 form-group mb-3">
+                                            <label class="font-weight-bold text-dark small mb-1">Cédula de Identidad (C.I.)</label>
+                                            <input type="text" class="form-control form-control-sm" id="cierre_responsable_documento" name="responsable_documento" placeholder="Ej: 1.234.567">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label class="font-weight-bold text-dark small mb-1">Teléfono de Contacto</label>
+                                        <input type="text" class="form-control form-control-sm" id="cierre_responsable_telefono" name="responsable_telefono" placeholder="Ej: 0981 123 456">
+                                    </div>
+
+                                    {{-- Recuadro Canvas Firma Responsable --}}
+                                    <div class="form-group mb-0">
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <label class="font-weight-bold text-dark small mb-0"><i class="fa fa-pen-alt mr-1 text-primary"></i>Firma Digital del Receptor <span class="text-danger">*</span></label>
+                                            <button type="button" class="btn btn-outline-danger btn-xs py-0 px-2" id="btnClearFirmaResponsable" style="font-size:0.72rem; border-radius:6px;">
+                                                <i class="fa fa-eraser mr-1"></i>Limpiar
+                                            </button>
+                                        </div>
+                                        <div class="border rounded bg-light d-flex align-items-center justify-content-center p-1" style="border: 2px dashed #94a3b8 !important; border-radius: 10px; background:#fafafa;">
+                                            <canvas id="canvasFirmaResponsable" width="480" height="150" style="touch-action: none; width: 100%; height: 150px; background: #ffffff; border-radius: 8px; cursor: crosshair;"></canvas>
+                                        </div>
+                                        <small class="text-muted d-block mt-1" style="font-size:0.72rem;"><i class="fa fa-info-circle mr-1"></i>Dibujar la firma directamente en el recuadro táctil o con el cursor.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- BLOQUE 2: Evaluador / Equipo de Relevamiento IPS --}}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm h-100" style="border-radius:14px; border: 1px solid #e2e8f0;">
+                                <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-light p-2 mr-2 text-info d-flex align-items-center justify-content-center" style="width:34px; height:34px;">
+                                            <i class="fa fa-user-check"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="font-weight-bold text-dark mb-0" style="font-size:0.95rem;">2. Evaluador Técnico IPS</h6>
+                                            <small class="text-muted">Talento humano responsable del relevamiento</small>
+                                        </div>
+                                    </div>
+                                    <span class="badge badge-info text-white font-weight-bold px-2 py-1" style="font-size:0.68rem;">Equipo IPS</span>
+                                </div>
+                                <div class="card-body p-4 bg-white">
+                                    <div class="form-group mb-3">
+                                        <label class="font-weight-bold text-dark small mb-1">Nombre del Evaluador <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control form-control-sm" id="cierre_evaluador_nombre" name="evaluador_nombre" value="{{ auth()->user() ? auth()->user()->name : '' }}" required>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label class="font-weight-bold text-dark small mb-1">Cargo / Dependencia</label>
+                                        <input type="text" class="form-control form-control-sm" id="cierre_evaluador_cargo" name="evaluador_cargo" value="Evaluador / Analista RIISS — Dirección de Planificación" required>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label class="font-weight-bold text-dark small mb-1">Observaciones Finales de Cierre (Opcional)</label>
+                                        <textarea class="form-control form-control-sm" id="cierre_observaciones_cierre" name="cierre_observaciones" rows="2" placeholder="Notas sobre la visita, acuerdos o condiciones observadas..."></textarea>
+                                    </div>
+
+                                    {{-- Recuadro Canvas Firma Evaluador --}}
+                                    <div class="form-group mb-0">
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <label class="font-weight-bold text-dark small mb-0"><i class="fa fa-pen-alt mr-1 text-info"></i>Firma Digital del Evaluador <span class="text-danger">*</span></label>
+                                            <button type="button" class="btn btn-outline-danger btn-xs py-0 px-2" id="btnClearFirmaEvaluador" style="font-size:0.72rem; border-radius:6px;">
+                                                <i class="fa fa-eraser mr-1"></i>Limpiar
+                                            </button>
+                                        </div>
+                                        <div class="border rounded bg-light d-flex align-items-center justify-content-center p-1" style="border: 2px dashed #94a3b8 !important; border-radius: 10px; background:#fafafa;">
+                                            <canvas id="canvasFirmaEvaluador" width="480" height="150" style="touch-action: none; width: 100%; height: 150px; background: #ffffff; border-radius: 8px; cursor: crosshair;"></canvas>
+                                        </div>
+                                        <small class="text-muted d-block mt-1" style="font-size:0.72rem;"><i class="fa fa-info-circle mr-1"></i>Sello digital de conformidad del evaluador de la Dirección de Planificación.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Declaración de Conformidad --}}
+                    <div class="p-3 bg-white border rounded d-flex align-items-center flex-wrap" style="border-radius:12px !important; gap:8px;">
+                        <div class="custom-control custom-checkbox mr-3">
+                            <input type="checkbox" class="custom-control-input" id="chkConformidadCierre" checked required>
+                            <label class="custom-control-label font-weight-bold text-dark" for="chkConformidadCierre" style="font-size:0.85rem; cursor:pointer;">
+                                Constancia de Visita Técnica en Terreno:
+                            </label>
+                        </div>
+                        <small class="text-muted" style="font-size:0.8rem;">
+                            Ambas partes dejan constancia de que los datos relevados reflejan fielmente el estado actual de los servicios, recursos y cartera asistencial observada.
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-white border-top py-3 px-4 d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary font-weight-bold btn-sm px-3" data-dismiss="modal" style="border-radius:8px;">
+                    <i class="fa fa-times mr-1"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-success font-weight-bold btn-sm px-4 shadow-sm" id="btnConfirmarCierreFirmas" style="border-radius:8px;">
+                    <i class="fa fa-file-signature mr-1"></i> Sellar y Cerrar Relevamiento
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <script>
 const EST_ID = '{{ $est->id_establecimiento }}';
 let evaluacionId = null;
 let formulario   = null;
 let respuestas   = {};
 let checklistState = {};
+let padResponsable = null;
+let padEvaluador   = null;
 
 // ── Localidad Select2 encadenado ──────────────────────────────────────────────
 function initLocalidadSelect(P) {
@@ -1076,6 +1252,149 @@ $(window).on('scroll', function() {
     });
 });
 
+// ── Gestión de Firmas y Cierre Formal ─────────────────────────────────────────
+function initSignaturePadsCierre() {
+    var canvasResp = document.getElementById('canvasFirmaResponsable');
+    var canvasEval = document.getElementById('canvasFirmaEvaluador');
+
+    if (canvasResp) {
+        if (!padResponsable) {
+            padResponsable = new SignaturePad(canvasResp, {
+                backgroundColor: 'rgb(255, 255, 255)',
+                penColor: 'rgb(15, 23, 42)'
+            });
+        }
+        var r1 = Math.max(window.devicePixelRatio || 1, 1);
+        canvasResp.width = canvasResp.offsetWidth * r1;
+        canvasResp.height = canvasResp.offsetHeight * r1;
+        canvasResp.getContext("2d").scale(r1, r1);
+        padResponsable.clear();
+    }
+
+    if (canvasEval) {
+        if (!padEvaluador) {
+            padEvaluador = new SignaturePad(canvasEval, {
+                backgroundColor: 'rgb(255, 255, 255)',
+                penColor: 'rgb(15, 23, 42)'
+            });
+        }
+        var r2 = Math.max(window.devicePixelRatio || 1, 1);
+        canvasEval.width = canvasEval.offsetWidth * r2;
+        canvasEval.height = canvasEval.offsetHeight * r2;
+        canvasEval.getContext("2d").scale(r2, r2);
+        padEvaluador.clear();
+    }
+}
+
+function abrirModalCierreFirmas() {
+    if (!evaluacionId) {
+        mostrarToast('Esperá que se inicialice la evaluación antes de firmar.', 'error');
+        return;
+    }
+
+    var total = formulario ? formulario.resumen.total_preguntas : 0;
+    var respondidas = Object.keys(respuestas).length;
+    if (total > 0 && respondidas < total * 0.4) {
+        if (!confirm('Solo has respondido ' + respondidas + ' de ' + total + ' preguntas (' + Math.round(respondidas/total*100) + '%). ¿Deseas proceder con el cierre y firmas en terreno de todas formas?')) {
+            return;
+        }
+    }
+
+    // Guardar respuestas pendientes primero
+    if (Object.keys(respuestas).length) {
+        enviarRespuestas(false);
+    }
+
+    $('#modalCierreFirmas').modal('show');
+    setTimeout(function() {
+        initSignaturePadsCierre();
+    }, 300);
+}
+
+$(document).ready(function() {
+    $('#btnClearFirmaResponsable').on('click', function() {
+        if (padResponsable) padResponsable.clear();
+    });
+
+    $('#btnClearFirmaEvaluador').on('click', function() {
+        if (padEvaluador) padEvaluador.clear();
+    });
+
+    $('#btnConfirmarCierreFirmas').on('click', function(e) {
+        e.preventDefault();
+
+        var nombreResp = $('#cierre_responsable_nombre').val().trim();
+        var cargoResp  = $('#cierre_responsable_cargo').val().trim();
+        var nombreEval = $('#cierre_evaluador_nombre').val().trim();
+
+        if (!nombreResp) {
+            mostrarToast('Por favor, ingresá el nombre del responsable del establecimiento.', 'error');
+            $('#cierre_responsable_nombre').focus();
+            return;
+        }
+
+        if (!cargoResp) {
+            mostrarToast('Por favor, ingresá o seleccioná el cargo del responsable receptor.', 'error');
+            $('#cierre_responsable_cargo').focus();
+            return;
+        }
+
+        if (!padResponsable || padResponsable.isEmpty()) {
+            mostrarToast('La firma digital del responsable del establecimiento es obligatoria.', 'error');
+            return;
+        }
+
+        if (!padEvaluador || padEvaluador.isEmpty()) {
+            mostrarToast('La firma digital del evaluador IPS es obligatoria.', 'error');
+            return;
+        }
+
+        if (!$('#chkConformidadCierre').is(':checked')) {
+            mostrarToast('Debés marcar la casilla de constancia y conformidad.', 'error');
+            return;
+        }
+
+        var btn = $('#btnConfirmarCierreFirmas');
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Sellando firmas y cerrando...');
+
+        var firmaRespBase64 = padResponsable.toDataURL('image/png');
+        var firmaEvalBase64 = padEvaluador.toDataURL('image/png');
+
+        var payload = {
+            _token: '{{ csrf_token() }}',
+            responsable_nombre:    nombreResp,
+            responsable_cargo:     cargoResp,
+            responsable_documento: $('#cierre_responsable_documento').val().trim(),
+            responsable_telefono:  $('#cierre_responsable_telefono').val().trim(),
+            responsable_firma:     firmaRespBase64,
+            evaluador_nombre:      nombreEval,
+            evaluador_cargo:       $('#cierre_evaluador_cargo').val().trim(),
+            evaluador_firma:       firmaEvalBase64,
+            cierre_observaciones:  $('#cierre_observaciones_cierre').val().trim(),
+        };
+
+        $.ajax({
+            url: '/riiss/evaluaciones/' + evaluacionId + '/cerrar-con-firmas',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function(resp) {
+                btn.prop('disabled', false).html('<i class="fa fa-file-signature mr-1"></i> Sellar y Cerrar Relevamiento');
+                $('#modalCierreFirmas').modal('hide');
+                mostrarToast(resp.message || 'Relevamiento cerrado con éxito', 'success');
+
+                // Ejecutar análisis de brechas final y mostrar resultado
+                ejecutarAnalisis();
+            },
+            error: function(xhr) {
+                btn.prop('disabled', false).html('<i class="fa fa-file-signature mr-1"></i> Sellar y Cerrar Relevamiento');
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Error al sellar las firmas.';
+                mostrarToast(msg, 'error');
+            }
+        });
+    });
+});
+
 // ── Guardar / Finalizar ───────────────────────────────────────────────────────
 function guardarParcial() {
     if (!evaluacionId || !Object.keys(respuestas).length) {
@@ -1085,13 +1404,7 @@ function guardarParcial() {
 }
 
 function finalizarEvaluacion() {
-    if (!evaluacionId) { mostrarToast('Esperá que se cree la evaluación', 'error'); return; }
-    var total = formulario ? formulario.resumen.total_preguntas : 0;
-    var respondidas = Object.keys(respuestas).length;
-    if (respondidas < total * 0.5) {
-        if (!confirm('Solo respondiste ' + respondidas + ' de ' + total + ' preguntas (' + Math.round(respondidas/total*100) + '%). ¿Continuar de todas formas?')) return;
-    }
-    enviarRespuestas(true);
+    abrirModalCierreFirmas();
 }
 
 function enviarRespuestas(ejecutarGap) {

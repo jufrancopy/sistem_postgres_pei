@@ -12,6 +12,7 @@ use App\Services\GapAnalysisService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class EvaluacionController extends Controller
 {
@@ -113,6 +114,9 @@ class EvaluacionController extends Controller
                     'progreso'                => $pct,
                     'clasificacion'           => $ev->clasificacion_resultado,
                     'porcentaje_cumplimiento' => $ev->porcentaje_cumplimiento,
+                    'cerrado_con_firmas'      => $ev->isCerradaConFirmas(),
+                    'responsable_nombre'      => $ev->responsable_nombre,
+                    'responsable_cargo'       => $ev->responsable_cargo,
                     'updated_at'              => $ev->updated_at?->diffForHumans(),
                 ];
             });
@@ -383,13 +387,115 @@ class EvaluacionController extends Controller
     }
 
     /**
+     * POST /riiss/evaluaciones/{id}/cerrar-con-firmas
+     * Sellar y cerrar formalmente el relevamiento con firmas digitales del receptor y evaluador.
+     */
+    public function cerrarConFirmas(Request $request, Evaluacion $evaluacion): JsonResponse
+    {
+        $this->authorizeEvaluacion($evaluacion);
+
+        $validated = $request->validate([
+            'responsable_nombre'     => 'required|string|max:200',
+            'responsable_cargo'      => 'required|string|max:150',
+            'responsable_documento'  => 'nullable|string|max:50',
+            'responsable_telefono'   => 'nullable|string|max:50',
+            'responsable_firma'      => 'required|string',
+            'evaluador_firma'        => 'required|string',
+            'evaluador_nombre'       => 'nullable|string|max:200',
+            'evaluador_cargo'        => 'nullable|string|max:150',
+            'cierre_observaciones'   => 'nullable|string|max:2000',
+        ], [
+            'responsable_nombre.required' => 'El nombre del responsable receptor es obligatorio.',
+            'responsable_cargo.required'  => 'El cargo del responsable receptor es obligatorio.',
+            'responsable_firma.required'  => 'La firma digital del responsable del establecimiento es obligatoria.',
+            'evaluador_firma.required'    => 'La firma digital del evaluador es obligatoria.',
+        ]);
+
+        $currentUser = Auth::user();
+        $firmasEvaluadores = is_array($evaluacion->firmas_evaluadores) ? $evaluacion->firmas_evaluadores : [];
+
+        // Agregar o actualizar la firma del evaluador actual
+        $firmaEvaluadorItem = [
+            'user_id'     => $currentUser?->id,
+            'nombre'      => $validated['evaluador_nombre'] ?: ($currentUser?->name ?? 'Evaluador IPS'),
+            'cargo'       => $validated['evaluador_cargo'] ?: 'Evaluador / Analista RIISS',
+            'email'       => $currentUser?->email,
+            'firma'       => $validated['evaluador_firma'],
+            'firmado_at'  => now()->format('Y-m-d H:i:s'),
+        ];
+
+        $foundIndex = false;
+        if ($currentUser) {
+            foreach ($firmasEvaluadores as $idx => $f) {
+                if (isset($f['user_id']) && $f['user_id'] == $currentUser->id) {
+                    $firmasEvaluadores[$idx] = $firmaEvaluadorItem;
+                    $foundIndex = true;
+                    break;
+                }
+            }
+        }
+        if (!$foundIndex) {
+            $firmasEvaluadores[] = $firmaEvaluadorItem;
+        }
+
+        // Actualizar la evaluación
+        $evaluacion->update([
+            'responsable_nombre'     => $validated['responsable_nombre'],
+            'responsable_cargo'      => $validated['responsable_cargo'],
+            'responsable_documento'  => $validated['responsable_documento'] ?? null,
+            'responsable_telefono'   => $validated['responsable_telefono'] ?? null,
+            'responsable_firma'      => $validated['responsable_firma'],
+            'responsable_firmado_at' => now(),
+            'firmas_evaluadores'     => $firmasEvaluadores,
+            'cierre_observaciones'   => $validated['cierre_observaciones'] ?? null,
+            'estado'                 => 'completada',
+            'cerrado_at'             => now(),
+            'cerrado_por_id'         => $currentUser?->id,
+        ]);
+
+        // Sincronizar asignaciones asociadas a este establecimiento
+        \App\Models\Riiss\Asignacion::where('id_establecimiento', $evaluacion->id_establecimiento)
+            ->whereIn('estado', ['pendiente', 'en_progreso'])
+            ->update([
+                'estado'        => 'completada',
+                'evaluacion_id' => $evaluacion->id,
+            ]);
+
+        // Otorgar gamificación por cierre formal
+        if ($currentUser) {
+            $config = \App\Models\HomeConfiguration::first();
+            $peiProfileId = $evaluacion->pei_profile_id ?: ($config?->pei_profile_id ?: '766eb883-fdd0-4723-8f75-cf689aa8f0fa');
+            app(\App\Services\GamificationService::class)->awardPoints(
+                $currentUser,
+                'riiss_cierre_firmado',
+                'Cierre con firmas del Relevamiento RIISS: ' . ($evaluacion->establecimiento?->nombre_oficial ?? 'Establecimiento'),
+                150,
+                $evaluacion,
+                $peiProfileId
+            );
+        }
+
+        return response()->json([
+            'ok'      => true,
+            'message' => '¡Relevamiento cerrado y sellado exitosamente con firmas digitales!',
+            'data'    => [
+                'evaluacion_id'      => $evaluacion->id,
+                'estado'             => $evaluacion->estado,
+                'cerrado_at'         => $evaluacion->cerrado_at?->format('d/m/Y H:i:s'),
+                'responsable_nombre' => $evaluacion->responsable_nombre,
+                'responsable_cargo'  => $evaluacion->responsable_cargo,
+            ],
+        ]);
+    }
+
+    /**
      * GET /riiss/evaluaciones/{id}
      * Detalle completo de una evaluación.
      */
     public function show(Evaluacion $evaluacion)
     {
         $this->authorizeEvaluacion($evaluacion);
-        $evaluacion->load(['establecimiento', 'respuestas.pregunta.seccion', 'gapAnalysis']);
+        $evaluacion->load(['establecimiento', 'respuestas.pregunta.seccion', 'gapAnalysis', 'cerradoPor']);
 
         if (request()->expectsJson()) {
             return response()->json(['ok' => true, 'data' => $evaluacion]);
