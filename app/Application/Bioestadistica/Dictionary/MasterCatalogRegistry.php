@@ -66,17 +66,22 @@ class MasterCatalogRegistry
             $prestacionNombre
         );
 
-        $bridge = DetalleCatalogoItem::query()->firstOrCreate(
+        $bridge = DetalleCatalogoItem::withTrashed()->firstOrNew(
             [
                 'variable_detalle_id' => $detalle->id,
                 'catalogo_tipo' => $catalogType->value,
                 'catalogo_item_id' => $catalogItem->id,
-            ],
-            [
-                'orden' => $orden,
-                'activo' => true,
             ]
         );
+        $createdBridge = ! $bridge->exists || $bridge->trashed();
+        if ($bridge->trashed()) {
+            $bridge->restore();
+        }
+        $bridge->fill([
+            'orden' => $orden ?: ($bridge->orden ?? 0),
+            'activo' => true,
+        ]);
+        $bridge->save();
 
         return [
             'variable' => $variable,
@@ -89,7 +94,7 @@ class MasterCatalogRegistry
                 'variable' => $variableCreated,
                 'detalle' => $detalleCreated,
                 'catalog_item' => $itemCreated,
-                'bridge' => $bridge->wasRecentlyCreated,
+                'bridge' => $createdBridge,
             ],
         ];
     }
@@ -165,22 +170,31 @@ class MasterCatalogRegistry
     /** @return array{0: EspecialidadMedica, 1: bool} */
     private function rememberEspecialidad(string $tipoRegistro, string $nombre, string $normalized): array
     {
-        $contexto = $this->classifier->especialidadContexto($tipoRegistro, $nombre);
-        if ($this->classifier->isOdontologiaConsultaName($nombre) && $contexto === 'ambulatorio') {
-            $contexto = 'odontologia_consulta';
+        $item = EspecialidadMedica::withTrashed()
+            ->where('nombre_normalizado', $normalized)
+            ->orderBy('id')
+            ->first();
+
+        if (! $item) {
+            $item = EspecialidadMedica::withTrashed()
+                ->whereRaw('lower(nombre) = ?', [mb_strtolower(trim($nombre))])
+                ->orderBy('id')
+                ->first();
         }
 
-        $item = EspecialidadMedica::withTrashed()->firstOrNew([
-            'nombre' => $nombre,
-            'contexto' => $contexto,
-        ]);
-        $created = ! $item->exists;
-        if ($item->exists && $item->trashed()) {
+        $created = false;
+        if (! $item) {
+            $item = new EspecialidadMedica(['nombre' => $nombre]);
+            $created = true;
+        } elseif ($item->trashed()) {
             $item->restore();
         }
+
         $item->fill([
+            'nombre' => $item->nombre ?: $nombre,
             'nombre_normalizado' => $normalized,
-            'especialidad_base' => $this->classifier->especialidadBase($nombre, $contexto),
+            'especialidad_base' => $item->especialidad_base
+                ?: $this->classifier->especialidadBase($nombre),
             'activo' => true,
         ]);
         $item->save();

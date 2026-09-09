@@ -8,21 +8,26 @@
     if ($rows === null) {
         $rows = $episodios->map(fn ($episode) => [
             'id' => $episode->id,
+            'nro_patronal' => $episode->nro_patronal,
             'cedula' => auth()->user()->can('bio.hosp.view_pii') ? $episode->cedula : '',
             'cedula_visible' => $episode->cedula_visible,
             'sexo' => $episode->sexo,
-            'edad' => $episode->edad,
             'seguro' => $episode->seguro,
+            'edad' => $episode->edad,
+            'ciudad_residencia' => $episode->ciudad_residencia,
             'fecha_ingreso' => optional($episode->fecha_ingreso)->format('Y-m-d'),
             'fecha_egreso' => optional($episode->fecha_egreso)->format('Y-m-d'),
+            'dias_internacion' => $episode->stayDays(),
             'servicio' => $episode->servicio,
-            'tipo_alta' => $episode->tipo_alta,
-            'cie10' => $episode->cie10,
             'diagnostico' => $episode->diagnostico,
-            'cirugia' => $episode->cirugia,
-            'tipo_cirugia' => $episode->tipo_cirugia,
-            'cesarea' => $episode->cesarea,
+            'cie10' => $episode->cie10,
+            'cirugia_mayor' => $episode->tipo_cirugia === 'MAYOR',
+            'cirugia_menor' => $episode->tipo_cirugia === 'MENOR',
             'recien_nacido' => $episode->recien_nacido,
+            'rn_sexo' => $episode->rn_sexo,
+            'rn_peso' => $episode->rn_peso,
+            'tipo_alta' => $episode->tipo_alta,
+            'cesarea' => $episode->cesarea,
         ])->all();
     }
     $targetRows = max(8, count($rows) + 3);
@@ -84,20 +89,25 @@
                     <thead class="thead-light">
                         <tr>
                             <th>#</th>
+                            <th>Nro. patronal</th>
                             <th>Cédula</th>
                             <th>Sexo</th>
+                            <th>Tipo de seguro</th>
                             <th>Edad</th>
-                            <th>Seguro</th>
-                            <th>Ingreso *</th>
-                            <th>Egreso</th>
+                            <th>Ciudad residencia</th>
+                            <th>F. ingreso *</th>
+                            <th>F. egreso</th>
+                            <th>Días internación</th>
                             <th>Servicio</th>
-                            <th>Tipo alta</th>
+                            <th>Diagnóstico egreso</th>
                             <th>CIE-10</th>
-                            <th>Diagnóstico</th>
-                            <th>Cirugía</th>
-                            <th>Tipo cirugía</th>
+                            <th>Cir. mayor</th>
+                            <th>Cir. menor</th>
+                            <th>RN</th>
+                            <th>RN sexo</th>
+                            <th>RN peso (g)</th>
+                            <th>Tipo alta</th>
                             <th>Cesárea</th>
-                            <th>R. nacido</th>
                             <th>Eliminar</th>
                         </tr>
                     </thead>
@@ -176,6 +186,54 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     renumber();
+
+    const stayDays = function (ingreso, egreso) {
+        if (!ingreso || !egreso) {
+            return '';
+        }
+        const start = new Date(ingreso + 'T00:00:00');
+        const end = new Date(egreso + 'T00:00:00');
+        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
+            return '';
+        }
+        const days = Math.round((end - start) / 86400000);
+        return String(Math.max(1, days));
+    };
+
+    const refreshStay = function (row) {
+        const ingreso = row.querySelector('[name*="[fecha_ingreso]"]');
+        const egreso = row.querySelector('[name*="[fecha_egreso]"]');
+        const out = row.querySelector('[data-stay-days]');
+        if (!out) {
+            return;
+        }
+        out.value = stayDays(ingreso && ingreso.value, egreso && egreso.value);
+    };
+
+    body.addEventListener('change', function (event) {
+        const target = event.target;
+        if (target && target.matches('[data-stay-input]')) {
+            refreshStay(target.closest('tr'));
+        }
+        if (target && target.matches('[data-cirugia-mayor]') && target.checked) {
+            const menor = target.closest('tr').querySelector('[data-cirugia-menor]');
+            if (menor) {
+                menor.checked = false;
+            }
+        }
+        if (target && target.matches('[data-cirugia-menor]') && target.checked) {
+            const mayor = target.closest('tr').querySelector('[data-cirugia-mayor]');
+            if (mayor) {
+                mayor.checked = false;
+            }
+        }
+    });
+    body.addEventListener('input', function (event) {
+        if (event.target && event.target.matches('[data-stay-input]')) {
+            refreshStay(event.target.closest('tr'));
+        }
+    });
+    body.querySelectorAll('tr').forEach(refreshStay);
 
     (function () {
         const form = document.getElementById('spreadsheet-form');

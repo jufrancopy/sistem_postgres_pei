@@ -29,7 +29,7 @@ class BioestadisticaIndicadoresSeeder extends Seeder
             ['TOTAL_ESTUDIOS_ALTA', 'Estudios de alta complejidad', 'SP4', 'estudios', 'estudios', 'Suma de estudios de alta complejidad (SP4).'],
             ['TOTAL_PACIENTES_ALTA', 'Pacientes en estudios de alta complejidad', 'SP4', 'pacientes', 'pacientes', 'Pacientes con estudios de alta complejidad (SP4).'],
             ['TOTAL_ODONTOLOGIA', 'Prestaciones odontológicas', 'SP6', 'total', 'prestaciones', 'Suma de prestaciones odontológicas (SP6).'],
-            ['TOTAL_PROCEDIMIENTOS', 'Procedimientos no odontológicos', 'SP7', 'prestaciones', 'prestaciones', 'Suma de procedimientos (SP7).'],
+            ['TOTAL_PROCEDIMIENTOS', 'Procedimientos no odontológicos', 'SP7', 'total', 'prestaciones', 'Suma de procedimientos (SP7).'],
             ['TOTAL_URGENCIAS', 'Atenciones de urgencias', 'SP9', 'total', 'atenciones', 'Suma de atenciones de urgencias (SP9).'],
             ['TOTAL_EPIDEMIOLOGIA', 'Indicadores de VIH y tuberculosis', 'SP12', 'total', 'registros', 'Suma de prestaciones de epidemiología VIH/TB (SP12).'],
             ['TOTAL_PROGRAMAS', 'Programas de salud', 'SP13', 'total', 'registros', 'Suma de prestaciones de programas de salud (SP13).'],

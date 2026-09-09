@@ -29,7 +29,7 @@ class HospEpisodioBatchRequest extends FormRequest
                 if (! is_array($row)) {
                     return null;
                 }
-                foreach (['cirugia', 'cesarea', 'recien_nacido', 'eliminar'] as $field) {
+                foreach (['cirugia', 'cesarea', 'recien_nacido', 'cirugia_mayor', 'cirugia_menor', 'eliminar'] as $field) {
                     $row[$field] = filter_var($row[$field] ?? false, FILTER_VALIDATE_BOOLEAN);
                 }
 
@@ -44,7 +44,7 @@ class HospEpisodioBatchRequest extends FormRequest
                 }
 
                 return collect($row)
-                    ->except(['cirugia', 'cesarea', 'recien_nacido', 'eliminar'])
+                    ->except(['cirugia', 'cesarea', 'recien_nacido', 'cirugia_mayor', 'cirugia_menor', 'eliminar'])
                     ->contains(fn ($value) => $value !== null && trim((string) $value) !== '');
             })
             ->values()
@@ -70,9 +70,11 @@ class HospEpisodioBatchRequest extends FormRequest
             'rows.*.id' => ['nullable', 'integer'],
             'rows.*.eliminar' => ['nullable', 'boolean'],
             'rows.*.cedula' => ['nullable', 'string', 'max:30'],
+            'rows.*.nro_patronal' => ['nullable', 'string', 'max:40'],
             'rows.*.sexo' => ['nullable', Rule::in(['M', 'F', ''])],
             'rows.*.seguro' => ['nullable', 'string', 'max:80'],
             'rows.*.edad' => ['nullable', 'integer', 'between:0,130'],
+            'rows.*.ciudad_residencia' => ['nullable', 'string', 'max:150'],
             'rows.*.fecha_ingreso' => $autosave ? ['nullable', 'string', 'max:20'] : ['nullable', 'date'],
             'rows.*.fecha_egreso' => $autosave
                 ? ['nullable', 'string', 'max:20']
@@ -82,8 +84,12 @@ class HospEpisodioBatchRequest extends FormRequest
             'rows.*.cie10' => ['nullable', 'string', 'max:10'],
             'rows.*.tipo_alta' => ['nullable', 'string', 'max:50'],
             'rows.*.cirugia' => ['nullable', 'boolean'],
+            'rows.*.cirugia_mayor' => ['nullable', 'boolean'],
+            'rows.*.cirugia_menor' => ['nullable', 'boolean'],
             'rows.*.tipo_cirugia' => ['nullable', 'string', 'max:150'],
             'rows.*.recien_nacido' => ['nullable', 'boolean'],
+            'rows.*.rn_sexo' => ['nullable', Rule::in(['M', 'F', ''])],
+            'rows.*.rn_peso' => ['nullable', 'integer', 'between:200,9000'],
             'rows.*.cesarea' => ['nullable', 'boolean'],
         ];
     }

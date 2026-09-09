@@ -25,8 +25,25 @@ class SpPlanillaImportCalidadTest extends TestCase
     public function test_mappable_sp_codes_cover_sprint_one(): void
     {
         $codes = app(SpPlanillaImportService::class)->mappableSpCodes();
-        $this->assertSame(['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'SP6', 'SP7', 'SP8', 'SP9'], $codes);
+        $this->assertSame(
+            ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'SP6', 'SP7', 'SP8', 'SP9', 'SP12', 'SP13', 'SP14'],
+            $codes
+        );
         $this->assertNotEmpty(app(SpPlanillaImportService::class)->mappingRolesForSp('SP1'));
+    }
+
+    public function test_sp12_to_sp14_are_importable_and_mappable(): void
+    {
+        $service = app(SpPlanillaImportService::class);
+        foreach (['SP12', 'SP13', 'SP14'] as $code) {
+            $this->assertTrue($service->isImportable($code), $code);
+            $this->assertContains($code, $service->mappableSpCodes());
+            $roles = $service->mappingRolesForSp($code);
+            $this->assertTrue(collect($roles)->contains(fn (array $r) => $r['key'] === 'total'), $code);
+        }
+        $this->assertTrue($service->usesDistributedTabular('SP12'));
+        $this->assertTrue($service->usesDistributedTabular('SP13'));
+        $this->assertFalse($service->usesDistributedTabular('SP14'));
     }
 
     public function test_resolve_sheet_tolerates_whitespace_and_index(): void

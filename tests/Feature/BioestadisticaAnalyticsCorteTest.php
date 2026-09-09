@@ -177,9 +177,13 @@ class BioestadisticaAnalyticsCorteTest extends TestCase
                 'field_id' => $field->id,
                 'value_json' => [
                     'rows' => [
-                        'pacientes_dia' => ['1' => $pacientes, 'total' => $pacientes],
-                        'camas_operativas' => ['1' => 2, 'total' => 2],
-                        'camas_disponibles' => ['1' => 2, 'total' => 2],
+                        'principio_dia' => ['1' => $pacientes, 'total' => $pacientes],
+                        'ingresos' => ['1' => 0, 'total' => 0],
+                        'altas' => ['1' => 0, 'total' => 0],
+                        'traslados' => ['1' => 0, 'total' => 0],
+                        'obitos' => ['1' => 0, 'total' => 0],
+                        'abandono' => ['1' => 0, 'total' => 0],
+                        'total_pacientes_dia' => ['1' => $pacientes, 'total' => $pacientes],
                     ],
                 ],
             ]);
@@ -192,6 +196,6 @@ class BioestadisticaAnalyticsCorteTest extends TestCase
         );
 
         $this->assertSame(10, $metrics['pacientes_dia']);
-        $this->assertSame(4, $metrics['camas_operativas']);
+        $this->assertSame(0, $metrics['camas_operativas']);
     }
 }

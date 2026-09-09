@@ -57,7 +57,6 @@ class CatalogItemAdminService
     {
         return match ($type) {
             CatalogType::EspecialidadMedica => [
-                'contexto' => $item->contexto,
                 'especialidad_base' => $item->especialidad_base,
             ],
             CatalogType::Determinacion => [
@@ -202,7 +201,6 @@ class CatalogItemAdminService
 
         return match ($type) {
             CatalogType::EspecialidadMedica => $payload + [
-                'contexto' => (string) ($data['contexto'] ?? 'ambulatorio'),
                 'especialidad_base' => $data['especialidad_base'] ?? null,
             ],
             CatalogType::Determinacion => $payload + [

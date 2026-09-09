@@ -293,7 +293,7 @@ class SpPlanillaParser
      */
     private function parseSp1Sheet(Worksheet $sheet, array $overrides = []): array
     {
-        $header = $this->parseHeader($sheet);
+            $header = $this->parseHeader($sheet);
         [$headerRow, $totalColumn] = $this->findSp1DataHeader($sheet);
         $columns = $overrides['columnas'] ?? [];
 
@@ -306,7 +306,7 @@ class SpPlanillaParser
             $totalColumn = $this->guessTotalColumnOnRow($sheet, $headerRow) ?? 7;
         }
 
-        if (! $headerRow || ! $totalColumn) {
+            if (! $headerRow || ! $totalColumn) {
             throw new RuntimeException('No se detectó la fila COD / ESPECIALIDADES / TOTAL CONSULTAS. Use el asistente de mapeo.');
         }
 
@@ -318,43 +318,43 @@ class SpPlanillaParser
             ? $this->columnIndex($columns['cod'])
             : ($this->resolveCodColumn($headerLabels) ?? 2);
 
-        $warnings = [];
-        if (! $this->detectSp1($sheet)) {
+            $warnings = [];
+            if (! $this->detectSp1($sheet)) {
             $warnings[] = 'La hoja no declara explícitamente «TABLA SP 1»; se procesó por mapeo o nombre de hoja.';
         }
         if ($overrides !== []) {
             $warnings[] = 'Parseo con mapeo manual (fila encabezado '.$headerRow.').';
-        }
+            }
 
-        $rows = [];
+            $rows = [];
         $labeledNumeric = 0;
-        $lastRow = $sheet->getHighestDataRow();
-        for ($row = $headerRow + 1; $row <= $lastRow; $row++) {
+            $lastRow = $sheet->getHighestDataRow();
+            for ($row = $headerRow + 1; $row <= $lastRow; $row++) {
             $cod = $this->cellText($sheet, $codColumn, $row);
             $label = $this->cellText($sheet, $labelColumn, $row);
-            if ($label === '' || $this->isTotal($label)) {
-                continue;
-            }
-            $total = $this->readNumeric($sheet, $totalColumn, $row);
+                if ($label === '' || $this->isTotal($label)) {
+                    continue;
+                }
+                $total = $this->readNumeric($sheet, $totalColumn, $row);
             if ($total === null) {
                 continue;
             }
             $labeledNumeric++;
             if ($total <= 0) {
-                continue;
-            }
+                    continue;
+                }
 
             $rows[] = $this->normalizeRow($row, $cod, $label, ['total_consultas' => (int) $total]);
-        }
+            }
 
-        if ($rows === []) {
+            if ($rows === []) {
             if ($labeledNumeric > 0) {
                 $warnings[] = 'La tabla SP1 tiene filas con etiqueta, pero todos los totales son 0 o vacíos; no hay valores para importar.';
 
                 return $this->buildResult('SP1', $sheet, $header, $headerRow, [], $warnings);
             }
-            throw new RuntimeException('No se encontraron filas con consultas numéricas en la planilla SP1.');
-        }
+                throw new RuntimeException('No se encontraron filas con consultas numéricas en la planilla SP1.');
+            }
 
         return $this->buildResult('SP1', $sheet, $header, $headerRow, $rows, $warnings);
     }
@@ -836,7 +836,7 @@ class SpPlanillaParser
             return null;
         }
 
-        return [
+            return [
             'header_row' => $headerRow,
             'cod_col' => $codCol,
             'label_col' => $labelCol,
@@ -1155,17 +1155,17 @@ class SpPlanillaParser
     ): array {
         return [
             'formulario_codigo' => $spCode,
-            'hoja' => $sheet->getTitle(),
-            'departamento' => $header['departamento'],
-            'establecimiento_nombre' => $header['establecimiento'],
-            'codigo_planilla' => $header['codigo'],
-            'periodo_mes' => $header['mes'],
-            'periodo_anio' => $header['anio'],
-            'fila_encabezado' => $headerRow,
-            'filas' => $rows,
-            'filas_detectadas' => count($rows),
-            'advertencias' => $warnings,
-        ];
+                'hoja' => $sheet->getTitle(),
+                'departamento' => $header['departamento'],
+                'establecimiento_nombre' => $header['establecimiento'],
+                'codigo_planilla' => $header['codigo'],
+                'periodo_mes' => $header['mes'],
+                'periodo_anio' => $header['anio'],
+                'fila_encabezado' => $headerRow,
+                'filas' => $rows,
+                'filas_detectadas' => count($rows),
+                'advertencias' => $warnings,
+            ];
     }
 
     /**
@@ -1778,17 +1778,12 @@ class SpPlanillaParser
         }
 
         $matrixRows = [];
-        $camasOperativasTotal = null;
         $lastRow = min($sheet->getHighestDataRow(), $headerRow + 20);
         for ($row = $headerRow + 1; $row <= $lastRow; $row++) {
             $label1 = $this->cellText($sheet, 1, $row);
             $label2 = $this->cellText($sheet, 2, $row);
-            $combined = trim($label1.' '.$label2);
             $rowCode = $this->resolveSp11RowCode($label1, $label2);
-            if ($rowCode === null) {
-                if (str_contains($this->normalizeKey($label1), 'camas operativas') && $totalColumn) {
-                    $camasOperativasTotal = $this->readNumeric($sheet, $totalColumn, $row);
-                }
+            if ($rowCode === null || Sp11Matrix::isComputed($rowCode)) {
                 continue;
             }
 
@@ -1816,12 +1811,8 @@ class SpPlanillaParser
             $matrixRows[$rowCode] = $cells;
         }
 
-        if ($camasOperativasTotal !== null && $camasOperativasTotal > 0 && ! isset($matrixRows['camas_operativas'])) {
-            $matrixRows['camas_operativas'] = ['total' => (int) $camasOperativasTotal];
-        }
-
-        if (! isset($matrixRows['pacientes_dia']) && ! isset($matrixRows['camas_operativas'])) {
-            throw new RuntimeException('No se encontraron filas de paciente día o camas operativas en SP11.');
+        if ($matrixRows === []) {
+            throw new RuntimeException('No se encontraron filas del censo SP11 (principio, ingresos o egresos).');
         }
 
         $result = $this->buildResult('SP11', $sheet, $header, $headerRow, []);
@@ -1915,27 +1906,36 @@ class SpPlanillaParser
 
     private function resolveSp11RowCode(string $label1, string $label2): ?string
     {
+        $key1 = $this->normalizeKey($label1);
         $key2 = $this->normalizeKey($label2);
-        if ($key2 === 'obitos' || str_starts_with($key2, 'obito')) {
+
+        if ($key2 === 'altas' || str_starts_with($key2, 'alta')) {
+            return 'altas';
+        }
+        if ($key2 === 'traslados' || str_starts_with($key2, 'traslad')) {
+            return 'traslados';
+        }
+        if ($key2 === 'obitos' || str_starts_with($key2, 'obito') || str_contains($key2, 'fallec')) {
             return 'obitos';
         }
-        if (str_contains($key2, 'total egresos')) {
-            return 'egresos';
+        if ($key2 === 'abandono' || str_starts_with($key2, 'abandon')) {
+            return 'abandono';
         }
-        if ($key2 === 'altas' && str_contains($this->normalizeKey($label1), 'egreso')) {
-            return 'egresos';
+        if (str_contains($key1, 'total egresos') || str_contains($key2, 'total egresos')) {
+            return 'total_egresos';
+        }
+        if (str_contains($key1, 'principio') || str_contains($key2, 'principio')) {
+            return 'principio_dia';
+        }
+        if (str_contains($key1, 'total pacientes') || str_contains($key2, 'total pacientes')
+            || (str_contains($key1, 'pacientes') && str_contains($key1, 'dia'))) {
+            return 'total_pacientes_dia';
         }
 
         $code = Sp11Matrix::canonicalRow(trim($label1.' '.$label2));
         $allowed = array_keys(Sp11Matrix::ROWS);
         if (in_array($code, $allowed, true)) {
             return $code;
-        }
-        if (str_contains($this->normalizeKey($label1), 'pacientes') && str_contains($this->normalizeKey($label1), 'dia')) {
-            return 'pacientes_dia';
-        }
-        if (str_contains($this->normalizeKey($label1), 'camas operativas')) {
-            return 'camas_operativas';
         }
 
         return null;

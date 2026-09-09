@@ -105,7 +105,7 @@ class BioestadisticaReportesDashboardsSeeder extends Seeder
             'Procedimientos por establecimiento y período',
             'Procedimientos no odontológicos (SP7).',
             'SP7',
-            'prestaciones',
+            'total',
             'TOTAL_PROCEDIMIENTOS',
             'Prestaciones'
         );

@@ -15,6 +15,10 @@ class VariablesSaludImporter
 {
     private const SHEET_NAMES = ['VARIABLES SALUD', 'VARIABLES SALUD (2)'];
 
+    public function __construct(private readonly VariablesSaludSheetReader $reader = new VariablesSaludSheetReader)
+    {
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -25,6 +29,11 @@ class VariablesSaludImporter
             'tipo' => BioestadisticaDedicatedImporter::VARIABLES_SALUD,
             'archivo' => basename($filePath),
             'procesados' => 0,
+            'omitidos' => [
+                'dominio_x' => 0,
+                'filas_amarillas' => 0,
+                'duplicados' => 0,
+            ],
             'creados' => [
                 'variables' => 0,
                 'variable_detalles' => 0,
@@ -44,7 +53,8 @@ class VariablesSaludImporter
             }
 
             $this->assertExpectedHeaders($sheet);
-            $this->importRows($sheet, $filePath, $summary);
+            $this->countSkippedRows($sheet, $summary);
+            $this->importRows($sheet, $summary);
 
             if ($summary['procesados'] === 0) {
                 throw new RuntimeException(
@@ -72,73 +82,95 @@ class VariablesSaludImporter
     /**
      * @param array<string, mixed> $summary
      */
-    private function importRows(
-        Worksheet $sheet,
-        string $filePath,
-        array &$summary
-    ): void {
-        $current = ['codigo' => null, 'dominio' => null, 'tipo' => null];
+    private function importRows(Worksheet $sheet, array &$summary): void
+    {
         $seen = [];
 
-        for ($row = 1; $row <= $sheet->getHighestDataRow(); $row++) {
-            $values = [];
-            for ($column = 1; $column <= 4; $column++) {
-                $values[$column] = $this->clean(
-                    $sheet->getCell([$column, $row])->getFormattedValue()
-                );
-            }
-
-            if ($this->isHeader($values)) {
-                continue;
-            }
-
-            if ($values[1] && ! preg_match('/^(?:[1-9]|1[0-8]|x)$/i', $values[1])) {
-                continue;
-            }
-
-            $current['codigo'] = $values[1] ?: $current['codigo'];
-            $current['dominio'] = $values[2] ?: $current['dominio'];
-            $current['tipo'] = $values[3] ?: $current['tipo'];
-            $prestacion = $values[4] ?: ($values[3] ? $values[3] : null);
-
-            if (! $current['codigo'] || ! $current['dominio'] || ! $current['tipo'] || ! $prestacion) {
-                continue;
-            }
-
+        foreach ($this->reader->rows($sheet) as $rowNumber => $entry) {
             $naturalKey = $this->key(
-                "{$current['codigo']}|{$current['tipo']}|{$prestacion}"
+                "{$entry['codigo']}|{$entry['tipo']}|{$entry['prestacion']}"
             );
             if (isset($seen[$naturalKey])) {
+                $summary['omitidos']['duplicados']++;
                 $summary['advertencias'][] =
-                    "Fila {$row}: prestación duplicada omitida ({$current['tipo']} / {$prestacion}).";
+                    "Fila {$rowNumber}: prestación duplicada omitida ({$entry['tipo']} / {$entry['prestacion']}).";
                 continue;
             }
             $seen[$naturalKey] = true;
 
             try {
-                DB::transaction(function () use (
-                    $current,
-                    $prestacion,
-                    &$summary
-                ): void {
-                    $dictionary = (new HealthVariableDictionary())->remember(
-                        $current['codigo'],
-                        $current['dominio'],
-                        $current['tipo'],
-                        $prestacion
+                DB::transaction(function () use ($entry, $rowNumber, &$summary): void {
+                    $dictionary = (new HealthVariableDictionary)->remember(
+                        $entry['codigo'],
+                        $entry['dominio'],
+                        $entry['tipo'],
+                        $entry['prestacion'],
+                        $rowNumber
                     );
+
+                    if ($dictionary['skipped_column']) {
+                        $summary['omitidos']['filas_amarillas']++;
+
+                        return;
+                    }
 
                     $summary['procesados']++;
                     $summary['creados']['variables'] += (int) $dictionary['created']['variable'];
                     $summary['creados']['variable_detalles'] += (int) $dictionary['created']['detalle'];
-                    $summary['creados']['prestaciones'] += (int) $dictionary['created']['prestacion'];
+                    $summary['creados']['prestaciones'] += (int) $dictionary['created']['catalog_item'];
                 });
             } catch (Throwable $exception) {
                 throw new RuntimeException(
-                    "Error en la fila {$row} de '" . $sheet->getTitle() . "': {$exception->getMessage()}",
+                    "Error en la fila {$rowNumber} de '" . $sheet->getTitle() . "': {$exception->getMessage()}",
                     0,
                     $exception
                 );
+            }
+        }
+    }
+
+    /**
+     * Cuenta filas excluidas antes del import (dominio x y amarillas con datos).
+     *
+     * @param array<string, mixed> $summary
+     */
+    private function countSkippedRows(Worksheet $sheet, array &$summary): void
+    {
+        $current = ['codigo' => null, 'dominio' => null, 'tipo' => null];
+
+        for ($row = 1; $row <= $sheet->getHighestDataRow(); $row++) {
+            $values = [];
+            for ($column = 1; $column <= 4; $column++) {
+                $values[$column] = trim((string) $sheet->getCell([$column, $row])->getFormattedValue());
+                $values[$column] = $values[$column] === '' ? null : preg_replace('/\s+/u', ' ', $values[$column]);
+            }
+
+            $joined = strtoupper(implode(' ', array_filter($values)));
+            if (str_contains($joined, 'CODIGO DE VARIABLE') || str_contains($joined, 'PRESTACIONES')) {
+                continue;
+            }
+
+            if ($values[1] && preg_match('/^(?:[1-9]|1[0-8])$/i', $values[1])) {
+                $current['codigo'] = $values[1];
+            } elseif ($values[1] && strcasecmp($values[1], 'x') === 0) {
+                $current['codigo'] = 'x';
+            }
+
+            $current['dominio'] = $values[2] ?: $current['dominio'];
+            $current['tipo'] = $values[3] ?: $current['tipo'];
+            $prestacion = $values[4] ?: null;
+
+            if (! $prestacion || str_contains(strtoupper($prestacion), 'PRESTACIONES')) {
+                continue;
+            }
+
+            if ($this->reader->isExcludedDomainCodigo($current['codigo'])) {
+                $summary['omitidos']['dominio_x']++;
+                continue;
+            }
+
+            if ($this->reader->isYellowRow($sheet, $row)) {
+                $summary['omitidos']['filas_amarillas']++;
             }
         }
     }
@@ -171,18 +203,6 @@ class VariablesSaludImporter
         }
     }
 
-    /**
-     * @param array<int, string|null> $values
-     */
-    private function isHeader(array $values): bool
-    {
-        $row = $this->key(implode(' ', array_filter($values)));
-
-        return str_contains($row, 'CODIGO_DE_VARIABLE')
-            || str_contains($row, 'TIPO_DE_REGISTRO')
-            || str_contains($row, 'PRESTACIONES');
-    }
-
     private function resolveSheet(Spreadsheet $spreadsheet): ?Worksheet
     {
         foreach (self::SHEET_NAMES as $name) {
@@ -206,7 +226,7 @@ class VariablesSaludImporter
     {
         try {
             return IOFactory::createReaderForFile($filePath)
-                ->setReadDataOnly(true)
+                ->setReadDataOnly(false)
                 ->load($filePath);
         } catch (Throwable $exception) {
             throw new RuntimeException(
@@ -215,13 +235,6 @@ class VariablesSaludImporter
                 $exception
             );
         }
-    }
-
-    private function clean(mixed $value): ?string
-    {
-        $value = preg_replace('/\s+/u', ' ', trim((string) $value));
-
-        return $value === '' ? null : $value;
     }
 
     private function key(mixed $value): string

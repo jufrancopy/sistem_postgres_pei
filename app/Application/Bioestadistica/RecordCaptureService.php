@@ -135,7 +135,7 @@ class RecordCaptureService
             'time' => ['value_text' => $this->time($field, $value, $strict)],
             'boolean' => ['value_bool' => filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false],
             'tabla' => ['value_json' => $this->tabla($field, $value, $strict)],
-            'matriz' => ['value_json' => $this->matriz($field, $value, $record)],
+            'matriz' => ['value_json' => $this->matriz($field, $value, $record, $strict)],
             'multiselect', 'subtabla' => ['value_json' => $this->json($field, $value)],
             default => ['value_text' => $this->text($field, $value, $strict)],
         };
@@ -331,13 +331,13 @@ class RecordCaptureService
         return $row;
     }
 
-    private function matriz(Field $field, mixed $value, ?Record $record): array
+    private function matriz(Field $field, mixed $value, ?Record $record, bool $strict = true): array
     {
         $payload = $this->json($field, $value);
         $year = (int) ($record?->periodo_anio ?: now()->year);
         $month = (int) ($record?->periodo_mes ?: now()->month);
         if (($field->config['cols'] ?? null) === 'dias_mes' || ($field->config['contract'] ?? null) === 'sp11_v1') {
-            return Sp11Matrix::normalize($payload, $year, $month, true);
+            return Sp11Matrix::normalize($payload, $year, $month, $strict);
         }
 
         return $payload;

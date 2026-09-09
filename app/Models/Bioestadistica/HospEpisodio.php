@@ -40,7 +40,8 @@ class HospEpisodio extends BioestadisticaModel
     protected $hidden = ['cedula', 'cedula_hash'];
 
     protected array $auditSensitive = [
-        'cedula', 'cedula_hash', 'source_fingerprint', 'diagnostico', 'cie10', 'seguro', 'source_row',
+        'cedula', 'cedula_hash', 'source_fingerprint', 'diagnostico', 'cie10', 'seguro',
+        'nro_patronal', 'ciudad_residencia', 'source_row',
     ];
 
     protected $casts = [
@@ -53,6 +54,7 @@ class HospEpisodio extends BioestadisticaModel
         'periodo_anio' => 'integer',
         'periodo_mes' => 'integer',
         'edad' => 'integer',
+        'rn_peso' => 'integer',
     ];
 
     public function establecimiento(): BelongsTo
@@ -247,6 +249,30 @@ class HospEpisodio extends BioestadisticaModel
         }
 
         return $value;
+    }
+
+    public static function normalizeTipoCirugia(?string $tipo): ?string
+    {
+        if ($tipo === null || trim($tipo) === '') {
+            return null;
+        }
+        $key = Str::upper(Str::slug(Str::ascii($tipo), '_'));
+        foreach (array_keys(self::TIPOS_CIRUGIA) as $code) {
+            if ($key === $code) {
+                return $code;
+            }
+        }
+        if (str_contains($key, 'MAYOR')) {
+            return 'MAYOR';
+        }
+        if (str_contains($key, 'MENOR')) {
+            return 'MENOR';
+        }
+        if (str_contains($key, 'ALTA') || str_contains($key, 'COMPLEJ')) {
+            return 'ALTA_COMPLEJIDAD';
+        }
+
+        return null;
     }
 
     public static function isValidCie10(?string $code): bool

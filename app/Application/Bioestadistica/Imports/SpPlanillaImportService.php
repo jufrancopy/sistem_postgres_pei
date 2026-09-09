@@ -20,7 +20,16 @@ class SpPlanillaImportService
     public const SESSION_KEY = 'bio_sp_planilla_preview';
 
     /** Formularios con importación de datos implementada (parser disponible). */
-    public const IMPORTABLE = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'SP6', 'SP7', 'SP8', 'SP9', 'SP10', 'SP11'];
+    public const IMPORTABLE = [
+        'SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'SP6', 'SP7', 'SP8', 'SP9',
+        'SP10', 'SP11', 'SP12', 'SP13', 'SP14',
+    ];
+
+    /**
+     * SP con varias tablas y planilla plana: matching contra la unión de ítems
+     * y confirm reparte cada fila al campo dueño de la prestación.
+     */
+    private const DISTRIBUTED_TABULAR = ['SP2', 'SP7', 'SP12', 'SP13'];
 
     /** Dominio del diccionario por SP (matching asistido). */
     private const DOMAINS = [
@@ -165,6 +174,16 @@ class SpPlanillaImportService
                 $fieldsByCode = $this->tablaFieldsByCode($formulario);
                 $field = $fieldsByCode->first();
                 $filas = $this->rematchSp9Filas($parsed['filas'] ?? [], self::DOMAINS['SP9'], $fieldsByCode);
+            } elseif ($formulario && $this->usesDistributedTabular($formulario->codigo)) {
+                $fieldsByCode = $this->tablaFieldsByCode($formulario);
+                $field = $fieldsByCode->first();
+                $validIds = $fieldsByCode
+                    ->flatMap(fn (Field $f) => $f->rowItems()->pluck('id'))
+                    ->map(fn ($id) => (int) $id)
+                    ->unique()
+                    ->values()
+                    ->all();
+                $filas = $this->rematchFilas($parsed['filas'] ?? [], $domain, $validIds);
             } else {
                 $field = $formulario ? $this->primaryTablaField($formulario) : null;
                 $validIds = $field ? $field->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all() : [];
@@ -440,7 +459,10 @@ class SpPlanillaImportService
      */
     public function mappableSpCodes(): array
     {
-        return ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'SP6', 'SP7', 'SP8', 'SP9'];
+        return [
+            'SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'SP6', 'SP7', 'SP8', 'SP9',
+            'SP12', 'SP13', 'SP14',
+        ];
     }
 
     /**
@@ -454,7 +476,7 @@ class SpPlanillaImportService
                 ['key' => 'total_consultas', 'label' => 'Total consultas', 'required' => true],
                 ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
             ],
-            'SP2', 'SP5', 'SP6' => [
+            'SP2', 'SP5', 'SP6', 'SP12', 'SP13', 'SP14' => [
                 ['key' => 'label', 'label' => 'Prestación / etiqueta', 'required' => true],
                 ['key' => 'total', 'label' => 'Total', 'required' => true],
                 ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
@@ -482,6 +504,11 @@ class SpPlanillaImportService
                 ['key' => 'total', 'label' => 'Total', 'required' => true],
             ],
         };
+    }
+
+    public function usesDistributedTabular(string $codigo): bool
+    {
+        return in_array($codigo, self::DISTRIBUTED_TABULAR, true);
     }
 
     /**
@@ -531,6 +558,10 @@ class SpPlanillaImportService
             return $this->confirmSp9Tabular($user, $preview, $lookup, $decisiones, $sobrescribir, $formulario);
         }
 
+        if ($this->usesDistributedTabular($formulario->codigo)) {
+            return $this->confirmDistributedTabular($user, $preview, $lookup, $decisiones, $sobrescribir, $formulario);
+        }
+
         $field = $this->primaryTablaField($formulario);
         if (! $field) {
             throw ValidationException::withMessages([
@@ -558,6 +589,60 @@ class SpPlanillaImportService
         }
 
         $this->capture->save($record, $values, false, true, $user->id);
+        $this->stampImportOrigin($record, $preview);
+
+        return $record->fresh(['formulario', 'establecimiento']);
+    }
+
+    /**
+     * Confirma planillas planas (SP2/SP7/SP12/SP13) repartiendo filas entre tablas del formulario.
+     *
+     * @param  array<string, mixed>  $preview
+     * @param  array<string, mixed>  $lookup
+     * @param  array<string, string>  $decisiones
+     */
+    private function confirmDistributedTabular(
+        User $user,
+        array $preview,
+        array $lookup,
+        array $decisiones,
+        bool $sobrescribir,
+        Formulario $formulario
+    ): Record {
+        $fieldsByCode = $this->tablaFieldsByCode($formulario);
+        if ($fieldsByCode->isEmpty()) {
+            throw ValidationException::withMessages([
+                'formulario_id' => 'El formulario seleccionado no tiene un campo tabular importable.',
+            ]);
+        }
+
+        $filas = $preview['detectado']['filas'] ?? [];
+        $values = [];
+        foreach ($fieldsByCode as $field) {
+            $validIds = $field->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all();
+            $rows = $this->buildRows($filas, $decisiones, $validIds, $field);
+            if ($rows !== []) {
+                $values[$field->code] = ['rows' => $rows];
+            }
+        }
+
+        if ($values === []) {
+            throw ValidationException::withMessages([
+                'importacion' => 'No hay filas válidas para importar. Revise el matching de prestaciones.',
+            ]);
+        }
+
+        $record = $this->resolveEditableRecord($lookup, $sobrescribir);
+        if (! $record) {
+            $record = Record::create($lookup + [
+                'estado' => Record::ESTADO_BORRADOR,
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
+            ]);
+        }
+
+        // Borrador no estricto: la planilla plana suele cubrir solo parte de las tablas del SP.
+        $this->capture->save($record, $values, false, false, $user->id);
         $this->stampImportOrigin($record, $preview);
 
         return $record->fresh(['formulario', 'establecimiento']);
@@ -645,10 +730,6 @@ class SpPlanillaImportService
             throw ValidationException::withMessages([
                 'importacion' => 'No hay filas de matriz válidas para importar.',
             ]);
-        }
-
-        if (! isset($matrixRows['camas_operativas'])) {
-            $matrixRows['camas_operativas'] = ['total' => 0];
         }
 
         $periodoAnio = (int) $context['periodo_anio'];
@@ -1155,6 +1236,14 @@ class SpPlanillaImportService
             $metricas = $fila['metricas'] ?? [];
             if ($metricas === [] && isset($fila['total_consultas'])) {
                 $metricas = ['total_consultas' => (int) $fila['total_consultas']];
+            }
+
+            // Planilla MULTI_METRIC (SP7) usa clave "prestaciones"; el formulario publica columna "total".
+            if (! isset($metricas['total']) && isset($metricas['prestaciones']) && in_array('total', $columnCodes, true)) {
+                $metricas['total'] = (int) $metricas['prestaciones'];
+            }
+            if (! isset($metricas['total']) && isset($metricas['determinaciones']) && in_array('total', $columnCodes, true)) {
+                $metricas['total'] = (int) $metricas['determinaciones'];
             }
 
             $rowValues = [];

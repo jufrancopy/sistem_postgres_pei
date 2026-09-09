@@ -47,6 +47,12 @@
                     @endcan
                 </div>
                 <div class="form-group col-md-2">
+                    <label>Nro. patronal</label>
+                    <input class="form-control" name="nro_patronal" value="{{ old('nro_patronal', $episodio->nro_patronal) }}" maxlength="40" @disabled(!auth()->user()->can('bio.hosp.manage'))>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-2">
                     <label>Sexo</label>
                     <select class="form-control" name="sexo" @disabled(!auth()->user()->can('bio.hosp.manage'))>
                         <option value="">Seleccione</option>
@@ -54,15 +60,18 @@
                         <option value="F" @selected(old('sexo', $episodio->sexo) === 'F')>F</option>
                     </select>
                 </div>
-            </div>
-            <div class="form-row">
                 <div class="form-group col-md-2"><label>Edad</label><input class="form-control" type="number" min="0" max="130" name="edad" value="{{ old('edad', $episodio->edad) }}" @disabled(!auth()->user()->can('bio.hosp.manage'))></div>
-                <div class="form-group col-md-3"><label>Seguro</label><input class="form-control" name="seguro" value="{{ old('seguro', $episodio->seguro) }}" @disabled(!auth()->user()->can('bio.hosp.manage'))></div>
-                <div class="form-group col-md-3"><label>Fecha de ingreso *</label><input class="form-control" type="date" name="fecha_ingreso" value="{{ old('fecha_ingreso', optional($episodio->fecha_ingreso)->format('Y-m-d')) }}" required @disabled(!auth()->user()->can('bio.hosp.manage'))></div>
-                <div class="form-group col-md-4"><label>Fecha de egreso</label><input class="form-control" type="date" name="fecha_egreso" value="{{ old('fecha_egreso', optional($episodio->fecha_egreso)->format('Y-m-d')) }}" @disabled(!auth()->user()->can('bio.hosp.manage'))></div>
+                <div class="form-group col-md-3"><label>Tipo de seguro</label><input class="form-control" name="seguro" value="{{ old('seguro', $episodio->seguro) }}" @disabled(!auth()->user()->can('bio.hosp.manage'))></div>
+                <div class="form-group col-md-5"><label>Ciudad de residencia</label><input class="form-control" name="ciudad_residencia" value="{{ old('ciudad_residencia', $episodio->ciudad_residencia) }}" maxlength="150" @disabled(!auth()->user()->can('bio.hosp.manage'))></div>
             </div>
             <div class="form-row">
-                <div class="form-group col-md-3">
+                <div class="form-group col-md-3"><label>Fecha de ingreso *</label><input class="form-control" type="date" name="fecha_ingreso" id="fecha_ingreso" value="{{ old('fecha_ingreso', optional($episodio->fecha_ingreso)->format('Y-m-d')) }}" required @disabled(!auth()->user()->can('bio.hosp.manage'))></div>
+                <div class="form-group col-md-3"><label>Fecha de egreso</label><input class="form-control" type="date" name="fecha_egreso" id="fecha_egreso" value="{{ old('fecha_egreso', optional($episodio->fecha_egreso)->format('Y-m-d')) }}" @disabled(!auth()->user()->can('bio.hosp.manage'))></div>
+                <div class="form-group col-md-2">
+                    <label>Días de internación</label>
+                    <input class="form-control" type="text" id="dias_internacion" value="{{ old('dias_internacion', $episodio->stayDays()) }}" readonly tabindex="-1" title="Calculado desde ingreso y egreso">
+                </div>
+                <div class="form-group col-md-4">
                     <label>Servicio</label>
                     <select class="form-control" name="servicio" @disabled(!auth()->user()->can('bio.hosp.manage'))>
                         <option value="">Seleccione</option>
@@ -71,6 +80,8 @@
                         @endforeach
                     </select>
                 </div>
+            </div>
+            <div class="form-row">
                 <div class="form-group col-md-3">
                     <label>Tipo de alta</label>
                     <select class="form-control" name="tipo_alta" @disabled(!auth()->user()->can('bio.hosp.manage'))>
@@ -81,21 +92,27 @@
                     </select>
                 </div>
                 <div class="form-group col-md-2"><label>CIE-10</label><input class="form-control text-uppercase" name="cie10" value="{{ old('cie10', $episodio->cie10) }}" maxlength="10" placeholder="A00.0" @disabled(!auth()->user()->can('bio.hosp.manage'))></div>
-                <div class="form-group col-md-4"><label>Diagnóstico</label><input class="form-control" name="diagnostico" value="{{ old('diagnostico', $episodio->diagnostico) }}" @disabled(!auth()->user()->can('bio.hosp.manage'))></div>
+                <div class="form-group col-md-7"><label>Diagnóstico de egreso</label><input class="form-control" name="diagnostico" value="{{ old('diagnostico', $episodio->diagnostico) }}" @disabled(!auth()->user()->can('bio.hosp.manage'))></div>
             </div>
+            @php
+                $tipoCirugia = old('tipo_cirugia', $episodio->tipo_cirugia);
+                $mayor = old('cirugia_mayor', $tipoCirugia === 'MAYOR');
+                $menor = old('cirugia_menor', $tipoCirugia === 'MENOR');
+            @endphp
             <div class="form-row">
-                <div class="form-group col-md-3"><label class="d-block">Cirugía</label><label><input type="checkbox" name="cirugia" value="1" @checked(old('cirugia', $episodio->cirugia)) @disabled(!auth()->user()->can('bio.hosp.manage'))> Sí</label></div>
-                <div class="form-group col-md-3">
-                    <label>Tipo de cirugía</label>
-                    <select class="form-control" name="tipo_cirugia" @disabled(!auth()->user()->can('bio.hosp.manage'))>
+                <div class="form-group col-md-2"><label class="d-block">Cirugía mayor</label><label><input type="checkbox" name="cirugia_mayor" value="1" @checked($mayor) @disabled(!auth()->user()->can('bio.hosp.manage'))> Sí</label></div>
+                <div class="form-group col-md-2"><label class="d-block">Cirugía menor</label><label><input type="checkbox" name="cirugia_menor" value="1" @checked($menor) @disabled(!auth()->user()->can('bio.hosp.manage'))> Sí</label></div>
+                <div class="form-group col-md-2"><label class="d-block">Cesárea</label><label><input type="checkbox" name="cesarea" value="1" @checked(old('cesarea', $episodio->cesarea)) @disabled(!auth()->user()->can('bio.hosp.manage'))> Sí</label></div>
+                <div class="form-group col-md-2"><label class="d-block">Recién nacido</label><label><input type="checkbox" name="recien_nacido" value="1" @checked(old('recien_nacido', $episodio->recien_nacido)) @disabled(!auth()->user()->can('bio.hosp.manage'))> Sí</label></div>
+                <div class="form-group col-md-2">
+                    <label>Sexo RN</label>
+                    <select class="form-control" name="rn_sexo" @disabled(!auth()->user()->can('bio.hosp.manage'))>
                         <option value="">—</option>
-                        @foreach($tiposCirugia as $code => $label)
-                            <option value="{{ $code }}" @selected(old('tipo_cirugia', $episodio->tipo_cirugia) === $code)>{{ $label }}</option>
-                        @endforeach
+                        <option value="M" @selected(old('rn_sexo', $episodio->rn_sexo) === 'M')>M</option>
+                        <option value="F" @selected(old('rn_sexo', $episodio->rn_sexo) === 'F')>F</option>
                     </select>
                 </div>
-                <div class="form-group col-md-3"><label class="d-block">Cesárea</label><label><input type="checkbox" name="cesarea" value="1" @checked(old('cesarea', $episodio->cesarea)) @disabled(!auth()->user()->can('bio.hosp.manage'))> Sí</label></div>
-                <div class="form-group col-md-3"><label class="d-block">Recién nacido</label><label><input type="checkbox" name="recien_nacido" value="1" @checked(old('recien_nacido', $episodio->recien_nacido)) @disabled(!auth()->user()->can('bio.hosp.manage'))> Sí</label></div>
+                <div class="form-group col-md-2"><label>Peso RN (g)</label><input class="form-control" type="number" min="200" max="9000" name="rn_peso" value="{{ old('rn_peso', $episodio->rn_peso) }}" @disabled(!auth()->user()->can('bio.hosp.manage'))></div>
             </div>
             @can('bio.hosp.manage')
                 <button class="btn btn-success">Guardar</button>
@@ -110,4 +127,31 @@
         @endif
     </div>
 </div>
+<script>
+(function () {
+    const ingreso = document.getElementById('fecha_ingreso');
+    const egreso = document.getElementById('fecha_egreso');
+    const dias = document.getElementById('dias_internacion');
+    if (!ingreso || !egreso || !dias) {
+        return;
+    }
+    const refresh = function () {
+        if (!ingreso.value || !egreso.value) {
+            dias.value = '';
+            return;
+        }
+        const start = new Date(ingreso.value + 'T00:00:00');
+        const end = new Date(egreso.value + 'T00:00:00');
+        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
+            dias.value = '';
+            return;
+        }
+        dias.value = String(Math.max(1, Math.round((end - start) / 86400000)));
+    };
+    ingreso.addEventListener('change', refresh);
+    egreso.addEventListener('change', refresh);
+    ingreso.addEventListener('input', refresh);
+    egreso.addEventListener('input', refresh);
+})();
+</script>
 @endsection
