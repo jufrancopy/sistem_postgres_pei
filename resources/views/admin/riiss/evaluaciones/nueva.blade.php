@@ -1288,27 +1288,71 @@ function initSignaturePadsCierre() {
 
 function abrirModalCierreFirmas() {
     if (!evaluacionId) {
-        mostrarToast('Esperá que se inicialice la evaluación antes de firmar.', 'error');
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Evaluación no inicializada',
+                text: 'Esperá que se inicialice la evaluación antes de firmar.',
+                confirmButtonColor: '#1a237e',
+                confirmButtonText: 'Entendido'
+            });
+        } else {
+            mostrarToast('Esperá que se inicialice la evaluación antes de firmar.', 'error');
+        }
         return;
     }
 
-    var total = formulario ? formulario.resumen.total_preguntas : 0;
+    var total = formulario ? (formulario.resumen ? formulario.resumen.total_preguntas : 0) : 0;
     var respondidas = Object.keys(respuestas).length;
+    
+    function ejecutarAperturaModal() {
+        // Guardar respuestas pendientes primero
+        if (Object.keys(respuestas).length) {
+            enviarRespuestas(false);
+        }
+
+        $('#modalCierreFirmas').modal('show');
+        setTimeout(function() {
+            initSignaturePadsCierre();
+        }, 300);
+    }
+
     if (total > 0 && respondidas < total * 0.4) {
-        if (!confirm('Solo has respondido ' + respondidas + ' de ' + total + ' preguntas (' + Math.round(respondidas/total*100) + '%). ¿Deseas proceder con el cierre y firmas en terreno de todas formas?')) {
+        var pct = Math.round((respondidas / total) * 100);
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: '¿Proceder al Cierre y Firmas?',
+                html: `
+                    <div class="text-left p-3" style="background:#fff8e1; border-radius:8px; border-left:4px solid #ffb300;">
+                        <p class="mb-2 text-dark" style="font-size:1rem;">
+                            Solo has respondido <strong>${respondidas}</strong> de <strong>${total}</strong> preguntas (<strong>${pct}%</strong>).
+                        </p>
+                        <p class="mb-0 text-muted small">
+                            <i class="fa fa-info-circle text-warning mr-1"></i> ¿Deseas proceder con el cierre y firmas en terreno de todas formas?
+                        </p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#1a237e',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fa fa-file-signature mr-1"></i> Sí, proceder al Acta de Cierre',
+                cancelButtonText: 'Continuar respondiendo',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    ejecutarAperturaModal();
+                }
+            });
             return;
+        } else {
+            if (!confirm('Solo has respondido ' + respondidas + ' de ' + total + ' preguntas (' + pct + '%). ¿Deseas proceder con el cierre y firmas en terreno de todas formas?')) {
+                return;
+            }
         }
     }
 
-    // Guardar respuestas pendientes primero
-    if (Object.keys(respuestas).length) {
-        enviarRespuestas(false);
-    }
-
-    $('#modalCierreFirmas').modal('show');
-    setTimeout(function() {
-        initSignaturePadsCierre();
-    }, 300);
+    ejecutarAperturaModal();
 }
 
 $(document).ready(function() {
@@ -1381,7 +1425,30 @@ $(document).ready(function() {
             success: function(resp) {
                 btn.prop('disabled', false).html('<i class="fa fa-file-signature mr-1"></i> Sellar y Cerrar Relevamiento');
                 $('#modalCierreFirmas').modal('hide');
-                mostrarToast(resp.message || 'Relevamiento cerrado con éxito', 'success');
+                
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: '¡Acta de Cierre Registrada!',
+                        html: `
+                            <div class="text-center p-2">
+                                <p class="mb-2 text-dark font-weight-bold">El relevamiento en terreno ha sido cerrado y rubricado formalmente.</p>
+                                <p class="mb-0 text-muted small">Firmas de conformidad registradas para <strong>${nombreResp}</strong> y <strong>${nombreEval}</strong>.</p>
+                            </div>
+                        `,
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonColor: '#1a237e',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: '<i class="fa fa-file-alt mr-1"></i> Ver Acta & Reporte',
+                        cancelButtonText: 'Permanecer aquí'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/riiss/evaluaciones/' + evaluacionId;
+                        }
+                    });
+                } else {
+                    mostrarToast(resp.message || 'Relevamiento cerrado con éxito', 'success');
+                }
 
                 // Ejecutar análisis de brechas final y mostrar resultado
                 ejecutarAnalisis();
