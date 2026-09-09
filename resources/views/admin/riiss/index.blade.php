@@ -1645,6 +1645,7 @@ function cargarDashboard() {
         var rowsData = evs.map(function(ev, idx) {
             var pct = ev.progreso || ev.porcentaje_cumplimiento || 0;
             var estadoLabel = (ev.estado || '').replace(/_/g,' ');
+            var evalNombre = (ev.evaluador && ev.evaluador !== '—') ? ev.evaluador : (ev.responsable_nombre ? ev.responsable_nombre : 'Sin evaluador asignado');
             var badgeEstado = '';
             if (ev.cerrado_con_firmas) {
                 badgeEstado = '<span class="badge badge-success px-2 py-1"><i class="fa fa-file-signature mr-1"></i>Firmado & Cerrado</span>';
