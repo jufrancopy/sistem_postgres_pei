@@ -641,6 +641,87 @@ class EvaluacionController extends Controller
     }
 
     /**
+     * GET /riiss/evaluaciones/{evaluacion}/acta-pdf
+     * Descarga el PDF oficial del Acta Institucional de Cierre RIISS generado con DomPDF.
+     */
+    public function descargarActaPdf(Evaluacion $evaluacion)
+    {
+        $this->authorizeEvaluacion($evaluacion);
+
+        $est = $evaluacion->establecimiento;
+        $respondidas = $evaluacion->respuestas()->count();
+        $totalPreguntas = 0;
+        try {
+            $totalPreguntas = (new \App\Services\FormularioDinamicoService())
+                ->seccionesAplicables($est)
+                ->sum(fn($s) => $s->preguntas->where('activa', true)->count());
+        } catch (\Exception $e) {}
+
+        $progreso = $totalPreguntas > 0 ? round(($respondidas / $totalPreguntas) * 100, 1) : ($evaluacion->porcentaje_cumplimiento ?? 0);
+
+        $primeraFirmaEval = !empty($evaluacion->firmas_evaluadores) ? $evaluacion->firmas_evaluadores[0] : null;
+        $evaluadorNombre = $primeraFirmaEval['nombre'] ?? ($evaluacion->evaluador_nombre ?: ($evaluacion->cerradoPor ? $evaluacion->cerradoPor->name : 'Equipo Técnico IPS'));
+        $evaluadorCargo  = $primeraFirmaEval['cargo'] ?? 'Evaluador Técnico — Dirección de Planificación';
+        $evaluadorFirma  = $primeraFirmaEval['firma'] ?? null;
+
+        $gap = $evaluacion->gapAnalysis()
+            ->select('estado', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+            ->groupBy('estado')
+            ->pluck('total', 'estado')
+            ->toArray();
+
+        $veredicto = $this->generarVeredicto($evaluacion, $est, $gap);
+        $clasificacion = $evaluacion->clasificacion_resultado ?: 'PENDIENTE';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.riiss.evaluaciones.acta_pdf', compact(
+            'evaluacion', 'est', 'respondidas', 'totalPreguntas', 'progreso',
+            'evaluadorNombre', 'evaluadorCargo', 'evaluadorFirma', 'veredicto', 'clasificacion'
+        ))->setPaper('a4', 'portrait');
+
+        $slugEst = \Illuminate\Support\Str::slug($est->nombre_oficial ?: 'establecimiento', '_');
+        return $pdf->stream("Acta_RIISS_Modulo1_{$slugEst}.pdf");
+    }
+
+    /**
+     * GET /riiss/evaluaciones/{evaluacion}/acta-imprimir
+     * Vista imprimible institucional limpia para impresión directa.
+     */
+    public function imprimirActa(Evaluacion $evaluacion)
+    {
+        $this->authorizeEvaluacion($evaluacion);
+
+        $est = $evaluacion->establecimiento;
+        $respondidas = $evaluacion->respuestas()->count();
+        $totalPreguntas = 0;
+        try {
+            $totalPreguntas = (new \App\Services\FormularioDinamicoService())
+                ->seccionesAplicables($est)
+                ->sum(fn($s) => $s->preguntas->where('activa', true)->count());
+        } catch (\Exception $e) {}
+
+        $progreso = $totalPreguntas > 0 ? round(($respondidas / $totalPreguntas) * 100, 1) : ($evaluacion->porcentaje_cumplimiento ?? 0);
+
+        $primeraFirmaEval = !empty($evaluacion->firmas_evaluadores) ? $evaluacion->firmas_evaluadores[0] : null;
+        $evaluadorNombre = $primeraFirmaEval['nombre'] ?? ($evaluacion->evaluador_nombre ?: ($evaluacion->cerradoPor ? $evaluacion->cerradoPor->name : 'Equipo Técnico IPS'));
+        $evaluadorCargo  = $primeraFirmaEval['cargo'] ?? 'Evaluador Técnico — Dirección de Planificación';
+        $evaluadorFirma  = $primeraFirmaEval['firma'] ?? null;
+
+        $gap = $evaluacion->gapAnalysis()
+            ->select('estado', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+            ->groupBy('estado')
+            ->pluck('total', 'estado')
+            ->toArray();
+
+        $veredicto = $this->generarVeredicto($evaluacion, $est, $gap);
+        $clasificacion = $evaluacion->clasificacion_resultado ?: 'PENDIENTE';
+
+        return view('admin.riiss.evaluaciones.acta_imprimir', compact(
+            'evaluacion', 'est', 'respondidas', 'totalPreguntas', 'progreso',
+            'evaluadorNombre', 'evaluadorCargo', 'evaluadorFirma', 'veredicto', 'clasificacion'
+        ));
+    }
+
+    /**
      * DELETE /riiss/evaluaciones/{id}
      * Elimina (soft delete) una evaluación.
      */

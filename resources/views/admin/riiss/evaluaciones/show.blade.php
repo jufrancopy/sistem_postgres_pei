@@ -123,9 +123,12 @@
                     <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size:0.8rem; border-radius:8px;">
                         <i class="fa fa-check-double mr-1"></i> Cerrado el {{ $evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : ($evaluacion->responsable_firmado_at ? $evaluacion->responsable_firmado_at->format('d/m/Y H:i') : date('d/m/Y')) }} hs
                     </span>
-                    <button type="button" class="btn btn-outline-dark btn-sm font-weight-bold" onclick="window.print()" style="border-radius:8px;">
-                        <i class="fa fa-print mr-1"></i> Imprimir Acta
-                    </button>
+                    <a href="{{ route('riiss.evaluaciones.acta-pdf', $evaluacion->id) }}" target="_blank" class="btn btn-danger btn-sm font-weight-bold shadow-sm" style="border-radius:8px;">
+                        <i class="fa fa-file-pdf mr-1"></i> Descargar PDF Oficial
+                    </a>
+                    <a href="{{ route('riiss.evaluaciones.acta-imprimir', $evaluacion->id) }}" target="_blank" class="btn btn-warning btn-sm font-weight-bold shadow-sm" style="border-radius:8px;">
+                        <i class="fa fa-print mr-1"></i> Vista Imprimible
+                    </a>
                 </div>
             </div>
             <div class="card-body p-4 bg-white">

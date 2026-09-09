@@ -351,6 +351,19 @@
     70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
     100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
 }
+/* ── Modal RIISS Acta Ultra-Spacious & Responsive ── */
+.modal-riiss-acta-xl {
+    max-width: 92vw !important;
+    width: 92vw !important;
+    margin: 20px auto !important;
+}
+@media (max-width: 768px) {
+    .modal-riiss-acta-xl {
+        max-width: 98vw !important;
+        width: 98vw !important;
+        margin: 5px auto !important;
+    }
+}
 /* ── Estilos de Impresión para Acta RIISS ── */
 @media print {
     body * {
@@ -1466,15 +1479,15 @@
 
 {{-- Modal Acta Oficial de Cierre y Firmas RIISS --}}
 <div class="modal fade" id="modalActaCierreRiiss" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-dialog modal-riiss-acta-xl modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content shadow-lg border-0" style="border-radius:16px; overflow:hidden;">
             <div class="modal-header text-white d-flex align-items-center justify-content-between no-print" style="background:linear-gradient(135deg,#0d47a1 0%,#1a237e 100%); padding:16px 24px;">
                 <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-white text-primary p-2 mr-3 d-flex align-items-center justify-content-center shadow-sm" style="width:42px; height:42px;">
+                    <div class="rounded-circle bg-white text-primary p-2 mr-3 d-flex align-items-center justify-content-center shadow-sm" style="width:44px; height:44px;">
                         <i class="fa fa-file-signature fa-lg" style="color:#0d47a1;"></i>
                     </div>
                     <div>
-                        <h5 class="modal-title font-weight-bold mb-0 text-white" style="font-size:1.15rem; letter-spacing:0.3px;">
+                        <h5 class="modal-title font-weight-bold mb-0 text-white" style="font-size:1.2rem; letter-spacing:0.3px;">
                             Acta Institucional de Cierre de Relevamiento en Terreno
                         </h5>
                         <small class="text-white-50">
@@ -1482,10 +1495,13 @@
                         </small>
                     </div>
                 </div>
-                <div class="d-flex align-items-center" style="gap:10px;">
-                    <button type="button" class="btn btn-warning btn-sm font-weight-bold shadow-sm" onclick="imprimirActaRiiss()">
-                        <i class="fa fa-print mr-1"></i>Imprimir Acta Oficial
-                    </button>
+                <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                    <a id="actaBtnPdfHeader" href="#" target="_blank" class="btn btn-danger btn-sm font-weight-bold shadow-sm">
+                        <i class="fa fa-file-pdf mr-1"></i>Descargar PDF
+                    </a>
+                    <a id="actaBtnImprimirHeader" href="#" target="_blank" class="btn btn-warning btn-sm font-weight-bold shadow-sm">
+                        <i class="fa fa-print mr-1"></i>Vista Imprimible
+                    </a>
                     <button type="button" class="close text-white opacity-90 ml-2" data-dismiss="modal" style="font-size:1.8rem; line-height:1;">
                         <span>&times;</span>
                     </button>
@@ -1497,19 +1513,19 @@
                     <div class="spinner-border text-primary mb-2" style="width:3rem; height:3rem;"></div>
                     <div class="text-muted font-weight-bold">Cargando Acta Oficial y Firmas Digitales...</div>
                 </div>
-                <div id="modalActaContenido" class="d-none p-3 p-md-4">
-                    {{-- Hoja Documental A4 --}}
-                    <div id="actaDocumentoImprimible" class="bg-white p-4 p-md-5 mx-auto shadow-sm" style="max-width:850px; border-radius:12px; border:1px solid #e2e8f0; color:#1e293b; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                <div id="modalActaContenido" class="d-none p-2 p-md-4">
+                    {{-- Hoja Documental A4 Espaciosa y Responsiva --}}
+                    <div id="actaDocumentoImprimible" class="bg-white p-3 p-md-4 p-lg-5 mx-auto shadow-sm w-100" style="max-width:1050px; border-radius:12px; border:1px solid #e2e8f0; color:#1e293b; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
                         
                         {{-- Membrete Oficial --}}
-                        <div class="border-bottom pb-4 mb-4">
+                        <div class="border-bottom pb-3 mb-3">
                             <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap:15px;">
                                 <div class="d-flex align-items-center">
                                     <div class="bg-light p-2 rounded mr-3 border text-center d-flex align-items-center justify-content-center" style="width:58px; height:58px;">
                                         <i class="fa fa-hospital-alt fa-2x text-primary"></i>
                                     </div>
                                     <div>
-                                        <div class="font-weight-bold text-uppercase" style="font-size:1.05rem; color:#0f172a; letter-spacing:0.5px;">INSTITUTO DE PREVISIÓN SOCIAL</div>
+                                        <div class="font-weight-bold text-uppercase" style="font-size:1.1rem; color:#0f172a; letter-spacing:0.5px;">INSTITUTO DE PREVISIÓN SOCIAL</div>
                                         <div class="text-primary font-weight-bold small text-uppercase" style="letter-spacing:0.5px;">DIRECCIÓN DE PLANIFICACIÓN</div>
                                         <div class="text-muted small" style="font-size:0.75rem;">Sistema Integrado de Planificación y Monitoreo Estratégico (SIPLAN)</div>
                                     </div>
@@ -1524,148 +1540,145 @@
                         </div>
 
                         {{-- Título Principal --}}
-                        <div class="text-center my-4 py-2" style="background:#f8fafc; border-radius:8px; border-top:2px solid #1a237e; border-bottom:2px solid #1a237e;">
-                            <h4 class="font-weight-bold text-uppercase mb-1" style="color:#0f172a; letter-spacing:0.5px; font-size:1.2rem;">
+                        <div class="text-center my-3 py-2" style="background:#f8fafc; border-radius:8px; border-top:2px solid #1a237e; border-bottom:2px solid #1a237e;">
+                            <h4 class="font-weight-bold text-uppercase mb-1" style="color:#0f172a; letter-spacing:0.5px; font-size:1.25rem;">
                                 ACTA DE CONSTANCIA Y CIERRE DE RELEVAMIENTO EN TERRENO
                             </h4>
                             <div class="font-weight-bold text-primary small text-uppercase" style="letter-spacing:0.4px;">
                                 POLÍTICA DE REDES INTEGRADAS E INTEGRALES DE SERVICIOS DE SALUD (RIISS)
                             </div>
-                            <div class="text-muted font-weight-bold" style="font-size:0.8rem;">
-                                MÓDULO 1: CARTERA DE SERVICIOS DE SALUD Y CAPACIDAD RESOLUTIVA
+                            <div class="text-muted font-weight-bold" style="font-size:0.85rem;">
+                                MÓDULO N° 1: CARTERA DE SERVICIOS DE SALUD Y CAPACIDAD RESOLUTIVA
                             </div>
                         </div>
 
                         {{-- I. Datos del Establecimiento --}}
-                        <div class="mb-4">
-                            <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-2" style="font-size:0.85rem; letter-spacing:0.3px;">
+                        <div class="mb-3">
+                            <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-2" style="font-size:0.88rem; letter-spacing:0.3px;">
                                 I. IDENTIFICACIÓN DEL ESTABLECIMIENTO AUDITADO
                             </h6>
-                            <table class="table table-sm table-bordered mb-0" style="font-size:0.83rem;">
-                                <tbody>
-                                    <tr>
-                                        <td class="bg-light font-weight-bold text-muted" style="width:25%;">Establecimiento:</td>
-                                        <td class="font-weight-bold text-dark" style="width:35%;" id="actaEstNombre">—</td>
-                                        <td class="bg-light font-weight-bold text-muted" style="width:20%;">Código / ID:</td>
-                                        <td id="actaEstId" style="width:20%;">—</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="bg-light font-weight-bold text-muted">Tipología Oficial:</td>
-                                        <td id="actaEstTipologia">—</td>
-                                        <td class="bg-light font-weight-bold text-muted">Complejidad Declarada:</td>
-                                        <td id="actaEstComplejidad">—</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="bg-light font-weight-bold text-muted">Nivel / Grado:</td>
-                                        <td id="actaEstNivelGrado">—</td>
-                                        <td class="bg-light font-weight-bold text-muted">Departamento / Distrito:</td>
-                                        <td id="actaEstUbicacion">—</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="bg-light font-weight-bold text-muted">Red / Microred:</td>
-                                        <td id="actaEstRed">—</td>
-                                        <td class="bg-light font-weight-bold text-muted">Fecha y Hora de Cierre:</td>
-                                        <td class="font-weight-bold text-primary" id="actaFechaCierre">—</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div class="row" style="font-size: 0.88rem;">
+                                <div class="col-12 col-md-6 mb-2">
+                                    <div class="p-3 border rounded bg-light h-100">
+                                        <span class="text-muted small d-block font-weight-bold text-uppercase">Establecimiento de Salud</span>
+                                        <span class="font-weight-bold text-dark" id="actaEstNombre" style="font-size: 1.05rem;">—</span>
+                                        <div class="text-muted small mt-2">
+                                            <strong>ID:</strong> <span id="actaEstId" class="text-dark">—</span> · 
+                                            <strong>Red / Microred:</strong> <span id="actaEstRed" class="text-dark">—</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 mb-2">
+                                    <div class="p-3 border rounded bg-light h-100">
+                                        <span class="text-muted small d-block font-weight-bold text-uppercase">Clasificación & Complejidad</span>
+                                        <div class="d-flex align-items-center flex-wrap my-1" style="gap:6px;">
+                                            <span id="actaEstComplejidad">—</span>
+                                            <span class="badge badge-secondary px-2 py-1" id="actaEstTipologia">—</span>
+                                        </div>
+                                        <div class="text-muted small mt-1">
+                                            <strong>Nivel/Grado:</strong> <span id="actaEstNivelGrado" class="text-dark">—</span> · 
+                                            <strong>Dpto:</strong> <span id="actaEstUbicacion" class="text-dark">—</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {{-- II. Marco Institucional y Declaración --}}
-                        <div class="mb-4">
-                            <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-2" style="font-size:0.85rem; letter-spacing:0.3px;">
+                        <div class="mb-3">
+                            <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-2" style="font-size:0.88rem; letter-spacing:0.3px;">
                                 II. DECLARACIÓN INSTITUCIONAL Y OBJETO DE LA VISITA
                             </h6>
-                            <p class="text-justify mb-2" style="font-size:0.84rem; line-height:1.55; color:#334155;">
+                            <p class="text-justify mb-2" style="font-size:0.88rem; line-height:1.55; color:#334155;">
                                 En el marco del proceso de implementación de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong> —que comprende 9 módulos estructurados para la articulación, categorización y gobernanza de la red sanitaria del Instituto de Previsión Social—, el equipo técnico comisionado por la <strong>Dirección de Planificación</strong> se constituyó formalmente en las instalaciones del establecimiento arriba individualizado, a efectos de efectuar la verificación técnica, auditoría in situ y consolidación de la oferta prestacional para el <strong>Módulo 1: Cartera de Servicios de Salud y Capacidad Resolutiva</strong>.
                             </p>
                         </div>
 
                         {{-- III. Resultados y Dictamen Técnico --}}
-                        <div class="mb-4">
-                            <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-2" style="font-size:0.85rem; letter-spacing:0.3px;">
+                        <div class="mb-3">
+                            <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-2" style="font-size:0.88rem; letter-spacing:0.3px;">
                                 III. RESULTADOS DEL RELEVAMIENTO Y DICTAMEN TÉCNICO
                             </h6>
-                            <div class="row align-items-center my-3">
-                                <div class="col-md-4 text-center mb-2 mb-md-0">
-                                    <div class="p-2 border rounded bg-light">
-                                        <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.7rem;">Cobertura de Relevamiento</small>
-                                        <div class="h4 font-weight-bold text-primary mb-0" id="actaProgresoPct">0%</div>
+                            <div class="row align-items-center my-2">
+                                <div class="col-12 col-md-4 text-center mb-2 mb-md-0">
+                                    <div class="p-3 border rounded bg-light">
+                                        <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.75rem;">Cobertura de Relevamiento</small>
+                                        <div class="h3 font-weight-bold text-primary mb-0" id="actaProgresoPct">0%</div>
                                         <small class="text-muted" id="actaPreguntasResp">0 / 0 preguntas auditadas</small>
                                     </div>
                                 </div>
-                                <div class="col-md-4 text-center mb-2 mb-md-0">
-                                    <div class="p-2 border rounded bg-light">
-                                        <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.7rem;">Cumplimiento de Cartera</small>
-                                        <div class="h4 font-weight-bold text-success mb-0" id="actaCumplimientoPct">0%</div>
+                                <div class="col-12 col-md-4 text-center mb-2 mb-md-0">
+                                    <div class="p-3 border rounded bg-light">
+                                        <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.75rem;">Cumplimiento de Cartera</small>
+                                        <div class="h3 font-weight-bold text-success mb-0" id="actaCumplimientoPct">0%</div>
                                         <small class="text-muted">Servicios según tipología</small>
                                     </div>
                                 </div>
-                                <div class="col-md-4 text-center">
-                                    <div class="p-2 border rounded bg-light">
-                                        <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.7rem;">Dictamen Institucional</small>
-                                        <div class="h5 font-weight-bold text-uppercase mb-0 mt-1" id="actaDictamenBadge">—</div>
+                                <div class="col-12 col-md-4 text-center">
+                                    <div class="p-3 border rounded bg-light">
+                                        <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.75rem;">Dictamen Institucional</small>
+                                        <div class="h4 font-weight-bold text-uppercase mb-0 mt-1" id="actaDictamenBadge">—</div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="p-2 rounded bg-light border small text-dark mt-2" id="actaVeredictoTexto" style="font-size:0.82rem; line-height:1.45;">
+                            <div class="p-3 rounded bg-light border text-dark mt-2" id="actaVeredictoTexto" style="font-size:0.85rem; line-height:1.45;">
                                 —
                             </div>
-                            <div id="actaObservacionesBox" class="p-2 rounded bg-white border mt-2 d-none" style="border-left:4px solid #f59e0b !important;">
+                            <div id="actaObservacionesBox" class="p-3 rounded bg-white border mt-2 d-none" style="border-left:4px solid #f59e0b !important;">
                                 <strong class="text-dark small d-block mb-1"><i class="fa fa-comment-dots text-warning mr-1"></i>Observaciones y Acuerdos Asentados en Terreno:</strong>
                                 <span class="small text-muted" id="actaObservacionesTexto">—</span>
                             </div>
                         </div>
 
                         {{-- IV. Rúbricas y Constancia de Conformidad --}}
-                        <div class="mb-4">
-                            <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-3" style="font-size:0.85rem; letter-spacing:0.3px;">
+                        <div class="mb-3">
+                            <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-3" style="font-size:0.88rem; letter-spacing:0.3px;">
                                 IV. CONSTANCIA DE CONFORMIDAD Y RÚBRICAS DIGITALES EN TERRENO
                             </h6>
-                            <p class="small text-muted mb-3" style="font-size:0.78rem; line-height:1.4;">
+                            <p class="small text-muted mb-3" style="font-size:0.82rem; line-height:1.4;">
                                 Las partes intervinientes ratifican la veracidad de los datos consignados en el relevamiento presencial, estampando sus firmas digitales en señal de plena conformidad y cierre de la auditoría técnica de campo:
                             </p>
 
                             <div class="row">
                                 {{-- Firma Receptor Local --}}
-                                <div class="col-6">
+                                <div class="col-12 col-md-6 mb-3">
                                     <div class="p-3 border rounded h-100 d-flex flex-column justify-content-between text-center" style="background:#f8fafc; border-color:#cbd5e1 !important; border-radius:10px;">
                                         <div class="border-bottom pb-2 mb-2">
-                                            <span class="badge badge-warning text-dark font-weight-bold px-2 py-1 text-uppercase" style="font-size:0.68rem;">
-                                                RECEPTOR / RESPONSABLE LOCAL
+                                            <span class="badge badge-warning text-dark font-weight-bold px-2 py-1 text-uppercase" style="font-size:0.72rem;">
+                                                <i class="fa fa-user-tie mr-1"></i>RECEPTOR / RESPONSABLE LOCAL
                                             </span>
                                         </div>
-                                        <div class="my-2 p-2 bg-white rounded border d-flex align-items-center justify-content-center" style="min-height:95px;">
-                                            <img id="actaFirmaRespImg" src="" alt="Firma del Responsable" style="max-height:85px; max-width:100%; object-fit:contain;" class="d-none">
+                                        <div class="my-2 p-2 bg-white rounded border d-flex align-items-center justify-content-center" style="min-height:100px;">
+                                            <img id="actaFirmaRespImg" src="" alt="Firma del Responsable" style="max-height:90px; max-width:100%; object-fit:contain;" class="d-none">
                                             <span id="actaFirmaRespVacia" class="text-muted small font-italic">Sin firma estampada</span>
                                         </div>
-                                        <div class="pt-2 border-top text-center" style="font-size:0.8rem;">
+                                        <div class="pt-2 border-top text-center" style="font-size:0.85rem;">
                                             <div class="font-weight-bold text-dark" id="actaRespNombre">—</div>
                                             <div class="text-primary font-weight-bold small" id="actaRespCargo">—</div>
                                             <div class="text-muted small" id="actaRespDoc">—</div>
                                             <div class="text-muted small" id="actaRespTel">—</div>
-                                            <div class="text-muted font-italic mt-1" style="font-size:0.7rem;" id="actaRespFechaFirma">—</div>
+                                            <div class="text-muted font-italic mt-1" style="font-size:0.75rem;" id="actaRespFechaFirma">—</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {{-- Firma Evaluador IPS --}}
-                                <div class="col-6">
+                                <div class="col-12 col-md-6 mb-3">
                                     <div class="p-3 border rounded h-100 d-flex flex-column justify-content-between text-center" style="background:#f8fafc; border-color:#cbd5e1 !important; border-radius:10px;">
                                         <div class="border-bottom pb-2 mb-2">
-                                            <span class="badge badge-info text-white font-weight-bold px-2 py-1 text-uppercase" style="font-size:0.68rem;">
-                                                EQUIPO EVALUADOR — PLANIFICACIÓN IPS
+                                            <span class="badge badge-info text-white font-weight-bold px-2 py-1 text-uppercase" style="font-size:0.72rem;">
+                                                <i class="fa fa-user-check mr-1"></i>EQUIPO EVALUADOR — PLANIFICACIÓN IPS
                                             </span>
                                         </div>
-                                        <div class="my-2 p-2 bg-white rounded border d-flex align-items-center justify-content-center" style="min-height:95px;">
-                                            <img id="actaFirmaEvalImg" src="" alt="Firma del Evaluador" style="max-height:85px; max-width:100%; object-fit:contain;" class="d-none">
+                                        <div class="my-2 p-2 bg-white rounded border d-flex align-items-center justify-content-center" style="min-height:100px;">
+                                            <img id="actaFirmaEvalImg" src="" alt="Firma del Evaluador" style="max-height:90px; max-width:100%; object-fit:contain;" class="d-none">
                                             <span id="actaFirmaEvalVacia" class="text-muted small font-italic">Sin firma estampada</span>
                                         </div>
-                                        <div class="pt-2 border-top text-center" style="font-size:0.8rem;">
+                                        <div class="pt-2 border-top text-center" style="font-size:0.85rem;">
                                             <div class="font-weight-bold text-dark" id="actaEvalNombre">—</div>
                                             <div class="text-info font-weight-bold small" id="actaEvalCargo">Equipo Técnico Relevador — Dirección de Planificación</div>
                                             <div class="text-muted small" id="actaEvalCerradoPor">—</div>
-                                            <div class="text-muted font-italic mt-1" style="font-size:0.7rem;" id="actaEvalFechaFirma">—</div>
+                                            <div class="text-muted font-italic mt-1" style="font-size:0.75rem;" id="actaEvalFechaFirma">—</div>
                                         </div>
                                     </div>
                                 </div>
@@ -1673,7 +1686,7 @@
                         </div>
 
                         {{-- Pie del Documento --}}
-                        <div class="border-top pt-3 mt-4 text-center text-muted" style="font-size:0.72rem; line-height:1.4;">
+                        <div class="border-top pt-3 mt-3 text-center text-muted" style="font-size:0.75rem; line-height:1.4;">
                             <div>Documento institucional emitido por el <strong>Sistema SIPLAN — Instituto de Previsión Social</strong>.</div>
                             <div>Implementación del Marco Técnico de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong>.</div>
                         </div>
@@ -1682,17 +1695,20 @@
                 </div>
             </div>
 
-            <div class="modal-footer bg-white border-top d-flex justify-content-between align-items-center flex-wrap no-print" style="padding:14px 24px;">
+            <div class="modal-footer bg-white border-top d-flex justify-content-between align-items-center flex-wrap no-print" style="padding:14px 24px; gap:10px;">
                 <div class="small text-muted">
                     <i class="fa fa-shield-alt text-success mr-1"></i>Acta oficial certificada con firma digital en terreno.
                 </div>
-                <div class="d-flex align-items-center" style="gap:8px;">
+                <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
                     <a href="#" id="actaBtnIrFormulario" class="btn btn-outline-primary btn-sm font-weight-bold">
                         <i class="fa fa-clipboard-list mr-1"></i>Ver Formulario Completo
                     </a>
-                    <button type="button" class="btn btn-warning btn-sm font-weight-bold shadow-sm" onclick="imprimirActaRiiss()">
-                        <i class="fa fa-print mr-1"></i>Imprimir Acta
-                    </button>
+                    <a id="actaBtnPdfFooter" href="#" target="_blank" class="btn btn-danger btn-sm font-weight-bold shadow-sm">
+                        <i class="fa fa-file-pdf mr-1"></i>Descargar PDF Oficial
+                    </a>
+                    <a id="actaBtnImprimirFooter" href="#" target="_blank" class="btn btn-warning btn-sm font-weight-bold shadow-sm">
+                        <i class="fa fa-print mr-1"></i>Vista Imprimible
+                    </a>
                     <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">
                         Cerrar
                     </button>
@@ -2922,6 +2938,10 @@ function abrirModalActa(evalId) {
         $('#actaEvalFechaFirma').text(vis.fecha_hora_cierre ? 'Cerrado el: ' + vis.fecha_hora_cierre : '');
 
         $('#actaBtnIrFormulario').attr('href', '/riiss/evaluaciones/nueva/' + est.id + '?evaluacion=' + d.id);
+        $('#actaBtnPdfHeader').attr('href', '/riiss/evaluaciones/' + d.id + '/acta-pdf');
+        $('#actaBtnPdfFooter').attr('href', '/riiss/evaluaciones/' + d.id + '/acta-pdf');
+        $('#actaBtnImprimirHeader').attr('href', '/riiss/evaluaciones/' + d.id + '/acta-imprimir');
+        $('#actaBtnImprimirFooter').attr('href', '/riiss/evaluaciones/' + d.id + '/acta-imprimir');
 
         $('#modalActaCargando').addClass('d-none');
         $('#modalActaContenido').removeClass('d-none');

@@ -1100,6 +1100,10 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('evaluaciones.clasificacion');
         Route::get('evaluaciones/{evaluacion}/acta-datos', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'actaDatos'])
             ->name('evaluaciones.acta-datos');
+        Route::get('evaluaciones/{evaluacion}/acta-pdf', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'descargarActaPdf'])
+            ->name('evaluaciones.acta-pdf');
+        Route::get('evaluaciones/{evaluacion}/acta-imprimir', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'imprimirActa'])
+            ->name('evaluaciones.acta-imprimir');
         Route::get('evaluaciones/{evaluacion}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'show'])
             ->name('evaluaciones.show');
         Route::post('evaluaciones/{evaluacion}/cerrar-con-firmas', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'cerrarConFirmas'])
