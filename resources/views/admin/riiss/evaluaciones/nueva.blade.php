@@ -838,23 +838,63 @@ function recuperarEvaluacionExistente(id) {
         cargarFormulario(function() {
             aplicarRespuestasVisuales(ev.respuestas || []);
             
-            // Cargar observaciones guardadas
+            // Cargar observaciones y aspectos positivos guardados
             if (ev.observaciones_generales) {
-                if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalObservaciones) {
-                    CKEDITOR.instances.evalObservaciones.setData(ev.observaciones_generales);
-                } else {
-                    $('#evalObservaciones').val(ev.observaciones_generales);
-                }
+                setRichEditorData('evalObservaciones', ev.observaciones_generales);
             }
             if (ev.aspectos_positivos) {
-                if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalAspectosPositivos) {
-                    CKEDITOR.instances.evalAspectosPositivos.setData(ev.aspectos_positivos);
-                } else {
-                    $('#evalAspectosPositivos').val(ev.aspectos_positivos);
-                }
+                setRichEditorData('evalAspectosPositivos', ev.aspectos_positivos);
             }
         });
     });
+}
+
+// ── Helpers para Texto Enriquecido (CKEditor) ──────────────────────────────
+function initRichTextEditors() {
+    if (typeof CKEDITOR === 'undefined') return;
+
+    var ckConfig = {
+        height: 150,
+        toolbarGroups: [
+            { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+            { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align' ] },
+            { name: 'links' },
+            { name: 'styles' },
+            { name: 'colors' }
+        ],
+        removeButtons: 'Underline,Subscript,Superscript,Strike,Styles'
+    };
+
+    ['evalAspectosPositivos', 'evalObservaciones'].forEach(function(fieldId) {
+        if ($('#' + fieldId).length) {
+            if (CKEDITOR.instances[fieldId]) {
+                try { CKEDITOR.instances[fieldId].destroy(true); } catch(e){}
+            }
+            CKEDITOR.replace(fieldId, ckConfig);
+        }
+    });
+}
+
+function getRichEditorData(fieldId) {
+    if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances[fieldId]) {
+        return CKEDITOR.instances[fieldId].getData();
+    }
+    return $('#' + fieldId).val() || '';
+}
+
+function setRichEditorData(fieldId, content) {
+    var safeContent = content || '';
+    if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances[fieldId]) {
+        if (CKEDITOR.instances[fieldId].status === 'ready') {
+            CKEDITOR.instances[fieldId].setData(safeContent);
+        } else {
+            CKEDITOR.instances[fieldId].on('instanceReady', function() {
+                this.setData(safeContent);
+            });
+        }
+    } else {
+        $('#' + fieldId).val(safeContent);
+    }
 }
 
 // ── Crear evaluación al cargar la página ─────────────────────────────────────
@@ -932,8 +972,8 @@ function guardarObservaciones() {
     var btn = $('#btnGuardarObs');
     btn.html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
     
-    var obs = typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalObservaciones ? CKEDITOR.instances.evalObservaciones.getData() : $('#evalObservaciones').val();
-    var asp = typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalAspectosPositivos ? CKEDITOR.instances.evalAspectosPositivos.getData() : $('#evalAspectosPositivos').val();
+    var obs = getRichEditorData('evalObservaciones');
+    var asp = getRichEditorData('evalAspectosPositivos');
     
     $.ajax({
         url: '/riiss/evaluaciones/' + evaluacionId + '/datos-visita',
@@ -958,8 +998,8 @@ function guardarObservaciones() {
 // Autoguardado al salir de la página
 window.addEventListener('beforeunload', function() {
     if (evaluacionId && ($('#evalObservaciones').length || $('#evalAspectosPositivos').length)) {
-        var obs = typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalObservaciones ? CKEDITOR.instances.evalObservaciones.getData() : $('#evalObservaciones').val();
-        var asp = typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.evalAspectosPositivos ? CKEDITOR.instances.evalAspectosPositivos.getData() : $('#evalAspectosPositivos').val();
+        var obs = getRichEditorData('evalObservaciones');
+        var asp = getRichEditorData('evalAspectosPositivos');
         navigator.sendBeacon('/riiss/evaluaciones/' + evaluacionId + '/datos-visita', new Blob([JSON.stringify({
             _token: '{{ csrf_token() }}',
             _method: 'PATCH',
@@ -968,11 +1008,7 @@ window.addEventListener('beforeunload', function() {
         })], {type: 'application/json'}));
     }
 });
-</script>
-@endsection
 
-@push('scripts')
-<script>
 // ── Cargar formulario ─────────────────────────────────────────────────────────
 function cargarFormulario(callback) {
     $('#listaSecciones').html('<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-danger"></div></div>');
@@ -989,24 +1025,12 @@ function cargarFormulario(callback) {
         actualizarProgreso();
         initBuscadorPreguntas();
 
-        // Inicializar CKEditor para observaciones y aspectos positivos deshabilitando aviso de versión
-        if (typeof CKEDITOR !== 'undefined') {
-            CKEDITOR.replace('evalObservaciones', {
-                height: 150,
-                toolbarGroups: [
-                    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
-                    { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align' ] },
-                    { name: 'links' },
-                    { name: 'styles' },
-                    { name: 'colors' }
-                ],
-                removeButtons: 'Underline,Subscript,Superscript,Strike,Styles'
-            });
-        }
+        // Inicializar CKEditor para observaciones y aspectos positivos
+        initRichTextEditors();
 
         // Ejecutar callback después de renderizar (para aplicar respuestas guardadas)
         if (typeof callback === 'function') {
-            setTimeout(callback, 150);
+            setTimeout(callback, 200);
         }
     });
 }
@@ -1609,4 +1633,4 @@ function mostrarToast(msg, tipo) {
     setTimeout(function() { $t.fadeOut(400, function() { $t.remove(); }); }, 3000);
 }
 </script>
-@endpush
+@endsection
