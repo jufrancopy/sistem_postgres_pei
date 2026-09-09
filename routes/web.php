@@ -1098,6 +1098,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('evaluaciones.gap');
         Route::get('evaluaciones/{evaluacion}/resumen-clasificacion', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'resumenClasificacion'])
             ->name('evaluaciones.clasificacion');
+        Route::get('evaluaciones/{evaluacion}/acta-datos', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'actaDatos'])
+            ->name('evaluaciones.acta-datos');
         Route::get('evaluaciones/{evaluacion}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'show'])
             ->name('evaluaciones.show');
         Route::post('evaluaciones/{evaluacion}/cerrar-con-firmas', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'cerrarConFirmas'])

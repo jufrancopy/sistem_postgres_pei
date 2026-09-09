@@ -551,6 +551,96 @@ class EvaluacionController extends Controller
     }
 
     /**
+     * GET /riiss/evaluaciones/{evaluacion}/acta-datos
+     * Retorna datos completos para el Acta Institucional de Cierre en Terreno.
+     */
+    public function actaDatos(Evaluacion $evaluacion): JsonResponse
+    {
+        $this->authorizeEvaluacion($evaluacion);
+
+        $est = $evaluacion->establecimiento;
+        $respondidas = $evaluacion->respuestas()->count();
+        $totalPreguntas = 0;
+        try {
+            $totalPreguntas = (new \App\Services\FormularioDinamicoService())
+                ->seccionesAplicables($est)
+                ->sum(fn($s) => $s->preguntas->where('activa', true)->count());
+        } catch (\Exception $e) {}
+
+        $pct = $totalPreguntas > 0 ? round(($respondidas / $totalPreguntas) * 100, 1) : ($evaluacion->porcentaje_cumplimiento ?? 0);
+
+        $primeraFirmaEval = !empty($evaluacion->firmas_evaluadores) ? $evaluacion->firmas_evaluadores[0] : null;
+        $evaluadorNombre = $primeraFirmaEval['nombre'] ?? ($evaluacion->evaluador_nombre ?: ($evaluacion->cerradoPor ? $evaluacion->cerradoPor->name : 'Equipo Técnico IPS'));
+        $evaluadorCargo  = $primeraFirmaEval['cargo'] ?? 'Evaluador Técnico — Dirección de Planificación';
+        $evaluadorFirma  = $primeraFirmaEval['firma'] ?? null;
+
+        $gap = $evaluacion->gapAnalysis()
+            ->select('estado', DB::raw('count(*) as total'))
+            ->groupBy('estado')
+            ->pluck('total', 'estado')
+            ->toArray();
+
+        $veredicto = $this->generarVeredicto($evaluacion, $est, $gap);
+
+        return response()->json([
+            'ok' => true,
+            'data' => [
+                'id'                      => $evaluacion->id,
+                'establecimiento'         => [
+                    'id'                  => $est->id_establecimiento,
+                    'nombre'              => $est->nombre_oficial,
+                    'tipologia'           => $est->tipologia_clasificacion,
+                    'complejidad'         => $est->complejidad,
+                    'complejidad_color'   => $est->complejidad_color,
+                    'nivel_atencion'      => $est->nivel_atencion,
+                    'grado_complejidad'   => $est->grado_complejidad,
+                    'departamento'        => $est->departamento,
+                    'distrito'            => $est->distrito ?? $est->ciudad,
+                    'microred'            => $est->microred,
+                    'red'                 => $est->red,
+                    'prestador'           => $est->prestador,
+                ],
+                'marco_institucional'     => [
+                    'institucion'         => 'INSTITUTO DE PREVISIÓN SOCIAL',
+                    'dependencia'         => 'DIRECCIÓN DE PLANIFICACIÓN',
+                    'politica'            => 'POLÍTICA DE REDES INTEGRADAS E INTEGRALES DE SERVICIOS DE SALUD (RIISS)',
+                    'modulo_numero'       => 1,
+                    'modulo_nombre'       => 'CARTERA DE SERVICIOS DE SALUD Y CAPACIDAD INSTALADA',
+                    'total_modulos'       => 9,
+                ],
+                'visita'                  => [
+                    'fecha'               => $evaluacion->fecha_evaluacion?->format('d/m/Y') ?: date('d/m/Y'),
+                    'fecha_hora_cierre'   => $evaluacion->cerrado_at?->format('d/m/Y H:i') ?: ($evaluacion->responsable_firmado_at?->format('d/m/Y H:i') ?: date('d/m/Y H:i')),
+                    'estado'              => $evaluacion->estado,
+                    'cerrado_con_firmas'  => $evaluacion->isCerradaConFirmas(),
+                    'respondidas'         => $respondidas,
+                    'total_preguntas'     => $totalPreguntas,
+                    'progreso'            => $pct,
+                    'cumplimiento'        => $evaluacion->porcentaje_cumplimiento ?? $pct,
+                    'clasificacion'       => $evaluacion->clasificacion_resultado,
+                    'veredicto'           => $veredicto,
+                    'observaciones'       => $evaluacion->cierre_observaciones,
+                ],
+                'responsable'             => [
+                    'nombre'              => $evaluacion->responsable_nombre,
+                    'cargo'               => $evaluacion->responsable_cargo,
+                    'documento'           => $evaluacion->responsable_documento,
+                    'telefono'            => $evaluacion->responsable_telefono,
+                    'firma'               => $evaluacion->responsable_firma,
+                    'firmado_at'          => $evaluacion->responsable_firmado_at?->format('d/m/Y H:i'),
+                ],
+                'evaluador'               => [
+                    'nombre'              => $evaluadorNombre,
+                    'cargo'               => $evaluadorCargo,
+                    'telefono'            => $evaluacion->evaluador_telefono,
+                    'firma'               => $evaluadorFirma,
+                    'cerrado_por'         => $evaluacion->cerradoPor?->name,
+                ],
+            ]
+        ]);
+    }
+
+    /**
      * DELETE /riiss/evaluaciones/{id}
      * Elimina (soft delete) una evaluación.
      */
