@@ -96,6 +96,52 @@
 .bmd-form-group { padding-top: 0 !important; margin-bottom: 0 !important; }
 .form-group { margin-bottom: 0 !important; }
 
+/* Modal Cierre Firmas anti-overlap styles */
+#modalCierreFirmas .bmd-form-group,
+#modalCierreFirmas .form-group {
+    position: relative !important;
+    margin-bottom: 1.15rem !important;
+    padding-top: 0 !important;
+}
+#modalCierreFirmas label,
+#modalCierreFirmas .bmd-label-floating,
+#modalCierreFirmas .bmd-label-static,
+#modalCierreFirmas .control-label {
+    position: static !important;
+    transform: none !important;
+    top: auto !important;
+    left: auto !important;
+    display: block !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin-bottom: 0.35rem !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+}
+#modalCierreFirmas .form-control {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: 38px !important;
+    padding: 0.45rem 0.75rem !important;
+    font-size: 0.88rem !important;
+    line-height: 1.5 !important;
+    color: #0f172a !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+#modalCierreFirmas textarea.form-control {
+    height: auto !important;
+}
+#modalCierreFirmas .form-control:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+}
+
 /* Reset Material Design backgrounds on Select2 inputs */
 .select2-search__field {
     background-image: none !important;

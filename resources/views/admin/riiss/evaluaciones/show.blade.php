@@ -14,6 +14,59 @@
 #evalTabs .nav-link { color:#343a40 !important; }
 #evalTabs .nav-link.active { color:#1a237e !important; font-weight:600; }
 #evalTabs .nav-link:hover { color:#1a237e !important; }
+
+/* Modal Estampar Firma fixes for Material Dashboard */
+#modalFirmarEvaluador .bmd-form-group,
+#modalFirmarEvaluador .form-group {
+    position: relative !important;
+    margin-bottom: 1.15rem !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+#modalFirmarEvaluador label,
+#modalFirmarEvaluador .form-label-custom,
+#modalFirmarEvaluador .bmd-label-floating,
+#modalFirmarEvaluador .bmd-label-static,
+#modalFirmarEvaluador .control-label {
+    position: static !important;
+    transform: none !important;
+    top: auto !important;
+    left: auto !important;
+    display: block !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin-bottom: 0.35rem !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+}
+#modalFirmarEvaluador .form-control,
+#modalFirmarEvaluador .form-control-custom {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: 38px !important;
+    padding: 0.45rem 0.75rem !important;
+    font-size: 0.88rem !important;
+    line-height: 1.5 !important;
+    color: #0f172a !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+#modalFirmarEvaluador .form-control:focus,
+#modalFirmarEvaluador .form-control-custom:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+    outline: none !important;
+}
+#modalFirmarEvaluador select.form-control,
+#modalFirmarEvaluador select.form-control-custom {
+    height: 38px !important;
+    cursor: pointer !important;
+}
 </style>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 @endpush
@@ -1031,52 +1084,72 @@ function guardarFirmaEvaluadorModal() {
 
 <!-- Modal Firmar Evaluador Pendiente -->
 <div class="modal fade" id="modalFirmarEvaluador" tabindex="-1" role="dialog" aria-hidden="true" style="z-index:1060;">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 540px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius:16px; overflow:hidden;">
-            <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
-                <h5 class="modal-title font-weight-bold mb-0 text-white" style="font-size:1.1rem;">
-                    <i class="fa fa-pen-nib mr-2"></i>Estampar Firma Digital de Evaluador Técnico
-                </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:0.9;">
+            <div class="modal-header text-white py-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-white text-info mr-2 d-flex align-items-center justify-content-center" style="width:34px; height:34px;">
+                        <i class="fa fa-pen-nib" style="color:#0284c7; font-size:1rem;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold mb-0 text-white" style="font-size:1.05rem;">
+                            Estampar Firma Digital de Evaluador
+                        </h5>
+                        <small class="text-white-50" style="font-size:0.75rem;">Equipo de la Dirección de Planificación — IPS</small>
+                    </div>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:0.9; text-shadow:none;">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body p-4 bg-light">
-                <form id="formFirmaEvaluadorPendiente">
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold text-dark small mb-1">Nombre y Apellido del Evaluador <span class="text-danger">*</span></label>
-                        @if(!empty($evaluadoresComision) && count($evaluadoresComision) > 0)
-                            <select class="form-control form-control-sm" id="modal_eval_nombre_select" onchange="if(this.value){ $('#modal_eval_nombre').val(this.value); }">
-                                <option value="">— Seleccionar de la comisión o escribir abajo —</option>
+            <div class="modal-body p-4" style="background:#f8fafc;">
+                <form id="formFirmaEvaluadorPendiente" onsubmit="return false;">
+                    @if(!empty($evaluadoresComision) && count($evaluadoresComision) > 0)
+                        <div class="form-group mb-3">
+                            <label class="form-label-custom font-weight-bold text-dark small mb-1">
+                                <i class="fa fa-users text-primary mr-1"></i>Seleccionar Técnico de la Comisión:
+                            </label>
+                            <select class="form-control form-control-custom" id="modal_eval_nombre_select" onchange="if(this.value){ $('#modal_eval_nombre').val(this.value); }">
+                                <option value="">— Elegir de la comisión comisionada —</option>
                                 @foreach($evaluadoresComision as $ec)
                                     <option value="{{ $ec['text'] ?? $ec['nombre'] ?? '' }}" data-id="{{ $ec['id'] ?? '' }}">{{ $ec['text'] ?? $ec['nombre'] ?? '' }}</option>
                                 @endforeach
                             </select>
-                        @endif
-                        <input type="text" class="form-control form-control-sm mt-2" id="modal_eval_nombre" placeholder="Nombre completo del evaluador..." value="{{ auth()->user() ? auth()->user()->name : '' }}" required>
+                        </div>
+                    @endif
+
+                    <div class="form-group mb-3">
+                        <label class="form-label-custom font-weight-bold text-dark small mb-1">
+                            <i class="fa fa-user-check text-info mr-1"></i>Nombre y Apellido del Evaluador <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control form-control-custom" id="modal_eval_nombre" placeholder="Nombre completo del evaluador..." value="{{ auth()->user() ? auth()->user()->name : '' }}" required>
                     </div>
 
                     <div class="form-group mb-3">
-                        <label class="font-weight-bold text-dark small mb-1">Cargo / Dependencia</label>
-                        <input type="text" class="form-control form-control-sm" id="modal_eval_cargo" value="Evaluador / Analista RIISS — Dirección de Planificación" required>
+                        <label class="form-label-custom font-weight-bold text-dark small mb-1">
+                            <i class="fa fa-briefcase text-secondary mr-1"></i>Cargo / Dependencia
+                        </label>
+                        <input type="text" class="form-control form-control-custom" id="modal_eval_cargo" value="Evaluador / Analista RIISS — Dirección de Planificación" required>
                     </div>
 
                     <div class="form-group mb-0">
                         <div class="d-flex align-items-center justify-content-between mb-1">
-                            <label class="font-weight-bold text-dark small mb-0"><i class="fa fa-pen-alt mr-1 text-primary"></i>Rúbrica Digital <span class="text-danger">*</span></label>
+                            <label class="form-label-custom font-weight-bold text-dark small mb-0">
+                                <i class="fa fa-signature text-primary mr-1"></i>Rúbrica Digital <span class="text-danger">*</span>
+                            </label>
                             <button type="button" class="btn btn-outline-danger btn-xs py-0 px-2" id="btnClearFirmaModalEval" style="font-size:0.72rem; border-radius:6px;">
                                 <i class="fa fa-eraser mr-1"></i>Limpiar
                             </button>
                         </div>
-                        <div class="border rounded bg-white d-flex align-items-center justify-content-center p-1" style="border: 2px dashed #94a3b8 !important; border-radius: 10px;">
-                            <canvas id="canvasFirmaModalEval" width="450" height="150" style="touch-action: none; width: 100%; height: 150px; background: #ffffff; border-radius: 8px; cursor: crosshair;"></canvas>
+                        <div class="border rounded bg-white d-flex align-items-center justify-content-center p-1" style="border: 2px dashed #94a3b8 !important; border-radius: 10px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                            <canvas id="canvasFirmaModalEval" width="480" height="150" style="touch-action: none; width: 100%; height: 150px; background: #ffffff; border-radius: 8px; cursor: crosshair;"></canvas>
                         </div>
-                        <small class="text-muted d-block mt-1" style="font-size:0.72rem;"><i class="fa fa-info-circle mr-1"></i>Dibujar la firma con el cursor o directamente en pantalla táctil.</small>
+                        <small class="text-muted d-block mt-1" style="font-size:0.72rem;"><i class="fa fa-info-circle mr-1"></i>Dibujar la firma con el cursor del mouse o directamente en pantalla táctil.</small>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer bg-white border-top py-3 px-4 d-flex justify-content-between">
-                <button type="button" class="btn btn-outline-secondary font-weight-bold btn-sm" data-dismiss="modal" style="border-radius:8px;">
+            <div class="modal-footer bg-white border-top py-3 px-4 d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-outline-secondary font-weight-bold btn-sm px-3" data-dismiss="modal" style="border-radius:8px;">
                     Cancelar
                 </button>
                 <button type="button" class="btn btn-success font-weight-bold btn-sm px-4 shadow-sm" id="btnGuardarFirmaModalEval" onclick="guardarFirmaEvaluadorModal()" style="border-radius:8px;">
