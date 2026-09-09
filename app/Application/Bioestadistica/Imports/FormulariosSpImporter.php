@@ -26,7 +26,7 @@ class FormulariosSpImporter
         'SP4' => ['nombre' => 'Estudios Alta Complejidad', 'layout' => 'tabular', 'periodicidad' => 'mensual', 'dominio' => '11'],
         'SP5' => ['nombre' => 'Laboratorio', 'layout' => 'tabular', 'periodicidad' => 'mensual', 'dominio' => '10'],
         'SP6' => ['nombre' => 'Odontología', 'layout' => 'tabular', 'periodicidad' => 'mensual', 'dominio' => '14'],
-        'SP7' => ['nombre' => 'Procedimientos', 'layout' => 'tabular', 'periodicidad' => 'mensual', 'dominio' => '14'],
+        'SP7' => ['nombre' => 'Procedimientos', 'layout' => 'tabular', 'periodicidad' => 'mensual', 'dominio' => '14'], // + dominios 5–9 en Sp7Seeder
         'SP8' => ['nombre' => 'Vacunación', 'layout' => 'tabular', 'periodicidad' => 'mensual', 'dominio' => '16'],
         'SP9' => ['nombre' => 'Urgencias', 'layout' => 'tabular', 'periodicidad' => 'mensual', 'dominio' => '4'],
         'SP10' => ['nombre' => 'Hospitalización', 'layout' => 'nominativo', 'periodicidad' => 'mensual', 'dominio' => '2'],
@@ -462,24 +462,43 @@ class FormulariosSpImporter
      */
     private function syncMatriz(Formulario $formulario, array $form): int
     {
-        $section = $formulario->secciones()->withTrashed()->firstOrCreate(
-            ['titulo' => 'Paciente día'],
-            ['descripcion' => 'Matriz calendario de 31 días.', 'orden' => 1]
-        );
-        if ($section->trashed()) {
-            $section->restore();
+        $section = $formulario->secciones()->withTrashed()->orderBy('orden')->orderBy('id')->first();
+        if (! $section) {
+            $section = $formulario->secciones()->create([
+                'titulo' => 'Censo diario',
+                'descripcion' => 'Principio del día, ingresos, egresos desglosados y totales calculados.',
+                'orden' => 1,
+            ]);
+        } else {
+            if ($section->trashed()) {
+                $section->restore();
+            }
+            $section->update([
+                'titulo' => 'Censo diario',
+                'descripcion' => 'Principio del día, ingresos, egresos desglosados y totales calculados.',
+                'orden' => 1,
+            ]);
         }
-        $rows = $form['filas'] ?: ['ingresos', 'egresos', 'obitos', 'pacientes_dia', 'camas_disponibles', 'camas_operativas'];
+
+        $formulario->secciones()
+            ->where('id', '<>', $section->id)
+            ->get()
+            ->each(function ($extra) {
+                $extra->fields()->withTrashed()->get()->each->delete();
+                $extra->delete();
+            });
+
         $field = $section->fields()->withTrashed()->firstOrNew(['code' => 'paciente_dia']);
         if ($field->trashed()) {
             $field->restore();
         }
         $field->fill([
-            'label' => 'Paciente día',
+            'label' => 'Matriz mensual',
             'type' => 'matriz',
             'required' => true,
             'config' => \App\Application\Bioestadistica\Sp11Matrix::defaultConfig(),
             'orden' => 1,
+            'help_text' => 'Total egresos y total pacientes día se calculan automáticamente.',
         ])->save();
 
         return 1;

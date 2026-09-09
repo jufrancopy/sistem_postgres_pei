@@ -452,27 +452,35 @@ class HospitalizacionController extends Controller
         return response()->streamDownload(function () use ($query, $user) {
             $out = fopen('php://output', 'w');
             fputcsv($out, [
-                'establecimiento', 'periodo', 'cedula', 'sexo', 'edad', 'ingreso', 'egreso',
-                'servicio', 'diagnostico', 'cie10', 'tipo_alta', 'cirugia', 'cesarea', 'recien_nacido', 'estancia',
+                'establecimiento', 'periodo', 'nro_patronal', 'cedula', 'sexo', 'seguro', 'edad',
+                'ciudad_residencia', 'ingreso', 'egreso', 'dias_internacion', 'servicio',
+                'diagnostico', 'cie10', 'cirugia_mayor', 'cirugia_menor', 'tipo_alta',
+                'cesarea', 'recien_nacido', 'rn_sexo', 'rn_peso',
             ]);
             $query->with('establecimiento')->chunkById(250, function ($rows) use ($out, $user) {
                 foreach ($rows as $episodio) {
                     fputcsv($out, [
                         $episodio->establecimiento->nombre ?? '',
                         sprintf('%02d/%d', $episodio->periodo_mes, $episodio->periodo_anio),
+                        $episodio->nro_patronal,
                         $episodio->visibleCedula($user),
                         $episodio->sexo,
+                        $episodio->seguro,
                         $episodio->edad,
+                        $episodio->ciudad_residencia,
                         optional($episodio->fecha_ingreso)->format('Y-m-d'),
                         optional($episodio->fecha_egreso)->format('Y-m-d'),
+                        $episodio->stayDays(),
                         $episodio->servicio,
                         $episodio->diagnostico,
                         $episodio->cie10,
+                        $episodio->tipo_cirugia === 'MAYOR' ? '1' : '0',
+                        $episodio->tipo_cirugia === 'MENOR' ? '1' : '0',
                         $episodio->tipo_alta,
-                        $episodio->cirugia ? '1' : '0',
                         $episodio->cesarea ? '1' : '0',
                         $episodio->recien_nacido ? '1' : '0',
-                        $episodio->stayDays(),
+                        $episodio->rn_sexo,
+                        $episodio->rn_peso,
                     ]);
                 }
             });

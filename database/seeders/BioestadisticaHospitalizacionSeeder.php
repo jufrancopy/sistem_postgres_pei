@@ -6,6 +6,7 @@ use App\Application\Bioestadistica\Dictionary\HealthVariableDictionary;
 use App\Application\Bioestadistica\Indicators\FormulaAstValidator;
 use App\Application\Bioestadistica\Sp11Matrix;
 use App\Models\Bioestadistica\Dashboard;
+use App\Models\Bioestadistica\Field;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\HospEpisodio;
 use App\Models\Bioestadistica\Indicador;
@@ -88,27 +89,55 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
             ['codigo' => 'SP11'],
             [
                 'nombre' => 'Paciente Día',
-                'descripcion' => 'Matriz calendario de paciente día y camas del período.',
+                'descripcion' => 'Censo diario del mes: principio del día, ingresos, egresos desglosados y pacientes día.',
                 'periodicidad' => 'mensual',
                 'layout_type' => 'matriz',
                 'estado' => 'activo',
             ]
         );
-        $sp11Section = $sp11->secciones()->firstOrCreate(
-            ['titulo' => 'Paciente día'],
-            ['descripcion' => 'Una fila por indicador y una columna por día del mes.', 'orden' => 1]
-        );
+        $sp11Section = $sp11->secciones()->orderBy('orden')->orderBy('id')->first();
+        if (! $sp11Section) {
+            $sp11Section = $sp11->secciones()->create([
+                'titulo' => 'Censo diario',
+                'descripcion' => 'Principio del día, ingresos, egresos (altas/traslados/óbitos/abandono) y totales calculados.',
+                'orden' => 1,
+            ]);
+        } else {
+            $sp11Section->update([
+                'titulo' => 'Censo diario',
+                'descripcion' => 'Principio del día, ingresos, egresos (altas/traslados/óbitos/abandono) y totales calculados.',
+                'orden' => 1,
+            ]);
+        }
+
+        // Una sola sección/campo: elimina duplicados de seeds previos.
+        $sp11->secciones()
+            ->where('id', '<>', $sp11Section->id)
+            ->get()
+            ->each(function ($section) {
+                $section->fields()->withTrashed()->get()->each->delete();
+                $section->delete();
+            });
+
         $matrix = $sp11Section->fields()->withTrashed()->firstOrNew(['code' => 'paciente_dia']);
         if ($matrix->trashed()) {
             $matrix->restore();
         }
         $matrix->fill([
-            'label' => 'Paciente día',
+            'label' => 'Matriz mensual',
             'type' => 'matriz',
             'required' => true,
             'config' => Sp11Matrix::defaultConfig(),
             'orden' => 1,
+            'help_text' => 'Total egresos y total pacientes día se calculan automáticamente.',
         ])->save();
+
+        Field::query()
+            ->where('code', 'paciente_dia')
+            ->where('seccion_id', '<>', $sp11Section->id)
+            ->whereHas('seccion', fn ($q) => $q->where('formulario_id', $sp11->id))
+            ->get()
+            ->each->delete();
 
         $this->indicators();
         $this->reports();
@@ -141,11 +170,13 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
             ['CESAREAS_HOSP', 'Cesáreas', 'cesáreas', 'cesareas', 0],
             ['PCT_CESAREAS', 'Porcentaje de cesáreas', '%', null, 2],
             ['RECIEN_NACIDOS', 'Recién nacidos', 'RN', 'recien_nacidos', 0],
-            ['OCUPACION_HOSPITALARIA', 'Ocupación hospitalaria', '%', null, 2],
-            ['ROTACION_CAMAS', 'Índice de rotación de camas', 'índice', null, 2],
-            ['INTERVALO_SUSTITUCION', 'Intervalo de sustitución', 'días', null, 2],
+            ['OCUPACION_HOSPITALARIA', 'Ocupación hospitalaria', '%', null, 2, false],
+            ['ROTACION_CAMAS', 'Índice de rotación de camas', 'índice', null, 2, false],
+            ['INTERVALO_SUSTITUCION', 'Intervalo de sustitución', 'días', null, 2, false],
         ];
-        foreach ($definitions as [$code, $name, $unit, $metric, $decimals]) {
+        foreach ($definitions as $definition) {
+            [$code, $name, $unit, $metric, $decimals] = $definition;
+            $activo = $definition[5] ?? true;
             $indicator = Indicador::updateOrCreate(
                 ['codigo' => $code],
                 [
@@ -154,9 +185,13 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
                     'unidad' => $unit,
                     'ambito' => 'establecimiento',
                     'decimales' => $decimals,
-                    'activo' => true,
+                    'activo' => $activo,
                 ]
             );
+            if (! $activo) {
+                $indicator->formulas()->delete();
+                continue;
+            }
             $expression = match ($code) {
                 'ESTANCIA_MEDIA' => [
                     'op' => 'div',
@@ -178,33 +213,6 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
                     'args' => [
                         ['op' => 'hosp_count', 'metric' => 'cesareas'],
                         ['op' => 'hosp_count', 'metric' => 'partos'],
-                    ],
-                ],
-                'OCUPACION_HOSPITALARIA' => [
-                    'op' => 'pct',
-                    'args' => [
-                        ['op' => 'sum', 'form' => 'SP11', 'field' => 'paciente_dia', 'metric' => 'pacientes_dia'],
-                        ['op' => 'sum', 'form' => 'SP11', 'field' => 'paciente_dia', 'metric' => 'camas_operativas'],
-                    ],
-                ],
-                'ROTACION_CAMAS' => [
-                    'op' => 'div',
-                    'args' => [
-                        ['op' => 'hosp_count', 'metric' => 'egresos'],
-                        ['op' => 'sum', 'form' => 'SP11', 'field' => 'paciente_dia', 'metric' => 'camas_operativas'],
-                    ],
-                ],
-                'INTERVALO_SUSTITUCION' => [
-                    'op' => 'div',
-                    'args' => [
-                        [
-                            'op' => 'sub',
-                            'args' => [
-                                ['op' => 'sum', 'form' => 'SP11', 'field' => 'paciente_dia', 'metric' => 'camas_disponibles'],
-                                ['op' => 'sum', 'form' => 'SP11', 'field' => 'paciente_dia', 'metric' => 'pacientes_dia'],
-                            ],
-                        ],
-                        ['op' => 'hosp_count', 'metric' => 'egresos'],
                     ],
                 ],
                 default => ['op' => 'hosp_count', 'metric' => $metric],
@@ -288,7 +296,7 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
                 [
                     'form' => 'SP11',
                     'field' => 'paciente_dia',
-                    'metric' => 'pacientes_dia',
+                    'metric' => 'total_pacientes_dia',
                     'agg' => 'sum',
                     'dimensions' => ['establecimiento', 'periodo'],
                     'filtros' => ['estado_record' => 'aprobado'],
@@ -314,7 +322,7 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
             $dashboard = Dashboard::create([
                 'codigo' => 'HOSPITALARIO',
                 'nombre' => 'Tablero hospitalario',
-                'descripcion' => 'KPIs SP10/SP11: egresos, estancia, mortalidad, ocupación.',
+                'descripcion' => 'KPIs SP10/SP11: egresos, estancia, mortalidad, paciente día.',
                 'user_id' => null,
                 'es_default' => false,
             ]);
@@ -322,7 +330,7 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
             $dashboard->restore();
             $dashboard->update([
                 'nombre' => 'Tablero hospitalario',
-                'descripcion' => 'KPIs SP10/SP11: egresos, estancia, mortalidad, ocupación.',
+                'descripcion' => 'KPIs SP10/SP11: egresos, estancia, mortalidad, paciente día.',
             ]);
         }
         $egresos = Reporte::where('codigo', 'EGRESOS_ESTABLECIMIENTO')->first();
@@ -332,16 +340,13 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
             ['kpi', 'Egresos', ['indicator' => 'EGRESOS_HOSP'], 0, 0, 3, 2],
             ['kpi', 'Estancia media', ['indicator' => 'ESTANCIA_MEDIA'], 3, 0, 3, 2],
             ['kpi', 'Mortalidad %', ['indicator' => 'MORTALIDAD_HOSP'], 6, 0, 3, 2],
-            ['kpi', 'Ocupación %', ['indicator' => 'OCUPACION_HOSPITALARIA'], 9, 0, 3, 2],
+            ['kpi', 'Ingresos', ['indicator' => 'INGRESOS_HOSP'], 9, 0, 3, 2],
             ['lineas', 'Egresos 12 meses', ['form' => 'SP10', 'field' => 'egresos_total', 'agg' => 'sum', 'dimension' => 'periodo', 'label' => 'Egresos'], 0, 2, 6, 3],
             ['barras', 'Cirugías', ['form' => 'SP10', 'field' => 'cirugias', 'agg' => 'sum', 'dimension' => 'establecimiento', 'label' => 'Cirugías'], 6, 2, 6, 3],
             ['indicador', 'Cesáreas', ['indicator' => 'PCT_CESAREAS', 'umbrales' => ['verde' => [0, 30], 'amarillo' => [30.01, 40], 'rojo' => [40.01, 100]]], 0, 5, 4, 2],
             ['kpi', 'Recién nacidos', ['indicator' => 'RECIEN_NACIDOS'], 4, 5, 4, 2],
-            ['kpi', 'Rotación de camas', ['indicator' => 'ROTACION_CAMAS'], 8, 5, 4, 2],
-            ['kpi', 'Ingresos', ['indicator' => 'INGRESOS_HOSP'], 0, 7, 3, 2],
-            ['kpi', 'Cirugías', ['indicator' => 'CIRUGIAS_HOSP'], 3, 7, 3, 2],
-            ['kpi', 'Intervalo de sustitución', ['indicator' => 'INTERVALO_SUSTITUCION'], 6, 7, 3, 2],
-            ['lineas', 'Paciente día', ['form' => 'SP11', 'field' => 'paciente_dia', 'metric' => 'pacientes_dia', 'agg' => 'sum', 'dimension' => 'periodo', 'label' => 'Paciente día'], 9, 7, 3, 2],
+            ['kpi', 'Cirugías', ['indicator' => 'CIRUGIAS_HOSP'], 8, 5, 4, 2],
+            ['lineas', 'Paciente día', ['form' => 'SP11', 'field' => 'paciente_dia', 'metric' => 'total_pacientes_dia', 'agg' => 'sum', 'dimension' => 'periodo', 'label' => 'Paciente día'], 0, 7, 12, 2],
             $egresos ? ['tabla', 'Egresos por establecimiento', ['reporte_id' => $egresos->id], 0, 9, 6, 4] : null,
             $porServicio ? ['tabla', 'Egresos por servicio', ['reporte_id' => $porServicio->id], 6, 9, 6, 4] : null,
         ] as $widget) {

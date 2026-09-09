@@ -330,17 +330,13 @@ class HospitalizationService
             'egresos_por_servicio' => $discharged->groupBy('servicio')->map->count()->all(),
             'egresos_por_sexo' => $discharged->groupBy('sexo')->map->count()->all(),
             'pacientes_dia' => $sp11['pacientes_dia'],
-            'camas_operativas' => $sp11['camas_operativas'],
-            'camas_disponibles' => $sp11['camas_disponibles'],
-            'ocupacion' => $sp11['camas_operativas'] > 0
-                ? round(($sp11['pacientes_dia'] / $sp11['camas_operativas']) * 100, 2)
-                : null,
-            'rotacion' => $sp11['camas_operativas'] > 0
-                ? round($egresos / $sp11['camas_operativas'], 2)
-                : null,
-            'intervalo_sustitucion' => $egresos > 0
-                ? round(($sp11['camas_disponibles'] - $sp11['pacientes_dia']) / $egresos, 2)
-                : null,
+            'ingresos_sp11' => $sp11['ingresos'],
+            'egresos_sp11' => $sp11['egresos'],
+            'camas_operativas' => 0,
+            'camas_disponibles' => 0,
+            'ocupacion' => null,
+            'rotacion' => null,
+            'intervalo_sustitucion' => null,
         ];
     }
 
@@ -469,21 +465,63 @@ class HospitalizationService
             throw ValidationException::withMessages(['tipo_alta' => 'Indique el tipo de alta al registrar el egreso.']);
         }
 
+        $mayor = filter_var($input['cirugia_mayor'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $menor = filter_var($input['cirugia_menor'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        if ($mayor && $menor) {
+            throw ValidationException::withMessages([
+                'tipo_cirugia' => 'Marque solo Cirugía mayor o Cirugía menor, no ambas.',
+            ]);
+        }
+
+        $tipoCirugia = null;
+        if ($mayor) {
+            $tipoCirugia = 'MAYOR';
+        } elseif ($menor) {
+            $tipoCirugia = 'MENOR';
+        } else {
+            $tipoCirugia = HospEpisodio::normalizeTipoCirugia($input['tipo_cirugia'] ?? null)
+                ?? $this->nullableString($input['tipo_cirugia'] ?? null, 150);
+        }
+
+        $cirugia = filter_var($input['cirugia'] ?? false, FILTER_VALIDATE_BOOLEAN) || $tipoCirugia !== null;
+
+        $recienNacido = filter_var($input['recien_nacido'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $rnSexo = HospEpisodio::normalizeSexo($input['rn_sexo'] ?? null);
+        if (($input['rn_sexo'] ?? null) && $rnSexo === null) {
+            throw ValidationException::withMessages(['rn_sexo' => 'El sexo del recién nacido debe ser M o F.']);
+        }
+        $rnPeso = $input['rn_peso'] ?? null;
+        if ($rnPeso !== null && $rnPeso !== '') {
+            $rnPeso = (int) $rnPeso;
+            if ($rnPeso < 200 || $rnPeso > 9000) {
+                throw ValidationException::withMessages(['rn_peso' => 'El peso del RN debe estar entre 200 y 9000 gramos.']);
+            }
+        } else {
+            $rnPeso = null;
+        }
+        if (($rnSexo !== null || $rnPeso !== null) && ! $recienNacido) {
+            $recienNacido = true;
+        }
+
         return [
             'establecimiento_id' => (int) $input['establecimiento_id'],
             'cedula' => HospEpisodio::normalizeCedula($input['cedula'] ?? null),
+            'nro_patronal' => $this->nullableString($input['nro_patronal'] ?? null, 40),
             'sexo' => $sexo,
             'seguro' => $this->nullableString($input['seguro'] ?? null, 80),
             'edad' => $edad === null || $edad === '' ? null : (int) $edad,
+            'ciudad_residencia' => $this->nullableString($input['ciudad_residencia'] ?? null, 150),
             'fecha_ingreso' => $ingreso,
             'fecha_egreso' => $egreso,
             'servicio' => HospEpisodio::normalizeServicio($input['servicio'] ?? null),
             'diagnostico' => $this->nullableString($input['diagnostico'] ?? null, 400),
             'cie10' => $cie10,
             'tipo_alta' => $tipoAlta,
-            'cirugia' => filter_var($input['cirugia'] ?? false, FILTER_VALIDATE_BOOLEAN),
-            'tipo_cirugia' => $this->nullableString($input['tipo_cirugia'] ?? null, 150),
-            'recien_nacido' => filter_var($input['recien_nacido'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'cirugia' => $cirugia,
+            'tipo_cirugia' => $tipoCirugia,
+            'recien_nacido' => $recienNacido,
+            'rn_sexo' => $rnSexo,
+            'rn_peso' => $rnPeso,
             'cesarea' => filter_var($input['cesarea'] ?? false, FILTER_VALIDATE_BOOLEAN),
         ];
     }
@@ -567,12 +605,12 @@ class HospitalizationService
     }
 
     /**
-     * @return array{pacientes_dia:int,camas_operativas:int,camas_disponibles:int}
+     * @return array{pacientes_dia:int,ingresos:int,egresos:int}
      */
     private function sp11Totals(int $establecimientoId, int $year, int $month, ?int $servicioId = null): array
     {
         $formulario = Formulario::where('codigo', 'SP11')->first();
-        $empty = ['pacientes_dia' => 0, 'camas_operativas' => 0, 'camas_disponibles' => 0];
+        $empty = ['pacientes_dia' => 0, 'ingresos' => 0, 'egresos' => 0];
         if (! $formulario) {
             return $empty;
         }
@@ -593,9 +631,9 @@ class HospitalizationService
         foreach ($records as $record) {
             $matrix = $record->values->first(fn ($value) => $value->field?->code === 'paciente_dia');
             $payload = $matrix?->value_json ?? [];
-            $totals['pacientes_dia'] += Sp11Matrix::total($payload, 'pacientes_dia');
-            $totals['camas_operativas'] += Sp11Matrix::total($payload, 'camas_operativas');
-            $totals['camas_disponibles'] += Sp11Matrix::total($payload, 'camas_disponibles');
+            $totals['pacientes_dia'] += Sp11Matrix::total($payload, 'total_pacientes_dia');
+            $totals['ingresos'] += Sp11Matrix::total($payload, 'ingresos');
+            $totals['egresos'] += Sp11Matrix::total($payload, 'total_egresos');
         }
 
         return $totals;

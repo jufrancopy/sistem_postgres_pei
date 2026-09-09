@@ -133,21 +133,40 @@ class CatalogClassifier
         };
     }
 
-    public function especialidadBase(string $nombre, string $contexto): ?string
+    public function especialidadBase(string $nombre, ?string $contexto = null): ?string
     {
-        if ($contexto === 'urgencia') {
+        $ctx = $contexto ?? $this->inferContextoFromName($nombre);
+
+        if ($ctx === 'urgencia') {
             return preg_replace('/^URGENCIAS?\s+/iu', '', preg_replace('/^URGENCIA\s+/iu', '', trim($nombre))) ?: null;
         }
 
-        if ($contexto === 'teleconsulta') {
+        if ($ctx === 'teleconsulta') {
             return preg_replace('/^TELE\s+/iu', '', trim($nombre)) ?: null;
         }
 
-        if ($contexto === 'odontologia_consulta' || str_starts_with($this->key($nombre), 'ODONTOLOG')) {
+        if ($ctx === 'odontologia_consulta' || str_starts_with($this->key($nombre), 'ODONTOLOG')) {
             return 'Odontología';
         }
 
         return trim($nombre) ?: null;
+    }
+
+    /** Inferencia ligera solo para especialidad_base (ya no se persiste contexto). */
+    private function inferContextoFromName(string $nombre): string
+    {
+        $key = $this->key($nombre);
+        if (str_starts_with($key, 'URGENCIA')) {
+            return 'urgencia';
+        }
+        if (str_starts_with($key, 'TELE ')) {
+            return 'teleconsulta';
+        }
+        if (str_starts_with($key, 'ODONTOLOG')) {
+            return 'odontologia_consulta';
+        }
+
+        return 'ambulatorio';
     }
 
     public function determinacionFamilia(string $codigoDominio): string

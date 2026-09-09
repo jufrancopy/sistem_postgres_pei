@@ -214,14 +214,56 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
     document.querySelectorAll('.bio-matriz').forEach(function (table) {
+        const egresoRows = ['altas', 'traslados', 'obitos', 'abandono'];
+        const cellValue = function (row, day) {
+            const input = table.querySelector('.bio-matriz-input[data-row="' + row + '"][data-day="' + day + '"]');
+            return input ? (parseInt(input.value, 10) || 0) : 0;
+        };
+        const setComputed = function (row, day, value) {
+            const input = table.querySelector('.bio-matriz-computed[data-row="' + row + '"][data-day="' + day + '"]');
+            if (!input) {
+                return;
+            }
+            input.value = value === 0 || value === null ? '' : String(value);
+        };
         const recalculate = function () {
+            const days = parseInt(table.getAttribute('data-days'), 10) || 31;
+            const totals = {};
+            table.querySelectorAll('[data-row-total]').forEach(function (cell) {
+                totals[cell.getAttribute('data-row-total')] = 0;
+            });
+
+            for (let day = 1; day <= days; day++) {
+                let egresos = 0;
+                egresoRows.forEach(function (row) {
+                    const value = cellValue(row, day);
+                    egresos += value;
+                    totals[row] = (totals[row] || 0) + value;
+                });
+                ['principio_dia', 'ingresos'].forEach(function (row) {
+                    totals[row] = (totals[row] || 0) + cellValue(row, day);
+                });
+                const pacientes = cellValue('principio_dia', day) + cellValue('ingresos', day) - egresos;
+                setComputed('total_egresos', day, egresos);
+                setComputed('total_pacientes_dia', day, pacientes);
+                totals.total_egresos = (totals.total_egresos || 0) + egresos;
+                totals.total_pacientes_dia = (totals.total_pacientes_dia || 0) + pacientes;
+            }
+
+            Object.keys(totals).forEach(function (row) {
+                if (egresoRows.indexOf(row) === -1 && row !== 'principio_dia' && row !== 'ingresos'
+                    && row !== 'total_egresos' && row !== 'total_pacientes_dia') {
+                    let total = 0;
+                    table.querySelectorAll('.bio-matriz-input[data-row="' + row + '"]').forEach(function (input) {
+                        total += parseInt(input.value, 10) || 0;
+                    });
+                    totals[row] = total;
+                }
+            });
+
             table.querySelectorAll('[data-row-total]').forEach(function (cell) {
                 const row = cell.getAttribute('data-row-total');
-                let total = 0;
-                table.querySelectorAll('.bio-matriz-input[data-row="' + row + '"]').forEach(function (input) {
-                    total += parseInt(input.value, 10) || 0;
-                });
-                cell.textContent = total.toLocaleString('es-PY');
+                cell.textContent = (totals[row] || 0).toLocaleString('es-PY');
             });
         };
         table.addEventListener('input', recalculate);

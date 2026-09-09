@@ -44,5 +44,7 @@ class HospEpisodioDomainTest extends TestCase
         self::assertSame('FALLECIDO', HospEpisodio::normalizeTipoAlta('Fallecido'));
         self::assertSame('MATERNIDAD', HospEpisodio::normalizeServicio('Obstetricia'));
         self::assertSame('F', HospEpisodio::normalizeSexo('femenino'));
+        self::assertSame('MAYOR', HospEpisodio::normalizeTipoCirugia('Cirugía mayor'));
+        self::assertSame('MENOR', HospEpisodio::normalizeTipoCirugia('menor'));
     }
 }

@@ -160,7 +160,6 @@ class DiccionarioController extends Controller
             'activo' => ['nullable', 'boolean'],
             'bridge_orden' => ['nullable', 'integer', 'min:0'],
             'bridge_activo' => ['nullable', 'boolean'],
-            'contexto' => ['nullable', 'string', 'max:40'],
             'especialidad_base' => ['nullable', 'string', 'max:200'],
             'familia' => ['nullable', 'string', 'max:40'],
             'modalidad' => ['nullable', 'string', 'max:120'],

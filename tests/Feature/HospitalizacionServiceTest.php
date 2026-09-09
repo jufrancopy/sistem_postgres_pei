@@ -29,21 +29,32 @@ class HospitalizacionServiceTest extends TestCase
         $episodio = app(HospitalizationService::class)->save([
             'establecimiento_id' => $establecimiento->id,
             'cedula' => '4.567.890',
+            'nro_patronal' => 'NP-100',
             'sexo' => 'F',
             'edad' => 28,
+            'ciudad_residencia' => 'Asunción',
             'fecha_ingreso' => '2026-07-01',
             'fecha_egreso' => '2026-07-04',
             'servicio' => 'MATERNIDAD',
             'cie10' => 'O80.0',
             'tipo_alta' => 'MEJORADO',
+            'cirugia_mayor' => true,
             'cesarea' => true,
             'recien_nacido' => true,
+            'rn_sexo' => 'M',
+            'rn_peso' => 3200,
         ], $user);
 
         $this->assertSame(2026, $episodio->periodo_anio);
         $this->assertSame(7, $episodio->periodo_mes);
         $this->assertSame(3, $episodio->stayDays());
         $this->assertSame('4567890', $episodio->cedula);
+        $this->assertSame('NP-100', $episodio->nro_patronal);
+        $this->assertSame('Asunción', $episodio->ciudad_residencia);
+        $this->assertSame('MAYOR', $episodio->tipo_cirugia);
+        $this->assertTrue((bool) $episodio->cirugia);
+        $this->assertSame('M', $episodio->rn_sexo);
+        $this->assertSame(3200, $episodio->rn_peso);
         $this->assertNotSame('4567890', $episodio->getRawOriginal('cedula'));
         $this->assertSame('••••890', $episodio->visibleCedula(new User()));
         $this->assertSame(HospEpisodio::hashCedula('4567890'), $episodio->cedula_hash);
@@ -288,9 +299,12 @@ class HospitalizacionServiceTest extends TestCase
             'field_id' => $field->id,
             'value_json' => [
                 'rows' => [
+                    'principio_dia' => ['1' => 1, 'total' => 1],
                     'ingresos' => ['1' => 1, '31' => 4, 'total' => 5],
-                    'pacientes_dia' => ['1' => 2, 'total' => 2],
-                    'camas_operativas' => ['1' => 10, 'total' => 10],
+                    'altas' => ['1' => 0, 'total' => 0],
+                    'traslados' => ['1' => 0, 'total' => 0],
+                    'obitos' => ['1' => 0, 'total' => 0],
+                    'abandono' => ['1' => 0, 'total' => 0],
                 ],
             ],
         ]);
@@ -342,9 +356,12 @@ class HospitalizacionServiceTest extends TestCase
             'field_id' => $field->id,
             'value_json' => [
                 'rows' => [
+                    'principio_dia' => ['1' => 2, 'total' => 2],
                     'ingresos' => ['1' => 1, '31' => 0, 'total' => 1],
-                    'pacientes_dia' => ['1' => 2, 'total' => 2],
-                    'camas_operativas' => ['1' => 10, 'total' => 10],
+                    'altas' => ['1' => 0, 'total' => 0],
+                    'traslados' => ['1' => 0, 'total' => 0],
+                    'obitos' => ['1' => 0, 'total' => 0],
+                    'abandono' => ['1' => 0, 'total' => 0],
                 ],
             ],
         ]);

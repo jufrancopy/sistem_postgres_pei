@@ -218,7 +218,7 @@ SP10 / SP11: fuera de esta fase salvo bugs; mantener parsers actuales.
 | Listo en lote | Score alto + auto-match | Checkbox lote |
 | Revisar matching | Filas parseadas pero varios nivel 4 | Detalle |
 | Ajustar mapeo | Sin SP / 0 filas / score bajo | Asistente (pantalla propia) |
-| No importable | SP12–14 u otro | Solo info |
+| No importable | SP fuera de alcance u otro | Solo info |
 
 ### Detalle — matching
 
@@ -265,7 +265,6 @@ Fixtures: copias anonimizadas en tests (no depender solo de `.docs-bio/` gitigno
 - Alias / sinónimos persistentes de prestaciones
 - OCR / PDF
 - Auto-fixar cualquier Excel genérico como SP
-- Importación SP12–14 de datos (hasta habilitar `IMPORTABLE`)
 - Cambiar el modelo EAV o catálogos maestros
 - Persistencia permanente de archivo / `import_jobs` (solo copia temporal de sesión para re-parsear)
 
@@ -278,8 +277,9 @@ Diseño **aprobado**. Sprints **1, 2 y 3 implementados**:
 1. Pantalla propia de mapeo (`/captura/importar/mapear`)
 2. Sin alias
 3. Score de calidad + badges en resumen
-4. Asistente **SP1–SP9** (excepto SP10 nominativo; SP11 queda fuera del asistente de columnas)
+4. Asistente **SP1–SP9** + **SP12–SP14** (excepto SP10 nominativo; SP11 queda fuera del asistente de columnas)
 5. Sinónimos de columnas (ej. «Consultas» ≈ «Total consultas»)
 6. Copia temporal del Excel en sesión (se borra al confirmar/descartar)
 7. Sprint 3: checklist en subida, mensajes accionables, filtros en detalle (Todas / Sin match / Sugeridas),
    «Aplicar sugerencias nivel 3», hint de período desfasado, fixtures “sucias” en tests
+8. Importación de datos **SP12–SP14** habilitada (`IMPORTABLE`); SP2/SP7/SP12/SP13 confirman repartiendo filas entre tablas

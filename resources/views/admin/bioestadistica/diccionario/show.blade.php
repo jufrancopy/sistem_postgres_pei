@@ -245,15 +245,7 @@
 
                 <div class="catalog-fields" data-tipo="especialidad_medica">
                     <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label>Contexto</label>
-                            <select class="form-control" name="contexto" data-field="contexto">
-                                @foreach(['ambulatorio','convenio','interconsulta','teleconsulta','urgencia','odontologia_consulta'] as $ctx)
-                                    <option value="{{ $ctx }}">{{ str_replace('_', ' ', ucfirst($ctx)) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-12">
                             <label>Especialidad base</label>
                             <input class="form-control" name="especialidad_base" data-field="especialidad_base">
                         </div>

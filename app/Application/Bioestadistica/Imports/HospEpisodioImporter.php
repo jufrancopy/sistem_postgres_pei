@@ -257,20 +257,33 @@ class HospEpisodioImporter
 
         $payload = [
             'cedula' => $this->value($raw, ['cedula', 'documento', 'nro_documento', 'ci']),
+            'nro_patronal' => $this->value($raw, ['nro_patronal', 'nropatronal', 'patronal']),
             'sexo' => $this->value($raw, ['sexo', 'genero']),
-            'seguro' => $this->value($raw, ['seguro', 'aseguradora']),
+            'seguro' => $this->value($raw, ['seguro', 'tipodeseguro', 'tipo_de_seguro', 'aseguradora']),
             'edad' => $this->value($raw, ['edad']),
+            'ciudad_residencia' => $this->value($raw, ['ciudad_residencia', 'ciudad', 'residencia']),
             'fecha_ingreso' => $this->date($this->value($raw, ['fecha_ingreso', 'ingreso', 'f_ingreso'])),
             'fecha_egreso' => $this->date($this->value($raw, ['fecha_egreso', 'egreso', 'f_egreso', 'fecha_alta'])),
             'servicio' => $this->value($raw, ['servicio', 'especialidad', 'sala']),
-            'diagnostico' => $this->value($raw, ['diagnostico', 'diagnostico_principal']),
+            'diagnostico' => $this->value($raw, ['diagnostico', 'diagnostico_egreso', 'diagnostico_principal']),
             'cie10' => $this->value($raw, ['cie10', 'cie_10', 'codigo_cie']),
             'tipo_alta' => $this->value($raw, ['tipo_alta', 'condicion_egreso', 'egreso_tipo']),
             'cirugia' => $this->bool($this->value($raw, ['cirugia', 'intervencion'])),
+            'cirugia_mayor' => $this->bool($this->value($raw, ['cirugia_mayor', 'mayor'])),
+            'cirugia_menor' => $this->bool($this->value($raw, ['cirugia_menor', 'menor'])),
             'tipo_cirugia' => $this->value($raw, ['tipo_cirugia']),
-            'recien_nacido' => $this->bool($this->value($raw, ['recien_nacido', 'rn', 'nacimiento'])),
+            'recien_nacido' => $this->bool($this->value($raw, ['recien_nacido', 'rn', 'rn_si_no', 'nacimiento'])),
+            'rn_sexo' => $this->value($raw, ['rn_sexo', 'sexo_rn', 'sexo_recien_nacido']),
+            'rn_peso' => $this->value($raw, ['rn_peso', 'peso_rn', 'peso_recien_nacido']),
             'cesarea' => $this->bool($this->value($raw, ['cesarea', 'cesarea_si'])),
         ];
+        if (! $payload['tipo_cirugia']) {
+            if ($payload['cirugia_mayor']) {
+                $payload['tipo_cirugia'] = 'MAYOR';
+            } elseif ($payload['cirugia_menor']) {
+                $payload['tipo_cirugia'] = 'MENOR';
+            }
+        }
         if ($establecimiento) {
             $payload['establecimiento_id'] = $establecimiento->id;
         }
@@ -284,11 +297,23 @@ class HospEpisodioImporter
         $key = trim($key, '_');
         $map = [
             'cedula' => 'cedula', 'documento' => 'cedula', 'ci' => 'cedula',
+            'nropatronal' => 'nro_patronal', 'nro_patronal' => 'nro_patronal', 'patronal' => 'nro_patronal',
             'sexo' => 'sexo', 'genero' => 'sexo',
+            'tipodeseguro' => 'seguro', 'tipo_de_seguro' => 'seguro', 'seguro' => 'seguro',
+            'edad' => 'edad',
+            'ciudad_residencia' => 'ciudad_residencia', 'ciudad' => 'ciudad_residencia', 'residencia' => 'ciudad_residencia',
             'fecha_ingreso' => 'fecha_ingreso', 'ingreso' => 'fecha_ingreso',
             'fecha_egreso' => 'fecha_egreso', 'egreso' => 'fecha_egreso',
+            'dias_internacion' => 'dias_internacion', 'dias_de_internacion' => 'dias_internacion',
             'servicio' => 'servicio',
+            'diagnostico' => 'diagnostico', 'diagnostico_egreso' => 'diagnostico',
             'cie10' => 'cie10', 'cie_10' => 'cie10',
+            'cirugia_mayor' => 'cirugia_mayor', 'mayor' => 'cirugia_mayor',
+            'cirugia_menor' => 'cirugia_menor', 'menor' => 'cirugia_menor',
+            'rn' => 'recien_nacido', 'rn_si_no' => 'recien_nacido', 'recien_nacido' => 'recien_nacido',
+            'rn_sexo' => 'rn_sexo', 'sexo_rn' => 'rn_sexo',
+            'rn_peso' => 'rn_peso', 'peso_rn' => 'rn_peso',
+            'tipo_alta' => 'tipo_alta',
             'establecimiento' => 'establecimiento', 'codigo_establecimiento' => 'establecimiento',
         ];
 

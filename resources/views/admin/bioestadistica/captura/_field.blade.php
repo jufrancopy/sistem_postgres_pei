@@ -128,13 +128,17 @@
             $days = \Carbon\Carbon::create($record->periodo_anio, $record->periodo_mes, 1)->daysInMonth;
             $rowCodes = $field->config['rows'] ?? array_keys(\App\Application\Bioestadistica\Sp11Matrix::ROWS);
             $rowLabels = $field->config['row_labels'] ?? array_values(\App\Application\Bioestadistica\Sp11Matrix::ROWS);
+            $editableRows = $field->config['editable_rows'] ?? array_keys(\App\Application\Bioestadistica\Sp11Matrix::EDITABLE_ROWS);
+            $egresoRows = $field->config['egreso_rows'] ?? \App\Application\Bioestadistica\Sp11Matrix::EGRESO_ROWS;
             $storedRows = is_array($value) ? ($value['rows'] ?? $value) : [];
+            $egresoStart = collect($rowCodes)->search($egresoRows[0] ?? null);
+            $egresoCount = count($egresoRows);
         @endphp
         <div class="table-responsive">
-            <table class="table table-sm table-bordered bio-matriz mb-0" data-days="{{ $days }}">
+            <table class="table table-sm table-bordered bio-matriz mb-0" data-days="{{ $days }}" data-sp11="1">
                 <thead class="thead-light">
                     <tr>
-                        <th style="min-width:160px">Indicador</th>
+                        <th style="min-width:120px" colspan="2">Indicador</th>
                         @for($day = 1; $day <= $days; $day++)
                             <th class="text-center" style="width:42px">{{ $day }}</th>
                         @endfor
@@ -143,19 +147,43 @@
                 </thead>
                 <tbody>
                 @foreach($rowCodes as $index => $rowCode)
-                    <tr>
-                        <td>{{ $rowLabels[$index] ?? $rowCode }}</td>
+                    @php
+                        $isEgreso = in_array($rowCode, $egresoRows, true);
+                        $isComputed = ! in_array($rowCode, $editableRows, true);
+                        $label = $rowLabels[$index] ?? $rowCode;
+                    @endphp
+                    <tr @if($isComputed) class="table-light" @endif>
+                        @if($isEgreso)
+                            @if($index === $egresoStart)
+                                <th class="align-middle text-uppercase" rowspan="{{ $egresoCount }}">Egresos</th>
+                            @endif
+                            <td class="align-middle text-uppercase">{{ $label }}</td>
+                        @else
+                            <th class="align-middle text-uppercase" colspan="2">{{ $label }}</th>
+                        @endif
                         @for($day = 1; $day <= $days; $day++)
                             <td>
-                                <input
-                                    class="form-control form-control-sm text-right bio-matriz-input"
-                                    type="number"
-                                    min="0"
-                                    step="1"
-                                    data-row="{{ $rowCode }}"
-                                    name="values[{{ $field->code }}][rows][{{ $rowCode }}][{{ $day }}]"
-                                    value="{{ old("values.{$field->code}.rows.{$rowCode}.{$day}", $storedRows[$rowCode][$day] ?? $storedRows[$rowCode][(string)$day] ?? null) }}"
-                                    @disabled(!$editable)>
+                                @if($isComputed)
+                                    <input
+                                        class="form-control form-control-sm text-right bio-matriz-computed"
+                                        type="text"
+                                        readonly
+                                        tabindex="-1"
+                                        data-row="{{ $rowCode }}"
+                                        data-day="{{ $day }}"
+                                        value="{{ $storedRows[$rowCode][$day] ?? $storedRows[$rowCode][(string)$day] ?? '' }}">
+                                @else
+                                    <input
+                                        class="form-control form-control-sm text-right bio-matriz-input"
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        data-row="{{ $rowCode }}"
+                                        data-day="{{ $day }}"
+                                        name="values[{{ $field->code }}][rows][{{ $rowCode }}][{{ $day }}]"
+                                        value="{{ old("values.{$field->code}.rows.{$rowCode}.{$day}", $storedRows[$rowCode][$day] ?? $storedRows[$rowCode][(string)$day] ?? null) }}"
+                                        @disabled(!$editable)>
+                                @endif
                             </td>
                         @endfor
                         <th class="text-right" data-row-total="{{ $rowCode }}">{{ $storedRows[$rowCode]['total'] ?? 0 }}</th>
@@ -164,7 +192,10 @@
                 </tbody>
             </table>
         </div>
-        <small class="text-muted d-block mt-2">El mes {{ $record->periodo_mes }}/{{ $record->periodo_anio }} tiene {{ $days }} días. Los totales se calculan al guardar.</small>
+        <small class="text-muted d-block mt-2">
+            El mes {{ $record->periodo_mes }}/{{ $record->periodo_anio }} tiene {{ $days }} días.
+            Total egresos y total pacientes día se calculan automáticamente (principio + ingresos − egresos).
+        </small>
     @elseif(in_array($field->type, ['subtabla']))
     @else
         <input class="form-control" id="field-{{ $field->id }}" type="text" name="values[{{ $field->code }}]" value="{{ old("values.{$field->code}", $value) }}" pattern="{{ $field->validation_regex }}" @disabled(!$editable)>

@@ -487,8 +487,12 @@ class BioestadisticaSpPlanillaImportTest extends TestCase
         $rows = $detectado['matriz']['rows'] ?? [];
         $this->assertNotEmpty($rows);
         $this->assertTrue(
-            isset($rows['pacientes_dia']) || isset($rows['camas_operativas']),
-            'SP11 debe incluir pacientes_dia o camas_operativas.'
+            isset($rows['principio_dia'])
+            || isset($rows['ingresos'])
+            || isset($rows['altas'])
+            || isset($rows['total_pacientes_dia'])
+            || isset($rows['pacientes_dia']),
+            'SP11 debe incluir filas del censo diario.'
         );
     }
 
@@ -639,5 +643,75 @@ class BioestadisticaSpPlanillaImportTest extends TestCase
             ->assertSee('Fila de encabezado');
 
         $service->forgetPreview();
+    }
+
+    public function test_sp12_sheet_is_importable_and_can_confirm_draft(): void
+    {
+        $path = base_path('.docs-bio/PLANILLAS CARGA MENSUAL AGOSTO 2026.xls');
+        if (! is_file($path)) {
+            $this->markTestSkipped('Falta planilla mensual de muestra con SP12.');
+        }
+
+        $user = User::role('Administrador')->first() ?? User::first();
+        $formulario = Formulario::where('codigo', 'SP12')->where('estado', 'activo')->first();
+        $est = Establecimiento::query()->whereNotNull('distrito_id')->first();
+        if (! $user || ! $formulario || ! $est) {
+            $this->markTestSkipped('Faltan usuario, SP12 o establecimiento con distrito.');
+        }
+
+        $workbook = app(SpPlanillaParser::class)->scanWorkbook($path);
+        $hoja = collect($workbook['hojas'])->first(
+            fn (array $h) => ($h['sp_codigo'] ?? '') === 'SP12'
+                && ($h['parseado'] ?? false)
+                && ($h['filas_detectadas'] ?? 0) > 0
+        );
+        if (! $hoja) {
+            $this->markTestSkipped('Ninguna hoja SP12 parseable en la muestra.');
+        }
+
+        $service = app(SpPlanillaImportService::class);
+        $this->assertTrue($service->isImportable('SP12'));
+
+        $preview = $service->applyPreviewContext([
+            'detectado' => $hoja['detectado'],
+            'workbook' => $workbook,
+            'hoja_activa' => $hoja['titulo'],
+            'formulario_id' => $formulario->id,
+            'establecimiento_id' => $est->id,
+            'periodo_anio' => 2097,
+            'periodo_mes' => 8,
+        ]);
+
+        $this->assertTrue($preview['importable'] ?? false);
+        $this->assertGreaterThan(0, $preview['detectado']['filas_detectadas'] ?? count($preview['detectado']['filas'] ?? []));
+
+        Record::where('formulario_id', $formulario->id)
+            ->where('establecimiento_id', $est->id)
+            ->where('periodo_anio', 2097)
+            ->where('periodo_mes', 8)
+            ->delete();
+
+        $filas = $preview['detectado']['filas'] ?? [];
+        $decisiones = [];
+        foreach ($filas as $fila) {
+            if (! empty($fila['prestacion_id'])) {
+                $decisiones[(string) $fila['key']] = (string) $fila['prestacion_id'];
+            }
+        }
+        if ($decisiones === []) {
+            $this->markTestSkipped('SP12 sin matches de prestaciones para confirmar.');
+        }
+
+        $record = $service->confirm($user, $preview, [
+            'formulario_id' => $formulario->id,
+            'establecimiento_id' => $est->id,
+            'periodo_anio' => 2097,
+            'periodo_mes' => 8,
+            'estructura_servicio_id' => null,
+        ], $decisiones, true);
+
+        $this->assertSame(Record::ESTADO_BORRADOR, $record->estado);
+        $this->assertSame($formulario->id, $record->formulario_id);
+        $this->assertGreaterThan(0, $record->values()->count());
     }
 }
