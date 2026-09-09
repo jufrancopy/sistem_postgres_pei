@@ -605,9 +605,12 @@ class EvaluacionController extends Controller
                     'institucion'         => $instCtx['institucion'],
                     'dependencia'         => $instCtx['dependencia'],
                     'logo_institucional'  => $instCtx['logo_institucional'],
+                    'pei_nombre'          => $instCtx['pei_nombre'],
+                    'evaluadores_texto'   => $instCtx['evaluadores_texto'],
+                    'evaluadores_lista'   => $instCtx['evaluadores_lista'],
                     'politica'            => 'POLÍTICA DE REDES INTEGRADAS E INTEGRALES DE SERVICIOS DE SALUD (RIISS)',
                     'modulo_numero'       => 1,
-                    'modulo_nombre'       => 'CARTERA DE SERVICIOS DE SALUD Y CAPACIDAD INSTALADA',
+                    'modulo_nombre'       => 'RELEVAMIENTO DE CARTERA DE SERVICIOS Y CAPACIDAD RESOLUTIVA',
                     'total_modulos'       => 9,
                     'footer_text'         => $instCtx['footer_text'],
                     'contact_email'       => $instCtx['contact_email'],
@@ -688,11 +691,15 @@ class EvaluacionController extends Controller
         $contactEmail      = $instCtx['contact_email'];
         $contactPhone      = $instCtx['contact_phone'];
         $address           = $instCtx['address'];
+        $peiNombre         = $instCtx['pei_nombre'];
+        $evaluadoresTexto  = $instCtx['evaluadores_texto'];
+        $evaluadoresLista  = $instCtx['evaluadores_lista'];
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.riiss.evaluaciones.acta_pdf', compact(
             'evaluacion', 'est', 'respondidas', 'totalPreguntas', 'progreso',
             'evaluadorNombre', 'evaluadorCargo', 'evaluadorFirma', 'veredicto', 'clasificacion',
-            'logoInstitucional', 'institucion', 'dependencia', 'footerText', 'contactEmail', 'contactPhone', 'address'
+            'logoInstitucional', 'institucion', 'dependencia', 'footerText', 'contactEmail', 'contactPhone', 'address',
+            'peiNombre', 'evaluadoresTexto', 'evaluadoresLista'
         ))->setPaper('a4', 'portrait');
 
         $slugEst = \Illuminate\Support\Str::slug($est->nombre_oficial ?: 'establecimiento', '_');
@@ -740,16 +747,20 @@ class EvaluacionController extends Controller
         $contactEmail      = $instCtx['contact_email'];
         $contactPhone      = $instCtx['contact_phone'];
         $address           = $instCtx['address'];
+        $peiNombre         = $instCtx['pei_nombre'];
+        $evaluadoresTexto  = $instCtx['evaluadores_texto'];
+        $evaluadoresLista  = $instCtx['evaluadores_lista'];
 
         return view('admin.riiss.evaluaciones.acta_imprimir', compact(
             'evaluacion', 'est', 'respondidas', 'totalPreguntas', 'progreso',
             'evaluadorNombre', 'evaluadorCargo', 'evaluadorFirma', 'veredicto', 'clasificacion',
-            'logoInstitucional', 'institucion', 'dependencia', 'footerText', 'contactEmail', 'contactPhone', 'address'
+            'logoInstitucional', 'institucion', 'dependencia', 'footerText', 'contactEmail', 'contactPhone', 'address',
+            'peiNombre', 'evaluadoresTexto', 'evaluadoresLista'
         ));
     }
 
     /**
-     * Resuelve los datos institucionales (Logo, Institución, Dependencia, Footer)
+     * Resuelve los datos institucionales (Logo, Institución, Dependencia, Footer, PEI y Evaluadores)
      * desde el PEI Profile (Variables del Plan) y HomeConfiguration.
      */
     private function resolveInstitucionalContext(Evaluacion $evaluacion): array
@@ -777,6 +788,28 @@ class EvaluacionController extends Controller
         $address      = \App\Models\HomeConfiguration::getSetting('address');
         $siteName     = \App\Models\HomeConfiguration::getSetting('site_name', 'SIPLAN');
 
+        $peiNombre = $evaluacion->peiProfile?->name
+            ?? ($profile?->name ?: 'Plan Estratégico Institucional (PEI 2024–2028)');
+
+        // Extraer lista completa de evaluadores/relevadores
+        $evaluadoresList = [];
+        if (!empty($evaluacion->evaluadores) && is_array($evaluacion->evaluadores)) {
+            foreach ($evaluacion->evaluadores as $ev) {
+                if (is_array($ev) && !empty($ev['text'])) {
+                    $evaluadoresList[] = $ev['text'];
+                } elseif (is_string($ev) && trim($ev) !== '') {
+                    $evaluadoresList[] = trim($ev);
+                }
+            }
+        }
+        if (empty($evaluadoresList) && !empty($evaluacion->evaluador_nombre)) {
+            $evaluadoresList = array_map('trim', explode(',', $evaluacion->evaluador_nombre));
+        }
+        if (empty($evaluadoresList)) {
+            $evaluadoresList = [$evaluacion->cerradoPor ? $evaluacion->cerradoPor->name : 'Equipo Técnico Relevador — Dirección de Planificación'];
+        }
+        $evaluadoresTexto = implode(', ', array_unique($evaluadoresList));
+
         return [
             'logo_institucional' => $logoInstitucional,
             'institucion'        => $institucion,
@@ -786,6 +819,9 @@ class EvaluacionController extends Controller
             'contact_phone'      => $contactPhone,
             'address'            => $address,
             'site_name'          => $siteName,
+            'pei_nombre'         => $peiNombre,
+            'evaluadores_lista'  => $evaluadoresList,
+            'evaluadores_texto'  => $evaluadoresTexto,
         ];
     }
 

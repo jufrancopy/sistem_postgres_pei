@@ -221,20 +221,22 @@
                 <td style="width:22%;">{{ $est->id_establecimiento }}</td>
             </tr>
             <tr>
-                <th>Tipología Declarada:</th>
-                <td>{{ $est->tipologia_clasificacion }}</td>
+                <th>Marco / Plan PEI:</th>
+                <td colspan="3"><strong style="color:#1a237e;">{{ $peiNombre }}</strong></td>
+            </tr>
+            <tr>
+                <th>Equipo Relevador:</th>
+                <td colspan="3"><strong style="color:#0f172a;">{{ $evaluadoresTexto }}</strong></td>
+            </tr>
+            <tr>
+                <th>Tipología / Nivel:</th>
+                <td>{{ $est->tipologia_clasificacion }} ({{ $est->nivel_atencion }} / Grado {{ $est->grado_complejidad }})</td>
                 <th>Complejidad:</th>
                 <td><strong style="color:#1a237e;">{{ $est->complejidad }}</strong></td>
             </tr>
             <tr>
-                <th>Nivel / Grado:</th>
-                <td>{{ $est->nivel_atencion }} / Grado {{ $est->grado_complejidad }}</td>
                 <th>Departamento / Distrito:</th>
                 <td>{{ $est->departamento }} {{ $est->distrito ? ' / ' . $est->distrito : '' }}</td>
-            </tr>
-            <tr>
-                <th>Red / Microred:</th>
-                <td>{{ $est->microred ?: ($est->red ?: 'Red Integrada IPS') }}</td>
                 <th>Fecha y Hora de Cierre:</th>
                 <td><strong style="color:#1a237e;">{{ $evaluacion->cerrado_at ? $evaluacion->cerrado_at->format('d/m/Y H:i') : ($evaluacion->responsable_firmado_at ? $evaluacion->responsable_firmado_at->format('d/m/Y H:i') : date('d/m/Y H:i')) }} hs</strong></td>
             </tr>
@@ -243,7 +245,7 @@
         {{-- II. Declaracion --}}
         <div class="section-title">II. Recepción y Constancia de la Visita Técnica</div>
         <p style="text-align:justify; margin:6px 0 12px 0; font-size:12px; line-height:1.55; color:#334155;">
-            En la fecha y hora indicadas, la autoridad o responsable del establecimiento de salud recibió formalmente a los profesionales comisionados por la <strong>Dirección de Planificación del Instituto de Previsión Social (IPS)</strong>, en el marco de la implementación técnica de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong>. Ambas partes procedieron de manera conjunta al recorrido de las instalaciones, la verificación in situ de los servicios en funcionamiento y el levantamiento exhaustivo de información para el <strong>Módulo 1: Cartera de Servicios de Salud y Capacidad Resolutiva</strong>.
+            En el marco de la ejecución del <strong>{{ $peiNombre }}</strong> y la implementación técnica de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong>, en la fecha y hora indicadas, la autoridad o responsable del establecimiento de salud recibió formalmente a la comisión técnica integrada por los profesionales comisionados: <strong>{{ $evaluadoresTexto }}</strong>, pertenecientes a la <strong>Dirección de Planificación del Instituto de Previsión Social (IPS)</strong>. Ambas partes procedieron de manera conjunta al recorrido de las instalaciones, la verificación in situ de los servicios en funcionamiento y el levantamiento exhaustivo de información para el <strong>Módulo 1: Cartera de Servicios de Salud y Capacidad Resolutiva</strong>.
         </p>
 
         {{-- III. Alcance del Relevamiento --}}

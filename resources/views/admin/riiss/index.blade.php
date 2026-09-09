@@ -1573,6 +1573,15 @@
                                 </div>
                                 <div class="col-12 col-md-6 mb-2">
                                     <div class="p-3 border rounded bg-light h-100">
+                                        <span class="text-muted small d-block font-weight-bold text-uppercase">Marco PEI & Equipo Relevador</span>
+                                        <div class="font-weight-bold text-primary" id="actaPeiNombre">Plan Estratégico Institucional (PEI 2024–2028)</div>
+                                        <div class="text-dark small mt-1">
+                                            <strong>Comisión:</strong> <span id="actaEvaluadoresTexto">—</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 mb-2">
+                                    <div class="p-3 border rounded bg-light h-100">
                                         <span class="text-muted small d-block font-weight-bold text-uppercase">Clasificación Declarada</span>
                                         <div class="d-flex align-items-center flex-wrap my-1" style="gap:6px;">
                                             <span id="actaEstComplejidad">—</span>
@@ -1584,6 +1593,13 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-12 col-md-6 mb-2">
+                                    <div class="p-3 border rounded bg-light h-100">
+                                        <span class="text-muted small d-block font-weight-bold text-uppercase">Fecha y Hora de Cierre</span>
+                                        <div class="font-weight-bold text-primary mt-1" id="actaFechaCierre" style="font-size:1rem;">—</div>
+                                        <small class="text-muted">Jornada técnica presencial formalizada</small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1593,7 +1609,7 @@
                                 II. RECEPCIÓN Y CONSTANCIA DE LA VISITA TÉCNICA
                             </h6>
                             <p class="text-justify mb-2" style="font-size:0.88rem; line-height:1.55; color:#334155;">
-                                En la fecha y hora indicadas, la autoridad o responsable del establecimiento de salud recibió formalmente a los profesionales comisionados por la <strong>Dirección de Planificación del Instituto de Previsión Social (IPS)</strong>, en el marco de la implementación técnica de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong>. Ambas partes procedieron de manera conjunta al recorrido de las instalaciones, la verificación in situ de los servicios en funcionamiento y el levantamiento de información para el <strong>Módulo 1: Cartera de Servicios de Salud y Capacidad Resolutiva</strong>.
+                                En el marco de la ejecución del <strong class="text-primary" id="actaDeclaracionPei">Plan Estratégico Institucional (PEI 2024–2028)</strong> y la implementación técnica de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong>, en la fecha y hora indicadas, la autoridad o responsable del establecimiento de salud recibió formalmente a la comisión técnica integrada por los profesionales comisionados: <strong class="text-dark" id="actaDeclaracionEvaluadores">—</strong>, pertenecientes a la <strong>Dirección de Planificación del Instituto de Previsión Social (IPS)</strong>. Ambas partes procedieron de manera conjunta al recorrido de las instalaciones, la verificación in situ de los servicios en funcionamiento y el levantamiento de información para el <strong>Módulo 1: Cartera de Servicios de Salud y Capacidad Resolutiva</strong>.
                             </p>
                         </div>
 
@@ -2901,6 +2917,10 @@ function abrirModalActa(evalId) {
         $('#actaInstitucionNombre').text(inst.institucion || 'INSTITUTO DE PREVISIÓN SOCIAL');
         $('#actaDependenciaNombre').text(inst.dependencia || 'DIRECCIÓN DE PLANIFICACIÓN');
         $('#actaFooterText').text(inst.footer_text || '© Instituto de Previsión Social (IPS) — Dirección de Planificación. Todos los derechos reservados.');
+        $('#actaPeiNombre').text(inst.pei_nombre || 'Plan Estratégico Institucional (PEI 2024–2028)');
+        $('#actaEvaluadoresTexto').text(inst.evaluadores_texto || 'Equipo Técnico Relevador — Dirección de Planificación');
+        $('#actaDeclaracionPei').text(inst.pei_nombre || 'Plan Estratégico Institucional (PEI 2024–2028)');
+        $('#actaDeclaracionEvaluadores').text(inst.evaluadores_texto || 'profesionales comisionados');
 
         var metaParts = [];
         if (inst.address) metaParts.push(inst.address);
@@ -2953,8 +2973,8 @@ function abrirModalActa(evalId) {
             $('#actaFirmaEvalImg').addClass('d-none').attr('src', '');
             $('#actaFirmaEvalVacia').removeClass('d-none');
         }
-        $('#actaEvalNombre').text(eva.nombre || 'Equipo Evaluador IPS');
-        $('#actaEvalCargo').text(eva.cargo || 'Equipo Técnico Relevador — Dirección de Planificación');
+        $('#actaEvalNombre').text(inst.evaluadores_texto || eva.nombre || 'Equipo Técnico Relevador — Dirección de Planificación');
+        $('#actaEvalCargo').text(eva.cargo || 'Comisión Técnica Relevadora — Dirección de Planificación');
         $('#actaEvalCerradoPor').text(eva.cerrado_por ? 'Usuario: ' + eva.cerrado_por : '');
         $('#actaEvalFechaFirma').text(vis.fecha_hora_cierre ? 'Cerrado el: ' + vis.fecha_hora_cierre : '');
 
