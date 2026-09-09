@@ -435,4 +435,101 @@ class EstablecimientoController extends Controller
         $filename = 'RIISS_' . \Illuminate\Support\Str::slug($est->nombre_oficial) . $suffix . '.pdf';
         return $pdf->stream($filename);
     }
+
+    /**
+     * GET /riiss/especialidades/buscar
+     * Búsqueda de especialidades médicas para Select2.
+     */
+    public function buscarEspecialidades(Request $request): JsonResponse
+    {
+        $q = trim($request->get('q', ''));
+        $especialidades = \App\Models\RiissEspecialidad::query()
+            ->when($q, fn($query) => $query->where('nombre', 'ILIKE', "%{$q}%"))
+            ->orderBy('nombre')
+            ->limit(40)
+            ->get(['id', 'nombre'])
+            ->map(fn($e) => [
+                'id'   => $e->id,
+                'text' => $e->nombre,
+            ]);
+
+        return response()->json(['results' => $especialidades]);
+    }
+
+    /**
+     * GET /riiss/establecimientos/{id}/especialidades
+     * Retorna las especialidades asociadas a un establecimiento.
+     */
+    public function listarEspecialidades(string $id): JsonResponse
+    {
+        $est = Establecimiento::where('id_establecimiento', $id)->firstOrFail();
+        $especialidades = $est->especialidades()->orderBy('nombre')->get(['riiss_especialidades.id', 'nombre']);
+
+        return response()->json([
+            'ok'    => true,
+            'data'  => $especialidades,
+            'count' => $especialidades->count(),
+        ]);
+    }
+
+    /**
+     * POST /riiss/establecimientos/{id}/especialidades
+     * Asocia una especialidad al establecimiento (o la crea si es nueva).
+     */
+    public function agregarEspecialidad(Request $request, string $id): JsonResponse
+    {
+        $est = Establecimiento::where('id_establecimiento', $id)->firstOrFail();
+
+        $especialidadId = $request->input('especialidad_id');
+        $nombre = trim($request->input('nombre', ''));
+
+        if (!$especialidadId && !empty($nombre)) {
+            $esp = \App\Models\RiissEspecialidad::firstOrCreate(
+                ['nombre' => mb_strtoupper($nombre, 'UTF-8')]
+            );
+            $especialidadId = $esp->id;
+        }
+
+        if (!$especialidadId) {
+            return response()->json(['ok' => false, 'message' => 'Debe seleccionar o escribir una especialidad.'], 422);
+        }
+
+        if (!$est->especialidades()->where('especialidad_id', $especialidadId)->exists()) {
+            $est->especialidades()->attach($especialidadId);
+        }
+
+        $especialidades = $est->especialidades()->orderBy('nombre')->get(['riiss_especialidades.id', 'nombre']);
+
+        return response()->json([
+            'ok'      => true,
+            'message' => 'Especialidad vinculada exitosamente.',
+            'data'    => $especialidades,
+            'count'   => $especialidades->count(),
+        ]);
+    }
+
+    /**
+     * DELETE /riiss/establecimientos/{id}/especialidades/{especialidad_id}
+     * Desvincula una especialidad del establecimiento.
+     */
+    public function eliminarEspecialidad(string $id, int $especialidad_id): JsonResponse
+    {
+        $est = Establecimiento::where('id_establecimiento', $id)->firstOrFail();
+        $est->especialidades()->detach($especialidad_id);
+
+        // Limpiar registros dependientes de medicamentos si correspondiera
+        DB::table('riiss_est_esp_medicamentos')
+            ->where('establecimiento_id', $id)
+            ->where('especialidad_id', $especialidad_id)
+            ->delete();
+
+        $especialidades = $est->especialidades()->orderBy('nombre')->get(['riiss_especialidades.id', 'nombre']);
+
+        return response()->json([
+            'ok'      => true,
+            'message' => 'Especialidad removida del establecimiento.',
+            'data'    => $especialidades,
+            'count'   => $especialidades->count(),
+        ]);
+    }
 }

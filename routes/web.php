@@ -1077,6 +1077,16 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('establecimientos/{id}', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'show'])
             ->name('establecimientos.show');
 
+        // Especialidades de Establecimientos
+        Route::get('especialidades/buscar', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'buscarEspecialidades'])
+            ->name('especialidades.buscar');
+        Route::get('establecimientos/{id}/especialidades', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'listarEspecialidades'])
+            ->name('establecimientos.especialidades.index');
+        Route::post('establecimientos/{id}/especialidades', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'agregarEspecialidad'])
+            ->name('establecimientos.especialidades.store');
+        Route::delete('establecimientos/{id}/especialidades/{especialidad_id}', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'eliminarEspecialidad'])
+            ->name('establecimientos.especialidades.destroy');
+
         // Evaluaciones
         Route::get('evaluaciones', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'index'])
             ->name('evaluaciones.index');

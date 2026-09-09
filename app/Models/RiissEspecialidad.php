@@ -11,4 +11,9 @@ class RiissEspecialidad extends Model
 
     protected $table = 'riiss_especialidades';
     protected $fillable = ['nombre'];
+
+    public function establecimientos()
+    {
+        return $this->belongsToMany(\App\Models\Riiss\Establecimiento::class, 'riiss_establecimiento_especialidades', 'especialidad_id', 'establecimiento_id');
+    }
 }

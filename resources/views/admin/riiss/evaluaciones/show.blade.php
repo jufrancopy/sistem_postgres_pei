@@ -87,6 +87,7 @@
                             </td></tr>
                             <tr><th class="text-muted small py-1">Nivel</th><td class="small">{{ $est->nivel_atencion }} / Grado {{ $est->grado_complejidad }}</td></tr>
                             <tr><th class="text-muted small py-1">Departamento</th><td class="small">{{ $est->departamento }}</td></tr>
+                            <tr><th class="text-muted small py-1">Especialidades</th><td><span class="badge badge-pill badge-primary" style="font-size:.72rem"><i class="fa fa-stethoscope mr-1"></i>{{ $est->especialidades->count() }} registradas</span></td></tr>
                         </table>
                         <button class="btn btn-sm btn-outline-info btn-block mt-3" onclick="abrirModalDetalles()">
                             <i class="fa fa-info-circle mr-1"></i> Ver Detalles y Mapa
@@ -268,6 +269,12 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link text-dark" data-toggle="tab" href="#tabEspecialidades">
+                    <i class="fa fa-stethoscope mr-1 text-primary"></i>Especialidades Médicas
+                    <span class="badge badge-pill badge-primary ml-1" id="badgeEspecialidadesTab">{{ $est->especialidades->count() }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link text-dark" data-toggle="tab" href="#tabRespuestas">
                     <i class="fa fa-list mr-1"></i>Respuestas
                 </a>
@@ -285,6 +292,56 @@
         </ul>
 
         <div class="tab-content">
+
+            {{-- Tab Especialidades Médicas --}}
+            <div class="tab-pane fade" id="tabEspecialidades">
+                <div class="card shadow-sm border-0" style="border-radius:12px;">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light p-2 mr-3 text-primary d-flex align-items-center justify-content-center" style="width:38px; height:38px;">
+                                <i class="fa fa-stethoscope fa-lg"></i>
+                            </div>
+                            <div>
+                                <h6 class="font-weight-bold text-dark mb-0" style="font-size:1rem;">
+                                    Especialidades Médicas Registradas
+                                </h6>
+                                <small class="text-muted">Servicios y prestaciones de especialidades médicas activas en {{ $est->nombre_oficial }}</small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                            <input type="text" id="filtroEspecialidadesShow" class="form-control form-control-sm" placeholder="🔍 Filtrar especialidad..." style="max-width:220px; border-radius:8px;">
+                            <span class="badge badge-primary px-3 py-2 font-weight-bold" style="font-size:0.8rem; border-radius:8px;">
+                                <i class="fa fa-user-md mr-1"></i> Total: {{ $est->especialidades->count() }} Especialidades
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        @if($est->especialidades->isEmpty())
+                            <div class="text-center py-5 text-muted">
+                                <i class="fa fa-user-md fa-3x mb-3 text-secondary" style="opacity: 0.35;"></i>
+                                <h6 class="font-weight-bold mb-1">Sin especialidades registradas</h6>
+                                <small>Este establecimiento no posee especialidades médicas registradas actualmente.</small>
+                            </div>
+                        @else
+                            <div class="row" id="gridEspecialidadesShow">
+                                @foreach($est->especialidades->sortBy('nombre') as $esp)
+                                    <div class="col-lg-3 col-md-4 col-sm-6 mb-3 item-especialidad-show" data-nombre="{{ strtolower($esp->nombre) }}">
+                                        <div class="p-3 rounded border bg-light h-100 d-flex align-items-center shadow-xs" style="border-radius:10px; transition: all 0.2s;">
+                                            <div class="rounded-circle bg-white text-primary p-2 mr-3 shadow-xs d-flex align-items-center justify-content-center" style="width:36px; height:36px; flex-shrink:0;">
+                                                <i class="fa fa-stethoscope"></i>
+                                            </div>
+                                            <div style="min-width:0;">
+                                                <div class="font-weight-bold text-dark small text-truncate" title="{{ $esp->nombre }}">{{ $esp->nombre }}</div>
+                                                <small class="text-success" style="font-size:0.72rem;"><i class="fa fa-check-circle mr-1"></i>Activa en centro</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
 
             {{-- Tab Gap Cartera --}}
             <div class="tab-pane fade" id="tabGap">
@@ -816,6 +873,15 @@ $(document).ready(function(){
     });
 
     aplicarFiltro();
+
+    // ── Filtro rápido de especialidades médicas ─────────────────────────────
+    $('#filtroEspecialidadesShow').on('keyup input', function() {
+        var query = $(this).val().toLowerCase().trim();
+        $('#gridEspecialidadesShow .item-especialidad-show').each(function() {
+            var nom = $(this).data('nombre') || '';
+            $(this).toggle(nom.indexOf(query) >= 0);
+        });
+    });
 });
 
 function mostrarToast(msg, tipo) {

@@ -329,6 +329,53 @@
             </div>
         </div>
 
+        {{-- Card de Especialidades Médicas del Establecimiento --}}
+        <div class="card shadow-sm mb-4 border-0" id="cardEspecialidadesEstablecimiento" style="border-radius:14px; border: 1px solid #e2e8f0;">
+            <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-light p-2 mr-3 text-primary d-flex align-items-center justify-content-center" style="width:38px; height:38px;">
+                        <i class="fa fa-stethoscope fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="font-weight-bold text-dark mb-0" style="font-size:0.95rem;">
+                            Especialidades Médicas del Establecimiento
+                            <span class="badge badge-pill badge-primary ml-2 font-weight-bold" id="badgeEspecialidadesCount">{{ $est->especialidades->count() }}</span>
+                        </h6>
+                        <small class="text-muted">Servicios y prestaciones de especialidades médicas activas en este centro</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                    <button type="button" class="btn btn-outline-primary btn-sm font-weight-bold shadow-xs" id="btnToggleAddEspecialidad" onclick="$('#panelAgregarEspecialidad').slideToggle(200); setTimeout(function(){ $('#selectNuevaEspecialidad').select2('open'); }, 250);" style="border-radius:8px;">
+                        <i class="fa fa-plus-circle mr-1"></i> Agregar Especialidad
+                    </button>
+                </div>
+            </div>
+
+            {{-- Formulario para Agregar Especialidad (Colapsable) --}}
+            <div id="panelAgregarEspecialidad" class="p-3 bg-light border-bottom" style="display:none;">
+                <div class="row align-items-center" style="gap: 8px;">
+                    <div class="col-md-7 mb-2 mb-md-0">
+                        <label class="font-weight-bold text-dark small mb-1">Buscar o escribir nombre de la especialidad:</label>
+                        <select id="selectNuevaEspecialidad" class="form-control" style="width:100%"></select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end pt-md-4" style="gap:8px;">
+                        <button type="button" class="btn btn-primary btn-sm font-weight-bold shadow-sm" id="btnConfirmarAddEsp" onclick="agregarEspecialidad()" style="border-radius:8px;">
+                            <i class="fa fa-check mr-1"></i> Vincular Especialidad
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="$('#panelAgregarEspecialidad').slideUp(200);" style="border-radius:8px;">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4 bg-white">
+                <div id="contenedorEspecialidadesPills" class="d-flex flex-wrap" style="gap:8px;">
+                    <div class="text-center w-100 py-3 text-muted"><div class="spinner-border spinner-border-sm text-primary mr-2"></div>Cargando especialidades...</div>
+                </div>
+            </div>
+        </div>
+
         {{-- Secciones del formulario --}}
         <div id="seccionesFormulario"></div>
 
@@ -759,7 +806,147 @@ if (evaluacionId) {
         clearTimeout(saveTimer);
         saveTimer = setTimeout(actualizarDatosVisita, 800);
     });
+
+    // ── Especialidades Médicas ───────────────────────────────────────────
+    initSelectNuevaEspecialidad();
+    cargarEspecialidadesEstablecimiento();
 });
+
+// ── Gestión de Especialidades Médicas del Establecimiento ────────────────────
+function cargarEspecialidadesEstablecimiento() {
+    $.get('/riiss/establecimientos/' + EST_ID + '/especialidades', function(r) {
+        if (!r.ok) return;
+        renderEspecialidadesPills(r.data);
+        $('#badgeEspecialidadesCount').text(r.count);
+    });
+}
+
+function renderEspecialidadesPills(lista) {
+    var $c = $('#contenedorEspecialidadesPills');
+    if (!lista || !lista.length) {
+        $c.html('<div class="text-muted small font-italic py-2"><i class="fa fa-info-circle mr-1"></i>No hay especialidades registradas para este establecimiento. Haz clic en "Agregar Especialidad" para vincular una.</div>');
+        return;
+    }
+
+    var html = '';
+    lista.forEach(function(esp) {
+        var nombreEscapado = (esp.nombre || '').replace(/'/g, "\\'");
+        html += '<div class="badge badge-light border d-inline-flex align-items-center py-2 px-3 shadow-xs text-dark mr-1 mb-1" style="border-radius: 20px; font-size: 0.82rem; font-weight: 600; background: #f8fafc; border-color: #cbd5e1 !important; gap: 6px;">'
+             + '<i class="fa fa-stethoscope text-primary mr-1" style="font-size:0.75rem;"></i>'
+             + '<span>' + esp.nombre + '</span>'
+             + '<button type="button" class="btn btn-link text-danger p-0 ml-1" onclick="eliminarEspecialidad(' + esp.id + ', \'' + nombreEscapado + '\')" title="Eliminar especialidad" style="line-height:1; font-size: 1.05rem; text-decoration:none; cursor:pointer;">'
+             + '<i class="fa fa-times-circle"></i>'
+             + '</button>'
+             + '</div>';
+    });
+    $c.html(html);
+}
+
+function initSelectNuevaEspecialidad() {
+    $('#selectNuevaEspecialidad').select2({
+        placeholder: 'Buscar o escribir especialidad...',
+        allowClear: true,
+        width: '100%',
+        tags: true,
+        dropdownParent: $('#cardEspecialidadesEstablecimiento'),
+        ajax: {
+            url: '{{ route("riiss.especialidades.buscar") }}',
+            dataType: 'json',
+            delay: 200,
+            data: function(p) { return { q: p.term || '' }; },
+            processResults: function(d) { return { results: d.results }; },
+            cache: true
+        }
+    });
+}
+
+function agregarEspecialidad() {
+    var selData = $('#selectNuevaEspecialidad').select2('data');
+    if (!selData || !selData.length) {
+        mostrarToast('Seleccioná o escribí una especialidad', 'error');
+        return;
+    }
+
+    var item = selData[0];
+    var payload = {
+        _token: '{{ csrf_token() }}'
+    };
+
+    if (item.id && !isNaN(item.id)) {
+        payload.especialidad_id = item.id;
+    } else {
+        payload.nombre = item.text;
+    }
+
+    var $btn = $('#btnConfirmarAddEsp');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i>Vinculando...');
+
+    $.ajax({
+        url: '/riiss/establecimientos/' + EST_ID + '/especialidades',
+        method: 'POST',
+        data: payload,
+        success: function(r) {
+            $btn.prop('disabled', false).html('<i class="fa fa-check mr-1"></i> Vincular Especialidad');
+            if (r.ok) {
+                renderEspecialidadesPills(r.data);
+                $('#badgeEspecialidadesCount').text(r.count);
+                $('#selectNuevaEspecialidad').val(null).trigger('change');
+                $('#panelAgregarEspecialidad').slideUp(200);
+                mostrarToast(r.message || 'Especialidad vinculada', 'success');
+            } else {
+                mostrarToast(r.message || 'Error al vincular especialidad', 'error');
+            }
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false).html('<i class="fa fa-check mr-1"></i> Vincular Especialidad');
+            var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Error al vincular especialidad';
+            mostrarToast(msg, 'error');
+        }
+    });
+}
+
+function eliminarEspecialidad(id, nombre) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '¿Desvincular especialidad?',
+            text: 'Se removerá "' + nombre + '" del establecimiento ' + EST_ID + '.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, desvincular',
+            cancelButtonText: 'Cancelar'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                ejecutarEliminarEspecialidad(id);
+            }
+        });
+    } else {
+        if (confirm('¿Desvincular la especialidad "' + nombre + '"?')) {
+            ejecutarEliminarEspecialidad(id);
+        }
+    }
+}
+
+function ejecutarEliminarEspecialidad(id) {
+    $.ajax({
+        url: '/riiss/establecimientos/' + EST_ID + '/especialidades/' + id,
+        method: 'DELETE',
+        data: { _token: '{{ csrf_token() }}' },
+        success: function(r) {
+            if (r.ok) {
+                renderEspecialidadesPills(r.data);
+                $('#badgeEspecialidadesCount').text(r.count);
+                mostrarToast(r.message || 'Especialidad eliminada', 'success');
+            } else {
+                mostrarToast(r.message || 'Error al eliminar', 'error');
+            }
+        },
+        error: function() {
+            mostrarToast('Error al desvincular especialidad', 'error');
+        }
+    });
+}
 
 // ── Recuperar evaluación por ID ──────────────────────────────────────────────
 function recuperarEvaluacionExistente(id) {

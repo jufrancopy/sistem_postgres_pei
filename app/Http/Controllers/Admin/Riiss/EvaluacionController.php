@@ -495,7 +495,7 @@ class EvaluacionController extends Controller
     public function show(Evaluacion $evaluacion)
     {
         $this->authorizeEvaluacion($evaluacion);
-        $evaluacion->load(['establecimiento', 'respuestas.pregunta.seccion', 'gapAnalysis', 'cerradoPor']);
+        $evaluacion->load(['establecimiento.especialidades', 'respuestas.pregunta.seccion', 'gapAnalysis', 'cerradoPor']);
 
         if (request()->expectsJson()) {
             return response()->json(['ok' => true, 'data' => $evaluacion]);
