@@ -1521,12 +1521,15 @@
                         <div class="border-bottom pb-3 mb-3">
                             <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap:15px;">
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-light p-2 rounded mr-3 border text-center d-flex align-items-center justify-content-center" style="width:58px; height:58px;">
-                                        <i class="fa fa-hospital-alt fa-2x text-primary"></i>
+                                    <div id="actaLogoInstitucionalContainer" class="mr-3 d-flex align-items-center justify-content-center" style="max-height:55px; max-width:130px;">
+                                        <img id="actaLogoInstitucionalImg" src="" alt="Logo Institucional" style="max-height:55px; max-width:130px; object-fit:contain;" class="d-none">
+                                        <div id="actaLogoInstitucionalFallback" class="bg-light p-2 rounded border text-center d-flex align-items-center justify-content-center" style="width:55px; height:55px;">
+                                            <i class="fa fa-hospital-alt fa-2x text-primary"></i>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div class="font-weight-bold text-uppercase" style="font-size:1.1rem; color:#0f172a; letter-spacing:0.5px;">INSTITUTO DE PREVISIÓN SOCIAL</div>
-                                        <div class="text-primary font-weight-bold small text-uppercase" style="letter-spacing:0.5px;">DIRECCIÓN DE PLANIFICACIÓN</div>
+                                    <div style="border-left: 2px solid #e2e8f0; padding-left: 12px;">
+                                        <div class="font-weight-bold text-uppercase" id="actaInstitucionNombre" style="font-size:1.05rem; color:#0f172a; letter-spacing:0.5px;">INSTITUTO DE PREVISIÓN SOCIAL</div>
+                                        <div class="text-primary font-weight-bold small text-uppercase" id="actaDependenciaNombre" style="letter-spacing:0.5px;">DIRECCIÓN DE PLANIFICACIÓN</div>
                                         <div class="text-muted small" style="font-size:0.75rem;">Sistema Integrado de Planificación y Monitoreo Estratégico (SIPLAN)</div>
                                     </div>
                                 </div>
@@ -1686,9 +1689,10 @@
                         </div>
 
                         {{-- Pie del Documento --}}
-                        <div class="border-top pt-3 mt-3 text-center text-muted" style="font-size:0.75rem; line-height:1.4;">
-                            <div>Documento institucional emitido por el <strong>Sistema SIPLAN — Instituto de Previsión Social</strong>.</div>
-                            <div>Implementación del Marco Técnico de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong>.</div>
+                        <div class="border-top pt-3 mt-3 text-center text-muted" style="font-size:0.75rem; line-height:1.5;">
+                            <div class="font-weight-bold text-secondary" id="actaFooterText">© Instituto de Previsión Social (IPS) — Dirección de Planificación.</div>
+                            <div id="actaFooterMetadata" class="small text-muted my-1"></div>
+                            <div class="font-italic" style="font-size:0.7rem;">Implementación del Marco Técnico de la Política de Redes Integradas e Integrales de Servicios de Salud (RIISS) — Módulo N° 1.</div>
                         </div>
 
                     </div>
@@ -2884,6 +2888,29 @@ function abrirModalActa(evalId) {
         var vis = d.visita || {};
         var resp = d.responsable || {};
         var eva = d.evaluador || {};
+        var inst = d.marco_institucional || {};
+
+        // Branding & Membrete Institucional
+        if (inst.logo_institucional) {
+            $('#actaLogoInstitucionalImg').attr('src', inst.logo_institucional).removeClass('d-none');
+            $('#actaLogoInstitucionalFallback').addClass('d-none');
+        } else {
+            $('#actaLogoInstitucionalImg').addClass('d-none').attr('src', '');
+            $('#actaLogoInstitucionalFallback').removeClass('d-none');
+        }
+        $('#actaInstitucionNombre').text(inst.institucion || 'INSTITUTO DE PREVISIÓN SOCIAL');
+        $('#actaDependenciaNombre').text(inst.dependencia || 'DIRECCIÓN DE PLANIFICACIÓN');
+        $('#actaFooterText').text(inst.footer_text || '© Instituto de Previsión Social (IPS) — Dirección de Planificación. Todos los derechos reservados.');
+
+        var metaParts = [];
+        if (inst.address) metaParts.push(inst.address);
+        if (inst.contact_phone) metaParts.push('Tel: ' + inst.contact_phone);
+        if (inst.contact_email) metaParts.push(inst.contact_email);
+        if (metaParts.length > 0) {
+            $('#actaFooterMetadata').text(metaParts.join(' · ')).removeClass('d-none');
+        } else {
+            $('#actaFooterMetadata').addClass('d-none');
+        }
 
         $('#actaCodigoDoc').text('ACTA-RIISS-#' + d.id);
         $('#actaEstNombre').text(est.nombre || '—');

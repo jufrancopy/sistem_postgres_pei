@@ -149,12 +149,21 @@
     {{-- Membrete --}}
     <table class="header-table">
         <tr>
-            <td style="width: 70%;">
-                <div class="header-title">INSTITUTO DE PREVISIÓN SOCIAL</div>
-                <div class="header-subtitle">DIRECCIÓN DE PLANIFICACIÓN</div>
+            <td style="width: 22%; vertical-align: middle;">
+                @if(!empty($logoInstitucional))
+                    <img src="{{ $logoInstitucional }}" style="max-height: 52px; max-width: 125px; object-fit: contain;">
+                @else
+                    <div style="background-color: #1a237e; color: #ffffff; font-weight: bold; font-size: 11px; padding: 6px 10px; text-align: center; border-radius: 4px; display: inline-block;">
+                        {{ mb_strtoupper(substr($institucion ?? 'IPS', 0, 8)) }}
+                    </div>
+                @endif
+            </td>
+            <td style="width: 53%; vertical-align: middle; padding-left: 8px;">
+                <div class="header-title">{{ $institucion ?? 'INSTITUTO DE PREVISIÓN SOCIAL' }}</div>
+                <div class="header-subtitle">{{ $dependencia ?? 'DIRECCIÓN DE PLANIFICACIÓN' }}</div>
                 <div class="text-muted" style="font-size: 8.5px;">Sistema Integrado de Planificación y Monitoreo Estratégico (SIPLAN)</div>
             </td>
-            <td style="width: 30%; text-align: right;">
+            <td style="width: 25%; text-align: right; vertical-align: middle;">
                 <span class="badge-tag">POLÍTICA RIISS (1 de 9)</span>
                 <div class="font-weight-bold text-muted" style="font-size: 9px; margin-top: 3px;">ACTA-RIISS-#{{ $evaluacion->id }}</div>
             </td>
@@ -303,7 +312,17 @@
 
     {{-- Footer --}}
     <div class="footer-note">
-        Documento oficial emitido por el Sistema SIPLAN — Instituto de Previsión Social (IPS). Marco Técnico de la Política de Redes Integradas e Integrales de Servicios de Salud (RIISS).
+        <div style="font-weight: bold; color: #475569;">{{ $footerText ?? '© ' . date('Y') . ' Instituto de Previsión Social (IPS) — Dirección de Planificación. Todos los derechos reservados.' }}</div>
+        @if(!empty($address) || !empty($contactPhone) || !empty($contactEmail))
+            <div style="margin-top: 2px; font-size: 8px; color: #64748b;">
+                @if(!empty($address)) {{ $address }} @endif
+                @if(!empty($contactPhone)) · Tel: {{ $contactPhone }} @endif
+                @if(!empty($contactEmail)) · {{ $contactEmail }} @endif
+            </div>
+        @endif
+        <div style="margin-top: 2px; font-size: 7.5px; color: #94a3b8; font-style: italic;">
+            Marco Técnico y Legal de la Política de Redes Integradas e Integrales de Servicios de Salud (RIISS) — Módulo N° 1.
+        </div>
     </div>
 
 </body>

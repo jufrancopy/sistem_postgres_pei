@@ -581,6 +581,7 @@ class EvaluacionController extends Controller
             ->toArray();
 
         $veredicto = $this->generarVeredicto($evaluacion, $est, $gap);
+        $instCtx = $this->resolveInstitucionalContext($evaluacion);
 
         return response()->json([
             'ok' => true,
@@ -601,12 +602,18 @@ class EvaluacionController extends Controller
                     'prestador'           => $est->prestador,
                 ],
                 'marco_institucional'     => [
-                    'institucion'         => 'INSTITUTO DE PREVISIÓN SOCIAL',
-                    'dependencia'         => 'DIRECCIÓN DE PLANIFICACIÓN',
+                    'institucion'         => $instCtx['institucion'],
+                    'dependencia'         => $instCtx['dependencia'],
+                    'logo_institucional'  => $instCtx['logo_institucional'],
                     'politica'            => 'POLÍTICA DE REDES INTEGRADAS E INTEGRALES DE SERVICIOS DE SALUD (RIISS)',
                     'modulo_numero'       => 1,
                     'modulo_nombre'       => 'CARTERA DE SERVICIOS DE SALUD Y CAPACIDAD INSTALADA',
                     'total_modulos'       => 9,
+                    'footer_text'         => $instCtx['footer_text'],
+                    'contact_email'       => $instCtx['contact_email'],
+                    'contact_phone'       => $instCtx['contact_phone'],
+                    'address'             => $instCtx['address'],
+                    'site_name'           => $instCtx['site_name'],
                 ],
                 'visita'                  => [
                     'fecha'               => $evaluacion->fecha_evaluacion?->format('d/m/Y') ?: date('d/m/Y'),
@@ -672,10 +679,20 @@ class EvaluacionController extends Controller
 
         $veredicto = $this->generarVeredicto($evaluacion, $est, $gap);
         $clasificacion = $evaluacion->clasificacion_resultado ?: 'PENDIENTE';
+        $instCtx = $this->resolveInstitucionalContext($evaluacion);
+
+        $logoInstitucional = $this->prepareLogoForPdf($instCtx['logo_institucional']);
+        $institucion       = $instCtx['institucion'];
+        $dependencia       = $instCtx['dependencia'];
+        $footerText        = $instCtx['footer_text'];
+        $contactEmail      = $instCtx['contact_email'];
+        $contactPhone      = $instCtx['contact_phone'];
+        $address           = $instCtx['address'];
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.riiss.evaluaciones.acta_pdf', compact(
             'evaluacion', 'est', 'respondidas', 'totalPreguntas', 'progreso',
-            'evaluadorNombre', 'evaluadorCargo', 'evaluadorFirma', 'veredicto', 'clasificacion'
+            'evaluadorNombre', 'evaluadorCargo', 'evaluadorFirma', 'veredicto', 'clasificacion',
+            'logoInstitucional', 'institucion', 'dependencia', 'footerText', 'contactEmail', 'contactPhone', 'address'
         ))->setPaper('a4', 'portrait');
 
         $slugEst = \Illuminate\Support\Str::slug($est->nombre_oficial ?: 'establecimiento', '_');
@@ -714,11 +731,98 @@ class EvaluacionController extends Controller
 
         $veredicto = $this->generarVeredicto($evaluacion, $est, $gap);
         $clasificacion = $evaluacion->clasificacion_resultado ?: 'PENDIENTE';
+        $instCtx = $this->resolveInstitucionalContext($evaluacion);
+
+        $logoInstitucional = $instCtx['logo_institucional'];
+        $institucion       = $instCtx['institucion'];
+        $dependencia       = $instCtx['dependencia'];
+        $footerText        = $instCtx['footer_text'];
+        $contactEmail      = $instCtx['contact_email'];
+        $contactPhone      = $instCtx['contact_phone'];
+        $address           = $instCtx['address'];
 
         return view('admin.riiss.evaluaciones.acta_imprimir', compact(
             'evaluacion', 'est', 'respondidas', 'totalPreguntas', 'progreso',
-            'evaluadorNombre', 'evaluadorCargo', 'evaluadorFirma', 'veredicto', 'clasificacion'
+            'evaluadorNombre', 'evaluadorCargo', 'evaluadorFirma', 'veredicto', 'clasificacion',
+            'logoInstitucional', 'institucion', 'dependencia', 'footerText', 'contactEmail', 'contactPhone', 'address'
         ));
+    }
+
+    /**
+     * Resuelve los datos institucionales (Logo, Institución, Dependencia, Footer)
+     * desde el PEI Profile (Variables del Plan) y HomeConfiguration.
+     */
+    private function resolveInstitucionalContext(Evaluacion $evaluacion): array
+    {
+        $profile = $evaluacion->peiProfile;
+        if (!$profile) {
+            $profile = \App\Admin\Planificacion\Pei\PeiProfile::find('ce99f883-fdd0-4723-8f75-cf689aa8f0fa')
+                ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'master')->first()
+                ?? \App\Admin\Planificacion\Pei\PeiProfile::first();
+        }
+
+        $master = $profile && $profile->parent_id ? ($profile->getRoot() ?? $profile) : $profile;
+        $params = [];
+        if ($master) {
+            $params = is_string($master->parameters) ? (json_decode($master->parameters, true) ?? []) : ($master->parameters ?? []);
+        }
+
+        $logoInstitucional = $params['logo_institucional'] ?? $params['acta_logo_url'] ?? ($master?->logo_institucional ?? null);
+        $institucion       = $params['acta_institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL (IPS)';
+        $dependencia       = $params['acta_dependencia'] ?? 'DIRECCIÓN DE PLANIFICACIÓN';
+
+        $footerText   = \App\Models\HomeConfiguration::getSetting('footer_text', '© ' . date('Y') . ' Instituto de Previsión Social (IPS) — Dirección de Planificación. Todos los derechos reservados.');
+        $contactEmail = \App\Models\HomeConfiguration::getSetting('contact_email');
+        $contactPhone = \App\Models\HomeConfiguration::getSetting('contact_phone');
+        $address      = \App\Models\HomeConfiguration::getSetting('address');
+        $siteName     = \App\Models\HomeConfiguration::getSetting('site_name', 'SIPLAN');
+
+        return [
+            'logo_institucional' => $logoInstitucional,
+            'institucion'        => $institucion,
+            'dependencia'        => $dependencia,
+            'footer_text'        => $footerText,
+            'contact_email'      => $contactEmail,
+            'contact_phone'      => $contactPhone,
+            'address'            => $address,
+            'site_name'          => $siteName,
+        ];
+    }
+
+    /**
+     * Prepara el logo para DomPDF convirtiendo recursos locales a data URI base64.
+     */
+    private function prepareLogoForPdf(?string $logoUrl): ?string
+    {
+        if (empty($logoUrl)) return null;
+
+        if (str_starts_with($logoUrl, 'data:image')) {
+            return $logoUrl;
+        }
+
+        $localFile = null;
+        $storagePrefix = asset('storage/');
+        if (str_starts_with($logoUrl, $storagePrefix)) {
+            $relative = str_replace($storagePrefix, '', $logoUrl);
+            $storageCandidate = storage_path('app/public/' . ltrim($relative, '/'));
+            if (file_exists($storageCandidate)) {
+                $localFile = $storageCandidate;
+            }
+        } elseif (str_starts_with($logoUrl, '/storage/')) {
+            $publicCandidate = public_path(ltrim($logoUrl, '/'));
+            if (file_exists($publicCandidate)) {
+                $localFile = $publicCandidate;
+            }
+        } elseif (file_exists(public_path(ltrim($logoUrl, '/')))) {
+            $localFile = public_path(ltrim($logoUrl, '/'));
+        }
+
+        if ($localFile && file_exists($localFile)) {
+            $mime = mime_content_type($localFile) ?: 'image/png';
+            return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($localFile));
+        }
+
+        return $logoUrl;
     }
 
     /**

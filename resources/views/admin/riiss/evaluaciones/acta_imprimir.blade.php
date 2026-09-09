@@ -174,13 +174,19 @@
     <div class="sheet">
         {{-- Membrete --}}
         <div class="header-box">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <div style="background:#f1f5f9; padding:8px 12px; border-radius:6px; font-size:24px; color:#1a237e;">
-                    <i class="fa fa-hospital-alt"></i>
+            <div style="display:flex; align-items:center; gap:14px;">
+                <div style="height:55px; width:130px; display:flex; align-items:center; justify-content:center;">
+                    @if(!empty($logoInstitucional))
+                        <img src="{{ $logoInstitucional }}" alt="Logo Institución" style="max-height:55px; max-width:130px; object-fit:contain;">
+                    @else
+                        <div style="background:#f1f5f9; padding:8px 12px; border-radius:6px; font-size:24px; color:#1a237e;">
+                            <i class="fa fa-hospital-alt"></i>
+                        </div>
+                    @endif
                 </div>
-                <div>
-                    <div style="font-size:14px; font-weight:700; text-transform:uppercase; color:#0f172a; letter-spacing:0.5px;">INSTITUTO DE PREVISIÓN SOCIAL</div>
-                    <div style="font-size:12px; font-weight:700; color:#1a237e; text-transform:uppercase;">DIRECCIÓN DE PLANIFICACIÓN</div>
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 12px;">
+                    <div style="font-size:14px; font-weight:700; text-transform:uppercase; color:#0f172a; letter-spacing:0.5px;">{{ $institucion ?? 'INSTITUTO DE PREVISIÓN SOCIAL' }}</div>
+                    <div style="font-size:12px; font-weight:700; color:#1a237e; text-transform:uppercase;">{{ $dependencia ?? 'DIRECCIÓN DE PLANIFICACIÓN' }}</div>
                     <div style="font-size:10px; color:#64748b;">Sistema Integrado de Planificación y Monitoreo Estratégico (SIPLAN)</div>
                 </div>
             </div>
@@ -332,9 +338,18 @@
         </div>
 
         {{-- Footer --}}
-        <div style="margin-top:25px; border-top:1px solid #e2e8f0; padding-top:8px; font-size:10px; color:#64748b; text-align:center;">
-            Documento oficial emitido por el <strong>Sistema SIPLAN — Instituto de Previsión Social (IPS)</strong>.<br>
-            Marco Técnico de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong>.
+        <div style="margin-top:25px; border-top:1px solid #e2e8f0; padding-top:10px; font-size:10.5px; color:#64748b; text-align:center; line-height:1.5;">
+            <div style="font-weight:600; color:#475569;">{{ $footerText ?? '© ' . date('Y') . ' Instituto de Previsión Social (IPS) — Dirección de Planificación. Todos los derechos reservados.' }}</div>
+            @if(!empty($address) || !empty($contactPhone) || !empty($contactEmail))
+                <div style="margin-top:3px; font-size:9.5px; color:#64748b;">
+                    @if(!empty($address)) {{ $address }} @endif
+                    @if(!empty($contactPhone)) · Tel: {{ $contactPhone }} @endif
+                    @if(!empty($contactEmail)) · {{ $contactEmail }} @endif
+                </div>
+            @endif
+            <div style="margin-top:3px; font-size:9px; color:#94a3b8; font-style:italic;">
+                Marco Técnico y Legal de la Política de Redes Integradas e Integrales de Servicios de Salud (RIISS) — Módulo N° 1.
+            </div>
         </div>
     </div>
 
