@@ -1406,11 +1406,17 @@
             <div class="modal-body" id="modalEstBody">
                 <div class="text-center py-4"><div class="spinner-border text-danger"></div></div>
             </div>
-            <div class="modal-footer">
-                <a href="#" id="btnIniciarEval" class="btn btn-danger">
-                    <i class="fa fa-clipboard-check mr-1"></i>Iniciar evaluación ahora
-                </a>
-                <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            <div class="modal-footer d-flex justify-content-between align-items-center flex-wrap" style="gap:10px;">
+                <div id="modalEstCierreTag"></div>
+                <div class="d-flex align-items-center flex-wrap" style="gap:8px">
+                    <a href="#" id="btnVerActaModal" class="btn btn-success d-none">
+                        <i class="fa fa-file-signature mr-1"></i>Ver Acta de Cierre
+                    </a>
+                    <a href="#" id="btnIniciarEval" class="btn btn-danger">
+                        <i class="fa fa-clipboard-check mr-1"></i>Iniciar evaluación ahora
+                    </a>
+                    <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1671,8 +1677,27 @@ function cargarDashboard() {
 
             var accionesHtml = `
                 <div class="d-flex justify-content-center align-items-center" style="gap:4px">
-                    <a href="/riiss/evaluaciones/nueva/${ev.id_establecimiento}?evaluacion=${ev.id}" class="btn btn-circle btn-primary" title="Continuar / Firmar Evaluación"><i class="fa fa-arrow-right"></i></a>
-                    <button type="button" class="btn btn-circle btn-info" onclick="verDetalle('${ev.id_establecimiento || ''}', '${nombreEsc}', '${ev.id || ''}')" title="Ver Detalle"><i class="fa fa-eye"></i></button>
+                    ${ev.cerrado_con_firmas || ev.id ? `
+                        <a href="/riiss/evaluaciones/${ev.id}" class="btn btn-circle ${ev.cerrado_con_firmas ? 'btn-success' : 'btn-info'}" title="${ev.cerrado_con_firmas ? 'Ver Acta de Cierre Firmada y Dictamen' : 'Ver Informe de Evaluación'}"><i class="fa ${ev.cerrado_con_firmas ? 'fa-file-signature' : 'fa-file-alt'}"></i></a>
+                    ` : ''}
+                    <a href="/riiss/evaluaciones/nueva/${ev.id_establecimiento}?evaluacion=${ev.id}" class="btn btn-circle btn-primary" title="${ev.cerrado_con_firmas ? 'Ver Formulario Completo' : 'Continuar / Firmar Evaluación'}"><i class="fa fa-arrow-right"></i></a>
+                    <button type="button" class="btn btn-circle btn-info" onclick="verDetalle('${ev.id_establecimiento || ''}', '${nombreEsc}', '${ev.id || ''}')" title="Ver Detalle y Ficha"><i class="fa fa-eye"></i></button>
+                </div>
+            `;
+
+            var evaluadorHtml = `
+                <div>
+                    <div class="d-flex align-items-center">
+                        <i class="fa fa-user-circle text-info mr-1"></i>
+                        <span class="small font-weight-bold text-dark">${evalNombre}</span>
+                    </div>
+                    ${ev.cerrado_con_firmas && ev.responsable_nombre ? `
+                        <div class="mt-1" style="font-size:0.75rem; line-height:1.2;">
+                            <span class="badge badge-light border text-success font-weight-normal px-1 py-1" title="Firmado por receptor local">
+                                <i class="fa fa-file-signature text-success mr-1"></i>Resp: <strong class="text-dark">${ev.responsable_nombre}</strong>${ev.responsable_cargo ? ' (' + ev.responsable_cargo + ')' : ''}
+                            </span>
+                        </div>
+                    ` : ''}
                 </div>
             `;
 
@@ -1680,7 +1705,7 @@ function cargarDashboard() {
                 num: idx + 1,
                 establecimiento: `<div class="font-weight-bold text-dark" style="font-size:.9rem">${ev.establecimiento}</div><small class="text-muted">${ev.fecha || '—'}</small>`,
                 complejidad: `<div><span class="badge" style="background:${ev.complejidad_color || '#64748b'};color:#fff">${ev.complejidad || 'N/A'}</span></div><small class="text-muted">${ev.tipologia || '—'}</small>`,
-                evaluador: `<div class="d-flex align-items-center"><i class="fa fa-user-circle text-info mr-1"></i><span class="small font-weight-bold text-dark">${evalNombre}</span></div>`,
+                evaluador: evaluadorHtml,
                 progreso: progresoHtml,
                 estado: badgeEstado,
                 updated_at: `<span class="small text-muted">${ev.updated_at || '—'}</span>`,
@@ -2443,15 +2468,27 @@ function addslashes(str) {
 function verDetalle(id, nombre, evaluacionId) {
     $('#modalEstNombre').text(nombre || '—');
     $('#modalEstBody').html('<div class="text-center py-4"><div class="spinner-border text-danger"></div></div>');
+    $('#modalEstCierreTag').html('');
+    $('#btnVerActaModal').addClass('d-none').attr('href', '#');
 
     var activeEvalId = evaluacionId;
-    if ((!activeEvalId || activeEvalId === '') && typeof _datosEvaluacionesGlobal !== 'undefined') {
-        var found = _datosEvaluacionesGlobal.find(function(ev) { return ev.id_establecimiento === id; });
-        if (found) activeEvalId = found.id;
+    var foundEval = null;
+    if (typeof _datosEvaluacionesGlobal !== 'undefined' && _datosEvaluacionesGlobal.length) {
+        if (activeEvalId) {
+            foundEval = _datosEvaluacionesGlobal.find(function(ev) { return String(ev.id) === String(activeEvalId); });
+        }
+        if (!foundEval && id) {
+            foundEval = _datosEvaluacionesGlobal.find(function(ev) { return ev.id_establecimiento === id; });
+            if (foundEval) activeEvalId = foundEval.id;
+        }
     }
 
     if (activeEvalId && activeEvalId !== '') {
-        $('#btnIniciarEval').attr('href', `/riiss/evaluaciones/nueva/${id}?evaluacion=${activeEvalId}`).removeClass('btn-danger').addClass('btn-info').html('<i class="fa fa-eye mr-1"></i>Ver evaluación');
+        if (foundEval && (foundEval.cerrado_con_firmas || foundEval.responsable_nombre)) {
+            $('#btnVerActaModal').removeClass('d-none').attr('href', `/riiss/evaluaciones/${activeEvalId}`);
+            $('#modalEstCierreTag').html('<span class="badge badge-success px-2 py-1"><i class="fa fa-file-signature mr-1"></i>Firmado & Cerrado</span>');
+        }
+        $('#btnIniciarEval').attr('href', `/riiss/evaluaciones/nueva/${id}?evaluacion=${activeEvalId}`).removeClass('btn-danger').addClass('btn-info').html('<i class="fa fa-clipboard-list mr-1"></i>Ver Formulario');
     } else {
         $('#btnIniciarEval').attr('href', `/riiss/evaluaciones/nueva/${id}`).removeClass('btn-info').addClass('btn-danger').html('<i class="fa fa-clipboard-check mr-1"></i>Iniciar evaluación ahora');
     }
@@ -2474,7 +2511,36 @@ function verDetalle(id, nombre, evaluacionId) {
             `<div class="d-flex justify-content-between small py-1 border-bottom"><span class="text-muted">${k}</span><strong>${v} servicios</strong></div>`
         ).join('') : '');
 
+        var cierreBannerHtml = '';
+        if (foundEval && (foundEval.cerrado_con_firmas || foundEval.responsable_nombre)) {
+            cierreBannerHtml = `
+            <div class="card border-0 shadow-sm mb-3" style="background:#f0fdf4; border-left:5px solid #10b981 !important; border-radius:10px;">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
+                    <div>
+                        <h6 class="font-weight-bold text-success mb-1">
+                            <i class="fa fa-file-signature mr-2"></i>Acta de Cierre en Terreno Formalmente Firmada
+                        </h6>
+                        <div class="small text-dark">
+                            <strong>Receptor del Centro:</strong> ${foundEval.responsable_nombre || 'Responsable'} ${foundEval.responsable_cargo ? '<span class="text-muted">(' + foundEval.responsable_cargo + ')</span>' : ''}
+                        </div>
+                        <div class="small text-dark">
+                            <strong>Evaluadores IPS:</strong> ${foundEval.evaluador || 'Equipo de Planificación'}
+                        </div>
+                        <div class="small text-muted mt-1">
+                            <i class="fa fa-check-circle text-success mr-1"></i>Relevamiento cerrado con <strong>${foundEval.progreso || 100}%</strong> de avance.
+                        </div>
+                    </div>
+                    <div>
+                        <a href="/riiss/evaluaciones/${activeEvalId}" class="btn btn-success btn-sm font-weight-bold shadow-sm">
+                            <i class="fa fa-file-contract mr-1"></i>Ver Acta & Dictamen
+                        </a>
+                    </div>
+                </div>
+            </div>`;
+        }
+
         $('#modalEstBody').html(`
+        ${cierreBannerHtml}
         <div class="row">
             <div class="col-md-5">
                 <h6 class="font-weight-bold text-danger mb-3">Datos del establecimiento</h6>
