@@ -172,13 +172,13 @@
 
     {{-- Título Principal --}}
     <div class="title-box">
-        <div class="main-title">ACTA DE CONSTANCIA Y CIERRE DE RELEVAMIENTO EN TERRENO</div>
+        <div class="main-title">ACTA DE CONSTANCIA DE VISITA Y RELEVAMIENTO TÉCNICO EN TERRENO</div>
         <div class="text-primary font-weight-bold" style="font-size: 9.5px;">POLÍTICA DE REDES INTEGRADAS E INTEGRALES DE SERVICIOS DE SALUD (RIISS)</div>
-        <div class="text-muted font-weight-bold" style="font-size: 8.5px;">MÓDULO N° 1: CARTERA DE SERVICIOS DE SALUD Y CAPACIDAD RESOLUTIVA</div>
+        <div class="text-muted font-weight-bold" style="font-size: 8.5px;">MÓDULO N° 1: RELEVAMIENTO DE CARTERA DE SERVICIOS Y CAPACIDAD RESOLUTIVA</div>
     </div>
 
     {{-- I. Datos del Establecimiento --}}
-    <div class="section-heading">I. Identificación del Establecimiento Auditado</div>
+    <div class="section-heading">I. Identificación del Establecimiento y de la Visita</div>
     <table class="data-table">
         <tr>
             <th style="width: 22%;">Establecimiento:</th>
@@ -187,7 +187,7 @@
             <td style="width: 22%;">{{ $est->id_establecimiento }}</td>
         </tr>
         <tr>
-            <th>Tipología Oficial:</th>
+            <th>Tipología Declarada:</th>
             <td>{{ $est->tipologia_clasificacion }}</td>
             <th>Complejidad:</th>
             <td><strong class="text-primary">{{ $est->complejidad }}</strong></td>
@@ -207,62 +207,58 @@
     </table>
 
     {{-- II. Declaración --}}
-    <div class="section-heading">II. Declaración Institucional y Objeto de la Visita</div>
+    <div class="section-heading">II. Recepción y Constancia de la Visita Técnica</div>
     <p class="text-justify" style="margin: 4px 0 8px 0;">
-        En el marco de la implementación progresiva de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong> —que comprende 9 módulos estratégicos de gobernanza sanitaria—, el equipo técnico comisionado por la <strong>Dirección de Planificación del IPS</strong> se constituyó formalmente en las instalaciones del establecimiento para la verificación técnica, auditoría in situ y consolidación de la oferta prestacional para el <strong>Módulo 1: Cartera de Servicios de Salud y Capacidad Resolutiva</strong>.
+        En la fecha y hora indicadas, la autoridad o responsable del establecimiento de salud recibió formalmente a los profesionales comisionados por la <strong>Dirección de Planificación del Instituto de Previsión Social (IPS)</strong>, en el marco de la implementación técnica de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong>. Ambas partes procedieron de manera conjunta al recorrido de las instalaciones, la verificación in situ de los servicios y el levantamiento de información para el <strong>Módulo 1: Cartera de Servicios de Salud y Capacidad Resolutiva</strong>.
     </p>
 
-    {{-- III. Resultados --}}
-    <div class="section-heading">III. Resultados del Relevamiento y Dictamen Técnico</div>
+    {{-- III. Alcance del Relevamiento --}}
+    <div class="section-heading">III. Alcance del Relevamiento de Campo</div>
     <table class="kpi-table">
         <tr>
             <td style="width: 33%; padding-right: 4px;">
                 <div class="kpi-card">
-                    <div class="text-muted font-weight-bold" style="font-size: 8px;">COBERTURA AUDITADA</div>
-                    <div class="kpi-val text-primary">{{ $progreso }}%</div>
-                    <div class="text-muted" style="font-size: 8px;">{{ $respondidas }} de {{ $totalPreguntas }} preguntas</div>
+                    <div class="text-muted font-weight-bold" style="font-size: 8px;">ÍTEMS AUDITADOS</div>
+                    <div class="kpi-val text-primary">{{ $respondidas }} de {{ $totalPreguntas }}</div>
+                    <div class="text-muted" style="font-size: 8px;">Preguntas técnicas verificadas</div>
                 </div>
             </td>
             <td style="width: 34%; padding: 0 2px;">
                 <div class="kpi-card">
-                    <div class="text-muted font-weight-bold" style="font-size: 8px;">CUMPLIMIENTO DE CARTERA</div>
-                    <div class="kpi-val text-success">{{ $evaluacion->porcentaje_cumplimiento ?? $progreso }}%</div>
-                    <div class="text-muted" style="font-size: 8px;">Requisitos según tipología</div>
+                    <div class="text-muted font-weight-bold" style="font-size: 8px;">COBERTURA DEL RELEVAMIENTO</div>
+                    <div class="kpi-val text-primary">{{ $progreso }}%</div>
+                    <div class="text-muted" style="font-size: 8px;">Cuestionario completado</div>
                 </div>
             </td>
             <td style="width: 33%; padding-left: 4px;">
                 <div class="kpi-card">
-                    <div class="text-muted font-weight-bold" style="font-size: 8px;">DICTAMEN TÉCNICO</div>
-                    <div class="kpi-val {{ $clasificacion === 'CUMPLE' ? 'text-success' : ($clasificacion === 'CUMPLE_PARCIALMENTE' ? 'text-warning' : 'text-danger') }}" style="font-size: 11px;">
-                        {{ str_replace('_', ' ', $clasificacion) }}
+                    <div class="text-muted font-weight-bold" style="font-size: 8px;">ESTADO DE LA VISITA</div>
+                    <div class="kpi-val text-success" style="font-size: 11px;">
+                        RELEVAMIENTO CONCLUIDO
                     </div>
-                    <div class="text-muted" style="font-size: 8px;">Veredicto de Cartera</div>
+                    <div class="text-muted" style="font-size: 8px;">Jornada presencial en terreno</div>
                 </div>
             </td>
         </tr>
     </table>
 
-    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 6px; border-radius: 4px; font-size: 9.5px; margin-bottom: 6px;">
-        <strong>Veredicto:</strong> {{ $veredicto }}
-    </div>
-
     @if($evaluacion->cierre_observaciones)
-    <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-left: 3px solid #f59e0b; padding: 5px 8px; font-size: 9px; margin-bottom: 6px;">
-        <strong>Observaciones y Acuerdos de Campo:</strong> {{ $evaluacion->cierre_observaciones }}
+    <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-left: 3px solid #1a237e; padding: 5px 8px; font-size: 9px; margin-bottom: 6px;">
+        <strong>Observaciones y Acuerdos de la Jornada de Campo:</strong> {{ $evaluacion->cierre_observaciones }}
     </div>
     @endif
 
     {{-- IV. Rúbricas y Firmas --}}
-    <div class="section-heading">IV. Constancia de Conformidad y Rúbricas Digitales</div>
+    <div class="section-heading">IV. Constancia de Conformidad y Rúbricas Digitales de la Visita</div>
     <p style="font-size: 8.5px; color: #475569; margin: 3px 0 6px 0;">
-        Las partes intervinientes ratifican la veracidad de los datos relevados en terreno, rubricando en señal de plena conformidad:
+        Las partes intervinientes ratifican la realización efectiva de la visita técnica presencial y la recepción conforme del equipo comisionado, rubricando al pie en señal de constancia y validación de la jornada de relevamiento de campo:
     </p>
 
     <table class="signatures-table">
         <tr>
             <td class="signature-box" style="padding-right: 8px;">
                 <div class="font-weight-bold text-uppercase" style="font-size: 8.5px; color: #92400e; border-bottom: 1px solid #fde68a; padding-bottom: 2px;">
-                    POR EL ESTABLECIMIENTO AUDITADO (RECEPTOR LOCAL)
+                    POR EL ESTABLECIMIENTO (RECEPCIÓN Y CONFORMIDAD)
                 </div>
                 <div style="height: 75px; text-align: center; padding: 4px 0;">
                     @if($evaluacion->responsable_firma)

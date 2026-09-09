@@ -1545,20 +1545,20 @@
                         {{-- Título Principal --}}
                         <div class="text-center my-3 py-2" style="background:#f8fafc; border-radius:8px; border-top:2px solid #1a237e; border-bottom:2px solid #1a237e;">
                             <h4 class="font-weight-bold text-uppercase mb-1" style="color:#0f172a; letter-spacing:0.5px; font-size:1.25rem;">
-                                ACTA DE CONSTANCIA Y CIERRE DE RELEVAMIENTO EN TERRENO
+                                ACTA DE CONSTANCIA DE VISITA Y RELEVAMIENTO TÉCNICO EN TERRENO
                             </h4>
                             <div class="font-weight-bold text-primary small text-uppercase" style="letter-spacing:0.4px;">
                                 POLÍTICA DE REDES INTEGRADAS E INTEGRALES DE SERVICIOS DE SALUD (RIISS)
                             </div>
                             <div class="text-muted font-weight-bold" style="font-size:0.85rem;">
-                                MÓDULO N° 1: CARTERA DE SERVICIOS DE SALUD Y CAPACIDAD RESOLUTIVA
+                                MÓDULO N° 1: RELEVAMIENTO DE CARTERA DE SERVICIOS Y CAPACIDAD RESOLUTIVA
                             </div>
                         </div>
 
                         {{-- I. Datos del Establecimiento --}}
                         <div class="mb-3">
                             <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-2" style="font-size:0.88rem; letter-spacing:0.3px;">
-                                I. IDENTIFICACIÓN DEL ESTABLECIMIENTO AUDITADO
+                                I. IDENTIFICACIÓN DEL ESTABLECIMIENTO Y DE LA VISITA
                             </h6>
                             <div class="row" style="font-size: 0.88rem;">
                                 <div class="col-12 col-md-6 mb-2">
@@ -1573,7 +1573,7 @@
                                 </div>
                                 <div class="col-12 col-md-6 mb-2">
                                     <div class="p-3 border rounded bg-light h-100">
-                                        <span class="text-muted small d-block font-weight-bold text-uppercase">Clasificación & Complejidad</span>
+                                        <span class="text-muted small d-block font-weight-bold text-uppercase">Clasificación Declarada</span>
                                         <div class="d-flex align-items-center flex-wrap my-1" style="gap:6px;">
                                             <span id="actaEstComplejidad">—</span>
                                             <span class="badge badge-secondary px-2 py-1" id="actaEstTipologia">—</span>
@@ -1587,48 +1587,48 @@
                             </div>
                         </div>
 
-                        {{-- II. Marco Institucional y Declaración --}}
+                        {{-- II. Marco Institucional y Recepción --}}
                         <div class="mb-3">
                             <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-2" style="font-size:0.88rem; letter-spacing:0.3px;">
-                                II. DECLARACIÓN INSTITUCIONAL Y OBJETO DE LA VISITA
+                                II. RECEPCIÓN Y CONSTANCIA DE LA VISITA TÉCNICA
                             </h6>
                             <p class="text-justify mb-2" style="font-size:0.88rem; line-height:1.55; color:#334155;">
-                                En el marco del proceso de implementación de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong> —que comprende 9 módulos estructurados para la articulación, categorización y gobernanza de la red sanitaria del Instituto de Previsión Social—, el equipo técnico comisionado por la <strong>Dirección de Planificación</strong> se constituyó formalmente en las instalaciones del establecimiento arriba individualizado, a efectos de efectuar la verificación técnica, auditoría in situ y consolidación de la oferta prestacional para el <strong>Módulo 1: Cartera de Servicios de Salud y Capacidad Resolutiva</strong>.
+                                En la fecha y hora indicadas, la autoridad o responsable del establecimiento de salud recibió formalmente a los profesionales comisionados por la <strong>Dirección de Planificación del Instituto de Previsión Social (IPS)</strong>, en el marco de la implementación técnica de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong>. Ambas partes procedieron de manera conjunta al recorrido de las instalaciones, la verificación in situ de los servicios en funcionamiento y el levantamiento de información para el <strong>Módulo 1: Cartera de Servicios de Salud y Capacidad Resolutiva</strong>.
                             </p>
                         </div>
 
-                        {{-- III. Resultados y Dictamen Técnico --}}
+                        {{-- III. Alcance del Relevamiento --}}
                         <div class="mb-3">
                             <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-2" style="font-size:0.88rem; letter-spacing:0.3px;">
-                                III. RESULTADOS DEL RELEVAMIENTO Y DICTAMEN TÉCNICO
+                                III. ALCANCE DEL RELEVAMIENTO DE CAMPO
                             </h6>
                             <div class="row align-items-center my-2">
                                 <div class="col-12 col-md-4 text-center mb-2 mb-md-0">
                                     <div class="p-3 border rounded bg-light">
-                                        <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.75rem;">Cobertura de Relevamiento</small>
-                                        <div class="h3 font-weight-bold text-primary mb-0" id="actaProgresoPct">0%</div>
-                                        <small class="text-muted" id="actaPreguntasResp">0 / 0 preguntas auditadas</small>
+                                        <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.75rem;">Ítems Auditados</small>
+                                        <div class="h4 font-weight-bold text-primary mb-0 mt-1" id="actaPreguntasResp">0 de 0</div>
+                                        <small class="text-muted">Preguntas técnicas verificadas</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-4 text-center mb-2 mb-md-0">
                                     <div class="p-3 border rounded bg-light">
-                                        <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.75rem;">Cumplimiento de Cartera</small>
-                                        <div class="h3 font-weight-bold text-success mb-0" id="actaCumplimientoPct">0%</div>
-                                        <small class="text-muted">Servicios según tipología</small>
+                                        <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.75rem;">Cobertura del Relevamiento</small>
+                                        <div class="h3 font-weight-bold text-primary mb-0" id="actaProgresoPct">0%</div>
+                                        <small class="text-muted">Cuestionario completado</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-4 text-center">
                                     <div class="p-3 border rounded bg-light">
-                                        <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.75rem;">Dictamen Institucional</small>
-                                        <div class="h4 font-weight-bold text-uppercase mb-0 mt-1" id="actaDictamenBadge">—</div>
+                                        <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.75rem;">Estado de la Visita</small>
+                                        <div class="h5 font-weight-bold text-success text-uppercase mb-0 mt-1">
+                                            RELEVAMIENTO CONCLUIDO
+                                        </div>
+                                        <small class="text-muted">Jornada presencial en terreno</small>
                                     </div>
                                 </div>
                             </div>
-                            <div class="p-3 rounded bg-light border text-dark mt-2" id="actaVeredictoTexto" style="font-size:0.85rem; line-height:1.45;">
-                                —
-                            </div>
-                            <div id="actaObservacionesBox" class="p-3 rounded bg-white border mt-2 d-none" style="border-left:4px solid #f59e0b !important;">
-                                <strong class="text-dark small d-block mb-1"><i class="fa fa-comment-dots text-warning mr-1"></i>Observaciones y Acuerdos Asentados en Terreno:</strong>
+                            <div id="actaObservacionesBox" class="p-3 rounded bg-white border mt-2 d-none" style="border-left:4px solid #1a237e !important;">
+                                <strong class="text-dark small d-block mb-1"><i class="fa fa-comment-dots text-primary mr-1"></i>Observaciones y Acuerdos Asentados en Terreno:</strong>
                                 <span class="small text-muted" id="actaObservacionesTexto">—</span>
                             </div>
                         </div>
@@ -1636,10 +1636,10 @@
                         {{-- IV. Rúbricas y Constancia de Conformidad --}}
                         <div class="mb-3">
                             <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-3" style="font-size:0.88rem; letter-spacing:0.3px;">
-                                IV. CONSTANCIA DE CONFORMIDAD Y RÚBRICAS DIGITALES EN TERRENO
+                                IV. CONSTANCIA DE CONFORMIDAD Y RÚBRICAS DIGITALES DE LA VISITA
                             </h6>
                             <p class="small text-muted mb-3" style="font-size:0.82rem; line-height:1.4;">
-                                Las partes intervinientes ratifican la veracidad de los datos consignados en el relevamiento presencial, estampando sus firmas digitales en señal de plena conformidad y cierre de la auditoría técnica de campo:
+                                Las partes intervinientes ratifican la realización efectiva de la visita técnica presencial y la recepción conforme del equipo comisionado, rubricando al pie en señal de constancia y validación de la jornada de relevamiento de campo:
                             </p>
 
                             <div class="row">
@@ -1648,7 +1648,7 @@
                                     <div class="p-3 border rounded h-100 d-flex flex-column justify-content-between text-center" style="background:#f8fafc; border-color:#cbd5e1 !important; border-radius:10px;">
                                         <div class="border-bottom pb-2 mb-2">
                                             <span class="badge badge-warning text-dark font-weight-bold px-2 py-1 text-uppercase" style="font-size:0.72rem;">
-                                                <i class="fa fa-user-tie mr-1"></i>RECEPTOR / RESPONSABLE LOCAL
+                                                <i class="fa fa-user-tie mr-1"></i>POR EL ESTABLECIMIENTO (RECEPCIÓN Y CONFORMIDAD)
                                             </span>
                                         </div>
                                         <div class="my-2 p-2 bg-white rounded border d-flex align-items-center justify-content-center" style="min-height:100px;">
@@ -2923,13 +2923,7 @@ function abrirModalActa(evalId) {
         $('#actaFechaCierre').text(vis.fecha_hora_cierre || vis.fecha || '—');
 
         $('#actaProgresoPct').text((vis.progreso || 0) + '%');
-        $('#actaPreguntasResp').text((vis.respondidas || 0) + ' de ' + (vis.total_preguntas || 0) + ' preguntas auditadas');
-        $('#actaCumplimientoPct').text((vis.cumplimiento || 0) + '%');
-
-        var clasif = vis.clasificacion || 'PENDIENTE';
-        var badgeClass = clasif === 'CUMPLE' ? 'text-success' : (clasif === 'CUMPLE_PARCIALMENTE' ? 'text-warning' : 'text-danger');
-        $('#actaDictamenBadge').attr('class', 'h5 font-weight-bold text-uppercase mb-0 mt-1 ' + badgeClass).text(clasif.replace(/_/g, ' '));
-        $('#actaVeredictoTexto').text(vis.veredicto || 'Relevamiento formalizado para el Módulo 1 de la Política RIISS.');
+        $('#actaPreguntasResp').text((vis.respondidas || 0) + ' de ' + (vis.total_preguntas || 0));
 
         if (vis.observaciones && vis.observaciones.trim() !== '') {
             $('#actaObservacionesTexto').text(vis.observaciones);
