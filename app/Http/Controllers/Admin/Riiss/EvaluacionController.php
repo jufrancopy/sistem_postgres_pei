@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin\Riiss;
 use App\Http\Controllers\Controller;
 use App\Models\Riiss\Establecimiento;
 use App\Models\Riiss\Evaluacion;
+use App\Models\Riiss\ValidacionEspecialidadRegistro;
+use App\Models\Riiss\SesionValidador;
+use App\Models\RiissEspecialidad;
 use App\Models\User;
 use App\Services\CarteraMatchingService;
 use App\Services\FormularioDinamicoService;
@@ -605,11 +608,39 @@ class EvaluacionController extends Controller
         $this->authorizeEvaluacion($evaluacion);
         $evaluacion->load(['establecimiento.especialidades', 'respuestas.pregunta.seccion', 'gapAnalysis', 'cerradoPor']);
 
+        $est = $evaluacion->establecimiento;
+
+        // Validaciones existentes para las especialidades de este establecimiento
+        $validacionesEspecialidades = ValidacionEspecialidadRegistro::where('establecimiento_id', $est->id_establecimiento)
+            ->with('sesionValidador')
+            ->get()
+            ->keyBy('especialidad_id');
+
+        // Especialidades añadidas en terreno que no estaban originalmente
+        $especialidadesAgregadas = [];
+        foreach ($validacionesEspecialidades as $valReg) {
+            if ($valReg->es_agregada && !$est->especialidades->contains('id', $valReg->especialidad_id)) {
+                $espModel = RiissEspecialidad::find($valReg->especialidad_id);
+                if ($espModel) {
+                    $especialidadesAgregadas[] = $espModel;
+                }
+            }
+        }
+
+        // Sesión de validación activa para el área/departamento del establecimiento
+        $sesionActiva = SesionValidador::where('estado', 'activo')
+            ->where(function($q) use ($est) {
+                $q->where('area_gestion', $est->area_gestion)
+                  ->orWhereNull('area_gestion');
+            })
+            ->latest()
+            ->first();
+
         if (request()->expectsJson()) {
             return response()->json(['ok' => true, 'data' => $evaluacion]);
         }
 
-        return view('admin.riiss.evaluaciones.show', compact('evaluacion'));
+        return view('admin.riiss.evaluaciones.show', compact('evaluacion', 'validacionesEspecialidades', 'especialidadesAgregadas', 'sesionActiva'));
     }
 
     /**

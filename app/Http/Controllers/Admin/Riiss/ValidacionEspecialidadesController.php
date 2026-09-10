@@ -107,6 +107,22 @@ class ValidacionEspecialidadesController extends Controller
             'created_by_user_id'  => Auth::id(),
         ]);
 
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Enlace generado con éxito para {$sesion->analista_nombre}.",
+                'data'    => [
+                    'id'            => $sesion->id,
+                    'token'         => $sesion->token,
+                    'codigo_acceso' => $sesion->codigo_acceso,
+                    'url_portal'    => url('/riiss/portal-validador/' . $sesion->token),
+                    'analista'      => $sesion->analista_nombre,
+                    'area_gestion'  => $sesion->area_gestion,
+                    'departamento'  => $sesion->departamento_filtro ?? 'Todos',
+                ]
+            ]);
+        }
+
         return redirect()->route('riiss.validaciones.index')
             ->with('success', "Enlace generado con éxito para {$sesion->analista_nombre}. Código de Acceso: {$sesion->codigo_acceso}");
     }

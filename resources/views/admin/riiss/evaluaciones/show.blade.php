@@ -374,47 +374,185 @@
             {{-- Tab Especialidades Médicas --}}
             <div class="tab-pane fade" id="tabEspecialidades">
                 <div class="card shadow-sm border-0" style="border-radius:12px;">
-                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap:12px;">
                         <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-2 mr-3 text-primary d-flex align-items-center justify-content-center" style="width:38px; height:38px;">
+                            <div class="rounded-circle bg-light p-2 mr-3 text-primary d-flex align-items-center justify-content-center shadow-xs" style="width:42px; height:42px;">
                                 <i class="fa fa-stethoscope fa-lg"></i>
                             </div>
                             <div>
-                                <h6 class="font-weight-bold text-dark mb-0" style="font-size:1rem;">
-                                    Especialidades Médicas Registradas
+                                <h6 class="font-weight-bold text-dark mb-0" style="font-size:1.05rem;">
+                                    Especialidades Médicas & Validación en Terreno
                                 </h6>
-                                <small class="text-muted">Servicios y prestaciones de especialidades médicas activas en {{ $est->nombre_oficial }}</small>
+                                <small class="text-muted">Servicios y prestaciones constatadas en {{ $est->nombre_oficial }}</small>
                             </div>
                         </div>
                         <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
-                            <input type="text" id="filtroEspecialidadesShow" class="form-control form-control-sm" placeholder="🔍 Filtrar especialidad..." style="max-width:220px; border-radius:8px;">
-                            <span class="badge badge-primary px-3 py-2 font-weight-bold" style="font-size:0.8rem; border-radius:8px;">
-                                <i class="fa fa-user-md mr-1"></i> Total: {{ $est->especialidades->count() }} Especialidades
-                            </span>
+                            <input type="text" id="filtroEspecialidadesShow" class="form-control form-control-sm" placeholder="🔍 Filtrar especialidad..." style="max-width:200px; border-radius:8px;">
+                            <button type="button" class="btn btn-primary btn-sm font-weight-bold shadow-sm" onclick="abrirModalGenerarValidacion()" style="border-radius:8px;">
+                                <i class="fa fa-link mr-1"></i> Generar Enlace de Validación
+                            </button>
+                            <a href="{{ route('riiss.validaciones.index') }}" target="_blank" class="btn btn-outline-secondary btn-sm font-weight-bold shadow-xs" style="border-radius:8px;">
+                                <i class="fa fa-clipboard-check mr-1"></i> Panel de Validaciones
+                            </a>
                         </div>
                     </div>
-                    <div class="card-body p-4">
-                        @if($est->especialidades->isEmpty())
-                            <div class="text-center py-5 text-muted">
+
+                    <div class="card-body p-4 bg-light">
+                        @php
+                            $todasEspecialidades = $est->especialidades->sortBy('nombre');
+                            $totalOriginales = $todasEspecialidades->count();
+                            $totalAgregadas = count($especialidadesAgregadas ?? []);
+                            $totalGeneral = $totalOriginales + $totalAgregadas;
+
+                            $validadasActivas = $validacionesEspecialidades->where('estado', 'activa')->count();
+                            $validadasInactivas = $validacionesEspecialidades->where('estado', 'inactiva')->count();
+                            $totalRevisadas = $validacionesEspecialidades->count();
+                            $pendientes = max(0, $totalGeneral - $totalRevisadas);
+                        @endphp
+
+                        {{-- Barra de Resumen KPIs de Validación --}}
+                        <div class="row mb-4">
+                            <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                <div class="bg-white p-3 rounded border shadow-xs text-center h-100" style="border-radius:10px;">
+                                    <small class="text-muted font-weight-bold text-uppercase d-block" style="font-size:0.7rem;">Total Catálogo</small>
+                                    <div class="h4 font-weight-bold text-dark mb-0 mt-1">{{ $totalGeneral }}</div>
+                                    <small class="text-muted" style="font-size:0.75rem;">Especialidades</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                <div class="bg-white p-3 rounded border shadow-xs text-center h-100" style="border-radius:10px; border-left:4px solid #10b981 !important;">
+                                    <small class="text-success font-weight-bold text-uppercase d-block" style="font-size:0.7rem;"><i class="fa fa-check-circle mr-1"></i>Validadas Activas</small>
+                                    <div class="h4 font-weight-bold text-success mb-0 mt-1">{{ $validadasActivas }}</div>
+                                    <small class="text-muted" style="font-size:0.75rem;">En funcionamiento</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                <div class="bg-white p-3 rounded border shadow-xs text-center h-100" style="border-radius:10px; border-left:4px solid #ef4444 !important;">
+                                    <small class="text-danger font-weight-bold text-uppercase d-block" style="font-size:0.7rem;"><i class="fa fa-times-circle mr-1"></i>Inactivas / Bajas</small>
+                                    <div class="h4 font-weight-bold text-danger mb-0 mt-1">{{ $validadasInactivas }}</div>
+                                    <small class="text-muted" style="font-size:0.75rem;">No operativas</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                <div class="bg-white p-3 rounded border shadow-xs text-center h-100" style="border-radius:10px; border-left:4px solid #f59e0b !important;">
+                                    <small class="text-warning font-weight-bold text-uppercase d-block" style="font-size:0.7rem;"><i class="fa fa-clock mr-1"></i>Pendientes</small>
+                                    <div class="h4 font-weight-bold text-warning mb-0 mt-1">{{ $pendientes }}</div>
+                                    <small class="text-muted" style="font-size:0.75rem;">Por auditar</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Grid de Especialidades --}}
+                        @if($totalGeneral === 0)
+                            <div class="text-center py-5 text-muted bg-white rounded border">
                                 <i class="fa fa-user-md fa-3x mb-3 text-secondary" style="opacity: 0.35;"></i>
-                                <h6 class="font-weight-bold mb-1">Sin especialidades registradas</h6>
+                                <h6 class="font-weight-bold text-dark mb-1">Sin especialidades registradas</h6>
                                 <small>Este establecimiento no posee especialidades médicas registradas actualmente.</small>
                             </div>
                         @else
                             <div class="row" id="gridEspecialidadesShow">
-                                @foreach($est->especialidades->sortBy('nombre') as $esp)
+                                {{-- Especialidades del catálogo --}}
+                                @foreach($todasEspecialidades as $esp)
+                                    @php
+                                        $val = $validacionesEspecialidades->get($esp->id);
+                                        $esValidada = !empty($val);
+                                        $isActiva = $esValidada ? ($val->estado === 'activa') : false;
+                                        $isInactiva = $esValidada ? ($val->estado === 'inactiva') : false;
+
+                                        $borderAccent = $isActiva ? '#10b981' : ($isInactiva ? '#ef4444' : '#cbd5e1');
+                                        $iconColor = $isActiva ? 'text-success' : ($isInactiva ? 'text-danger' : 'text-primary');
+                                    @endphp
                                     <div class="col-lg-3 col-md-4 col-sm-6 mb-3 item-especialidad-show" data-nombre="{{ strtolower($esp->nombre) }}">
-                                        <div class="p-3 rounded border bg-light h-100 d-flex align-items-center shadow-xs" style="border-radius:10px; transition: all 0.2s;">
-                                            <div class="rounded-circle bg-white text-primary p-2 mr-3 shadow-xs d-flex align-items-center justify-content-center" style="width:36px; height:36px; flex-shrink:0;">
-                                                <i class="fa fa-stethoscope"></i>
+                                        <div class="p-3 rounded border bg-white h-100 d-flex flex-column justify-content-between shadow-xs" style="border-radius:12px; border-left:4px solid {{ $borderAccent }} !important; transition: transform 0.2s;">
+                                            <div>
+                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                    <span class="rounded-circle bg-light p-2 {{ $iconColor }} shadow-none d-flex align-items-center justify-content-center" style="width:32px; height:32px; flex-shrink:0;">
+                                                        <i class="fa fa-stethoscope"></i>
+                                                    </span>
+                                                    @if($isActiva)
+                                                        <span class="badge badge-success font-weight-bold px-2 py-1" style="font-size:0.7rem; border-radius:6px;">
+                                                            <i class="fa fa-check-circle mr-1"></i>Validada Activa
+                                                        </span>
+                                                    @elseif($isInactiva)
+                                                        <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size:0.7rem; border-radius:6px;">
+                                                            <i class="fa fa-times-circle mr-1"></i>Inactiva
+                                                        </span>
+                                                    @else
+                                                        <span class="badge badge-secondary font-weight-bold px-2 py-1" style="font-size:0.7rem; border-radius:6px; background-color:#94a3b8;">
+                                                            <i class="fa fa-hourglass-half mr-1"></i>Sin Validar
+                                                        </span>
+                                                    @endif
+                                                </div>
+
+                                                <div class="font-weight-bold text-dark" style="font-size:0.88rem; line-height:1.3;" title="{{ $esp->nombre }}">
+                                                    {{ $esp->nombre }}
+                                                </div>
+                                                @if(!empty($esp->codigo))
+                                                    <small class="text-muted font-weight-bold" style="font-size:0.7rem;">Cód: {{ $esp->codigo }}</small>
+                                                @endif
                                             </div>
-                                            <div style="min-width:0;">
-                                                <div class="font-weight-bold text-dark small text-truncate" title="{{ $esp->nombre }}">{{ $esp->nombre }}</div>
-                                                <small class="text-success" style="font-size:0.72rem;"><i class="fa fa-check-circle mr-1"></i>Activa en centro</small>
+
+                                            <div class="pt-2 border-top mt-2" style="font-size:0.72rem;">
+                                                @if($esValidada)
+                                                    <div class="text-muted">
+                                                        <i class="fa fa-user-check text-info mr-1"></i>Por: <strong>{{ $val->validado_por ?: ($val->sesionValidador->analista_nombre ?? 'Auditor') }}</strong>
+                                                    </div>
+                                                    @if($val->validado_at)
+                                                        <div class="text-muted"><i class="fa fa-calendar-check mr-1"></i>{{ $val->validado_at->format('d/m/Y H:i') }}</div>
+                                                    @endif
+                                                    @if(!empty($val->justificacion))
+                                                        <div class="text-secondary font-italic mt-1" style="font-size:0.68rem; line-height:1.2;">
+                                                            "{{ $val->justificacion }}"
+                                                        </div>
+                                                    @endif
+                                                @else
+                                                    <div class="text-muted font-italic">
+                                                        <i class="fa fa-info-circle mr-1"></i>Declarada en catálogo
+                                                    </div>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
                                 @endforeach
+
+                                {{-- Especialidades agregadas en terreno --}}
+                                @if(!empty($especialidadesAgregadas))
+                                    @foreach($especialidadesAgregadas as $espAgr)
+                                        @php
+                                            $valAgr = $validacionesEspecialidades->get($espAgr->id);
+                                            $isActiva = $valAgr ? ($valAgr->estado === 'activa') : true;
+                                        @endphp
+                                        <div class="col-lg-3 col-md-4 col-sm-6 mb-3 item-especialidad-show" data-nombre="{{ strtolower($espAgr->nombre) }}">
+                                            <div class="p-3 rounded border bg-white h-100 d-flex flex-column justify-content-between shadow-xs" style="border-radius:12px; border-left:4px solid #f59e0b !important;">
+                                                <div>
+                                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                                        <span class="rounded-circle bg-warning text-dark p-2 shadow-none d-flex align-items-center justify-content-center" style="width:32px; height:32px; flex-shrink:0;">
+                                                            <i class="fa fa-plus-circle"></i>
+                                                        </span>
+                                                        <span class="badge badge-warning text-dark font-weight-bold px-2 py-1" style="font-size:0.7rem; border-radius:6px;">
+                                                            <i class="fa fa-map-marker-alt mr-1"></i>Agregada en Terreno
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="font-weight-bold text-dark" style="font-size:0.88rem; line-height:1.3;" title="{{ $espAgr->nombre }}">
+                                                        {{ $espAgr->nombre }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="pt-2 border-top mt-2" style="font-size:0.72rem;">
+                                                    <div class="text-muted">
+                                                        <i class="fa fa-user-check text-info mr-1"></i>Por: <strong>{{ $valAgr->validado_por ?: ($valAgr->sesionValidador->analista_nombre ?? 'Auditor') }}</strong>
+                                                    </div>
+                                                    @if($valAgr && $valAgr->justificacion)
+                                                        <div class="text-secondary font-italic mt-1" style="font-size:0.68rem;">
+                                                            "{{ $valAgr->justificacion }}"
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
                             </div>
                         @endif
                     </div>
@@ -851,6 +989,124 @@
     </div>
 </div>
 
+{{-- Modal Generar Enlace de Validación de Especialidades --}}
+<div class="modal fade" id="modalGenerarValidacionEspecialidades" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(60deg, #00acc1, #26c6da); padding: 18px 24px;">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-white text-info d-inline-flex align-items-center justify-content-center mr-3 shadow-sm" style="width: 38px; height: 38px; font-size: 16px;">
+                        <i class="fa fa-link"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold mb-0 text-white" style="font-size: 1.1rem; letter-spacing: 0.2px;">
+                            Generar Enlace de Validación
+                        </h5>
+                        <span class="small text-white-50">Portal de Validación de Especialidades Médicas</span>
+                    </div>
+                </div>
+                <button type="button" class="close text-white opacity-90" data-dismiss="modal" aria-label="Cerrar" style="outline: none;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body p-4">
+                {{-- Formulario para Generar Enlace --}}
+                <form id="formGenerarEnlaceValidacion" onsubmit="ejecutarGeneracionEnlace(event)">
+                    @csrf
+                    <div class="alert alert-info py-2 px-3 mb-3 border-0" style="border-radius: 8px; font-size: 12.5px; background-color: #f0f9ff; color: #0369a1;">
+                        <i class="fa fa-info-circle mr-1"></i> Este enlace permitirá a los auditores y directores técnicos validar las especialidades médicas de <strong>{{ $est->nombre_oficial }}</strong> en tiempo real.
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">
+                            Nombre del Analista / Validador <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" name="analista_nombre" id="genValNombre" class="form-control" value="{{ auth()->user()->name ?? 'Auditor Técnico' }}" required style="border-radius: 8px; font-size: 13px;">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">Cargo / Función</label>
+                            <input type="text" name="analista_cargo" id="genValCargo" class="form-control" value="Analista Técnico Relevador" style="border-radius: 8px; font-size: 13px;">
+                        </div>
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">Teléfono / WhatsApp</label>
+                            <input type="text" name="analista_telefono" id="genValTelefono" class="form-control" placeholder="+595..." style="border-radius: 8px; font-size: 13px;">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">Área de Gestión <span class="text-danger">*</span></label>
+                            <select name="area_gestion" id="genValArea" class="form-control" required style="border-radius: 8px; font-size: 13px;">
+                                <option value="AREA INTERIOR" {{ ($est->area_gestion ?? '') === 'AREA CENTRAL' ? '' : 'selected' }}>🏥 Área Interior</option>
+                                <option value="AREA CENTRAL" {{ ($est->area_gestion ?? '') === 'AREA CENTRAL' ? 'selected' : '' }}>🏙️ Área Central</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">Departamento</label>
+                            <input type="text" name="departamento_filtro" id="genValDepto" class="form-control" value="{{ $est->departamento }}" readonly style="border-radius: 8px; font-size: 13px; background-color: #f8fafc;">
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">Notas u Observaciones (Opcional)</label>
+                        <textarea name="notas" id="genValNotas" class="form-control" rows="2" placeholder="Instrucciones para la jornada técnica..." style="border-radius: 8px; font-size: 13px;">Validación técnica de especialidades para {{ $est->nombre_oficial }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end" style="gap: 8px;">
+                        <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">Cancelar</button>
+                        <button type="submit" class="btn btn-primary font-weight-bold px-4" id="btnSubmitGenEnlace" style="border-radius: 8px; background: linear-gradient(60deg, #00acc1, #00838f); border: none;">
+                            <i class="fa fa-paper-plane mr-1"></i> Generar Enlace
+                        </button>
+                    </div>
+                </form>
+
+                {{-- Resultado generado exitosamente --}}
+                <div id="resultadoEnlaceGenerado" style="display: none;">
+                    <div class="text-center py-2">
+                        <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-2 shadow-sm" style="width: 48px; height: 48px; font-size: 22px;">
+                            <i class="fa fa-check"></i>
+                        </div>
+                        <h6 class="font-weight-bold text-dark mb-1">¡Enlace de Validación Generado!</h6>
+                        <p class="text-muted small mb-3">Comparta este enlace o código de acceso con el auditor o responsable del centro:</p>
+                    </div>
+
+                    <div class="p-3 bg-light rounded border mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small font-weight-bold text-muted">Código de Acceso:</span>
+                            <span class="badge badge-dark px-2 py-1 font-weight-bold" id="resCodigoAcceso" style="font-size: 12px; letter-spacing: 0.5px;">VAL-XXXX</span>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="resUrlPortal" class="form-control form-control-sm font-weight-bold text-primary bg-white" readonly>
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-primary btn-sm font-weight-bold" type="button" onclick="copiarUrlPortal()" title="Copiar enlace">
+                                    <i class="fa fa-copy mr-1"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 8px;">
+                        <button type="button" class="btn btn-success btn-sm font-weight-bold" id="btnCompartirWhatsapp" onclick="compartirPorWhatsapp()" style="border-radius: 8px;">
+                            <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+                        </button>
+                        <div>
+                            <a href="#" id="btnIrAlPortal" target="_blank" class="btn btn-info btn-sm font-weight-bold mr-1" style="border-radius: 8px;">
+                                <i class="fa fa-external-link-alt mr-1"></i> Abrir Portal
+                            </a>
+                            <button type="button" class="btn btn-secondary btn-sm font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
@@ -859,7 +1115,79 @@ const EVAL_ID = {{ $evaluacion->id }};
 
 $(document).ready(function() {
     cargarGap();
+
+    // Filtro instantáneo de especialidades
+    $('#filtroEspecialidadesShow').on('input', function() {
+        var query = $(this).val().toLowerCase().trim();
+        $('#gridEspecialidadesShow .item-especialidad-show').each(function() {
+            var nombre = $(this).data('nombre') || '';
+            if (!query || nombre.indexOf(query) !== -1) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
 });
+
+let enlaceGeneradoData = null;
+
+function abrirModalGenerarValidacion() {
+    $('#formGenerarEnlaceValidacion').show();
+    $('#resultadoEnlaceGenerado').hide();
+    $('#modalGenerarValidacionEspecialidades').modal('show');
+}
+
+function ejecutarGeneracionEnlace(e) {
+    e.preventDefault();
+    var form = $('#formGenerarEnlaceValidacion');
+    var btn = $('#btnSubmitGenEnlace');
+
+    btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Generando...');
+
+    $.ajax({
+        url: '{{ route("riiss.validaciones.generar-enlace") }}',
+        method: 'POST',
+        data: form.serialize(),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        success: function(res) {
+            btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Generar Enlace');
+            if (res.success && res.data) {
+                enlaceGeneradoData = res.data;
+                $('#resCodigoAcceso').text(res.data.codigo_acceso);
+                $('#resUrlPortal').val(res.data.url_portal);
+                $('#btnIrAlPortal').attr('href', res.data.url_portal);
+
+                $('#formGenerarEnlaceValidacion').hide();
+                $('#resultadoEnlaceGenerado').fadeIn();
+            } else {
+                alert(res.message || 'Error al generar enlace');
+            }
+        },
+        error: function(xhr) {
+            btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i> Generar Enlace');
+            var err = xhr.responseJSON ? xhr.responseJSON.message : 'Error de comunicación con el servidor';
+            alert('Error: ' + err);
+        }
+    });
+}
+
+function copiarUrlPortal() {
+    var copyText = document.getElementById("resUrlPortal");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value).then(function() {
+        alert("¡Enlace copiado al portapapeles! 📋");
+    });
+}
+
+function compartirPorWhatsapp() {
+    if (!enlaceGeneradoData) return;
+    var estNombre = "{{ $est->nombre_oficial }}";
+    var msg = `*Validación de Especialidades Médicas - IPS RIISS*\n\nEstablecimiento: ${estNombre}\nCódigo de Acceso: ${enlaceGeneradoData.codigo_acceso}\n\nEnlace directo para validar:\n${enlaceGeneradoData.url_portal}`;
+    var url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(msg);
+    window.open(url, '_blank');
+}
 
 function verFotoModal(url, desc, fecha, titulo) {
     if (!url) return;
