@@ -24,6 +24,7 @@ class SesionValidador extends Model
         'analista_telefono',
         'analista_email',
         'departamento_filtro',
+        'area_gestion',
         'estado',
         'notas',
         'firma_digital',

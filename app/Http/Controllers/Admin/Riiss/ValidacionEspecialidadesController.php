@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
 class ValidacionEspecialidadesController extends Controller
 {
     /**
-     * Bandeja Administrativa de Validaciones de Especialidades (Área Interior)
+     * Bandeja Administrativa de Validaciones de Especialidades (Área Interior / Central)
      */
     public function index(Request $request)
     {
@@ -32,25 +32,42 @@ class ValidacionEspecialidadesController extends Controller
             });
         }
 
+        if ($request->filled('area')) {
+            $querySesiones->where('area_gestion', $request->area);
+        }
+
         $sesiones = $querySesiones->paginate(15);
 
-        // Resumen de establecimientos del Área Interior
-        $establecimientosQuery = Establecimiento::query();
-        // Excluir Asunción y Capital si se desea enfocar en Área Interior
-        $departamentos = Establecimiento::distinct()->whereNotNull('departamento')->pluck('departamento')->sort()->values();
+        // Departamentos agrupados por Área de Gestión
+        $deptosInterior = Establecimiento::where('area_gestion', 'AREA INTERIOR')
+            ->distinct()->whereNotNull('departamento')->pluck('departamento')->sort()->values();
+
+        $deptosCentral = Establecimiento::where('area_gestion', 'AREA CENTRAL')
+            ->distinct()->whereNotNull('departamento')->pluck('departamento')->sort()->values();
 
         $totalEstablecimientos = Establecimiento::count();
+        $totalInterior = Establecimiento::where('area_gestion', 'AREA INTERIOR')->count();
+        $totalCentral = Establecimiento::where('area_gestion', 'AREA CENTRAL')->count();
+
         $totalRegistrosValidados = ValidacionEspecialidadRegistro::where('estado', 'activa')->count();
         $totalRegistrosInactivos = ValidacionEspecialidadRegistro::where('estado', 'inactiva')->count();
         $totalConRevision = ValidacionEspecialidadRegistro::distinct('establecimiento_id')->count('establecimiento_id');
 
+        // Nómina de establecimientos para el gestor de clasificación
+        $todosEstablecimientos = Establecimiento::select('id_establecimiento', 'nombre_oficial', 'departamento', 'tipologia_clasificacion', 'area_gestion')
+            ->orderBy('departamento')->orderBy('nombre_oficial')->get();
+
         return view('admin.riiss.especialidades_validacion.index', compact(
             'sesiones',
-            'departamentos',
+            'deptosInterior',
+            'deptosCentral',
             'totalEstablecimientos',
+            'totalInterior',
+            'totalCentral',
             'totalRegistrosValidados',
             'totalRegistrosInactivos',
-            'totalConRevision'
+            'totalConRevision',
+            'todosEstablecimientos'
         ));
     }
 
@@ -65,19 +82,26 @@ class ValidacionEspecialidadesController extends Controller
             'analista_documento'  => 'nullable|string|max:50',
             'analista_telefono'   => 'nullable|string|max:50',
             'analista_email'      => 'nullable|email|max:150',
+            'area_gestion'        => 'required|string|in:AREA INTERIOR,AREA CENTRAL',
             'departamento_filtro' => 'nullable|string|max:100',
             'notas'               => 'nullable|string|max:500',
         ]);
+
+        $areaGestion = $request->area_gestion ?: 'AREA INTERIOR';
+        $deptoFiltro = ($request->departamento_filtro && !in_array($request->departamento_filtro, ['TODOS', 'TODOS_INTERIOR', 'TODOS_CENTRAL'])) 
+            ? $request->departamento_filtro 
+            : null;
 
         $sesion = SesionValidador::create([
             'token'               => Str::random(40),
             'codigo_acceso'       => 'VAL-' . strtoupper(Str::random(6)),
             'analista_nombre'     => trim($request->analista_nombre),
-            'analista_cargo'      => $request->analista_cargo ? trim($request->analista_cargo) : 'Analista Técnico de Hospitales Área Interior',
+            'analista_cargo'      => $request->analista_cargo ? trim($request->analista_cargo) : ($areaGestion === 'AREA CENTRAL' ? 'Analista Técnico Área Central' : 'Analista Técnico Área Interior'),
             'analista_documento'  => $request->analista_documento ? trim($request->analista_documento) : null,
             'analista_telefono'   => $request->analista_telefono ? trim($request->analista_telefono) : null,
             'analista_email'      => $request->analista_email ? trim($request->analista_email) : null,
-            'departamento_filtro' => ($request->departamento_filtro && $request->departamento_filtro !== 'TODOS') ? $request->departamento_filtro : null,
+            'area_gestion'        => $areaGestion,
+            'departamento_filtro' => $deptoFiltro,
             'notas'               => $request->notas ? trim($request->notas) : null,
             'estado'              => 'activo',
             'created_by_user_id'  => Auth::id(),
@@ -85,6 +109,27 @@ class ValidacionEspecialidadesController extends Controller
 
         return redirect()->route('riiss.validaciones.index')
             ->with('success', "Enlace generado con éxito para {$sesion->analista_nombre}. Código de Acceso: {$sesion->codigo_acceso}");
+    }
+
+    /**
+     * Sincronizar o Cambiar manualmente el Área de Gestión de un Establecimiento (AJAX)
+     */
+    public function actualizarAreaGestion(Request $request)
+    {
+        $request->validate([
+            'establecimiento_id' => 'required|string|exists:establecimientos,id_establecimiento',
+            'area_gestion'       => 'required|in:AREA INTERIOR,AREA CENTRAL',
+        ]);
+
+        $est = Establecimiento::where('id_establecimiento', $request->establecimiento_id)->firstOrFail();
+        $est->area_gestion = $request->area_gestion;
+        $est->save();
+
+        return response()->json([
+            'success'      => true,
+            'message'      => "Establecimiento {$est->nombre_oficial} actualizado a {$est->area_gestion}",
+            'area_gestion' => $est->area_gestion,
+        ]);
     }
 
     /**
@@ -115,8 +160,14 @@ class ValidacionEspecialidadesController extends Controller
             abort(404, 'Enlace de validación inválido o expirado.');
         }
 
-        // Consultar Establecimientos (filtrados si el token tiene dpto específico)
+        // Consultar Establecimientos filtrados estrictamente por el Área de Gestión del Token
         $estQuery = Establecimiento::query()->orderBy('departamento')->orderBy('nombre_oficial');
+
+        if ($sesion->area_gestion) {
+            $estQuery->where('area_gestion', $sesion->area_gestion);
+        } else {
+            $estQuery->where('area_gestion', 'AREA INTERIOR');
+        }
 
         if ($sesion->departamento_filtro) {
             $estQuery->where('departamento', $sesion->departamento_filtro);
@@ -151,8 +202,7 @@ class ValidacionEspecialidadesController extends Controller
         $sesion = SesionValidador::where('token', $token)->orWhere('codigo_acceso', $token)->firstOrFail();
         $est = Establecimiento::where('id_establecimiento', $establecimiento_id)->firstOrFail();
 
-        // 1. Especialidades que actualmente tiene asignadas en riiss_establecimiento_especialidades
-        // Las especialidades provienen directamente de bioestadistica.especialidades_medicas
+        // 1. Especialidades asignadas obtenidas de bioestadistica.especialidades_medicas
         $especialidadesAsignadas = DB::table('riiss_establecimiento_especialidades')
             ->join('bioestadistica.especialidades_medicas', 'riiss_establecimiento_especialidades.especialidad_id', '=', 'bioestadistica.especialidades_medicas.id')
             ->where('riiss_establecimiento_especialidades.establecimiento_id', $est->id_establecimiento)
@@ -186,7 +236,7 @@ class ValidacionEspecialidadesController extends Controller
             ];
         }
 
-        // Agregar especialidades agregadas en terreno que quizás no estaban en la lista inicial
+        // Agregar especialidades agregadas en terreno
         foreach ($validacionesExistentes as $valReg) {
             if ($valReg->es_agregada && !collect($lista)->contains('especialidad_id', $valReg->especialidad_id)) {
                 $espModel = RiissEspecialidad::find($valReg->especialidad_id);
@@ -213,6 +263,7 @@ class ValidacionEspecialidadesController extends Controller
                 'departamento' => $est->departamento,
                 'tipologia'    => $est->tipologia_clasificacion,
                 'complejidad'  => $est->complejidad_label ?? $est->complejidad,
+                'area_gestion' => $est->area_gestion,
             ],
             'especialidades'   => $lista,
         ]);
@@ -246,8 +297,6 @@ class ValidacionEspecialidadesController extends Controller
             ]
         );
 
-        // Si se marca inactiva, sincronizar también en riiss_establecimiento_especialidades si correspondiese
-        // O mantener el registro oficial de la auditoría
         return response()->json([
             'success'  => true,
             'message'  => 'Guardado correctamente',
@@ -310,7 +359,7 @@ class ValidacionEspecialidadesController extends Controller
             ],
             [
                 'estado'              => 'activa',
-                'justificacion'       => $request->justificacion ? trim($request->justificacion) : 'Agregada durante el relevamiento de Área Interior',
+                'justificacion'       => $request->justificacion ? trim($request->justificacion) : 'Agregada durante el relevamiento',
                 'es_agregada'         => true,
                 'sesion_validador_id' => $sesion->id,
                 'validado_por'        => $sesion->analista_nombre,
@@ -375,7 +424,9 @@ class ValidacionEspecialidadesController extends Controller
         $totalEstablecimientos = $registros->pluck('establecimiento_id')->unique()->count();
 
         $institucion = 'INSTITUTO DE PREVISIÓN SOCIAL';
-        $dependencia = 'DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR';
+        $dependencia = ($sesion->area_gestion === 'AREA CENTRAL')
+            ? 'DIRECCIÓN DE HOSPITALES DEL ÁREA CENTRAL'
+            : 'DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR';
 
         $logoPath = public_path('assets/img/ips_logo.png');
         $logoInstitucional = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : null;
@@ -391,7 +442,7 @@ class ValidacionEspecialidadesController extends Controller
             'logoInstitucional'
         ))->setPaper('a4', 'portrait');
 
-        return $pdf->stream("Acta_Validacion_Area_Interior_{$sesion->codigo_acceso}.pdf");
+        return $pdf->stream("Acta_Validacion_{$sesion->codigo_acceso}.pdf");
     }
 
     /**
@@ -410,7 +461,9 @@ class ValidacionEspecialidadesController extends Controller
         $totalEstablecimientos = $registros->pluck('establecimiento_id')->unique()->count();
 
         $institucion = 'INSTITUTO DE PREVISIÓN SOCIAL';
-        $dependencia = 'DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR';
+        $dependencia = ($sesion->area_gestion === 'AREA CENTRAL')
+            ? 'DIRECCIÓN DE HOSPITALES DEL ÁREA CENTRAL'
+            : 'DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR';
 
         $logoPath = public_path('assets/img/ips_logo.png');
         $logoInstitucional = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : null;

@@ -1102,6 +1102,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('validaciones.index');
         Route::post('validaciones-especialidades/generar-enlace', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'generarEnlace'])
             ->name('validaciones.generar-enlace');
+        Route::post('validaciones-especialidades/establecimiento/area-gestion', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'actualizarAreaGestion'])
+            ->name('validaciones.establecimiento.area-gestion');
         Route::delete('validaciones-especialidades/enlace/{id}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'eliminarEnlace'])
             ->name('validaciones.eliminar-enlace');
 
