@@ -685,19 +685,37 @@
 {{-- Modal Ver Foto en Grande / Zoom --}}
 <div class="modal fade" id="modalVerFotoGrande" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius:14px; overflow:hidden; background:#0f172a;">
-            <div class="modal-header py-2 px-3 border-0 d-flex justify-content-between align-items-center">
-                <h6 class="text-white mb-0 font-weight-bold" id="modalFotoGrandeTitulo">Foto de Relevamiento</h6>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px; overflow:hidden; background:#0f172a;">
+            <div class="modal-header py-3 px-4 border-0 d-flex justify-content-between align-items-center" style="background: rgba(15, 23, 42, 0.95);">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-info text-white d-inline-flex align-items-center justify-content-center mr-2 shadow-sm" style="width:32px; height:32px; font-size:14px;">
+                        <i class="fa fa-camera"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-white mb-0 font-weight-bold" id="modalFotoGrandeTitulo" style="font-size:1rem; letter-spacing:0.2px;">Foto de Relevamiento</h6>
+                        <small class="text-white-50" id="modalFotoGrandeSubtitulo">Registro fotográfico del relevamiento</small>
+                    </div>
+                </div>
+                <button type="button" class="close text-white opacity-75 hover-opacity-100 p-2" data-dismiss="modal" aria-label="Close" style="outline:none;">
+                    <span aria-hidden="true" style="font-size:1.6rem;">&times;</span>
                 </button>
             </div>
-            <div class="modal-body p-0 text-center" style="background:#000;">
-                <img id="modalFotoGrandeImg" src="" alt="Foto Relevamiento" style="max-height:75vh; max-width:100%; object-fit:contain;">
+            <div class="modal-body p-0 text-center d-flex align-items-center justify-content-center" style="background:#020617; min-height:350px; max-height:75vh; overflow:hidden;">
+                <img id="modalFotoGrandeImg" src="" alt="Foto Relevamiento" style="max-height:72vh; max-width:100%; object-fit:contain; border-radius:4px; transition:all 0.3s ease;">
             </div>
-            <div class="modal-footer py-2 px-3 border-0 bg-dark text-white d-flex justify-content-between align-items-center">
-                <p class="text-white-50 small mb-0" id="modalFotoGrandeDesc"></p>
-                <button type="button" class="btn btn-sm btn-outline-light" data-dismiss="modal">Cerrar</button>
+            <div class="modal-footer py-3 px-4 border-0 d-flex justify-content-between align-items-center flex-wrap" style="background:#0f172a; gap:10px;">
+                <div class="text-left" style="max-width:70%;">
+                    <p class="text-white font-weight-bold small mb-0" id="modalFotoGrandeDesc" style="line-height:1.4;">Sin descripción</p>
+                    <small class="text-white-50" id="modalFotoGrandeFecha"><i class="fa fa-clock mr-1"></i>--</small>
+                </div>
+                <div class="d-flex align-items-center" style="gap:8px;">
+                    <a id="modalFotoGrandeDescargar" href="#" download target="_blank" class="btn btn-sm btn-outline-light font-weight-bold shadow-sm" style="border-radius:8px;">
+                        <i class="fa fa-download mr-1"></i> Descargar
+                    </a>
+                    <button type="button" class="btn btn-sm btn-primary font-weight-bold px-3 shadow-sm" data-dismiss="modal" style="border-radius:8px;">
+                        Cerrar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1327,10 +1345,14 @@ function eliminarFotoRelevamiento(fotoId) {
     });
 }
 
-function ampliarFoto(url, desc, title) {
+function ampliarFoto(url, desc, title, fecha) {
+    if (!url) return;
     $('#modalFotoGrandeImg').attr('src', url);
     $('#modalFotoGrandeTitulo').text(title || 'Evidencia Fotográfica');
-    $('#modalFotoGrandeDesc').text(desc || 'Sin descripción');
+    $('#modalFotoGrandeSubtitulo').text(fecha ? 'Capturada el ' + fecha : 'Registro en terreno');
+    $('#modalFotoGrandeDesc').text(desc && desc.trim() !== '' ? desc : 'Sin descripción técnica adicional');
+    $('#modalFotoGrandeFecha').html(fecha ? '<i class="fa fa-clock mr-1"></i>' + fecha : '');
+    $('#modalFotoGrandeDescargar').attr('href', url);
     $('#modalVerFotoGrande').modal('show');
 }
 

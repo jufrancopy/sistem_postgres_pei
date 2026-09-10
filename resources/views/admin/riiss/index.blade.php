@@ -1842,6 +1842,45 @@
     </div>
 </div>
 
+{{-- Modal Lightbox para Ver Fotos en Grande --}}
+<div class="modal fade" id="modalFotoEvidencia" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px; overflow:hidden; background:#0f172a;">
+            <div class="modal-header py-3 px-4 border-0 d-flex justify-content-between align-items-center" style="background: rgba(15, 23, 42, 0.95);">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-info text-white d-inline-flex align-items-center justify-content-center mr-2 shadow-sm" style="width:32px; height:32px; font-size:14px;">
+                        <i class="fa fa-camera"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-white mb-0 font-weight-bold" id="modalFotoEvidenciaTitulo" style="font-size:1rem; letter-spacing:0.2px;">Evidencia Fotográfica</h6>
+                        <small class="text-white-50" id="modalFotoEvidenciaSubtitulo">Registro fotográfico del relevamiento</small>
+                    </div>
+                </div>
+                <button type="button" class="close text-white opacity-75 hover-opacity-100 p-2" data-dismiss="modal" aria-label="Cerrar" style="outline:none;">
+                    <span aria-hidden="true" style="font-size:1.6rem;">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-0 text-center d-flex align-items-center justify-content-center" style="background:#020617; min-height:350px; max-height:75vh; overflow:hidden;">
+                <img id="modalFotoEvidenciaImg" src="" alt="Foto Evidencia" style="max-height:72vh; max-width:100%; object-fit:contain; border-radius:4px; transition:all 0.3s ease;">
+            </div>
+            <div class="modal-footer py-3 px-4 border-0 d-flex justify-content-between align-items-center flex-wrap" style="background:#0f172a; gap:10px;">
+                <div class="text-left" style="max-width:70%;">
+                    <p class="text-white font-weight-bold small mb-0" id="modalFotoEvidenciaDesc" style="line-height:1.4;">Descripción de la foto</p>
+                    <small class="text-white-50" id="modalFotoEvidenciaFecha"><i class="fa fa-clock mr-1"></i>--</small>
+                </div>
+                <div class="d-flex align-items-center" style="gap:8px;">
+                    <a id="modalFotoEvidenciaDescargar" href="#" download target="_blank" class="btn btn-sm btn-outline-light font-weight-bold shadow-sm" style="border-radius:8px;">
+                        <i class="fa fa-download mr-1"></i> Descargar
+                    </a>
+                    <button type="button" class="btn btn-sm btn-primary font-weight-bold px-3 shadow-sm" data-dismiss="modal" style="border-radius:8px;">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
@@ -3099,15 +3138,24 @@ function abrirModalActa(evalId) {
         if (fotos.length > 0) {
             var fotosHtml = '';
             fotos.forEach(function(f, idx) {
+                var descEsc = (f.descripcion || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                var urlEsc = (f.url || '').replace(/'/g, "\\'");
+                var fechaEsc = (f.fecha || '').replace(/'/g, "\\'");
                 fotosHtml += `
-                    <div class="col-md-4 col-sm-6 mb-2">
-                        <div class="border rounded bg-white p-2 h-100 shadow-xs">
-                            <div style="height:120px; overflow:hidden; border-radius:6px; background:#0f172a; cursor:pointer;" onclick="window.open('${f.url}', '_blank')">
-                                <img src="${f.url}" alt="Foto ${idx + 1}" style="width:100%; height:100%; object-fit:cover;">
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card h-100 border-0 shadow-xs" style="border-radius:12px; overflow:hidden; border:1px solid #e2e8f0; background:#ffffff;">
+                            <div class="position-relative" style="height:170px; background:#0f172a; overflow:hidden; cursor:pointer;" onclick="verFotoModal('${urlEsc}', '${descEsc}', '${fechaEsc}', 'Foto #${idx + 1}')">
+                                <img src="${f.url}" alt="Foto ${idx + 1}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                <span class="badge badge-dark" style="position:absolute; top:8px; left:8px; background:rgba(15,23,42,0.8); font-size:0.75rem; border-radius:6px;">
+                                    <i class="fa fa-camera mr-1 text-info"></i>Foto #${idx + 1}
+                                </span>
+                                <span class="badge badge-info" style="position:absolute; top:8px; right:8px; background:rgba(2,132,199,0.9); font-size:0.7rem; border-radius:6px;">
+                                    <i class="fa fa-search-plus mr-1"></i>Ver foto
+                                </span>
                             </div>
-                            <div class="mt-2 small">
-                                <strong class="text-dark d-block text-truncate" title="${f.descripcion || ''}">${f.descripcion || 'Foto #' + (idx + 1)}</strong>
-                                <small class="text-muted"><i class="fa fa-clock mr-1"></i>${f.fecha || ''}</small>
+                            <div class="p-2 d-flex flex-column justify-content-between">
+                                <strong class="text-dark d-block text-truncate small mb-1" title="${f.descripcion || ''}">${f.descripcion || 'Foto #' + (idx + 1)}</strong>
+                                <small class="text-muted" style="font-size:0.72rem;"><i class="fa fa-clock mr-1"></i>${f.fecha || ''}</small>
                             </div>
                         </div>
                     </div>
@@ -3517,6 +3565,17 @@ function extenderAccesoAuditor(id, horas) {
             mostrarToast('Error al extender vigencia', 'danger');
         }
     });
+}
+
+function verFotoModal(url, desc, fecha, titulo) {
+    if (!url) return;
+    $('#modalFotoEvidenciaImg').attr('src', url);
+    $('#modalFotoEvidenciaTitulo').text(titulo || 'Evidencia Fotográfica');
+    $('#modalFotoEvidenciaSubtitulo').text(fecha ? 'Capturada el ' + fecha : 'Registro en terreno');
+    $('#modalFotoEvidenciaDesc').text(desc && desc.trim() !== '' ? desc : 'Sin descripción técnica adicional');
+    $('#modalFotoEvidenciaFecha').html(fecha ? '<i class="fa fa-clock mr-1"></i>' + fecha : '');
+    $('#modalFotoEvidenciaDescargar').attr('href', url);
+    $('#modalFotoEvidencia').modal('show');
 }
 </script>
 @endsection
