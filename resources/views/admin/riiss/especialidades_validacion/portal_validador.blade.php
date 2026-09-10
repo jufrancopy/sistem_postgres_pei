@@ -574,6 +574,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         const TOKEN_SESION = '{{ $sesion->token }}';
@@ -704,7 +705,12 @@
                     renderizarEspecialidades(res.especialidades);
                 }
             }).fail(function() {
-                alert('Error al cargar la información del establecimiento.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de carga',
+                    text: 'Error al cargar la información del establecimiento.',
+                    confirmButtonColor: '#0284c7'
+                });
             });
         }
 
@@ -844,7 +850,12 @@
         // Modal para agregar especialidad
         function abrirModalAgregar() {
             if (!establecimientoActualId) {
-                alert('Seleccione primero un establecimiento.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Atención',
+                    text: 'Seleccione primero un establecimiento de la lista.',
+                    confirmButtonColor: '#0284c7'
+                });
                 return;
             }
             $('#justificacionAgregar').val('');
@@ -857,7 +868,12 @@
             const justificacion = $('#justificacionAgregar').val();
 
             if (!especialidadId) {
-                alert('Por favor seleccione una especialidad de la lista.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Especialidad requerida',
+                    text: 'Por favor seleccione una especialidad de la lista.',
+                    confirmButtonColor: '#0284c7'
+                });
                 return;
             }
 
@@ -869,9 +885,22 @@
                 if (res.success) {
                     $('#modalAgregarEspecialidad').modal('hide');
                     seleccionarEstablecimiento(establecimientoActualId);
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Especialidad agregada correctamente',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
                 }
             }).fail(function(err) {
-                alert('Error al agregar la especialidad.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al agregar la especialidad.',
+                    confirmButtonColor: '#0284c7'
+                });
             });
         }
 
@@ -888,14 +917,48 @@
 
             const notas = $('#notasCierre').val();
 
-            $.post(`/riiss/portal-validador/${TOKEN_SESION}/finalizar`, {
-                firma_base64: firmaData,
-                notas: notas
-            }, function(res) {
-                if (res.success) {
-                    alert('¡Relevamiento finalizado y sellado con éxito!');
-                    $('#modalFinalizar').modal('hide');
-                    window.location.reload();
+            Swal.fire({
+                title: '¿Confirmar finalización?',
+                text: 'Se sellará y enviará el relevamiento de especialidades de esta red.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fa fa-check mr-1"></i> Sí, finalizar y sellar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Sellando relevamiento...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    $.post(`/riiss/portal-validador/${TOKEN_SESION}/finalizar`, {
+                        firma_base64: firmaData,
+                        notas: notas
+                    }, function(res) {
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Relevamiento finalizado!',
+                                text: 'El relevamiento ha sido sellado con éxito.',
+                                confirmButtonColor: '#0284c7'
+                            }).then(() => {
+                                $('#modalFinalizar').modal('hide');
+                                window.location.reload();
+                            });
+                        }
+                    }).fail(function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudo finalizar el relevamiento.',
+                            confirmButtonColor: '#0284c7'
+                        });
+                    });
                 }
             });
         }

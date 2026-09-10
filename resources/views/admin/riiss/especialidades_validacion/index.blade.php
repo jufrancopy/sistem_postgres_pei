@@ -338,10 +338,13 @@
                                             </a>
 
                                             {{-- Eliminar --}}
-                                            <form action="{{ route('riiss.validaciones.eliminar-enlace', $s->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar este enlace de validador?');">
+                                            <form action="{{ route('riiss.validaciones.eliminar-enlace', $s->id) }}" method="POST" class="d-inline form-eliminar-enlace">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="circle-btn btn btn-danger text-white" title="Eliminar Enlace">
+                                                <button type="button" class="circle-btn btn btn-danger text-white btn-delete-enlace" 
+                                                        data-analista="{{ $s->analista_nombre }}" 
+                                                        data-codigo="{{ $s->codigo_acceso }}" 
+                                                        title="Eliminar Enlace">
                                                     <i class="fa fa-trash"></i>
                                                 </button>
                                             </form>
@@ -669,13 +672,50 @@ function cambiarAreaEstablecimiento(estId, nuevaArea) {
     }, function(res) {
         if (res.success) {
             $(`tr[data-nombre*="${estId.toLowerCase()}"]`).attr('data-area', nuevaArea);
+            Swal.fire({
+                icon: 'success',
+                title: 'Área Actualizada',
+                text: res.message || 'Se actualizó la jurisdicción del establecimiento.',
+                timer: 2000,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
         }
     }).fail(function() {
-        alert('Error al actualizar el área de gestión del establecimiento.');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al actualizar el área de gestión del establecimiento.',
+            confirmButtonColor: '#0284c7'
+        });
     });
 }
 
 $(document).ready(function() {
+    // Eliminar Enlace con SweetAlert2
+    $(document).on('click', '.btn-delete-enlace', function(e) {
+        e.preventDefault();
+        var form = $(this).closest('form');
+        var analista = $(this).data('analista') || 'este validador';
+        var codigo = $(this).data('codigo') || '';
+
+        Swal.fire({
+            title: '¿Eliminar Enlace de Validación?',
+            html: `Se revocará el acceso asignado a <strong>${analista}</strong> (${codigo}).<br><small class="text-muted">Esta acción no se puede deshacer.</small>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fa fa-trash mr-1"></i> Sí, eliminar enlace',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
     // Inicializar Select2 en los modales
     $('#selectAreaGestion').select2({
         dropdownParent: $('#modalGenerarEnlace'),
@@ -715,11 +755,25 @@ $(document).ready(function() {
         navigator.clipboard.writeText(url).then(function() {
             var origHtml = $btn.html();
             $btn.removeClass('btn-outline-info').addClass('btn-success').html('<i class="fa fa-check"></i>');
+            Swal.fire({
+                icon: 'success',
+                title: 'Enlace Copiado',
+                text: 'El enlace de validación se copió al portapapeles 📋',
+                timer: 1800,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
             setTimeout(function() {
                 $btn.removeClass('btn-success').addClass('btn-outline-info').html(origHtml);
             }, 2500);
         }).catch(function(err) {
-            alert('Enlace: ' + url);
+            Swal.fire({
+                icon: 'info',
+                title: 'Enlace de Validación',
+                text: url,
+                confirmButtonColor: '#0284c7'
+            });
         });
     });
 
