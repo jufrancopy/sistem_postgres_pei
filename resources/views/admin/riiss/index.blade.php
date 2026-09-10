@@ -128,6 +128,58 @@
     box-shadow: 0 6px 16px rgba(0,0,0,0.06);
 }
 
+/* ── Panel de Filtros Tab 2 Establecimientos ── */
+.riiss-filter-panel {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+}
+.riiss-filter-panel .filter-label {
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #475569;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.riiss-filter-panel .form-control {
+    height: 38px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px;
+    font-size: 0.85rem !important;
+}
+.riiss-filter-panel .form-control:focus {
+    border-color: #00acc1 !important;
+    box-shadow: 0 0 0 2px rgba(0, 172, 193, 0.2) !important;
+}
+.riiss-filter-panel .select2-container--default .select2-selection--single {
+    height: 38px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    background-color: #ffffff !important;
+    font-size: 0.85rem !important;
+}
+.riiss-filter-panel .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 36px !important;
+    padding-left: 10px !important;
+    padding-right: 24px !important;
+    color: #1e293b !important;
+}
+.riiss-filter-panel .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px !important;
+    right: 6px !important;
+}
+.riiss-filter-panel .select2-container--default .select2-selection--single .select2-selection__clear {
+    margin-right: 18px !important;
+    line-height: 36px !important;
+}
+
 /* ── Modern Chronic Switch Cards ── */
 .chronic-switch-card {
     background: #ffffff;
@@ -556,42 +608,72 @@
     <div class="tab-pane fade" id="tab-establecimientos" role="tabpanel">
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-                {{-- Filtros --}}
-                <div class="row mb-3 align-items-center">
-                    <div class="col-md-3 mb-2">
-                        <input id="fBuscarUnificado" type="text" class="form-control" style="width:100%" placeholder="🔍 Buscar establecimiento o depto...">
+                {{-- Panel de Filtros Profesionales --}}
+                <div class="riiss-filter-panel mb-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 border-bottom pb-2">
+                        <div class="d-flex align-items-center">
+                            <span class="d-inline-flex align-items-center justify-content-center bg-info text-white rounded-circle mr-2" style="width: 28px; height: 28px; font-size: 0.8rem;">
+                                <i class="fa fa-filter"></i>
+                            </span>
+                            <span class="font-weight-bold text-dark" style="font-size: 0.95rem;">Filtros de Búsqueda y Segmentación</span>
+                            <span class="badge badge-info ml-2 px-2 py-1" style="font-size: 0.72rem; font-weight: 600;">RIISS DATA</span>
+                        </div>
+                        <div>
+                            <button type="button" id="btnResetFiltrosUnificados" class="btn btn-sm btn-outline-secondary font-weight-bold shadow-none" style="border-radius: 8px; font-size: 0.8rem;">
+                                <i class="fa fa-undo mr-1"></i> Limpiar Filtros
+                            </button>
+                        </div>
                     </div>
-                    <div class="col-md-2 mb-2">
-                        <select id="fAreaGestion" class="form-control" style="width:100%">
-                            <option value="">Área / Dirección (Todas)</option>
-                            <option value="AREA INTERIOR">🏥 Área Interior (106)</option>
-                            <option value="AREA CENTRAL">🏙️ Área Central (35)</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <select id="fTipologiaUnificada" class="form-control" style="width:100%">
-                            <option value="">Todas las Tipologías</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <select id="fProgramaCronico" class="form-control" style="width:100%">
-                            <option value="">Patologías Crónicas (Todas)</option>
-                            <option value="farmacia">💙 Con Farmacia Crónicos</option>
-                            <option value="empadronamiento">🩺 Con Empadronamiento SIH</option>
-                            <option value="ambos">🌟 Farmacia + Empadronamiento</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <select id="fConMedicamentos" class="form-control" style="width:100%">
-                            <option value="">Medicamentos (Todos)</option>
-                            <option value="con">Con Medicamentos</option>
-                            <option value="sin">Sin Medicamentos</option>
-                        </select>
-                    </div>
-                    <div class="col-md-1 mb-2">
-                        <button class="btn btn-primary btn-block font-weight-bold px-0" onclick="tablaUnificada.draw()" title="Buscar" style="border-radius:8px;">
-                            <i class="fa fa-search"></i>
-                        </button>
+
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3 mb-lg-0">
+                            <label class="filter-label"><i class="fa fa-search text-primary"></i> Búsqueda Rápida</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-white border-right-0 text-muted" style="border-radius: 8px 0 0 8px; border-color: #cbd5e1;"><i class="fa fa-search" style="font-size: 0.8rem;"></i></span>
+                                </div>
+                                <input id="fBuscarUnificado" type="text" class="form-control border-left-0" style="border-radius: 0 8px 8px 0;" placeholder="Buscar establecimiento o depto...">
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-6 mb-3 mb-lg-0">
+                            <label class="filter-label"><i class="fa fa-map-marker-alt text-danger"></i> Dirección / Área</label>
+                            <select id="fAreaGestion" class="form-control" style="width:100%">
+                                <option value="">Todas las Áreas</option>
+                                <option value="AREA INTERIOR">🏥 Área Interior (106)</option>
+                                <option value="AREA CENTRAL">🏙️ Área Central (35)</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-6 mb-3 mb-lg-0">
+                            <label class="filter-label"><i class="fa fa-clipboard-check text-success"></i> Asignación RIISS</label>
+                            <select id="fConAsignacion" class="form-control" style="width:100%">
+                                <option value="">Todas las asignaciones</option>
+                                <option value="con">📋 Con Asignación Activa</option>
+                                <option value="sin">⏳ Sin Asignar (Pendientes)</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-6 mb-3 mb-lg-0">
+                            <label class="filter-label"><i class="fa fa-hospital text-info"></i> Tipología</label>
+                            <select id="fTipologiaUnificada" class="form-control" style="width:100%">
+                                <option value="">Todas las Tipologías</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-6 mb-3 mb-lg-0">
+                            <label class="filter-label"><i class="fa fa-heartbeat" style="color: #8b5cf6;"></i> Patologías Crónicas</label>
+                            <select id="fProgramaCronico" class="form-control" style="width:100%">
+                                <option value="">Todas las patologías</option>
+                                <option value="farmacia">💙 Con Farmacia Crónicos</option>
+                                <option value="empadronamiento">🩺 Con Empadronamiento</option>
+                                <option value="ambos">🌟 Farmacia + Empadronamiento</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-1 col-md-6">
+                            <label class="filter-label"><i class="fa fa-pills text-warning"></i> Meds</label>
+                            <select id="fConMedicamentos" class="form-control" style="width:100%">
+                                <option value="">Todos</option>
+                                <option value="con">💊 Con</option>
+                                <option value="sin">⚪ Sin</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -1811,19 +1893,25 @@ $(document).ready(function() {
         }
     });
 
-    // Select2 Con Asignación en filtro
+    // Select2 Filtros Tab 2
+    $('#fAreaGestion').select2({
+        placeholder: 'Todas las Áreas', allowClear: true, width: '100%'
+    });
+
     $('#fConAsignacion').select2({
         placeholder: 'Todas las asignaciones', allowClear: true, width: '100%'
     });
 
-    // Select2 Medicamentos en filtro
     $('#fConMedicamentos').select2({
-        placeholder: 'Medicamentos (Todos)', allowClear: true, width: '100%'
+        placeholder: 'Todos los medicamentos', allowClear: true, width: '100%'
     });
 
-    // Select2 Tipología en filtro
     $('#fTipologiaUnificada').select2({
         placeholder: 'Todas las tipologías', allowClear: true, width: '100%'
+    });
+
+    $('#fProgramaCronico').select2({
+        placeholder: 'Todas las patologías', allowClear: true, width: '100%'
     });
 
     // Select2 Evaluador en filtro
@@ -1854,11 +1942,11 @@ $(document).ready(function() {
     var tablaUnificada = $('#tablaUnificada').DataTable({
         processing: true,
         serverSide: true,
-        dom: 'Bfrtip',
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"B>rtip',
         buttons: [
-            { extend: 'excel', text: '<i class="fa fa-file-excel mr-1"></i>Excel', className: 'btn btn-sm btn-outline-success', title: 'RIISS - Establecimientos' },
-            { extend: 'pdf',   text: '<i class="fa fa-file-pdf mr-1"></i>PDF', className: 'btn btn-sm btn-outline-danger', title: 'RIISS - Establecimientos' },
-            { extend: 'print', text: '<i class="fa fa-print mr-1"></i>Imprimir', className: 'btn btn-sm btn-outline-secondary' },
+            { extend: 'excel', text: '<i class="fa fa-file-excel mr-1"></i>Excel', className: 'btn btn-sm btn-outline-success font-weight-bold', title: 'RIISS - Establecimientos' },
+            { extend: 'pdf',   text: '<i class="fa fa-file-pdf mr-1"></i>PDF', className: 'btn btn-sm btn-outline-danger font-weight-bold', title: 'RIISS - Establecimientos' },
+            { extend: 'print', text: '<i class="fa fa-print mr-1"></i>Imprimir', className: 'btn btn-sm btn-outline-secondary font-weight-bold' },
         ],
         language: {
             emptyTable:     'Sin establecimientos registrados',
@@ -1899,9 +1987,22 @@ $(document).ready(function() {
     $('#fBuscarUnificado').on('keyup change', function() { tablaUnificada.draw(); });
     $('#fTipologiaUnificada, #fConAsignacion, #fConMedicamentos, #fEvaluadorUnificado, #fProgramaCronico').on('change', function() { tablaUnificada.draw(); });
 
+    $('#btnResetFiltrosUnificados').on('click', function() {
+        $('#fBuscarUnificado').val('');
+        $('#fAreaGestion').val('').trigger('change.select2');
+        $('#filtroGlobalAreaGestion').val('');
+        $('#fConAsignacion').val('').trigger('change.select2');
+        $('#fTipologiaUnificada').val('').trigger('change.select2');
+        $('#fProgramaCronico').val('').trigger('change.select2');
+        $('#fConMedicamentos').val('').trigger('change.select2');
+        cargarDashboard();
+        cargarHistorial();
+        if (window.tablaUnificada) window.tablaUnificada.draw();
+    });
+
     $('#filtroGlobalAreaGestion').on('change', function() {
         var val = $(this).val();
-        $('#fAreaGestion').val(val);
+        $('#fAreaGestion').val(val).trigger('change.select2');
         cargarDashboard();
         cargarHistorial();
         if (window.tablaUnificada) window.tablaUnificada.draw();
