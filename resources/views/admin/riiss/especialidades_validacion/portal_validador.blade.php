@@ -43,8 +43,8 @@
         .portal-container {
             flex: 1;
             display: flex;
-            height: calc(100vh - 75px);
-            overflow: hidden;
+            min-height: calc(100vh - 180px);
+            background: var(--bg-body);
         }
 
         /* Panel Izquierdo: Lista de Establecimientos */
@@ -280,32 +280,140 @@
             padding: 8px 12px !important;
         }
 
-        @media (max-width: 992px) {
-            .portal-container {
-                flex-direction: column;
-                height: auto;
+        /* ═══ FOOTER DE PORTADA SIPLAN GO ═══ */
+        .site-footer {
+            background: #0f172a;
+            color: rgba(255,255,255,.6);
+            padding: 40px clamp(14px,4vw,40px) 24px;
+            border-top: 1px solid rgba(255,255,255,.08);
+            margin-top: auto;
+        }
+        .footer-inner {
+            max-width: 1140px;
+            margin: 0 auto;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 40px;
+            margin-bottom: 28px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .footer-logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 6px;
+            background: linear-gradient(145deg, #0284c7, #7c3aed);
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-weight: 900;
+            font-size: 11px;
+            letter-spacing: -.8px;
+        }
+        .footer-brand-text .fb-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: #fff;
+        }
+        .footer-brand-text .fb-sub {
+            font-size: 10px;
+            color: rgba(255,255,255,.4);
+        }
+        .footer-desc {
+            font-size: 12px;
+            line-height: 1.7;
+            max-width: 380px;
+            color: rgba(255,255,255,.6);
+        }
+        .ai-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            color: rgba(255,255,255,.4);
+            margin-bottom: 8px;
+        }
+        .ai-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .ai-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.08);
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255,255,255,.7);
+            text-decoration: none;
+            transition: all .15s;
+        }
+        .ai-chip:hover {
+            background: rgba(255,255,255,.12);
+            color: #fff;
+            text-decoration: none;
+        }
+        .dev-credit {
+            font-size: 10px;
+            color: rgba(255,255,255,.35);
+        }
+        .dev-credit a {
+            color: #38bdf8;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .dev-credit a:hover {
+            text-decoration: underline;
+        }
+        .footer-copy {
+            text-align: center;
+            font-size: 10px;
+            color: rgba(255,255,255,.35);
+        }
+        @media (max-width: 768px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
             }
-            .sidebar-establecimientos {
-                width: 100%;
-                height: 320px;
+            .footer-desc {
+                max-width: 100%;
             }
         }
     </style>
 </head>
 <body>
 
-    {{-- Barra Superior --}}
+    {{-- Barra Superior con Logo Institucional del Plan --}}
     <nav class="navbar-portal d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center">
-            <div class="bg-white text-dark font-weight-bold rounded px-2 py-1 mr-3 shadow-sm" style="font-size: 13px; color:#0284c7 !important;">
-                IPS
-            </div>
-            <div>
-                <div class="font-weight-bold" style="font-size: 15px; letter-spacing: 0.3px;">
-                    DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR
+            @if(!empty($logoInstitucional) || !empty($sysLogoUrl))
+                <div class="bg-white rounded p-1 mr-3 shadow-sm d-flex align-items-center justify-content-center" style="height: 46px; min-width: 48px; max-width: 140px; border-radius: 8px;">
+                    <img src="{{ $logoInstitucional ?: $sysLogoUrl }}" alt="Logo Institucional" style="max-height: 38px; max-width: 130px; object-fit: contain;">
                 </div>
-                <div style="font-size: 12px; color: #94a3b8;">
-                    Sistema de Validación de Especialidades Médicas (Catálogo Bioestadística)
+            @else
+                <div class="bg-white text-dark font-weight-bold rounded px-2 py-1 mr-3 shadow-sm" style="font-size: 13px; color:#0284c7 !important;">
+                    IPS
+                </div>
+            @endif
+            <div>
+                <div class="font-weight-bold text-white" style="font-size: 14.5px; letter-spacing: 0.3px;">
+                    {{ $dependencia }}
+                </div>
+                <div style="font-size: 11.5px; color: #94a3b8;">
+                    {{ $institucion }} · Sistema de Validación de Especialidades Médicas
                 </div>
             </div>
         </div>
@@ -315,7 +423,7 @@
                 <div class="font-weight-bold text-white" style="font-size: 13px;">
                     <i class="fa fa-user-circle mr-1 text-info"></i> {{ $sesion->analista_nombre }}
                 </div>
-                <div class="badge badge-light px-2 py-1 font-weight-bold" style="font-size: 11px;">
+                <div class="badge badge-light px-2 py-1 font-weight-bold text-dark" style="font-size: 11px;">
                     Código: {{ $sesion->codigo_acceso }}
                 </div>
             </div>
@@ -460,6 +568,67 @@
         </main>
 
     </div>
+
+    {{-- FOOTER — ESTILO PORTADA SIPLAN GO --}}
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-brand">
+                        @if($logoInstitucional || $sysLogoUrl)
+                            <div style="background:#ffffff; padding:4px 8px; border-radius:8px; display:inline-flex; align-items:center;">
+                                <img src="{{ $logoInstitucional ?: $sysLogoUrl }}" alt="{{ $sysSiteName }}" style="max-height: 42px; width: auto; object-fit: contain;">
+                            </div>
+                        @else
+                            <div class="footer-logo" aria-hidden="true">SP</div>
+                        @endif
+                        <div class="footer-brand-text">
+                            <div class="fb-name">{{ $sysSiteName }}</div>
+                            <div class="fb-sub">{{ $institucion }} · {{ $dependencia }}</div>
+                        </div>
+                    </div>
+                    <p class="footer-desc" style="margin-top:12px; line-height:1.6;">
+                        Plataforma de monitoreo estratégico y validación técnica institucional.<br>
+                        <span style="opacity: .85; font-size:11px; display:block; margin-top:6px;">
+                            <i class="fa fa-envelope" style="margin-right: 4px; color:#38bdf8;"></i> {{ $sysEmail }} &nbsp;·&nbsp; 
+                            <i class="fa fa-phone" style="margin-right: 4px; color:#4ade80;"></i> {{ $sysPhone }}<br>
+                            <i class="fa fa-clock" style="margin-right: 4px; color:#fbbf24;"></i> {{ $sysHours }} &nbsp;·&nbsp; 
+                            <i class="fa fa-map-marker-alt" style="margin-right: 4px; color:#f87171;"></i> {{ $sysAddress }}
+                        </span>
+                    </p>
+                </div>
+                <div>
+                    <div class="ai-label">Impulsado con asistencia de IA</div>
+                    <div class="ai-list">
+                        <a class="ai-chip" href="https://kiro.dev" target="_blank" rel="noopener">
+                            <svg width="14" height="14" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#F59E0B"/><path d="M12 36L24 12L36 36H28L24 27L20 36H12Z" fill="white"/></svg>
+                            Kiro
+                        </a>
+                        <a class="ai-chip" href="https://aws.amazon.com/q/" target="_blank" rel="noopener">
+                            <svg width="14" height="14" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#1A9C3E"/><path d="M24 10C16.3 10 10 16.3 10 24C10 31.7 16.3 38 24 38C27.4 38 30.5 36.8 32.9 34.8L36 38L38 36L34.8 32.9C36.8 30.5 38 27.4 38 24C38 16.3 31.7 10 24 10ZM24 34C18.5 34 14 29.5 14 24C14 18.5 18.5 14 24 14C29.5 14 34 18.5 34 24C34 26.6 33 29 31.3 30.8L27 26.5C27.6 25.8 28 24.9 28 24C28 21.8 26.2 20 24 20C21.8 20 20 21.8 20 24C20 26.2 21.8 28 24 28C24.9 28 25.8 27.6 26.5 27L30.8 31.3C29 33 26.6 34 24 34Z" fill="white"/></svg>
+                            Amazon Q
+                        </a>
+                        <a class="ai-chip" href="https://claude.ai" target="_blank" rel="noopener">
+                            <svg width="14" height="14" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#F97316"/><path d="M24 8L38 32H10L24 8Z" fill="white" opacity=".9"/></svg>
+                            Claude
+                        </a>
+                        <a class="ai-chip" href="https://gemini.google.com" target="_blank" rel="noopener">
+                            <svg width="14" height="14" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#4285F4"/><path d="M24 8C24 8 30 20 30 24C30 28 24 40 24 40C24 40 18 28 18 24C18 20 24 8 24 8Z" fill="white"/><path d="M8 24C8 24 20 18 24 18C28 18 40 24 40 24C40 24 28 30 24 30C20 30 8 24 8 24Z" fill="white" opacity=".7"/></svg>
+                            Gemini
+                        </a>
+                    </div>
+                    <div class="dev-credit">
+                        Desarrollado por
+                        <a href="https://www.linkedin.com/in/jufrancopy/" target="_blank" rel="noopener">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#7dd3fc" style="vertical-align:middle;margin-right:2px"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+                            Julio Franco
+                        </a> · IPS Paraguay
+                    </div>
+                </div>
+            </div>
+            <div class="footer-copy">{{ $sysFooter }}</div>
+        </div>
+    </footer>
 
     {{-- Modal para Agregar Especialidad con Select2 --}}
     <div class="modal fade" id="modalAgregarEspecialidad" tabindex="-1" role="dialog" aria-hidden="true">

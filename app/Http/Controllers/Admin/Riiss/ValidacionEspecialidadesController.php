@@ -37,7 +37,7 @@ class ValidacionEspecialidadesController extends Controller
             $querySesiones->where('area_gestion', $request->area);
         }
 
-        $sesiones = $querySesiones->paginate(15);
+        $sesiones = $querySesiones->get();
 
         // Departamentos agrupados por Área de Gestión
         $deptosInterior = Establecimiento::where('area_gestion', 'AREA INTERIOR')
@@ -235,11 +235,12 @@ class ValidacionEspecialidadesController extends Controller
             DB::raw("COUNT(CASE WHEN estado = 'inactiva' THEN 1 END) as total_inactivas")
         )->groupBy('establecimiento_id')->get()->keyBy('establecimiento_id');
 
-        return view('admin.riiss.especialidades_validacion.portal_validador', compact(
-            'sesion',
-            'establecimientos',
-            'departamentos',
-            'resumenValidaciones'
+        // Contexto institucional (Logo oficial del plan / entidad, membrete y datos del sistema)
+        $ctx = $this->getContextoInstitucional($sesion);
+
+        return view('admin.riiss.especialidades_validacion.portal_validador', array_merge(
+            compact('sesion', 'establecimientos', 'departamentos', 'resumenValidaciones'),
+            $ctx
         ));
     }
 
@@ -474,13 +475,10 @@ class ValidacionEspecialidadesController extends Controller
         $totalInactivadas = $registros->where('estado', 'inactiva')->count();
         $totalEstablecimientos = $registros->pluck('establecimiento_id')->unique()->count();
 
-        $institucion = 'INSTITUTO DE PREVISIÓN SOCIAL';
-        $dependencia = ($sesion->area_gestion === 'AREA CENTRAL')
-            ? 'DIRECCIÓN DE HOSPITALES DEL ÁREA CENTRAL'
-            : 'DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR';
-
-        $logoPath = public_path('assets/img/ips_logo.png');
-        $logoInstitucional = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : null;
+        $ctx = $this->getContextoInstitucional($sesion);
+        $institucion = $ctx['institucion'];
+        $dependencia = $ctx['dependencia'];
+        $logoInstitucional = $this->prepareLogoForPdf($ctx['logoInstitucional']);
 
         $pdf = Pdf::loadView('admin.riiss.especialidades_validacion.acta_sesion_pdf', compact(
             'sesion',
@@ -511,13 +509,10 @@ class ValidacionEspecialidadesController extends Controller
         $totalInactivadas = $registros->where('estado', 'inactiva')->count();
         $totalEstablecimientos = $registros->pluck('establecimiento_id')->unique()->count();
 
-        $institucion = 'INSTITUTO DE PREVISIÓN SOCIAL';
-        $dependencia = ($sesion->area_gestion === 'AREA CENTRAL')
-            ? 'DIRECCIÓN DE HOSPITALES DEL ÁREA CENTRAL'
-            : 'DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR';
-
-        $logoPath = public_path('assets/img/ips_logo.png');
-        $logoInstitucional = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : null;
+        $ctx = $this->getContextoInstitucional($sesion);
+        $institucion = $ctx['institucion'];
+        $dependencia = $ctx['dependencia'];
+        $logoInstitucional = $ctx['logoInstitucional'];
 
         return view('admin.riiss.especialidades_validacion.acta_sesion_imprimir', compact(
             'sesion',
@@ -529,5 +524,89 @@ class ValidacionEspecialidadesController extends Controller
             'dependencia',
             'logoInstitucional'
         ));
+    }
+
+    /**
+     * Obtener el contexto institucional (Logo, institución, dependencia, datos de contacto del sistema)
+     */
+    private function getContextoInstitucional($sesion = null): array
+    {
+        $profile = \App\Admin\Planificacion\Pei\PeiProfile::find('ce99f883-fdd0-4723-8f75-cf689aa8f0fa')
+            ?? \App\Admin\Planificacion\Pei\PeiProfile::where('level', 'master')->first()
+            ?? \App\Admin\Planificacion\Pei\PeiProfile::first();
+
+        $master = $profile && $profile->parent_id ? ($profile->getRoot() ?? $profile) : $profile;
+        $params = [];
+        if ($master) {
+            $params = is_string($master->parameters) ? (json_decode($master->parameters, true) ?? []) : ($master->parameters ?? []);
+        }
+
+        $logoInstitucional = $params['logo_institucional'] ?? $params['acta_logo_url'] ?? ($master?->logo_institucional ?? null);
+        $institucion       = $params['acta_institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL (IPS)';
+
+        $area = $sesion ? $sesion->area_gestion : 'AREA INTERIOR';
+        $dependenciaDefault = ($area === 'AREA CENTRAL') 
+            ? 'DIRECCIÓN DE HOSPITALES DEL ÁREA CENTRAL' 
+            : 'DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR';
+        $dependencia       = $params['acta_dependencia'] ?? $dependenciaDefault;
+
+        $sysLogoRaw  = \App\Models\HomeConfiguration::getSetting('logo_url') ?? \App\Models\HomeConfiguration::getSetting('logo');
+        $sysLogoUrl  = !empty($sysLogoRaw) ? ((str_starts_with($sysLogoRaw, 'http://') || str_starts_with($sysLogoRaw, 'https://')) ? $sysLogoRaw : url($sysLogoRaw)) : asset('material/img/new_logo.png');
+
+        $sysSiteName = \App\Models\HomeConfiguration::getSetting('site_name', 'SIPLAN GO');
+        $sysEmail    = \App\Models\HomeConfiguration::getSetting('contact_email', 'planificacion@ips.gov.py');
+        $sysPhone    = \App\Models\HomeConfiguration::getSetting('contact_phone', '+595 21 219 7000');
+        $sysHours    = \App\Models\HomeConfiguration::getSetting('business_hours', 'Lun – Vie: 07:00 – 15:00');
+        $sysAddress  = \App\Models\HomeConfiguration::getSetting('address', 'Santo Domingo c/ Avda. Santísimo Sacramento, Asunción');
+        $sysFooter   = \App\Models\HomeConfiguration::getSetting('footer_text', '© ' . date('Y') . ' Instituto de Previsión Social (IPS) — Dirección de Planificación. Todos los derechos reservados.');
+
+        return [
+            'logoInstitucional' => $logoInstitucional,
+            'institucion'       => $institucion,
+            'dependencia'       => $dependencia,
+            'sysLogoUrl'        => $sysLogoUrl,
+            'sysSiteName'       => $sysSiteName,
+            'sysEmail'          => $sysEmail,
+            'sysPhone'          => $sysPhone,
+            'sysHours'          => $sysHours,
+            'sysAddress'        => $sysAddress,
+            'sysFooter'         => $sysFooter,
+        ];
+    }
+
+    /**
+     * Prepara el logo para DomPDF convirtiendo recursos locales a data URI base64.
+     */
+    private function prepareLogoForPdf(?string $logoUrl): ?string
+    {
+        if (empty($logoUrl)) return null;
+
+        if (str_starts_with($logoUrl, 'data:image')) {
+            return $logoUrl;
+        }
+
+        $localFile = null;
+        $storagePrefix = asset('storage/');
+        if (str_starts_with($logoUrl, $storagePrefix)) {
+            $relative = str_replace($storagePrefix, '', $logoUrl);
+            $storageCandidate = storage_path('app/public/' . ltrim($relative, '/'));
+            if (file_exists($storageCandidate)) {
+                $localFile = $storageCandidate;
+            }
+        } elseif (str_starts_with($logoUrl, '/storage/')) {
+            $publicCandidate = public_path(ltrim($logoUrl, '/'));
+            if (file_exists($publicCandidate)) {
+                $localFile = $publicCandidate;
+            }
+        } elseif (file_exists(public_path(ltrim($logoUrl, '/')))) {
+            $localFile = public_path(ltrim($logoUrl, '/'));
+        }
+
+        if ($localFile && file_exists($localFile)) {
+            $mime = mime_content_type($localFile) ?: 'image/png';
+            return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($localFile));
+        }
+
+        return $logoUrl;
     }
 }

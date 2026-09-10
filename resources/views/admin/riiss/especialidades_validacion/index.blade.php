@@ -202,36 +202,21 @@
         </div>
 
         {{-- Card Principal con Tabla de Enlaces --}}
+        {{-- Card Principal con Tabla de Enlaces con DataTables --}}
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header d-flex flex-wrap align-items-center justify-content-between bg-white py-3">
                 <div class="d-flex align-items-center mb-2 mb-md-0">
                     <label class="font-weight-bold mr-2 mb-0 text-dark small">
-                        <i class="fa fa-filter text-info mr-1"></i> Área:
+                        <i class="fa fa-filter text-info mr-1"></i> Filtrar Área:
                     </label>
-                    <form method="GET" action="{{ route('riiss.validaciones.index') }}" class="form-inline">
-                        <select name="area" class="form-control form-control-sm font-weight-bold mr-2" onchange="this.form.submit()" style="min-width: 170px; border-radius: 6px;">
-                            <option value="">📋 Todas las Áreas</option>
-                            <option value="AREA INTERIOR" @selected(request('area') === 'AREA INTERIOR')>🏥 Área Interior ({{ $totalInterior }})</option>
-                            <option value="AREA CENTRAL" @selected(request('area') === 'AREA CENTRAL')>🏙️ Área Central ({{ $totalCentral }})</option>
-                        </select>
-                    </form>
+                    <select id="filtroAreaTabla" class="form-control form-control-sm font-weight-bold mr-2" style="min-width: 190px; border-radius: 6px;">
+                        <option value="">📋 Todas las Áreas</option>
+                        <option value="AREA INTERIOR">🏥 Área Interior ({{ $totalInterior }})</option>
+                        <option value="AREA CENTRAL">🏙️ Área Central ({{ $totalCentral }})</option>
+                    </select>
                 </div>
 
                 <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
-                    <form method="GET" action="{{ route('riiss.validaciones.index') }}" class="form-inline mr-2">
-                        @if(request('area'))
-                            <input type="hidden" name="area" value="{{ request('area') }}">
-                        @endif
-                        <div class="input-group input-group-sm">
-                            <input type="text" name="buscar" class="form-control" placeholder="Buscar analista o código..." value="{{ request('buscar') }}" style="border-radius: 6px 0 0 6px;">
-                            <div class="input-group-append">
-                                <button class="btn btn-outline-info" type="submit" style="border-radius: 0 6px 6px 0;">
-                                    <i class="fa fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-
                     <button type="button" class="btn btn-outline-danger font-weight-bold" onclick="confirmarReinicioValidaciones()" style="border-radius: 6px;" title="Reiniciar datos de prueba a 0">
                         <i class="fa fa-sync-alt mr-1"></i> Reiniciar a 0
                     </button>
@@ -244,22 +229,22 @@
                 </div>
             </div>
 
-            <div class="card-body p-0">
+            <div class="card-body p-3">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover mb-0" style="width:100%;">
+                    <table class="table table-bordered table-hover mb-0" id="tablaSesionesValidador" style="width:100%;">
                         <thead class="thead-dark">
                             <tr>
-                                <th style="width: 50px;" class="text-center">#</th>
-                                <th style="width: 130px;" class="text-center">Código Acceso</th>
-                                <th style="max-width: 250px;">Analista Responsable</th>
-                                <th style="width: 200px;">Dirección / Alcance Asignado</th>
-                                <th style="width: 120px;" class="text-center">Registros Guardados</th>
+                                <th style="width: 45px;" class="text-center">#</th>
+                                <th style="width: 140px;" class="text-center">Código Acceso</th>
+                                <th>Analista Responsable</th>
+                                <th style="width: 210px;">Dirección / Alcance Asignado</th>
+                                <th style="width: 130px;" class="text-center">Registros Guardados</th>
                                 <th style="width: 100px;" class="text-center">Estado</th>
                                 <th style="width: 180px;" class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($sesiones as $idx => $s)
+                            @foreach($sesiones as $idx => $s)
                                 <tr>
                                     <td class="text-center font-weight-bold text-muted">{{ $loop->iteration }}</td>
                                     <td class="text-center">
@@ -378,25 +363,11 @@
                                         </div>
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="fa fa-link fa-3x mb-3 text-secondary" style="opacity: 0.4;"></i>
-                                        <p class="mb-1 font-weight-bold">No hay enlaces de validadores generados aún.</p>
-                                        <p class="small">Haga clic en <strong>"+ Nuevo Enlace de Validador"</strong> para emitir el primer acceso de relevamiento.</p>
-                                    </td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
-
-            @if($sesiones->hasPages())
-                <div class="card-footer bg-white d-flex justify-content-center py-3">
-                    {{ $sesiones->links() }}
-                </div>
-            @endif
         </div>
 
     </div>
@@ -1054,6 +1025,39 @@ $(document).ready(function() {
             }
         });
     };
+
+    // ── Inicializar DataTable para Sesiones de Validador ──
+    var dtSesiones = $('#tablaSesionesValidador').DataTable({
+        language: {
+            emptyTable:     '<div class="py-4 text-muted"><i class="fa fa-link fa-2x mb-2 text-secondary" style="opacity:.4"></i><div>No hay enlaces de validadores generados aún.</div><small>Haga clic en "+ Nuevo Enlace de Validador" para emitir el primer acceso.</small></div>',
+            info:           'Mostrando _START_ a _END_ de _TOTAL_ enlaces',
+            infoEmpty:      '0 enlaces',
+            infoFiltered:   '(filtrado de _MAX_ totales)',
+            search:         'Buscar:',
+            searchPlaceholder: 'Analista, código, área...',
+            zeroRecords:    'No se encontraron enlaces coincidentes',
+            paginate: { first:'Primero', last:'Último', next:'Siguiente', previous:'Anterior' },
+            lengthMenu:     'Mostrar _MENU_ registros por página'
+        },
+        order: [[0, 'asc']],
+        pageLength: 10,
+        columnDefs: [
+            { orderable: false, targets: [6] } // Acciones
+        ],
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
+    });
+
+    // Filtro interactivo por Área
+    $('#filtroAreaTabla').on('change', function() {
+        var val = $(this).val();
+        if (val === 'AREA CENTRAL') {
+            dtSesiones.column(3).search('Área Central').draw();
+        } else if (val === 'AREA INTERIOR') {
+            dtSesiones.column(3).search('Área Interior').draw();
+        } else {
+            dtSesiones.column(3).search('').draw();
+        }
+    });
 
     @if(session('nuevo_acceso'))
         var nuevoAccesoData = @json(session('nuevo_acceso'));
