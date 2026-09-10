@@ -441,10 +441,10 @@
                             <thead>
                                 <tr>
                                     <th style="width: 8%;" class="text-center">ID</th>
-                                    <th style="width: 34%;">Especialidad Médica (Bioestadística)</th>
+                                    <th style="width: 32%;">Especialidad Médica (Bioestadística)</th>
                                     <th style="width: 18%;" class="text-center">Estado en Centro</th>
-                                    <th style="width: 34%;">Justificación / Observación (Opcional)</th>
-                                    <th style="width: 6%;" class="text-center">Estado</th>
+                                    <th style="width: 32%;">Justificación / Observación (Opcional)</th>
+                                    <th style="width: 10%;" class="text-center"><i class="fa fa-cloud-upload-alt mr-1"></i> Sincronización</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaEspecialidadesBody">
@@ -772,8 +772,8 @@
                                    onblur="guardarJustificacion(${esp.especialidad_id}, this.value)">
                         </td>
                         <td class="text-center">
-                            <span class="badge badge-success badge-save px-2 py-1" id="badge-save-${esp.especialidad_id}">
-                                <i class="fa fa-check"></i>
+                            <span class="badge badge-light border text-muted px-2 py-1" id="badge-save-${esp.especialidad_id}" style="font-size: 11px; border-radius: 6px; font-weight: 600;">
+                                <i class="fa fa-cloud text-secondary mr-1"></i> Listo
                             </span>
                         </td>
                     </tr>
@@ -812,6 +812,11 @@
         function enviarActualizacion(especialidadId, estado, justificacion) {
             if (!establecimientoActualId) return;
 
+            const $badge = $(`#badge-save-${especialidadId}`);
+            $badge.removeClass('badge-light text-muted badge-success badge-danger')
+                  .addClass('badge-info text-white')
+                  .html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
+
             $.post(`/riiss/portal-validador/${TOKEN_SESION}/actualizar-especialidad`, {
                 establecimiento_id: establecimientoActualId,
                 especialidad_id: especialidadId,
@@ -822,15 +827,23 @@
                     mostrarFeedbackGuardado(especialidadId);
                     actualizarBadgeEstablecimiento(establecimientoActualId);
                 }
+            }).fail(function() {
+                $badge.removeClass('badge-info text-white badge-success badge-light text-muted')
+                      .addClass('badge-danger text-white')
+                      .html('<i class="fa fa-times-circle mr-1"></i> Error');
             });
         }
 
         function mostrarFeedbackGuardado(especialidadId) {
             const $badge = $(`#badge-save-${especialidadId}`);
-            $badge.addClass('show');
+            $badge.removeClass('badge-info text-white badge-light text-muted badge-danger')
+                  .addClass('badge-success text-white')
+                  .html('<i class="fa fa-check mr-1"></i> Guardado');
             setTimeout(function() {
-                $badge.removeClass('show');
-            }, 1800);
+                $badge.removeClass('badge-success text-white')
+                      .addClass('badge-light text-muted')
+                      .html('<i class="fa fa-cloud text-secondary mr-1"></i> Listo');
+            }, 2200);
         }
 
         function actualizarBadgeEstablecimiento(estId) {

@@ -161,15 +161,36 @@ class ValidacionEspecialidadesController extends Controller
     }
 
     /**
-     * Eliminar / Desactivar enlace de validador
+     * Eliminar / Desactivar enlace de validador y sus registros asociados
      */
     public function eliminarEnlace($id)
     {
         $sesion = SesionValidador::findOrFail($id);
+        ValidacionEspecialidadRegistro::where('sesion_validador_id', $sesion->id)->delete();
         $sesion->delete();
 
         return redirect()->route('riiss.validaciones.index')
             ->with('success', "Enlace y sesión de validador eliminados correctamente.");
+    }
+
+    /**
+     * Reiniciar todos los registros de validación de prueba para dejar todo en cero
+     */
+    public function reiniciarRegistros(Request $request)
+    {
+        // Eliminar todos los registros de validación de especialidades
+        ValidacionEspecialidadRegistro::query()->delete();
+
+        // Si se solicitó eliminar también las sesiones de validador de prueba
+        if ($request->boolean('incluir_sesiones')) {
+            SesionValidador::query()->delete();
+            $mensaje = "Se han reiniciado a 0 todos los registros de validación y se han limpiado los enlaces de prueba.";
+        } else {
+            $mensaje = "Se han reiniciado a 0 todos los registros de especialidades validadas/inactivadas.";
+        }
+
+        return redirect()->route('riiss.validaciones.index')
+            ->with('success', $mensaje);
     }
 
     /**

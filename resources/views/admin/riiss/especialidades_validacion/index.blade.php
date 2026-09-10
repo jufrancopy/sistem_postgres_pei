@@ -232,6 +232,9 @@
                         </div>
                     </form>
 
+                    <button type="button" class="btn btn-outline-danger font-weight-bold" onclick="confirmarReinicioValidaciones()" style="border-radius: 6px;" title="Reiniciar datos de prueba a 0">
+                        <i class="fa fa-sync-alt mr-1"></i> Reiniciar a 0
+                    </button>
                     <button type="button" class="btn btn-outline-info font-weight-bold" data-toggle="modal" data-target="#modalClasificacionTerritorial" style="border-radius: 6px;">
                         <i class="fa fa-map-marked-alt mr-1"></i> Clasificación Territorial ({{ $totalEstablecimientos }})
                     </button>
@@ -999,6 +1002,56 @@ $(document).ready(function() {
                 showConfirmButton: false,
                 timer: 2000
             });
+        });
+    };
+
+    window.confirmarReinicioValidaciones = function() {
+        Swal.fire({
+            title: '¿Reiniciar todas las validaciones a 0?',
+            html: `
+                <p class="text-muted mb-2" style="font-size: 14px;">
+                    Esta acción restablecerá los contadores y eliminará todos los registros de especialidades validadas/inactivadas durante las pruebas.
+                </p>
+                <div class="custom-control custom-checkbox text-left mt-3 p-2 bg-light rounded border">
+                    <input type="checkbox" class="custom-control-input" id="checkEliminarSesiones">
+                    <label class="custom-control-label font-weight-bold text-dark" for="checkEliminarSesiones" style="font-size: 13px; cursor: pointer;">
+                        Eliminar también los enlaces y sesiones de validador creados
+                    </label>
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fa fa-trash-alt mr-1"></i> Sí, reiniciar a 0',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#64748b',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const checkEl = document.getElementById('checkEliminarSesiones');
+                const incluirSesiones = checkEl ? checkEl.checked : false;
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{{ route('riiss.validaciones.reiniciar-registros') }}";
+
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = "{{ csrf_token() }}";
+                form.appendChild(csrfInput);
+
+                if (incluirSesiones) {
+                    const incInput = document.createElement('input');
+                    incInput.type = 'hidden';
+                    incInput.name = 'incluir_sesiones';
+                    incInput.value = '1';
+                    form.appendChild(incInput);
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+            }
         });
     };
 
