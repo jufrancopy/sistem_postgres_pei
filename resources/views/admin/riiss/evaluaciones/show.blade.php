@@ -347,6 +347,12 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link text-dark" data-toggle="tab" href="#tabFotos">
+                    <i class="fa fa-camera mr-1 text-info"></i>Evidencia Fotográfica
+                    <span class="badge badge-pill badge-info ml-1">{{ count($evaluacion->fotos ?? []) }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link text-dark" data-toggle="tab" href="#tabRespuestas">
                     <i class="fa fa-list mr-1"></i>Respuestas
                 </a>
@@ -405,6 +411,70 @@
                                             <div style="min-width:0;">
                                                 <div class="font-weight-bold text-dark small text-truncate" title="{{ $esp->nombre }}">{{ $esp->nombre }}</div>
                                                 <small class="text-success" style="font-size:0.72rem;"><i class="fa fa-check-circle mr-1"></i>Activa en centro</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Tab Evidencia Fotográfica --}}
+            <div class="tab-pane fade" id="tabFotos">
+                <div class="card shadow-sm border-0" style="border-radius:12px;">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light p-2 mr-3 text-info d-flex align-items-center justify-content-center" style="width:38px; height:38px;">
+                                <i class="fa fa-camera fa-lg"></i>
+                            </div>
+                            <div>
+                                <h6 class="font-weight-bold text-dark mb-0" style="font-size:1rem;">
+                                    Evidencia Fotográfica del Relevamiento
+                                </h6>
+                                <small class="text-muted">Registro visual y técnico documentado durante la visita en terreno a {{ $est->nombre_oficial }}</small>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="badge badge-info px-3 py-2 font-weight-bold" style="font-size:0.8rem; border-radius:8px;">
+                                <i class="fa fa-images mr-1"></i> {{ count($evaluacion->fotos ?? []) }} Fotografías
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-4 bg-light">
+                        @php $fotosList = is_array($evaluacion->fotos) ? $evaluacion->fotos : []; @endphp
+                        @if(empty($fotosList))
+                            <div class="text-center py-5 text-muted bg-white rounded border">
+                                <i class="fa fa-camera-retro fa-3x mb-3 text-secondary" style="opacity: 0.35;"></i>
+                                <h6 class="font-weight-bold text-dark mb-1">Sin evidencia fotográfica adjunta</h6>
+                                <small>No se cargaron fotos durante el relevamiento de este establecimiento.</small>
+                            </div>
+                        @else
+                            <div class="row">
+                                @foreach($fotosList as $idx => $foto)
+                                    <div class="col-lg-4 col-md-6 mb-4">
+                                        <div class="card h-100 border-0 shadow-sm" style="border-radius:12px; overflow:hidden; border: 1px solid #e2e8f0;">
+                                            <div style="position:relative; height:220px; background:#0f172a; overflow:hidden; cursor:pointer;" onclick="window.open('{{ $foto['url'] ?? '#' }}', '_blank')">
+                                                <img src="{{ $foto['url'] ?? '' }}" alt="Foto {{ $idx + 1 }}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                                <span class="badge badge-dark" style="position:absolute; top:8px; left:8px; background:rgba(15,23,42,0.8); font-size:0.75rem;">
+                                                    <i class="fa fa-camera mr-1 text-info"></i>Foto #{{ $idx + 1 }}
+                                                </span>
+                                                <span class="badge badge-info" style="position:absolute; top:8px; right:8px; background:rgba(2,132,199,0.9); font-size:0.7rem;">
+                                                    <i class="fa fa-expand mr-1"></i>Ver completa
+                                                </span>
+                                            </div>
+                                            <div class="card-body p-3 bg-white d-flex flex-column justify-content-between">
+                                                <div>
+                                                    <label class="small font-weight-bold text-muted text-uppercase mb-1" style="font-size:0.68rem; letter-spacing:0.5px;">Descripción Técnica</label>
+                                                    <p class="text-dark font-weight-bold small mb-2" style="line-height:1.4;">
+                                                        {{ !empty($foto['descripcion']) ? $foto['descripcion'] : 'Sin descripción registrada' }}
+                                                    </p>
+                                                </div>
+                                                <div class="pt-2 border-top d-flex align-items-center justify-content-between mt-auto" style="font-size:0.72rem;">
+                                                    <span class="text-muted"><i class="fa fa-clock mr-1"></i>{{ $foto['fecha'] ?? '' }}</span>
+                                                    <span class="text-muted"><i class="fa fa-user mr-1"></i>{{ $foto['subido_por'] ?? 'Evaluador' }}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

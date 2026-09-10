@@ -1140,6 +1140,12 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('evaluaciones.cerrar-con-firmas');
         Route::post('evaluaciones/{evaluacion}/firmar-evaluador', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'firmarEvaluador'])
             ->name('evaluaciones.firmar-evaluador');
+        Route::post('evaluaciones/{evaluacion}/fotos', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'subirFoto'])
+            ->name('evaluaciones.fotos.store');
+        Route::delete('evaluaciones/{evaluacion}/fotos/{fotoId}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'eliminarFoto'])
+            ->name('evaluaciones.fotos.destroy');
+        Route::patch('evaluaciones/{evaluacion}/fotos/{fotoId}/descripcion', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'actualizarDescripcionFoto'])
+            ->name('evaluaciones.fotos.descripcion');
         Route::delete('evaluaciones/{evaluacion}', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'destroy'])
             ->name('evaluaciones.destroy');
     });

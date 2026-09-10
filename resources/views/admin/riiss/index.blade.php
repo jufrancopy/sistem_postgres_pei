@@ -1663,10 +1663,18 @@
                             </div>
                         </div>
 
-                        {{-- IV. Rúbricas y Constancia de Conformidad --}}
+                        {{-- Evidencia Fotográfica en Acta --}}
+                        <div id="actaFotosBox" class="mb-3 d-none">
+                            <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-2" style="font-size:0.88rem; letter-spacing:0.3px;">
+                                <i class="fa fa-camera mr-1 text-info"></i>IV. EVIDENCIA FOTOGRÁFICA EN TERRENO
+                            </h6>
+                            <div class="row" id="actaFotosGrid"></div>
+                        </div>
+
+                        {{-- V. Rúbricas y Constancia de Conformidad --}}
                         <div class="mb-3">
                             <h6 class="font-weight-bold text-uppercase text-dark border-bottom pb-1 mb-3" style="font-size:0.88rem; letter-spacing:0.3px;">
-                                IV. CONSTANCIA DE CONFORMIDAD Y RÚBRICAS DIGITALES DE LA VISITA
+                                V. CONSTANCIA DE CONFORMIDAD Y RÚBRICAS DIGITALES DE LA VISITA
                             </h6>
                             <p class="small text-muted mb-3" style="font-size:0.82rem; line-height:1.4;">
                                 Las partes intervinientes ratifican la realización efectiva de la visita técnica presencial y la recepción conforme del equipo comisionado, rubricando al pie en señal de constancia y validación de la jornada de relevamiento de campo:
@@ -2983,6 +2991,31 @@ function abrirModalActa(evalId) {
             $('#actaObservacionesBox').removeClass('d-none');
         } else {
             $('#actaObservacionesBox').addClass('d-none');
+        }
+
+        // Renderizar Evidencia Fotográfica en Acta
+        var fotos = d.fotos || [];
+        if (fotos.length > 0) {
+            var fotosHtml = '';
+            fotos.forEach(function(f, idx) {
+                fotosHtml += `
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <div class="border rounded bg-white p-2 h-100 shadow-xs">
+                            <div style="height:120px; overflow:hidden; border-radius:6px; background:#0f172a; cursor:pointer;" onclick="window.open('${f.url}', '_blank')">
+                                <img src="${f.url}" alt="Foto ${idx + 1}" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
+                            <div class="mt-2 small">
+                                <strong class="text-dark d-block text-truncate" title="${f.descripcion || ''}">${f.descripcion || 'Foto #' + (idx + 1)}</strong>
+                                <small class="text-muted"><i class="fa fa-clock mr-1"></i>${f.fecha || ''}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            $('#actaFotosGrid').html(fotosHtml);
+            $('#actaFotosBox').removeClass('d-none');
+        } else {
+            $('#actaFotosBox').addClass('d-none');
         }
 
         // Firmas Digitales

@@ -456,6 +456,57 @@
             </div>
         </div>
 
+        {{-- Evidencia Fotográfica / Galería de Fotos del Relevamiento --}}
+        <div class="card shadow-sm mb-4" id="panelFotosRelevamiento" style="display:none; border-radius:12px; overflow:hidden;">
+            <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-light p-2 mr-3 text-primary d-flex align-items-center justify-content-center" style="width:38px; height:38px;">
+                        <i class="fa fa-camera fa-lg text-info"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 font-weight-bold text-dark" style="font-size:0.95rem">
+                            📸 Evidencia Fotográfica del Relevamiento en Terreno
+                        </h6>
+                        <small class="text-muted">Galería fotográfica con descripción técnica (mínimo 3 fotos: Fachada, Urgencias/Servicios, Farmacia/Depósito).</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                    <span class="badge badge-light border text-dark font-weight-bold px-3 py-2" id="badgeContadorFotos" style="font-size:0.8rem; border-radius:8px;">
+                        <i class="fa fa-images text-info mr-1"></i> <span id="txtCantidadFotos">0</span> fotos cargadas
+                    </span>
+                    <button type="button" class="btn btn-info btn-sm font-weight-bold shadow-sm" onclick="$('#inputSubirFoto').click()" style="border-radius:8px;">
+                        <i class="fa fa-camera mr-1"></i> Capturar / Subir Foto
+                    </button>
+                    <input type="file" id="inputSubirFoto" accept="image/*" style="display:none" onchange="subirNuevaFoto(this)">
+                </div>
+            </div>
+            <div class="card-body p-4 bg-light">
+                
+                {{-- Formulario de carga con descripción --}}
+                <div id="dropzoneNuevaFoto" class="p-3 mb-3 bg-white rounded border text-center shadow-xs" style="border: 2px dashed #cbd5e1 !important; border-radius:12px;">
+                    <div class="row align-items-center justify-content-center">
+                        <div class="col-md-5 mb-2 mb-md-0">
+                            <input type="text" id="descNuevaFotoInput" class="form-control form-control-sm" placeholder="📝 Descripción técnica (ej: Fachada principal, Farmacia, Quirófano, Consultorios)...">
+                        </div>
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <div class="custom-file text-left">
+                                <input type="file" class="custom-file-input" id="inputArchivoFotoDirecta" accept="image/*">
+                                <label class="custom-file-label small" for="inputArchivoFotoDirecta" id="labelArchivoFoto">Seleccionar imagen...</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-primary btn-sm btn-block font-weight-bold" id="btnSubirFotoManual" onclick="ejecutarSubidaFotoManual()" style="border-radius:6px;">
+                                <i class="fa fa-cloud-upload-alt mr-1"></i> Guardar Foto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Contenedor dinámico de la Galería de Fotos --}}
+                <div class="row" id="contenedorGaleriaFotos"></div>
+            </div>
+        </div>
+
         {{-- Botones --}}
         <div id="botonesAccion" class="card shadow-sm mb-4" style="display:none">
             <div class="card-body d-flex justify-content-between align-items-center flex-wrap" style="gap:10px;">
@@ -626,6 +677,27 @@
                 <button type="button" class="btn btn-success font-weight-bold btn-sm px-4 shadow-sm" id="btnConfirmarCierreFirmas" style="border-radius:8px;">
                     <i class="fa fa-file-signature mr-1"></i> Sellar y Cerrar Relevamiento
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Ver Foto en Grande / Zoom --}}
+<div class="modal fade" id="modalVerFotoGrande" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:14px; overflow:hidden; background:#0f172a;">
+            <div class="modal-header py-2 px-3 border-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-white mb-0 font-weight-bold" id="modalFotoGrandeTitulo">Foto de Relevamiento</h6>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-0 text-center" style="background:#000;">
+                <img id="modalFotoGrandeImg" src="" alt="Foto Relevamiento" style="max-height:75vh; max-width:100%; object-fit:contain;">
+            </div>
+            <div class="modal-footer py-2 px-3 border-0 bg-dark text-white d-flex justify-content-between align-items-center">
+                <p class="text-white-50 small mb-0" id="modalFotoGrandeDesc"></p>
+                <button type="button" class="btn btn-sm btn-outline-light" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -984,6 +1056,7 @@ function recuperarEvaluacionExistente(id) {
             return;
         }
         const ev = r.data;
+        evaluacionId = ev.id;
         $('#evalFecha').val(ev.fecha_evaluacion.split('T')[0]);
         $('#evalTelefono').val(ev.evaluador_telefono);
 
@@ -1046,6 +1119,9 @@ function recuperarEvaluacionExistente(id) {
             });
         }
 
+        // Renderizar fotos guardadas
+        renderGaleriaFotos(ev.fotos || []);
+
         $('#evalEstado').html('<span class="badge badge-success">Evaluación #' + id + ' activa</span>');
 
         // Cargar formulario y DESPUÉS aplicar las respuestas visualmente
@@ -1061,6 +1137,201 @@ function recuperarEvaluacionExistente(id) {
             }
         });
     });
+}
+
+// ── Galería de Fotos del Relevamiento ───────────────────────────────────────
+let _fotosRelevamiento = [];
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function renderGaleriaFotos(fotos) {
+    _fotosRelevamiento = Array.isArray(fotos) ? fotos : [];
+    const count = _fotosRelevamiento.length;
+    $('#txtCantidadFotos').text(count);
+
+    if (count >= 3) {
+        $('#badgeContadorFotos').removeClass('border-warning text-warning text-dark').addClass('badge-success text-white').html('<i class="fa fa-check-circle mr-1"></i> ' + count + ' fotos cargadas (Completo)');
+    } else {
+        $('#badgeContadorFotos').removeClass('badge-success text-white').addClass('badge-light border text-dark').html('<i class="fa fa-images text-info mr-1"></i> ' + count + ' / 3 fotos recomendadas');
+    }
+
+    const $cont = $('#contenedorGaleriaFotos');
+    $cont.empty();
+
+    if (count === 0) {
+        $cont.html(`
+            <div class="col-12 text-center py-4">
+                <div class="text-muted mb-2"><i class="fa fa-camera-retro fa-3x text-secondary" style="opacity:0.35;"></i></div>
+                <h6 class="font-weight-bold text-dark mb-1">No hay fotografías cargadas aún</h6>
+                <p class="text-muted small mb-3">Relevá y documentá visualmente el estado del establecimiento (mínimo 3 fotos recomendadas):</p>
+                <div class="d-flex justify-content-center flex-wrap" style="gap:10px;">
+                    <span class="badge badge-white border shadow-xs text-dark py-2 px-3"><i class="fa fa-hospital mr-1 text-primary"></i> 1. Fachada & Cartel</span>
+                    <span class="badge badge-white border shadow-xs text-dark py-2 px-3"><i class="fa fa-stethoscope mr-1 text-success"></i> 2. Consultorios / Urgencias</span>
+                    <span class="badge badge-white border shadow-xs text-dark py-2 px-3"><i class="fa fa-pills mr-1 text-info"></i> 3. Farmacia / Depósito</span>
+                </div>
+            </div>
+        `);
+        return;
+    }
+
+    _fotosRelevamiento.forEach(function(f, idx) {
+        const descEsc = escapeHtml(f.descripcion || '');
+        const idEsc = f.id || ('foto_' + idx);
+        const cardHtml = `
+            <div class="col-md-4 col-sm-6 mb-3" id="card-foto-${idEsc}">
+                <div class="card h-100 border-0 shadow-sm" style="border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
+                    <div style="position:relative; height:180px; background:#0f172a; overflow:hidden; cursor:pointer;" onclick="ampliarFoto('${f.url}', '${escapeHtml(f.descripcion||'')}', 'Foto #${idx + 1}')">
+                        <img src="${f.url}" alt="Foto ${idx + 1}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        <span class="badge badge-dark" style="position:absolute; top:8px; left:8px; background:rgba(15,23,42,0.8); font-size:0.75rem;">
+                            <i class="fa fa-camera mr-1 text-info"></i>Foto #${idx + 1}
+                        </span>
+                        <span class="badge badge-info" style="position:absolute; top:8px; right:8px; background:rgba(2,132,199,0.9); font-size:0.7rem;">
+                            <i class="fa fa-search-plus"></i>
+                        </span>
+                    </div>
+                    <div class="card-body p-3 d-flex flex-column justify-content-between bg-white">
+                        <div class="form-group mb-2">
+                            <label class="small font-weight-bold text-dark mb-1" style="font-size:0.75rem;"><i class="fa fa-align-left mr-1 text-info"></i>Descripción técnica:</label>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control form-control-sm" id="desc-input-${idEsc}" value="${descEsc}" placeholder="Describir área o servicio...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-primary btn-sm" type="button" onclick="guardarDescripcionFoto('${idEsc}')" title="Guardar descripción">
+                                        <i class="fa fa-save"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-auto">
+                            <small class="text-muted" style="font-size:0.7rem;"><i class="fa fa-clock mr-1"></i>${f.fecha || ''}</small>
+                            <button type="button" class="btn btn-outline-danger btn-xs py-1 px-2" onclick="eliminarFotoRelevamiento('${idEsc}')" style="font-size:0.72rem; border-radius:6px;" title="Eliminar foto">
+                                <i class="fa fa-trash-alt mr-1"></i>Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        $cont.append(cardHtml);
+    });
+}
+
+function subirNuevaFoto(inputEl) {
+    if (!inputEl.files || !inputEl.files[0]) return;
+    const file = inputEl.files[0];
+    const desc = prompt('📝 Ingresá una descripción para esta foto (ej: Fachada principal, Farmacia, Urgencias):', '') || '';
+    enviarArchivoFoto(file, desc);
+    inputEl.value = '';
+}
+
+function ejecutarSubidaFotoManual() {
+    const fileInput = document.getElementById('inputArchivoFotoDirecta');
+    if (!fileInput.files || !fileInput.files[0]) {
+        mostrarToast('Seleccioná un archivo de imagen primero', 'warning');
+        return;
+    }
+    const file = fileInput.files[0];
+    const desc = $('#descNuevaFotoInput').val() || '';
+    const btn = $('#btnSubirFotoManual');
+    btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i>Guardando...');
+
+    enviarArchivoFoto(file, desc, function() {
+        btn.prop('disabled', false).html('<i class="fa fa-cloud-upload-alt mr-1"></i> Guardar Foto');
+        $('#descNuevaFotoInput').val('');
+        fileInput.value = '';
+        $('#labelArchivoFoto').text('Seleccionar imagen...');
+    }, function() {
+        btn.prop('disabled', false).html('<i class="fa fa-cloud-upload-alt mr-1"></i> Guardar Foto');
+    });
+}
+
+function enviarArchivoFoto(file, desc, callbackSuccess, callbackError) {
+    if (!evaluacionId) {
+        mostrarToast('Debes iniciar o guardar la evaluación primero', 'warning');
+        if (typeof callbackError === 'function') callbackError();
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('_token', '{{ csrf_token() }}');
+    formData.append('foto', file);
+    formData.append('descripcion', desc);
+
+    mostrarToast('Subiendo fotografía...', 'info');
+
+    $.ajax({
+        url: '/riiss/evaluaciones/' + evaluacionId + '/fotos',
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(r) {
+            if (r.ok) {
+                mostrarToast('Fotografía agregada a la evidencia técnica ✅', 'success');
+                renderGaleriaFotos(r.fotos || []);
+                if (typeof callbackSuccess === 'function') callbackSuccess();
+            } else {
+                mostrarToast(r.message || 'Error al subir foto', 'error');
+                if (typeof callbackError === 'function') callbackError();
+            }
+        },
+        error: function(xhr) {
+            const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error al subir archivo de imagen';
+            mostrarToast(msg, 'error');
+            if (typeof callbackError === 'function') callbackError();
+        }
+    });
+}
+
+function guardarDescripcionFoto(fotoId) {
+    if (!evaluacionId) return;
+    const desc = $('#desc-input-' + fotoId).val() || '';
+    $.ajax({
+        url: '/riiss/evaluaciones/' + evaluacionId + '/fotos/' + fotoId + '/descripcion',
+        method: 'PATCH',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            _token: '{{ csrf_token() }}',
+            descripcion: desc
+        }),
+        success: function(r) {
+            if (r.ok) {
+                mostrarToast('Descripción guardada ✅', 'success');
+                if (r.fotos) renderGaleriaFotos(r.fotos);
+            }
+        }
+    });
+}
+
+function eliminarFotoRelevamiento(fotoId) {
+    if (!evaluacionId) return;
+    if (!confirm('¿Estás seguro de eliminar esta fotografía de la evidencia técnica?')) return;
+
+    $.ajax({
+        url: '/riiss/evaluaciones/' + evaluacionId + '/fotos/' + fotoId,
+        method: 'DELETE',
+        data: { _token: '{{ csrf_token() }}' },
+        success: function(r) {
+            if (r.ok) {
+                mostrarToast('Fotografía eliminada ✅', 'success');
+                renderGaleriaFotos(r.fotos || []);
+            }
+        }
+    });
+}
+
+function ampliarFoto(url, desc, title) {
+    $('#modalFotoGrandeImg').attr('src', url);
+    $('#modalFotoGrandeTitulo').text(title || 'Evidencia Fotográfica');
+    $('#modalFotoGrandeDesc').text(desc || 'Sin descripción');
+    $('#modalVerFotoGrande').modal('show');
 }
 
 // ── Helpers para Texto Enriquecido (CKEditor) ──────────────────────────────
@@ -1152,6 +1423,7 @@ function crearEvaluacionYCargar() {
             localStorage.setItem('riiss_eval_' + EST_ID, evaluacionId);
 
             $('#evalEstado').html('<span class="badge badge-success">Evaluación #' + evaluacionId + ' activa</span>');
+            renderGaleriaFotos(r.data.fotos || []);
             cargarFormulario();
 
             // Enviar respuestas que se marcaron antes de que se creara la evaluación
@@ -1252,6 +1524,7 @@ function cargarFormulario(callback) {
         $('#botonesAccion').show();
         $('#panelObservaciones').show();
         $('#panelAspectosPositivos').show();
+        $('#panelFotosRelevamiento').show();
         actualizarProgreso();
         initBuscadorPreguntas();
 
@@ -1791,6 +2064,11 @@ $(document).ready(function() {
                 mostrarToast(msg, 'error');
             }
         });
+    });
+
+    $(document).on('change', '#inputArchivoFotoDirecta', function() {
+        var fileName = $(this).val().split('\\').pop();
+        $('#labelArchivoFoto').text(fileName || 'Seleccionar imagen...');
     });
 });
 

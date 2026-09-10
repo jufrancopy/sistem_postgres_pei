@@ -13,6 +13,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class EvaluacionController extends Controller
 {
@@ -745,6 +747,7 @@ class EvaluacionController extends Controller
                     'firma'               => $evaluacion->responsable_firma,
                     'firmado_at'          => $evaluacion->responsable_firmado_at?->format('d/m/Y H:i'),
                 ],
+                'fotos'                   => is_array($evaluacion->fotos) ? $evaluacion->fotos : [],
                 'evaluador'               => [
                     'nombre'              => $evaluadorNombre,
                     'cargo'               => $evaluadorCargo,
@@ -1061,5 +1064,124 @@ class EvaluacionController extends Controller
         }
 
         return $msg;
+    }
+
+    /**
+     * POST /riiss/evaluaciones/{evaluacion}/fotos
+     * Subir foto de evidencia fotográfica con descripción.
+     */
+    public function subirFoto(Request $request, Evaluacion $evaluacion): JsonResponse
+    {
+        $this->authorizeEvaluacion($evaluacion);
+
+        $request->validate([
+            'foto'        => 'required|image|mimes:jpeg,png,jpg,webp|max:12288',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $file = $request->file('foto');
+        $extension = $file->getClientOriginalExtension();
+        $filename = 'relevamiento_' . $evaluacion->id . '_' . time() . '_' . Str::random(6) . '.' . $extension;
+
+        // Guardar en public storage
+        $path = $file->storeAs('riiss/evaluaciones/' . $evaluacion->id, $filename, 'public');
+        $url = asset('storage/' . $path);
+
+        $nuevaFoto = [
+            'id'             => 'foto_' . uniqid(),
+            'url'            => $url,
+            'path'           => $path,
+            'nombre_archivo' => $file->getClientOriginalName(),
+            'descripcion'    => trim($request->get('descripcion', '')),
+            'fecha'          => now()->format('d/m/Y H:i'),
+            'subido_por'     => auth()->user()?->name ?? 'Evaluador',
+        ];
+
+        $fotos = is_array($evaluacion->fotos) ? $evaluacion->fotos : [];
+        $fotos[] = $nuevaFoto;
+
+        $evaluacion->fotos = $fotos;
+        $evaluacion->save();
+
+        return response()->json([
+            'ok'      => true,
+            'foto'    => $nuevaFoto,
+            'fotos'   => $fotos,
+            'total'   => count($fotos),
+            'message' => 'Foto guardada con éxito',
+        ]);
+    }
+
+    /**
+     * DELETE /riiss/evaluaciones/{evaluacion}/fotos/{fotoId}
+     * Eliminar una foto de la galería.
+     */
+    public function eliminarFoto(Evaluacion $evaluacion, string $fotoId): JsonResponse
+    {
+        $this->authorizeEvaluacion($evaluacion);
+
+        $fotos = is_array($evaluacion->fotos) ? $evaluacion->fotos : [];
+        $fotosFiltradas = [];
+        $encontrada = false;
+
+        foreach ($fotos as $f) {
+            if (($f['id'] ?? '') === $fotoId) {
+                $encontrada = true;
+                if (!empty($f['path'])) {
+                    Storage::disk('public')->delete($f['path']);
+                }
+            } else {
+                $fotosFiltradas[] = $f;
+            }
+        }
+
+        if ($encontrada) {
+            $evaluacion->fotos = array_values($fotosFiltradas);
+            $evaluacion->save();
+        }
+
+        return response()->json([
+            'ok'      => true,
+            'fotos'   => array_values($fotosFiltradas),
+            'total'   => count($fotosFiltradas),
+            'message' => 'Foto eliminada correctamente',
+        ]);
+    }
+
+    /**
+     * PATCH /riiss/evaluaciones/{evaluacion}/fotos/{fotoId}/descripcion
+     * Actualizar la descripción técnica de una foto.
+     */
+    public function actualizarDescripcionFoto(Request $request, Evaluacion $evaluacion, string $fotoId): JsonResponse
+    {
+        $this->authorizeEvaluacion($evaluacion);
+
+        $request->validate([
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $descripcion = trim($request->get('descripcion', ''));
+        $fotos = is_array($evaluacion->fotos) ? $evaluacion->fotos : [];
+        $actualizada = false;
+
+        foreach ($fotos as &$f) {
+            if (($f['id'] ?? '') === $fotoId) {
+                $f['descripcion'] = $descripcion;
+                $actualizada = true;
+                break;
+            }
+        }
+        unset($f);
+
+        if ($actualizada) {
+            $evaluacion->fotos = $fotos;
+            $evaluacion->save();
+        }
+
+        return response()->json([
+            'ok'      => true,
+            'fotos'   => $fotos,
+            'message' => 'Descripción actualizada',
+        ]);
     }
 }
