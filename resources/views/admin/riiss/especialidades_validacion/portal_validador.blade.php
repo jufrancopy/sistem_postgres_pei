@@ -366,6 +366,13 @@
             <a href="{{ route('riiss.portal-validador.acta-imprimir', $sesion->token) }}" target="_blank" class="btn btn-outline-light btn-sm shadow-sm font-weight-bold">
                 <i class="fa fa-print mr-1"></i> Ver Acta General
             </a>
+
+            <form action="{{ route('riiss.portal-validador.salir', $sesion->token) }}" method="POST" class="d-inline ml-2" onsubmit="return confirm('¿Desea bloquear o cerrar la sesión de validación?');">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-danger shadow-sm font-weight-bold" style="border-color: rgba(239,68,68,0.5); color: #fca5a5;" title="Cerrar Sesión de Validación">
+                    <i class="fa fa-sign-out-alt mr-1"></i> Salir
+                </button>
+            </form>
         </div>
     </nav>
 

@@ -210,6 +210,16 @@ class ValidacionEspecialidadesController extends Controller
             abort(404, 'Enlace de validación inválido o expirado.');
         }
 
+        // Verificar si la sesión ya autenticó con el Código de Acceso
+        $sessionKey = 'riiss_validador_auth_' . $sesion->token;
+        if (!session()->get($sessionKey, false) && !session()->get('riiss_validador_auth_' . $token, false)) {
+            $ctx = $this->getContextoInstitucional($sesion);
+            return view('admin.riiss.especialidades_validacion.desafio_codigo', array_merge(
+                compact('sesion', 'token'),
+                $ctx
+            ));
+        }
+
         // Consultar Establecimientos filtrados estrictamente por el Área de Gestión del Token
         $estQuery = Establecimiento::query()->orderBy('departamento')->orderBy('nombre_oficial');
 
@@ -255,6 +265,70 @@ class ValidacionEspecialidadesController extends Controller
             compact('sesion', 'establecimientos', 'departamentos', 'resumenValidaciones', 'conteosEspecialidadesDb', 'validacionesEstablecimientos'),
             $ctx
         ));
+    }
+
+    /**
+     * POST /riiss/portal-validador/{token}/verificar-codigo
+     * Autenticación del Validador mediante Código de Acceso (PIN / Código alfanumérico)
+     */
+    public function verificarCodigo(Request $request, $token)
+    {
+        $sesion = SesionValidador::where('token', $token)->first();
+
+        if (!$sesion) {
+            $sesion = SesionValidador::where('codigo_acceso', $token)->first();
+        }
+
+        if (!$sesion) {
+            return response()->json([
+                'ok'      => false,
+                'message' => 'Este enlace de validación no existe o ha expirado.'
+            ], 404);
+        }
+
+        $request->validate([
+            'codigo' => 'required|string',
+        ]);
+
+        $inputCodigo  = strtoupper(trim($request->codigo));
+        $sesionCodigo = strtoupper(trim($sesion->codigo_acceso));
+
+        // Normalización flexible para comparación (permitir con o sin 'VAL-', guiones o espacios)
+        $normInput  = str_replace(['VAL-', 'VAL', '-', ' '], '', $inputCodigo);
+        $normSesion = str_replace(['VAL-', 'VAL', '-', ' '], '', $sesionCodigo);
+
+        if ($inputCodigo !== $sesionCodigo && $normInput !== $normSesion) {
+            return response()->json([
+                'ok'      => false,
+                'message' => 'El Código de Acceso ingresado es incorrecto. Por favor, verifique el código recibido por WhatsApp o correo.'
+            ], 422);
+        }
+
+        // Marcar sesión como autenticada
+        session([
+            'riiss_validador_auth_' . $sesion->token => true,
+            'riiss_validador_auth_' . $token         => true,
+        ]);
+
+        return response()->json([
+            'ok'       => true,
+            'redirect' => route('riiss.portal-validador.show', ['token' => $sesion->token]),
+        ]);
+    }
+
+    /**
+     * POST /riiss/portal-validador/{token}/salir
+     * Cierra la sesión activa del validador.
+     */
+    public function salirPortal($token)
+    {
+        $sesion = SesionValidador::where('token', $token)->first();
+        if ($sesion) {
+            session()->forget('riiss_validador_auth_' . $sesion->token);
+        }
+        session()->forget('riiss_validador_auth_' . $token);
+
+        return redirect()->route('riiss.portal-validador.show', ['token' => $token]);
     }
 
     /**

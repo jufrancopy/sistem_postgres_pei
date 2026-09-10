@@ -41,6 +41,8 @@ Route::get('/riiss/portal-auditor/{token}/pdf', [\App\Http\Controllers\Admin\Rii
 
 // ── Portal Validador de Especialidades Médicas Área Interior (Acceso con Enlace/Token) ───
 Route::get('/riiss/portal-validador/{token}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'portalValidador'])->name('riiss.portal-validador.show');
+Route::post('/riiss/portal-validador/{token}/verificar-codigo', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'verificarCodigo'])->name('riiss.portal-validador.verificar-codigo');
+Route::post('/riiss/portal-validador/{token}/salir', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'salirPortal'])->name('riiss.portal-validador.salir');
 Route::get('/riiss/portal-validador/{token}/establecimiento/{establecimiento_id}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'getEstablecimientoEspecialidades'])->name('riiss.portal-validador.especialidades');
 Route::post('/riiss/portal-validador/{token}/actualizar-especialidad', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'actualizarEspecialidad'])->name('riiss.portal-validador.actualizar');
 Route::post('/riiss/portal-validador/{token}/validar-todas', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'validarTodas'])->name('riiss.portal-validador.validar-todas');
