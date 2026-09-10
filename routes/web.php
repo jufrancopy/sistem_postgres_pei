@@ -1155,6 +1155,12 @@ Route::group(['middleware' => 'auth'], function () {
 Route::get('riiss/evaluaciones/{evaluacion}/matriz-partial',
     [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'matrizPartial'])
     ->name('evaluaciones.matriz-partial');
+Route::get('riiss/evaluaciones/{evaluacion}/resumen-partial',
+    [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'resumenPartial'])
+    ->name('evaluaciones.resumen-partial');
+Route::get('riiss/evaluaciones/{evaluacion}/resumen-publico',
+    [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'resumenPublico'])
+    ->name('evaluaciones.resumen-publico');
 
 // ── Rutas públicas Proyectos (sin auth) ───────────────────────────────────────
 Route::get('pei-profiles/{profileId}/solicitar-proyecto',

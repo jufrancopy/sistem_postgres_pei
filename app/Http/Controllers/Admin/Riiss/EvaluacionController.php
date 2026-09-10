@@ -1063,6 +1063,73 @@ class EvaluacionController extends Controller
         ));
     }
 
+    /**
+     * GET /riiss/evaluaciones/{id}/resumen-partial
+     * Retorna el HTML del Resumen Técnico para el modal público en welcome.
+     */
+    public function resumenPartial(Evaluacion $evaluacion)
+    {
+        $evaluacion->load(['establecimiento.complejidadTipo', 'establecimiento.especialidades', 'gapAnalysis', 'cerradoPor']);
+        $est = $evaluacion->establecimiento;
+
+        // Validaciones de especialidades
+        $validacionesEspecialidades = ValidacionEspecialidadRegistro::where('establecimiento_id', $est->id_establecimiento)
+            ->with('sesionValidador')
+            ->get()
+            ->keyBy('especialidad_id');
+
+        $especialidadesAgregadas = [];
+        foreach ($validacionesEspecialidades as $valReg) {
+            if ($valReg->es_agregada && !$est->especialidades->contains('id', $valReg->especialidad_id)) {
+                $espModel = RiissEspecialidad::find($valReg->especialidad_id);
+                if ($espModel) {
+                    $especialidadesAgregadas[] = $espModel;
+                }
+            }
+        }
+
+        $gapCartera = $evaluacion->gapAnalysis()->where('dimension', 'cartera_servicios')->get();
+        $gapHabilitacion = $evaluacion->gapAnalysis()->where('dimension', 'condiciones_habilitantes')->get();
+
+        return view('admin.riiss.evaluaciones.partials.resumen_tecnico_partial', compact(
+            'evaluacion', 'est', 'validacionesEspecialidades', 'especialidadesAgregadas',
+            'gapCartera', 'gapHabilitacion'
+        ));
+    }
+
+    /**
+     * GET /riiss/evaluaciones/{id}/resumen-publico
+     * Página completa e independiente de la Ficha Técnica para compartir o imprimir.
+     */
+    public function resumenPublico(Evaluacion $evaluacion)
+    {
+        $evaluacion->load(['establecimiento.complejidadTipo', 'establecimiento.especialidades', 'gapAnalysis', 'cerradoPor']);
+        $est = $evaluacion->establecimiento;
+
+        $validacionesEspecialidades = ValidacionEspecialidadRegistro::where('establecimiento_id', $est->id_establecimiento)
+            ->with('sesionValidador')
+            ->get()
+            ->keyBy('especialidad_id');
+
+        $especialidadesAgregadas = [];
+        foreach ($validacionesEspecialidades as $valReg) {
+            if ($valReg->es_agregada && !$est->especialidades->contains('id', $valReg->especialidad_id)) {
+                $espModel = RiissEspecialidad::find($valReg->especialidad_id);
+                if ($espModel) {
+                    $especialidadesAgregadas[] = $espModel;
+                }
+            }
+        }
+
+        $gapCartera = $evaluacion->gapAnalysis()->where('dimension', 'cartera_servicios')->get();
+        $gapHabilitacion = $evaluacion->gapAnalysis()->where('dimension', 'condiciones_habilitantes')->get();
+
+        return view('admin.riiss.evaluaciones.resumen_publico', compact(
+            'evaluacion', 'est', 'validacionesEspecialidades', 'especialidadesAgregadas',
+            'gapCartera', 'gapHabilitacion'
+        ));
+    }
+
     private function authorizeEvaluacion(Evaluacion $evaluacion): void
     {
         if (!auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Analista - RIISS', 'Analista RIISS', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS'])) {

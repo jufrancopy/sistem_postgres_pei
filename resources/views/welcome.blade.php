@@ -5,9 +5,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>SIPLAN — Sistema de Planificación Estratégica · IPS Paraguay</title>
-<link rel="icon" type="image/png" href="{{ asset('material/img/favicon.png') }}">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -137,6 +137,11 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .btn-matriz{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:var(--radius-xs);font-size:10px;font-weight:700;background:var(--blue-50);color:var(--blue);border:1px solid var(--blue-100);cursor:pointer;white-space:nowrap;transition:all .15s}
 .btn-matriz:hover{background:var(--blue-100);transform:translateY(-1px)}
 .btn-matriz svg{flex-shrink:0}
+.btn-resumen{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:var(--radius-xs);font-size:10px;font-weight:700;background:var(--green-50);color:var(--green);border:1px solid rgba(16,185,129,0.3);cursor:pointer;white-space:nowrap;transition:all .15s}
+.btn-resumen:hover{background:var(--green);color:#fff;transform:translateY(-1px);box-shadow:0 2px 6px rgba(16,185,129,0.3)}
+.btn-resumen svg{flex-shrink:0}
+.eval-name-link{cursor:pointer;transition:color .15s}
+.eval-name-link:hover{color:var(--blue);text-decoration:underline}
 
 /* ═══ NIVELES — ESCALA VISUAL ═══ */
 .nivel-visual{padding:20px;display:flex;flex-direction:column;gap:10px}
@@ -491,7 +496,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                 $offset = $circumference - ($p / 100) * $circumference;
             @endphp
             <div class="eval-row">
-                <div class="eval-ring">
+                <div class="eval-ring btn-resumen-trigger" data-eval="{{ $ev->id }}" data-nombre="{{ $ev->establecimiento?->nombre_oficial ?? 'Ficha Técnica' }}" style="cursor:pointer;" title="Ver Ficha Técnica">
                     <svg viewBox="0 0 42 42">
                         <circle class="ring-bg" cx="21" cy="21" r="17"/>
                         <circle class="ring-fg" cx="21" cy="21" r="17"
@@ -502,7 +507,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                     <div class="ring-pct" style="color:{{ $dc }}">{{ round($p) }}%</div>
                 </div>
                 <div class="eval-info">
-                    <div class="eval-name" title="{{ $ev->establecimiento?->nombre_oficial ?? '' }}">{{ $ev->establecimiento?->nombre_oficial ?? '—' }}</div>
+                    <div class="eval-name eval-name-link btn-resumen-trigger" data-eval="{{ $ev->id }}" data-nombre="{{ $ev->establecimiento?->nombre_oficial ?? 'Ficha Técnica' }}" title="Ver Ficha Técnica: {{ $ev->establecimiento?->nombre_oficial ?? '' }}">{{ $ev->establecimiento?->nombre_oficial ?? '—' }}</div>
                     <div class="eval-sub">
                         @if($ev->establecimiento?->complejidadTipo?->nombre)<span>{{ $ev->establecimiento?->complejidadTipo?->nombre }}</span>@endif
                         @if($ev->fecha_evaluacion)<span>{{ \Carbon\Carbon::parse($ev->fecha_evaluacion)->format('d/m/Y') }}</span>@endif
@@ -510,6 +515,13 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
                 </div>
                 <div class="eval-actions">
                     <span class="state-tag {{ $stc }}">{{ ucfirst(str_replace('_',' ',$ev->estado)) }}</span>
+                    <button class="btn-resumen btn-resumen-trigger"
+                            data-eval="{{ $ev->id }}"
+                            data-nombre="{{ $ev->establecimiento?->nombre_oficial ?? 'Ficha Técnica' }}"
+                            title="Ver Ficha Técnica y Resumen del Relevamiento">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        Ficha
+                    </button>
                     <button class="btn-matriz"
                             data-eval="{{ $ev->id }}"
                             data-nombre="{{ $ev->establecimiento?->nombre_oficial ?? 'Evaluación #'.$ev->id }}"
@@ -887,6 +899,24 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     </div>
 </div>
 
+{{-- MODAL RESUMEN TÉCNICO / FICHA PÚBLICA --}}
+<div id="modalResumenTecnico" class="modal-bg" role="dialog" aria-modal="true" aria-label="Ficha Técnica del Relevamiento">
+    <div class="modal-card" style="max-width: 1040px; width: 95vw;">
+        <div class="modal-top" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+            <div style="position:relative;z-index:1">
+                <div style="font-size:10px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:2px">
+                    <i class="fa fa-file-medical-alt mr-1" style="color:#38bdf8;"></i> Resumen Técnico del Relevamiento
+                </div>
+                <div id="modalResumenNombre" style="font-size:16px;font-weight:800;color:#fff;font-family:'Outfit', sans-serif;"></div>
+            </div>
+            <button class="modal-x" onclick="cerrarModalResumenTecnico()" aria-label="Cerrar">✕</button>
+        </div>
+        <div id="modalResumenBody" class="modal-content" style="max-height: 82vh; overflow-y: auto; padding: 24px; background: #f8fafc;">
+            <div style="text-align:center;padding:3rem;color:var(--muted)"><div class="spinner"></div>Cargando ficha técnica…</div>
+        </div>
+    </div>
+</div>
+
 <script>
 (function(){
     'use strict';
@@ -970,6 +1000,49 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     document.addEventListener('keydown', function(e){ if (e.key==='Escape' && overlay.classList.contains('open')) cerrar(); });
     window.cerrarModalMatriz = cerrar;
 
+    /* ═══ MODAL RESUMEN TÉCNICO ═══ */
+    var overlayResumen = document.getElementById('modalResumenTecnico');
+    var mResumenBody = document.getElementById('modalResumenBody');
+    var mResumenNombre = document.getElementById('modalResumenNombre');
+
+    function abrirResumen(id, nombre) {
+        prevFocus = document.activeElement;
+        mResumenNombre.textContent = nombre;
+        mResumenBody.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)"><div class="spinner"></div>Cargando ficha técnica…</div>';
+        overlayResumen.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        fetch('/riiss/evaluaciones/'+id+'/resumen-partial', {headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(function(r){return r.text()})
+        .then(function(html){
+            mResumenBody.innerHTML = html;
+            mResumenBody.querySelectorAll('script').forEach(function(s){
+                var ns = document.createElement('script');
+                ns.textContent = s.textContent;
+                s.parentNode.replaceChild(ns,s);
+            });
+        })
+        .catch(function(){
+            mResumenBody.innerHTML = '<div class="empty" style="padding:3rem"><i class="fa fa-exclamation-circle" style="color:var(--red);opacity:.4"></i><p style="color:var(--red)">Error al cargar el resumen técnico.</p></div>';
+        });
+    }
+
+    function cerrarResumen() {
+        overlayResumen.classList.remove('open');
+        document.body.style.overflow = '';
+        if (prevFocus) { prevFocus.focus(); prevFocus = null; }
+    }
+
+    document.addEventListener('click', function(e) {
+        var b = e.target.closest('.btn-resumen-trigger');
+        if (b) { e.preventDefault(); abrirResumen(b.dataset.eval, b.dataset.nombre); }
+    });
+
+    if (overlayResumen) {
+        overlayResumen.addEventListener('click', function(e){ if (e.target === overlayResumen) cerrarResumen(); });
+    }
+    document.addEventListener('keydown', function(e){ if (e.key==='Escape' && overlayResumen && overlayResumen.classList.contains('open')) cerrarResumen(); });
+    window.cerrarModalResumenTecnico = cerrarResumen;
+
     /* ═══ RING ANIMATION ON SCROLL ═══ */
     if ('IntersectionObserver' in window) {
         var io = new IntersectionObserver(function(entries){
@@ -1012,7 +1085,49 @@ document.addEventListener('click', function(e) {
     var m = document.getElementById('modalFlyerManifiesto');
     if (m && e.target === m) cerrarModalFlyerManifiesto();
 });
+
+window.verFotoLightbox = function(url, desc, fecha, titulo) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: titulo || 'Evidencia Fotográfica',
+            text: desc || '',
+            imageUrl: url,
+            imageAlt: 'Foto Relevamiento',
+            imageWidth: '100%',
+            imageHeight: 'auto',
+            showCloseButton: true,
+            showConfirmButton: false,
+            background: '#0f172a',
+            color: '#fff'
+        });
+    } else {
+        window.open(url, '_blank');
+    }
+};
+
+window.copiarUrlFicha = function(url) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function() {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Enlace copiado al portapapeles 📋',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            } else {
+                alert('Enlace copiado: ' + url);
+            }
+        });
+    } else {
+        prompt('Copie el enlace:', url);
+    }
+};
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 {{-- MODAL FLYER MANIFIESTO SIPLAN --}}
 <div class="modal-bg" id="modalFlyerManifiesto">
