@@ -1,10 +1,50 @@
 @extends('layouts.master')
 
-@section('title', 'Gestión de Enlaces y Relevamiento — Hospitales Área Interior y Central')
+@section('title', 'Validación de Especialidades Médicas')
+
+@push('styles')
+<style>
+.circle-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    transition: all 0.2s;
+}
+.circle-btn:hover {
+    transform: scale(1.08);
+}
+.kpi-stat-card {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    transition: transform 0.2s ease;
+}
+.kpi-stat-card:hover {
+    transform: translateY(-2px);
+}
+</style>
+@endpush
 
 @section('content')
-<div class="content">
-    <div class="container-fluid">
+<div class="card">
+    <div class="card-header card-header-info">
+        <h4 class="card-title">Módulo de Validación de Especialidades Médicas</h4>
+    </div>
+
+    <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ route('riiss.index') }}">RIISS</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Validación de Especialidades Médicas (Hospitales Área Interior y Central)</li>
+        </ol>
+    </nav>
+
+    <div class="container-fluid px-3">
 
         {{-- Alertas --}}
         @if(session('success'))
@@ -16,253 +56,235 @@
             </div>
         @endif
 
-        {{-- Cabecera Principal --}}
+        {{-- Tarjetas KPI de Resumen --}}
         <div class="row mb-3">
-            <div class="col-12">
-                <div class="card text-white shadow-sm border-0" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0369a1 100%);">
-                    <div class="card-body p-4">
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                            <div>
-                                <span class="badge badge-info px-3 py-1 text-uppercase" style="letter-spacing:1px; font-size:11px;">
-                                    <i class="fa fa-stethoscope mr-1"></i> DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR Y CENTRAL
-                                </span>
-                                <h2 class="font-weight-bold mt-2 mb-1 text-white">Validación de Especialidades Médicas</h2>
-                                <p class="text-light mb-0 font-weight-300" style="font-size:14px; opacity: 0.9;">
-                                    Generación de enlaces con código único por validador, segmentación territorial y relevamiento en tiempo real con el catálogo de Bioestadística.
-                                </p>
-                            </div>
-                            <div class="mt-3 mt-md-0 d-flex flex-wrap" style="gap: 8px;">
-                                <button type="button" class="btn btn-outline-light btn-lg font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalClasificacionTerritorial">
-                                    <i class="fa fa-map-marked-alt mr-1"></i> Clasificación Territorial ({{ $totalEstablecimientos }})
-                                </button>
-                                <button type="button" class="btn btn-success btn-lg shadow font-weight-bold" data-toggle="modal" data-target="#modalGenerarEnlace">
-                                    <i class="fa fa-plus-circle mr-1"></i> Generar Nuevo Enlace
-                                </button>
-                            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #00bcd4 !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 11px;">Área Interior</div>
+                            <div class="h3 font-weight-bold text-dark mb-0 mt-1">{{ $totalInterior }}</div>
+                            <small class="text-muted">{{ count($deptosInterior) }} Departamentos</small>
+                        </div>
+                        <div class="bg-light p-3 rounded-circle text-info">
+                            <i class="fa fa-hospital fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #2196f3 !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 11px;">Área Central / Capital</div>
+                            <div class="h3 font-weight-bold text-primary mb-0 mt-1">{{ $totalCentral }}</div>
+                            <small class="text-muted">Central y Asunción</small>
+                        </div>
+                        <div class="bg-light p-3 rounded-circle text-primary">
+                            <i class="fa fa-city fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #4caf50 !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 11px;">Especialidades Validadas</div>
+                            <div class="h3 font-weight-bold text-success mb-0 mt-1">{{ $totalRegistrosValidados }}</div>
+                            <small class="text-success font-weight-bold">Confirmadas Activas</small>
+                        </div>
+                        <div class="bg-light p-3 rounded-circle text-success">
+                            <i class="fa fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #f44336 !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 11px;">Especialidades Inactivadas</div>
+                            <div class="h3 font-weight-bold text-danger mb-0 mt-1">{{ $totalRegistrosInactivos }}</div>
+                            <small class="text-muted">{{ $totalConRevision }} Centros Auditados</small>
+                        </div>
+                        <div class="bg-light p-3 rounded-circle text-danger">
+                            <i class="fa fa-times-circle fa-2x"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- KPIs de Avance --}}
-        <div class="row">
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #0284c7 !important;">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="text-muted text-uppercase small font-weight-bold">Área Interior</div>
-                                <div class="h3 font-weight-bold text-dark mb-0 mt-1">{{ $totalInterior }}</div>
-                                <small class="text-muted">{{ count($deptosInterior) }} Departamentos</small>
-                            </div>
-                            <div class="bg-light p-3 rounded-circle text-primary">
-                                <i class="fa fa-hospital fa-2x"></i>
+        {{-- Card Principal con Tabla de Enlaces --}}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header d-flex flex-wrap align-items-center justify-content-between bg-white py-3">
+                <div class="d-flex align-items-center mb-2 mb-md-0">
+                    <label class="font-weight-bold mr-2 mb-0 text-dark small">
+                        <i class="fa fa-filter text-info mr-1"></i> Área:
+                    </label>
+                    <form method="GET" action="{{ route('riiss.validaciones.index') }}" class="form-inline">
+                        <select name="area" class="form-control form-control-sm font-weight-bold mr-2" onchange="this.form.submit()" style="min-width: 170px;">
+                            <option value="">📋 Todas las Áreas</option>
+                            <option value="AREA INTERIOR" @selected(request('area') === 'AREA INTERIOR')>🏥 Área Interior ({{ $totalInterior }})</option>
+                            <option value="AREA CENTRAL" @selected(request('area') === 'AREA CENTRAL')>🏙️ Área Central ({{ $totalCentral }})</option>
+                        </select>
+                    </form>
+                </div>
+
+                <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
+                    <form method="GET" action="{{ route('riiss.validaciones.index') }}" class="form-inline mr-2">
+                        @if(request('area'))
+                            <input type="hidden" name="area" value="{{ request('area') }}">
+                        @endif
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="buscar" class="form-control" placeholder="Buscar analista o código..." value="{{ request('buscar') }}">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-info" type="submit">
+                                    <i class="fa fa-search"></i>
+                                </button>
                             </div>
                         </div>
-                    </div>
+                    </form>
+
+                    <button type="button" class="btn btn-outline-info font-weight-bold" data-toggle="modal" data-target="#modalClasificacionTerritorial">
+                        <i class="fa fa-map-marked-alt mr-1"></i> Clasificación Territorial ({{ $totalEstablecimientos }})
+                    </button>
+                    <button type="button" class="btn btn-success font-weight-bold" data-toggle="modal" data-target="#modalGenerarEnlace">
+                        <i class="fa fa-plus mr-1"></i> Nuevo Enlace de Validador
+                    </button>
                 </div>
             </div>
 
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #3b82f6 !important;">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="text-muted text-uppercase small font-weight-bold">Área Central / Capital</div>
-                                <div class="h3 font-weight-bold text-primary mb-0 mt-1">{{ $totalCentral }}</div>
-                                <small class="text-muted">Central y Asunción</small>
-                            </div>
-                            <div class="bg-light p-3 rounded-circle text-info">
-                                <i class="fa fa-city fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #10b981 !important;">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="text-muted text-uppercase small font-weight-bold">Especialidades Validadas</div>
-                                <div class="h3 font-weight-bold text-success mb-0 mt-1">{{ $totalRegistrosValidados }}</div>
-                                <small class="text-success font-weight-bold">Confirmadas Activas</small>
-                            </div>
-                            <div class="bg-light p-3 rounded-circle text-success">
-                                <i class="fa fa-check-circle fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #ef4444 !important;">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="text-muted text-uppercase small font-weight-bold">Especialidades Inactivadas</div>
-                                <div class="h3 font-weight-bold text-danger mb-0 mt-1">{{ $totalRegistrosInactivos }}</div>
-                                <small class="text-muted">{{ $totalConRevision }} Centros auditados</small>
-                            </div>
-                            <div class="bg-light p-3 rounded-circle text-danger">
-                                <i class="fa fa-times-circle fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Tabla de Enlaces Generados para Validadores --}}
-        <div class="row">
-            <div class="col-12">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                        <h5 class="mb-2 mb-md-0 font-weight-bold text-dark">
-                            <i class="fa fa-link text-primary mr-2"></i> Enlaces y Accesos de Validadores Asignados
-                        </h5>
-                        
-                        <form method="GET" action="{{ route('riiss.validaciones.index') }}" class="form-inline">
-                            <select name="area" class="form-control form-control-sm mr-2" onchange="this.form.submit()">
-                                <option value="">Todas las Áreas</option>
-                                <option value="AREA INTERIOR" @selected(request('area') === 'AREA INTERIOR')>Área Interior</option>
-                                <option value="AREA CENTRAL" @selected(request('area') === 'AREA CENTRAL')>Área Central</option>
-                            </select>
-
-                            <div class="input-group input-group-sm">
-                                <input type="text" name="buscar" class="form-control" placeholder="Buscar por analista o código..." value="{{ request('buscar') }}">
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-primary" type="submit">
-                                        <i class="fa fa-search"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="thead-light" style="background-color: #f8fafc; font-size:12px;">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0" style="width:100%;">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th style="width: 50px;" class="text-center">#</th>
+                                <th style="width: 130px;" class="text-center">Código Acceso</th>
+                                <th style="max-width: 250px;">Analista Responsable</th>
+                                <th style="width: 200px;">Dirección / Alcance Asignado</th>
+                                <th style="width: 120px;" class="text-center">Registros Guardados</th>
+                                <th style="width: 100px;" class="text-center">Estado</th>
+                                <th style="width: 180px;" class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($sesiones as $idx => $s)
                                 <tr>
-                                    <th style="width: 14%;">Código de Acceso</th>
-                                    <th style="width: 24%;">Analista Responsable</th>
-                                    <th style="width: 20%;">Dirección / Alcance Asignado</th>
-                                    <th style="width: 12%;" class="text-center">Registros Guardados</th>
-                                    <th style="width: 10%;" class="text-center">Estado</th>
-                                    <th style="width: 20%;" class="text-right">Acciones y Enlace</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($sesiones as $s)
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-primary px-2 py-1 font-weight-bold" style="font-size:12px; letter-spacing:0.5px; background-color:#0284c7;">
-                                                <i class="fa fa-key mr-1"></i> {{ $s->codigo_acceso }}
-                                            </span>
-                                            <div class="text-muted small mt-1" style="font-size:11px;">
-                                                Creado: {{ $s->created_at->format('d/m/Y H:i') }}
+                                    <td class="text-center font-weight-bold text-muted">{{ $loop->iteration }}</td>
+                                    <td class="text-center">
+                                        <span class="badge badge-info px-2 py-1 font-weight-bold" style="font-size:11.5px; letter-spacing:0.5px;">
+                                            <i class="fa fa-key mr-1"></i> {{ $s->codigo_acceso }}
+                                        </span>
+                                        <div class="text-muted small mt-1" style="font-size:10.5px;">
+                                            {{ $s->created_at->format('d/m/Y H:i') }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="font-weight-bold text-dark">{{ $s->analista_nombre }}</div>
+                                        <div class="text-muted small">{{ $s->analista_cargo ?: 'Analista Técnico' }}</div>
+                                        @if($s->analista_documento || $s->analista_telefono)
+                                            <div class="text-muted small" style="font-size:10.5px;">
+                                                @if($s->analista_documento) C.I.: {{ $s->analista_documento }} @endif
+                                                @if($s->analista_telefono) · Tel: {{ $s->analista_telefono }} @endif
                                             </div>
-                                        </td>
-                                        <td>
-                                            <div class="font-weight-bold text-dark">{{ $s->analista_nombre }}</div>
-                                            <div class="text-muted small">{{ $s->analista_cargo ?: 'Analista Técnico' }}</div>
-                                            @if($s->analista_documento || $s->analista_telefono)
-                                                <div class="text-muted small" style="font-size:10.5px;">
-                                                    @if($s->analista_documento) C.I.: {{ $s->analista_documento }} @endif
-                                                    @if($s->analista_telefono) · Tel: {{ $s->analista_telefono }} @endif
-                                                </div>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($s->area_gestion === 'AREA CENTRAL')
-                                                <span class="badge badge-info px-2 py-1 font-weight-bold">
-                                                    <i class="fa fa-city mr-1"></i> Área Central
-                                                </span>
-                                            @else
-                                                <span class="badge badge-primary px-2 py-1 font-weight-bold" style="background-color: #0f766e;">
-                                                    <i class="fa fa-hospital mr-1"></i> Área Interior
-                                                </span>
-                                            @endif
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($s->area_gestion === 'AREA CENTRAL')
+                                            <span class="badge badge-primary px-2 py-1 font-weight-bold">
+                                                <i class="fa fa-city mr-1"></i> Área Central
+                                            </span>
+                                        @else
+                                            <span class="badge badge-info px-2 py-1 font-weight-bold" style="background-color: #00bcd4;">
+                                                <i class="fa fa-hospital mr-1"></i> Área Interior
+                                            </span>
+                                        @endif
 
-                                            <div class="mt-1" style="font-size:11.5px;">
-                                                @if($s->departamento_filtro)
-                                                    <span class="text-dark font-weight-bold">
-                                                        <i class="fa fa-map-marker-alt text-danger mr-1"></i> {{ $s->departamento_filtro }}
-                                                    </span>
-                                                @else
-                                                    <span class="text-muted">
-                                                        <i class="fa fa-globe-americas mr-1"></i> Todos los Dptos. del Área
-                                                    </span>
-                                                @endif
-                                            </div>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="font-weight-bold text-primary" style="font-size:14px;">
-                                                {{ $s->registros_count }}
-                                            </span>
-                                            <div class="text-muted small" style="font-size:10px;">especialidades</div>
-                                        </td>
-                                        <td class="text-center">
-                                            @if($s->estado === 'finalizado')
-                                                <span class="badge badge-success px-2 py-1 font-weight-bold">
-                                                    <i class="fa fa-check mr-1"></i> Finalizado
+                                        <div class="mt-1" style="font-size:11px;">
+                                            @if($s->departamento_filtro)
+                                                <span class="text-dark font-weight-bold">
+                                                    <i class="fa fa-map-marker-alt text-danger mr-1"></i> {{ $s->departamento_filtro }}
                                                 </span>
                                             @else
-                                                <span class="badge badge-light border border-success text-success px-2 py-1 font-weight-bold">
-                                                    <i class="fa fa-spinner fa-pulse mr-1"></i> Activo
+                                                <span class="text-muted">
+                                                    <i class="fa fa-globe-americas mr-1"></i> Todos los Dptos. del Área
                                                 </span>
                                             @endif
-                                        </td>
-                                        <td class="text-right">
-                                            <div class="btn-group btn-group-sm">
-                                                <button type="button" 
-                                                        class="btn btn-outline-primary btn-copy" 
-                                                        data-url="{{ $s->url_acceso }}"
-                                                        title="Copiar Enlace Directo para enviar al Validador">
-                                                    <i class="fa fa-copy mr-1"></i> Copiar Enlace
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="font-weight-bold text-info" style="font-size:15px;">
+                                            {{ $s->registros_count }}
+                                        </span>
+                                        <div class="text-muted small" style="font-size:10px;">especialidades</div>
+                                    </td>
+                                    <td class="text-center">
+                                        @if($s->estado === 'finalizado')
+                                            <span class="badge badge-success px-2 py-1 font-weight-bold">
+                                                <i class="fa fa-check mr-1"></i> Finalizado
+                                            </span>
+                                        @else
+                                            <span class="badge badge-light border border-success text-success px-2 py-1 font-weight-bold">
+                                                <i class="fa fa-spinner fa-pulse mr-1"></i> Activo
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center" style="gap: 6px;">
+                                            {{-- Copiar enlace --}}
+                                            <button type="button" 
+                                                    class="circle-btn btn btn-outline-info btn-copy" 
+                                                    data-url="{{ $s->url_acceso }}"
+                                                    title="Copiar Enlace Directo">
+                                                <i class="fa fa-copy"></i>
+                                            </button>
+                                            
+                                            {{-- Abrir portal --}}
+                                            <a href="{{ $s->url_acceso }}" target="_blank" class="circle-btn btn btn-info text-white" title="Abrir Portal de Validación">
+                                                <i class="fa fa-external-link-alt"></i>
+                                            </a>
+
+                                            {{-- Imprimir acta --}}
+                                            <a href="{{ route('riiss.portal-validador.acta-imprimir', $s->token) }}" target="_blank" class="circle-btn btn btn-outline-secondary" title="Imprimir / Ver Acta Consolidada">
+                                                <i class="fa fa-print"></i>
+                                            </a>
+
+                                            {{-- Eliminar --}}
+                                            <form action="{{ route('riiss.validaciones.eliminar-enlace', $s->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar este enlace de validador?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="circle-btn btn btn-danger text-white" title="Eliminar Enlace">
+                                                    <i class="fa fa-trash"></i>
                                                 </button>
-                                                
-                                                <a href="{{ $s->url_acceso }}" target="_blank" class="btn btn-primary" title="Abrir Portal de Validación">
-                                                    <i class="fa fa-external-link-alt"></i>
-                                                </a>
-
-                                                <a href="{{ route('riiss.portal-validador.acta-imprimir', $s->token) }}" target="_blank" class="btn btn-outline-secondary" title="Imprimir / Ver Acta Consolidada">
-                                                    <i class="fa fa-print"></i>
-                                                </a>
-
-                                                <form action="{{ route('riiss.validaciones.eliminar-enlace', $s->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar este enlace de validador?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-outline-danger" title="Eliminar Enlace">
-                                                        <i class="fa fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="text-center py-5 text-muted">
-                                            <i class="fa fa-link fa-3x mb-3 text-secondary" style="opacity: 0.5;"></i>
-                                            <p class="mb-1 font-weight-bold">No hay enlaces de validadores generados aún.</p>
-                                            <p class="small">Haga clic en el botón <strong>"Generar Nuevo Enlace"</strong> para crear el primer acceso de relevamiento.</p>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    @if($sesiones->hasPages())
-                        <div class="card-footer bg-white d-flex justify-content-center">
-                            {{ $sesiones->links() }}
-                        </div>
-                    @endif
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <i class="fa fa-link fa-3x mb-3 text-secondary" style="opacity: 0.4;"></i>
+                                        <p class="mb-1 font-weight-bold">No hay enlaces de validadores generados aún.</p>
+                                        <p class="small">Haga clic en <strong>"+ Nuevo Enlace de Validador"</strong> para emitir el primer acceso de relevamiento.</p>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
+
+            @if($sesiones->hasPages())
+                <div class="card-footer bg-white d-flex justify-content-center py-3">
+                    {{ $sesiones->links() }}
+                </div>
+            @endif
         </div>
 
     </div>
@@ -274,8 +296,8 @@
         <div class="modal-content border-0 shadow-lg">
             <form action="{{ route('riiss.validaciones.generar-enlace') }}" method="POST">
                 @csrf
-                <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #0369a1 100%);">
-                    <h5 class="modal-title font-weight-bold" id="modalGenerarEnlaceLabel">
+                <div class="modal-header card-header-info py-3 px-4">
+                    <h5 class="modal-title font-weight-bold text-white" id="modalGenerarEnlaceLabel">
                         <i class="fa fa-key mr-2"></i> Generar Enlace Único de Validador
                     </h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
@@ -331,7 +353,7 @@
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary font-weight-bold">
+                    <button type="submit" class="btn btn-info font-weight-bold">
                         <i class="fa fa-link mr-1"></i> Generar y Emitir Enlace
                     </button>
                 </div>
@@ -344,9 +366,9 @@
 <div class="modal fade" id="modalClasificacionTerritorial" tabindex="-1" role="dialog" aria-labelledby="modalClasificacionLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
-                <h5 class="modal-title font-weight-bold" id="modalClasificacionLabel">
-                    <i class="fa fa-map-marked-alt mr-2 text-info"></i> Clasificación Territorial de Establecimientos (Área Central vs Interior)
+            <div class="modal-header card-header-info py-3 px-4">
+                <h5 class="modal-title font-weight-bold text-white" id="modalClasificacionLabel">
+                    <i class="fa fa-map-marked-alt mr-2"></i> Clasificación Territorial de Establecimientos (Área Central vs Interior)
                 </h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
                     <span aria-hidden="true">&times;</span>
@@ -363,10 +385,10 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <select id="filtroAreaClasif" class="form-control form-control-sm">
-                            <option value="">Todas las Áreas</option>
-                            <option value="AREA INTERIOR">Solo Área Interior</option>
-                            <option value="AREA CENTRAL">Solo Área Central</option>
+                        <select id="filtroAreaClasif" class="form-control form-control-sm font-weight-bold">
+                            <option value="">📋 Todas las Áreas</option>
+                            <option value="AREA INTERIOR">🏥 Solo Área Interior</option>
+                            <option value="AREA CENTRAL">🏙️ Solo Área Central</option>
                         </select>
                     </div>
                     <div class="col-md-3 text-right">
@@ -377,10 +399,10 @@
                 </div>
 
                 <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
-                    <table class="table table-sm table-hover align-middle mb-0" id="tablaClasificacionEst">
-                        <thead class="thead-light sticky-top" style="background-color: #f1f5f9; font-size:11.5px;">
+                    <table class="table table-bordered table-sm table-hover align-middle mb-0" id="tablaClasificacionEst">
+                        <thead class="thead-dark sticky-top" style="font-size:11.5px;">
                             <tr>
-                                <th style="width: 12%;">Código</th>
+                                <th style="width: 12%;" class="text-center">Código</th>
                                 <th style="width: 38%;">Establecimiento de Salud</th>
                                 <th style="width: 22%;">Departamento / Tipología</th>
                                 <th style="width: 28%;" class="text-center">Área de Gestión Asignada</th>
@@ -391,7 +413,7 @@
                                 <tr class="fila-est-clasif" 
                                     data-nombre="{{ strtolower($e->nombre_oficial . ' ' . $e->id_establecimiento) }}"
                                     data-area="{{ $e->area_gestion }}">
-                                    <td class="font-weight-bold text-muted" style="font-size:11px;">
+                                    <td class="text-center font-weight-bold text-muted" style="font-size:11px;">
                                         {{ $e->id_establecimiento }}
                                     </td>
                                     <td>
@@ -410,7 +432,7 @@
                                                 <input type="radio" name="area_{{ $e->id_establecimiento }}" autocomplete="off" @checked($e->area_gestion === 'AREA INTERIOR')>
                                                 Área Interior
                                             </label>
-                                            <label class="btn {{ $e->area_gestion === 'AREA CENTRAL' ? 'btn-primary active' : 'btn-outline-secondary' }} btn-sm font-weight-bold" 
+                                            <label class="btn {{ $e->area_gestion === 'AREA CENTRAL' ? 'btn-info active' : 'btn-outline-secondary' }} btn-sm font-weight-bold" 
                                                    onclick="cambiarAreaEstablecimiento('{{ $e->id_establecimiento }}', 'AREA CENTRAL')">
                                                 <input type="radio" name="area_{{ $e->id_establecimiento }}" autocomplete="off" @checked($e->area_gestion === 'AREA CENTRAL')>
                                                 Área Central
@@ -466,7 +488,6 @@ function cambiarAreaEstablecimiento(estId, nuevaArea) {
         area_gestion: nuevaArea
     }, function(res) {
         if (res.success) {
-            // Actualizar atributo en la fila
             $(`tr[data-nombre*="${estId.toLowerCase()}"]`).attr('data-area', nuevaArea);
         }
     }).fail(function() {
@@ -483,9 +504,9 @@ $(document).ready(function() {
         var $btn = $(this);
         navigator.clipboard.writeText(url).then(function() {
             var origHtml = $btn.html();
-            $btn.removeClass('btn-outline-primary').addClass('btn-success').html('<i class="fa fa-check mr-1"></i> ¡Copiado!');
+            $btn.removeClass('btn-outline-info').addClass('btn-success').html('<i class="fa fa-check"></i>');
             setTimeout(function() {
-                $btn.removeClass('btn-success').addClass('btn-outline-primary').html(origHtml);
+                $btn.removeClass('btn-success').addClass('btn-outline-info').html(origHtml);
             }, 2500);
         }).catch(function(err) {
             alert('Enlace: ' + url);
