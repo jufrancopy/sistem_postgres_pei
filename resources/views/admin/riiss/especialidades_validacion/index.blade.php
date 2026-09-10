@@ -260,9 +260,19 @@
                                 <tr>
                                     <td class="text-center font-weight-bold text-muted">{{ $loop->iteration }}</td>
                                     <td class="text-center">
-                                        <span class="badge badge-info px-2 py-1 font-weight-bold" style="font-size:11.5px; letter-spacing:0.5px;">
+                                        <button type="button" 
+                                                class="badge badge-info px-2 py-1 font-weight-bold btn-share-validador border-0 shadow-xs" 
+                                                style="font-size:11.5px; letter-spacing:0.5px; cursor:pointer;"
+                                                data-url="{{ $s->url_acceso }}"
+                                                data-codigo="{{ $s->codigo_acceso }}"
+                                                data-analista="{{ $s->analista_nombre }}"
+                                                data-cargo="{{ $s->analista_cargo ?: 'Analista Técnico' }}"
+                                                data-telefono="{{ $s->analista_telefono ?? '' }}"
+                                                data-area="{{ $s->area_gestion }}"
+                                                data-depto="{{ $s->departamento_filtro ?? 'Todos los Dptos. del Área' }}"
+                                                title="Ver y Compartir Acceso de {{ $s->analista_nombre }}">
                                             <i class="fa fa-key mr-1"></i> {{ $s->codigo_acceso }}
-                                        </span>
+                                        </button>
                                         <div class="text-muted small mt-1" style="font-size:10.5px;">
                                             {{ $s->created_at->format('d/m/Y H:i') }}
                                         </div>
@@ -319,6 +329,20 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 6px;">
+                                            {{-- Compartir WhatsApp y Código --}}
+                                            <button type="button" 
+                                                    class="circle-btn btn btn-success text-white btn-share-validador shadow-xs" 
+                                                    data-url="{{ $s->url_acceso }}"
+                                                    data-codigo="{{ $s->codigo_acceso }}"
+                                                    data-analista="{{ $s->analista_nombre }}"
+                                                    data-cargo="{{ $s->analista_cargo ?: 'Analista Técnico' }}"
+                                                    data-telefono="{{ $s->analista_telefono ?? '' }}"
+                                                    data-area="{{ $s->area_gestion }}"
+                                                    data-depto="{{ $s->departamento_filtro ?? 'Todos los Dptos. del Área' }}"
+                                                    title="Compartir Acceso y Código por WhatsApp">
+                                                <i class="fab fa-whatsapp"></i>
+                                            </button>
+
                                             {{-- Copiar enlace --}}
                                             <button type="button" 
                                                     class="circle-btn btn btn-outline-info btn-copy" 
@@ -497,6 +521,87 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Compartir Acceso y Código a Validador / Analista (WhatsApp) --}}
+<div class="modal fade" id="modalCompartirAccesoValidador" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                        <i class="fab fa-whatsapp fa-2x text-white"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold mb-0 text-white">Compartir Acceso a Validador</h5>
+                        <small class="text-white-50">Enlace oficial con Código de Acceso asignado</small>
+                    </div>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" style="outline: none;">
+                    <span style="font-size: 1.5rem;">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body p-4 bg-light">
+                <div class="alert alert-success d-flex align-items-center mb-3 py-2 px-3 shadow-xs" style="background:#ecfdf5; border-color:#a7f3d0;">
+                    <i class="fa fa-user-check fa-lg mr-2 text-success"></i>
+                    <div>
+                        <span class="small font-weight-bold text-dark d-block" id="shareAnalistaNombre">Analista Responsable</span>
+                        <small class="text-muted" id="shareAnalistaCargo">Cargo / Jurisdicción</small>
+                    </div>
+                </div>
+
+                <div class="p-3 mb-3 bg-white rounded border">
+                    {{-- Enlace de Acceso --}}
+                    <label class="small font-weight-bold text-muted text-uppercase mb-1">
+                        <i class="fa fa-link text-primary mr-1"></i> Enlace de Acceso Directo
+                    </label>
+                    <div class="input-group mb-3">
+                        <input type="text" id="shareUrlPortal" class="form-control form-control-sm bg-light font-weight-600" readonly style="font-size: 0.82rem;">
+                        <div class="input-group-append">
+                            <button class="btn btn-sm btn-outline-primary font-weight-bold" type="button" onclick="copiarTextoInput('shareUrlPortal', '¡Enlace copiado!')">
+                                <i class="fa fa-copy mr-1"></i> Copiar
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Código de Acceso PIN --}}
+                    <div class="d-flex align-items-center justify-content-between p-2 rounded mb-2" style="background: #f0fdf4; border: 1.5px dashed #86efac;">
+                        <div>
+                            <small class="text-muted font-weight-bold d-block" style="font-size: 10.5px;">CÓDIGO DE ACCESO OFICIAL</small>
+                            <span id="shareCodigoAcceso" class="font-weight-bold text-success" style="font-size: 1.35rem; letter-spacing: 0.12em; font-family: monospace;">VAL-XXXXXX</span>
+                        </div>
+                        <button class="btn btn-sm btn-success px-3 font-weight-bold shadow-xs" type="button" onclick="copiarCodigoAccesoValidador()">
+                            <i class="fa fa-copy mr-1"></i> Copiar Código
+                        </button>
+                    </div>
+
+                    {{-- Alcance territorial --}}
+                    <div class="small text-muted p-2 rounded bg-light border mt-2">
+                        <i class="fa fa-map-marked-alt text-info mr-1"></i> <strong>Alcance:</strong> <span id="shareAlcanceTexto" class="text-dark"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column gap-2">
+                    <a href="#" id="btnShareWhatsAppDirecto" target="_blank" class="btn btn-success font-weight-bold py-2 shadow-sm mb-2 text-center" style="background: #25d366; border: none; font-size: 13.5px;">
+                        <i class="fab fa-whatsapp fa-lg mr-2"></i> Enviar Mensaje por WhatsApp
+                    </a>
+
+                    <button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold mb-2 py-2" onclick="copiarMensajeCompletoValidador()">
+                        <i class="fa fa-clipboard mr-1"></i> Copiar Mensaje Completo para Pegar
+                    </button>
+
+                    <a href="#" id="btnShareAbrirPortal" target="_blank" class="btn btn-link btn-sm text-primary text-center mt-1 font-weight-bold">
+                        <i class="fa fa-external-link-alt mr-1"></i> Abrir Portal de Validador para verificar
+                    </a>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-white py-2">
+                <button type="button" class="btn btn-secondary btn-sm font-weight-bold px-3" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -804,6 +909,111 @@ $(document).ready(function() {
             }
         });
     }
+
+    // ── MODAL COMPARTIR VALIDADOR POR WHATSAPP Y CÓDIGO ──
+    var _ultimoCodigoValidador = '';
+    var _ultimoMensajeWhatsAppValidador = '';
+
+    window.abrirModalCompartirValidador = function(data) {
+        _ultimoCodigoValidador = data.codigo || '';
+        
+        $('#shareAnalistaNombre').text(data.analista || 'Analista Responsable');
+        $('#shareAnalistaCargo').text((data.cargo || 'Analista Técnico') + (data.telefono ? ' · Tel: ' + data.telefono : ''));
+        $('#shareUrlPortal').val(data.url || '');
+        $('#shareCodigoAcceso').text(data.codigo || 'VAL-XXXXXX');
+        $('#shareAlcanceTexto').text((data.area || 'Área Interior') + ' — ' + (data.depto || 'Todos los Departamentos'));
+
+        var mensaje = `*SIPLAN GO — MÓDULO DE VALIDACIÓN DE ESPECIALIDADES MÉDICAS*\n🏛️ *Instituto de Previsión Social (IPS)*\n\nEstimado/a *${data.analista || 'Analista'}*, se le ha asignado el acceso oficial para el relevamiento y validación de especialidades médicas:\n\n📍 *Área / Jurisdicción:* ${data.area || 'Área Interior'}\n📋 *Alcance Asignado:* ${data.depto || 'Todos los Departamentos'}\n🔑 *CÓDIGO DE ACCESO:* *${data.codigo || ''}*\n\n🔗 *Enlace Directo al Portal:*\n${data.url || ''}\n\n_Por favor ingrese al enlace para validar o inactivar las especialidades de los establecimientos asignados._`;
+
+        _ultimoMensajeWhatsAppValidador = mensaje;
+
+        var urlWa = 'https://api.whatsapp.com/send?';
+        if (data.telefono) {
+            var cleanPhone = data.telefono.replace(/\D/g, '');
+            if (cleanPhone.length >= 9 && !cleanPhone.startsWith('595')) {
+                cleanPhone = '595' + cleanPhone.replace(/^0+/, '');
+            }
+            urlWa += 'phone=' + cleanPhone + '&';
+        }
+        urlWa += 'text=' + encodeURIComponent(mensaje);
+
+        $('#btnShareWhatsAppDirecto').attr('href', urlWa);
+        $('#btnShareAbrirPortal').attr('href', data.url || '#');
+
+        $('#modalCompartirAccesoValidador').modal('show');
+    };
+
+    $(document).on('click', '.btn-share-validador', function(e) {
+        e.preventDefault();
+        var data = {
+            url: $(this).data('url'),
+            codigo: $(this).data('codigo'),
+            analista: $(this).data('analista'),
+            cargo: $(this).data('cargo'),
+            telefono: $(this).data('telefono'),
+            area: $(this).data('area'),
+            depto: $(this).data('depto')
+        };
+        abrirModalCompartirValidador(data);
+    });
+
+    window.copiarTextoInput = function(elemId, msg) {
+        var input = document.getElementById(elemId);
+        if (!input) return;
+        input.select();
+        input.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(input.value).then(function() {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: msg || 'Copiado al portapapeles 📋',
+                showConfirmButton: false,
+                timer: 1800
+            });
+        });
+    };
+
+    window.copiarCodigoAccesoValidador = function() {
+        if (!_ultimoCodigoValidador) return;
+        navigator.clipboard.writeText(_ultimoCodigoValidador).then(function() {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Código (' + _ultimoCodigoValidador + ') copiado 🔑',
+                showConfirmButton: false,
+                timer: 1800
+            });
+        });
+    };
+
+    window.copiarMensajeCompletoValidador = function() {
+        if (!_ultimoMensajeWhatsAppValidador) return;
+        navigator.clipboard.writeText(_ultimoMensajeWhatsAppValidador).then(function() {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Mensaje completo copiado para WhatsApp 💬',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        });
+    };
+
+    @if(session('nuevo_acceso'))
+        var nuevoAccesoData = @json(session('nuevo_acceso'));
+        abrirModalCompartirValidador({
+            url: nuevoAccesoData.url_portal,
+            codigo: nuevoAccesoData.codigo_acceso,
+            analista: nuevoAccesoData.analista,
+            cargo: nuevoAccesoData.cargo,
+            telefono: nuevoAccesoData.telefono,
+            area: nuevoAccesoData.area_gestion,
+            depto: nuevoAccesoData.departamento
+        });
+    @endif
 });
 </script>
 @endpush
