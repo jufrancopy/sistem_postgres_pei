@@ -39,6 +39,16 @@ Route::post('/riiss/portal-auditor/{token}/verificar-pin', [\App\Http\Controller
 Route::post('/riiss/portal-auditor/{token}/ping', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'ping'])->name('riiss.portal-auditor.ping');
 Route::get('/riiss/portal-auditor/{token}/pdf', [\App\Http\Controllers\Admin\Riiss\RiissAuditorPortalController::class, 'descargarPdf'])->name('riiss.portal-auditor.pdf');
 
+// ── Portal Validador de Especialidades Médicas Área Interior (Acceso con Enlace/Token) ───
+Route::get('/riiss/portal-validador/{token}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'portalValidador'])->name('riiss.portal-validador.show');
+Route::get('/riiss/portal-validador/{token}/establecimiento/{establecimiento_id}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'getEstablecimientoEspecialidades'])->name('riiss.portal-validador.especialidades');
+Route::post('/riiss/portal-validador/{token}/actualizar-especialidad', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'actualizarEspecialidad'])->name('riiss.portal-validador.actualizar');
+Route::get('/riiss/portal-validador/{token}/catalogo-bioestadistica', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'buscarEnBioestadistica'])->name('riiss.portal-validador.catalogo');
+Route::post('/riiss/portal-validador/{token}/agregar-especialidad', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'agregarEspecialidadPortal'])->name('riiss.portal-validador.agregar');
+Route::post('/riiss/portal-validador/{token}/finalizar', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'finalizarSesion'])->name('riiss.portal-validador.finalizar');
+Route::get('/riiss/portal-validador/{token}/acta-pdf', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'actaValidadorPdf'])->name('riiss.portal-validador.acta-pdf');
+Route::get('/riiss/portal-validador/{token}/acta-imprimir', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'actaValidadorImprimir'])->name('riiss.portal-validador.acta-imprimir');
+
 // ── Vistas públicas Acta de Reunión MECIP (sin autenticación) ─────────────────
 Route::get('/actas-reunion/{token}', 'Admin\Globales\ActaMecipController@publicView')->name('actas.public.show');
 Route::post('/actas-reunion/{token}/registro', 'Admin\Globales\ActaMecipController@publicRegistrar')->name('actas.public.registrar');
@@ -1086,6 +1096,14 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('establecimientos.especialidades.store');
         Route::delete('establecimientos/{id}/especialidades/{especialidad_id}', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'eliminarEspecialidad'])
             ->name('establecimientos.especialidades.destroy');
+
+        // Validación de Especialidades (Hospitales Área Interior)
+        Route::get('validaciones-especialidades', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'index'])
+            ->name('validaciones.index');
+        Route::post('validaciones-especialidades/generar-enlace', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'generarEnlace'])
+            ->name('validaciones.generar-enlace');
+        Route::delete('validaciones-especialidades/enlace/{id}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'eliminarEnlace'])
+            ->name('validaciones.eliminar-enlace');
 
         // Evaluaciones
         Route::get('evaluaciones', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'index'])

@@ -91,6 +91,9 @@ class Establecimiento extends Model
 
     public function getTipoEstLabelAttribute(): string
     {
+        if (empty($this->tipo_est)) {
+            return '';
+        }
         return TipoEstablecimientoEnum::tryFrom($this->tipo_est)?->label() ?? $this->tipo_est;
     }
 

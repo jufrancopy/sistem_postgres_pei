@@ -465,6 +465,12 @@
                                             <span class="sidebar-normal">Mis Asignaciones</span>
                                         </a>
                                     </li>
+                                    <li class="nav-item {{ str_contains($path, 'riiss/validaciones-especialidades') ? 'active' : '' }}">
+                                        <a class="nav-link" href="{{ route('riiss.validaciones.index') }}">
+                                            <span class="sidebar-mini"><i class="fa fa-stethoscope" style="font-size:.8rem; color: #0284c7;"></i></span>
+                                            <span class="sidebar-normal">Validación Especialidades</span>
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         </li>
@@ -594,6 +600,12 @@
                             <a class="nav-link" href="{{ route('riiss.mis-asignaciones') }}">
                                 <span class="sidebar-mini"><i class="fa fa-clipboard-list" style="font-size:.8rem; color: #06b6d4;"></i></span>
                                 <span class="sidebar-normal">Mis Asignaciones</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ str_contains($path, 'riiss/validaciones-especialidades') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('riiss.validaciones.index') }}">
+                                <span class="sidebar-mini"><i class="fa fa-stethoscope" style="font-size:.8rem; color: #0284c7;"></i></span>
+                                <span class="sidebar-normal">Validación Especialidades</span>
                             </a>
                         </li>
                     </ul>
