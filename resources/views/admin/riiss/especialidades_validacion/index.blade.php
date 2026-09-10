@@ -296,12 +296,12 @@
         <div class="modal-content border-0 shadow-lg">
             <form action="{{ route('riiss.validaciones.generar-enlace') }}" method="POST">
                 @csrf
-                <div class="modal-header card-header-info py-3 px-4">
-                    <h5 class="modal-title font-weight-bold text-white" id="modalGenerarEnlaceLabel">
-                        <i class="fa fa-key mr-2"></i> Generar Enlace Único de Validador
+                <div class="modal-header py-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #00acc1 0%, #26c6da 100%); color: #ffffff; border-radius: calc(0.3rem - 1px) calc(0.3rem - 1px) 0 0;">
+                    <h5 class="modal-title font-weight-bold text-white mb-0" id="modalGenerarEnlaceLabel">
+                        <i class="fa fa-key mr-2 text-white"></i> Generar Enlace Único de Validador
                     </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.9; text-shadow: none;">
+                        <span aria-hidden="true" style="font-size: 1.5rem; color: #ffffff;">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body p-4">
@@ -366,12 +366,12 @@
 <div class="modal fade" id="modalClasificacionTerritorial" tabindex="-1" role="dialog" aria-labelledby="modalClasificacionLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header card-header-info py-3 px-4">
-                <h5 class="modal-title font-weight-bold text-white" id="modalClasificacionLabel">
-                    <i class="fa fa-map-marked-alt mr-2"></i> Clasificación Territorial de Establecimientos (Área Central vs Interior)
+            <div class="modal-header py-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #00acc1 0%, #26c6da 100%); color: #ffffff; border-radius: calc(0.3rem - 1px) calc(0.3rem - 1px) 0 0;">
+                <h5 class="modal-title font-weight-bold text-white mb-0" id="modalClasificacionLabel">
+                    <i class="fa fa-map-marked-alt mr-2 text-white"></i> Clasificación Territorial de Establecimientos (Área Central vs Interior)
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.9; text-shadow: none;">
+                    <span aria-hidden="true" style="font-size: 1.5rem; color: #ffffff;">&times;</span>
                 </button>
             </div>
             <div class="modal-body p-4">
@@ -400,12 +400,12 @@
 
                 <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
                     <table class="table table-bordered table-sm table-hover align-middle mb-0" id="tablaClasificacionEst">
-                        <thead class="thead-dark sticky-top" style="font-size:11.5px;">
+                        <thead class="sticky-top" style="background: #1e293b; color: #ffffff; font-size:11.5px;">
                             <tr>
-                                <th style="width: 12%;" class="text-center">Código</th>
-                                <th style="width: 38%;">Establecimiento de Salud</th>
-                                <th style="width: 22%;">Departamento / Tipología</th>
-                                <th style="width: 28%;" class="text-center">Área de Gestión Asignada</th>
+                                <th style="width: 12%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Código</th>
+                                <th style="width: 38%; background: #1e293b; color: #ffffff; border-color: #334155;">Establecimiento de Salud</th>
+                                <th style="width: 22%; background: #1e293b; color: #ffffff; border-color: #334155;">Departamento / Tipología</th>
+                                <th style="width: 28%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Área de Gestión Asignada</th>
                             </tr>
                         </thead>
                         <tbody>
