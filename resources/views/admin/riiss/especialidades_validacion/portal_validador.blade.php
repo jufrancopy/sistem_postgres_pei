@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         :root {
@@ -36,6 +37,7 @@
             color: #ffffff;
             padding: 12px 24px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 10;
         }
 
         .portal-container {
@@ -64,28 +66,31 @@
         .lista-est-scroll {
             flex: 1;
             overflow-y: auto;
-            padding: 8px;
+            padding: 10px;
         }
 
         .est-item {
             padding: 12px 14px;
-            border-radius: 8px;
-            margin-bottom: 6px;
+            border-radius: 10px;
+            margin-bottom: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            border: 1px solid transparent;
+            border: 1.5px solid #f1f5f9;
             background: #ffffff;
+            border-left: 4px solid transparent;
         }
 
         .est-item:hover {
-            background: #f1f5f9;
+            background: #f8fafc;
             border-color: #cbd5e1;
+            transform: translateX(2px);
         }
 
         .est-item.active {
-            background: #e0f2fe;
-            border-color: #38bdf8;
-            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.12);
+            background: #f0f9ff;
+            border-color: #bae6fd;
+            border-left: 4px solid #0284c7;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.12);
         }
 
         .est-item.active .est-nombre {
@@ -100,41 +105,53 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            position: relative;
+        }
+
+        .workspace-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 450px;
+            padding: 40px 20px;
+            text-align: center;
         }
 
         .workspace-header {
             background: #ffffff;
-            padding: 20px 24px;
+            padding: 20px 28px;
             border-bottom: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
 
         .workspace-body {
-            padding: 24px;
+            padding: 24px 28px;
             flex: 1;
         }
 
         .table-especialidades {
             background: #ffffff;
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
             overflow: hidden;
         }
 
         .table-especialidades th {
             background: #f8fafc;
-            font-weight: 600;
-            font-size: 12px;
+            font-weight: 700;
+            font-size: 11.5px;
             color: #475569;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             border-bottom: 1px solid var(--border-color);
-            padding: 12px 16px;
+            padding: 14px 16px;
         }
 
         .table-especialidades td {
-            padding: 12px 16px;
+            padding: 13px 16px;
             vertical-align: middle;
             border-bottom: 1px solid #f1f5f9;
             font-size: 13.5px;
@@ -145,6 +162,7 @@
             padding-top: 2px;
             font-weight: 600;
             cursor: pointer;
+            font-size: 13px;
         }
         .custom-switch-lg .custom-control-label::before {
             height: 22px;
@@ -164,11 +182,12 @@
 
         .input-justificacion {
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 12.5px;
-            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            padding: 7px 12px;
             transition: all 0.2s;
             width: 100%;
+            background: #ffffff;
         }
         .input-justificacion:focus {
             border-color: var(--primary);
@@ -194,6 +213,71 @@
             cursor: crosshair;
             width: 100%;
             height: 180px;
+        }
+
+        /* Select2 Custom Styling */
+        .select2-container {
+            width: 100% !important;
+        }
+        .select2-container--default .select2-selection--single {
+            height: 42px !important;
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            padding: 6px 12px !important;
+            background-color: #ffffff !important;
+            font-size: 13.5px !important;
+            display: flex !important;
+            align-items: center !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .select2-container--default .select2-selection--single:focus,
+        .select2-container--default.select2-container--open .select2-selection--single {
+            border-color: #0284c7 !important;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+            outline: none;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #1e293b !important;
+            line-height: normal !important;
+            padding-left: 0 !important;
+            font-weight: 500 !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px !important;
+            right: 10px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__clear {
+            margin-right: 20px !important;
+            font-size: 16px !important;
+            color: #94a3b8 !important;
+        }
+        .select2-dropdown {
+            border: 1.5px solid #0284c7 !important;
+            border-radius: 10px !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12) !important;
+            font-size: 13px !important;
+            z-index: 9999 !important;
+            overflow: hidden !important;
+        }
+        .select2-container--default .select2-search--dropdown {
+            padding: 8px !important;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 6px !important;
+            padding: 6px 10px !important;
+            font-size: 13px !important;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+            border-color: #0284c7 !important;
+            outline: none !important;
+        }
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #0284c7 !important;
+            color: #ffffff !important;
+        }
+        .select2-results__option {
+            padding: 8px 12px !important;
         }
 
         @media (max-width: 992px) {
@@ -254,13 +338,13 @@
             <div class="sidebar-header">
                 <div class="input-group input-group-sm mb-2">
                     <div class="input-group-prepend">
-                        <span class="input-group-text bg-light border-right-0"><i class="fa fa-search text-muted"></i></span>
+                        <span class="input-group-text bg-light border-right-0" style="border-radius: 8px 0 0 8px;"><i class="fa fa-search text-muted"></i></span>
                     </div>
-                    <input type="text" id="filtroEstablecimiento" class="form-control border-left-0 bg-light" placeholder="Buscar establecimiento...">
+                    <input type="text" id="filtroEstablecimiento" class="form-control border-left-0 bg-light" style="border-radius: 0 8px 8px 0;" placeholder="Buscar por nombre...">
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center">
-                    <select id="filtroDepartamento" class="form-control form-control-sm" style="font-size: 11.5px;">
+                    <select id="filtroDepartamento" class="form-control form-control-sm" style="font-size: 12px; border-radius: 8px;">
                         <option value="">Todos los Departamentos ({{ $establecimientos->count() }})</option>
                         @foreach($departamentos as $dpto)
                             <option value="{{ $dpto }}">{{ $dpto }}</option>
@@ -286,11 +370,11 @@
                                 {{ $est->nombre_oficial }}
                             </div>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center mt-1">
-                            <span class="text-muted" style="font-size: 11px;">
-                                <i class="fa fa-map-marker-alt text-secondary"></i> {{ $est->departamento }}
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="text-muted" style="font-size: 11.5px;">
+                                <i class="fa fa-map-marker-alt text-danger mr-1"></i> {{ $est->departamento }}
                             </span>
-                            <span class="badge {{ $totalReg > 0 ? 'badge-primary' : 'badge-light border' }}" id="badge-est-{{ $est->id_establecimiento }}" style="font-size: 10px;">
+                            <span class="badge {{ $totalReg > 0 ? 'badge-primary' : 'badge-light border text-muted' }}" id="badge-est-{{ $est->id_establecimiento }}" style="font-size: 10.5px; border-radius: 6px; padding: 4px 8px;">
                                 {{ $totalReg > 0 ? $totalActivas . ' activas' : 'Sin revisar' }}
                             </span>
                         </div>
@@ -303,24 +387,26 @@
         <main class="workspace-panel" id="workspacePanel">
             
             {{-- Estado Inicial / Placeholder --}}
-            <div id="workspaceVacio" class="d-flex flex-column align-items-center justify-content-center h-100 p-5 text-center text-muted">
-                <i class="fa fa-hospital fa-4x text-muted mb-3" style="opacity: 0.3;"></i>
-                <h4 class="font-weight-bold text-dark mb-1">Seleccione un Establecimiento de Salud</h4>
-                <p class="small text-muted" style="max-width: 420px;">
+            <div id="workspaceVacio" class="workspace-empty-state">
+                <div class="mb-3">
+                    <i class="fa fa-hospital fa-4x text-muted" style="opacity: 0.25;"></i>
+                </div>
+                <h4 class="font-weight-bold text-dark mb-2">Seleccione un Establecimiento de Salud</h4>
+                <p class="text-muted" style="max-width: 440px; font-size: 13.5px; line-height: 1.6;">
                     Haga clic en cualquiera de los centros del listado de la izquierda para desplegar y validar sus especialidades médicas en tiempo real.
                 </p>
             </div>
 
             {{-- Área Activa de Trabajo --}}
-            <div id="workspaceActivo" style="display: none;">
+            <div id="workspaceActivo" style="display: none; flex-direction: column; height: 100%;">
                 
                 {{-- Encabezado del Establecimiento --}}
                 <div class="workspace-header d-flex flex-column flex-md-row justify-content-between align-items-md-center">
                     <div>
-                        <span class="badge badge-info px-2 py-1 text-uppercase font-weight-bold" id="estDeptoBadge" style="font-size: 10.5px;">
+                        <span class="badge badge-info px-2 py-1 text-uppercase font-weight-bold shadow-none" id="estDeptoBadge" style="font-size: 10.5px; border-radius: 6px;">
                             DEPARTAMENTO
                         </span>
-                        <h4 class="font-weight-bold text-dark mt-1 mb-1" id="estNombreTitulo">
+                        <h4 class="font-weight-bold text-dark mt-2 mb-1" id="estNombreTitulo" style="letter-spacing: -0.2px;">
                             Nombre del Establecimiento
                         </h4>
                         <div class="text-muted small">
@@ -329,7 +415,7 @@
                     </div>
 
                     <div class="mt-3 mt-md-0 d-flex align-items-center">
-                        <button type="button" class="btn btn-outline-primary btn-sm font-weight-bold shadow-sm mr-2" onclick="abrirModalAgregar()">
+                        <button type="button" class="btn btn-outline-primary btn-sm font-weight-bold shadow-sm" onclick="abrirModalAgregar()" style="border-radius: 8px; padding: 8px 16px;">
                             <i class="fa fa-plus-circle mr-1"></i> Agregar Especialidad (Bioestadística)
                         </button>
                     </div>
@@ -342,10 +428,10 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="font-weight-bold text-dark" style="font-size: 14px;">
                             <i class="fa fa-list-ul text-primary mr-1"></i> Especialidades Médicas Registradas
-                            <span class="badge badge-secondary ml-1" id="contadorEspecialidades">0</span>
+                            <span class="badge badge-secondary ml-1" id="contadorEspecialidades" style="border-radius: 10px; padding: 3px 8px;">0</span>
                         </div>
                         <div class="text-muted small">
-                            <i class="fa fa-info-circle text-info"></i> El campo de justificación es <strong>opcional</strong>. Los cambios se guardan automáticamente.
+                            <i class="fa fa-info-circle text-info mr-1"></i> El campo de justificación es <strong>opcional</strong>. Los cambios se guardan automáticamente.
                         </div>
                     </div>
 
@@ -355,9 +441,9 @@
                             <thead>
                                 <tr>
                                     <th style="width: 8%;" class="text-center">ID</th>
-                                    <th style="width: 32%;">Especialidad Médica (Bioestadística)</th>
+                                    <th style="width: 34%;">Especialidad Médica (Bioestadística)</th>
                                     <th style="width: 18%;" class="text-center">Estado en Centro</th>
-                                    <th style="width: 36%;">Justificación / Observación (Opcional)</th>
+                                    <th style="width: 34%;">Justificación / Observación (Opcional)</th>
                                     <th style="width: 6%;" class="text-center">Estado</th>
                                 </tr>
                             </thead>
@@ -375,43 +461,53 @@
 
     </div>
 
-    {{-- Modal para Agregar Especialidad desde Catálogo Maestro de Bioestadística --}}
+    {{-- Modal para Agregar Especialidad con Select2 --}}
     <div class="modal fade" id="modalAgregarEspecialidad" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #0369a1 100%);">
-                    <h5 class="modal-title font-weight-bold">
-                        <i class="fa fa-plus-circle mr-2"></i> Agregar Especialidad Médica
-                    </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); padding: 18px 24px;">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-white text-primary d-inline-flex align-items-center justify-content-center mr-3 shadow-sm" style="width: 36px; height: 36px; font-size: 16px;">
+                            <i class="fa fa-plus"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-weight-bold mb-0" style="font-size: 16px; letter-spacing: 0.2px;">
+                                Agregar Especialidad Médica
+                            </h5>
+                            <span class="small text-white-50">Catálogo Oficial de Bioestadística</span>
+                        </div>
+                    </div>
+                    <button type="button" class="close text-white opacity-75 hover-opacity-100" data-dismiss="modal" aria-label="Cerrar" style="outline: none;">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="text-muted small mb-3">
-                        Seleccione una especialidad médica del catálogo canónico de <strong>Bioestadística</strong> para incorporarla al establecimiento.
-                    </p>
-
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark">Buscar Especialidad en Bioestadística <span class="text-danger">*</span></label>
-                        <input type="text" id="buscadorBioestadistica" class="form-control" placeholder="Escriba para filtrar (ej. Cardiología, Pediatría)..." oninput="buscarEspecialidadesBio(this.value)">
+                    <div class="alert alert-info py-2 px-3 mb-3 border-0" style="border-radius: 8px; font-size: 12.5px; background-color: #f0f9ff; color: #0369a1;">
+                        <i class="fa fa-info-circle mr-1"></i> Seleccione una especialidad médica del catálogo canónico para incorporarla al establecimiento.
                     </div>
 
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark">Especialidad Canónica <span class="text-danger">*</span></label>
-                        <select id="selectEspecialidadBio" class="form-control" size="6" style="font-size: 13px;">
-                            <option value="" disabled>Escriba en el buscador para ver coincidencias...</option>
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">
+                            Especialidad Canónica (Bioestadística) <span class="text-danger">*</span>
+                        </label>
+                        <select id="selectEspecialidadBio" class="form-control" style="width: 100%;">
+                            <option value="">Buscar o seleccionar especialidad médica...</option>
                         </select>
+                        <small class="form-text text-muted">Escriba el nombre o código de la especialidad para buscar en el catálogo.</small>
                     </div>
 
                     <div class="form-group mb-0">
-                        <label class="font-weight-bold text-dark">Observación / Motivo de Incorporación (Opcional)</label>
-                        <input type="text" id="justificacionAgregar" class="form-control" placeholder="Ej: Incorporada recientemente en terreno...">
+                        <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">
+                            Observación / Motivo de Incorporación (Opcional)
+                        </label>
+                        <input type="text" id="justificacionAgregar" class="form-control" style="border-radius: 8px; height: 40px; font-size: 13px; border: 1.5px solid #cbd5e1;" placeholder="Ej: Incorporada recientemente en terreno...">
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary font-weight-bold" onclick="guardarNuevaEspecialidad()">
+                <div class="modal-footer bg-light" style="padding: 14px 24px; border-top: 1px solid #e2e8f0;">
+                    <button type="button" class="btn btn-secondary font-weight-bold px-3" data-dismiss="modal" style="border-radius: 8px; font-size: 13px;">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary font-weight-bold px-4 shadow-sm" onclick="guardarNuevaEspecialidad()" style="border-radius: 8px; font-size: 13px; background: linear-gradient(135deg, #0284c7, #0369a1); border: none;">
                         <i class="fa fa-check mr-1"></i> Asignar al Establecimiento
                     </button>
                 </div>
@@ -422,12 +518,20 @@
     {{-- Modal Finalizar / Firma Digital --}}
     <div class="modal fade" id="modalFinalizar" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #10b981 100%);">
-                    <h5 class="modal-title font-weight-bold">
-                        <i class="fa fa-signature mr-2"></i> Cerrar y Sellar Relevamiento
-                    </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #10b981 100%); padding: 18px 24px;">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-white text-success d-inline-flex align-items-center justify-content-center mr-3 shadow-sm" style="width: 36px; height: 36px; font-size: 16px;">
+                            <i class="fa fa-signature"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-weight-bold mb-0" style="font-size: 16px; letter-spacing: 0.2px;">
+                                Cerrar y Sellar Relevamiento
+                            </h5>
+                            <span class="small text-white-50">Constancia y Firma Digital</span>
+                        </div>
+                    </div>
+                    <button type="button" class="close text-white opacity-75 hover-opacity-100" data-dismiss="modal" aria-label="Cerrar" style="outline: none;">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -437,25 +541,27 @@
                     </p>
 
                     <div class="form-group">
-                        <label class="font-weight-bold text-dark">Lienzo de Firma Digital</label>
+                        <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">Lienzo de Firma Digital</label>
                         <div id="signature-pad" class="signature-pad">
                             <canvas id="canvasFirma"></canvas>
                         </div>
                         <div class="text-right mt-1">
-                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="limpiarFirma()">
+                            <button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold" onclick="limpiarFirma()" style="border-radius: 6px; font-size: 12px;">
                                 <i class="fa fa-eraser mr-1"></i> Limpiar Firma
                             </button>
                         </div>
                     </div>
 
                     <div class="form-group mb-0">
-                        <label class="font-weight-bold text-dark">Notas u Observaciones Generales (Opcional)</label>
-                        <textarea id="notasCierre" class="form-control" rows="2" placeholder="Observaciones finales sobre el relevamiento...">{{ $sesion->notas }}</textarea>
+                        <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">Notas u Observaciones Generales (Opcional)</label>
+                        <textarea id="notasCierre" class="form-control" rows="2" style="border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13px;" placeholder="Observaciones finales sobre el relevamiento...">{{ $sesion->notas }}</textarea>
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Seguir Editando</button>
-                    <button type="button" class="btn btn-success font-weight-bold" onclick="guardarFinalizacion()">
+                <div class="modal-footer bg-light" style="padding: 14px 24px; border-top: 1px solid #e2e8f0;">
+                    <button type="button" class="btn btn-secondary font-weight-bold px-3" data-dismiss="modal" style="border-radius: 8px; font-size: 13px;">
+                        Seguir Editando
+                    </button>
+                    <button type="button" class="btn btn-success font-weight-bold px-4 shadow-sm" onclick="guardarFinalizacion()" style="border-radius: 8px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669); border: none;">
                         <i class="fa fa-save mr-1"></i> Guardar y Finalizar
                     </button>
                 </div>
@@ -466,6 +572,7 @@
     {{-- Scripts JS --}}
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 
     <script>
@@ -481,6 +588,44 @@
         });
 
         $(document).ready(function() {
+            // Inicializar Select2 en Modal de Agregar Especialidad
+            $('#selectEspecialidadBio').select2({
+                dropdownParent: $('#modalAgregarEspecialidad'),
+                placeholder: 'Buscar especialidad por nombre o código...',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "No se encontraron especialidades en Bioestadística";
+                    },
+                    searching: function() {
+                        return "Buscando en catálogo Bioestadística...";
+                    }
+                },
+                ajax: {
+                    url: `/riiss/portal-validador/${TOKEN_SESION}/catalogo-bioestadistica`,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            q: params.term || ''
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: (data.items || []).map(function(item) {
+                                return {
+                                    id: item.id,
+                                    text: `#${item.id} — ${item.nombre}` + (item.codigo ? ` (${item.codigo})` : '')
+                                };
+                            })
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 0
+            });
+
             // Inicializar Signature Pad al abrir modal
             $('#modalFinalizar').on('shown.bs.modal', function () {
                 var canvas = document.getElementById('canvasFirma');
@@ -535,14 +680,15 @@
             $('#listaEstablecimientos .est-item').removeClass('active');
             $(`#listaEstablecimientos .est-item[data-id="${id}"]`).addClass('active');
 
+            // Ocultar placeholder y mostrar workspace activo
             $('#workspaceVacio').hide();
-            $('#workspaceActivo').show();
+            $('#workspaceActivo').css('display', 'flex');
 
             $('#tablaEspecialidadesBody').html(`
                 <tr>
-                    <td colspan="5" class="text-center py-4 text-muted">
+                    <td colspan="5" class="text-center py-5 text-muted">
                         <i class="fa fa-spinner fa-spin fa-2x mb-2 text-primary"></i>
-                        <div>Cargando especialidades médicas desde Bioestadística...</div>
+                        <div class="font-weight-600">Cargando especialidades médicas desde Bioestadística...</div>
                     </td>
                 </tr>
             `);
@@ -567,10 +713,10 @@
             if (!lista || lista.length === 0) {
                 $('#tablaEspecialidadesBody').html(`
                     <tr>
-                        <td colspan="5" class="text-center py-4 text-muted">
-                            <i class="fa fa-stethoscope fa-2x mb-2 text-secondary" style="opacity: 0.5;"></i>
-                            <div>No hay especialidades registradas aún para este establecimiento.</div>
-                            <button type="button" class="btn btn-outline-primary btn-sm mt-2 font-weight-bold" onclick="abrirModalAgregar()">
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="fa fa-stethoscope fa-2x mb-2 text-secondary" style="opacity: 0.4;"></i>
+                            <div class="font-weight-bold">No hay especialidades registradas aún para este establecimiento.</div>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-3 font-weight-bold shadow-sm" onclick="abrirModalAgregar()" style="border-radius: 8px;">
                                 <i class="fa fa-plus-circle mr-1"></i> Agregar Especialidad desde Bioestadística
                             </button>
                         </td>
@@ -586,14 +732,14 @@
 
                 html += `
                     <tr id="row-esp-${esp.especialidad_id}" class="${rowClass}">
-                        <td class="text-center font-weight-bold text-muted" style="font-size: 11.5px;">
+                        <td class="text-center font-weight-bold text-muted" style="font-size: 12px;">
                             #${esp.especialidad_id}
                         </td>
                         <td>
                             <div class="font-weight-600 text-dark">
                                 ${esp.nombre}
                             </div>
-                            ${esp.es_agregada ? '<span class="badge badge-warning text-dark font-weight-bold" style="font-size: 9.5px;"><i class="fa fa-plus mr-1"></i> Agregada en Relevamiento</span>' : ''}
+                            ${esp.es_agregada ? '<span class="badge badge-warning text-dark font-weight-bold mt-1" style="font-size: 9.5px; border-radius: 4px;"><i class="fa fa-plus mr-1"></i> Agregada en Relevamiento</span>' : ''}
                         </td>
                         <td class="text-center">
                             <div class="custom-control custom-switch custom-switch-lg d-inline-block">
@@ -620,7 +766,7 @@
                                    onblur="guardarJustificacion(${esp.especialidad_id}, this.value)">
                         </td>
                         <td class="text-center">
-                            <span class="badge badge-success badge-save" id="badge-save-${esp.especialidad_id}">
+                            <span class="badge badge-success badge-save px-2 py-1" id="badge-save-${esp.especialidad_id}">
                                 <i class="fa fa-check"></i>
                             </span>
                         </td>
@@ -690,7 +836,7 @@
             });
 
             $(`#badge-est-${estId}`)
-                .removeClass('badge-light border')
+                .removeClass('badge-light border text-muted')
                 .addClass('badge-primary')
                 .text(`${totalActivas} activas`);
         }
@@ -701,30 +847,9 @@
                 alert('Seleccione primero un establecimiento.');
                 return;
             }
-            $('#buscadorBioestadistica').val('');
             $('#justificacionAgregar').val('');
-            buscarEspecialidadesBio('');
+            $('#selectEspecialidadBio').val(null).trigger('change');
             $('#modalAgregarEspecialidad').modal('show');
-        }
-
-        let debounceBuscarBio = null;
-        function buscarEspecialidadesBio(query) {
-            clearTimeout(debounceBuscarBio);
-            debounceBuscarBio = setTimeout(function() {
-                $.get(`/riiss/portal-validador/${TOKEN_SESION}/catalogo-bioestadistica?q=${encodeURIComponent(query)}`, function(res) {
-                    if (res.success) {
-                        let opts = '';
-                        if (res.items.length === 0) {
-                            opts = '<option value="" disabled>No se encontraron especialidades en Bioestadística</option>';
-                        } else {
-                            res.items.forEach(it => {
-                                opts += `<option value="${it.id}">#${it.id} — ${it.nombre}</option>`;
-                            });
-                        }
-                        $('#selectEspecialidadBio').html(opts);
-                    }
-                });
-            }, 250);
         }
 
         function guardarNuevaEspecialidad() {
