@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class ValidacionEspecialidadesController extends Controller
 {
@@ -351,15 +352,17 @@ class ValidacionEspecialidadesController extends Controller
 
         $request->validate([
             'establecimiento_id' => 'required|string|exists:establecimientos,id_establecimiento',
-            'especialidad_id'    => 'required|integer|exists:bioestadistica.especialidades_medicas,id',
+            'especialidad_id'    => ['required', 'integer', Rule::exists(RiissEspecialidad::class, 'id')],
             'justificacion'      => 'nullable|string|max:1000',
         ]);
+
+        $esp = RiissEspecialidad::findOrFail($request->especialidad_id);
 
         // 1. Asegurar en riiss_establecimiento_especialidades
         DB::table('riiss_establecimiento_especialidades')->updateOrInsert(
             [
                 'establecimiento_id' => $request->establecimiento_id,
-                'especialidad_id'    => $request->especialidad_id,
+                'especialidad_id'    => $esp->id,
             ],
             [
                 'created_at' => now(),
