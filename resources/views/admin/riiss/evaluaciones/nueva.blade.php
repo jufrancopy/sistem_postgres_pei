@@ -220,11 +220,12 @@
 .sec-item.completa .sec-dot { background:#22c55e; }
 .sec-item.parcial  .sec-dot { background:#f97316; }
 
-.seccion-card { border-radius:12px; border:1px solid #e5e7eb; margin-bottom:20px; overflow:hidden; }
+.seccion-card { border-radius:12px; border:1px solid #e5e7eb; margin-bottom:20px; overflow:hidden; scroll-margin-top: 85px; }
+.seccion-card.highlight-section { border-color: #e91e63 !important; box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.2) !important; transition: all 0.3s ease; }
 .seccion-card .seccion-header { background:#f9fafb; padding:14px 18px; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; gap:10px; }
 .seccion-card .seccion-body { padding:18px; }
 
-.pregunta-item { padding:12px 0; border-bottom:1px solid #f3f4f6; }
+.pregunta-item { padding:12px 0; border-bottom:1px solid #f3f4f6; scroll-margin-top: 110px; }
 .pregunta-item:last-child { border-bottom:none; }
 .pregunta-label { font-size:.88rem; font-weight:500; margin-bottom:8px; }
 .pregunta-label .req-star { color:#e91e63; }
@@ -1614,7 +1615,7 @@ function aplicarRespuestasVisuales(listaRespuestas) {
 function renderSidebar(secciones) {
     var html = '';
     secciones.forEach(function(s) {
-        html += '<button class="sec-item" id="side-' + s.id + '" onclick="irSeccion(' + s.id + ')">'
+        html += '<button type="button" class="sec-item" id="side-' + s.id + '" onclick="irSeccion(' + s.id + ')">'
             + '<span class="sec-dot"></span>'
             + '<span class="flex-grow-1">' + s.seccion + '</span>'
             + '<small class="text-muted">' + s.preguntas.length + '</small>'
@@ -1780,26 +1781,79 @@ function actualizarSidebarSeccion(preguntaId) {
     });
 }
 
-// ── Navegación ────────────────────────────────────────────────────────────────
-function irSeccion(id) {
-    var el = document.getElementById('sec-' + id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    $('.sec-item').removeClass('active');
-    $('#side-' + id).addClass('active');
+// ── Navegación Multiplataforma (Windows / macOS) ─────────────────────────────
+function scrollHaciaElemento($target, offset) {
+    if (!$target || !$target.length) return;
+    offset = offset || 85;
+    var el = $target[0];
+
+    // 1. Intentar scrollIntoView nativo
+    try {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch(e) {
+        try { el.scrollIntoView(true); } catch(err) {}
+    }
+
+    // 2. Animar scroll en html/body (estándar macOS y navegadores nativos)
+    var targetOffset = $target.offset().top - offset;
+    $('html, body').stop().animate({ scrollTop: targetOffset }, 300);
+
+    // 3. Soporte para .main-panel en Windows si el contenedor tiene overflow propio
+    var $mainPanel = $('.main-panel');
+    if ($mainPanel.length && $mainPanel.get(0).scrollHeight > $mainPanel.get(0).clientHeight && $mainPanel.css('overflow-y') !== 'visible') {
+        var panelOffset = $mainPanel.offset().top;
+        var panelScroll = $mainPanel.scrollTop();
+        var pos = $target.offset().top - panelOffset + panelScroll - offset;
+        $mainPanel.stop().animate({ scrollTop: pos }, 300);
+    }
 }
 
-$(window).on('scroll', function() {
-    if (!formulario) return;
+function irSeccion(id) {
+    $('.sec-item').removeClass('active');
+    $('#side-' + id).addClass('active');
+    var $target = $('#sec-' + id);
+    if ($target.length) {
+        scrollHaciaElemento($target, 85);
+        $target.addClass('highlight-section');
+        setTimeout(function() { $target.removeClass('highlight-section'); }, 1200);
+    }
+}
+
+function irAPregunta(pid) {
+    var $target = $('#preg-' + pid);
+    if ($target.length) {
+        var seccionCard = $target.closest('.seccion-card');
+        if (seccionCard.length) {
+            var secId = seccionCard.attr('id').replace('sec-', '');
+            $('.sec-item').removeClass('active');
+            $('#side-' + secId).addClass('active');
+        }
+        scrollHaciaElemento($target, 120);
+        $target.css({
+            'background-color': '#fef9c3',
+            'transition': 'background-color 0.4s ease'
+        });
+        setTimeout(function() {
+            $target.css('background-color', '');
+        }, 2200);
+    }
+}
+
+function actualizarSeccionActivaEnScroll() {
+    if (!formulario || !formulario.secciones) return;
     formulario.secciones.forEach(function(s) {
         var el = document.getElementById('sec-' + s.id);
         if (!el) return;
         var rect = el.getBoundingClientRect();
-        if (rect.top <= 120 && rect.bottom >= 120) {
+        if (rect.top <= 140 && rect.bottom >= 140) {
             $('.sec-item').removeClass('active');
             $('#side-' + s.id).addClass('active');
         }
     });
-});
+}
+
+$(window).on('scroll', actualizarSeccionActivaEnScroll);
+$('.main-panel').on('scroll', actualizarSeccionActivaEnScroll);
 
 // ── Gestión de Firmas y Cierre Formal ─────────────────────────────────────────
 function renderModalFirmasEvaluadores() {
@@ -2213,18 +2267,8 @@ function initBuscadorPreguntas() {
         var pid = e.params.data.id;
         $('#cardDatosEstablecimiento').slideUp(150);
         setTimeout(function() {
-            var el = document.getElementById('preg-' + pid);
-            if (el) {
-                // Compatible con Windows Chrome — fallback a scrollTop si smooth no funciona
-                try {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } catch(err) {
-                    el.scrollIntoView(true);
-                }
-                $(el).css('background', '#fef9c3');
-                setTimeout(function() { $(el).css('background', ''); }, 1500);
-            }
-        }, 200);
+            irAPregunta(pid);
+        }, 180);
     });
 
     $('#buscadorPreguntas').on('select2:clear', function() {

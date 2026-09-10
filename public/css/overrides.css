@@ -32,3 +32,12 @@ body {
 .select2-dropdown {
   z-index: 99999 !important;
 }
+
+/* Fix Windows PerfectScrollbar breaking native scroll, scrollIntoView and position:sticky */
+html.perfect-scrollbar-on, 
+html.perfect-scrollbar-on body,
+html.perfect-scrollbar-on .main-panel {
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+}

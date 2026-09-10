@@ -78,6 +78,17 @@
 
 <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc  -->
 <script src="{{ asset('master/assets/js/material-dashboard.min.js?v=2.1.0') }}" type="text/javascript"></script>
+<script>
+    // En Windows Material Dashboard inicializa perfectScrollbar en .main-panel, rompiendo scrollIntoView, position:sticky y eventos scroll nativos
+    if (window.isWindows || (navigator.platform && navigator.platform.indexOf('Win') > -1)) {
+        try {
+            if (window.jQuery && $.fn && $.fn.perfectScrollbar) {
+                $('.main-panel').perfectScrollbar('destroy');
+            }
+        } catch(e) {}
+        $('html').removeClass('perfect-scrollbar-on').addClass('perfect-scrollbar-off');
+    }
+</script>
 <script src="{{ asset('js/select2.js') }}"></script>
 <script src="{{ asset('js/cursos.js') }}"></script>
 <script src="{{ asset('assets/bootbox/bootbox.all.js') }}"></script>
