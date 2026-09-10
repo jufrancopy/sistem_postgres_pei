@@ -54,6 +54,10 @@ class RiissCenterController extends Controller
 
         $buscar = trim($request->get('buscar', ''));
 
+        if ($areaGestion = trim($request->get('area_gestion', ''))) {
+            $query->where('area_gestion', $areaGestion);
+        }
+
         if ($tipologia = trim($request->get('tipologia', ''))) {
             $query->where('tipologia_clasificacion', $tipologia);
         }
@@ -128,7 +132,13 @@ class RiissCenterController extends Controller
             })
             ->addColumn('tipologia_ubicacion', function ($est) {
                 $dept = $est->departamento ?: '—';
-                return '<small>' . e($est->tipologia_clasificacion ?? '—') . '</small><br><small class="text-muted">' . e($dept) . '</small>';
+                $areaBadge = '';
+                if ($est->area_gestion === 'AREA CENTRAL') {
+                    $areaBadge = ' <span class="badge badge-primary px-1" style="font-size:0.65rem; background:#0284c7;" title="Dirección de Hospitales Área Central"><i class="fa fa-city mr-1"></i>Central</span>';
+                } elseif ($est->area_gestion === 'AREA INTERIOR') {
+                    $areaBadge = ' <span class="badge badge-success px-1" style="font-size:0.65rem; background:#059669;" title="Dirección de Hospitales Área Interior"><i class="fa fa-tree mr-1"></i>Interior</span>';
+                }
+                return '<small>' . e($est->tipologia_clasificacion ?? '—') . '</small><br><small class="text-muted">' . e($dept) . '</small>' . $areaBadge;
             })
             ->addColumn('evaluador', function ($est) {
                 $asig = $est->asignaciones->first();

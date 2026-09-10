@@ -1067,48 +1067,64 @@ function recuperarEvaluacionExistente(id) {
 function initRichTextEditors() {
     if (typeof CKEDITOR === 'undefined') return;
 
-    var ckConfig = {
-        height: 150,
-        toolbarGroups: [
-            { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
-            { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align' ] },
-            { name: 'links' },
-            { name: 'styles' },
-            { name: 'colors' }
-        ],
-        removeButtons: 'Underline,Subscript,Superscript,Strike,Styles'
-    };
+    try {
+        var ckConfig = {
+            height: 150,
+            toolbarGroups: [
+                { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+                { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align' ] },
+                { name: 'links' },
+                { name: 'styles' },
+                { name: 'colors' }
+            ],
+            removeButtons: 'Underline,Subscript,Superscript,Strike,Styles'
+        };
 
-    ['evalAspectosPositivos', 'evalObservaciones'].forEach(function(fieldId) {
-        if ($('#' + fieldId).length) {
-            if (CKEDITOR.instances[fieldId]) {
-                try { CKEDITOR.instances[fieldId].destroy(true); } catch(e){}
+        ['evalAspectosPositivos', 'evalObservaciones'].forEach(function(fieldId) {
+            if ($('#' + fieldId).length) {
+                if (CKEDITOR.instances && CKEDITOR.instances[fieldId]) {
+                    try { CKEDITOR.instances[fieldId].destroy(true); } catch(e){}
+                }
+                try {
+                    CKEDITOR.replace(fieldId, ckConfig);
+                } catch(e) {
+                    console.warn('CKEditor replace warning on ' + fieldId, e);
+                }
             }
-            CKEDITOR.replace(fieldId, ckConfig);
-        }
-    });
+        });
+    } catch(err) {
+        console.warn('CKEditor init warning:', err);
+    }
 }
 
 function getRichEditorData(fieldId) {
-    if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances[fieldId]) {
-        return CKEDITOR.instances[fieldId].getData();
+    try {
+        if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances && CKEDITOR.instances[fieldId]) {
+            return CKEDITOR.instances[fieldId].getData();
+        }
+    } catch(e) {
+        console.warn('CKEditor getData warning on ' + fieldId, e);
     }
     return $('#' + fieldId).val() || '';
 }
 
 function setRichEditorData(fieldId, content) {
     var safeContent = content || '';
-    if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances[fieldId]) {
-        if (CKEDITOR.instances[fieldId].status === 'ready') {
-            CKEDITOR.instances[fieldId].setData(safeContent);
-        } else {
-            CKEDITOR.instances[fieldId].on('instanceReady', function() {
-                this.setData(safeContent);
-            });
+    try {
+        if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances && CKEDITOR.instances[fieldId]) {
+            if (CKEDITOR.instances[fieldId].status === 'ready') {
+                CKEDITOR.instances[fieldId].setData(safeContent);
+            } else {
+                CKEDITOR.instances[fieldId].on('instanceReady', function() {
+                    this.setData(safeContent);
+                });
+            }
+            return;
         }
-    } else {
-        $('#' + fieldId).val(safeContent);
+    } catch(e) {
+        console.warn('CKEditor setData warning on ' + fieldId, e);
     }
+    $('#' + fieldId).val(safeContent);
 }
 
 // ── Crear evaluación al cargar la página ─────────────────────────────────────

@@ -82,12 +82,19 @@ class EvaluacionController extends Controller
     /**
      * GET /riiss/dashboard/datos
      */
-    public function dashboardDatos(): JsonResponse
+    public function dashboardDatos(Request $request): JsonResponse
     {
-        $evaluaciones = Evaluacion::with('establecimiento')
+        $query = Evaluacion::with('establecimiento')
             ->whereIn('estado', ['borrador', 'en_progreso', 'completada'])
-            ->orderByDesc('updated_at')
-            ->get()
+            ->orderByDesc('updated_at');
+
+        if ($area = trim($request->get('area_gestion', ''))) {
+            $query->whereHas('establecimiento', function($q) use ($area) {
+                $q->where('area_gestion', $area);
+            });
+        }
+
+        $evaluaciones = $query->get()
             ->map(function ($ev) {
                 $respondidas = $ev->respuestas()->count();
                 $totalPreguntas = 0;
@@ -97,13 +104,20 @@ class EvaluacionController extends Controller
                         ->sum(fn($s) => $s->preguntas->where('activa', true)->count());
                 } catch (\Exception $e) {}
 
-                $pct = $totalPreguntas > 0 ? round(($respondidas / $totalPreguntas) * 100, 1) : 0;
+                $pct = 0;
+                if ($ev->porcentaje_cumplimiento !== null && (float)$ev->porcentaje_cumplimiento > 0) {
+                    $pct = min(100.0, round((float)$ev->porcentaje_cumplimiento, 1));
+                } elseif ($totalPreguntas > 0) {
+                    $pct = min(100.0, round(($respondidas / $totalPreguntas) * 100, 1));
+                }
 
                 return [
                     'id'                      => $ev->id,
                     'id_establecimiento'      => $ev->id_establecimiento,
                     'establecimiento'         => $ev->establecimiento->nombre_oficial ?? '—',
                     'tipologia'               => $ev->establecimiento->tipologia_clasificacion ?? '—',
+                    'departamento'            => $ev->establecimiento->departamento ?? '—',
+                    'area_gestion'            => $ev->establecimiento->area_gestion ?? '—',
                     'complejidad'             => $ev->establecimiento->complejidad ?? '—',
                     'complejidad_color'       => $ev->establecimiento->complejidad_color ?? '#6b7280',
                     'evaluador'               => $ev->evaluador_nombre ?? '—',

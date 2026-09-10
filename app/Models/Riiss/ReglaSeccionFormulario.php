@@ -24,9 +24,12 @@ class ReglaSeccionFormulario extends Model
         return $this->belongsTo(FormularioSeccion::class, 'formulario_seccion_id');
     }
 
-    public function scopeParaTipologia($query, string $tipologia)
+    public function scopeParaTipologia($query, ?string $tipologia)
     {
-        return $query->where('tipologia_clasificacion', $tipologia);
+        if (empty($tipologia)) {
+            return $query;
+        }
+        return $query->whereRaw('UPPER(TRIM(tipologia_clasificacion)) = UPPER(TRIM(?))', [trim($tipologia)]);
     }
 
     public function scopeAplican($query)

@@ -122,7 +122,7 @@ class FormularioDinamicoService
         }
 
         $regla = ReglaSeccionFormulario::where('formulario_seccion_id', $seccion->id)
-            ->where('tipologia_clasificacion', $est->tipologia_clasificacion)
+            ->paraTipologia($est->tipologia_clasificacion)
             ->first();
 
         if ($regla) {

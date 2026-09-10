@@ -448,24 +448,38 @@
         </ol>
     </nav>
     <div class="card-body pb-2">
-        {{-- Pestañas de navegación principal --}}
-        <ul class="nav nav-pills riiss-tabs border-0" id="riissMainTabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="tab-dashboard-tab" data-toggle="tab" href="#tab-dashboard" role="tab">
-                    <i class="fa fa-chart-line mr-1"></i>Monitoreo & KPIs
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="tab-establecimientos-tab" data-toggle="tab" href="#tab-establecimientos" role="tab">
-                    <i class="fa fa-building mr-1"></i>Establecimientos & Asignaciones
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="tab-historial-tab" data-toggle="tab" href="#tab-historial" role="tab">
-                    <i class="fa fa-history mr-1"></i>Historial de Evaluaciones
-                </a>
-            </li>
-        </ul>
+        <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px;">
+            {{-- Pestañas de navegación principal --}}
+            <ul class="nav nav-pills riiss-tabs border-0 mb-2 mb-md-0" id="riissMainTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="tab-dashboard-tab" data-toggle="tab" href="#tab-dashboard" role="tab">
+                        <i class="fa fa-chart-line mr-1"></i>Monitoreo & KPIs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-establecimientos-tab" data-toggle="tab" href="#tab-establecimientos" role="tab">
+                        <i class="fa fa-building mr-1"></i>Establecimientos & Asignaciones
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-historial-tab" data-toggle="tab" href="#tab-historial" role="tab">
+                        <i class="fa fa-history mr-1"></i>Historial de Evaluaciones
+                    </a>
+                </li>
+            </ul>
+
+            {{-- Selector Territorial Rápido --}}
+            <div class="d-flex align-items-center mb-2 mb-md-0">
+                <span class="mr-2 small font-weight-bold text-muted text-uppercase d-none d-sm-inline" style="font-size:0.75rem; letter-spacing:0.5px;">
+                    <i class="fa fa-map-marker-alt text-info mr-1"></i>Dirección / Área:
+                </span>
+                <select id="filtroGlobalAreaGestion" class="form-control form-control-sm font-weight-bold" style="border-radius: 8px; border: 1.5px solid #00acc1; background: #f0fdfa; color: #0f172a; width: auto; min-width: 200px; height: 36px;">
+                    <option value="">🌐 Toda la Red (141)</option>
+                    <option value="AREA INTERIOR">🏥 Hospitales Área Interior (106)</option>
+                    <option value="AREA CENTRAL">🏙️ Hospitales Área Central (35)</option>
+                </select>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -548,6 +562,13 @@
                         <input id="fBuscarUnificado" type="text" class="form-control" style="width:100%" placeholder="🔍 Buscar establecimiento o depto...">
                     </div>
                     <div class="col-md-2 mb-2">
+                        <select id="fAreaGestion" class="form-control" style="width:100%">
+                            <option value="">Área / Dirección (Todas)</option>
+                            <option value="AREA INTERIOR">🏥 Área Interior (106)</option>
+                            <option value="AREA CENTRAL">🏙️ Área Central (35)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-2">
                         <select id="fTipologiaUnificada" class="form-control" style="width:100%">
                             <option value="">Todas las Tipologías</option>
                         </select>
@@ -565,13 +586,6 @@
                             <option value="">Medicamentos (Todos)</option>
                             <option value="con">Con Medicamentos</option>
                             <option value="sin">Sin Medicamentos</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <select id="fConAsignacion" class="form-control" style="width:100%">
-                            <option value="">Asignaciones (Todas)</option>
-                            <option value="con">Con Evaluador Asignado</option>
-                            <option value="sin">Sin Evaluador Asignado</option>
                         </select>
                     </div>
                     <div class="col-md-1 mb-2">
@@ -1851,6 +1865,7 @@ $(document).ready(function() {
             url: UNIF_URL,
             data: function(d) {
                 d.buscar = $('#fBuscarUnificado').val();
+                d.area_gestion = $('#fAreaGestion').val() || $('#filtroGlobalAreaGestion').val() || '';
                 d.tipologia = $('#fTipologiaUnificada').val() || '';
                 d.evaluador_id = $('#fEvaluadorUnificado').val() || '';
                 d.con_asignacion = $('#fConAsignacion').val() || '';
@@ -1875,6 +1890,22 @@ $(document).ready(function() {
 
     $('#fBuscarUnificado').on('keyup change', function() { tablaUnificada.draw(); });
     $('#fTipologiaUnificada, #fConAsignacion, #fConMedicamentos, #fEvaluadorUnificado, #fProgramaCronico').on('change', function() { tablaUnificada.draw(); });
+
+    $('#filtroGlobalAreaGestion').on('change', function() {
+        var val = $(this).val();
+        $('#fAreaGestion').val(val);
+        cargarDashboard();
+        cargarHistorial();
+        if (window.tablaUnificada) window.tablaUnificada.draw();
+    });
+
+    $('#fAreaGestion').on('change', function() {
+        var val = $(this).val();
+        $('#filtroGlobalAreaGestion').val(val);
+        cargarDashboard();
+        cargarHistorial();
+        if (window.tablaUnificada) window.tablaUnificada.draw();
+    });
 
     historialTable = $('#tablaHistorial').DataTable({
         processing: true,
@@ -1917,7 +1948,8 @@ $(document).ready(function() {
 });
 
 function cargarHistorial() {
-    $.get(DASH_URL, function(r) {
+    var area = $('#filtroGlobalAreaGestion').val() || $('#fAreaGestion').val() || '';
+    $.get(DASH_URL, { area_gestion: area }, function(r) {
         var evs = (r && r.evaluaciones) ? r.evaluaciones : [];
         var rows = evs.map(function(ev) {
             var pct = ev.progreso || ev.porcentaje_cumplimiento || 0;
@@ -1953,7 +1985,8 @@ var _dtMonitoreo = null;
 var _datosEvaluacionesGlobal = [];
 
 function cargarDashboard() {
-    $.get(DASH_URL, function(r) {
+    var area = $('#filtroGlobalAreaGestion').val() || $('#fAreaGestion').val() || '';
+    $.get(DASH_URL, { area_gestion: area }, function(r) {
         if (!r || !r.ok) return;
         var res = r.resumen || {};
         var evs = r.evaluaciones || [];
