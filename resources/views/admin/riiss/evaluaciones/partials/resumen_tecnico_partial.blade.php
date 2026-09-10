@@ -11,6 +11,18 @@
     
     // Lista unificada de especialidades activas
     $especialidadesTodas = $est->especialidades->merge($especialidadesAgregadas);
+
+    // Parsear evaluadores de forma segura
+    $listaNombresEvaluadores = [];
+    if (is_array($evaluacion->evaluadores)) {
+        foreach ($evaluacion->evaluadores as $evItem) {
+            $nom = is_array($evItem) ? ($evItem['text'] ?? ($evItem['nombre'] ?? ($evItem['name'] ?? ''))) : (is_object($evItem) ? ($evItem->text ?? ($evItem->nombre ?? ($evItem->name ?? ''))) : (string)$evItem);
+            $nom = trim($nom);
+            if ($nom && $nom !== trim((string)$evaluacion->evaluador_nombre) && !in_array($nom, $listaNombresEvaluadores)) {
+                $listaNombresEvaluadores[] = $nom;
+            }
+        }
+    }
 @endphp
 
 <div class="resumen-tecnico-wrapper">
@@ -332,9 +344,9 @@
                 <div class="col-md-6 mb-3 mb-md-0 border-right">
                     <div class="small text-muted font-weight-bold text-uppercase mb-1">Equipo Evaluador & Auditoría</div>
                     <div class="font-weight-600 text-dark">{{ $evaluacion->evaluador_nombre ?? 'Equipo Técnico de Planificación' }}</div>
-                    @if(is_array($evaluacion->evaluadores) && count($evaluacion->evaluadores) > 1)
+                    @if(!empty($listaNombresEvaluadores))
                         <div class="small text-muted mt-1">
-                            Acompañantes: {{ implode(', ', array_filter($evaluacion->evaluadores, fn($e) => $e !== $evaluacion->evaluador_nombre)) }}
+                            Acompañantes: {{ implode(', ', $listaNombresEvaluadores) }}
                         </div>
                     @endif
                     <div class="small text-muted mt-1"><i class="fa fa-calendar mr-1"></i>Fecha de Relevamiento: {{ $evaluacion->fecha_evaluacion?->format('d/m/Y') ?? '—' }}</div>
