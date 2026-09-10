@@ -463,7 +463,7 @@ class EstablecimientoController extends Controller
     public function listarEspecialidades(string $id): JsonResponse
     {
         $est = Establecimiento::where('id_establecimiento', $id)->firstOrFail();
-        $especialidades = $est->especialidades()->orderBy('nombre')->get(['riiss_especialidades.id', 'nombre']);
+        $especialidades = $est->especialidades()->orderBy('nombre')->get();
 
         return response()->json([
             'ok'    => true,
@@ -498,7 +498,7 @@ class EstablecimientoController extends Controller
             $est->especialidades()->attach($especialidadId);
         }
 
-        $especialidades = $est->especialidades()->orderBy('nombre')->get(['riiss_especialidades.id', 'nombre']);
+        $especialidades = $est->especialidades()->orderBy('nombre')->get();
 
         return response()->json([
             'ok'      => true,

@@ -9,8 +9,8 @@ class RiissEspecialidad extends Model
 {
     use HasFactory;
 
-    protected $table = 'riiss_especialidades';
-    protected $fillable = ['nombre'];
+    protected $table = 'bioestadistica.especialidades_medicas';
+    protected $fillable = ['nombre', 'codigo', 'activo', 'especialidad_base_id', 'meta'];
 
     public function establecimientos()
     {
