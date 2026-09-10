@@ -228,24 +228,37 @@
             <td class="info-label">Complejidad:</td>
             <td class="info-val">{{ $est->complejidad_label ?? 'N/A' }}</td>
             <td class="info-label">Condición:</td>
-            <td class="info-val">{{ $est->condicion_inmueble ?? 'N/A' }}</td>
+            <td class="info-val">
+                {{ $est->condicion_inmueble ?? 'N/A' }}
+                @if(!empty($est->habilita_farmacia_cronicos) || !empty($est->habilita_empadronamiento_cronicos))
+                    &nbsp;·&nbsp;<span style="color: #1e40af; font-weight: bold;">[Dispensación Crónicos]</span>
+                @endif
+            </td>
         </tr>
     </table>
 
     <table class="kpi-table">
         <tr>
-            <td style="width: 50%; padding-right: 4px;">
+            <td style="width: {{ !empty($totalMedicamentosCronicos) ? '34%' : '50%' }}; padding-right: 4px;">
                 <div class="kpi-card">
                     <div class="kpi-num">{{ $totalMedicamentosUnicos }}</div>
-                    <div class="kpi-label">Medicamentos Físicos Únicos en Catálogo</div>
+                    <div class="kpi-label">Medicamentos Físicos Únicos</div>
                 </div>
             </td>
-            <td style="width: 50%; padding-left: 4px;">
+            <td style="width: {{ !empty($totalMedicamentosCronicos) ? '33%' : '50%' }}; padding-left: 2px; padding-right: 2px;">
                 <div class="kpi-card blue">
                     <div class="kpi-num">{{ $totalEspecialidades }}</div>
-                    <div class="kpi-label">Especialidades Médicas Asistenciales Cubiertas</div>
+                    <div class="kpi-label">Especialidades Asistenciales</div>
                 </div>
             </td>
+            @if(!empty($totalMedicamentosCronicos))
+                <td style="width: 33%; padding-left: 4px;">
+                    <div class="kpi-card" style="background-color: #eff6ff; border-color: #bfdbfe;">
+                        <div class="kpi-num" style="color: #1d4ed8;">{{ $totalMedicamentosCronicos }}</div>
+                        <div class="kpi-label" style="color: #2563eb;">Patologías Crónicas (RCA 007/22)</div>
+                    </div>
+                </td>
+            @endif
         </tr>
     </table>
 
@@ -265,7 +278,7 @@
                     <td style="text-align: center; color: #64748b; font-weight: bold;">{{ $loop->iteration }}</td>
                     <td><span class="code-badge">{{ $m['codigo'] ?: 'S/C' }}</span></td>
                     <td>
-                        <strong style="color: #0f172a;">{{ $m['nombre'] }}</strong>
+                        <strong style="color: #0f172a;">{{ $m['nombre'] ?: ('MEDICAMENTO CÓDIGO ' . $m['codigo']) }}</strong>
                         @if(!empty($m['es_cronico']))
                             <div style="margin-top: 1px;">
                                 <span style="display: inline-block; background-color: #dbeafe; color: #1e40af; font-size: 6.5px; font-weight: bold; padding: 1px 3px; border-radius: 2px;">

@@ -383,8 +383,12 @@ class EstablecimientoController extends Controller
                 $especialidadesMedicamentos[$espNombre] = [];
             }
             $especialidadesMedicamentos[$espNombre][] = [
-                'codigo' => $med->codigo,
-                'nombre' => $med->nombre,
+                'codigo'                => $med->codigo,
+                'nombre'                => $med->nombre ?: ('MEDICAMENTO CÓDIGO ' . $med->codigo),
+                'es_cronico'            => (bool) $med->es_cronico,
+                'categoria_terapeutica' => $med->categoria_terapeutica,
+                'es_psicotropico'       => (bool) $med->es_psicotropico,
+                'resolucion_respaldo'   => $med->resolucion_respaldo,
             ];
             $totalAsignaciones++;
 
@@ -392,10 +396,14 @@ class EstablecimientoController extends Controller
             $medKey = $med->codigo ? $med->codigo : ('ID_' . $med->id);
             if (!isset($medicamentosConsolidados[$medKey])) {
                 $medicamentosConsolidados[$medKey] = [
-                    'id'             => $med->id,
-                    'codigo'         => $med->codigo ?: 'S/C',
-                    'nombre'         => $med->nombre,
-                    'especialidades' => []
+                    'id'                    => $med->id,
+                    'codigo'                => $med->codigo ?: 'S/C',
+                    'nombre'                => $med->nombre ?: ('MEDICAMENTO CÓDIGO ' . $med->codigo),
+                    'es_cronico'            => (bool) $med->es_cronico,
+                    'categoria_terapeutica' => $med->categoria_terapeutica,
+                    'es_psicotropico'       => (bool) $med->es_psicotropico,
+                    'resolucion_respaldo'   => $med->resolucion_respaldo,
+                    'especialidades'        => []
                 ];
             }
             if (!in_array($espNombre, $medicamentosConsolidados[$medKey]['especialidades'])) {
@@ -413,6 +421,8 @@ class EstablecimientoController extends Controller
         ksort($especialidadesMedicamentos);
         uasort($medicamentosConsolidados, fn($a, $b) => strcmp($a['nombre'], $b['nombre']));
 
+        $totalCronicos = count(array_filter($medicamentosConsolidados, fn($m) => !empty($m['es_cronico'])));
+
         $tipo = $request->get('tipo', 'consolidado'); // 'consolidado' (por defecto) o 'especialidad'
 
         $viewName = ($tipo === 'especialidad')
@@ -424,6 +434,8 @@ class EstablecimientoController extends Controller
             'medicamentosConsolidados'   => $medicamentosConsolidados,
             'especialidadesMedicamentos' => $especialidadesMedicamentos,
             'totalMedicamentosUnicos'    => count($medicamentosConsolidados),
+            'totalMedicamentosCronicos'  => $totalCronicos,
+            'totalCronicos'              => $totalCronicos,
             'totalAsignaciones'          => $totalAsignaciones,
             'totalEspecialidades'        => count($especialidadesMedicamentos),
             'fecha'                      => now()->format('d/m/Y H:i'),

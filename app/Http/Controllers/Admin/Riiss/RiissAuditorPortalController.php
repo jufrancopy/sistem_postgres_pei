@@ -332,6 +332,8 @@ class RiissAuditorPortalController extends Controller
         ksort($especialidadesMedicamentos);
         uasort($medicamentosConsolidados, fn($a, $b) => strcmp($a['nombre'], $b['nombre']));
 
+        $totalCronicos = count(array_filter($medicamentosConsolidados, fn($m) => !empty($m['es_cronico'])));
+
         $tipo = $request->get('tipo', 'consolidado');
         $viewName = ($tipo === 'especialidad')
             ? 'admin.riiss.establecimientos.pdf_medicamentos_especialidad'
@@ -342,6 +344,8 @@ class RiissAuditorPortalController extends Controller
             'medicamentosConsolidados'   => $medicamentosConsolidados,
             'especialidadesMedicamentos' => $especialidadesMedicamentos,
             'totalMedicamentosUnicos'    => count($medicamentosConsolidados),
+            'totalMedicamentosCronicos'  => $totalCronicos,
+            'totalCronicos'              => $totalCronicos,
             'totalAsignaciones'          => $totalAsignaciones,
             'totalEspecialidades'        => count($especialidadesMedicamentos),
             'fecha'                      => now()->format('d/m/Y H:i'),
